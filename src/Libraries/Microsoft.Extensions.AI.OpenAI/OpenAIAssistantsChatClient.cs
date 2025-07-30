@@ -26,8 +26,8 @@ using OpenAI.Assistants;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents an <see cref="IChatClient"/> for an Azure.AI.Agents.Persistent <see cref="AssistantClient"/>.</summary>
-internal sealed class OpenAIAssistantChatClient : IChatClient
+/// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="AssistantClient"/>.</summary>
+internal sealed class OpenAIAssistantsChatClient : IChatClient
 {
     /// <summary>The underlying <see cref="AssistantClient" />.</summary>
     private readonly AssistantClient _client;
@@ -44,8 +44,8 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
     /// <summary>List of tools associated with the assistant.</summary>
     private IReadOnlyList<ToolDefinition>? _assistantTools;
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
-    public OpenAIAssistantChatClient(AssistantClient assistantClient, string assistantId, string? defaultThreadId)
+    /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantsChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
+    public OpenAIAssistantsChatClient(AssistantClient assistantClient, string assistantId, string? defaultThreadId)
     {
         _client = Throw.IfNull(assistantClient);
         _assistantId = Throw.IfNullOrWhitespace(assistantId);
@@ -60,6 +60,13 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
             ?.GetValue(assistantClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
 
         _metadata = new("openai", providerUrl);
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantsChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
+    public OpenAIAssistantsChatClient(AssistantClient assistantClient, Assistant assistant, string? defaultThreadId)
+        : this(assistantClient, Throw.IfNull(assistant).Id, defaultThreadId)
+    {
+        _assistantTools = assistant.Tools;
     }
 
     /// <inheritdoc />
@@ -203,7 +210,7 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
                     break;
 
                 case MessageContentUpdate mcu:
-                    yield return new(mcu.Role == MessageRole.User ? ChatRole.User : ChatRole.Assistant, mcu.Text)
+                    ChatResponseUpdate textUpdate = new(mcu.Role == MessageRole.User ? ChatRole.User : ChatRole.Assistant, mcu.Text)
                     {
                         AuthorName = _assistantId,
                         ConversationId = threadId,
@@ -211,10 +218,42 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
                         RawRepresentation = mcu,
                         ResponseId = responseId,
                     };
+
+                    // Add any annotations from the text update. The OpenAI Assistants API does not support passing these back
+                    // into the model (MessageContent.FromXx does not support providing annotations), so they end up being one way and are dropped
+                    // on subsequent requests.
+                    if (mcu.TextAnnotation is { } tau)
+                    {
+                        string? fileId = null;
+                        string? toolName = null;
+                        if (!string.IsNullOrWhiteSpace(tau.InputFileId))
+                        {
+                            fileId = tau.InputFileId;
+                            toolName = "file_search";
+                        }
+                        else if (!string.IsNullOrWhiteSpace(tau.OutputFileId))
+                        {
+                            fileId = tau.OutputFileId;
+                            toolName = "code_interpreter";
+                        }
+
+                        if (fileId is not null)
+                        {
+                            (((TextContent)textUpdate.Contents[0]).Annotations ??= []).Add(new CitationAnnotation
+                            {
+                                RawRepresentation = tau,
+                                AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = tau.StartIndex, EndIndex = tau.EndIndex }],
+                                FileId = fileId,
+                                ToolName = toolName,
+                            });
+                        }
+                    }
+
+                    yield return textUpdate;
                     break;
 
                 default:
-                    yield return new ChatResponseUpdate
+                    yield return new()
                     {
                         AuthorName = _assistantId,
                         ConversationId = threadId,

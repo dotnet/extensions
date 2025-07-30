@@ -943,13 +943,14 @@ public static partial class AIJsonUtilitiesTests
         JsonSerializerOptions options = new()
         {
             TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
         options.AddAIContentType<DerivedAIContent>("derivativeContent");
 
         AIContent c = new DerivedAIContent { DerivedValue = 42 };
         string json = JsonSerializer.Serialize(c, options);
-        Assert.Equal("""{"$type":"derivativeContent","DerivedValue":42,"AdditionalProperties":null}""", json);
+        Assert.Equal("""{"$type":"derivativeContent","DerivedValue":42}""", json);
 
         AIContent? deserialized = JsonSerializer.Deserialize<AIContent>(json, options);
         Assert.IsType<DerivedAIContent>(deserialized);

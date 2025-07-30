@@ -183,4 +183,37 @@ public class OpenAIConversionTests
         Assert.Equal(OpenAI.Responses.MessageRole.Assistant, m5.Role);
         Assert.Equal("The answer is 42.", Assert.Single(m5.Content).Text);
     }
+
+    [Fact]
+    public void AsChatResponse_ConvertsOpenAIChatCompletion()
+    {
+        Assert.Throws<ArgumentNullException>("chatCompletion", () => ((ChatCompletion)null!).AsChatResponse());
+
+        ChatCompletion cc = OpenAIChatModelFactory.ChatCompletion(
+            "id", OpenAI.Chat.ChatFinishReason.Length, null, null,
+            [ChatToolCall.CreateFunctionToolCall("id", "functionName", BinaryData.FromString("test"))],
+            ChatMessageRole.User, null, null, null, new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            "model123", null, OpenAIChatModelFactory.ChatTokenUsage(2, 1, 3));
+        cc.Content.Add(ChatMessageContentPart.CreateTextPart("Hello, world!"));
+        cc.Content.Add(ChatMessageContentPart.CreateImagePart(new Uri("http://example.com/image.png")));
+
+        ChatResponse response = cc.AsChatResponse();
+
+        Assert.Equal("id", response.ResponseId);
+        Assert.Equal(ChatFinishReason.Length, response.FinishReason);
+        Assert.Equal("model123", response.ModelId);
+        Assert.Equal(new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero), response.CreatedAt);
+        Assert.NotNull(response.Usage);
+        Assert.Equal(1, response.Usage.InputTokenCount);
+        Assert.Equal(2, response.Usage.OutputTokenCount);
+        Assert.Equal(3, response.Usage.TotalTokenCount);
+
+        ChatMessage message = Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.User, message.Role);
+
+        Assert.Equal(3, message.Contents.Count);
+        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(message.Contents[0]).Text);
+        Assert.Equal("http://example.com/image.png", Assert.IsType<UriContent>(message.Contents[1]).Uri.ToString());
+        Assert.Equal("functionName", Assert.IsType<FunctionCallContent>(message.Contents[2]).Name);
+    }
 }

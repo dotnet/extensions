@@ -5,6 +5,7 @@ using System;
 #if NET
 using System.Buffers;
 using System.Buffers.Text;
+using System.ComponentModel;
 #endif
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -142,6 +143,9 @@ public class DataContent : AIContent
     /// or from a <see cref="System.Uri"/>.
     /// </remarks>
     [StringSyntax(StringSyntaxAttribute.Uri)]
+#if NET
+    [Description("A data URI representing the content.")]
+#endif
     public string Uri
     {
         get
@@ -182,6 +186,13 @@ public class DataContent : AIContent
     /// </remarks>
     [JsonIgnore]
     public string MediaType { get; }
+
+    /// <summary>Gets or sets an optional name associated with the data.</summary>
+    /// <remarks>
+    /// A service might use this name as part of citations or to help infer the type of data
+    /// being represented based on a file extension.
+    /// </remarks>
+    public string? Name { get; set; }
 
     /// <summary>Gets the data represented by this instance.</summary>
     /// <remarks>

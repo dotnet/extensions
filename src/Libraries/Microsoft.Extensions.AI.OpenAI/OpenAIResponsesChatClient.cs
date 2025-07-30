@@ -23,7 +23,7 @@ using OpenAI.Responses;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an <see cref="OpenAIResponseClient"/>.</summary>
-internal sealed class OpenAIResponseChatClient : IChatClient
+internal sealed class OpenAIResponsesChatClient : IChatClient
 {
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
@@ -31,10 +31,10 @@ internal sealed class OpenAIResponseChatClient : IChatClient
     /// <summary>The underlying <see cref="OpenAIResponseClient" />.</summary>
     private readonly OpenAIResponseClient _responseClient;
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAIResponseChatClient"/> class for the specified <see cref="OpenAIResponseClient"/>.</summary>
+    /// <summary>Initializes a new instance of the <see cref="OpenAIResponsesChatClient"/> class for the specified <see cref="OpenAIResponseClient"/>.</summary>
     /// <param name="responseClient">The underlying client.</param>
     /// <exception cref="ArgumentNullException"><paramref name="responseClient"/> is <see langword="null"/>.</exception>
-    public OpenAIResponseChatClient(OpenAIResponseClient responseClient)
+    public OpenAIResponsesChatClient(OpenAIResponseClient responseClient)
     {
         _ = Throw.IfNull(responseClient);
 
@@ -78,10 +78,16 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         // Make the call to the OpenAIResponseClient.
         var openAIResponse = (await _responseClient.CreateResponseAsync(openAIResponseItems, openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
 
+        // Convert the response to a ChatResponse.
+        return FromOpenAIResponse(openAIResponse, openAIOptions);
+    }
+
+    internal static ChatResponse FromOpenAIResponse(OpenAIResponse openAIResponse, ResponseCreationOptions? openAIOptions)
+    {
         // Convert and return the results.
         ChatResponse response = new()
         {
-            ConversationId = openAIOptions.StoredOutputEnabled is false ? null : openAIResponse.Id,
+            ConversationId = openAIOptions?.StoredOutputEnabled is false ? null : openAIResponse.Id,
             CreatedAt = openAIResponse.CreatedAt,
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
             Messages = [new(ChatRole.Assistant, [])],
@@ -111,10 +117,15 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                 switch (outputItem)
                 {
                     case MessageResponseItem messageItem:
+                        if (message.MessageId is not null && message.MessageId != messageItem.Id)
+                        {
+                            message = new ChatMessage();
+                            response.Messages.Add(message);
+                        }
+
                         message.MessageId = messageItem.Id;
                         message.RawRepresentation = messageItem;
                         message.Role = ToChatRole(messageItem.Role);
-                        (message.AdditionalProperties ??= []).Add(nameof(messageItem.Id), messageItem.Id);
                         ((List<AIContent>)message.Contents).AddRange(ToAIContents(messageItem.Content));
                         break;
 
@@ -149,6 +160,11 @@ internal sealed class OpenAIResponseChatClient : IChatClient
             {
                 message.Contents.Add(new ErrorContent(error.Message) { ErrorCode = error.Code.ToString() });
             }
+        }
+
+        foreach (var message in response.Messages)
+        {
+            message.CreatedAt = openAIResponse.CreatedAt;
         }
 
         return response;
@@ -592,10 +608,27 @@ internal sealed class OpenAIResponseChatClient : IChatClient
             switch (part.Kind)
             {
                 case ResponseContentPartKind.OutputText:
-                    results.Add(new TextContent(part.Text)
+                    TextContent text = new(part.Text)
                     {
                         RawRepresentation = part,
-                    });
+                    };
+
+                    if (part.OutputTextAnnotations is { Count: > 0 })
+                    {
+                        foreach (var ota in part.OutputTextAnnotations)
+                        {
+                            (text.Annotations ??= []).Add(new CitationAnnotation
+                            {
+                                RawRepresentation = ota,
+                                AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = ota.UriCitationStartIndex, EndIndex = ota.UriCitationEndIndex }],
+                                Title = ota.UriCitationTitle,
+                                Url = ota.UriCitationUri,
+                                FileId = ota.FileCitationFileId ?? ota.FilePathFileId,
+                            });
+                        }
+                    }
+
+                    results.Add(text);
                     break;
 
                 case ResponseContentPartKind.Refusal:
@@ -639,7 +672,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                     break;
 
                 case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
-                    parts.Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, $"{Guid.NewGuid():N}.pdf"));
+                    parts.Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
                     break;
 
                 case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):

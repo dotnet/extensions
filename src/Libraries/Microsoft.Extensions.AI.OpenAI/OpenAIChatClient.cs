@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -17,6 +18,7 @@ using OpenAI.Chat;
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable SA1202 // Elements should be ordered by access
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
@@ -76,7 +78,7 @@ internal sealed class OpenAIChatClient : IChatClient
         // Make the call to OpenAI.
         var response = await _chatClient.CompleteChatAsync(openAIChatMessages, openAIOptions, cancellationToken).ConfigureAwait(false);
 
-        return FromOpenAIChatCompletion(response.Value, options, openAIOptions);
+        return FromOpenAIChatCompletion(response.Value, openAIOptions);
     }
 
     /// <inheritdoc />
@@ -264,7 +266,7 @@ internal sealed class OpenAIChatClient : IChatClient
                 break;
 
             case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
-                return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, $"{Guid.NewGuid():N}.pdf");
+                return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf");
 
             case AIContent when content.RawRepresentation is ChatMessageContentPart rawContentPart:
                 return rawContentPart;
@@ -430,13 +432,14 @@ internal sealed class OpenAIChatClient : IChatClient
             "mp3" or _ => "audio/mpeg",
         };
 
-    private static ChatResponse FromOpenAIChatCompletion(ChatCompletion openAICompletion, ChatOptions? options, ChatCompletionOptions chatCompletionOptions)
+    internal static ChatResponse FromOpenAIChatCompletion(ChatCompletion openAICompletion, ChatCompletionOptions? chatCompletionOptions)
     {
         _ = Throw.IfNull(openAICompletion);
 
         // Create the return message.
         ChatMessage returnMessage = new()
         {
+            CreatedAt = openAICompletion.CreatedAt,
             MessageId = openAICompletion.Id, // There's no per-message ID, so we use the same value as the response ID
             RawRepresentation = openAICompletion,
             Role = FromOpenAIChatRole(openAICompletion.Role),
@@ -461,17 +464,14 @@ internal sealed class OpenAIChatClient : IChatClient
         }
 
         // Also manufacture function calling content items from any tool calls in the response.
-        if (options?.Tools is { Count: > 0 })
+        foreach (ChatToolCall toolCall in openAICompletion.ToolCalls)
         {
-            foreach (ChatToolCall toolCall in openAICompletion.ToolCalls)
+            if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
             {
-                if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
-                {
-                    var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
-                    callContent.RawRepresentation = toolCall;
+                var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
+                callContent.RawRepresentation = toolCall;
 
-                    returnMessage.Contents.Add(callContent);
-                }
+                returnMessage.Contents.Add(callContent);
             }
         }
 
@@ -479,6 +479,30 @@ internal sealed class OpenAIChatClient : IChatClient
         if (openAICompletion.Refusal is string refusal)
         {
             returnMessage.Contents.Add(new ErrorContent(refusal) { ErrorCode = nameof(openAICompletion.Refusal) });
+        }
+
+        // And add annotations. OpenAI chat completion specifies annotations at the message level (and as such they can't be
+        // roundtripped back); we store them either on the first text content, assuming there is one, or on a dedicated content
+        // instance if not.
+        if (openAICompletion.Annotations is { Count: > 0 })
+        {
+            TextContent? annotationContent = returnMessage.Contents.OfType<TextContent>().FirstOrDefault();
+            if (annotationContent is null)
+            {
+                annotationContent = new(null);
+                returnMessage.Contents.Add(annotationContent);
+            }
+
+            foreach (var annotation in openAICompletion.Annotations)
+            {
+                (annotationContent.Annotations ??= []).Add(new CitationAnnotation
+                {
+                    RawRepresentation = annotation,
+                    AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = annotation.StartIndex, EndIndex = annotation.EndIndex }],
+                    Title = annotation.WebResourceTitle,
+                    Url = annotation.WebResourceUri,
+                });
+            }
         }
 
         // Wrap the content in a ChatResponse to return.
