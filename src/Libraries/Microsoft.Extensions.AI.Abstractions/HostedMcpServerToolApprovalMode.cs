@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -10,7 +9,6 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents the mode in which approval is required for tool calls to a hosted MCP server.
 /// </summary>
-[Experimental("MEAI001")]
 public class HostedMcpServerToolApprovalMode
 {
     /// <summary>
