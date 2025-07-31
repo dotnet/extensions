@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,7 +12,6 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 
 internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
 {
-    private readonly IReadOnlyList<string> _cachingKeys;
     private readonly ChatDetails _chatDetails;
     private readonly ConcurrentDictionary<string, Stopwatch> _stopWatches;
 
@@ -24,7 +22,7 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
         ChatDetails chatDetails)
             : base(originalChatClient, cache)
     {
-        _cachingKeys = [.. cachingKeys];
+        CacheKeyAdditionalValues = [.. cachingKeys];
         _chatDetails = chatDetails;
         _stopWatches = new ConcurrentDictionary<string, Stopwatch>();
     }
@@ -124,7 +122,4 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
                     cacheHit: false));
         }
     }
-
-    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
-        => base.GetCacheKey([.. values, .. _cachingKeys]);
 }

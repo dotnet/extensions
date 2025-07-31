@@ -46,35 +46,12 @@ export const ScenarioGroup = ({ node, scoreSummary }: {
     node: ScoreNode,
     scoreSummary: ScoreSummary,
 }) => {
-    const { selectedTags } = useReportContext();
+    const { filterTree } = useReportContext();
     const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(() => new Set());
     const handleOpenChange = useCallback((_: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
         setOpenItems(data.openItems);
     }, []);
     const isOpen = (name: string) => openItems.has(name);
-
-    const filterTree = (node: ScoreNode): ScoreNode | null => {
-        if (selectedTags.length === 0) {
-            return node;
-        }
-
-        if (node.isLeafNode) {
-            return node.scenario?.tags?.some(tag => selectedTags.includes(tag)) ? node : null;
-        }
-
-        const filteredChildren = node.childNodes
-            .map(filterTree)
-            .filter((child): child is ScoreNode => child !== null);
-
-        if (filteredChildren.length > 0) {
-            const newNode = new ScoreNode(node.name, node.nodeType, node.nodeKey, node.executionName);
-            newNode.setChildren(new Map(filteredChildren.map(child => [child.name, child])));
-            newNode.aggregate(selectedTags);
-            return newNode;
-        }
-
-        return null;
-    };
 
     const filteredNode = filterTree(node);
 
@@ -95,8 +72,8 @@ const SelectionButton = ({ nodeKey }: { nodeKey: string }) => {
         <Button
             appearance="transparent"
             icon={nodeKey === selectedScenarioLevel ? <RadioButtonFilled /> : <RadioButtonRegular />}
-            onClick={(evt) => {
-                evt.stopPropagation();
+            onClick={(event: React.MouseEvent) => {
+                event.stopPropagation();
                 selectScenarioLevel(nodeKey);
             }}
             aria-label="Select"
@@ -134,9 +111,9 @@ const ScoreNodeHeader = ({ item, showPrompt }:
 
     return (<div className={headerClass}>
         {scoreSummary.includesReportHistory && <SelectionButton nodeKey={item.nodeKey} />}
-        <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px" 
-            selected={item.nodeKey == selectedScenarioLevel} 
-            onClick={(event) => {
+        <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px"
+            selected={item.nodeKey == selectedScenarioLevel}
+            onClick={(event: React.MouseEvent) => {
                 if (scoreSummary.includesReportHistory) {
                     event.stopPropagation();
                     selectScenarioLevel(item.nodeKey);

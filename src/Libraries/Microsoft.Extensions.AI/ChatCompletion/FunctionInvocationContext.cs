@@ -9,7 +9,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides context for an in-flight function invocation.</summary>
-public sealed class FunctionInvocationContext
+public class FunctionInvocationContext
 {
     /// <summary>
     /// A nop function used to allow <see cref="Function"/> to be non-nullable. Default instances of
@@ -92,6 +92,16 @@ public sealed class FunctionInvocationContext
     /// and a new request issued to the wrapped client. If this property is set to <see langword="true"/>, that subsequent request
     /// will not be issued and instead the loop immediately terminated rather than continuing until there are no
     /// more function call requests in responses.
+    /// <para>
+    /// If multiple function call requests are issued as part of a single iteration (a single response from the inner <see cref="IChatClient"/>),
+    /// setting <see cref="Terminate" /> to <see langword="true" /> may also prevent subsequent requests within that same iteration from being processed.
+    /// </para>
     /// </remarks>
     public bool Terminate { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the function invocation is occurring as part of a
+    /// <see cref="IChatClient.GetStreamingResponseAsync"/> call as opposed to a <see cref="IChatClient.GetResponseAsync"/> call.
+    /// </summary>
+    public bool IsStreaming { get; set; }
 }

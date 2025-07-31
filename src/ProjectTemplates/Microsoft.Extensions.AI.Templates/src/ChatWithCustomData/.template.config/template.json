@@ -23,11 +23,14 @@
   ],
   "primaryOutputs": [
     {
+      "path": "./README.md"
+    },
+    {
       "condition": "(!IsAspire)",
       "path": "./ChatWithCustomData-CSharp.csproj"
     },
     {
-      "condition": "(IsAspire && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
+      "condition": "(IsAspire && (hostIdentifier == \"dotnetcli\" || hostIdentifier == \"dotnetcli-preview\"))",
       "path": "./ChatWithCustomData-CSharp.sln"
     },
     {
@@ -41,9 +44,6 @@
     {
       "condition": "(IsAspire)",
       "path": "./ChatWithCustomData-CSharp.Web/ChatWithCustomData-CSharp.Web.csproj"
-    },
-    {
-      "path": "./README.md"
     }
   ],
   "sources": [{
@@ -74,6 +74,12 @@
           "Program.Aspire.cs": "Program.cs",
           "README.Aspire.md": "README.md"
         }
+      },
+      {
+        "condition": "(IsAspire && hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
+        "exclude": [
+          "*.sln"
+        ]
       },
       {
         "condition": "(!UseLocalVectorStore)",
@@ -491,7 +497,7 @@
       "type": "derived",
       "valueSource": "name",
       "valueTransform": "vectorStoreIndexNameTransform",
-      "replaces": "data-ChatWithCustomData-CSharp.Web-ingestion"
+      "replaces": "data-ChatWithCustomData-CSharp.Web-"
     },
     "webProjectNamespaceAdjuster": {
       "type": "generated",
@@ -553,17 +559,17 @@
     "vectorStoreIndexName_PrefixSuffix": {
       "identifier": "replace",
       "pattern": "^(.*)$",
-      "replacement": "data-$1-ingested",
+      "replacement": "data-$1-",
       "description": "Produces a meaningful name parameterized by project name; ensures first, second, and last characters are valid"
     }
   },
   "postActions": [{
-    "condition": "(hostIdentifier != \"dotnetcli\")",
+    "condition": "(hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
     "description": "Opens README file in the editor",
     "manualInstructions": [ ],
     "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
     "args": {
-      "files": "1"
+      "files": "0"
     },
     "continueOnError": true
   }],

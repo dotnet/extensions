@@ -28,7 +28,7 @@ internal sealed partial class ReportCommand(ILogger logger)
         Format format,
         CancellationToken cancellationToken = default)
     {
-        IResultStore resultStore;
+        IEvaluationResultStore resultStore;
 
         if (storageRootDir is not null)
         {

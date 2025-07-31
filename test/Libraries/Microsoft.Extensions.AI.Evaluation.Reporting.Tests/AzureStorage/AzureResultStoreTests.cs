@@ -19,11 +19,12 @@ public class AzureResultStoreTests : ResultStoreTester, IAsyncLifetime
     {
         if (Settings.Current.Configured)
         {
+            var credential = new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential());
             _fsClient = new(
                 new Uri(
                     baseUri: new Uri(Settings.Current.StorageAccountEndpoint),
                     relativeUri: Settings.Current.StorageContainerName),
-                new DefaultAzureCredential());
+                credential);
         }
     }
 
@@ -46,7 +47,7 @@ public class AzureResultStoreTests : ResultStoreTester, IAsyncLifetime
 
     public override bool IsConfigured => Settings.Current.Configured;
 
-    public override IResultStore CreateResultStore()
+    public override IEvaluationResultStore CreateResultStore()
         => new AzureStorageResultStore(_dirClient!);
 
 }

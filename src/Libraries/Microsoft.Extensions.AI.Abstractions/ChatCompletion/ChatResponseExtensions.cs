@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -84,9 +85,10 @@ public static class ChatResponseExtensions
         var contentsList = filter is null ? update.Contents : update.Contents.Where(filter).ToList();
         if (contentsList.Count > 0)
         {
-            list.Add(new ChatMessage(update.Role ?? ChatRole.Assistant, contentsList)
+            list.Add(new(update.Role ?? ChatRole.Assistant, contentsList)
             {
                 AuthorName = update.AuthorName,
+                CreatedAt = update.CreatedAt,
                 RawRepresentation = update.RawRepresentation,
                 AdditionalProperties = update.AdditionalProperties,
             });
@@ -180,6 +182,76 @@ public static class ChatResponseExtensions
         }
     }
 
+    /// <summary>Coalesces sequential <see cref="AIContent"/> content elements.</summary>
+    internal static void CoalesceTextContent(List<AIContent> contents)
+    {
+        Coalesce<TextContent>(contents, static text => new(text));
+        Coalesce<TextReasoningContent>(contents, static text => new(text));
+
+        // This implementation relies on TContent's ToString returning its exact text.
+        static void Coalesce<TContent>(List<AIContent> contents, Func<string, TContent> fromText)
+            where TContent : AIContent
+        {
+            StringBuilder? coalescedText = null;
+
+            // Iterate through all of the items in the list looking for contiguous items that can be coalesced.
+            int start = 0;
+            while (start < contents.Count - 1)
+            {
+                // We need at least two TextContents in a row to be able to coalesce. We also avoid touching contents
+                // that have annotations, as we want to ensure the annotations (and in particular any start/end indices
+                // into the text content) remain accurate.
+                if (!TryAsCoalescable(contents[start], out var firstText))
+                {
+                    start++;
+                    continue;
+                }
+
+                if (!TryAsCoalescable(contents[start + 1], out var secondText))
+                {
+                    start += 2;
+                    continue;
+                }
+
+                // Append the text from those nodes and continue appending subsequent TextContents until we run out.
+                // We null out nodes as their text is appended so that we can later remove them all in one O(N) operation.
+                coalescedText ??= new();
+                _ = coalescedText.Clear().Append(firstText).Append(secondText);
+                contents[start + 1] = null!;
+                int i = start + 2;
+                for (; i < contents.Count && TryAsCoalescable(contents[i], out TContent? next); i++)
+                {
+                    _ = coalescedText.Append(next);
+                    contents[i] = null!;
+                }
+
+                // Store the replacement node. We inherit the properties of the first text node. We don't
+                // currently propagate additional properties from the subsequent nodes. If we ever need to,
+                // we can add that here.
+                var newContent = fromText(coalescedText.ToString());
+                contents[start] = newContent;
+                newContent.AdditionalProperties = firstText.AdditionalProperties?.Clone();
+
+                start = i;
+
+                static bool TryAsCoalescable(AIContent content, [NotNullWhen(true)] out TContent? coalescable)
+                {
+                    if (content is TContent && (content is not TextContent tc || tc.Annotations is not { Count: > 0 }))
+                    {
+                        coalescable = (TContent)content;
+                        return true;
+                    }
+
+                    coalescable = null!;
+                    return false;
+                }
+            }
+
+            // Remove all of the null slots left over from the coalescing process.
+            _ = contents.RemoveAll(u => u is null);
+        }
+    }
+
     /// <summary>Finalizes the <paramref name="response"/> object.</summary>
     private static void FinalizeResponse(ChatResponse response)
     {
@@ -212,7 +284,7 @@ public static class ChatResponseExtensions
 
         if (isNewMessage)
         {
-            message = new ChatMessage(ChatRole.Assistant, []);
+            message = new(ChatRole.Assistant, []);
             response.Messages.Add(message);
         }
         else
@@ -224,9 +296,15 @@ public static class ChatResponseExtensions
         // Incorporate those into the latest message; in cases where the message
         // stores a single value, prefer the latest update's value over anything
         // stored in the message.
+
         if (update.AuthorName is not null)
         {
             message.AuthorName = update.AuthorName;
+        }
+
+        if (update.CreatedAt is not null)
+        {
+            message.CreatedAt = update.CreatedAt;
         }
 
         if (update.Role is ChatRole role)
@@ -264,9 +342,9 @@ public static class ChatResponseExtensions
             response.ResponseId = update.ResponseId;
         }
 
-        if (update.ChatThreadId is not null)
+        if (update.ConversationId is not null)
         {
-            response.ChatThreadId = update.ChatThreadId;
+            response.ConversationId = update.ConversationId;
         }
 
         if (update.CreatedAt is not null)
@@ -295,54 +373,5 @@ public static class ChatResponseExtensions
                 response.AdditionalProperties.SetAll(update.AdditionalProperties);
             }
         }
-    }
-
-    /// <summary>Coalesces sequential <see cref="TextContent"/> content elements.</summary>
-    private static void CoalesceTextContent(List<AIContent> contents)
-    {
-        StringBuilder? coalescedText = null;
-
-        // Iterate through all of the items in the list looking for contiguous items that can be coalesced.
-        int start = 0;
-        while (start < contents.Count - 1)
-        {
-            // We need at least two TextContents in a row to be able to coalesce.
-            if (contents[start] is not TextContent firstText)
-            {
-                start++;
-                continue;
-            }
-
-            if (contents[start + 1] is not TextContent secondText)
-            {
-                start += 2;
-                continue;
-            }
-
-            // Append the text from those nodes and continue appending subsequent TextContents until we run out.
-            // We null out nodes as their text is appended so that we can later remove them all in one O(N) operation.
-            coalescedText ??= new();
-            _ = coalescedText.Clear().Append(firstText.Text).Append(secondText.Text);
-            contents[start + 1] = null!;
-            int i = start + 2;
-            for (; i < contents.Count && contents[i] is TextContent next; i++)
-            {
-                _ = coalescedText.Append(next.Text);
-                contents[i] = null!;
-            }
-
-            // Store the replacement node.
-            contents[start] = new TextContent(coalescedText.ToString())
-            {
-                // We inherit the properties of the first text node. We don't currently propagate additional
-                // properties from the subsequent nodes. If we ever need to, we can add that here.
-                AdditionalProperties = firstText.AdditionalProperties?.Clone(),
-            };
-
-            start = i;
-        }
-
-        // Remove all of the null slots left over from the coalescing process.
-        _ = contents.RemoveAll(u => u is null);
     }
 }

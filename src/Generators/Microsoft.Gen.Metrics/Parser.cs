@@ -422,7 +422,7 @@ internal sealed class Parser
         if (!methodAttribute.ConstructorArguments.IsDefaultOrEmpty
             && methodAttribute.ConstructorArguments[0].Kind == TypedConstantKind.Type)
         {
-            KeyValuePair<string, TypedConstant> namedArg;
+            KeyValuePair<string, TypedConstant> namedArg = default;
             var ctorArg = methodAttribute.ConstructorArguments[0];
 
             if (!methodAttribute.NamedArguments.IsDefaultOrEmpty)

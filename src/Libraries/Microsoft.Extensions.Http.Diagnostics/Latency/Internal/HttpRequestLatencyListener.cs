@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
@@ -17,16 +15,9 @@ internal sealed class HttpRequestLatencyListener : EventListener
     private const string HttpProviderName = "System.Net.Http";
     private const string NameResolutionProivderName = "System.Net.NameResolution";
 
-    private readonly ConcurrentDictionary<string, EventSource?> _eventSources = new()
-    {
-        [SocketProviderName] = null,
-        [HttpProviderName] = null,
-        [NameResolutionProivderName] = null
-    };
+    private readonly FrozenDictionary<string, FrozenDictionary<string, CheckpointToken>> _eventToTokenMap;
 
     internal HttpClientLatencyContext LatencyContext { get; }
-
-    private readonly EventToCheckpointToken _eventToCheckpointToken;
 
     private int _enabled;
 
@@ -35,39 +26,40 @@ internal sealed class HttpRequestLatencyListener : EventListener
     public HttpRequestLatencyListener(HttpClientLatencyContext latencyContext, ILatencyContextTokenIssuer tokenIssuer)
     {
         LatencyContext = latencyContext;
-        _eventToCheckpointToken = new(tokenIssuer);
+        _eventToTokenMap = EventToCheckpointToken.Build(tokenIssuer);
     }
 
     public void Enable()
     {
         if (Interlocked.CompareExchange(ref _enabled, 1, 0) == 0)
         {
-            foreach (var eventSource in _eventSources)
+#if NETSTANDARD
+            foreach (var eventSource in EventSource.GetSources())
             {
-                if (eventSource.Value != null)
-                {
-                    EnableEventSource(eventSource.Value);
-                }
+                OnEventSourceCreated(eventSource.Name, eventSource);
             }
+#else
+            // process already existing listeners once again
+            EventSourceCreated += (_, args) => OnEventSourceCreated(args.EventSource!);
+#endif
+
         }
     }
 
     internal void OnEventWritten(string eventSourceName, string? eventName)
     {
         // If event of interest, add a checkpoint for it.
-        CheckpointToken? token = _eventToCheckpointToken.GetCheckpointToken(eventSourceName, eventName);
-        if (token.HasValue)
+        if (eventName != null && _eventToTokenMap[eventSourceName].TryGetValue(eventName, out var token))
         {
-            LatencyContext.Get()?.AddCheckpoint(token.Value);
+            LatencyContext.Get()?.AddCheckpoint(token);
         }
     }
 
     internal void OnEventSourceCreated(string eventSourceName, EventSource eventSource)
     {
-        if (_eventSources.ContainsKey(eventSourceName))
+        if (Enabled && _eventToTokenMap.ContainsKey(eventSourceName))
         {
-            _eventSources[eventSourceName] = eventSource;
-            EnableEventSource(eventSource);
+            EnableEvents(eventSource, EventLevel.Informational);
         }
     }
 
@@ -81,15 +73,7 @@ internal sealed class HttpRequestLatencyListener : EventListener
         OnEventWritten(eventData.EventSource.Name, eventData.EventName);
     }
 
-    private void EnableEventSource(EventSource eventSource)
-    {
-        if (Enabled && !eventSource.IsEnabled())
-        {
-            EnableEvents(eventSource, EventLevel.Informational);
-        }
-    }
-
-    private sealed class EventToCheckpointToken
+    private static class EventToCheckpointToken
     {
         private static readonly Dictionary<string, string> _socketMap = new()
         {
@@ -117,47 +101,32 @@ internal sealed class HttpRequestLatencyListener : EventListener
             { "ResponseContentStop", HttpCheckpoints.ResponseContentEnd }
         };
 
-        private readonly FrozenDictionary<string, FrozenDictionary<string, CheckpointToken>> _eventToTokenMap;
-
-        public EventToCheckpointToken(ILatencyContextTokenIssuer tokenIssuer)
+        public static FrozenDictionary<string, FrozenDictionary<string, CheckpointToken>> Build(ILatencyContextTokenIssuer tokenIssuer)
         {
             Dictionary<string, CheckpointToken> socket = [];
-            foreach (string key in _socketMap.Keys)
+            foreach (var kv in _socketMap)
             {
-                socket[key] = tokenIssuer.GetCheckpointToken(_socketMap[key]);
+                socket[kv.Key] = tokenIssuer.GetCheckpointToken(kv.Value);
             }
 
             Dictionary<string, CheckpointToken> nameResolution = [];
-            foreach (string key in _nameResolutionMap.Keys)
+            foreach (var kv in _nameResolutionMap)
             {
-                nameResolution[key] = tokenIssuer.GetCheckpointToken(_nameResolutionMap[key]);
+                nameResolution[kv.Key] = tokenIssuer.GetCheckpointToken(kv.Value);
             }
 
             Dictionary<string, CheckpointToken> http = [];
-            foreach (string key in _httpMap.Keys)
+            foreach (var kv in _httpMap)
             {
-                http[key] = tokenIssuer.GetCheckpointToken(_httpMap[key]);
+                http[kv.Key] = tokenIssuer.GetCheckpointToken(kv.Value);
             }
 
-            _eventToTokenMap = new Dictionary<string, FrozenDictionary<string, CheckpointToken>>
+            return new Dictionary<string, FrozenDictionary<string, CheckpointToken>>
             {
-                { SocketProviderName, socket.ToFrozenDictionary(StringComparer.Ordinal) },
-                { NameResolutionProivderName, nameResolution.ToFrozenDictionary(StringComparer.Ordinal) },
-                { HttpProviderName, http.ToFrozenDictionary(StringComparer.Ordinal) }
-            }.ToFrozenDictionary(StringComparer.Ordinal);
-        }
-
-        public CheckpointToken? GetCheckpointToken(string eventSourceName, string? eventName)
-        {
-            if (eventName != null && _eventToTokenMap.TryGetValue(eventSourceName, out var events))
-            {
-                if (events.TryGetValue(eventName, out var token))
-                {
-                    return token;
-                }
-            }
-
-            return null;
+                { SocketProviderName, socket.ToFrozenDictionary() },
+                { NameResolutionProivderName, nameResolution.ToFrozenDictionary() },
+                { HttpProviderName, http.ToFrozenDictionary() }
+            }.ToFrozenDictionary();
         }
     }
 }

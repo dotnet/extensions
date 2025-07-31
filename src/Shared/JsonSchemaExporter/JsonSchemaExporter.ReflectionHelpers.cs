@@ -31,8 +31,6 @@ internal static partial class JsonSchemaExporter
         public static bool IsBuiltInConverter(JsonConverter converter) =>
             converter.GetType().Assembly == typeof(JsonConverter).Assembly;
 
-        public static bool CanBeNull(Type type) => !type.IsValueType || Nullable.GetUnderlyingType(type) is not null;
-
         public static Type GetElementType(JsonTypeInfo typeInfo)
         {
             Debug.Assert(typeInfo.Kind is JsonTypeInfoKind.Enumerable or JsonTypeInfoKind.Dictionary, "TypeInfo must be of collection type");

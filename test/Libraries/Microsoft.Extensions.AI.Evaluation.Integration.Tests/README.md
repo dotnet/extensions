@@ -1,7 +1,7 @@
 ﻿### Instructions
 
-Some of the tests in this project (such as the tests in `EvaluatorTests.cs`) require special configuration to run.
-These tests will be skipped by default if they have not been configured.
+Some of the tests in this project (such as the tests in `QualityEvaluatorTests.cs` and `SafetyEvaluatorTests.cs`)
+require special configuration to run. These tests will be skipped by default if they have not been configured.
 
 To configure the tests when running them locally on your machine, copy the `appsettings.json` file present in the
 current folder to a new file named `appsettings.local.json`, and fill in the values for the following properties:
@@ -13,6 +13,9 @@ current folder to a new file named `appsettings.local.json`, and fill in the val
   "ModelName": "<the Azure Open AI model (such as gpt-4o) that the tests should use>",
   "Endpoint": "<the Azure Open AI endpoint url that the tests should use>",
   "StorageRootPath": "<the full path to a folder on your machine under which cached LLM responses and evaluation resuts for the tests should be stored>"
+  "AzureSubscriptionId": "<the Azure subscripton that contains the below AI Project that can be used when running the safety evaluator tests>",
+  "AzureResourceGroupName": "<the name of the resource group under the above Azure subscription that contains the below AI Project that can be used when running the safety evaluator tests>",
+  "AzureAIProjectName": "<the name of the AI Project that can be used when running the safety evaluator tests>"
   }
 ```
 

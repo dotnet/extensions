@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Schema;
 
 namespace Microsoft.Extensions.AI.JsonSchemaExporter;
 
@@ -14,7 +13,9 @@ internal sealed record TestData<T>(
     T? Value,
     [StringSyntax(StringSyntaxAttribute.Json)] string ExpectedJsonSchema,
     IEnumerable<T?>? AdditionalValues = null,
-    JsonSchemaExporterOptions? ExporterOptions = null,
+#if TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
+    System.Text.Json.Schema.JsonSchemaExporterOptions? ExporterOptions = null,
+#endif
     JsonSerializerOptions? Options = null,
     bool WritesNumbersAsStrings = false)
     : ITestData
@@ -23,7 +24,9 @@ internal sealed record TestData<T>(
 
     public Type Type => typeof(T);
     object? ITestData.Value => Value;
+#if TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
     object? ITestData.ExporterOptions => ExporterOptions;
+#endif
     JsonNode ITestData.ExpectedJsonSchema { get; } =
         JsonNode.Parse(ExpectedJsonSchema, documentOptions: _schemaParseOptions)
         ?? throw new ArgumentNullException("schema must not be null");
@@ -33,7 +36,9 @@ internal sealed record TestData<T>(
         yield return this;
 
         if (default(T) is null &&
-            ExporterOptions is { TreatNullObliviousAsNonNullable: false } &&
+#if TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
+            ExporterOptions is System.Text.Json.Schema.JsonSchemaExporterOptions { TreatNullObliviousAsNonNullable: false } &&
+#endif
             Value is not null)
         {
             yield return this with { Value = default };
@@ -57,7 +62,9 @@ public interface ITestData
 
     JsonNode ExpectedJsonSchema { get; }
 
+#if TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
     object? ExporterOptions { get; }
+#endif
 
     JsonSerializerOptions? Options { get; }
 
