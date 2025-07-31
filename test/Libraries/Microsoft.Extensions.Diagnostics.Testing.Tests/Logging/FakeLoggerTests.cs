@@ -294,7 +294,7 @@ public class FakeLoggerTests
         // Given
         var options = new FakeLogCollectorOptions
         {
-            CustomFilter = r => !r.Message.Equals(IgnoredMessage, StringComparison.Ordinal),
+            CustomFilter = r => r.Message != IgnoredMessage,
             FilteredLevels = useErrorLevelFilter ? [LogLevel.Error] : new HashSet<LogLevel>(),
         };
 
