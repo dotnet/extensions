@@ -12,18 +12,15 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public class TextToImageOptions
 {
-    /// <summary>Gets or sets the content type of the image.</summary>
-    public TextToImageContentType? ContentType { get; set; }
+    /// <summary>
+    /// Gets or sets the style of background to use for the generated image. Examples include "opaque" or "transparent".
+    /// </summary>
+    public string? Background { get; set; }
 
     /// <summary>
     /// Gets or sets the number of images to generate.
     /// </summary>
     public int? Count { get; set; }
-
-    /// <summary>
-    /// Gets or sets the guidance scale to use for image generation.
-    /// </summary>
-    public float? GuidanceScale { get; set; }
 
     /// <summary>
     /// Gets or sets the size of the generated image.
@@ -33,19 +30,14 @@ public class TextToImageOptions
     public Size? ImageSize { get; set; }
 
     /// <summary>
+    /// Gets or sets the media type (also known as MIME type) of the generated image.
+    /// </summary>
+    public string? MediaType { get; set; }
+
+    /// <summary>
     /// Gets or sets the model ID to use for image generation.
     /// </summary>
     public string? ModelId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the negative prompt to use for image generation.
-    /// </summary>
-    public string? NegativePrompt { get; set; }
-
-    /// <summary>
-    /// Gets or sets the diffusion step count to use for image generation.
-    /// </summary>
-    public int? Steps { get; set; }
 
     /// <summary>
     /// Gets or sets a callback responsible for creating the raw representation of the image generation options from an underlying implementation.
@@ -66,20 +58,30 @@ public class TextToImageOptions
     [JsonIgnore]
     public Func<ITextToImageClient, object?>? RawRepresentationFactory { get; set; }
 
+    /// <summary>
+    /// Gets or sets the response format of the generated image.
+    /// </summary>
+    public TextToImageResponseFormat? ResponseFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the style of the generated image to some predefined style supported by the provider.
+    /// </summary>
+    public string? Style { get; set; }
+
     /// <summary>Produces a clone of the current <see cref="TextToImageOptions"/> instance.</summary>
     /// <returns>A clone of the current <see cref="TextToImageOptions"/> instance.</returns>
     public virtual TextToImageOptions Clone()
     {
         TextToImageOptions options = new()
         {
-            ContentType = ContentType,
+            Background = Background,
             Count = Count,
-            GuidanceScale = GuidanceScale,
+            MediaType = MediaType,
             ImageSize = ImageSize,
             ModelId = ModelId,
-            NegativePrompt = NegativePrompt,
-            Steps = Steps,
-            RawRepresentationFactory = RawRepresentationFactory
+            RawRepresentationFactory = RawRepresentationFactory,
+            ResponseFormat = ResponseFormat,
+            Style = Style
         };
 
         return options;
@@ -90,7 +92,7 @@ public class TextToImageOptions
 /// Represents the requested content type of the generated image.
 /// </summary>
 [Experimental("MEAI001")]
-public enum TextToImageContentType
+public enum TextToImageResponseFormat
 {
     /// <summary>
     /// The generated image is returned as a URI pointing to the image resource.
@@ -100,5 +102,10 @@ public enum TextToImageContentType
     /// <summary>
     /// The generated image is returned as in-memory image data.
     /// </summary>
-    Data
+    Data,
+
+    /// <summary>
+    /// The generated image is returned as a hosted resource identifier, which can be used to retrieve the image later.
+    /// </summary>
+    Hosted,
 }

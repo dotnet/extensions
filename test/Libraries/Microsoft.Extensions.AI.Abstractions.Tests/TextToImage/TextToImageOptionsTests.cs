@@ -14,24 +14,24 @@ public class TextToImageOptionsTests
     public void Constructor_Parameterless_PropsDefaulted()
     {
         TextToImageOptions options = new();
-        Assert.Null(options.ContentType);
+        Assert.Null(options.Background);
+        Assert.Null(options.ResponseFormat);
         Assert.Null(options.Count);
-        Assert.Null(options.GuidanceScale);
         Assert.Null(options.ImageSize);
+        Assert.Null(options.MediaType);
         Assert.Null(options.ModelId);
-        Assert.Null(options.NegativePrompt);
-        Assert.Null(options.Steps);
         Assert.Null(options.RawRepresentationFactory);
+        Assert.Null(options.Style);
 
         TextToImageOptions clone = options.Clone();
-        Assert.Null(options.ContentType);
-        Assert.Null(options.Count);
-        Assert.Null(clone.GuidanceScale);
-        Assert.Null(options.ImageSize);
+        Assert.Null(clone.Background);
+        Assert.Null(clone.ResponseFormat);
+        Assert.Null(clone.Count);
+        Assert.Null(clone.ImageSize);
+        Assert.Null(clone.MediaType);
         Assert.Null(clone.ModelId);
-        Assert.Null(clone.NegativePrompt);
-        Assert.Null(clone.Steps);
         Assert.Null(clone.RawRepresentationFactory);
+        Assert.Null(clone.Style);
     }
 
     [Fact]
@@ -41,33 +41,33 @@ public class TextToImageOptionsTests
 
         Func<ITextToImageClient, object?> factory = client => new { Representation = "raw data" };
 
-        options.ContentType = TextToImageContentType.Data;
+        options.Background = "transparent";
+        options.ResponseFormat = TextToImageResponseFormat.Data;
         options.Count = 5;
-        options.GuidanceScale = 7.5f;
         options.ImageSize = new Size(1024, 768);
+        options.MediaType = "image/png";
         options.ModelId = "modelId";
-        options.NegativePrompt = "negative prompt";
-        options.Steps = 50;
         options.RawRepresentationFactory = factory;
+        options.Style = "photorealistic";
 
-        Assert.Equal(TextToImageContentType.Data, options.ContentType);
+        Assert.Equal("transparent", options.Background);
+        Assert.Equal(TextToImageResponseFormat.Data, options.ResponseFormat);
         Assert.Equal(5, options.Count);
-        Assert.Equal(7.5f, options.GuidanceScale);
         Assert.Equal(new Size(1024, 768), options.ImageSize);
+        Assert.Equal("image/png", options.MediaType);
         Assert.Equal("modelId", options.ModelId);
-        Assert.Equal("negative prompt", options.NegativePrompt);
-        Assert.Equal(50, options.Steps);
         Assert.Same(factory, options.RawRepresentationFactory);
+        Assert.Equal("photorealistic", options.Style);
 
         TextToImageOptions clone = options.Clone();
-        Assert.Equal(TextToImageContentType.Data, clone.ContentType);
+        Assert.Equal("transparent", clone.Background);
+        Assert.Equal(TextToImageResponseFormat.Data, clone.ResponseFormat);
         Assert.Equal(5, clone.Count);
-        Assert.Equal(7.5f, clone.GuidanceScale);
         Assert.Equal(new Size(1024, 768), clone.ImageSize);
+        Assert.Equal("image/png", clone.MediaType);
         Assert.Equal("modelId", clone.ModelId);
-        Assert.Equal("negative prompt", clone.NegativePrompt);
-        Assert.Equal(50, clone.Steps);
         Assert.Same(factory, clone.RawRepresentationFactory);
+        Assert.Equal("photorealistic", clone.Style);
     }
 
     [Fact]
@@ -75,13 +75,13 @@ public class TextToImageOptionsTests
     {
         TextToImageOptions options = new()
         {
-            ContentType = TextToImageContentType.Data,
+            Background = "opaque",
+            ResponseFormat = TextToImageResponseFormat.Data,
             Count = 3,
-            GuidanceScale = 10.0f,
             ImageSize = new Size(256, 256),
+            MediaType = "image/jpeg",
             ModelId = "test-model",
-            NegativePrompt = "bad quality",
-            Steps = 25
+            Style = "artistic"
         };
 
         string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.TextToImageOptions);
@@ -89,13 +89,13 @@ public class TextToImageOptionsTests
         TextToImageOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.TextToImageOptions);
         Assert.NotNull(deserialized);
 
-        Assert.Equal(TextToImageContentType.Data, deserialized.ContentType);
+        Assert.Equal("opaque", deserialized.Background);
+        Assert.Equal(TextToImageResponseFormat.Data, deserialized.ResponseFormat);
         Assert.Equal(3, deserialized.Count);
-        Assert.Equal(10.0f, deserialized.GuidanceScale);
         Assert.Equal(new Size(256, 256), deserialized.ImageSize);
+        Assert.Equal("image/jpeg", deserialized.MediaType);
         Assert.Equal("test-model", deserialized.ModelId);
-        Assert.Equal("bad quality", deserialized.NegativePrompt);
-        Assert.Equal(25, deserialized.Steps);
+        Assert.Equal("artistic", deserialized.Style);
     }
 
     [Fact]
@@ -103,52 +103,53 @@ public class TextToImageOptionsTests
     {
         TextToImageOptions original = new()
         {
-            ContentType = TextToImageContentType.Data,
+            Background = "transparent",
+            ResponseFormat = TextToImageResponseFormat.Data,
             Count = 2,
-            GuidanceScale = 5.0f,
             ImageSize = new Size(512, 512),
+            MediaType = "image/png",
             ModelId = "original-model",
-            NegativePrompt = "original negative",
-            Steps = 30
+            Style = "minimalist"
         };
 
         TextToImageOptions clone = original.Clone();
 
         // Modify original
-        original.ContentType = TextToImageContentType.Uri;
+        original.Background = "opaque";
+        original.ResponseFormat = TextToImageResponseFormat.Uri;
         original.Count = 1;
-        original.GuidanceScale = 2.0f;
         original.ImageSize = new Size(1024, 1024);
+        original.MediaType = "image/jpeg";
         original.ModelId = "modified-model";
-        original.NegativePrompt = "modified negative";
-        original.Steps = 20;
+        original.Style = "baroque";
 
         // Clone should remain unchanged
-        Assert.Equal(TextToImageContentType.Data, clone.ContentType);
+        Assert.Equal("transparent", clone.Background);
+        Assert.Equal(TextToImageResponseFormat.Data, clone.ResponseFormat);
         Assert.Equal(2, clone.Count);
-        Assert.Equal(5.0f, clone.GuidanceScale);
         Assert.Equal(new Size(512, 512), clone.ImageSize);
+        Assert.Equal("image/png", clone.MediaType);
         Assert.Equal("original-model", clone.ModelId);
-        Assert.Equal("original negative", clone.NegativePrompt);
-        Assert.Equal(30, clone.Steps);
+        Assert.Equal("minimalist", clone.Style);
     }
 
     [Theory]
-    [InlineData(TextToImageContentType.Uri)]
-    [InlineData(TextToImageContentType.Data)]
-    public void TextToImageContentType_Values_AreValid(TextToImageContentType contentType)
+    [InlineData(TextToImageResponseFormat.Uri)]
+    [InlineData(TextToImageResponseFormat.Data)]
+    [InlineData(TextToImageResponseFormat.Hosted)]
+    public void TextToImageResponseFormat_Values_AreValid(TextToImageResponseFormat responseFormat)
     {
-        Assert.True(Enum.IsDefined(typeof(TextToImageContentType), contentType));
+        Assert.True(Enum.IsDefined(typeof(TextToImageResponseFormat), responseFormat));
     }
 
     [Fact]
-    public void TextToImageContentType_JsonSerialization_Roundtrips()
+    public void TextToImageResponseFormat_JsonSerialization_Roundtrips()
     {
-        foreach (TextToImageContentType contentType in Enum.GetValues(typeof(TextToImageContentType)))
+        foreach (TextToImageResponseFormat responseFormat in Enum.GetValues(typeof(TextToImageResponseFormat)))
         {
-            string json = JsonSerializer.Serialize(contentType, TestJsonSerializerContext.Default.TextToImageContentType);
-            TextToImageContentType deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.TextToImageContentType);
-            Assert.Equal(contentType, deserialized);
+            string json = JsonSerializer.Serialize(responseFormat, TestJsonSerializerContext.Default.TextToImageResponseFormat);
+            TextToImageResponseFormat deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.TextToImageResponseFormat);
+            Assert.Equal(responseFormat, deserialized);
         }
     }
 }

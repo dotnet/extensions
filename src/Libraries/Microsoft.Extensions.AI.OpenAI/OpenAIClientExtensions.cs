@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
@@ -163,16 +162,6 @@ public static class OpenAIClientExtensions
     [Experimental("MEAI001")]
     public static ITextToImageClient AsITextToImageClient(this ImageClient imageClient) =>
         new OpenAITextToImageClient(imageClient);
-
-    /// <summary>Gets an <see cref="ITextToImageClient"/> for use with this <see cref="OpenAIClient"/>.</summary>
-    /// <param name="openAIClient">The OpenAI client.</param>
-    /// <param name="model">The model to use for image generation.</param>
-    /// <returns>An <see cref="ITextToImageClient"/> that can be used to generate images via the <see cref="OpenAIClient"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="openAIClient"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="model"/> is <see langword="null"/>.</exception>
-    [Experimental("MEAI001")]
-    public static ITextToImageClient AsITextToImageClient(this OpenAIClient openAIClient, string model) =>
-        new OpenAITextToImageClient(Throw.IfNull(openAIClient).GetImageClient(model));
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="EmbeddingClient"/>.</summary>
     /// <param name="embeddingClient">The client.</param>

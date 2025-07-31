@@ -1,11 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operators
 
@@ -26,10 +24,9 @@ public class TextToImageResponse
 
     /// <summary>Initializes a new instance of the <see cref="TextToImageResponse"/> class.</summary>
     /// <param name="contents">The contents for this response.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="contents"/> is <see langword="null"/>.</exception>
-    public TextToImageResponse(IList<AIContent> contents)
+    public TextToImageResponse(IList<AIContent>? contents)
     {
-        _contents = Throw.IfNull(contents);
+        _contents = contents;
     }
 
     /// <summary>Gets or sets the raw representation of the text to image response from an underlying implementation.</summary>

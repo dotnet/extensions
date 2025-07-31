@@ -138,13 +138,13 @@ public class TextToImageClientTests
     {
         var options = new TextToImageOptions
         {
-            ContentType = TextToImageContentType.Data,
+            Background = "transparent",
+            ResponseFormat = TextToImageResponseFormat.Data,
             Count = 3,
-            GuidanceScale = 7.5f,
             ImageSize = new Size(1024, 768),
+            MediaType = "image/png",
             ModelId = "test-model",
-            NegativePrompt = "low quality",
-            Steps = 50
+            Style = "photorealistic"
         };
 
         using var client = new TestTextToImageClient
@@ -164,16 +164,19 @@ public class TextToImageClientTests
     {
         var options = new TextToImageOptions
         {
-            ContentType = TextToImageContentType.Uri,
+            Background = "opaque",
+            ResponseFormat = TextToImageResponseFormat.Uri,
             Count = 2,
-            ModelId = "edit-model"
+            MediaType = "image/jpeg",
+            ModelId = "edit-model",
+            Style = "artistic"
         };
 
         AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
 
         using var client = new TestTextToImageClient
         {
-            EditImagesAsyncCallback = (dataContent, prompt, receivedOptions, cancellationToken) =>
+            EditImagesAsyncCallback = (originalImages, prompt, receivedOptions, cancellationToken) =>
             {
                 Assert.Same(options, receivedOptions);
                 return Task.FromResult(new TextToImageResponse());

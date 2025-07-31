@@ -7,5 +7,6 @@ public class OpenAITextToImageClientIntegrationTests : TextToImageClientIntegrat
 {
     protected override ITextToImageClient? CreateClient()
         => IntegrationTestHelpers.GetOpenAIClient()?
-            .AsITextToImageClient(TestRunnerConfiguration.Instance["OpenAI:ImageModel"] ?? "dall-e-3");
+            .GetImageClient(TestRunnerConfiguration.Instance["OpenAI:ImageModel"] ?? "dall-e-3")
+            .AsITextToImageClient();
 }

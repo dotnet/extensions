@@ -15,8 +15,6 @@ public class OpenAITextToImageClientTests
     public void AsITextToImageClient_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("imageClient", () => ((ImageClient)null!).AsITextToImageClient());
-        Assert.Throws<ArgumentNullException>("openAIClient", () => ((OpenAIClient)null!).AsITextToImageClient("dall-e-3"));
-        Assert.Throws<ArgumentNullException>("model", () => new OpenAIClient(new ApiKeyCredential("key")).AsITextToImageClient(null!));
     }
 
     [Fact]
@@ -27,13 +25,8 @@ public class OpenAITextToImageClientTests
 
         var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
-        ITextToImageClient textToImageClient = client.AsITextToImageClient(model);
+        ITextToImageClient textToImageClient = client.GetImageClient(model).AsITextToImageClient();
         var metadata = textToImageClient.GetService<TextToImageClientMetadata>();
-        Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.DefaultModelId);
-
-        textToImageClient = client.GetImageClient(model).AsITextToImageClient();
-        metadata = textToImageClient.GetService<TextToImageClientMetadata>();
         Assert.Equal(endpoint, metadata?.ProviderUri);
         Assert.Equal(model, metadata?.DefaultModelId);
     }
@@ -42,7 +35,7 @@ public class OpenAITextToImageClientTests
     public void GetService_ReturnsExpectedServices()
     {
         var client = new OpenAIClient(new ApiKeyCredential("key"));
-        ITextToImageClient textToImageClient = client.AsITextToImageClient("dall-e-3");
+        ITextToImageClient textToImageClient = client.GetImageClient("dall-e-3").AsITextToImageClient();
 
         Assert.Same(textToImageClient, textToImageClient.GetService<ITextToImageClient>());
         Assert.Same(textToImageClient, textToImageClient.GetService<object>());

@@ -7,6 +7,8 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -142,9 +144,9 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
 
         if (additionalRawData?.TryGetValue("output_format", out var outputFormat) ?? false)
         {
-#pragma warning disable IL2026, IL3050 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-            contentType = $"image/{outputFormat.ToObjectFromJson<string>()}";
-#pragma warning restore IL2026, IL3050 
+            var stringJsonTypeInfo = (JsonTypeInfo<string>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(string));
+            var outputFormatString = JsonSerializer.Deserialize(outputFormat, stringJsonTypeInfo);
+            contentType = $"image/{outputFormatString}";
         }
 
         List<AIContent> contents = new();
@@ -153,7 +155,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         {
             if (image.ImageBytes is not null)
             {
-                contents.Add(new DataContent(image.ImageBytes.ToArray(), contentType));
+                contents.Add(new DataContent(image.ImageBytes.ToMemory(), contentType));
             }
             else if (image.ImageUri is not null)
             {
@@ -176,14 +178,28 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     {
         ImageGenerationOptions result = options?.RawRepresentationFactory?.Invoke(this) as ImageGenerationOptions ?? new();
 
-        result.Size = ToOpenAIImageSize(options?.ImageSize);
+        result.Background ??= options?.Background;
 
-        if (options?.ContentType is not null)
+        result.OutputFileFormat ??= options?.MediaType switch
         {
-            result.ResponseFormat = options.ContentType == TextToImageContentType.Uri
-                ? GeneratedImageFormat.Uri
-                : GeneratedImageFormat.Bytes;
-        }
+            "image/png" => GeneratedImageFileFormat.Png,
+            "image/jpeg" => GeneratedImageFileFormat.Jpeg,
+            "image/webp" => GeneratedImageFileFormat.Webp,
+            _ => null,
+        };
+
+        result.ResponseFormat ??= options?.ResponseFormat switch
+        {
+            TextToImageResponseFormat.Uri => GeneratedImageFormat.Uri,
+            TextToImageResponseFormat.Data => GeneratedImageFormat.Bytes,
+
+            // TextToImageResponseFormat.Hosted not supported by ImageClient, however other OpenAI API support file IDs.
+            _ => null
+        };
+
+        result.Size ??= ToOpenAIImageSize(options?.ImageSize);
+
+        result.Style ??= options?.Style;
 
         return result;
     }
@@ -193,14 +209,16 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     {
         ImageEditOptions result = options?.RawRepresentationFactory?.Invoke(this) as ImageEditOptions ?? new();
 
-        result.Size = ToOpenAIImageSize(options?.ImageSize);
-
-        if (options?.ContentType is not null)
+        result.ResponseFormat ??= options?.ResponseFormat switch
         {
-            result.ResponseFormat = options.ContentType == TextToImageContentType.Uri
-                ? GeneratedImageFormat.Uri
-                : GeneratedImageFormat.Bytes;
-        }
+            TextToImageResponseFormat.Uri => GeneratedImageFormat.Uri,
+            TextToImageResponseFormat.Data => GeneratedImageFormat.Bytes,
+
+            // TextToImageResponseFormat.Hosted not supported by ImageClient, however other OpenAI API support file IDs.
+            _ => null
+        };
+
+        result.Size ??= ToOpenAIImageSize(options?.ImageSize);
 
         return result;
     }
