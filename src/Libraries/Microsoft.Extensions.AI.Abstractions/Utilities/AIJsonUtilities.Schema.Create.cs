@@ -14,6 +14,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
@@ -287,6 +288,12 @@ public static partial class AIJsonUtilities
                 if (ctx.TypeInfo.Type.IsEnum && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
                 {
                     objSchema.InsertAtStart(TypePropertyName, "string");
+                }
+
+                // Include a trivial items keyword if missing
+                if (ctx.TypeInfo.Kind is JsonTypeInfoKind.Enumerable && !objSchema.ContainsKey(ItemsPropertyName))
+                {
+                    objSchema.Add(ItemsPropertyName, new JsonObject());
                 }
 
                 // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
