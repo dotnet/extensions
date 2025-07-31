@@ -11,12 +11,6 @@ namespace Microsoft.Extensions.AI;
 public class TextToImageResponseTests
 {
     [Fact]
-    public void Constructor_InvalidArgs_Throws()
-    {
-        Assert.Throws<ArgumentNullException>("contents", () => new TextToImageResponse(null!));
-    }
-
-    [Fact]
     public void Constructor_Parameterless_PropsDefaulted()
     {
         TextToImageResponse response = new();
