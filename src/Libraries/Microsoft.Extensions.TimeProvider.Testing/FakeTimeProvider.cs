@@ -137,7 +137,7 @@ public class FakeTimeProvider : TimeProvider
     }
 
     /// <summary>
-    /// Advances the date and time in the UTC time zone.
+    /// Sets the date and time in the UTC time zone.
     /// </summary>
     /// <param name="value">The date and time in the UTC time zone.</param>
     /// <remarks>
@@ -145,7 +145,6 @@ public class FakeTimeProvider : TimeProvider
     /// timers. This is similar to what happens in a real system when the system's
     /// time is changed.
     /// </remarks>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.TimeProvider, UrlFormat = DiagnosticIds.UrlFormat)]
     public void AdjustTime(DateTimeOffset value)
     {
         lock (Waiters)
