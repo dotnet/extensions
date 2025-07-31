@@ -419,6 +419,7 @@ public static partial class AIJsonUtilitiesTests
                 "required":["num","str"]
             }
             """);
+
         AssertDeepEquals(expectedSchema.RootElement, func.JsonSchema);
     }
 
