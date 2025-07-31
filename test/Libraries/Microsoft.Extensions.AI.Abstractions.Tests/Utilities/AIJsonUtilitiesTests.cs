@@ -409,7 +409,7 @@ public static partial class AIJsonUtilitiesTests
         JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
         AIFunction func = AIFunctionFactory.Create(([Range(1, 10)] int num, [StringLength(100, MinimumLength = 1)] string str) => num + str.Length, serializerOptions: options);
 
-        JsonElement expectedSchema = JsonDocument.Parse("""
+        using JsonDocument expectedSchema = JsonDocument.Parse("""
             {
                 "type":"object",
                 "properties": {
@@ -418,8 +418,8 @@ public static partial class AIJsonUtilitiesTests
                 },
                 "required":["num","str"]
             }
-            """).RootElement;
-        AssertDeepEquals(expectedSchema, func.JsonSchema);
+            """);
+        AssertDeepEquals(expectedSchema.RootElement, func.JsonSchema);
     }
 
     [Fact]
