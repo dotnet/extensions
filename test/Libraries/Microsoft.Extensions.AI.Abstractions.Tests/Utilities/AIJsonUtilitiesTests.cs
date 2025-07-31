@@ -171,6 +171,21 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateJsonSchema_TrivialArray_GeneratesExpectedJsonSchema()
+    {
+        JsonElement expected = JsonDocument.Parse("""
+            {
+                "type": "array",
+                "items": {}
+            }
+            """).RootElement;
+
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(object[]), serializerOptions: JsonContext.Default.Options);
+
+        AssertDeepEquals(expected, actual);
+    }
+
+    [Fact]
     public static void CreateJsonSchema_OverriddenParameters_GeneratesExpectedJsonSchema()
     {
         JsonElement expected = JsonDocument.Parse("""
@@ -1326,6 +1341,7 @@ public static partial class AIJsonUtilitiesTests
     [JsonSerializable(typeof(DerivedAIContent))]
     [JsonSerializable(typeof(MyPoco))]
     [JsonSerializable(typeof(MyEnumValue?))]
+    [JsonSerializable(typeof(object[]))]
     private partial class JsonContext : JsonSerializerContext;
 
     private static bool DeepEquals(JsonElement element1, JsonElement element2)
