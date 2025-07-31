@@ -341,8 +341,8 @@ public class OpenAIConversionTests
         Assert.Equal(new DateTimeOffset(2025, 1, 3, 14, 30, 0, TimeSpan.Zero), completion.CreatedAt);
 
         Assert.NotNull(completion.Usage);
-        Assert.Equal(12, completion.Usage.InputTokenCount);
-        Assert.Equal(25, completion.Usage.OutputTokenCount);
+        Assert.Equal(25, completion.Usage.InputTokenCount);
+        Assert.Equal(12, completion.Usage.OutputTokenCount);
         Assert.Equal(37, completion.Usage.TotalTokenCount);
 
         Assert.NotEmpty(completion.Content);

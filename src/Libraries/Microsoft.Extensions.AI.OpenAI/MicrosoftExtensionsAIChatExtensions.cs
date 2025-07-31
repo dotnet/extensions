@@ -67,8 +67,8 @@ public static class MicrosoftExtensionsAIChatExtensions
         };
 
         ChatTokenUsage usage = OpenAIChatModelFactory.ChatTokenUsage(
-            (int?)response.Usage?.InputTokenCount ?? 0,
             (int?)response.Usage?.OutputTokenCount ?? 0,
+            (int?)response.Usage?.InputTokenCount ?? 0,
             (int?)response.Usage?.TotalTokenCount ?? 0);
 
         IEnumerable<ChatToolCall>? toolCalls = lastMessage?.Contents
