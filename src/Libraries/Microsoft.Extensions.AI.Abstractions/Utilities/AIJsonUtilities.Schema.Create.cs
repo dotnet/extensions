@@ -391,9 +391,6 @@ public static partial class AIJsonUtilities
 
             void ApplyDataAnnotations(ref JsonNode schema, AIJsonSchemaCreateContext ctx)
             {
-                // If this is a root schema, take any parameter info attributes into account.
-                ParameterInfo? effectiveParameterInfo = ctx.Path.IsEmpty ? parameter : null;
-
                 if (ResolveAttribute<DisplayNameAttribute>() is { } displayNameAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[TitlePropertyName] ??= displayNameAttribute.DisplayName;
@@ -633,9 +630,16 @@ public static partial class AIJsonUtilities
                 }
 #endif
                 TAttribute? ResolveAttribute<TAttribute>()
-                    where TAttribute : Attribute =>
-                    effectiveParameterInfo?.GetCustomAttribute<TAttribute>(inherit: true) ??
-                    ctx.GetCustomAttribute<TAttribute>(inherit: true);
+                    where TAttribute : Attribute
+                {
+                    // If this is the root schema, check for any parameter attributes first.
+                    if (ctx.Path.IsEmpty && parameter?.GetCustomAttribute<TAttribute>(inherit: true) is TAttribute attr)
+                    {
+                        return attr;
+                    }
+
+                    return ctx.GetCustomAttribute<TAttribute>(inherit: true);
+                }
             }
         }
     }
