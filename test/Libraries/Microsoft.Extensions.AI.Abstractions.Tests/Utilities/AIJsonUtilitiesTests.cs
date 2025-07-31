@@ -404,6 +404,26 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateFunctionJsonSchema_ReadsParameterDataAnnotationAttributes()
+    {
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
+        AIFunction func = AIFunctionFactory.Create(([Range(1, 10)] int num, [StringLength(100, MinimumLength = 1)] string str) => num + str.Length, serializerOptions: options);
+
+        using JsonDocument expectedSchema = JsonDocument.Parse("""
+            {
+                "type":"object",
+                "properties": {
+                    "num": { "type":"integer", "minimum": 1, "maximum": 10 },
+                    "str": { "type":"string", "minLength": 1, "maxLength": 100 }
+                },
+                "required":["num","str"]
+            }
+            """);
+
+        AssertDeepEquals(expectedSchema.RootElement, func.JsonSchema);
+    }
+
+    [Fact]
     public static void CreateJsonSchema_CanBeBoolean()
     {
         JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(object));

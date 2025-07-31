@@ -113,7 +113,7 @@ public static partial class AIJsonUtilities
 
             JsonNode parameterSchema = CreateJsonSchemaCore(
                 type: parameter.ParameterType,
-                parameterName: parameter.Name,
+                parameter: parameter,
                 description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 hasDefaultValue: parameter.HasDefaultValue,
                 defaultValue: GetDefaultValueNormalized(parameter),
@@ -178,7 +178,7 @@ public static partial class AIJsonUtilities
     {
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
-        JsonNode schema = CreateJsonSchemaCore(type, parameterName: null, description, hasDefaultValue, defaultValue, serializerOptions, inferenceOptions);
+        JsonNode schema = CreateJsonSchemaCore(type, parameter: null, description, hasDefaultValue, defaultValue, serializerOptions, inferenceOptions);
 
         // Finally, apply any schema transformations if specified.
         if (inferenceOptions.TransformOptions is { } options)
@@ -208,7 +208,7 @@ public static partial class AIJsonUtilities
 #endif
     private static JsonNode CreateJsonSchemaCore(
         Type? type,
-        string? parameterName,
+        ParameterInfo? parameter,
         string? description,
         bool hasDefaultValue,
         object? defaultValue,
@@ -272,14 +272,14 @@ public static partial class AIJsonUtilities
                 // The resulting schema might be a $ref using a pointer to a different location in the document.
                 // As JSON pointer doesn't support relative paths, parameter schemas need to fix up such paths
                 // to accommodate the fact that they're being nested inside of a higher-level schema.
-                if (parameterName is not null && objSchema.TryGetPropertyValue(RefPropertyName, out JsonNode? paramName))
+                if (parameter?.Name is not null && objSchema.TryGetPropertyValue(RefPropertyName, out JsonNode? paramName))
                 {
                     // Fix up any $ref URIs to match the path from the root document.
                     string refUri = paramName!.GetValue<string>();
                     Debug.Assert(refUri is "#" || refUri.StartsWith("#/", StringComparison.Ordinal), $"Expected {nameof(refUri)} to be either # or start with #/, got {refUri}");
                     refUri = refUri == "#"
-                        ? $"#/{PropertiesPropertyName}/{parameterName}"
-                        : $"#/{PropertiesPropertyName}/{parameterName}/{refUri.AsMemory("#/".Length)}";
+                        ? $"#/{PropertiesPropertyName}/{parameter.Name}"
+                        : $"#/{PropertiesPropertyName}/{parameter.Name}/{refUri.AsMemory("#/".Length)}";
 
                     objSchema[RefPropertyName] = (JsonNode)refUri;
                 }
@@ -359,7 +359,7 @@ public static partial class AIJsonUtilities
                 ConvertSchemaToObject(ref schema).InsertAtStart(SchemaPropertyName, (JsonNode)SchemaKeywordUri);
             }
 
-            ApplyDataAnnotations(parameterName, ref schema, ctx);
+            ApplyDataAnnotations(ref schema, ctx);
 
             // Finally, apply any user-defined transformations if specified.
             if (inferenceOptions.TransformSchemaNode is { } transformer)
@@ -389,30 +389,30 @@ public static partial class AIJsonUtilities
                 }
             }
 
-            void ApplyDataAnnotations(string? parameterName, ref JsonNode schema, AIJsonSchemaCreateContext ctx)
+            void ApplyDataAnnotations(ref JsonNode schema, AIJsonSchemaCreateContext ctx)
             {
-                if (ctx.GetCustomAttribute<DisplayNameAttribute>() is { } displayNameAttribute)
+                if (ResolveAttribute<DisplayNameAttribute>() is { } displayNameAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[TitlePropertyName] ??= displayNameAttribute.DisplayName;
                 }
 
 #if NET || NETFRAMEWORK
-                if (ctx.GetCustomAttribute<EmailAddressAttribute>() is { } emailAttribute)
+                if (ResolveAttribute<EmailAddressAttribute>() is { } emailAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[FormatPropertyName] ??= "email";
                 }
 
-                if (ctx.GetCustomAttribute<UrlAttribute>() is { } urlAttribute)
+                if (ResolveAttribute<UrlAttribute>() is { } urlAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[FormatPropertyName] ??= "uri";
                 }
 
-                if (ctx.GetCustomAttribute<RegularExpressionAttribute>() is { } regexAttribute)
+                if (ResolveAttribute<RegularExpressionAttribute>() is { } regexAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[PatternPropertyName] ??= regexAttribute.Pattern;
                 }
 
-                if (ctx.GetCustomAttribute<StringLengthAttribute>() is { } stringLengthAttribute)
+                if (ResolveAttribute<StringLengthAttribute>() is { } stringLengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
 
@@ -424,7 +424,7 @@ public static partial class AIJsonUtilities
                     obj[MaxLengthStringPropertyName] ??= stringLengthAttribute.MaximumLength;
                 }
 
-                if (ctx.GetCustomAttribute<MinLengthAttribute>() is { } minLengthAttribute)
+                if (ResolveAttribute<MinLengthAttribute>() is { } minLengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
                     if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
@@ -437,7 +437,7 @@ public static partial class AIJsonUtilities
                     }
                 }
 
-                if (ctx.GetCustomAttribute<MaxLengthAttribute>() is { } maxLengthAttribute)
+                if (ResolveAttribute<MaxLengthAttribute>() is { } maxLengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
                     if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
@@ -450,7 +450,7 @@ public static partial class AIJsonUtilities
                     }
                 }
 
-                if (ctx.GetCustomAttribute<RangeAttribute>() is { } rangeAttribute)
+                if (ResolveAttribute<RangeAttribute>() is { } rangeAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
 
@@ -521,12 +521,12 @@ public static partial class AIJsonUtilities
 #endif
 
 #if NET
-                if (ctx.GetCustomAttribute<Base64StringAttribute>() is { } base64Attribute)
+                if (ResolveAttribute<Base64StringAttribute>() is { } base64Attribute)
                 {
                     ConvertSchemaToObject(ref schema)[ContentEncodingPropertyName] ??= "base64";
                 }
 
-                if (ctx.GetCustomAttribute<LengthAttribute>() is { } lengthAttribute)
+                if (ResolveAttribute<LengthAttribute>() is { } lengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
 
@@ -550,7 +550,7 @@ public static partial class AIJsonUtilities
                     }
                 }
 
-                if (ctx.GetCustomAttribute<AllowedValuesAttribute>() is { } allowedValuesAttribute)
+                if (ResolveAttribute<AllowedValuesAttribute>() is { } allowedValuesAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
                     if (!obj.ContainsKey(EnumPropertyName))
@@ -562,7 +562,7 @@ public static partial class AIJsonUtilities
                     }
                 }
 
-                if (ctx.GetCustomAttribute<DeniedValuesAttribute>() is { } deniedValuesAttribute)
+                if (ResolveAttribute<DeniedValuesAttribute>() is { } deniedValuesAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
 
@@ -597,7 +597,7 @@ public static partial class AIJsonUtilities
                     return enumArray;
                 }
 
-                if (ctx.GetCustomAttribute<DataTypeAttribute>() is { } dataTypeAttribute)
+                if (ResolveAttribute<DataTypeAttribute>() is { } dataTypeAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
                     switch (dataTypeAttribute.DataType)
@@ -629,6 +629,17 @@ public static partial class AIJsonUtilities
                     }
                 }
 #endif
+                TAttribute? ResolveAttribute<TAttribute>()
+                    where TAttribute : Attribute
+                {
+                    // If this is the root schema, check for any parameter attributes first.
+                    if (ctx.Path.IsEmpty && parameter?.GetCustomAttribute<TAttribute>(inherit: true) is TAttribute attr)
+                    {
+                        return attr;
+                    }
+
+                    return ctx.GetCustomAttribute<TAttribute>(inherit: true);
+                }
             }
         }
     }
