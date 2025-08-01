@@ -15,50 +15,21 @@ This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See
 
 # Configure the AI Model Provider
 
-## Using Azure OpenAI
+## Using Azure Provisioning
 
-To use Azure OpenAI, you will need an Azure account and an Azure OpenAI Service resource. For detailed instructions, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/ai-services/openai/how-to/create-resource).
+The project is set up to automatically provision Azure resources, but local configuration is configured. For detailed instructions, see the [Local Provisioning documentation](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration).
 
-### 1. Create an Azure OpenAI Service Resource
-[Create an Azure OpenAI Service resource](https://learn.microsoft.com/azure/ai-services/openai/how-to/create-resource?pivots=web-portal).
+From the command line, configure local provisioning for this project using .NET User Secrets by running the following commands:
 
-### 2. Deploy the Models
-Deploy the `gpt-4o-mini` and `text-embedding-3-small` models to your Azure OpenAI Service resource. When creating those deployments, give them the same names as the models (`gpt-4o-mini` and `text-embedding-3-small`). See the Azure OpenAI documentation to learn how to [Deploy a model](https://learn.microsoft.com/azure/ai-services/openai/how-to/create-resource?pivots=web-portal#deploy-a-model).
+```sh
+cd aichatweb.AppHost
+dotnet user-secrets set Azure:SubscriptionId "<Your subscription id>"
+dotnet user-secrets set Azure:AllowResourceGroupCreation "true"
+dotnet user-secrets set Azure:ResourceGroup "<Valid resource group name>"
+dotnet user-secrets set Azure:Location "<Valid Azure location>"
+```
 
-### 3. Configure API Key and Endpoint
-Configure your Azure OpenAI API key and endpoint for this project, using .NET User Secrets:
-   1. In the Azure Portal, navigate to your Azure OpenAI resource.
-   2. Copy the "Endpoint" URL and "Key 1" from the "Keys and Endpoint" section.
-   3. From the command line, configure your API key and endpoint for this project using .NET User Secrets by running the following commands:
-
-      ```sh
-      cd aichatweb.AppHost
-      dotnet user-secrets set ConnectionStrings:openai "Endpoint=https://YOUR-DEPLOYMENT-NAME.openai.azure.com;Key=YOUR-API-KEY"
-      ```
-
-Make sure to replace `YOUR-API-KEY` and `YOUR-DEPLOYMENT-NAME` with your actual Azure OpenAI key and endpoint. Make sure your endpoint URL is formatted like https://YOUR-DEPLOYMENT-NAME.openai.azure.com/ (do not include any path after .openai.azure.com/).
-
-## Configure Azure AI Search
-
-To use Azure AI Search, you will need an Azure account and an Azure AI Search resource. For detailed instructions, see the [Azure AI Search documentation](https://learn.microsoft.com/azure/search/search-create-service-portal).
-
-### 1. Create an Azure AI Search Resource
-Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure AI Search resource. Note that there is a free tier for the service but it is not currently the default setting on the portal.
-
-Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `data-aichatweb-chunks` and `data-aichatweb-documents` indexes using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
-
-### 3. Configure API Key and Endpoint
-   Configure your Azure AI Search API key and endpoint for this project, using .NET User Secrets:
-   1. In the Azure Portal, navigate to your Azure AI Search resource.
-   2. Copy the "Endpoint" URL and "Primary admin key" from the "Keys" section.
-   3. From the command line, configure your API key and endpoint for this project using .NET User Secrets by running the following commands:
-
-      ```sh
-      cd aichatweb.AppHost
-      dotnet user-secrets set ConnectionStrings:azureAISearch "Endpoint=https://YOUR-DEPLOYMENT-NAME.search.windows.net;Key=YOUR-API-KEY"
-      ```
-
-Make sure to replace `YOUR-DEPLOYMENT-NAME` and `YOUR-API-KEY` with your actual Azure AI Search deployment name and key.
+Make sure to replace placeholder values with real configuration values.
 
 # Running the application
 
