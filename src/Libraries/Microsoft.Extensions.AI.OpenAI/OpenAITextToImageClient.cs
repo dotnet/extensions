@@ -88,7 +88,13 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
                 imageStream = MemoryMarshal.TryGetArray(dataContent.Data, out var array) ?
                     new MemoryStream(array.Array!, array.Offset, array.Count) :
                     new MemoryStream(dataContent.Data.ToArray());
-                fileName = "image.png"; // Default file name for image data
+                fileName = dataContent.Name ?? dataContent.MediaType switch
+                {
+                    "image/png" => "image.png",
+                    "image/jpeg" => "image.jpg",
+                    "image/webp" => "image.webp",
+                    _ => "image"
+                };
             }
             else
             {
