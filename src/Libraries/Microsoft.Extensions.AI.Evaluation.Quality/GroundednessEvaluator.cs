@@ -71,6 +71,7 @@ public sealed class GroundednessEvaluator : IEvaluator
 
         var metric = new NumericMetric(GroundednessMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {
