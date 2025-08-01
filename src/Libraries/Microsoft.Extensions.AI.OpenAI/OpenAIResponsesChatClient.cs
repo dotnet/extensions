@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -148,7 +149,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case ReasoningResponseItem reasoningItem when reasoningItem.GetSummaryText() is string summary:
-                    message.Contents.Add(new TextReasoningContent(summary) { RawRepresentation = reasoningItem });
+                    message.Contents.Add(new TextReasoningContent(summary) { RawRepresentation = outputItem });
                     break;
 
                 case FunctionCallResponseItem functionCall:
@@ -402,21 +403,44 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         result.Tools.Add(ToResponseTool(aiFunction, options));
                         break;
 
-                    case HostedWebSearchTool:
+                    case HostedWebSearchTool webSearchTool:
                         WebSearchUserLocation? location = null;
-                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchUserLocation), out object? objLocation))
+                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchUserLocation), out object? objLocation))
                         {
                             location = objLocation as WebSearchUserLocation;
                         }
 
                         WebSearchContextSize? size = null;
-                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchContextSize), out object? objSize) &&
+                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchContextSize), out object? objSize) &&
                             objSize is WebSearchContextSize)
                         {
                             size = (WebSearchContextSize)objSize;
                         }
 
                         result.Tools.Add(ResponseTool.CreateWebSearchTool(location, size));
+                        break;
+
+                    case HostedFileSearchTool fileSearchTool:
+                        result.Tools.Add(ResponseTool.CreateFileSearchTool(
+                            fileSearchTool.Inputs?.OfType<HostedVectorStoreContent>().Select(c => c.VectorStoreId) ?? [],
+                            fileSearchTool.MaximumResultCount));
+                        break;
+
+                    case HostedCodeInterpreterTool codeTool:
+                        string json;
+                        if (codeTool.Inputs is { Count: > 0 } inputs)
+                        {
+                            string jsonArray = JsonSerializer.Serialize(
+                                inputs.OfType<HostedFileContent>().Select(c => c.FileId),
+                                OpenAIJsonContext.Default.IEnumerableString);
+                            json = $$"""{"type":"code_interpreter","container":{"type":"auto",files:{{jsonArray}}} }""";
+                        }
+                        else
+                        {
+                            json = """{"type":"code_interpreter","container":"auto"}""";
+                        }
+
+                        result.Tools.Add(ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString(json)));
                         break;
                 }
             }
@@ -493,7 +517,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             if (input.Role == ChatRole.User)
             {
-                yield return ResponseItem.CreateUserMessageItem(ToOpenAIResponsesContent(input.Contents));
+                yield return ResponseItem.CreateUserMessageItem(ToResponseContentParts(input.Contents));
                 continue;
             }
 
@@ -652,7 +676,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     /// <summary>Convert a list of <see cref="AIContent"/>s to a list of <see cref="ResponseContentPart"/>.</summary>
-    private static List<ResponseContentPart> ToOpenAIResponsesContent(IList<AIContent> contents)
+    private static List<ResponseContentPart> ToResponseContentParts(IList<AIContent> contents)
     {
         List<ResponseContentPart> parts = [];
         foreach (var content in contents)
@@ -677,6 +701,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
                     parts.Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
+                    break;
+
+                case HostedFileContent fileContent:
+                    parts.Add(ResponseContentPart.CreateInputFilePart(fileContent.FileId));
                     break;
 
                 case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
