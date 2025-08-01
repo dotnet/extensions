@@ -16,6 +16,7 @@ using OpenAI.Assistants;
 #pragma warning disable CA1031 // Do not catch general exception types
 #pragma warning disable SA1005 // Single line comments should begin with single space
 #pragma warning disable SA1204 // Static elements should appear before instance elements
+#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable S125 // Sections of code should not be commented out
 #pragma warning disable S907 // "goto" statement should not be used
 #pragma warning disable S1067 // Expressions should not be too complex
@@ -90,7 +91,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
         _ = Throw.IfNull(messages);
 
         // Extract necessary state from messages and options.
-        (RunCreationOptions runOptions, List<FunctionResultContent>? toolResults) = await CreateRunOptionsAsync(messages, options, cancellationToken).ConfigureAwait(false);
+        (RunCreationOptions runOptions, ToolResources? toolResources, List<FunctionResultContent>? toolResults) = await CreateRunOptionsAsync(messages, options, cancellationToken).ConfigureAwait(false);
 
         // Get the thread ID.
         string? threadId = options?.ConversationId ?? _defaultThreadId;
@@ -135,7 +136,11 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
             if (threadId is null)
             {
                 // No thread ID was provided, so create a new thread.
-                ThreadCreationOptions threadCreationOptions = new();
+                ThreadCreationOptions threadCreationOptions = new()
+                {
+                    ToolResources = toolResources,
+                };
+
                 foreach (var message in runOptions.AdditionalMessages)
                 {
                     threadCreationOptions.InitialMessages.Add(message);
@@ -293,13 +298,15 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
     /// Creates the <see cref="RunCreationOptions"/> to use for the request and extracts any function result contents 
     /// that need to be submitted as tool results.
     /// </summary>
-    private async ValueTask<(RunCreationOptions RunOptions, List<FunctionResultContent>? ToolResults)> CreateRunOptionsAsync(
+    private async ValueTask<(RunCreationOptions RunOptions, ToolResources? Resources, List<FunctionResultContent>? ToolResults)> CreateRunOptionsAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options, CancellationToken cancellationToken)
     {
         // Create the options instance to populate, either a fresh or using one the caller provides.
         RunCreationOptions runOptions =
             options?.RawRepresentationFactory?.Invoke(this) as RunCreationOptions ??
             new();
+
+        ToolResources? resources = null;
 
         // Populate the run options from the ChatOptions, if provided.
         if (options is not null)
@@ -339,8 +346,44 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                             runOptions.ToolsOverride.Add(ToOpenAIAssistantsFunctionToolDefinition(aiFunction, options));
                             break;
 
-                        case HostedCodeInterpreterTool:
-                            runOptions.ToolsOverride.Add(new CodeInterpreterToolDefinition());
+                        case HostedCodeInterpreterTool codeInterpreterTool:
+                            var interpreterToolDef = ToolDefinition.CreateCodeInterpreter();
+                            runOptions.ToolsOverride.Add(interpreterToolDef);
+
+                            if (codeInterpreterTool.Inputs?.Count is > 0)
+                            {
+                                ThreadInitializationMessage? threadInitializationMessage = null;
+                                foreach (var input in codeInterpreterTool.Inputs)
+                                {
+                                    if (input is HostedFileContent hostedFile)
+                                    {
+                                        threadInitializationMessage ??= new(MessageRole.User, [MessageContent.FromText("attachments")]);
+                                        threadInitializationMessage.Attachments.Add(new(hostedFile.FileId, [interpreterToolDef]));
+                                    }
+                                }
+
+                                if (threadInitializationMessage is not null)
+                                {
+                                    runOptions.AdditionalMessages.Add(threadInitializationMessage);
+                                }
+                            }
+
+                            break;
+
+                        case HostedFileSearchTool fileSearchTool:
+                            runOptions.ToolsOverride.Add(ToolDefinition.CreateFileSearch(fileSearchTool.MaximumResultCount));
+                            if (fileSearchTool.Inputs is { Count: > 0 } fileSearchInputs)
+                            {
+                                foreach (var input in fileSearchInputs)
+                                {
+                                    if (input is HostedVectorStoreContent file)
+                                    {
+                                        (resources ??= new()).FileSearch ??= new();
+                                        resources.FileSearch.VectorStoreIds.Add(file.VectorStoreId);
+                                    }
+                                }
+                            }
+
                             break;
                     }
                 }
@@ -469,7 +512,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
 
         runOptions.AdditionalInstructions = instructions?.ToString();
 
-        return (runOptions, functionResults);
+        return (runOptions, resources, functionResults);
     }
 
     /// <summary>Convert <see cref="FunctionResultContent"/> instances to <see cref="ToolOutput"/> instances.</summary>
