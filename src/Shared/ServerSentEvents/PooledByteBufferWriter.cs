@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !NET10_0_OR_GREATER
+
 using System.Buffers;
 using System.ComponentModel;
 
@@ -34,3 +36,5 @@ namespace System.Net.ServerSentEvents
         public void Dispose() => _buffer.Dispose();
     }
 }
+
+#endif

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !NET10_0_OR_GREATER
+
 namespace System.Net.ServerSentEvents
 {
     /// <summary>Encapsulates a method for parsing the bytes payload of a server-sent event.</summary>
@@ -10,3 +12,5 @@ namespace System.Net.ServerSentEvents
     /// <returns>The parsed <typeparamref name="T"/>.</returns>
     internal delegate T SseItemParser<out T>(string eventType, ReadOnlySpan<byte> data);
 }
+
+#endif
