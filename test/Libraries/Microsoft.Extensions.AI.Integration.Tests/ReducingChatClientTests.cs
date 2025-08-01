@@ -68,7 +68,7 @@ public sealed class TokenCountingChatReducer : IChatReducer
         _tokenLimit = Throw.IfLessThan(tokenLimit, 1);
     }
 
-    public async Task<IList<ChatMessage>> ReduceAsync(
+    public async Task<IEnumerable<ChatMessage>> ReduceAsync(
         IEnumerable<ChatMessage> messages, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(messages);

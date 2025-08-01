@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -175,15 +174,15 @@ public class ReducingChatClientTests
 
     private sealed class TestReducer : IChatReducer
     {
-        public IList<ChatMessage>? ReducedMessages { get; set; }
+        public IEnumerable<ChatMessage>? ReducedMessages { get; set; }
         public int ReduceAsyncCallCount { get; private set; }
         public IEnumerable<ChatMessage>? LastMessagesProvided { get; private set; }
 
-        public Task<IList<ChatMessage>> ReduceAsync(IEnumerable<ChatMessage> messages, CancellationToken cancellationToken)
+        public Task<IEnumerable<ChatMessage>> ReduceAsync(IEnumerable<ChatMessage> messages, CancellationToken cancellationToken)
         {
             ReduceAsyncCallCount++;
             LastMessagesProvided = messages;
-            return Task.FromResult(ReducedMessages ?? messages.ToList());
+            return Task.FromResult(ReducedMessages ?? messages);
         }
     }
 }
