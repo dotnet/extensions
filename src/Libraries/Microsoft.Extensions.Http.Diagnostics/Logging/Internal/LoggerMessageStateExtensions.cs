@@ -53,6 +53,23 @@ internal static class LoggerMessageStateExtensions
     }
 
     /// <summary>
+    /// Adds the full request URL (including the redacted query string) as the <c>url.full</c> tag to the <see cref="LoggerMessageState"/>.
+    /// </summary>
+    /// <param name="state">The <see cref="LoggerMessageState"/> to be filled.</param>
+    /// <param name="fullUri">The full URI to log with redacted query parameters.</param>
+    /// <param name="index">
+    /// Represents an index to be used when writing tags into <paramref name="state"/>.
+    /// <para>This parameter will be mutated to point to the next <paramref name="state"/> item.</para>
+    /// </param>
+    public static void AddFullUrl(this LoggerMessageState state, string? fullUri, ref int index)
+    {
+        if (fullUri is not null)
+        {
+            state.TagArray[index++] = new(HttpClientLoggingTagNames.FullUri, fullUri);
+        }
+    }
+
+    /// <summary>
     /// Adds path parameters to <see cref="LoggerMessageState"/>.
     /// </summary>
     /// <param name="state">A <see cref="LoggerMessageState"/> to be filled.</param>
