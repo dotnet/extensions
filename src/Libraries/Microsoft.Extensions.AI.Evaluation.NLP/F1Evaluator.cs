@@ -50,6 +50,7 @@ public sealed class F1Evaluator : IEvaluator
 
         var metric = new NumericMetric(F1MetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {
