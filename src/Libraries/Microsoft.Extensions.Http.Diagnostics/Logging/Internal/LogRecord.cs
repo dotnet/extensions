@@ -82,10 +82,10 @@ internal sealed class LogRecord : IResettable
     public KeyValuePair<string, string>[]? QueryParameters { get; set; }
 
     /// <summary>
-    /// Gets or sets full request URI.
+    /// Gets or sets full request URL.
     /// </summary>
-#pragma warning disable S3996
-    public string? FullUri { get; set; }
+#pragma warning disable S3996 // We use string instead of System.Uri to increase performance
+    public string? FullUrl { get; set; }
 #pragma warning restore S3996
 
     public bool TryReset()
@@ -108,7 +108,7 @@ internal sealed class LogRecord : IResettable
         ResponseHeaders = null;
         PathParametersCount = 0;
         QueryParameters = null;
-        FullUri = null;
+        FullUrl = null;
         return true;
     }
 }

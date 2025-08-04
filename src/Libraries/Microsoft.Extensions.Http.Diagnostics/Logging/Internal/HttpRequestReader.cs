@@ -157,7 +157,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         var queryString = sb.ToString();
 
-        logRecord.FullUri = string.IsNullOrEmpty(queryString)
+        logRecord.FullUrl = string.IsNullOrEmpty(queryString)
             ? null
             : $"{logRecord.Host}/{logRecord.Path}?{queryString}";
     }

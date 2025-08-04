@@ -54,10 +54,10 @@ public static class HttpClientLoggingTagNames
     public const string ResponseHeaderPrefix = "http.response.header.";
 
     /// <summary>
-    /// HTTP full URI prefix.
+    /// HTTP full URL prefix.
     /// </summary>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-    public const string FullUri = "url.full";
+    public const string FullUrl = "url.full";
 
     /// <summary>
     /// HTTP Status Code.
@@ -79,6 +79,6 @@ public static class HttpClientLoggingTagNames
             ResponseBody,
             ResponseHeaderPrefix,
             StatusCode,
-            FullUri
+            FullUrl
         ]);
 }

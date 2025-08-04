@@ -96,10 +96,10 @@ internal static partial class Log
         var statusCodePropertyCount = record.StatusCode.HasValue ? 1 : 0;
         var requestHeadersCount = record.RequestHeaders?.Count ?? 0;
         var responseHeadersCount = record.ResponseHeaders?.Count ?? 0;
-        var fullUriPropertyCount = record.FullUri is null ? 0 : 1;
+        var fullUrlPropertyCount = record.FullUrl is null ? 0 : 1;
 
         var spaceToReserve = MinimalPropertyCount + statusCodePropertyCount + requestHeadersCount + responseHeadersCount +
-            record.PathParametersCount + (record.RequestBody is null ? 0 : 1) + (record.ResponseBody is null ? 0 : 1) + fullUriPropertyCount;
+            record.PathParametersCount + (record.RequestBody is null ? 0 : 1) + (record.ResponseBody is null ? 0 : 1) + fullUrlPropertyCount;
 
         var index = loggerMessageState.ReserveTagSpace(spaceToReserve);
         loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Method, record.Method);
@@ -137,9 +137,9 @@ internal static partial class Log
             loggerMessageState.TagArray[index] = new(HttpClientLoggingTagNames.ResponseBody, record.ResponseBody);
         }
 
-        if (record.FullUri is not null)
+        if (record.FullUrl is not null)
         {
-            loggerMessageState.AddFullUrl(record.FullUri, ref index);
+            loggerMessageState.AddFullUrl(record.FullUrl, ref index);
         }
 
         logger.Log(

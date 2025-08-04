@@ -627,8 +627,8 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
-        logRecord.FullUri.Should().NotBeNull();
-        logRecord.FullUri.Should().Contain("userId=REDACTED");
+        logRecord.FullUrl.Should().NotBeNull();
+        logRecord.FullUrl.Should().Contain("userId=REDACTED");
     }
 
     [Fact]
@@ -656,7 +656,7 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
-        logRecord.FullUri.Should().BeNull();
+        logRecord.FullUrl.Should().BeNull();
     }
 
     [Fact]
@@ -724,10 +724,10 @@ public class HttpRequestReaderTest
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
         // Assert the full URI contains only the redacted query parameters
-        logRecord.FullUri.Should().NotBeNull();
-        logRecord.FullUri!.Should().Contain("userId=REDACTED");
-        logRecord.FullUri!.Should().Contain("token=REDACTED");
-        logRecord.FullUri!.Should().NotContain("other=not_logged");
+        logRecord.FullUrl.Should().NotBeNull();
+        logRecord.FullUrl!.Should().Contain("userId=REDACTED");
+        logRecord.FullUrl!.Should().Contain("token=REDACTED");
+        logRecord.FullUrl!.Should().NotContain("other=not_logged");
     }
 
     [Fact]
@@ -818,7 +818,7 @@ public class HttpRequestReaderTest
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
         // Should not log empty values
-        logRecord.FullUri.Should().BeNull();
+        logRecord.FullUrl.Should().BeNull();
     }
 
     [Fact]
@@ -881,11 +881,11 @@ public class HttpRequestReaderTest
         logRecord.Path.Should().Contain(Redacted);
 
         // Assert: query parameter is redacted in the full URI
-        logRecord.FullUri.Should().NotBeNull();
-        logRecord.FullUri!.Should().Contain($"{queryParamName}={Redacted}");
-        logRecord.FullUri!.Should().NotContain($"{queryParamName}={queryParamValue}");
-        logRecord.FullUri!.Should().Contain($"/api/orders/{Redacted}/details");
-        logRecord.FullUri!.Should().NotContain($"/api/orders/{pathParamValue}/details");
+        logRecord.FullUrl.Should().NotBeNull();
+        logRecord.FullUrl!.Should().Contain($"{queryParamName}={Redacted}");
+        logRecord.FullUrl!.Should().NotContain($"{queryParamName}={queryParamValue}");
+        logRecord.FullUrl!.Should().Contain($"/api/orders/{Redacted}/details");
+        logRecord.FullUrl!.Should().NotContain($"/api/orders/{pathParamValue}/details");
     }
 
     private static ServiceProvider GetServiceProvider(
