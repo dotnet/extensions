@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
+
 public class TypeTests
 {
     [Theory]
