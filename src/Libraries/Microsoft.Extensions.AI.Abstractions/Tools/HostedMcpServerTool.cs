@@ -12,27 +12,21 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public class HostedMcpServerTool : AITool
 {
-    private readonly string _name;
-    private readonly string _description;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
     /// </summary>
-    /// <param name="name">The name of the remote MCP server.</param>
+    /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="url">The URL of the remote MCP server.</param>
-    /// <param name="description">The description of the remote MCP server.</param>
-    public HostedMcpServerTool(string name, Uri url, string? description = null)
+    public HostedMcpServerTool(string serverName, Uri url)
     {
-        _name = Throw.IfNullOrWhitespace(name);
-        _description = description ?? string.Empty;
-
+        ServerName = Throw.IfNullOrWhitespace(serverName);
         Url = Throw.IfNull(url);
     }
 
     /// <summary>
     /// Gets the name of the remote MCP server that is used to identify it.
     /// </summary>
-    public override string Name => _name;
+    public string ServerName { get; }
 
     /// <summary>
     /// Gets the URL of the remote MCP server.
@@ -40,9 +34,9 @@ public class HostedMcpServerTool : AITool
     public Uri Url { get; }
 
     /// <summary>
-    /// Gets the description of the remote MCP server, used to provide more context to the AI service.
+    /// Gets or sets the description of the remote MCP server, used to provide more context to the AI service.
     /// </summary>
-    public override string Description => _description;
+    public string? ServerDescription { get; set; }
 
     /// <summary>
     /// Gets or sets the list of tools allowed to be used by the AI service.
@@ -53,8 +47,8 @@ public class HostedMcpServerTool : AITool
     /// Gets or sets the approval mode that indicates when the AI service should require user approval for tool calls to the remote MCP server.
     /// </summary>
     /// <remarks>
-    /// You can set this property to <see cref="HostedMcpServerToolApprovalMode.Always"/> to require approval for all tool calls, 
-    /// or to <see cref="HostedMcpServerToolApprovalMode.Never"/> to never require approval.
+    /// You can set this property to <see cref="HostedMcpServerToolApprovalMode.AlwaysRequire"/> to require approval for all tool calls, 
+    /// or to <see cref="HostedMcpServerToolApprovalMode.NeverRequire"/> to never require approval.
     /// </remarks>
     public HostedMcpServerToolApprovalMode? ApprovalMode { get; set; }
 
@@ -62,7 +56,7 @@ public class HostedMcpServerTool : AITool
     /// Gets or sets the HTTP headers that the AI service should use when making tool calls to the remote MCP server.
     /// </summary>
     /// <remarks>
-    /// This property is useful for specifying authentication or other headers required by the MCP server.
+    /// This property is useful for specifying the authentication header or other headers required by the MCP server.
     /// </remarks>
     public IDictionary<string, string>? Headers { get; set; }
 }

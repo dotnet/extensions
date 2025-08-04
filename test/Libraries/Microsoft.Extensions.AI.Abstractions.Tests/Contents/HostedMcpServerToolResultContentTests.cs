@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -16,7 +17,7 @@ public class HostedMcpServerToolResultContentTests
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
         Assert.Null(c.Output);
-        Assert.Null(c.Error);
+        Assert.False(c.IsError);
     }
 
     [Fact]
@@ -37,12 +38,13 @@ public class HostedMcpServerToolResultContentTests
         Assert.Equal("callId", c.CallId);
 
         Assert.Null(c.Output);
-        c.Output = "output";
-        Assert.Equal("output", c.Output);
+        IList<AIContent> output = [];
+        c.Output = output;
+        Assert.Same(output, c.Output);
 
-        Assert.Null(c.Error);
-        c.Error = "error";
-        Assert.Equal("error", c.Error);
+        Assert.False(c.IsError);
+        c.IsError = true;
+        Assert.True(c.IsError);
     }
 
     [Fact]

@@ -27,9 +27,7 @@ public class HostedMcpServerToolCallContentTests
     [Fact]
     public void Constructor_PropsRoundtrip()
     {
-        IReadOnlyDictionary<string, object?> args = new Dictionary<string, object?>();
-
-        HostedMcpServerToolCallContent c = new("callId1", "name", "serverName", args);
+        HostedMcpServerToolCallContent c = new("callId1", "name", "serverName");
 
         Assert.Null(c.RawRepresentation);
         object raw = new();
@@ -41,10 +39,14 @@ public class HostedMcpServerToolCallContentTests
         c.AdditionalProperties = props;
         Assert.Same(props, c.AdditionalProperties);
 
+        Assert.Null(c.Arguments);
+        IReadOnlyDictionary<string, object?> args = new Dictionary<string, object?>();
+        c.Arguments = args;
+        Assert.Same(props, c.AdditionalProperties);
+
         Assert.Equal("callId1", c.CallId);
         Assert.Equal("name", c.Name);
         Assert.Equal("serverName", c.ServerName);
-        Assert.Same(args, c.Arguments);
     }
 
     [Fact]

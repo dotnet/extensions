@@ -17,13 +17,11 @@ public class HostedMcpServerToolCallContent : AIContent
     /// <param name="callId">The tool call ID.</param>
     /// <param name="name">The tool name.</param>
     /// <param name="serverName">The MCP server name.</param>
-    /// <param name="arguments">The arguments used for the tool call.</param>
-    public HostedMcpServerToolCallContent(string callId, string name, string serverName, IReadOnlyDictionary<string, object?>? arguments = null)
+    public HostedMcpServerToolCallContent(string callId, string name, string serverName)
     {
         CallId = Throw.IfNullOrWhitespace(callId);
         Name = Throw.IfNullOrWhitespace(name);
         ServerName = Throw.IfNullOrWhitespace(serverName);
-        Arguments = arguments;
     }
 
     /// <summary>
@@ -32,7 +30,7 @@ public class HostedMcpServerToolCallContent : AIContent
     public string CallId { get; }
 
     /// <summary>
-    /// Gets the name of the tool requested.
+    /// Gets the name of the tool called.
     /// </summary>
     public string Name { get; }
 
@@ -42,7 +40,7 @@ public class HostedMcpServerToolCallContent : AIContent
     public string ServerName { get; }
 
     /// <summary>
-    /// Gets the arguments used for the tool call.
+    /// Gets or sets the arguments used for the tool call.
     /// </summary>
-    public IReadOnlyDictionary<string, object?>? Arguments { get; }
+    public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
 }

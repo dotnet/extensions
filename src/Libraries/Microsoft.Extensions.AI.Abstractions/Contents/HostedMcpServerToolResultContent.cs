@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents a tool call result from a hosted MCP server.
+/// Represents the result of a hosted MCP server tool call.
 /// </summary>
 public class HostedMcpServerToolResultContent : AIContent
 {
@@ -27,10 +28,10 @@ public class HostedMcpServerToolResultContent : AIContent
     /// <summary>
     /// Gets or sets the output of the tool call.
     /// </summary>
-    public string? Output { get; set; }
+    public IList<AIContent>? Output { get; set; }
 
     /// <summary>
-    /// Gets or sets the error of the tool call, if any.
+    /// Gets or sets a value indicating whether the result was an error.
     /// </summary>
-    public string? Error { get; set; }
+    public bool IsError { get; set; }
 }

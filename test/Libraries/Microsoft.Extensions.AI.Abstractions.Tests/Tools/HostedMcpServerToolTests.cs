@@ -12,11 +12,11 @@ public class HostedMcpServerToolTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        HostedMcpServerTool tool = new("name", new Uri("https://localhost/"));
+        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"));
 
         Assert.Empty(tool.AdditionalProperties);
 
-        Assert.Equal("name", tool.Name);
+        Assert.Equal("serverName", tool.ServerName);
         Assert.Equal("https://localhost/", tool.Url.ToString());
 
         Assert.Empty(tool.Description);
@@ -27,13 +27,20 @@ public class HostedMcpServerToolTests
     [Fact]
     public void Constructor_Roundtrips()
     {
-        HostedMcpServerTool tool = new("name", new Uri("https://localhost/"), "description");
+        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"));
 
         Assert.Empty(tool.AdditionalProperties);
+        Assert.Empty(tool.Description);
+        Assert.Equal(nameof(HostedMcpServerTool), tool.Name);
 
-        Assert.Equal("name", tool.Name);
+        Assert.Equal("serverName", tool.ServerName);
         Assert.Equal("https://localhost/", tool.Url.ToString());
-        Assert.Equal("description", tool.Description);
+        Assert.Empty(tool.Description);
+
+        Assert.Null(tool.ServerDescription);
+        string serverDescription = "This is a test server";
+        tool.ServerDescription = serverDescription;
+        Assert.Equal(serverDescription, tool.ServerDescription);
 
         Assert.Null(tool.AllowedTools);
         List<string> allowedTools = ["tool1", "tool2"];
@@ -41,13 +48,13 @@ public class HostedMcpServerToolTests
         Assert.Same(allowedTools, tool.AllowedTools);
 
         Assert.Null(tool.ApprovalMode);
-        tool.ApprovalMode = HostedMcpServerToolApprovalMode.Never;
-        Assert.Same(HostedMcpServerToolApprovalMode.Never, tool.ApprovalMode);
+        tool.ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire;
+        Assert.Same(HostedMcpServerToolApprovalMode.NeverRequire, tool.ApprovalMode);
 
-        tool.ApprovalMode = HostedMcpServerToolApprovalMode.Always;
-        Assert.Same(HostedMcpServerToolApprovalMode.Always, tool.ApprovalMode);
+        tool.ApprovalMode = HostedMcpServerToolApprovalMode.AlwaysRequire;
+        Assert.Same(HostedMcpServerToolApprovalMode.AlwaysRequire, tool.ApprovalMode);
 
-        var customApprovalMode = new HostedMcpServerToolApprovalMode(require: ["tool1"], notRequire: ["tool2"]);
+        var customApprovalMode = new HostedMcpServerToolRequireSpecificApprovalMode(["tool1"], ["tool2"]);
         tool.ApprovalMode = customApprovalMode;
         Assert.Same(customApprovalMode, tool.ApprovalMode);
 
