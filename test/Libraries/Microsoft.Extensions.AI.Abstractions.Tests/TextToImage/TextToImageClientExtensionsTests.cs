@@ -227,6 +227,6 @@ public class TextToImageClientExtensionsTests
         await testClient.EditImageAsync(imageData, "test.png", prompt);
 
         // Assert
-        Assert.Equal(3, callCount);
+        Assert.Equal(2, callCount);
     }
 }
