@@ -628,6 +628,54 @@ public static partial class AIJsonUtilities
                             break;
                     }
                 }
+
+    /// <summary>
+    /// Checks if the type node represents a string type (either "string" or ["string", "null"] or ["null", "string"]).
+    /// </summary>
+    private static bool TypeIsStringOrNullableString(JsonNode? typeNode)
+    {
+        if (typeNode?.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
+        {
+            // Simple string type
+            return true;
+        }
+
+        if (typeNode is JsonArray typeArray && typeArray.Count == 2)
+        {
+            // Check for nullable string: ["string", "null"] or ["null", "string"]
+            bool hasString = false;
+            bool hasNull = false;
+
+            foreach (JsonNode? entry in typeArray)
+            {
+                if (entry?.GetValueKind() is JsonValueKind.String && entry.GetValue<string>() is string type)
+                {
+                    if (type == "string")
+                    {
+                        hasString = true;
+                    }
+                    else if (type == "null")
+                    {
+                        hasNull = true;
+                    }
+                    else
+                    {
+                        // Some other type, not a nullable string
+                        return false;
+                    }
+                }
+                else
+                {
+                    // Non-string entry, not a nullable string
+                    return false;
+                }
+            }
+
+            return hasString && hasNull;
+        }
+
+        return false;
+    }
 #endif
                 TAttribute? ResolveAttribute<TAttribute>()
                     where TAttribute : Attribute
@@ -683,54 +731,6 @@ public static partial class AIJsonUtilities
             }
 
             return allowString && numericType is not null;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Checks if the type node represents a string type (either "string" or ["string", "null"] or ["null", "string"]).
-    /// </summary>
-    private static bool TypeIsStringOrNullableString(JsonNode? typeNode)
-    {
-        if (typeNode?.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
-        {
-            // Simple string type
-            return true;
-        }
-
-        if (typeNode is JsonArray typeArray && typeArray.Count == 2)
-        {
-            // Check for nullable string: ["string", "null"] or ["null", "string"]
-            bool hasString = false;
-            bool hasNull = false;
-
-            foreach (JsonNode? entry in typeArray)
-            {
-                if (entry?.GetValueKind() is JsonValueKind.String && entry.GetValue<string>() is string type)
-                {
-                    if (type == "string")
-                    {
-                        hasString = true;
-                    }
-                    else if (type == "null")
-                    {
-                        hasNull = true;
-                    }
-                    else
-                    {
-                        // Some other type, not a nullable string
-                        return false;
-                    }
-                }
-                else
-                {
-                    // Non-string entry, not a nullable string
-                    return false;
-                }
-            }
-
-            return hasString && hasNull;
         }
 
         return false;
