@@ -70,6 +70,7 @@ public sealed class FluencyEvaluator : IEvaluator
 
         var metric = new NumericMetric(FluencyMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {

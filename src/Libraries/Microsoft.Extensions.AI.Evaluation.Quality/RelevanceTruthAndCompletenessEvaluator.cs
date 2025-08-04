@@ -90,6 +90,10 @@ public sealed class RelevanceTruthAndCompletenessEvaluator : IEvaluator
         var completeness = new NumericMetric(CompletenessMetricName);
         var result = new EvaluationResult(relevance, truth, completeness);
 
+        relevance.MarkAsBuiltIn();
+        truth.MarkAsBuiltIn();
+        completeness.MarkAsBuiltIn();
+
         if (!messages.TryGetUserRequest(
                 out ChatMessage? userRequest,
                 out IReadOnlyList<ChatMessage> conversationHistory) ||

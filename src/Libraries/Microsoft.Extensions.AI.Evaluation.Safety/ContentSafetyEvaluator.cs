@@ -166,6 +166,7 @@ public abstract class ContentSafetyEvaluator(
                     metric.Name = metricName;
                 }
 
+                metric.MarkAsBuiltIn();
                 metric.AddOrUpdateChatMetadata(annotationResponse, annotationDuration);
 
                 metric.Interpretation =

@@ -84,6 +84,7 @@ public sealed class IntentResolutionEvaluator : IEvaluator
 
         var metric = new NumericMetric(IntentResolutionMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (!messages.Any())
         {

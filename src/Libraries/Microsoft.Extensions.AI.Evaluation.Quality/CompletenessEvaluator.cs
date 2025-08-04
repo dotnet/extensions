@@ -73,6 +73,7 @@ public sealed class CompletenessEvaluator : IEvaluator
 
         var metric = new NumericMetric(CompletenessMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {

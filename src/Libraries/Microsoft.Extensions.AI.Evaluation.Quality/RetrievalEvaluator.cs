@@ -79,6 +79,7 @@ public sealed class RetrievalEvaluator : IEvaluator
 
         var metric = new NumericMetric(RetrievalMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (!messages.TryGetUserRequest(out ChatMessage? userRequest) || string.IsNullOrWhiteSpace(userRequest.Text))
         {

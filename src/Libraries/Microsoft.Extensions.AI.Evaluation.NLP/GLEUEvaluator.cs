@@ -50,6 +50,7 @@ public sealed class GLEUEvaluator : IEvaluator
 
         var metric = new NumericMetric(GLEUMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {

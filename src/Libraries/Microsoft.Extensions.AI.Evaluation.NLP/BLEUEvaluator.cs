@@ -50,6 +50,7 @@ public sealed class BLEUEvaluator : IEvaluator
 
         var metric = new NumericMetric(BLEUMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {

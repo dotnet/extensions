@@ -59,6 +59,13 @@
     </AssemblyAttribute>
   </ItemGroup>
 
+  <ItemGroup Condition="'$(RepoOriginalSourceRevisionId)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>OriginalRepoCommitHash</_Parameter1>
+      <_Parameter2>$(RepoOriginalSourceRevisionId)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
   <Target Name="AddInternalsVisibleToDynamicProxyGenAssembly2" BeforeTargets="BeforeCompile">
     <ItemGroup Condition="'@(InternalsVisibleToDynamicProxyGenAssembly2->Count())' &gt; 0">
       <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">

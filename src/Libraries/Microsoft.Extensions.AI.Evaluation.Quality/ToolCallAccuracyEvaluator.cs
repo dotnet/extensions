@@ -85,6 +85,7 @@ public sealed class ToolCallAccuracyEvaluator : IEvaluator
 
         var metric = new BooleanMetric(ToolCallAccuracyMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (!messages.Any())
         {

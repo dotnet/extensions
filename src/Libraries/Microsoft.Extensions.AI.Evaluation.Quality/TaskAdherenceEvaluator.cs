@@ -83,6 +83,7 @@ public sealed class TaskAdherenceEvaluator : IEvaluator
 
         var metric = new NumericMetric(TaskAdherenceMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (!messages.Any())
         {
