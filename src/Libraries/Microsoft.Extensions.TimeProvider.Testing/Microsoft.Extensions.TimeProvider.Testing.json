@@ -18,6 +18,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.AdjustTime(System.DateTimeOffset value)",
+          "Stage": "Stable"
+        },
+        {
           "Member": "override System.Threading.ITimer Microsoft.Extensions.Time.Testing.FakeTimeProvider.CreateTimer(System.Threading.TimerCallback callback, object? state, System.TimeSpan dueTime, System.TimeSpan period);",
           "Stage": "Stable"
         },
