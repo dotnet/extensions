@@ -112,7 +112,7 @@ public class OpenAIConversionTests
             Assert.Equal(6, convertedMessages.Length);
 
             index = 1;
-            SystemChatMessage instructionsMessage = Assert.IsType<SystemChatMessage>(convertedMessages[0]);
+            SystemChatMessage instructionsMessage = Assert.IsType<SystemChatMessage>(convertedMessages[0], exactMatch: false);
             Assert.Equal("You talk like a parrot.", Assert.Single(instructionsMessage.Content).Text);
         }
         else
@@ -120,13 +120,13 @@ public class OpenAIConversionTests
             Assert.Equal(5, convertedMessages.Length);
         }
 
-        SystemChatMessage m0 = Assert.IsType<SystemChatMessage>(convertedMessages[index]);
+        SystemChatMessage m0 = Assert.IsType<SystemChatMessage>(convertedMessages[index], exactMatch: false);
         Assert.Equal("You are a helpful assistant.", Assert.Single(m0.Content).Text);
 
-        UserChatMessage m1 = Assert.IsType<UserChatMessage>(convertedMessages[index + 1]);
+        UserChatMessage m1 = Assert.IsType<UserChatMessage>(convertedMessages[index + 1], exactMatch: false);
         Assert.Equal("Hello", Assert.Single(m1.Content).Text);
 
-        AssistantChatMessage m2 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 2]);
+        AssistantChatMessage m2 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 2], exactMatch: false);
         Assert.Single(m2.Content);
         Assert.Equal("Hi there!", m2.Content[0].Text);
         var tc = Assert.Single(m2.ToolCalls);
@@ -138,11 +138,11 @@ public class OpenAIConversionTests
             ["param2"] = 42
         }), JsonSerializer.Deserialize<JsonElement>(tc.FunctionArguments.ToMemory().Span)));
 
-        ToolChatMessage m3 = Assert.IsType<ToolChatMessage>(convertedMessages[index + 3]);
+        ToolChatMessage m3 = Assert.IsType<ToolChatMessage>(convertedMessages[index + 3], exactMatch: false);
         Assert.Equal("callid123", m3.ToolCallId);
         Assert.Equal("theresult", Assert.Single(m3.Content).Text);
 
-        AssistantChatMessage m4 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 4]);
+        AssistantChatMessage m4 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 4], exactMatch: false);
         Assert.Equal("The answer is 42.", Assert.Single(m4.Content).Text);
     }
 
@@ -229,9 +229,9 @@ public class OpenAIConversionTests
         Assert.Equal(ChatRole.User, message.Role);
 
         Assert.Equal(3, message.Contents.Count);
-        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(message.Contents[0]).Text);
-        Assert.Equal("http://example.com/image.png", Assert.IsType<UriContent>(message.Contents[1]).Uri.ToString());
-        Assert.Equal("functionName", Assert.IsType<FunctionCallContent>(message.Contents[2]).Name);
+        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(message.Contents[0], exactMatch: false).Text);
+        Assert.Equal("http://example.com/image.png", Assert.IsType<UriContent>(message.Contents[1], exactMatch: false).Uri.ToString());
+        Assert.Equal("functionName", Assert.IsType<FunctionCallContent>(message.Contents[2], exactMatch: false).Name);
     }
 
     [Fact]
@@ -260,9 +260,9 @@ public class OpenAIConversionTests
         Assert.Equal(ChatRole.Assistant, message.Role);
 
         Assert.Equal(3, message.Contents.Count);
-        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(message.Contents[0]).Text);
-        Assert.Equal("http://example.com/image.png", Assert.IsType<UriContent>(message.Contents[1]).Uri.ToString());
-        Assert.Equal("functionName", Assert.IsType<FunctionCallContent>(message.Contents[2]).Name);
+        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(message.Contents[0], exactMatch: false).Text);
+        Assert.Equal("http://example.com/image.png", Assert.IsType<UriContent>(message.Contents[1], exactMatch: false).Uri.ToString());
+        Assert.Equal("functionName", Assert.IsType<FunctionCallContent>(message.Contents[2], exactMatch: false).Name);
 
         static async IAsyncEnumerable<StreamingChatCompletionUpdate> CreateUpdates()
         {
@@ -1015,10 +1015,10 @@ public class OpenAIConversionTests
         Assert.Equal(4, outputItems.Length);
 
         // Should have message, function call, function output, and final message
-        Assert.IsType<MessageResponseItem>(outputItems[0]);
-        Assert.IsType<FunctionCallResponseItem>(outputItems[1]);
-        Assert.IsType<FunctionCallOutputResponseItem>(outputItems[2]);
-        Assert.IsType<MessageResponseItem>(outputItems[3]);
+        Assert.IsType<MessageResponseItem>(outputItems[0], exactMatch: false);
+        Assert.IsType<FunctionCallResponseItem>(outputItems[1], exactMatch: false);
+        Assert.IsType<FunctionCallOutputResponseItem>(outputItems[2], exactMatch: false);
+        Assert.IsType<MessageResponseItem>(outputItems[3], exactMatch: false);
 
         var functionCallOutput = (FunctionCallOutputResponseItem)outputItems[2];
         Assert.Equal("call-456", functionCallOutput.CallId);
@@ -1045,9 +1045,9 @@ public class OpenAIConversionTests
         var outputItems = openAIResponse.OutputItems.ToArray();
         Assert.Equal(3, outputItems.Length);
 
-        var systemMessage = Assert.IsType<MessageResponseItem>(outputItems[0]);
-        var userMessage = Assert.IsType<MessageResponseItem>(outputItems[1]);
-        var assistantMessage = Assert.IsType<MessageResponseItem>(outputItems[2]);
+        var systemMessage = Assert.IsType<MessageResponseItem>(outputItems[0], exactMatch: false);
+        var userMessage = Assert.IsType<MessageResponseItem>(outputItems[1], exactMatch: false);
+        var assistantMessage = Assert.IsType<MessageResponseItem>(outputItems[2], exactMatch: false);
 
         Assert.Equal("You are a helpful assistant.", Assert.Single(systemMessage.Content).Text);
         Assert.Equal("Hello, how are you?", Assert.Single(userMessage.Content).Text);
