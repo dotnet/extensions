@@ -47,10 +47,8 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(AudioClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(audioClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
-        string? model = typeof(AudioClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(audioClient) as string;
 
-        _metadata = new("openai", providerUrl, model);
+        _metadata = new("openai", providerUrl, _audioClient.Model);
     }
 
     /// <inheritdoc />

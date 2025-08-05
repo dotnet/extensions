@@ -47,10 +47,8 @@ internal sealed class OpenAIChatClient : IChatClient
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(ChatClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
-        string? model = typeof(ChatClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(chatClient) as string;
 
-        _metadata = new("openai", providerUrl, model);
+        _metadata = new("openai", providerUrl, _chatClient.Model);
     }
 
     /// <inheritdoc />
@@ -303,7 +301,7 @@ internal sealed class OpenAIChatClient : IChatClient
         return null;
     }
 
-    private static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
+    internal static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
         IAsyncEnumerable<StreamingChatCompletionUpdate> updates,
         ChatCompletionOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)

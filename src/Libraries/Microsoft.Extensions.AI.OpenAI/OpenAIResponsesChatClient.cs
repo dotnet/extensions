@@ -72,7 +72,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         _ = Throw.IfNull(messages);
 
         // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIResponseItems = ToOpenAIResponseItems(messages);
+        var openAIResponseItems = ToOpenAIResponseItems(messages, options);
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Make the call to the OpenAIResponseClient.
@@ -174,16 +174,22 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
 
-        // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIResponseItems = ToOpenAIResponseItems(messages);
+        var openAIResponseItems = ToOpenAIResponseItems(messages, options);
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
-        // Make the call to the OpenAIResponseClient and process the streaming results.
+        var streamingUpdates = _responseClient.CreateResponseStreamingAsync(openAIResponseItems, openAIOptions, cancellationToken);
+
+        return FromOpenAIStreamingResponseUpdatesAsync(streamingUpdates, openAIOptions, cancellationToken);
+    }
+
+    internal static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingResponseUpdatesAsync(
+        IAsyncEnumerable<StreamingResponseUpdate> streamingResponseUpdates, ResponseCreationOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
         DateTimeOffset? createdAt = null;
         string? responseId = null;
         string? conversationId = null;
@@ -192,33 +198,40 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         ChatRole? lastRole = null;
         Dictionary<int, MessageResponseItem> outputIndexToMessages = [];
         Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
-        await foreach (var streamingUpdate in _responseClient.CreateResponseStreamingAsync(openAIResponseItems, openAIOptions, cancellationToken).ConfigureAwait(false))
+
+        await foreach (var streamingUpdate in streamingResponseUpdates.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
+            // Create an update populated with the current state of the response.
+            ChatResponseUpdate CreateUpdate(AIContent? content = null) =>
+                new(lastRole, content is not null ? [content] : null)
+                {
+                    ConversationId = conversationId,
+                    CreatedAt = createdAt,
+                    MessageId = lastMessageId,
+                    ModelId = modelId,
+                    RawRepresentation = streamingUpdate,
+                    ResponseId = responseId,
+                };
+
             switch (streamingUpdate)
             {
                 case StreamingResponseCreatedUpdate createdUpdate:
                     createdAt = createdUpdate.Response.CreatedAt;
                     responseId = createdUpdate.Response.Id;
-                    conversationId = openAIOptions.StoredOutputEnabled is false ? null : responseId;
+                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
                     modelId = createdUpdate.Response.Model;
                     goto default;
 
                 case StreamingResponseCompletedUpdate completedUpdate:
-                    yield return new()
-                    {
-                        Contents = ToUsageDetails(completedUpdate.Response) is { } usage ? [new UsageContent(usage)] : [],
-                        ConversationId = conversationId,
-                        CreatedAt = createdAt,
-                        FinishReason =
-                            ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
-                            (functionCallInfos is not null ? ChatFinishReason.ToolCalls : ChatFinishReason.Stop),
-                        MessageId = lastMessageId,
-                        ModelId = modelId,
-                        RawRepresentation = streamingUpdate,
-                        ResponseId = responseId,
-                        Role = lastRole,
-                    };
+                {
+                    var update = CreateUpdate(ToUsageDetails(completedUpdate.Response) is { } usage ? new UsageContent(usage) : null);
+                    update.FinishReason =
+                        ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
+                        (functionCallInfos is not null ? ChatFinishReason.ToolCalls :
+                        ChatFinishReason.Stop);
+                    yield return update;
                     break;
+                }
 
                 case StreamingResponseOutputItemAddedUpdate outputItemAddedUpdate:
                     switch (outputItemAddedUpdate.Item)
@@ -236,22 +249,32 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate:
                     _ = outputIndexToMessages.Remove(outputItemDoneUpdate.OutputIndex);
+
+                    if (outputItemDoneUpdate.Item is MessageResponseItem item &&
+                        item.Content is { Count: > 0 } content &&
+                        content.Any(c => c.OutputTextAnnotations is { Count: > 0 }))
+                    {
+                        AIContent annotatedContent = new();
+                        foreach (var c in content)
+                        {
+                            PopulateAnnotations(c, annotatedContent);
+                        }
+
+                        yield return CreateUpdate(annotatedContent);
+                        break;
+                    }
+
                     goto default;
 
                 case StreamingResponseOutputTextDeltaUpdate outputTextDeltaUpdate:
+                {
                     _ = outputIndexToMessages.TryGetValue(outputTextDeltaUpdate.OutputIndex, out MessageResponseItem? messageItem);
                     lastMessageId = messageItem?.Id;
                     lastRole = ToChatRole(messageItem?.Role);
-                    yield return new ChatResponseUpdate(lastRole, outputTextDeltaUpdate.Delta)
-                    {
-                        ConversationId = conversationId,
-                        CreatedAt = createdAt,
-                        MessageId = lastMessageId,
-                        ModelId = modelId,
-                        RawRepresentation = streamingUpdate,
-                        ResponseId = responseId,
-                    };
+
+                    yield return CreateUpdate(new TextContent(outputTextDeltaUpdate.Delta));
                     break;
+                }
 
                 case StreamingResponseFunctionCallArgumentsDeltaUpdate functionCallArgumentsDeltaUpdate:
                 {
@@ -276,16 +299,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         lastMessageId = callInfo.ResponseItem.Id;
                         lastRole = ChatRole.Assistant;
-                        yield return new ChatResponseUpdate(lastRole, [fcc])
-                        {
-                            ConversationId = conversationId,
-                            CreatedAt = createdAt,
-                            MessageId = lastMessageId,
-                            ModelId = modelId,
-                            RawRepresentation = streamingUpdate,
-                            ResponseId = responseId,
-                        };
 
+                        yield return CreateUpdate(fcc);
                         break;
                     }
 
@@ -293,51 +308,22 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 }
 
                 case StreamingResponseErrorUpdate errorUpdate:
-                    yield return new ChatResponseUpdate
+                    yield return CreateUpdate(new ErrorContent(errorUpdate.Message)
                     {
-                        Contents =
-                        [
-                            new ErrorContent(errorUpdate.Message)
-                            {
-                                ErrorCode = errorUpdate.Code,
-                                Details = errorUpdate.Param,
-                            }
-                        ],
-                        ConversationId = conversationId,
-                        CreatedAt = createdAt,
-                        MessageId = lastMessageId,
-                        ModelId = modelId,
-                        RawRepresentation = streamingUpdate,
-                        ResponseId = responseId,
-                        Role = lastRole,
-                    };
+                        ErrorCode = errorUpdate.Code,
+                        Details = errorUpdate.Param,
+                    });
                     break;
 
                 case StreamingResponseRefusalDoneUpdate refusalDone:
-                    yield return new ChatResponseUpdate
+                    yield return CreateUpdate(new ErrorContent(refusalDone.Refusal)
                     {
-                        Contents = [new ErrorContent(refusalDone.Refusal) { ErrorCode = nameof(ResponseContentPart.Refusal) }],
-                        ConversationId = conversationId,
-                        CreatedAt = createdAt,
-                        MessageId = lastMessageId,
-                        ModelId = modelId,
-                        RawRepresentation = streamingUpdate,
-                        ResponseId = responseId,
-                        Role = lastRole,
-                    };
+                        ErrorCode = nameof(ResponseContentPart.Refusal),
+                    });
                     break;
 
                 default:
-                    yield return new ChatResponseUpdate
-                    {
-                        ConversationId = conversationId,
-                        CreatedAt = createdAt,
-                        MessageId = lastMessageId,
-                        ModelId = modelId,
-                        RawRepresentation = streamingUpdate,
-                        ResponseId = responseId,
-                        Role = lastRole,
-                    };
+                    yield return CreateUpdate();
                     break;
             }
         }
@@ -485,8 +471,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     /// <summary>Convert a sequence of <see cref="ChatMessage"/>s to <see cref="ResponseItem"/>s.</summary>
-    internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> inputs)
+    internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> inputs, ChatOptions? options)
     {
+        _ = options; // currently unused
+
         foreach (ChatMessage input in inputs)
         {
             if (input.Role == ChatRole.System ||
@@ -619,20 +607,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         RawRepresentation = part,
                     };
 
-                    if (part.OutputTextAnnotations is { Count: > 0 })
-                    {
-                        foreach (var ota in part.OutputTextAnnotations)
-                        {
-                            (text.Annotations ??= []).Add(new CitationAnnotation
-                            {
-                                RawRepresentation = ota,
-                                AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = ota.UriCitationStartIndex, EndIndex = ota.UriCitationEndIndex }],
-                                Title = ota.UriCitationTitle,
-                                Url = ota.UriCitationUri,
-                                FileId = ota.FileCitationFileId ?? ota.FilePathFileId,
-                            });
-                        }
-                    }
+                    PopulateAnnotations(part, text);
 
                     results.Add(text);
                     break;
@@ -655,6 +630,25 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
 
         return results;
+    }
+
+    /// <summary>Converts any annotations from <paramref name="source"/> and stores them in <paramref name="destination"/>.</summary>
+    private static void PopulateAnnotations(ResponseContentPart source, AIContent destination)
+    {
+        if (source.OutputTextAnnotations is { Count: > 0 })
+        {
+            foreach (var ota in source.OutputTextAnnotations)
+            {
+                (destination.Annotations ??= []).Add(new CitationAnnotation
+                {
+                    RawRepresentation = ota,
+                    AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = ota.UriCitationStartIndex, EndIndex = ota.UriCitationEndIndex }],
+                    Title = ota.UriCitationTitle,
+                    Url = ota.UriCitationUri,
+                    FileId = ota.FileCitationFileId ?? ota.FilePathFileId,
+                });
+            }
+        }
     }
 
     /// <summary>Convert a list of <see cref="AIContent"/>s to a list of <see cref="ResponseContentPart"/>.</summary>
