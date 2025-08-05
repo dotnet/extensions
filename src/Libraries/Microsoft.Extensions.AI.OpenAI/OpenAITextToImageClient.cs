@@ -44,10 +44,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         Uri providerUrl = typeof(ImageClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(imageClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
 
-        string? modelId = typeof(ImageClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(imageClient) as string;
-
-        _metadata = new("openai", providerUrl, modelId);
+        _metadata = new("openai", providerUrl, _imageClient.Model);
     }
 
     /// <inheritdoc />
