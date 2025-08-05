@@ -234,7 +234,7 @@ public class SummarizingChatReducerTests
 
         var reducedMessages = await reducer.ReduceAsync(messages, CancellationToken.None);
 
-        Assert.Equal(3, reducedMessages.Count()); // 1 summary + 2 unsummarized messages.
+        Assert.Equal(3, reducedMessages.Count()); // 1 summary + 2 unsummarized messages
         Assert.Collection(reducedMessages,
             m => Assert.StartsWith("The user asked for information", m.Text, StringComparison.Ordinal),
             m => Assert.StartsWith("Golden retrievers are quite", m.Text, StringComparison.Ordinal),

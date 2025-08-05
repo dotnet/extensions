@@ -23,7 +23,7 @@ public sealed class SummarizingChatReducer : IChatReducer
 {
     private const string SummaryKey = "__summary__";
 
-    private const string SummarizerSystemPrompt = """
+    private const string DefaultSummarizationPrompt = """
         **Generate a clear and complete summary of the entire conversation in no more than five sentences.**
 
         The summary must always:
@@ -42,6 +42,17 @@ public sealed class SummarizingChatReducer : IChatReducer
     private readonly IChatClient _chatClient;
     private readonly int _targetCount;
     private readonly int _thresholdCount;
+
+    private string _summarizationPrompt = DefaultSummarizationPrompt;
+
+    /// <summary>
+    /// Gets or sets the prompt text used for summarization.
+    /// </summary>
+    public string SummarizationPrompt
+    {
+        get => _summarizationPrompt;
+        set => _summarizationPrompt = Throw.IfNull(value);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SummarizingChatReducer"/> class with the specified chat client,
@@ -65,7 +76,8 @@ public sealed class SummarizingChatReducer : IChatReducer
         var summarizedConversion = SummarizedConversation.FromChatMessages(messages);
         if (summarizedConversion.ShouldResummarize(_targetCount, _thresholdCount))
         {
-            summarizedConversion = await summarizedConversion.ResummarizeAsync(_chatClient, _targetCount, cancellationToken);
+            summarizedConversion = await summarizedConversion.ResummarizeAsync(
+                _chatClient, _targetCount, _summarizationPrompt, cancellationToken);
         }
 
         return summarizedConversion.ToChatMessages();
@@ -103,7 +115,7 @@ public sealed class SummarizingChatReducer : IChatReducer
             => unsummarizedMessages.Count > targetCount + thresholdCount;
 
         public async Task<SummarizedConversation> ResummarizeAsync(
-            IChatClient chatClient, int targetCount, CancellationToken cancellationToken)
+            IChatClient chatClient, int targetCount, string summarizationPrompt, CancellationToken cancellationToken)
         {
             var messagesToResummarize = unsummarizedMessages.Count - targetCount;
             if (messagesToResummarize <= 0)
@@ -112,7 +124,7 @@ public sealed class SummarizingChatReducer : IChatReducer
                 return this;
             }
 
-            var summarizerChatMessages = ToResummarizerChatMessages(messagesToResummarize);
+            var summarizerChatMessages = ToSummarizerChatMessages(messagesToResummarize, summarizationPrompt);
             var response = await chatClient.GetResponseAsync(summarizerChatMessages, cancellationToken: cancellationToken);
             var newSummary = response.Text;
 
@@ -142,7 +154,7 @@ public sealed class SummarizingChatReducer : IChatReducer
             }
         }
 
-        private IEnumerable<ChatMessage> ToResummarizerChatMessages(int messagesToResummarize)
+        private IEnumerable<ChatMessage> ToSummarizerChatMessages(int messagesToResummarize, string summarizationPrompt)
         {
             if (summary is not null)
             {
@@ -154,7 +166,7 @@ public sealed class SummarizingChatReducer : IChatReducer
                 yield return unsummarizedMessages[i];
             }
 
-            yield return new ChatMessage(ChatRole.System, SummarizerSystemPrompt);
+            yield return new ChatMessage(ChatRole.System, summarizationPrompt);
         }
     }
 }
