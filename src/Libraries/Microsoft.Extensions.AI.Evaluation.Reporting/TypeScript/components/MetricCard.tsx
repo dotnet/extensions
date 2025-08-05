@@ -242,9 +242,14 @@ export const MetricDisplay = ({ metric }: { metric: MetricWithNoValue | NumericM
     const classes = useCardStyles();
     const { fg, bg } = useCardColors(metric.interpretation);
 
-    const pillClass = mergeClasses(
-        bg,
-        classes.metricPill,
+    const pillClass = mergeClasses(bg, classes.metricPill);
+    const valueClass = mergeClasses(fg, classes.metricValueText);
+
+    return (
+        <Tooltip content={`${metric.name}: ${metricValue}`} relationship="description">
+            <div className={pillClass}>
+                <span className={valueClass}>{metricValue}</span>
+            </div>
+        </Tooltip>
     );
-    return (<div className={pillClass}><span className={fg}>{metricValue}</span></div>);
 };

@@ -199,11 +199,12 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
 
                     if (ru is RequiredActionUpdate rau && rau.ToolCallId is string toolCallId && rau.FunctionName is string functionName)
                     {
-                        ruUpdate.Contents.Add(
-                            new FunctionCallContent(
-                                JsonSerializer.Serialize([ru.Value.Id, toolCallId], OpenAIJsonContext.Default.StringArray),
-                                functionName,
-                                JsonSerializer.Deserialize(rau.FunctionArguments, OpenAIJsonContext.Default.IDictionaryStringObject)!));
+                        var fcc = OpenAIClientExtensions.ParseCallContent(
+                            rau.FunctionArguments,
+                            JsonSerializer.Serialize([ru.Value.Id, toolCallId], OpenAIJsonContext.Default.StringArray),
+                            functionName);
+                        fcc.RawRepresentation = ru;
+                        ruUpdate.Contents.Add(fcc);
                     }
 
                     yield return ruUpdate;
@@ -440,6 +441,10 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
             {
                 switch (content)
                 {
+                    case AIContent when content.RawRepresentation is MessageContent rawRep:
+                        messageContents.Add(rawRep);
+                        break;
+
                     case TextContent text:
                         messageContents.Add(MessageContent.FromText(text.Text));
                         break;
@@ -448,17 +453,8 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                         messageContents.Add(MessageContent.FromImageUri(image.Uri));
                         break;
 
-                    // Assistants doesn't support data URIs.
-                    //case DataContent image when image.HasTopLevelMediaType("image"):
-                    //    messageContents.Add(MessageContent.FromImageUri(new Uri(image.Uri)));
-                    //    break;
-
                     case FunctionResultContent result:
                         (functionResults ??= []).Add(result);
-                        break;
-
-                    case AIContent when content.RawRepresentation is MessageContent rawRep:
-                        messageContents.Add(rawRep);
                         break;
                 }
             }
