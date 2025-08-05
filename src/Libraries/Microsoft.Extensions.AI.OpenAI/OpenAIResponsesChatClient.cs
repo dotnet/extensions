@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
+using OpenAI.Images;
 using OpenAI.Responses;
 
 #pragma warning disable S907 // "goto" statement should not be used
@@ -349,6 +350,59 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             strict ?? false);
     }
 
+    internal static ResponseTool ToImageResponseTool(ImageGenerationTool imageGenerationTool, ChatOptions? options = null)
+    {
+        TextToImageOptions? textToImageOptions = null;
+        if (imageGenerationTool.AdditionalProperties.TryGetValue(nameof(TextToImageOptions), out object? optionsObj))
+        {
+            textToImageOptions = optionsObj as TextToImageOptions;
+        }
+        else if (options?.AdditionalProperties?.TryGetValue(nameof(TextToImageOptions), out object? optionsObj2) ?? false)
+        {
+            textToImageOptions = optionsObj2 as TextToImageOptions;
+        }
+
+        var toolOptions = textToImageOptions?.RawRepresentationFactory?.Invoke(null!) as Dictionary<string, string> ?? new();
+        toolOptions["type"] = "image_generation";
+
+        // Size: Image dimensions (e.g., 1024x1024, 1024x1536)
+        if (textToImageOptions?.ImageSize is not null && !toolOptions.ContainsKey("size"))
+        {
+            // Use a custom type to ensure the size is formatted correctly.
+            // This is a workaround for OpenAI's specific size format requirements.
+            toolOptions["size"] = new GeneratedImageSize(
+                textToImageOptions.ImageSize.Value.Width,
+                textToImageOptions.ImageSize.Value.Height).ToString();
+        }
+
+        // Quality: Rendering quality (e.g. low, medium, high) --> not exposed
+
+        // Format: File output format
+        if (textToImageOptions?.MediaType is not null && !toolOptions.ContainsKey("format"))
+        {
+            toolOptions["format"] = textToImageOptions.MediaType switch
+            {
+                "image/png" => GeneratedImageFileFormat.Png.ToString(),
+                "image/jpeg" => GeneratedImageFileFormat.Jpeg.ToString(),
+                "image/webp" => GeneratedImageFileFormat.Webp.ToString(),
+                _ => string.Empty,
+            };
+        }
+
+        // Compression: Compression level (0-100%) for JPEG and WebP formats --> not exposed
+
+        // Background: Transparent or opaque
+        if (textToImageOptions?.Background is not null && !toolOptions.ContainsKey("background"))
+        {
+            toolOptions["background"] = textToImageOptions.Background;
+        }
+
+        // Can't create the tool, but we can deserialize it from Json
+        BinaryData? toolOptionsData = BinaryData.FromBytes(
+            JsonSerializer.SerializeToUtf8Bytes(toolOptions, OpenAIJsonContext.Default.IDictionaryStringString));
+        return ModelReaderWriter.Read<ResponseTool>(toolOptionsData, ModelReaderWriterOptions.Json)!;
+    }
+
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
     private static ChatRole ToChatRole(MessageRole? role) =>
         role switch
@@ -403,7 +457,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         result.Tools.Add(ToResponseTool(aiFunction, options));
                         break;
 
-                    case HostedWebSearchTool webSearchTool:
+                    case ImageGenerationTool imageGenerationTool:
+                        result.Tools.Add(ToImageResponseTool(imageGenerationTool, options));
+                        break;
+
+                    case HostedWebSearchTool:
                         WebSearchUserLocation? location = null;
                         if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchUserLocation), out object? objLocation))
                         {
