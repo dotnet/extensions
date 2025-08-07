@@ -5,7 +5,7 @@
 - Updated to depend on OpenAI 2.3.0.
 - Added more conversion helpers for converting bidirectionally between Microsoft.Extensions.AI messages and OpenAI messages.
 - Fixed handling of multiple response messages in the Responses `IChatClient`.
-- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.7.1-preview.1.25365.4
 
@@ -19,30 +19,30 @@
 - Tweaked how JSON schemas for functions are transformed for better compatibility with OpenAI `strict` constraints.
 - Improved handling of `RawRepresentation` in `IChatClients` for Responses and Chat Completion APIs.
 - Improved `ISpeechToTextClient` implementation to support streaming transcriptions.
-- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.6.0-preview.1.25310.2
 
-- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.5.0-preview.1.25265.7
 
 - Added PDF support to `IChatClient` implementations.
 - Disabled use of `strict` schema handling by default.
 - Added support for creating `ErrorContent` in `IChatClient` implementations, such as for refusals.
-- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+- Updated to accommodate the changes in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.4.4-preview.1.25259.16
 
 - Made `IChatClient` implementation more resilient with non-OpenAI services.
 - Added `ErrorContent` to represent refusals.
-- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+- Updated to accommodate the changes in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.4.3-preview.1.25230.7
 
 - Reverted previous change that enabled `strict` schemas by default.
 - Updated `IChatClient` implementations to support `DataContent`s for PDFs.
-- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+- Updated to accommodate the changes in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.4.0-preview.1.25207.5
 
@@ -52,11 +52,11 @@
 - Removed the public `OpenAIChatClient`/`OpenAIEmbeddingGenerator` types. These are only created now via the extension methods.
 - Removed serialization/deserialization helpers.
 - Updated to support pulling propagating image detail from `AdditionalProperties`.
-- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+- Updated to accommodate the changes in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.3.0-preview.1.25161.3
 
-- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+- Updated to accommodate the changes in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.3.0-preview.1.25114.11
 
