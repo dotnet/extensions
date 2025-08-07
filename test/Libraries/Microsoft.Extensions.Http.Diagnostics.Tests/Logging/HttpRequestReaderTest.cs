@@ -55,6 +55,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted), new("Header3", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
+            FullUrl = $"{RequestedHost}/{TelemetryConstants.Redacted}",
             QueryParameters = []
         };
 
@@ -122,7 +123,8 @@ public class HttpRequestReaderTest
             StatusCode = 200,
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            QueryParameters = []
+            QueryParameters = [],
+            FullUrl = $"{TelemetryConstants.Unknown}/{TelemetryConstants.Unknown}"
         };
 
         var options = new LoggingOptions
@@ -183,7 +185,8 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            QueryParameters = []
+            QueryParameters = [],
+            FullUrl = $"{RequestedHost}/foo/bar/123"
         };
 
         var opts = new LoggingOptions
@@ -256,7 +259,8 @@ public class HttpRequestReaderTest
             RequestBody = requestContent,
             ResponseBody = responseContent,
             PathParametersCount = 1,
-            QueryParameters = []
+            QueryParameters = [],
+            FullUrl = $"{RequestedHost}/foo/bar/{{userId}}"
         };
 
         var opts = new LoggingOptions
@@ -330,7 +334,8 @@ public class HttpRequestReaderTest
             Path = "/foo/bar/123",
             RequestHeaders = [new("Header1", Redacted)],
             RequestBody = requestContent,
-            QueryParameters = []
+            QueryParameters = [],
+            FullUrl = $"{RequestedHost}/foo/bar/123"
         };
 
         var opts = new LoggingOptions
@@ -391,7 +396,8 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            QueryParameters = []
+            QueryParameters = [],
+            FullUrl = $"{RequestedHost}/TestRequest"
         };
 
         var opts = new LoggingOptions
@@ -463,7 +469,8 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            QueryParameters = []
+            QueryParameters = [],
+            FullUrl = $"{RequestedHost}/{TelemetryConstants.Redacted}",
         };
 
         var opts = new LoggingOptions
@@ -531,7 +538,8 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            QueryParameters = []
+            QueryParameters = [],
+            FullUrl = $"{RequestedHost}/{TelemetryConstants.Unknown}"
         };
 
         var opts = new LoggingOptions
@@ -632,7 +640,7 @@ public class HttpRequestReaderTest
     }
 
     [Fact]
-    public async Task ReadAsync_SetsEmptyQueryParameters_WhenClassificationEmpty()
+    public async Task ReadAsync_SetsFullUrl_WhenClassificationEmpty()
     {
         var options = new LoggingOptions
         {
@@ -656,7 +664,7 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
-        logRecord.FullUrl.Should().BeNull();
+        logRecord.FullUrl.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
@@ -723,7 +731,7 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
-        // Assert the full URI contains only the redacted query parameters
+        // Assert the full URL contains only the redacted query parameters
         logRecord.FullUrl.Should().NotBeNull();
         logRecord.FullUrl!.Should().Contain("userId=REDACTED");
         logRecord.FullUrl!.Should().Contain("token=REDACTED");
@@ -777,16 +785,15 @@ public class HttpRequestReaderTest
 
         // Assert
         var logRecord = fakeLogger.Collector.GetSnapshot().First();
-        var state = (((IEnumerable<KeyValuePair<string, string>>)logRecord.State!)!)
-            .Select(kvp => new KeyValuePair<string, object>(kvp.Key, kvp.Value));
+        var state = logRecord.GetStructuredState();
 
         Assert.Contains(
             state,
-            tag => tag.Key == "url.full" && ((string)tag.Value).Contains("userId=REDACTED"));
+            tag => tag.Key == "url.full" && (tag.Value!).Contains("userId=REDACTED"));
     }
 
     [Fact]
-    public async Task ReadAsync_SetsEmptyQueryParameters_WhenValueEmpty()
+    public async Task ReadAsync_SetsFullUrl_WhenValueEmpty()
     {
         var options = new LoggingOptions
         {
@@ -817,8 +824,10 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
-        // Should not log empty values
-        logRecord.FullUrl.Should().BeNull();
+        // Would log a combination of requested host and path
+        // But shouldn't log query parameter as it's value is empty 
+        logRecord.FullUrl.Should().NotBeNullOrEmpty();
+        logRecord.FullUrl.Should().NotContain("userId");
     }
 
     [Fact]

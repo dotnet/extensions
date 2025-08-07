@@ -157,9 +157,17 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         var queryString = sb.ToString();
 
+        // Avoid double slash when path already starts with a slash
+#if NETCOREAPP || NET5_0_OR_GREATER
+   string pathPrefix = logRecord.Path.StartsWith('/') ? string.Empty : "/";
+#else
+#pragma warning disable EA0003 // Character based overload doesn't exist in net framework
+        string pathPrefix = logRecord.Path.StartsWith("/", StringComparison.Ordinal) ? string.Empty : "/";
+#pragma warning restore EA0003 
+#endif
         logRecord.FullUrl = string.IsNullOrEmpty(queryString)
-            ? null
-            : $"{logRecord.Host}/{logRecord.Path}?{queryString}";
+            ? $"{logRecord.Host}{pathPrefix}{logRecord.Path}"
+            : $"{logRecord.Host}{pathPrefix}{logRecord.Path}?{queryString}";
     }
 
     private static string UnescapeDataString(ReadOnlySpan<char> value)

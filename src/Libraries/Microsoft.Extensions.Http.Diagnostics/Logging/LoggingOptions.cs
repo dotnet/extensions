@@ -40,7 +40,7 @@ public class LoggingOptions
     /// Gets or sets the set of HTTP request query parameters to log and their respective data classifications to use for redaction.
     /// </summary>
     /// <value>
-    /// The default value is <see cref="System.Collections.Generic.IDictionary{TKey, TValue}"/>.
+    /// The default value is <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/>.
     /// </value>
     /// <remarks>
     /// If empty, no HTTP request query parameters will be logged.

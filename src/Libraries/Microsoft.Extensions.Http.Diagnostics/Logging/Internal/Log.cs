@@ -106,6 +106,7 @@ internal static partial class Log
         loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Host, record.Host);
         loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Path, record.Path);
         loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Duration, record.Duration);
+        loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.FullUrl, record.FullUrl);
 
         if (record.StatusCode.HasValue)
         {
@@ -135,11 +136,6 @@ internal static partial class Log
         if (record.ResponseBody is not null)
         {
             loggerMessageState.TagArray[index] = new(HttpClientLoggingTagNames.ResponseBody, record.ResponseBody);
-        }
-
-        if (record.FullUrl is not null)
-        {
-            loggerMessageState.AddFullUrl(record.FullUrl, ref index);
         }
 
         logger.Log(
