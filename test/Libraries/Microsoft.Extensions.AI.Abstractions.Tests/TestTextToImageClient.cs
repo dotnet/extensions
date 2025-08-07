@@ -8,18 +8,18 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
-public sealed class TestTextToImageClient : ITextToImageClient
+public sealed class TestImageClient : IImageClient
 {
-    public TestTextToImageClient()
+    public TestImageClient()
     {
         GetServiceCallback = DefaultGetServiceCallback;
     }
 
     public IServiceProvider? Services { get; set; }
 
-    public Func<string, TextToImageOptions?, CancellationToken, Task<TextToImageResponse>>? GenerateImagesAsyncCallback { get; set; }
+    public Func<string, ImageOptions?, CancellationToken, Task<ImageResponse>>? GenerateImagesAsyncCallback { get; set; }
 
-    public Func<IEnumerable<AIContent>, string, TextToImageOptions?, CancellationToken, Task<TextToImageResponse>>? EditImagesAsyncCallback { get; set; }
+    public Func<IEnumerable<AIContent>, string, ImageOptions?, CancellationToken, Task<ImageResponse>>? EditImagesAsyncCallback { get; set; }
 
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
 
@@ -28,17 +28,17 @@ public sealed class TestTextToImageClient : ITextToImageClient
     private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey)
         => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
-    public Task<TextToImageResponse> GenerateImagesAsync(string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<ImageResponse> GenerateImagesAsync(string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         return GenerateImagesAsyncCallback?.Invoke(prompt, options, cancellationToken) ??
-            Task.FromResult(new TextToImageResponse());
+            Task.FromResult(new ImageResponse());
     }
 
-    public Task<TextToImageResponse> EditImagesAsync(
-        IEnumerable<AIContent> originalImages, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<ImageResponse> EditImagesAsync(
+        IEnumerable<AIContent> originalImages, string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         return EditImagesAsyncCallback?.Invoke(originalImages, prompt, options, cancellationToken) ??
-            Task.FromResult(new TextToImageResponse());
+            Task.FromResult(new ImageResponse());
     }
 
     public object? GetService(Type serviceType, object? serviceKey = null)

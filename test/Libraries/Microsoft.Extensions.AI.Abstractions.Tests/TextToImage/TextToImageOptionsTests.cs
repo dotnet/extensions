@@ -8,12 +8,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class TextToImageOptionsTests
+public class ImageOptionsTests
 {
     [Fact]
     public void Constructor_Parameterless_PropsDefaulted()
     {
-        TextToImageOptions options = new();
+        ImageOptions options = new();
         Assert.Null(options.Background);
         Assert.Null(options.ResponseFormat);
         Assert.Null(options.Count);
@@ -23,7 +23,7 @@ public class TextToImageOptionsTests
         Assert.Null(options.RawRepresentationFactory);
         Assert.Null(options.Style);
 
-        TextToImageOptions clone = options.Clone();
+        ImageOptions clone = options.Clone();
         Assert.Null(clone.Background);
         Assert.Null(clone.ResponseFormat);
         Assert.Null(clone.Count);
@@ -37,12 +37,12 @@ public class TextToImageOptionsTests
     [Fact]
     public void Properties_Roundtrip()
     {
-        TextToImageOptions options = new();
+        ImageOptions options = new();
 
-        Func<ITextToImageClient, object?> factory = client => new { Representation = "raw data" };
+        Func<IImageClient, object?> factory = client => new { Representation = "raw data" };
 
         options.Background = "transparent";
-        options.ResponseFormat = TextToImageResponseFormat.Data;
+        options.ResponseFormat = ImageResponseFormat.Data;
         options.Count = 5;
         options.ImageSize = new Size(1024, 768);
         options.MediaType = "image/png";
@@ -51,7 +51,7 @@ public class TextToImageOptionsTests
         options.Style = "photorealistic";
 
         Assert.Equal("transparent", options.Background);
-        Assert.Equal(TextToImageResponseFormat.Data, options.ResponseFormat);
+        Assert.Equal(ImageResponseFormat.Data, options.ResponseFormat);
         Assert.Equal(5, options.Count);
         Assert.Equal(new Size(1024, 768), options.ImageSize);
         Assert.Equal("image/png", options.MediaType);
@@ -59,9 +59,9 @@ public class TextToImageOptionsTests
         Assert.Same(factory, options.RawRepresentationFactory);
         Assert.Equal("photorealistic", options.Style);
 
-        TextToImageOptions clone = options.Clone();
+        ImageOptions clone = options.Clone();
         Assert.Equal("transparent", clone.Background);
-        Assert.Equal(TextToImageResponseFormat.Data, clone.ResponseFormat);
+        Assert.Equal(ImageResponseFormat.Data, clone.ResponseFormat);
         Assert.Equal(5, clone.Count);
         Assert.Equal(new Size(1024, 768), clone.ImageSize);
         Assert.Equal("image/png", clone.MediaType);
@@ -73,10 +73,10 @@ public class TextToImageOptionsTests
     [Fact]
     public void JsonSerialization_Roundtrips()
     {
-        TextToImageOptions options = new()
+        ImageOptions options = new()
         {
             Background = "opaque",
-            ResponseFormat = TextToImageResponseFormat.Data,
+            ResponseFormat = ImageResponseFormat.Data,
             Count = 3,
             ImageSize = new Size(256, 256),
             MediaType = "image/jpeg",
@@ -84,13 +84,13 @@ public class TextToImageOptionsTests
             Style = "artistic"
         };
 
-        string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.TextToImageOptions);
+        string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.ImageOptions);
 
-        TextToImageOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.TextToImageOptions);
+        ImageOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ImageOptions);
         Assert.NotNull(deserialized);
 
         Assert.Equal("opaque", deserialized.Background);
-        Assert.Equal(TextToImageResponseFormat.Data, deserialized.ResponseFormat);
+        Assert.Equal(ImageResponseFormat.Data, deserialized.ResponseFormat);
         Assert.Equal(3, deserialized.Count);
         Assert.Equal(new Size(256, 256), deserialized.ImageSize);
         Assert.Equal("image/jpeg", deserialized.MediaType);
@@ -101,10 +101,10 @@ public class TextToImageOptionsTests
     [Fact]
     public void Clone_CreatesIndependentCopy()
     {
-        TextToImageOptions original = new()
+        ImageOptions original = new()
         {
             Background = "transparent",
-            ResponseFormat = TextToImageResponseFormat.Data,
+            ResponseFormat = ImageResponseFormat.Data,
             Count = 2,
             ImageSize = new Size(512, 512),
             MediaType = "image/png",
@@ -112,11 +112,11 @@ public class TextToImageOptionsTests
             Style = "minimalist"
         };
 
-        TextToImageOptions clone = original.Clone();
+        ImageOptions clone = original.Clone();
 
         // Modify original
         original.Background = "opaque";
-        original.ResponseFormat = TextToImageResponseFormat.Uri;
+        original.ResponseFormat = ImageResponseFormat.Uri;
         original.Count = 1;
         original.ImageSize = new Size(1024, 1024);
         original.MediaType = "image/jpeg";
@@ -125,7 +125,7 @@ public class TextToImageOptionsTests
 
         // Clone should remain unchanged
         Assert.Equal("transparent", clone.Background);
-        Assert.Equal(TextToImageResponseFormat.Data, clone.ResponseFormat);
+        Assert.Equal(ImageResponseFormat.Data, clone.ResponseFormat);
         Assert.Equal(2, clone.Count);
         Assert.Equal(new Size(512, 512), clone.ImageSize);
         Assert.Equal("image/png", clone.MediaType);
@@ -134,21 +134,21 @@ public class TextToImageOptionsTests
     }
 
     [Theory]
-    [InlineData(TextToImageResponseFormat.Uri)]
-    [InlineData(TextToImageResponseFormat.Data)]
-    [InlineData(TextToImageResponseFormat.Hosted)]
-    public void TextToImageResponseFormat_Values_AreValid(TextToImageResponseFormat responseFormat)
+    [InlineData(ImageResponseFormat.Uri)]
+    [InlineData(ImageResponseFormat.Data)]
+    [InlineData(ImageResponseFormat.Hosted)]
+    public void ImageResponseFormat_Values_AreValid(ImageResponseFormat responseFormat)
     {
-        Assert.True(Enum.IsDefined(typeof(TextToImageResponseFormat), responseFormat));
+        Assert.True(Enum.IsDefined(typeof(ImageResponseFormat), responseFormat));
     }
 
     [Fact]
-    public void TextToImageResponseFormat_JsonSerialization_Roundtrips()
+    public void ImageResponseFormat_JsonSerialization_Roundtrips()
     {
-        foreach (TextToImageResponseFormat responseFormat in Enum.GetValues(typeof(TextToImageResponseFormat)))
+        foreach (ImageResponseFormat responseFormat in Enum.GetValues(typeof(ImageResponseFormat)))
         {
-            string json = JsonSerializer.Serialize(responseFormat, TestJsonSerializerContext.Default.TextToImageResponseFormat);
-            TextToImageResponseFormat deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.TextToImageResponseFormat);
+            string json = JsonSerializer.Serialize(responseFormat, TestJsonSerializerContext.Default.ImageResponseFormat);
+            ImageResponseFormat deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ImageResponseFormat);
             Assert.Equal(responseFormat, deserialized);
         }
     }

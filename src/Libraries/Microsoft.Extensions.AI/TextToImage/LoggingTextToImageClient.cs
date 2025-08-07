@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>A delegating text to image client that logs text to image operations to an <see cref="ILogger"/>.</summary>
 /// <remarks>
 /// <para>
-/// The provided implementation of <see cref="ITextToImageClient"/> is thread-safe for concurrent use so long as the
+/// The provided implementation of <see cref="IImageClient"/> is thread-safe for concurrent use so long as the
 /// <see cref="ILogger"/> employed is also thread-safe for concurrent use.
 /// </para>
 /// <para>
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// </remarks>
 [Experimental("MEAI001")]
-public partial class LoggingTextToImageClient : DelegatingTextToImageClient
+public partial class LoggingImageClient : DelegatingImageClient
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
     private readonly ILogger _logger;
@@ -35,11 +35,11 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
     /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization of state written to the logger.</summary>
     private JsonSerializerOptions _jsonSerializerOptions;
 
-    /// <summary>Initializes a new instance of the <see cref="LoggingTextToImageClient"/> class.</summary>
-    /// <param name="innerClient">The underlying <see cref="ITextToImageClient"/>.</param>
+    /// <summary>Initializes a new instance of the <see cref="LoggingImageClient"/> class.</summary>
+    /// <param name="innerClient">The underlying <see cref="IImageClient"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
     /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> or <paramref name="logger"/> is <see langword="null"/>.</exception>
-    public LoggingTextToImageClient(ITextToImageClient innerClient, ILogger logger)
+    public LoggingImageClient(IImageClient innerClient, ILogger logger)
         : base(innerClient)
     {
         _logger = Throw.IfNull(logger);
@@ -55,14 +55,14 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
     }
 
     /// <inheritdoc/>
-    public override async Task<TextToImageResponse> GenerateImagesAsync(
-        string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ImageResponse> GenerateImagesAsync(
+        string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GenerateImagesAsync), prompt, AsJson(options), AsJson(this.GetService<TextToImageClientMetadata>()));
+                LogInvokedSensitive(nameof(GenerateImagesAsync), prompt, AsJson(options), AsJson(this.GetService<ImageClientMetadata>()));
             }
             else
             {
@@ -101,14 +101,14 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
     }
 
     /// <inheritdoc/>
-    public override async Task<TextToImageResponse> EditImagesAsync(
-        IEnumerable<AIContent> originalImages, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ImageResponse> EditImagesAsync(
+        IEnumerable<AIContent> originalImages, string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(EditImagesAsync), prompt, AsJson(options), AsJson(this.GetService<TextToImageClientMetadata>()));
+                LogInvokedSensitive(nameof(EditImagesAsync), prompt, AsJson(options), AsJson(this.GetService<ImageClientMetadata>()));
             }
             else
             {
@@ -151,14 +151,14 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
     private partial void LogInvoked(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Prompt: {Prompt}. Options: {TextToImageOptions}. Metadata: {TextToImageClientMetadata}.")]
-    private partial void LogInvokedSensitive(string methodName, string prompt, string textToImageOptions, string textToImageClientMetadata);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Prompt: {Prompt}. Options: {ImageOptions}. Metadata: {ImageClientMetadata}.")]
+    private partial void LogInvokedSensitive(string methodName, string prompt, string imageOptions, string imageClientMetadata);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
     private partial void LogCompleted(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {TextToImageResponse}.")]
-    private partial void LogCompletedSensitive(string methodName, string textToImageResponse);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {ImageResponse}.")]
+    private partial void LogCompletedSensitive(string methodName, string imageResponse);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
     private partial void LogInvocationCanceled(string methodName);

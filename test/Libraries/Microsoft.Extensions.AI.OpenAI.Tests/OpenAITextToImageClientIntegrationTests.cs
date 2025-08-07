@@ -3,10 +3,10 @@
 
 namespace Microsoft.Extensions.AI;
 
-public class OpenAITextToImageClientIntegrationTests : TextToImageClientIntegrationTests
+public class OpenAIImageClientIntegrationTests : ImageClientIntegrationTests
 {
-    protected override ITextToImageClient? CreateClient()
+    protected override IImageClient? CreateClient()
         => IntegrationTestHelpers.GetOpenAIClient()?
             .GetImageClient(TestRunnerConfiguration.Instance["OpenAI:ImageModel"] ?? "dall-e-3")
-            .AsITextToImageClient();
+            .AsIImageClient();
 }

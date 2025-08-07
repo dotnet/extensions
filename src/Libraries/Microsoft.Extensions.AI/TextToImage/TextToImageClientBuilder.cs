@@ -8,63 +8,63 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A builder for creating pipelines of <see cref="ITextToImageClient"/>.</summary>
+/// <summary>A builder for creating pipelines of <see cref="IImageClient"/>.</summary>
 [Experimental("MEAI001")]
-public sealed class TextToImageClientBuilder
+public sealed class ImageClientBuilder
 {
-    private readonly Func<IServiceProvider, ITextToImageClient> _innerClientFactory;
+    private readonly Func<IServiceProvider, IImageClient> _innerClientFactory;
 
     /// <summary>The registered client factory instances.</summary>
-    private List<Func<ITextToImageClient, IServiceProvider, ITextToImageClient>>? _clientFactories;
+    private List<Func<IImageClient, IServiceProvider, IImageClient>>? _clientFactories;
 
-    /// <summary>Initializes a new instance of the <see cref="TextToImageClientBuilder"/> class.</summary>
-    /// <param name="innerClient">The inner <see cref="ITextToImageClient"/> that represents the underlying backend.</param>
+    /// <summary>Initializes a new instance of the <see cref="ImageClientBuilder"/> class.</summary>
+    /// <param name="innerClient">The inner <see cref="IImageClient"/> that represents the underlying backend.</param>
     /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
-    public TextToImageClientBuilder(ITextToImageClient innerClient)
+    public ImageClientBuilder(IImageClient innerClient)
     {
         _ = Throw.IfNull(innerClient);
         _innerClientFactory = _ => innerClient;
     }
 
-    /// <summary>Initializes a new instance of the <see cref="TextToImageClientBuilder"/> class.</summary>
-    /// <param name="innerClientFactory">A callback that produces the inner <see cref="ITextToImageClient"/> that represents the underlying backend.</param>
+    /// <summary>Initializes a new instance of the <see cref="ImageClientBuilder"/> class.</summary>
+    /// <param name="innerClientFactory">A callback that produces the inner <see cref="IImageClient"/> that represents the underlying backend.</param>
     /// <exception cref="ArgumentNullException"><paramref name="innerClientFactory"/> is <see langword="null"/>.</exception>
-    public TextToImageClientBuilder(Func<IServiceProvider, ITextToImageClient> innerClientFactory)
+    public ImageClientBuilder(Func<IServiceProvider, IImageClient> innerClientFactory)
     {
         _innerClientFactory = Throw.IfNull(innerClientFactory);
     }
 
-    /// <summary>Builds an <see cref="ITextToImageClient"/> that represents the entire pipeline. Calls to this instance will pass through each of the pipeline stages in turn.</summary>
+    /// <summary>Builds an <see cref="IImageClient"/> that represents the entire pipeline. Calls to this instance will pass through each of the pipeline stages in turn.</summary>
     /// <param name="services">
-    /// The <see cref="IServiceProvider"/> that should provide services to the <see cref="ITextToImageClient"/> instances.
+    /// The <see cref="IServiceProvider"/> that should provide services to the <see cref="IImageClient"/> instances.
     /// If null, an empty <see cref="IServiceProvider"/> will be used.
     /// </param>
-    /// <returns>An instance of <see cref="ITextToImageClient"/> that represents the entire pipeline.</returns>
-    public ITextToImageClient Build(IServiceProvider? services = null)
+    /// <returns>An instance of <see cref="IImageClient"/> that represents the entire pipeline.</returns>
+    public IImageClient Build(IServiceProvider? services = null)
     {
         services ??= EmptyServiceProvider.Instance;
-        var textToImageClient = _innerClientFactory(services);
+        var imageClient = _innerClientFactory(services);
 
         // To match intuitive expectations, apply the factories in reverse order, so that the first factory added is the outermost.
         if (_clientFactories is not null)
         {
             for (var i = _clientFactories.Count - 1; i >= 0; i--)
             {
-                textToImageClient = _clientFactories[i](textToImageClient, services) ??
+                imageClient = _clientFactories[i](imageClient, services) ??
                     throw new InvalidOperationException(
-                        $"The {nameof(TextToImageClientBuilder)} entry at index {i} returned null. " +
-                        $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(ITextToImageClient)} instances.");
+                        $"The {nameof(ImageClientBuilder)} entry at index {i} returned null. " +
+                        $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IImageClient)} instances.");
             }
         }
 
-        return textToImageClient;
+        return imageClient;
     }
 
     /// <summary>Adds a factory for an intermediate text to image client to the text to image client pipeline.</summary>
     /// <param name="clientFactory">The client factory function.</param>
-    /// <returns>The updated <see cref="TextToImageClientBuilder"/> instance.</returns>
+    /// <returns>The updated <see cref="ImageClientBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
-    public TextToImageClientBuilder Use(Func<ITextToImageClient, ITextToImageClient> clientFactory)
+    public ImageClientBuilder Use(Func<IImageClient, IImageClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);
 
@@ -73,9 +73,9 @@ public sealed class TextToImageClientBuilder
 
     /// <summary>Adds a factory for an intermediate text to image client to the text to image client pipeline.</summary>
     /// <param name="clientFactory">The client factory function.</param>
-    /// <returns>The updated <see cref="TextToImageClientBuilder"/> instance.</returns>
+    /// <returns>The updated <see cref="ImageClientBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
-    public TextToImageClientBuilder Use(Func<ITextToImageClient, IServiceProvider, ITextToImageClient> clientFactory)
+    public ImageClientBuilder Use(Func<IImageClient, IServiceProvider, IImageClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);
 

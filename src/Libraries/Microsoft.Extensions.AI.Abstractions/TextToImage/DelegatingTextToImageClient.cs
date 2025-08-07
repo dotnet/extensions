@@ -11,21 +11,21 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Provides an optional base class for an <see cref="ITextToImageClient"/> that passes through calls to another instance.
+/// Provides an optional base class for an <see cref="IImageClient"/> that passes through calls to another instance.
 /// </summary>
 /// <remarks>
-/// This is recommended as a base type when building clients that can be chained in any order around an underlying <see cref="ITextToImageClient"/>.
+/// This is recommended as a base type when building clients that can be chained in any order around an underlying <see cref="IImageClient"/>.
 /// The default implementation simply passes each call to the inner client instance.
 /// </remarks>
 [Experimental("MEAI001")]
-public class DelegatingTextToImageClient : ITextToImageClient
+public class DelegatingImageClient : IImageClient
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="DelegatingTextToImageClient"/> class.
+    /// Initializes a new instance of the <see cref="DelegatingImageClient"/> class.
     /// </summary>
     /// <param name="innerClient">The wrapped client instance.</param>
     /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
-    protected DelegatingTextToImageClient(ITextToImageClient innerClient)
+    protected DelegatingImageClient(IImageClient innerClient)
     {
         InnerClient = Throw.IfNull(innerClient);
     }
@@ -37,19 +37,19 @@ public class DelegatingTextToImageClient : ITextToImageClient
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>Gets the inner <see cref="ITextToImageClient" />.</summary>
-    protected ITextToImageClient InnerClient { get; }
+    /// <summary>Gets the inner <see cref="IImageClient" />.</summary>
+    protected IImageClient InnerClient { get; }
 
     /// <inheritdoc />
-    public virtual Task<TextToImageResponse> GenerateImagesAsync(
-        string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<ImageResponse> GenerateImagesAsync(
+        string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         return InnerClient.GenerateImagesAsync(prompt, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual Task<TextToImageResponse> EditImagesAsync(
-        IEnumerable<AIContent> originalImages, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<ImageResponse> EditImagesAsync(
+        IEnumerable<AIContent> originalImages, string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         return InnerClient.EditImagesAsync(originalImages, prompt, options, cancellationToken);
     }

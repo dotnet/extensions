@@ -8,12 +8,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class DelegatingTextToImageClientTests
+public class DelegatingImageClientTests
 {
     [Fact]
-    public void RequiresInnerTextToImageClient()
+    public void RequiresInnerImageClient()
     {
-        Assert.Throws<ArgumentNullException>("innerClient", () => new NoOpDelegatingTextToImageClient(null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => new NoOpDelegatingImageClient(null!));
     }
 
     [Fact]
@@ -21,11 +21,11 @@ public class DelegatingTextToImageClientTests
     {
         // Arrange
         var expectedPrompt = "test prompt";
-        var expectedOptions = new TextToImageOptions();
+        var expectedOptions = new ImageOptions();
         var expectedCancellationToken = CancellationToken.None;
-        var expectedResult = new TaskCompletionSource<TextToImageResponse>();
-        var expectedResponse = new TextToImageResponse();
-        using var inner = new TestTextToImageClient
+        var expectedResult = new TaskCompletionSource<ImageResponse>();
+        var expectedResponse = new ImageResponse();
+        using var inner = new TestImageClient
         {
             GenerateImagesAsyncCallback = (prompt, options, cancellationToken) =>
             {
@@ -36,7 +36,7 @@ public class DelegatingTextToImageClientTests
             }
         };
 
-        using var delegating = new NoOpDelegatingTextToImageClient(inner);
+        using var delegating = new NoOpDelegatingImageClient(inner);
 
         // Act
         var resultTask = delegating.GenerateImagesAsync(expectedPrompt, expectedOptions, expectedCancellationToken);
@@ -54,11 +54,11 @@ public class DelegatingTextToImageClientTests
         // Arrange
         AIContent[] expectedImages = [new DataContent(Array.Empty<byte>(), "image/png")];
         var expectedPrompt = "edit prompt";
-        var expectedOptions = new TextToImageOptions();
+        var expectedOptions = new ImageOptions();
         var expectedCancellationToken = CancellationToken.None;
-        var expectedResult = new TaskCompletionSource<TextToImageResponse>();
-        var expectedResponse = new TextToImageResponse();
-        using var inner = new TestTextToImageClient
+        var expectedResult = new TaskCompletionSource<ImageResponse>();
+        var expectedResponse = new ImageResponse();
+        using var inner = new TestImageClient
         {
             EditImagesAsyncCallback = (originalImages, prompt, options, cancellationToken) =>
             {
@@ -70,7 +70,7 @@ public class DelegatingTextToImageClientTests
             }
         };
 
-        using var delegating = new NoOpDelegatingTextToImageClient(inner);
+        using var delegating = new NoOpDelegatingImageClient(inner);
 
         // Act
         var resultTask = delegating.EditImagesAsync(expectedImages, expectedPrompt, expectedOptions, expectedCancellationToken);
@@ -85,8 +85,8 @@ public class DelegatingTextToImageClientTests
     [Fact]
     public void GetServiceThrowsForNullType()
     {
-        using var inner = new TestTextToImageClient();
-        using var delegating = new NoOpDelegatingTextToImageClient(inner);
+        using var inner = new TestImageClient();
+        using var delegating = new NoOpDelegatingImageClient(inner);
         Assert.Throws<ArgumentNullException>("serviceType", () => delegating.GetService(null!));
     }
 
@@ -94,11 +94,11 @@ public class DelegatingTextToImageClientTests
     public void GetServiceReturnsSelfIfCompatibleWithRequestAndKeyIsNull()
     {
         // Arrange
-        using var inner = new TestTextToImageClient();
-        using var delegating = new NoOpDelegatingTextToImageClient(inner);
+        using var inner = new TestImageClient();
+        using var delegating = new NoOpDelegatingImageClient(inner);
 
         // Act
-        var client = delegating.GetService<DelegatingTextToImageClient>();
+        var client = delegating.GetService<DelegatingImageClient>();
 
         // Assert
         Assert.Same(delegating, client);
@@ -109,15 +109,15 @@ public class DelegatingTextToImageClientTests
     {
         // Arrange
         var expectedKey = new object();
-        using var expectedResult = new TestTextToImageClient();
-        using var inner = new TestTextToImageClient
+        using var expectedResult = new TestImageClient();
+        using var inner = new TestImageClient
         {
             GetServiceCallback = (_, _) => expectedResult
         };
-        using var delegating = new NoOpDelegatingTextToImageClient(inner);
+        using var delegating = new NoOpDelegatingImageClient(inner);
 
         // Act
-        var client = delegating.GetService<ITextToImageClient>(expectedKey);
+        var client = delegating.GetService<IImageClient>(expectedKey);
 
         // Assert
         Assert.Same(expectedResult, client);
@@ -129,13 +129,13 @@ public class DelegatingTextToImageClientTests
         // Arrange
         var expectedResult = TimeZoneInfo.Local;
         var expectedKey = new object();
-        using var inner = new TestTextToImageClient
+        using var inner = new TestImageClient
         {
             GetServiceCallback = (type, key) => type == expectedResult.GetType() && key == expectedKey
                 ? expectedResult
                 : throw new InvalidOperationException("Unexpected call")
         };
-        using var delegating = new NoOpDelegatingTextToImageClient(inner);
+        using var delegating = new NoOpDelegatingImageClient(inner);
 
         // Act
         var tzi = delegating.GetService<TimeZoneInfo>(expectedKey);
@@ -147,8 +147,8 @@ public class DelegatingTextToImageClientTests
     [Fact]
     public void Dispose_SetsFlag()
     {
-        using var inner = new TestTextToImageClient();
-        var delegating = new NoOpDelegatingTextToImageClient(inner);
+        using var inner = new TestImageClient();
+        var delegating = new NoOpDelegatingImageClient(inner);
         Assert.False(inner.DisposeInvoked);
 
         delegating.Dispose();
@@ -158,8 +158,8 @@ public class DelegatingTextToImageClientTests
     [Fact]
     public void Dispose_MultipleCallsSafe()
     {
-        using var inner = new TestTextToImageClient();
-        var delegating = new NoOpDelegatingTextToImageClient(inner);
+        using var inner = new TestImageClient();
+        var delegating = new NoOpDelegatingImageClient(inner);
 
         delegating.Dispose();
         Assert.True(inner.DisposeInvoked);
@@ -171,6 +171,6 @@ public class DelegatingTextToImageClientTests
         Assert.True(inner.DisposeInvoked);
     }
 
-    private sealed class NoOpDelegatingTextToImageClient(ITextToImageClient innerClient)
-        : DelegatingTextToImageClient(innerClient);
+    private sealed class NoOpDelegatingImageClient(IImageClient innerClient)
+        : DelegatingImageClient(innerClient);
 }

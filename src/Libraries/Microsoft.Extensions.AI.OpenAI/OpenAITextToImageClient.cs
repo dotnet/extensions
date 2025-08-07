@@ -19,19 +19,19 @@ using OpenAI.Images;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents an <see cref="ITextToImageClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ImageClient"/>.</summary>
-internal sealed class OpenAITextToImageClient : ITextToImageClient
+/// <summary>Represents an <see cref="IImageClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ImageClient"/>.</summary>
+internal sealed class OpenAIImageClient : IImageClient
 {
     /// <summary>Metadata about the client.</summary>
-    private readonly TextToImageClientMetadata _metadata;
+    private readonly ImageClientMetadata _metadata;
 
     /// <summary>The underlying <see cref="ImageClient" />.</summary>
     private readonly ImageClient _imageClient;
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAITextToImageClient"/> class for the specified <see cref="ImageClient"/>.</summary>
+    /// <summary>Initializes a new instance of the <see cref="OpenAIImageClient"/> class for the specified <see cref="ImageClient"/>.</summary>
     /// <param name="imageClient">The underlying client.</param>
     /// <exception cref="ArgumentNullException"><paramref name="imageClient"/> is <see langword="null"/>.</exception>
-    public OpenAITextToImageClient(ImageClient imageClient)
+    public OpenAIImageClient(ImageClient imageClient)
     {
         _ = Throw.IfNull(imageClient);
 
@@ -48,7 +48,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     }
 
     /// <inheritdoc />
-    public async Task<TextToImageResponse> GenerateImagesAsync(string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ImageResponse> GenerateImagesAsync(string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(prompt);
 
@@ -56,12 +56,12 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
 
         GeneratedImageCollection result = await _imageClient.GenerateImagesAsync(prompt, options?.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
 
-        return ToTextToImageResponse(result);
+        return ToImageResponse(result);
     }
 
     /// <inheritdoc />
-    public async Task<TextToImageResponse> EditImagesAsync(
-        IEnumerable<AIContent> originalImages, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ImageResponse> EditImagesAsync(
+        IEnumerable<AIContent> originalImages, string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(originalImages);
         _ = Throw.IfNull(prompt);
@@ -106,7 +106,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         GeneratedImageCollection result = await _imageClient.GenerateImageEditsAsync(
             imageStream, fileName, prompt, options?.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
 
-        return ToTextToImageResponse(result);
+        return ToImageResponse(result);
     }
 
     /// <inheritdoc />
@@ -114,7 +114,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     public object? GetService(Type serviceType, object? serviceKey = null) =>
         serviceType is null ? throw new ArgumentNullException(nameof(serviceType)) :
         serviceKey is not null ? null :
-        serviceType == typeof(TextToImageClientMetadata) ? _metadata :
+        serviceType == typeof(ImageClientMetadata) ? _metadata :
         serviceType == typeof(ImageClient) ? _imageClient :
         serviceType.IsInstanceOfType(this) ? this :
         null;
@@ -123,7 +123,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     /// <inheritdoc />
     void IDisposable.Dispose()
     {
-        // Nothing to dispose. Implementation required for the ITextToImageClient interface.
+        // Nothing to dispose. Implementation required for the IImageClient interface.
     }
 
     /// <summary>
@@ -134,8 +134,8 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     private static GeneratedImageSize? ToOpenAIImageSize(Size? requestedSize) =>
         requestedSize is null ? null : new GeneratedImageSize(requestedSize.Value.Width, requestedSize.Value.Height);
 
-    /// <summary>Converts a <see cref="GeneratedImageCollection"/> to a <see cref="TextToImageResponse"/>.</summary>
-    private static TextToImageResponse ToTextToImageResponse(GeneratedImageCollection generatedImages)
+    /// <summary>Converts a <see cref="GeneratedImageCollection"/> to a <see cref="ImageResponse"/>.</summary>
+    private static ImageResponse ToImageResponse(GeneratedImageCollection generatedImages)
     {
         string contentType = "image/png"; // Default content type for images
 
@@ -170,14 +170,14 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
             }
         }
 
-        return new TextToImageResponse(contents)
+        return new ImageResponse(contents)
         {
             RawRepresentation = generatedImages
         };
     }
 
-    /// <summary>Converts a <see cref="TextToImageOptions"/> to a <see cref="ImageGenerationOptions"/>.</summary>
-    private ImageGenerationOptions ToOpenAIImageGenerationOptions(TextToImageOptions? options)
+    /// <summary>Converts a <see cref="ImageOptions"/> to a <see cref="ImageGenerationOptions"/>.</summary>
+    private ImageGenerationOptions ToOpenAIImageGenerationOptions(ImageOptions? options)
     {
         ImageGenerationOptions result = options?.RawRepresentationFactory?.Invoke(this) as ImageGenerationOptions ?? new();
 
@@ -193,10 +193,10 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
 
         result.ResponseFormat ??= options?.ResponseFormat switch
         {
-            TextToImageResponseFormat.Uri => GeneratedImageFormat.Uri,
-            TextToImageResponseFormat.Data => GeneratedImageFormat.Bytes,
+            ImageResponseFormat.Uri => GeneratedImageFormat.Uri,
+            ImageResponseFormat.Data => GeneratedImageFormat.Bytes,
 
-            // TextToImageResponseFormat.Hosted not supported by ImageClient, however other OpenAI API support file IDs.
+            // ImageResponseFormat.Hosted not supported by ImageClient, however other OpenAI API support file IDs.
             _ => null
         };
 
@@ -207,17 +207,17 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         return result;
     }
 
-    /// <summary>Converts a <see cref="TextToImageOptions"/> to a <see cref="ImageEditOptions"/>.</summary>
-    private ImageEditOptions ToOpenAIImageEditOptions(TextToImageOptions? options)
+    /// <summary>Converts a <see cref="ImageOptions"/> to a <see cref="ImageEditOptions"/>.</summary>
+    private ImageEditOptions ToOpenAIImageEditOptions(ImageOptions? options)
     {
         ImageEditOptions result = options?.RawRepresentationFactory?.Invoke(this) as ImageEditOptions ?? new();
 
         result.ResponseFormat ??= options?.ResponseFormat switch
         {
-            TextToImageResponseFormat.Uri => GeneratedImageFormat.Uri,
-            TextToImageResponseFormat.Data => GeneratedImageFormat.Bytes,
+            ImageResponseFormat.Uri => GeneratedImageFormat.Uri,
+            ImageResponseFormat.Data => GeneratedImageFormat.Bytes,
 
-            // TextToImageResponseFormat.Hosted not supported by ImageClient, however other OpenAI API support file IDs.
+            // ImageResponseFormat.Hosted not supported by ImageClient, however other OpenAI API support file IDs.
             _ => null
         };
 

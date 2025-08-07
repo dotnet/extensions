@@ -12,11 +12,11 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public abstract class TextToImageClientIntegrationTests : IDisposable
+public abstract class ImageClientIntegrationTests : IDisposable
 {
-    private readonly ITextToImageClient? _client;
+    private readonly IImageClient? _client;
 
-    protected TextToImageClientIntegrationTests()
+    protected ImageClientIntegrationTests()
     {
         _client = CreateClient();
     }
@@ -27,14 +27,14 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected abstract ITextToImageClient? CreateClient();
+    protected abstract IImageClient? CreateClient();
 
     [ConditionalFact]
     public virtual async Task GenerateImagesAsync_SingleImageGeneration()
     {
         SkipIfNotEnabled();
 
-        var options = new TextToImageOptions
+        var options = new ImageOptions
         {
             Count = 1
         };
@@ -57,7 +57,7 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        var options = new TextToImageOptions
+        var options = new ImageOptions
         {
             Count = 2
         };
@@ -85,7 +85,7 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
         var imageData = GetImageData("dotnet.png");
         AIContent[] originalImages = [new DataContent(imageData, "image/png")];
 
-        var options = new TextToImageOptions
+        var options = new ImageOptions
         {
             Count = 1
         };
@@ -105,7 +105,7 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
 
     private static byte[] GetImageData(string fileName)
     {
-        using Stream? s = typeof(TextToImageClientIntegrationTests).Assembly.GetManifestResourceStream($"Microsoft.Extensions.AI.Resources.{fileName}");
+        using Stream? s = typeof(ImageClientIntegrationTests).Assembly.GetManifestResourceStream($"Microsoft.Extensions.AI.Resources.{fileName}");
         Assert.NotNull(s);
         using MemoryStream ms = new();
         s.CopyTo(ms);

@@ -8,19 +8,19 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class ConfigureOptionsTextToImageClientTests
+public class ConfigureOptionsImageClientTests
 {
     [Fact]
-    public void ConfigureOptionsTextToImageClient_InvalidArgs_Throws()
+    public void ConfigureOptionsImageClient_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("innerClient", () => new ConfigureOptionsTextToImageClient(null!, _ => { }));
-        Assert.Throws<ArgumentNullException>("configure", () => new ConfigureOptionsTextToImageClient(new TestTextToImageClient(), null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => new ConfigureOptionsImageClient(null!, _ => { }));
+        Assert.Throws<ArgumentNullException>("configure", () => new ConfigureOptionsImageClient(new TestImageClient(), null!));
     }
 
     [Fact]
     public void ConfigureOptions_InvalidArgs_Throws()
     {
-        using var innerClient = new TestTextToImageClient();
+        using var innerClient = new TestImageClient();
         var builder = innerClient.AsBuilder();
         Assert.Throws<ArgumentNullException>("configure", () => builder.ConfigureOptions(null!));
     }
@@ -30,12 +30,12 @@ public class ConfigureOptionsTextToImageClientTests
     [InlineData(true)]
     public async Task ConfigureOptions_ReturnedInstancePassedToNextClient(bool nullProvidedOptions)
     {
-        TextToImageOptions? providedOptions = nullProvidedOptions ? null : new() { ModelId = "test" };
-        TextToImageOptions? returnedOptions = null;
-        TextToImageResponse expectedResponse = new([]);
+        ImageOptions? providedOptions = nullProvidedOptions ? null : new() { ModelId = "test" };
+        ImageOptions? returnedOptions = null;
+        ImageResponse expectedResponse = new([]);
         using CancellationTokenSource cts = new();
 
-        using ITextToImageClient innerClient = new TestTextToImageClient
+        using IImageClient innerClient = new TestImageClient
         {
             GenerateImagesAsyncCallback = (prompt, options, cancellationToken) =>
             {

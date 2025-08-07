@@ -9,24 +9,24 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class OpenAITextToImageClientTests
+public class OpenAIImageClientTests
 {
     [Fact]
-    public void AsITextToImageClient_InvalidArgs_Throws()
+    public void AsIImageClient_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("imageClient", () => ((ImageClient)null!).AsITextToImageClient());
+        Assert.Throws<ArgumentNullException>("imageClient", () => ((ImageClient)null!).AsIImageClient());
     }
 
     [Fact]
-    public void AsITextToImageClient_OpenAIClient_ProducesExpectedMetadata()
+    public void AsIImageClient_OpenAIClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "dall-e-3";
 
         var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
-        ITextToImageClient textToImageClient = client.GetImageClient(model).AsITextToImageClient();
-        var metadata = textToImageClient.GetService<TextToImageClientMetadata>();
+        IImageClient imageClient = client.GetImageClient(model).AsIImageClient();
+        var metadata = imageClient.GetService<ImageClientMetadata>();
         Assert.Equal(endpoint, metadata?.ProviderUri);
         Assert.Equal(model, metadata?.DefaultModelId);
     }
@@ -35,11 +35,11 @@ public class OpenAITextToImageClientTests
     public void GetService_ReturnsExpectedServices()
     {
         var client = new OpenAIClient(new ApiKeyCredential("key"));
-        ITextToImageClient textToImageClient = client.GetImageClient("dall-e-3").AsITextToImageClient();
+        IImageClient imageClient = client.GetImageClient("dall-e-3").AsIImageClient();
 
-        Assert.Same(textToImageClient, textToImageClient.GetService<ITextToImageClient>());
-        Assert.Same(textToImageClient, textToImageClient.GetService<object>());
-        Assert.NotNull(textToImageClient.GetService<TextToImageClientMetadata>());
-        Assert.NotNull(textToImageClient.GetService<ImageClient>());
+        Assert.Same(imageClient, imageClient.GetService<IImageClient>());
+        Assert.Same(imageClient, imageClient.GetService<object>());
+        Assert.NotNull(imageClient.GetService<ImageClientMetadata>());
+        Assert.NotNull(imageClient.GetService<ImageClient>());
     }
 }

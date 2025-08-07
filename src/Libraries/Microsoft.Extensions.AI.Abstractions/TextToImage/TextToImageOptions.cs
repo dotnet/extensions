@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the options for an image generation request.</summary>
 [Experimental("MEAI001")]
-public class TextToImageOptions
+public class ImageOptions
 {
     /// <summary>
     /// Gets or sets the style of background to use for the generated image. Examples include "opaque" or "transparent".
@@ -43,36 +43,36 @@ public class TextToImageOptions
     /// Gets or sets a callback responsible for creating the raw representation of the image generation options from an underlying implementation.
     /// </summary>
     /// <remarks>
-    /// The underlying <see cref="ITextToImageClient" /> implementation may have its own representation of options.
-    /// When <see cref="ITextToImageClient.GenerateImagesAsync" /> is invoked with an <see cref="TextToImageOptions" />,
+    /// The underlying <see cref="IImageClient" /> implementation may have its own representation of options.
+    /// When <see cref="IImageClient.GenerateImagesAsync" /> is invoked with an <see cref="ImageOptions" />,
     /// that implementation may convert the provided options into its own representation in order to use it while performing
-    /// the operation. For situations where a consumer knows  which concrete <see cref="ITextToImageClient" /> is being used
+    /// the operation. For situations where a consumer knows  which concrete <see cref="IImageClient" /> is being used
     /// and how it represents options, a new instance of that implementation-specific options type may be returned by this
-    /// callback, for the <see cref="ITextToImageClient" />implementation to use instead of creating a new instance.
+    /// callback, for the <see cref="IImageClient" />implementation to use instead of creating a new instance.
     /// Such implementations may mutate the supplied options instance further based on other settings supplied on this
-    /// <see cref="TextToImageOptions" /> instance or from other inputs, therefore, it is <b>strongly recommended</b> to not
+    /// <see cref="ImageOptions" /> instance or from other inputs, therefore, it is <b>strongly recommended</b> to not
     /// return shared instances and instead make the callback return a new instance on each call.
     /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly-typed
-    /// properties on <see cref="TextToImageOptions" />.
+    /// properties on <see cref="ImageOptions" />.
     /// </remarks>
     [JsonIgnore]
-    public Func<ITextToImageClient, object?>? RawRepresentationFactory { get; set; }
+    public Func<IImageClient, object?>? RawRepresentationFactory { get; set; }
 
     /// <summary>
     /// Gets or sets the response format of the generated image.
     /// </summary>
-    public TextToImageResponseFormat? ResponseFormat { get; set; }
+    public ImageResponseFormat? ResponseFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the style of the generated image to some predefined style supported by the provider.
     /// </summary>
     public string? Style { get; set; }
 
-    /// <summary>Produces a clone of the current <see cref="TextToImageOptions"/> instance.</summary>
-    /// <returns>A clone of the current <see cref="TextToImageOptions"/> instance.</returns>
-    public virtual TextToImageOptions Clone()
+    /// <summary>Produces a clone of the current <see cref="ImageOptions"/> instance.</summary>
+    /// <returns>A clone of the current <see cref="ImageOptions"/> instance.</returns>
+    public virtual ImageOptions Clone()
     {
-        TextToImageOptions options = new()
+        ImageOptions options = new()
         {
             Background = Background,
             Count = Count,
@@ -92,7 +92,7 @@ public class TextToImageOptions
 /// Represents the requested content type of the generated image.
 /// </summary>
 [Experimental("MEAI001")]
-public enum TextToImageResponseFormat
+public enum ImageResponseFormat
 {
     /// <summary>
     /// The generated image is returned as a URI pointing to the image resource.

@@ -155,13 +155,13 @@ public static class OpenAIClientExtensions
     public static ISpeechToTextClient AsISpeechToTextClient(this AudioClient audioClient) =>
         new OpenAISpeechToTextClient(audioClient);
 
-    /// <summary>Gets an <see cref="ITextToImageClient"/> for use with this <see cref="ImageClient"/>.</summary>
+    /// <summary>Gets an <see cref="IImageClient"/> for use with this <see cref="ImageClient"/>.</summary>
     /// <param name="imageClient">The client.</param>
-    /// <returns>An <see cref="ITextToImageClient"/> that can be used to generate images via the <see cref="ImageClient"/>.</returns>
+    /// <returns>An <see cref="IImageClient"/> that can be used to generate images via the <see cref="ImageClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="imageClient"/> is <see langword="null"/>.</exception>
     [Experimental("MEAI001")]
-    public static ITextToImageClient AsITextToImageClient(this ImageClient imageClient) =>
-        new OpenAITextToImageClient(imageClient);
+    public static IImageClient AsIImageClient(this ImageClient imageClient) =>
+        new OpenAIImageClient(imageClient);
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="EmbeddingClient"/>.</summary>
     /// <param name="embeddingClient">The client.</param>

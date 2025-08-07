@@ -9,12 +9,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class TextToImageClientTests
+public class ImageClientTests
 {
     [Fact]
     public void GetService_WithServiceKey_ReturnsNull()
     {
-        using var client = new TestTextToImageClient();
+        using var client = new TestImageClient();
         client.GetServiceCallback = (serviceType, serviceKey) =>
         {
             // When serviceKey is not null, should return null per interface contract
@@ -28,7 +28,7 @@ public class TextToImageClientTests
     [Fact]
     public void GetService_WithoutServiceKey_CallsCallback()
     {
-        using var client = new TestTextToImageClient();
+        using var client = new TestImageClient();
         var expectedResult = new object();
 
         client.GetServiceCallback = (serviceType, serviceKey) =>
@@ -45,11 +45,11 @@ public class TextToImageClientTests
     [Fact]
     public async Task GenerateImagesAsync_CallsCallback()
     {
-        var expectedResponse = new TextToImageResponse();
-        var expectedOptions = new TextToImageOptions();
+        var expectedResponse = new ImageResponse();
+        var expectedOptions = new ImageOptions();
         using var cts = new CancellationTokenSource();
 
-        using var client = new TestTextToImageClient
+        using var client = new TestImageClient
         {
             GenerateImagesAsyncCallback = (prompt, options, cancellationToken) =>
             {
@@ -67,7 +67,7 @@ public class TextToImageClientTests
     [Fact]
     public async Task GenerateImagesAsync_NoCallback_ReturnsEmptyResponse()
     {
-        using var client = new TestTextToImageClient();
+        using var client = new TestImageClient();
         var result = await client.GenerateImagesAsync("test prompt", null);
         Assert.NotNull(result);
         Assert.Empty(result.Contents);
@@ -76,12 +76,12 @@ public class TextToImageClientTests
     [Fact]
     public async Task EditImagesAsync_CallsCallback()
     {
-        var expectedResponse = new TextToImageResponse();
-        var expectedOptions = new TextToImageOptions();
+        var expectedResponse = new ImageResponse();
+        var expectedOptions = new ImageOptions();
         using var cts = new CancellationTokenSource();
         AIContent[] expectedImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
 
-        using var client = new TestTextToImageClient
+        using var client = new TestImageClient
         {
             EditImagesAsyncCallback = (originalImages, prompt, options, cancellationToken) =>
             {
@@ -100,7 +100,7 @@ public class TextToImageClientTests
     [Fact]
     public async Task EditImagesAsync_NoCallback_ReturnsEmptyResponse()
     {
-        using var client = new TestTextToImageClient();
+        using var client = new TestImageClient();
         AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
 
         var result = await client.EditImagesAsync(originalImages, "edit prompt", null);
@@ -111,7 +111,7 @@ public class TextToImageClientTests
     [Fact]
     public void Dispose_SetsFlag()
     {
-        var client = new TestTextToImageClient();
+        var client = new TestImageClient();
         Assert.False(client.DisposeInvoked);
 
         client.Dispose();
@@ -121,7 +121,7 @@ public class TextToImageClientTests
     [Fact]
     public void Dispose_MultipleCallsSafe()
     {
-        var client = new TestTextToImageClient();
+        var client = new TestImageClient();
 
         client.Dispose();
         Assert.True(client.DisposeInvoked);
@@ -136,10 +136,10 @@ public class TextToImageClientTests
     [Fact]
     public async Task GenerateImagesAsync_WithOptions_PassesThroughCorrectly()
     {
-        var options = new TextToImageOptions
+        var options = new ImageOptions
         {
             Background = "transparent",
-            ResponseFormat = TextToImageResponseFormat.Data,
+            ResponseFormat = ImageResponseFormat.Data,
             Count = 3,
             ImageSize = new Size(1024, 768),
             MediaType = "image/png",
@@ -147,12 +147,12 @@ public class TextToImageClientTests
             Style = "photorealistic"
         };
 
-        using var client = new TestTextToImageClient
+        using var client = new TestImageClient
         {
             GenerateImagesAsyncCallback = (prompt, receivedOptions, cancellationToken) =>
             {
                 Assert.Same(options, receivedOptions);
-                return Task.FromResult(new TextToImageResponse());
+                return Task.FromResult(new ImageResponse());
             }
         };
 
@@ -162,10 +162,10 @@ public class TextToImageClientTests
     [Fact]
     public async Task EditImagesAsync_WithOptions_PassesThroughCorrectly()
     {
-        var options = new TextToImageOptions
+        var options = new ImageOptions
         {
             Background = "opaque",
-            ResponseFormat = TextToImageResponseFormat.Uri,
+            ResponseFormat = ImageResponseFormat.Uri,
             Count = 2,
             MediaType = "image/jpeg",
             ModelId = "edit-model",
@@ -174,12 +174,12 @@ public class TextToImageClientTests
 
         AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
 
-        using var client = new TestTextToImageClient
+        using var client = new TestImageClient
         {
             EditImagesAsyncCallback = (originalImages, prompt, receivedOptions, cancellationToken) =>
             {
                 Assert.Same(options, receivedOptions);
-                return Task.FromResult(new TextToImageResponse());
+                return Task.FromResult(new ImageResponse());
             }
         };
 

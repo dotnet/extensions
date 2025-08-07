@@ -9,21 +9,21 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class TextToImageClientExtensionsTests
+public class ImageClientExtensionsTests
 {
     [Fact]
     public void GetService_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("client", () =>
         {
-            _ = TextToImageClientExtensions.GetService<object>(null!);
+            _ = ImageClientExtensions.GetService<object>(null!);
         });
     }
 
     [Fact]
     public void GetService_ValidClient_CallsUnderlyingGetService()
     {
-        using var testClient = new TestTextToImageClient();
+        using var testClient = new TestImageClient();
         var expectedResult = new object();
         var expectedServiceKey = new object();
 
@@ -41,15 +41,15 @@ public class TextToImageClientExtensionsTests
     [Fact]
     public void GetService_ReturnsCorrectType()
     {
-        using var testClient = new TestTextToImageClient();
-        var metadata = new TextToImageClientMetadata("test", null, "model");
+        using var testClient = new TestImageClient();
+        var metadata = new ImageClientMetadata("test", null, "model");
 
         testClient.GetServiceCallback = (serviceType, serviceKey) =>
         {
-            return (serviceType == typeof(TextToImageClientMetadata)) ? metadata : null;
+            return (serviceType == typeof(ImageClientMetadata)) ? metadata : null;
         };
 
-        var result = testClient.GetService<TextToImageClientMetadata>();
+        var result = testClient.GetService<ImageClientMetadata>();
         Assert.Same(metadata, result);
 
         var nullResult = testClient.GetService<string>();
@@ -60,12 +60,12 @@ public class TextToImageClientExtensionsTests
     public async Task EditImageAsync_DataContent_CallsEditImagesAsync()
     {
         // Arrange
-        using var testClient = new TestTextToImageClient();
+        using var testClient = new TestImageClient();
         var imageData = new byte[] { 1, 2, 3, 4 };
         var dataContent = new DataContent(imageData, "image/png") { Name = "test.png" };
         var prompt = "Edit this image";
-        var options = new TextToImageOptions { Count = 2 };
-        var expectedResponse = new TextToImageResponse();
+        var options = new ImageOptions { Count = 2 };
+        var expectedResponse = new ImageResponse();
         var cancellationToken = new CancellationToken(canceled: false);
 
         testClient.EditImagesAsyncCallback = (originalImages, p, o, ct) =>
@@ -88,11 +88,11 @@ public class TextToImageClientExtensionsTests
     [Fact]
     public async Task EditImageAsync_DataContent_NullArguments_Throws()
     {
-        using var testClient = new TestTextToImageClient();
+        using var testClient = new TestImageClient();
         var dataContent = new DataContent(new byte[] { 1, 2, 3 }, "image/png");
 
         await Assert.ThrowsAsync<ArgumentNullException>("client", async () =>
-            await TextToImageClientExtensions.EditImageAsync(null!, dataContent, "prompt"));
+            await ImageClientExtensions.EditImageAsync(null!, dataContent, "prompt"));
 
         await Assert.ThrowsAsync<ArgumentNullException>("originalImage", async () =>
             await testClient.EditImageAsync(null!, "prompt"));
@@ -105,12 +105,12 @@ public class TextToImageClientExtensionsTests
     public async Task EditImageAsync_ByteArray_CallsEditImagesAsync()
     {
         // Arrange
-        using var testClient = new TestTextToImageClient();
+        using var testClient = new TestImageClient();
         var imageData = new byte[] { 1, 2, 3, 4 };
         var fileName = "test.jpg";
         var prompt = "Edit this image";
-        var options = new TextToImageOptions { Count = 2 };
-        var expectedResponse = new TextToImageResponse();
+        var options = new ImageOptions { Count = 2 };
+        var expectedResponse = new ImageResponse();
         var cancellationToken = new CancellationToken(canceled: false);
 
         testClient.EditImagesAsyncCallback = (originalImages, p, o, ct) =>
@@ -139,13 +139,13 @@ public class TextToImageClientExtensionsTests
         var imageData = new byte[] { 1, 2, 3 };
 
         await Assert.ThrowsAsync<ArgumentNullException>("client", async () =>
-            await TextToImageClientExtensions.EditImageAsync(null!, imageData, "test.png", "prompt"));
+            await ImageClientExtensions.EditImageAsync(null!, imageData, "test.png", "prompt"));
     }
 
     [Fact]
     public async Task EditImageAsync_ByteArray_NullData_Throws()
     {
-        using var testClient = new TestTextToImageClient();
+        using var testClient = new TestImageClient();
 
         await Assert.ThrowsAsync<ArgumentNullException>("originalImageData", async () =>
         {
@@ -157,7 +157,7 @@ public class TextToImageClientExtensionsTests
     [Fact]
     public async Task EditImageAsync_ByteArray_NullFileName_Throws()
     {
-        using var testClient = new TestTextToImageClient();
+        using var testClient = new TestImageClient();
         var imageData = new byte[] { 1, 2, 3 };
 
         await Assert.ThrowsAsync<ArgumentNullException>("fileName", async () =>
@@ -167,7 +167,7 @@ public class TextToImageClientExtensionsTests
     [Fact]
     public async Task EditImageAsync_ByteArray_NullPrompt_Throws()
     {
-        using var testClient = new TestTextToImageClient();
+        using var testClient = new TestImageClient();
         var imageData = new byte[] { 1, 2, 3 };
 
         await Assert.ThrowsAsync<ArgumentNullException>("prompt", async () =>
@@ -188,7 +188,7 @@ public class TextToImageClientExtensionsTests
     public async Task EditImageAsync_ByteArray_InfersCorrectMediaType(string fileName, string expectedMediaType)
     {
         // Arrange
-        using var testClient = new TestTextToImageClient();
+        using var testClient = new TestImageClient();
         var imageData = new byte[] { 1, 2, 3, 4 };
         var prompt = "Edit this image";
 
@@ -196,7 +196,7 @@ public class TextToImageClientExtensionsTests
         {
             var dataContent = Assert.IsType<DataContent>(Assert.Single(originalImages));
             Assert.Equal(expectedMediaType, dataContent.MediaType);
-            return Task.FromResult(new TextToImageResponse());
+            return Task.FromResult(new ImageResponse());
         };
 
         // Act & Assert
@@ -207,7 +207,7 @@ public class TextToImageClientExtensionsTests
     public async Task EditImageAsync_AllMethods_PassDefaultOptionsAndCancellation()
     {
         // Arrange
-        using var testClient = new TestTextToImageClient();
+        using var testClient = new TestImageClient();
         var imageData = new byte[] { 1, 2, 3, 4 };
         var dataContent = new DataContent(imageData, "image/png");
         using var stream = new MemoryStream(imageData);
@@ -219,7 +219,7 @@ public class TextToImageClientExtensionsTests
             callCount++;
             Assert.Null(o); // Default options should be null
             Assert.Equal(CancellationToken.None, ct); // Default cancellation token
-            return Task.FromResult(new TextToImageResponse());
+            return Task.FromResult(new ImageResponse());
         };
 
         // Act - Test all three overloads with default parameters

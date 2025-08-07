@@ -6,12 +6,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class TextToImageClientMetadataTests
+public class ImageClientMetadataTests
 {
     [Fact]
     public void Constructor_NullValues_AllowedAndRoundtrip()
     {
-        TextToImageClientMetadata metadata = new(null, null, null);
+        ImageClientMetadata metadata = new(null, null, null);
         Assert.Null(metadata.ProviderName);
         Assert.Null(metadata.ProviderUri);
         Assert.Null(metadata.DefaultModelId);
@@ -21,7 +21,7 @@ public class TextToImageClientMetadataTests
     public void Constructor_Value_Roundtrips()
     {
         var uri = new Uri("https://example.com");
-        TextToImageClientMetadata metadata = new("providerName", uri, "theModel");
+        ImageClientMetadata metadata = new("providerName", uri, "theModel");
         Assert.Equal("providerName", metadata.ProviderName);
         Assert.Same(uri, metadata.ProviderUri);
         Assert.Equal("theModel", metadata.DefaultModelId);

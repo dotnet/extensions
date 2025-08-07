@@ -3,9 +3,9 @@
 
 namespace Microsoft.Extensions.AI;
 
-public static class SingletonTextToImageClientExtensions
+public static class SingletonImageClientExtensions
 {
-    public static TextToImageClientBuilder UseSingletonMiddleware(this TextToImageClientBuilder builder)
+    public static ImageClientBuilder UseSingletonMiddleware(this ImageClientBuilder builder)
         => builder.Use((inner, services)
-            => new TextToImageClientDependencyInjectionPatterns.SingletonMiddleware(inner, services));
+            => new ImageClientDependencyInjectionPatterns.SingletonMiddleware(inner, services));
 }

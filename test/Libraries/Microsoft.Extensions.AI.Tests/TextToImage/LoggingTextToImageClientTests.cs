@@ -12,32 +12,32 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class LoggingTextToImageClientTests
+public class LoggingImageClientTests
 {
     [Fact]
-    public void LoggingTextToImageClient_InvalidArgs_Throws()
+    public void LoggingImageClient_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("innerClient", () => new LoggingTextToImageClient(null!, NullLogger.Instance));
-        Assert.Throws<ArgumentNullException>("logger", () => new LoggingTextToImageClient(new TestTextToImageClient(), null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => new LoggingImageClient(null!, NullLogger.Instance));
+        Assert.Throws<ArgumentNullException>("logger", () => new LoggingImageClient(new TestImageClient(), null!));
     }
 
     [Fact]
     public void UseLogging_AvoidsInjectingNopClient()
     {
-        using var innerClient = new TestTextToImageClient();
+        using var innerClient = new TestImageClient();
 
-        Assert.Null(innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(LoggingTextToImageClient)));
-        Assert.Same(innerClient, innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(ITextToImageClient)));
+        Assert.Null(innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(LoggingImageClient)));
+        Assert.Same(innerClient, innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(IImageClient)));
 
         using var factory = LoggerFactory.Create(b => b.AddFakeLogging());
-        Assert.NotNull(innerClient.AsBuilder().UseLogging(factory).Build().GetService(typeof(LoggingTextToImageClient)));
+        Assert.NotNull(innerClient.AsBuilder().UseLogging(factory).Build().GetService(typeof(LoggingImageClient)));
 
         ServiceCollection c = new();
         c.AddFakeLogging();
         var services = c.BuildServiceProvider();
-        Assert.NotNull(innerClient.AsBuilder().UseLogging().Build(services).GetService(typeof(LoggingTextToImageClient)));
-        Assert.NotNull(innerClient.AsBuilder().UseLogging(null).Build(services).GetService(typeof(LoggingTextToImageClient)));
-        Assert.Null(innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build(services).GetService(typeof(LoggingTextToImageClient)));
+        Assert.NotNull(innerClient.AsBuilder().UseLogging().Build(services).GetService(typeof(LoggingImageClient)));
+        Assert.NotNull(innerClient.AsBuilder().UseLogging(null).Build(services).GetService(typeof(LoggingImageClient)));
+        Assert.Null(innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build(services).GetService(typeof(LoggingImageClient)));
     }
 
     [Theory]
@@ -52,38 +52,38 @@ public class LoggingTextToImageClientTests
         c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
         var services = c.BuildServiceProvider();
 
-        using ITextToImageClient innerClient = new TestTextToImageClient
+        using IImageClient innerClient = new TestImageClient
         {
             GenerateImagesAsyncCallback = (prompt, options, cancellationToken) =>
             {
-                return Task.FromResult(new TextToImageResponse());
+                return Task.FromResult(new ImageResponse());
             },
         };
 
-        using ITextToImageClient client = innerClient
+        using IImageClient client = innerClient
             .AsBuilder()
             .UseLogging()
             .Build(services);
 
         await client.GenerateImagesAsync(
             "A beautiful sunset",
-            new TextToImageOptions { ModelId = "dall-e-3" });
+            new ImageOptions { ModelId = "dall-e-3" });
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
         {
             Assert.Collection(logs,
                 entry => Assert.True(
-                    entry.Message.Contains($"{nameof(ITextToImageClient.GenerateImagesAsync)} invoked:") &&
+                    entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} invoked:") &&
                     entry.Message.Contains("A beautiful sunset") &&
                     entry.Message.Contains("dall-e-3")),
-                entry => Assert.Contains($"{nameof(ITextToImageClient.GenerateImagesAsync)} completed:", entry.Message));
+                entry => Assert.Contains($"{nameof(IImageClient.GenerateImagesAsync)} completed:", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains($"{nameof(ITextToImageClient.GenerateImagesAsync)} invoked.") && !entry.Message.Contains("A beautiful sunset")),
-                entry => Assert.True(entry.Message.Contains($"{nameof(ITextToImageClient.GenerateImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} invoked.") && !entry.Message.Contains("A beautiful sunset")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
         }
         else
         {
@@ -100,15 +100,15 @@ public class LoggingTextToImageClientTests
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
 
-        using ITextToImageClient innerClient = new TestTextToImageClient
+        using IImageClient innerClient = new TestImageClient
         {
             EditImagesAsyncCallback = (originalImages, prompt, options, cancellationToken) =>
             {
-                return Task.FromResult(new TextToImageResponse());
+                return Task.FromResult(new ImageResponse());
             }
         };
 
-        using ITextToImageClient client = innerClient
+        using IImageClient client = innerClient
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
@@ -117,23 +117,23 @@ public class LoggingTextToImageClientTests
         await client.EditImagesAsync(
             originalImages,
             "Make it more colorful",
-            new TextToImageOptions { ModelId = "dall-e-3" });
+            new ImageOptions { ModelId = "dall-e-3" });
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
         {
             Assert.Collection(logs,
                 entry => Assert.True(
-                    entry.Message.Contains($"{nameof(ITextToImageClient.EditImagesAsync)} invoked:") &&
+                    entry.Message.Contains($"{nameof(IImageClient.EditImagesAsync)} invoked:") &&
                     entry.Message.Contains("Make it more colorful") &&
                     entry.Message.Contains("dall-e-3")),
-                entry => Assert.Contains($"{nameof(ITextToImageClient.EditImagesAsync)} completed:", entry.Message));
+                entry => Assert.Contains($"{nameof(IImageClient.EditImagesAsync)} completed:", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains($"{nameof(ITextToImageClient.EditImagesAsync)} invoked.") && !entry.Message.Contains("Make it more colorful")),
-                entry => Assert.True(entry.Message.Contains($"{nameof(ITextToImageClient.EditImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.EditImagesAsync)} invoked.") && !entry.Message.Contains("Make it more colorful")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.EditImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
         }
         else
         {

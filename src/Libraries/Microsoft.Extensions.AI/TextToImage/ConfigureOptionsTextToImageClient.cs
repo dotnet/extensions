@@ -10,47 +10,47 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents a delegating text to image client that configures a <see cref="TextToImageOptions"/> instance used by the remainder of the pipeline.</summary>
+/// <summary>Represents a delegating text to image client that configures a <see cref="ImageOptions"/> instance used by the remainder of the pipeline.</summary>
 [Experimental("MEAI001")]
-public sealed class ConfigureOptionsTextToImageClient : DelegatingTextToImageClient
+public sealed class ConfigureOptionsImageClient : DelegatingImageClient
 {
     /// <summary>The callback delegate used to configure options.</summary>
-    private readonly Action<TextToImageOptions> _configureOptions;
+    private readonly Action<ImageOptions> _configureOptions;
 
-    /// <summary>Initializes a new instance of the <see cref="ConfigureOptionsTextToImageClient"/> class with the specified <paramref name="configure"/> callback.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ConfigureOptionsImageClient"/> class with the specified <paramref name="configure"/> callback.</summary>
     /// <param name="innerClient">The inner client.</param>
     /// <param name="configure">
-    /// The delegate to invoke to configure the <see cref="TextToImageOptions"/> instance. It is passed a clone of the caller-supplied <see cref="TextToImageOptions"/> instance
+    /// The delegate to invoke to configure the <see cref="ImageOptions"/> instance. It is passed a clone of the caller-supplied <see cref="ImageOptions"/> instance
     /// (or a newly constructed instance if the caller-supplied instance is <see langword="null"/>).
     /// </param>
     /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The <paramref name="configure"/> delegate is passed either a new instance of <see cref="TextToImageOptions"/> if
-    /// the caller didn't supply a <see cref="TextToImageOptions"/> instance, or a clone (via <see cref="TextToImageOptions.Clone"/> of the caller-supplied
+    /// The <paramref name="configure"/> delegate is passed either a new instance of <see cref="ImageOptions"/> if
+    /// the caller didn't supply a <see cref="ImageOptions"/> instance, or a clone (via <see cref="ImageOptions.Clone"/> of the caller-supplied
     /// instance if one was supplied.
     /// </remarks>
-    public ConfigureOptionsTextToImageClient(ITextToImageClient innerClient, Action<TextToImageOptions> configure)
+    public ConfigureOptionsImageClient(IImageClient innerClient, Action<ImageOptions> configure)
         : base(innerClient)
     {
         _configureOptions = Throw.IfNull(configure);
     }
 
     /// <inheritdoc/>
-    public override async Task<TextToImageResponse> GenerateImagesAsync(
-        string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ImageResponse> GenerateImagesAsync(
+        string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await base.GenerateImagesAsync(prompt, Configure(options), cancellationToken);
     }
 
     /// <inheritdoc/>
-    public override async Task<TextToImageResponse> EditImagesAsync(
-        IEnumerable<AIContent> originalImages, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ImageResponse> EditImagesAsync(
+        IEnumerable<AIContent> originalImages, string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await base.EditImagesAsync(originalImages, prompt, Configure(options), cancellationToken);
     }
 
-    /// <summary>Creates and configures the <see cref="TextToImageOptions"/> to pass along to the inner client.</summary>
-    private TextToImageOptions Configure(TextToImageOptions? options)
+    /// <summary>Creates and configures the <see cref="ImageOptions"/> to pass along to the inner client.</summary>
+    private ImageOptions Configure(ImageOptions? options)
     {
         options = options?.Clone() ?? new();
 

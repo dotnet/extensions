@@ -8,12 +8,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class TextToImageResponseTests
+public class ImageResponseTests
 {
     [Fact]
     public void Constructor_Parameterless_PropsDefaulted()
     {
-        TextToImageResponse response = new();
+        ImageResponse response = new();
         Assert.Empty(response.Contents);
         Assert.NotNull(response.Contents);
         Assert.Same(response.Contents, response.Contents);
@@ -33,7 +33,7 @@ public class TextToImageResponseTests
             content.Add(new UriContent(new Uri($"https://example.com/image-{i}.png"), "image/png"));
         }
 
-        TextToImageResponse response = new(content);
+        ImageResponse response = new(content);
 
         Assert.Same(response.Contents, response.Contents);
         if (contentCount == 0)
@@ -55,7 +55,7 @@ public class TextToImageResponseTests
     [Fact]
     public void Contents_SetNull_ReturnsEmpty()
     {
-        TextToImageResponse response = new()
+        ImageResponse response = new()
         {
             Contents = null!
         };
@@ -66,7 +66,7 @@ public class TextToImageResponseTests
     [Fact]
     public void Contents_Set_Roundtrips()
     {
-        TextToImageResponse response = new();
+        ImageResponse response = new();
         byte[] imageData = [1, 2, 3, 4];
 
         List<AIContent> contents = [
@@ -81,7 +81,7 @@ public class TextToImageResponseTests
     [Fact]
     public void RawRepresentation_Roundtrips()
     {
-        TextToImageResponse response = new();
+        ImageResponse response = new();
         Assert.Null(response.RawRepresentation);
 
         object representation = new { test = "value" };
@@ -100,11 +100,11 @@ public class TextToImageResponseTests
             new DataContent((byte[])[1, 2, 3, 4], "image/jpeg")
         ];
 
-        TextToImageResponse response = new(contents);
+        ImageResponse response = new(contents);
 
-        string json = JsonSerializer.Serialize(response, TestJsonSerializerContext.Default.TextToImageResponse);
+        string json = JsonSerializer.Serialize(response, TestJsonSerializerContext.Default.ImageResponse);
 
-        TextToImageResponse? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.TextToImageResponse);
+        ImageResponse? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ImageResponse);
         Assert.NotNull(deserialized);
 
         Assert.Equal(2, deserialized.Contents.Count);
@@ -121,11 +121,11 @@ public class TextToImageResponseTests
     [Fact]
     public void JsonSerialization_Empty_Roundtrips()
     {
-        TextToImageResponse response = new();
+        ImageResponse response = new();
 
-        string json = JsonSerializer.Serialize(response, TestJsonSerializerContext.Default.TextToImageResponse);
+        string json = JsonSerializer.Serialize(response, TestJsonSerializerContext.Default.ImageResponse);
 
-        TextToImageResponse? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.TextToImageResponse);
+        ImageResponse? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ImageResponse);
         Assert.NotNull(deserialized);
         Assert.Empty(deserialized.Contents);
     }
@@ -139,11 +139,11 @@ public class TextToImageResponseTests
             new TextContent("Generated image description") // Edge case: text content in image response
         ];
 
-        TextToImageResponse response = new(contents);
+        ImageResponse response = new(contents);
 
-        string json = JsonSerializer.Serialize(response, TestJsonSerializerContext.Default.TextToImageResponse);
+        string json = JsonSerializer.Serialize(response, TestJsonSerializerContext.Default.ImageResponse);
 
-        TextToImageResponse? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.TextToImageResponse);
+        ImageResponse? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ImageResponse);
         Assert.NotNull(deserialized);
         Assert.Equal(3, deserialized.Contents.Count);
 
