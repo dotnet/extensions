@@ -75,41 +75,6 @@ public class ImageClientTests
     }
 
     [Fact]
-    public async Task EditImagesAsync_CallsCallback()
-    {
-        var expectedResponse = new ImageResponse();
-        var expectedOptions = new ImageOptions();
-        using var cts = new CancellationTokenSource();
-        AIContent[] expectedImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
-
-        using var client = new TestImageClient
-        {
-            EditImagesAsyncCallback = (originalImages, prompt, options, cancellationToken) =>
-            {
-                Assert.Same(expectedImages, originalImages);
-                Assert.Equal("edit prompt", prompt);
-                Assert.Same(expectedOptions, options);
-                Assert.Equal(cts.Token, cancellationToken);
-                return Task.FromResult(expectedResponse);
-            }
-        };
-
-        var result = await client.EditImagesAsync(expectedImages, "edit prompt", expectedOptions, cts.Token);
-        Assert.Same(expectedResponse, result);
-    }
-
-    [Fact]
-    public async Task EditImagesAsync_NoCallback_ReturnsEmptyResponse()
-    {
-        using var client = new TestImageClient();
-        AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
-
-        var result = await client.EditImagesAsync(originalImages, "edit prompt", null);
-        Assert.NotNull(result);
-        Assert.Empty(result.Contents);
-    }
-
-    [Fact]
     public void Dispose_SetsFlag()
     {
         var client = new TestImageClient();
@@ -164,7 +129,7 @@ public class ImageClientTests
     }
 
     [Fact]
-    public async Task EditImagesAsync_WithOptions_PassesThroughCorrectly()
+    public async Task GenerateImagesAsync_WithEditRequest_PassesThroughCorrectly()
     {
         var options = new ImageOptions
         {
@@ -177,16 +142,18 @@ public class ImageClientTests
         };
 
         AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
+        var expectedRequest = new ImageRequest("edit prompt", originalImages);
 
         using var client = new TestImageClient
         {
-            EditImagesAsyncCallback = (originalImages, prompt, receivedOptions, cancellationToken) =>
+            GenerateImagesAsyncCallback = (request, receivedOptions, cancellationToken) =>
             {
+                Assert.Same(expectedRequest, request);
                 Assert.Same(options, receivedOptions);
                 return Task.FromResult(new ImageResponse());
             }
         };
 
-        await client.EditImagesAsync(originalImages, "edit prompt", options);
+        await client.GenerateImagesAsync(expectedRequest, options);
     }
 }

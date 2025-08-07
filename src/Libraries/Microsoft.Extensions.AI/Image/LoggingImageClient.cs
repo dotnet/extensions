@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,52 +94,6 @@ public partial class LoggingImageClient : DelegatingImageClient
         catch (Exception ex)
         {
             LogInvocationFailed(nameof(GenerateImagesAsync), ex);
-            throw;
-        }
-    }
-
-    /// <inheritdoc/>
-    public override async Task<ImageResponse> EditImagesAsync(
-        IEnumerable<AIContent> originalImages, string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        if (_logger.IsEnabled(LogLevel.Debug))
-        {
-            if (_logger.IsEnabled(LogLevel.Trace))
-            {
-                LogInvokedSensitive(nameof(EditImagesAsync), prompt, AsJson(options), AsJson(this.GetService<ImageClientMetadata>()));
-            }
-            else
-            {
-                LogInvoked(nameof(EditImagesAsync));
-            }
-        }
-
-        try
-        {
-            var response = await base.EditImagesAsync(originalImages, prompt, options, cancellationToken);
-
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                if (_logger.IsEnabled(LogLevel.Trace) && response.Contents.All(c => c is not DataContent))
-                {
-                    LogCompletedSensitive(nameof(EditImagesAsync), AsJson(response));
-                }
-                else
-                {
-                    LogCompleted(nameof(EditImagesAsync));
-                }
-            }
-
-            return response;
-        }
-        catch (OperationCanceledException)
-        {
-            LogInvocationCanceled(nameof(EditImagesAsync));
-            throw;
-        }
-        catch (Exception ex)
-        {
-            LogInvocationFailed(nameof(EditImagesAsync), ex);
             throw;
         }
     }

@@ -44,12 +44,6 @@ public class ConfigureOptionsImageClientTests
                 return Task.FromResult(expectedResponse);
             },
 
-            EditImagesAsyncCallback = (originalImages, prompt, options, cancellationToken) =>
-            {
-                Assert.Same(returnedOptions, options);
-                Assert.Equal(cts.Token, cancellationToken);
-                return Task.FromResult(expectedResponse);
-            },
         };
 
         using var client = innerClient
@@ -72,9 +66,5 @@ public class ConfigureOptionsImageClientTests
 
         var response1 = await client.GenerateImagesAsync("test prompt", providedOptions, cts.Token);
         Assert.Same(expectedResponse, response1);
-
-        AIContent[] images = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
-        var response2 = await client.EditImagesAsync(images, "edit prompt", providedOptions, cts.Token);
-        Assert.Same(expectedResponse, response2);
     }
 }

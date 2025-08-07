@@ -54,7 +54,7 @@ public class LoggingImageClientTests
 
         using IImageClient innerClient = new TestImageClient
         {
-            GenerateImagesAsyncCallback = (prompt, options, cancellationToken) =>
+            GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
             {
                 return Task.FromResult(new ImageResponse());
             },
@@ -66,7 +66,7 @@ public class LoggingImageClientTests
             .Build(services);
 
         await client.GenerateImagesAsync(
-            "A beautiful sunset",
+            new ImageRequest("A beautiful sunset"),
             new ImageOptions { ModelId = "dall-e-3" });
 
         var logs = collector.GetSnapshot();
@@ -95,14 +95,14 @@ public class LoggingImageClientTests
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
     [InlineData(LogLevel.Information)]
-    public async Task EditImagesAsync_LogsInvocationAndCompletion(LogLevel level)
+    public async Task GenerateImagesAsync_WithOriginalImages_LogsInvocationAndCompletion(LogLevel level)
     {
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
 
         using IImageClient innerClient = new TestImageClient
         {
-            EditImagesAsyncCallback = (originalImages, prompt, options, cancellationToken) =>
+            GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
             {
                 return Task.FromResult(new ImageResponse());
             }
@@ -114,9 +114,8 @@ public class LoggingImageClientTests
             .Build();
 
         AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
-        await client.EditImagesAsync(
-            originalImages,
-            "Make it more colorful",
+        await client.GenerateImagesAsync(
+            new ImageRequest("Make it more colorful", originalImages),
             new ImageOptions { ModelId = "dall-e-3" });
 
         var logs = collector.GetSnapshot();
@@ -124,16 +123,16 @@ public class LoggingImageClientTests
         {
             Assert.Collection(logs,
                 entry => Assert.True(
-                    entry.Message.Contains($"{nameof(IImageClient.EditImagesAsync)} invoked:") &&
+                    entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} invoked:") &&
                     entry.Message.Contains("Make it more colorful") &&
                     entry.Message.Contains("dall-e-3")),
-                entry => Assert.Contains($"{nameof(IImageClient.EditImagesAsync)} completed:", entry.Message));
+                entry => Assert.Contains($"{nameof(IImageClient.GenerateImagesAsync)} completed:", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.EditImagesAsync)} invoked.") && !entry.Message.Contains("Make it more colorful")),
-                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.EditImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} invoked.") && !entry.Message.Contains("Make it more colorful")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
         }
         else
         {

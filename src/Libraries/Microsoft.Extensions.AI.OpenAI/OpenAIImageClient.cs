@@ -58,62 +58,52 @@ internal sealed class OpenAIImageClient : IImageClient
         // If the request has original images, treat this as an edit operation
         if (request.OriginalImages != null)
         {
-            return await EditImagesAsync(request.OriginalImages, prompt, options, cancellationToken).ConfigureAwait(false);
+            ImageEditOptions editOptions = ToOpenAIImageEditOptions(options);
+            string? fileName = null;
+            Stream? imageStream = null;
+
+            foreach (AIContent originalImage in request.OriginalImages)
+            {
+                if (imageStream is not null)
+                {
+                    // We only support a single image for editing.
+                    Throw.ArgumentException(
+                        "Only a single image can be provided for editing.",
+                        nameof(request));
+                }
+
+                if (originalImage is DataContent dataContent)
+                {
+                    imageStream = MemoryMarshal.TryGetArray(dataContent.Data, out var array) ?
+                        new MemoryStream(array.Array!, array.Offset, array.Count) :
+                        new MemoryStream(dataContent.Data.ToArray());
+                    fileName = dataContent.Name ?? dataContent.MediaType switch
+                    {
+                        "image/png" => "image.png",
+                        "image/jpeg" => "image.jpg",
+                        "image/webp" => "image.webp",
+                        _ => "image"
+                    };
+                }
+                else
+                {
+                    // We might be able to handle UriContent by downloading the image, but need to plumb an HttpClient for that.
+                    // For now, we only support DataContent for image editing as OpenAI's API expects image data in a stream.
+                    Throw.ArgumentException(
+                        "The original image must be a DataContent instance containing image data.",
+                        nameof(request));
+                }
+            }
+
+            GeneratedImageCollection editResult = await _imageClient.GenerateImageEditsAsync(
+                imageStream, fileName, prompt, options?.Count ?? 1, editOptions, cancellationToken).ConfigureAwait(false);
+
+            return ToImageResponse(editResult);
         }
 
         ImageGenerationOptions openAIOptions = ToOpenAIImageGenerationOptions(options);
 
         GeneratedImageCollection result = await _imageClient.GenerateImagesAsync(prompt, options?.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
-
-        return ToImageResponse(result);
-    }
-
-    /// <inheritdoc />
-    public async Task<ImageResponse> EditImagesAsync(
-        IEnumerable<AIContent> originalImages, string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(originalImages);
-        _ = Throw.IfNull(prompt);
-
-        ImageEditOptions openAIOptions = ToOpenAIImageEditOptions(options);
-        string? fileName = null;
-        Stream? imageStream = null;
-
-        foreach (AIContent originalImage in originalImages)
-        {
-            if (imageStream is not null)
-            {
-                // We only support a single image for editing.
-                Throw.ArgumentException(
-                    "Only a single image can be provided for editing.",
-                    nameof(originalImages));
-            }
-
-            if (originalImage is DataContent dataContent)
-            {
-                imageStream = MemoryMarshal.TryGetArray(dataContent.Data, out var array) ?
-                    new MemoryStream(array.Array!, array.Offset, array.Count) :
-                    new MemoryStream(dataContent.Data.ToArray());
-                fileName = dataContent.Name ?? dataContent.MediaType switch
-                {
-                    "image/png" => "image.png",
-                    "image/jpeg" => "image.jpg",
-                    "image/webp" => "image.webp",
-                    _ => "image"
-                };
-            }
-            else
-            {
-                // We might be able to handle UriContent by downloading the image, but need to plumb an HttpClient for that.
-                // For now, we only support DataContent for image editing as OpenAI's API expects image data in a stream.
-                Throw.ArgumentException(
-                    "The original image must be a DataContent instance containing image data.",
-                    nameof(originalImages));
-            }
-        }
-
-        GeneratedImageCollection result = await _imageClient.GenerateImageEditsAsync(
-            imageStream, fileName, prompt, options?.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
 
         return ToImageResponse(result);
     }

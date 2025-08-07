@@ -49,40 +49,6 @@ public class DelegatingImageClientTests
     }
 
     [Fact]
-    public async Task EditImagesAsyncDefaultsToInnerClientAsync()
-    {
-        // Arrange
-        AIContent[] expectedImages = [new DataContent(Array.Empty<byte>(), "image/png")];
-        var expectedPrompt = "edit prompt";
-        var expectedOptions = new ImageOptions();
-        var expectedCancellationToken = CancellationToken.None;
-        var expectedResult = new TaskCompletionSource<ImageResponse>();
-        var expectedResponse = new ImageResponse();
-        using var inner = new TestImageClient
-        {
-            EditImagesAsyncCallback = (originalImages, prompt, options, cancellationToken) =>
-            {
-                Assert.Same(expectedImages, originalImages);
-                Assert.Same(expectedPrompt, prompt);
-                Assert.Same(expectedOptions, options);
-                Assert.Equal(expectedCancellationToken, cancellationToken);
-                return expectedResult.Task;
-            }
-        };
-
-        using var delegating = new NoOpDelegatingImageClient(inner);
-
-        // Act
-        var resultTask = delegating.EditImagesAsync(expectedImages, expectedPrompt, expectedOptions, expectedCancellationToken);
-
-        // Assert
-        Assert.False(resultTask.IsCompleted);
-        expectedResult.SetResult(expectedResponse);
-        Assert.True(resultTask.IsCompleted);
-        Assert.Same(expectedResponse, await resultTask);
-    }
-
-    [Fact]
     public void GetServiceThrowsForNullType()
     {
         using var inner = new TestImageClient();

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -57,7 +56,7 @@ public class ImageClientExtensionsTests
     }
 
     [Fact]
-    public async Task EditImageAsync_DataContent_CallsEditImagesAsync()
+    public async Task EditImageAsync_DataContent_CallsGenerateImagesAsync()
     {
         // Arrange
         using var testClient = new TestImageClient();
@@ -68,11 +67,12 @@ public class ImageClientExtensionsTests
         var expectedResponse = new ImageResponse();
         var cancellationToken = new CancellationToken(canceled: false);
 
-        testClient.EditImagesAsyncCallback = (originalImages, p, o, ct) =>
+        testClient.GenerateImagesAsyncCallback = (request, o, ct) =>
         {
-            Assert.Single(originalImages);
-            Assert.Same(dataContent, Assert.Single(originalImages));
-            Assert.Equal(prompt, p);
+            Assert.NotNull(request.OriginalImages);
+            Assert.Single(request.OriginalImages);
+            Assert.Same(dataContent, Assert.Single(request.OriginalImages));
+            Assert.Equal(prompt, request.Prompt);
             Assert.Same(options, o);
             Assert.Equal(cancellationToken, ct);
             return Task.FromResult(expectedResponse);
@@ -102,7 +102,7 @@ public class ImageClientExtensionsTests
     }
 
     [Fact]
-    public async Task EditImageAsync_ByteArray_CallsEditImagesAsync()
+    public async Task EditImageAsync_ByteArray_CallsGenerateImagesAsync()
     {
         // Arrange
         using var testClient = new TestImageClient();
@@ -113,14 +113,15 @@ public class ImageClientExtensionsTests
         var expectedResponse = new ImageResponse();
         var cancellationToken = new CancellationToken(canceled: false);
 
-        testClient.EditImagesAsyncCallback = (originalImages, p, o, ct) =>
+        testClient.GenerateImagesAsyncCallback = (request, o, ct) =>
         {
-            Assert.Single(originalImages);
-            var dataContent = Assert.IsType<DataContent>(Assert.Single(originalImages));
+            Assert.NotNull(request.OriginalImages);
+            Assert.Single(request.OriginalImages);
+            var dataContent = Assert.IsType<DataContent>(Assert.Single(request.OriginalImages));
             Assert.Equal(imageData, dataContent.Data.ToArray());
             Assert.Equal("image/jpeg", dataContent.MediaType);
             Assert.Equal(fileName, dataContent.Name);
-            Assert.Equal(prompt, p);
+            Assert.Equal(prompt, request.Prompt);
             Assert.Same(options, o);
             Assert.Equal(cancellationToken, ct);
             return Task.FromResult(expectedResponse);
@@ -192,9 +193,10 @@ public class ImageClientExtensionsTests
         var imageData = new byte[] { 1, 2, 3, 4 };
         var prompt = "Edit this image";
 
-        testClient.EditImagesAsyncCallback = (originalImages, p, o, ct) =>
+        testClient.GenerateImagesAsyncCallback = (request, o, ct) =>
         {
-            var dataContent = Assert.IsType<DataContent>(Assert.Single(originalImages));
+            Assert.NotNull(request.OriginalImages);
+            var dataContent = Assert.IsType<DataContent>(Assert.Single(request.OriginalImages));
             Assert.Equal(expectedMediaType, dataContent.MediaType);
             return Task.FromResult(new ImageResponse());
         };
@@ -210,19 +212,19 @@ public class ImageClientExtensionsTests
         using var testClient = new TestImageClient();
         var imageData = new byte[] { 1, 2, 3, 4 };
         var dataContent = new DataContent(imageData, "image/png");
-        using var stream = new MemoryStream(imageData);
         var prompt = "Edit this image";
 
         int callCount = 0;
-        testClient.EditImagesAsyncCallback = (originalImages, p, o, ct) =>
+        testClient.GenerateImagesAsyncCallback = (request, o, ct) =>
         {
             callCount++;
             Assert.Null(o); // Default options should be null
             Assert.Equal(CancellationToken.None, ct); // Default cancellation token
+            Assert.NotNull(request.OriginalImages); // Should have original images for editing
             return Task.FromResult(new ImageResponse());
         };
 
-        // Act - Test all three overloads with default parameters
+        // Act - Test all two overloads with default parameters
         await testClient.EditImageAsync(dataContent, prompt);
         await testClient.EditImageAsync(imageData, "test.png", prompt);
 

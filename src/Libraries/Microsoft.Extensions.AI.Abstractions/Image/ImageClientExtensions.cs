@@ -149,7 +149,7 @@ public static class ImageClientExtensions
         _ = Throw.IfNull(originalImage);
         _ = Throw.IfNull(prompt);
 
-        return client.EditImagesAsync([originalImage], prompt, options, cancellationToken);
+        return client.GenerateImagesAsync(new ImageRequest(prompt, [originalImage]), options, cancellationToken);
     }
 
     /// <summary>
@@ -183,7 +183,7 @@ public static class ImageClientExtensions
         string mediaType = GetMediaTypeFromFileName(fileName);
 
         var dataContent = new DataContent(originalImageData, mediaType) { Name = fileName };
-        return client.EditImagesAsync([dataContent], prompt, options, cancellationToken);
+        return client.GenerateImagesAsync(new ImageRequest(prompt, [dataContent]), options, cancellationToken);
     }
 
     /// <summary>
