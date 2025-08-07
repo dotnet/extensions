@@ -48,9 +48,18 @@ internal sealed class OpenAIImageClient : IImageClient
     }
 
     /// <inheritdoc />
-    public async Task<ImageResponse> GenerateImagesAsync(string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ImageResponse> GenerateImagesAsync(ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(request);
+
+        string? prompt = request.Prompt;
         _ = Throw.IfNull(prompt);
+
+        // If the request has original images, treat this as an edit operation
+        if (request.OriginalImages != null)
+        {
+            return await EditImagesAsync(request.OriginalImages, prompt, options, cancellationToken).ConfigureAwait(false);
+        }
 
         ImageGenerationOptions openAIOptions = ToOpenAIImageGenerationOptions(options);
 

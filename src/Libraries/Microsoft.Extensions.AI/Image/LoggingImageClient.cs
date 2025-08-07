@@ -56,13 +56,13 @@ public partial class LoggingImageClient : DelegatingImageClient
 
     /// <inheritdoc/>
     public override async Task<ImageResponse> GenerateImagesAsync(
-        string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
+        ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GenerateImagesAsync), prompt, AsJson(options), AsJson(this.GetService<ImageClientMetadata>()));
+                LogInvokedSensitive(nameof(GenerateImagesAsync), AsJson(request), AsJson(options), AsJson(this.GetService<ImageClientMetadata>()));
             }
             else
             {
@@ -72,7 +72,7 @@ public partial class LoggingImageClient : DelegatingImageClient
 
         try
         {
-            var response = await base.GenerateImagesAsync(prompt, options, cancellationToken);
+            var response = await base.GenerateImagesAsync(request, options, cancellationToken);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {

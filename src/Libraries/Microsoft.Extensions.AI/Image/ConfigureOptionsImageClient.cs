@@ -37,9 +37,9 @@ public sealed class ConfigureOptionsImageClient : DelegatingImageClient
 
     /// <inheritdoc/>
     public override async Task<ImageResponse> GenerateImagesAsync(
-        string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
+        ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await base.GenerateImagesAsync(prompt, Configure(options), cancellationToken);
+        return await base.GenerateImagesAsync(request, Configure(options), cancellationToken);
     }
 
     /// <inheritdoc/>

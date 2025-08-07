@@ -17,7 +17,7 @@ public sealed class TestImageClient : IImageClient
 
     public IServiceProvider? Services { get; set; }
 
-    public Func<string, ImageOptions?, CancellationToken, Task<ImageResponse>>? GenerateImagesAsyncCallback { get; set; }
+    public Func<ImageRequest, ImageOptions?, CancellationToken, Task<ImageResponse>>? GenerateImagesAsyncCallback { get; set; }
 
     public Func<IEnumerable<AIContent>, string, ImageOptions?, CancellationToken, Task<ImageResponse>>? EditImagesAsyncCallback { get; set; }
 
@@ -28,9 +28,9 @@ public sealed class TestImageClient : IImageClient
     private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey)
         => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
-    public Task<ImageResponse> GenerateImagesAsync(string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<ImageResponse> GenerateImagesAsync(ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return GenerateImagesAsyncCallback?.Invoke(prompt, options, cancellationToken) ??
+        return GenerateImagesAsyncCallback?.Invoke(request, options, cancellationToken) ??
             Task.FromResult(new ImageResponse());
     }
 

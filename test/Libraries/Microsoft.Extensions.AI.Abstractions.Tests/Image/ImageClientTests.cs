@@ -48,19 +48,20 @@ public class ImageClientTests
         var expectedResponse = new ImageResponse();
         var expectedOptions = new ImageOptions();
         using var cts = new CancellationTokenSource();
+        var expectedRequest = new ImageRequest("test prompt");
 
         using var client = new TestImageClient
         {
-            GenerateImagesAsyncCallback = (prompt, options, cancellationToken) =>
+            GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
             {
-                Assert.Equal("test prompt", prompt);
+                Assert.Same(expectedRequest, request);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(cts.Token, cancellationToken);
                 return Task.FromResult(expectedResponse);
             }
         };
 
-        var result = await client.GenerateImagesAsync("test prompt", expectedOptions, cts.Token);
+        var result = await client.GenerateImagesAsync(expectedRequest, expectedOptions, cts.Token);
         Assert.Same(expectedResponse, result);
     }
 
@@ -68,7 +69,7 @@ public class ImageClientTests
     public async Task GenerateImagesAsync_NoCallback_ReturnsEmptyResponse()
     {
         using var client = new TestImageClient();
-        var result = await client.GenerateImagesAsync("test prompt", null);
+        var result = await client.GenerateImagesAsync(new ImageRequest("test prompt"), null);
         Assert.NotNull(result);
         Assert.Empty(result.Contents);
     }
@@ -147,16 +148,19 @@ public class ImageClientTests
             Style = "photorealistic"
         };
 
+        var expectedRequest = new ImageRequest("test prompt");
+
         using var client = new TestImageClient
         {
-            GenerateImagesAsyncCallback = (prompt, receivedOptions, cancellationToken) =>
+            GenerateImagesAsyncCallback = (request, receivedOptions, cancellationToken) =>
             {
+                Assert.Same(expectedRequest, request);
                 Assert.Same(options, receivedOptions);
                 return Task.FromResult(new ImageResponse());
             }
         };
 
-        await client.GenerateImagesAsync("test prompt", options);
+        await client.GenerateImagesAsync(expectedRequest, options);
     }
 
     [Fact]

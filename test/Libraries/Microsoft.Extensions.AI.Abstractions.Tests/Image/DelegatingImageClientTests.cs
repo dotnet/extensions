@@ -20,16 +20,16 @@ public class DelegatingImageClientTests
     public async Task GenerateImagesAsyncDefaultsToInnerClientAsync()
     {
         // Arrange
-        var expectedPrompt = "test prompt";
+        var expectedRequest = new ImageRequest("test prompt");
         var expectedOptions = new ImageOptions();
         var expectedCancellationToken = CancellationToken.None;
         var expectedResult = new TaskCompletionSource<ImageResponse>();
         var expectedResponse = new ImageResponse();
         using var inner = new TestImageClient
         {
-            GenerateImagesAsyncCallback = (prompt, options, cancellationToken) =>
+            GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
             {
-                Assert.Same(expectedPrompt, prompt);
+                Assert.Same(expectedRequest, request);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCancellationToken, cancellationToken);
                 return expectedResult.Task;
@@ -39,7 +39,7 @@ public class DelegatingImageClientTests
         using var delegating = new NoOpDelegatingImageClient(inner);
 
         // Act
-        var resultTask = delegating.GenerateImagesAsync(expectedPrompt, expectedOptions, expectedCancellationToken);
+        var resultTask = delegating.GenerateImagesAsync(expectedRequest, expectedOptions, expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);

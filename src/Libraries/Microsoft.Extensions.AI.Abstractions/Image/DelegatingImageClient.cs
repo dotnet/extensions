@@ -42,9 +42,9 @@ public class DelegatingImageClient : IImageClient
 
     /// <inheritdoc />
     public virtual Task<ImageResponse> GenerateImagesAsync(
-        string prompt, ImageOptions? options = null, CancellationToken cancellationToken = default)
+        ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.GenerateImagesAsync(prompt, options, cancellationToken);
+        return InnerClient.GenerateImagesAsync(request, options, cancellationToken);
     }
 
     /// <inheritdoc />
