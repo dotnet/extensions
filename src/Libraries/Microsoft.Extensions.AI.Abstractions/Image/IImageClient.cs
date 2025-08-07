@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI;
 public interface IImageClient : IDisposable
 {
     /// <summary>
-    /// Sends a text prompt to the model and returns the generated image as a <see cref="ImageResponse"/>.
+    /// Sends a request the model and returns the generated image as a <see cref="ImageResponse"/>.
     /// </summary>
     /// <param name="request">The image generation request containing the prompt and optional original images for editing.</param>
     /// <param name="options">The text to image options to configure the request.</param>
@@ -26,7 +26,7 @@ public interface IImageClient : IDisposable
     Task<ImageResponse> GenerateImagesAsync(ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Sends a text prompt to the model and streams back the generated images as updates.
+    /// Sends a request to the model and streams back the generated images as updates.
     /// </summary>
     /// <param name="request">The image generation request containing the prompt and optional original images for editing.</param>
     /// <param name="options">The text to image options to configure the request.</param>
