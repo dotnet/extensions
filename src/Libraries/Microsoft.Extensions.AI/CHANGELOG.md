@@ -1,5 +1,40 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Added `FunctionInvokingChatClient.AdditionalTools` to allow `FunctionInvokingChatClient` to have access to tools not included in `ChatOptions.Tools` but known to the target service via pre-configuration.
+- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.7.1
+
+- Increased the default `FunctionInvokingChatClient.MaximumIterationsPerRequest` value from 10 to 40.
+- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.7.0
+
+- Added `DistributedCachingChatClient/EmbeddingGenerator.AdditionalCacheKeyValues` to allow adding additional values to the cache key.
+- Allowed a `CachingChatClient` to control per-request caching.
+- Updated the Open Telemetry instrumentation to conform to the latest 1.35.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.6.0
+
+- Fixed hashing in `CachingChatClient` and `CachingEmbeddingGenerator` to be stable with respect to indentation settings and property ordering.
+- Updated the Open Telemetry instrumentation to conform to the latest 1.34.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.5.0
+
+- Changed `OpenTelemetryChatClient` and `OpenTelemetryEmbeddingGenerator` to consider `AdditionalProperties` to be "sensitive".
+- Changed `FunctionInvokingChatClient` to respect the `SynchronizationContext` of the caller when invoking functions.
+- Changed hash function algorithm used in `CachingChatClient` and `CachingEmbeddingGenerator` to SHA-384 instead of SHA-256.
+- Updated `FunctionInvokingChatClient` to include token counts on its emitted diagnostic spans.
+- Updated `OpenTelemetryChatClient` and `OpenTelemetryEmbeddingGenerator` to conform to the latest 1.33.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Renamed the `useJsonSchema` paramter of `GetResponseAsync<T>`.
+- Removed debug-level logging of updates in `LoggingChatClient`.
+- Avoided caching in `CachingChatClient` when `ConversationId` is set.
+- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.4.4-preview.1.25259.16
 
 - Fixed `CachingChatClient` to avoid caching when `ConversationId` is set.

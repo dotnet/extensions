@@ -1,5 +1,37 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Updated to depend on OpenAI 2.3.0.
+- Added more conversion helpers for converting bidirectionally between Microsoft.Extensions.AI messages and OpenAI messages.
+- Fixed handling of multiple response messages in the Responses `IChatClient`.
+- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.7.1-preview.1.25365.4
+
+- Added some conversion helpers for converting Microsoft.Extensions.AI messages to OpenAI messages.
+
+## 9.7.0-preview.1.25356.2
+
+- Updated to depend on OpenAI 2.2.0.
+- Added conversion helpers from `AIFunction` to various OpenAI tool representations.
+- Added `AsIChatClient` extension method for OpenAI's `AssistantClient`, enabling `IChatClient` to be used with OpenAI Assistants.
+- Tweaked how JSON schemas for functions are transformed for better compatibility with OpenAI `strict` constraints.
+- Improved handling of `RawRepresentation` in `IChatClients` for Responses and Chat Completion APIs.
+- Improved `ISpeechToTextClient` implementation to support streaming transcriptions.
+- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.6.0-preview.1.25310.2
+
+- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.5.0-preview.1.25265.7
+
+- Added PDF support to `IChatClient` implementations.
+- Disabled use of `strict` schema handling by default.
+- Added support for creating `ErrorContent` in `IChatClient` implementations, such as for refusals.
+- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.4.4-preview.1.25259.16
 
 - Made `IChatClient` implementation more resilient with non-OpenAI services.

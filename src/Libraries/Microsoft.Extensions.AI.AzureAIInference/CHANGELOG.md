@@ -1,5 +1,23 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Updated to depend on Azure.AI.Inference 1.0.0-beta.5.
+- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.7.0-preview.1.25356.2
+
+- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.6.0-preview.1.25310.2
+
+- Updated to accomodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.5.0-preview.1.25265.7
+
+- Added `AsIEmbeddingGenerator` for Azure.AI.Inference `ImageEmbeddingsClient`.
+- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.4.4-preview.1.25259.16
 
 - Added an `AsIEmbeddingGenerator` extension method for `ImageEmbeddingsClient`.
