@@ -76,6 +76,7 @@ public sealed class CoherenceEvaluator : IEvaluator
 
         var metric = new NumericMetric(CoherenceMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {

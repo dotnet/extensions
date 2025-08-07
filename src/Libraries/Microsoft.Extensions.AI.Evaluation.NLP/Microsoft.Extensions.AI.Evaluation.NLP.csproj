@@ -21,6 +21,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\BuiltInEvaluatorUtilities.cs" Link="Utilities\BuiltInEvaluatorUtilities.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\TimingHelper.cs" Link="Utilities\TimingHelper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Memory" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
   </ItemGroup>
@@ -33,8 +38,4 @@
     <InternalsVisibleToTest Include="Microsoft.Extensions.AI.Evaluation.NLP.Tests" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\TimingHelper.cs" Link="Utilities\TimingHelper.cs" />
-  </ItemGroup>
-  
 </Project>
