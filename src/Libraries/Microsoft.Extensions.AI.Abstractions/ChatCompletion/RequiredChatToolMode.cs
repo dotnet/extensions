@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 public sealed class RequiredChatToolMode : ChatToolMode
 {
     /// <summary>
-    /// Gets the name of a specific <see cref="AIFunction"/> that must be called.
+    /// Gets the name of a specific function that must be called.
     /// </summary>
     /// <remarks>
     /// If the value is <see langword="null"/>, any available function can be selected (but at least one must be).
