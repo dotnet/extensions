@@ -335,7 +335,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Nothing to dispose. Implementation required for the IChatClient interface.
     }
 
-    internal static ResponseTool ToResponseTool(AIFunction aiFunction, ChatOptions? options = null)
+    internal static ResponseTool ToResponseTool(AIFunctionDefinition aiFunction, ChatOptions? options = null)
     {
         bool? strict =
             OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
@@ -398,7 +398,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             {
                 switch (tool)
                 {
-                    case AIFunction aiFunction:
+                    case AIFunctionDefinition aiFunction:
                         result.Tools.Add(ToResponseTool(aiFunction, options));
                         break;
 

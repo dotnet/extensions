@@ -275,7 +275,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions function to an OpenAI assistants function tool.</summary>
-    internal static FunctionToolDefinition ToOpenAIAssistantsFunctionToolDefinition(AIFunction aiFunction, ChatOptions? options = null)
+    internal static FunctionToolDefinition ToOpenAIAssistantsFunctionToolDefinition(AIFunctionDefinition aiFunction, ChatOptions? options = null)
     {
         bool? strict =
             OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
@@ -335,7 +335,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                 {
                     switch (tool)
                     {
-                        case AIFunction aiFunction:
+                        case AIFunctionDefinition aiFunction:
                             runOptions.ToolsOverride.Add(ToOpenAIAssistantsFunctionToolDefinition(aiFunction, options));
                             break;
 
