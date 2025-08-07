@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -46,6 +47,45 @@ public class DelegatingImageClientTests
         expectedResult.SetResult(expectedResponse);
         Assert.True(resultTask.IsCompleted);
         Assert.Same(expectedResponse, await resultTask);
+    }
+
+    [Fact]
+    public async Task GenerateStreamingImagesAsyncDefaultsToInnerClientAsync()
+    {
+        // Arrange
+        var expectedRequest = new ImageRequest("test prompt");
+        var expectedOptions = new ImageOptions();
+        var expectedCancellationToken = CancellationToken.None;
+        var expectedResult = new TaskCompletionSource<IAsyncEnumerable<ImageResponseUpdate>>();
+        ImageResponseUpdate[] expectedResults =
+        [
+            new ImageResponseUpdate([new UriContent("http://example.com/image1.png", "image/png")]),
+            new ImageResponseUpdate([new UriContent("http://example.com/image2.png", "image/png")])
+        ];
+
+        using var inner = new TestImageClient
+        {
+            GenerateStreamingImagesAsyncCallback = (request, options, cancellationToken) =>
+            {
+                Assert.Same(expectedRequest, request);
+                Assert.Same(expectedOptions, options);
+                Assert.Equal(expectedCancellationToken, cancellationToken);
+                return YieldAsync(expectedResults);
+            }
+        };
+
+        using var delegating = new NoOpDelegatingImageClient(inner);
+
+        // Act
+        var resultAsyncEnumerable = delegating.GenerateStreamingImagesAsync(expectedRequest, expectedOptions, expectedCancellationToken);
+
+        // Assert
+        var enumerator = resultAsyncEnumerable.GetAsyncEnumerator();
+        Assert.True(await enumerator.MoveNextAsync());
+        Assert.Same(expectedResults[0], enumerator.Current);
+        Assert.True(await enumerator.MoveNextAsync());
+        Assert.Same(expectedResults[1], enumerator.Current);
+        Assert.False(await enumerator.MoveNextAsync());
     }
 
     [Fact]
@@ -139,4 +179,13 @@ public class DelegatingImageClientTests
 
     private sealed class NoOpDelegatingImageClient(IImageClient innerClient)
         : DelegatingImageClient(innerClient);
+
+    private static async IAsyncEnumerable<T> YieldAsync<T>(params T[] items)
+    {
+        await Task.Yield();
+        foreach (var item in items)
+        {
+            yield return item;
+        }
+    }
 }

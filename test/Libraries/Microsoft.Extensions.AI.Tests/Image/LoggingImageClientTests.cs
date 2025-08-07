@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -126,7 +127,7 @@ public class LoggingImageClientTests
                     entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} invoked:") &&
                     entry.Message.Contains("Make it more colorful") &&
                     entry.Message.Contains("dall-e-3")),
-                entry => Assert.Contains($"{nameof(IImageClient.GenerateImagesAsync)} completed:", entry.Message));
+                entry => Assert.Contains($"{nameof(IImageClient.GenerateImagesAsync)} completed", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
@@ -137,6 +138,69 @@ public class LoggingImageClientTests
         else
         {
             Assert.Empty(logs);
+        }
+    }
+
+    [Theory]
+    [InlineData(LogLevel.Trace)]
+    [InlineData(LogLevel.Debug)]
+    [InlineData(LogLevel.Information)]
+    public async Task GenerateStreamingImagesAsync_LogsInvocationAndCompletion(LogLevel level)
+    {
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
+
+        using IImageClient innerClient = new TestImageClient
+        {
+            GenerateStreamingImagesAsyncCallback = (request, options, cancellationToken) =>
+            {
+                return YieldUpdates(new ImageResponseUpdate([new DataContent(new byte[] { 1, 2, 3 }, "image/png")]));
+            }
+        };
+
+        using IImageClient client = innerClient
+            .AsBuilder()
+            .UseLogging(loggerFactory)
+            .Build();
+
+        var updates = new List<ImageResponseUpdate>();
+        await foreach (var update in client.GenerateStreamingImagesAsync(
+            new ImageRequest("A beautiful sunset"),
+            new ImageOptions { ModelId = "dall-e-3" }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Single(updates);
+
+        var logs = collector.GetSnapshot();
+        if (level is LogLevel.Trace)
+        {
+            Assert.Collection(logs,
+                entry => Assert.True(
+                    entry.Message.Contains($"{nameof(IImageClient.GenerateStreamingImagesAsync)} invoked:") &&
+                    entry.Message.Contains("A beautiful sunset") &&
+                    entry.Message.Contains("dall-e-3")),
+                entry => Assert.Contains($"{nameof(IImageClient.GenerateStreamingImagesAsync)} completed", entry.Message));
+        }
+        else if (level is LogLevel.Debug)
+        {
+            Assert.Collection(logs,
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateStreamingImagesAsync)} invoked.") && !entry.Message.Contains("A beautiful sunset")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateStreamingImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
+        }
+        else
+        {
+            Assert.Empty(logs);
+        }
+    }
+
+    private static async IAsyncEnumerable<ImageResponseUpdate> YieldUpdates(params ImageResponseUpdate[] updates)
+    {
+        await Task.Yield();
+        foreach (var update in updates)
+        {
+            yield return update;
         }
     }
 }

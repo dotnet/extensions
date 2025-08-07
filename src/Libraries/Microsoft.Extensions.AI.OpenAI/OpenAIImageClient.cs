@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -106,6 +107,28 @@ internal sealed class OpenAIImageClient : IImageClient
         GeneratedImageCollection result = await _imageClient.GenerateImagesAsync(prompt, options?.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
 
         return ToImageResponse(result);
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(
+        ImageRequest request,
+        ImageOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(request);
+
+        // OpenAI does not currently support streaming image generation in the managed client, though it does
+        // in the REST API.
+        // It does so by setting partial_images to 1-3 and gets multiple updates of the same image.
+        // We don't yet know what form this will take in the managed client.
+
+        // For now, we'll simulate streaming by yielding a single update with the complete result
+        var response = await GenerateImagesAsync(request, options, cancellationToken).ConfigureAwait(false);
+
+        yield return new ImageResponseUpdate(response.Contents)
+        {
+            RawRepresentation = response.RawRepresentation
+        };
     }
 
     /// <inheritdoc />

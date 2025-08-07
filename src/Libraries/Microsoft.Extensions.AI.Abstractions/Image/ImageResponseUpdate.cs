@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -60,23 +59,4 @@ public class ImageResponseUpdate
     /// </remarks>
     [JsonIgnore]
     public object? RawRepresentation { get; set; }
-
-    /// <summary>Gets or sets additional properties for the update.</summary>
-    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
-
-    /// <summary>Gets or sets the ID of the response of which this update is a part.</summary>
-    public string? ResponseId { get; set; }
-
-    /// <summary>Gets or sets a timestamp for the response update.</summary>
-    public DateTimeOffset? CreatedAt { get; set; }
-
-    /// <summary>Gets or sets the model ID associated with this response update.</summary>
-    public string? ModelId { get; set; }
-
-    /// <summary>Gets or sets an indication of the completion status of the image generation.</summary>
-    /// <remarks>
-    /// This can indicate whether the generation is in progress, completed successfully,
-    /// or encountered an error.
-    /// </remarks>
-    public string? CompletionStatus { get; set; }
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -230,5 +231,70 @@ public class ImageClientExtensionsTests
 
         // Assert
         Assert.Equal(2, callCount);
+    }
+
+    [Fact]
+    public async Task GenerateStreamingImagesAsync_WithPrompt_CallsGenerateStreamingImagesAsync()
+    {
+        // Arrange
+        using var testClient = new TestImageClient();
+        var prompt = "A beautiful sunset";
+        var options = new ImageOptions { Count = 2 };
+        var expectedUpdate = new ImageResponseUpdate();
+        var cancellationToken = new CancellationToken(canceled: false);
+
+        testClient.GenerateStreamingImagesAsyncCallback = (request, o, ct) =>
+        {
+            Assert.NotNull(request);
+            Assert.Equal(prompt, request.Prompt);
+            Assert.Null(request.OriginalImages);
+            Assert.Same(options, o);
+            Assert.Equal(cancellationToken, ct);
+            return YieldAsync(expectedUpdate);
+        };
+
+        // Act
+        var updates = new List<ImageResponseUpdate>();
+        await foreach (var update in testClient.GenerateStreamingImagesAsync(prompt, options, cancellationToken))
+        {
+            updates.Add(update);
+        }
+
+        // Assert
+        Assert.Single(updates);
+        Assert.Same(expectedUpdate, updates[0]);
+    }
+
+    [Fact]
+    public async Task GenerateStreamingImagesAsync_NullClient_Throws()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>("client", async () =>
+        {
+            await foreach (var _ in ImageClientExtensions.GenerateStreamingImagesAsync(null!, "prompt"))
+            {
+                // Should not reach here
+            }
+        });
+    }
+
+    [Fact]
+    public async Task GenerateStreamingImagesAsync_NullPrompt_Throws()
+    {
+        using var testClient = new TestImageClient();
+
+        await Assert.ThrowsAsync<ArgumentNullException>("prompt", async () =>
+        {
+            await foreach (var _ in ImageClientExtensions.GenerateStreamingImagesAsync(testClient, null!))
+            {
+                // Should not reach here
+            }
+        });
+    }
+
+    private static async IAsyncEnumerable<T> YieldAsync<T>(T item)
+    {
+        // Helper method to yield an item asynchronously
+        await Task.Yield();
+        yield return item;
     }
 }

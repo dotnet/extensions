@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,6 +19,8 @@ public sealed class TestImageClient : IImageClient
 
     public Func<ImageRequest, ImageOptions?, CancellationToken, Task<ImageResponse>>? GenerateImagesAsyncCallback { get; set; }
 
+    public Func<ImageRequest, ImageOptions?, CancellationToken, IAsyncEnumerable<ImageResponseUpdate>>? GenerateStreamingImagesAsyncCallback { get; set; }
+
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
 
     public bool DisposeInvoked { get; private set; }
@@ -29,6 +32,18 @@ public sealed class TestImageClient : IImageClient
     {
         return GenerateImagesAsyncCallback?.Invoke(request, options, cancellationToken) ??
             Task.FromResult(new ImageResponse());
+    }
+
+    public IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return GenerateStreamingImagesAsyncCallback?.Invoke(request, options, cancellationToken) ??
+            EmptyAsyncEnumerable();
+    }
+
+    private static async IAsyncEnumerable<ImageResponseUpdate> EmptyAsyncEnumerable()
+    {
+        await Task.CompletedTask;
+        yield break;
     }
 
     public object? GetService(Type serviceType, object? serviceKey = null)

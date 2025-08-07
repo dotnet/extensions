@@ -187,6 +187,27 @@ public static class ImageClientExtensions
     }
 
     /// <summary>
+    /// Generates images based on a text prompt with streaming updates.
+    /// </summary>
+    /// <param name="client">The image client.</param>
+    /// <param name="prompt">The prompt to guide the image generation.</param>
+    /// <param name="options">The image generation options to configure the request.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="prompt"/> are <see langword="null"/>.</exception>
+    /// <returns>An async enumerable of image generation updates.</returns>
+    public static IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(
+        this IImageClient client,
+        string prompt,
+        ImageOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(client);
+        _ = Throw.IfNull(prompt);
+
+        return client.GenerateStreamingImagesAsync(new ImageRequest(prompt), options, cancellationToken);
+    }
+
+    /// <summary>
     /// Gets the media type based on the file extension.
     /// </summary>
     /// <param name="fileName">The filename to extract the media type from.</param>

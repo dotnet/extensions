@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,6 +45,13 @@ public class DelegatingImageClient : IImageClient
         ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         return InnerClient.GenerateImagesAsync(request, options, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public virtual IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(
+        ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return InnerClient.GenerateStreamingImagesAsync(request, options, cancellationToken);
     }
 
     /// <inheritdoc />

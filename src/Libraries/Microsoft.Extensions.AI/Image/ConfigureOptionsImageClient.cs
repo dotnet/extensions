@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +40,13 @@ public sealed class ConfigureOptionsImageClient : DelegatingImageClient
         ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await base.GenerateImagesAsync(request, Configure(options), cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public override IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(
+        ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return base.GenerateStreamingImagesAsync(request, Configure(options), cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="ImageOptions"/> to pass along to the inner client.</summary>

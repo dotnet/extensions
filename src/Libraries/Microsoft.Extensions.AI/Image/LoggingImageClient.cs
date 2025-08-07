@@ -2,12 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
+using static Microsoft.Extensions.AI.OpenTelemetryConsts.GenAI;
 
 namespace Microsoft.Extensions.AI;
 
@@ -56,11 +60,13 @@ public partial class LoggingImageClient : DelegatingImageClient
     public override async Task<ImageResponse> GenerateImagesAsync(
         ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(request);
+
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GenerateImagesAsync), AsJson(request), AsJson(options), AsJson(this.GetService<ImageClientMetadata>()));
+                LogInvokedSensitive(nameof(GenerateImagesAsync), request.Prompt ?? string.Empty, AsJson(options), AsJson(this.GetService<ImageClientMetadata>()));
             }
             else
             {
@@ -74,7 +80,7 @@ public partial class LoggingImageClient : DelegatingImageClient
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                if (_logger.IsEnabled(LogLevel.Trace))
+                if (_logger.IsEnabled(LogLevel.Trace) && response.Contents.All(c => c is not DataContent))
                 {
                     LogCompletedSensitive(nameof(GenerateImagesAsync), AsJson(response));
                 }
@@ -95,6 +101,49 @@ public partial class LoggingImageClient : DelegatingImageClient
         {
             LogInvocationFailed(nameof(GenerateImagesAsync), ex);
             throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public override IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(
+        ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(request);
+
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                LogInvokedSensitive(nameof(GenerateStreamingImagesAsync), request.Prompt ?? string.Empty, AsJson(options), AsJson(this.GetService<ImageClientMetadata>()));
+            }
+            else
+            {
+                LogInvoked(nameof(GenerateStreamingImagesAsync));
+            }
+        }
+
+        return LogStreamingUpdatesAsync(base.GenerateStreamingImagesAsync(request, options, cancellationToken), cancellationToken);
+    }
+
+    private async IAsyncEnumerable<ImageResponseUpdate> LogStreamingUpdatesAsync(
+        IAsyncEnumerable<ImageResponseUpdate> updates,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var update in updates.WithCancellation(cancellationToken))
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                if (_logger.IsEnabled(LogLevel.Trace) && update.Contents.All(c => c is not DataContent))
+                {
+                    LogCompletedSensitive(nameof(GenerateStreamingImagesAsync), AsJson(update));
+                }
+                else
+                {
+                    LogCompleted(nameof(GenerateStreamingImagesAsync));
+                }
+            }
+
+            yield return update;
         }
     }
 
