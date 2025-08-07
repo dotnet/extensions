@@ -159,7 +159,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         // Avoid double slash when path already starts with a slash
 #if NETCOREAPP || NET5_0_OR_GREATER
-   string pathPrefix = logRecord.Path.StartsWith('/') ? string.Empty : "/";
+        string pathPrefix = logRecord.Path.StartsWith('/') ? string.Empty : "/";
 #else
 #pragma warning disable EA0003 // Character based overload doesn't exist in net framework
         string pathPrefix = logRecord.Path.StartsWith("/", StringComparison.Ordinal) ? string.Empty : "/";

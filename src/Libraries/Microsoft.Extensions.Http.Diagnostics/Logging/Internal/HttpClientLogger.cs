@@ -236,17 +236,6 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             }
         }
 
-        if (logRecord.QueryParameters is { Length: > 0 })
-        {
-            if (loggerMessageState is IEnrichmentTagCollector collector)
-            {
-                foreach (var param in logRecord.QueryParameters)
-                {
-                    collector.Add(param.Key, param.Value);
-                }
-            }
-        }
-
         logRecord.EnrichmentTags = loggerMessageState;
         logRecord.Duration = (long)elapsed.TotalMilliseconds;
     }
