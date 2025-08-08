@@ -4,16 +4,20 @@
 using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net.Mime;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Images;
 using OpenAI.Responses;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 #pragma warning disable S907 // "goto" statement should not be used
 #pragma warning disable S1067 // Expressions should not be too complex
@@ -164,7 +168,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 default:
-                    message.Contents.Add(new() { RawRepresentation = outputItem });
+                    if (outputItem.GetType().Name == "InternalImageGenToolCallItemResource")
+                    {
+                        message.Contents.Add(GetContentFromImageGen(outputItem));
+                    }
+                    else
+                    {
+                        message.Contents.Add(new() { RawRepresentation = outputItem });
+                    }
+
                     break;
             }
         }
@@ -173,6 +185,39 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             yield return message;
         }
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ResponseItem))]
+    private static DataContent GetContentFromImageGen(ResponseItem outputItem)
+    {
+        var imageGenResultType = Type.GetType("OpenAI.Responses.InternalImageGenToolCallItemResource, OpenAI");
+        if (imageGenResultType == null)
+        {
+            throw new InvalidOperationException("Unable to determine the type of the image generation result.");
+        }
+
+        var imageGenStatus = imageGenResultType.GetProperty("Status")?.GetValue(outputItem)?.ToString();
+        var imageGenResult = imageGenResultType.GetProperty("Result")?.GetValue(outputItem) as string;
+
+        IDictionary<string, BinaryData>? additionalRawData = imageGenResultType
+            .GetProperty("SerializedAdditionalRawData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            ?.GetValue(outputItem) as IDictionary<string, BinaryData>;
+
+        string mediaType = "image/png";
+        if (additionalRawData?.TryGetValue("output_format", out var outputFormat) == true)
+        {
+            var stringJsonTypeInfo = (JsonTypeInfo<string>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(string));
+            var outputFormatString = JsonSerializer.Deserialize(outputFormat, stringJsonTypeInfo);
+            mediaType = $"image/{outputFormatString}";
+        }
+
+        var resultBytes = Convert.FromBase64String(imageGenResult ?? string.Empty);
+
+        return new DataContent(resultBytes, mediaType)
+        {
+            RawRepresentation = outputItem,
+        };
+
     }
 
     /// <inheritdoc />
