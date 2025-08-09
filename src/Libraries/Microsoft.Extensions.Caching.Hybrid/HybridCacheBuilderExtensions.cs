@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -57,6 +59,29 @@ public static class HybridCacheBuilderExtensions
         where TImplementation : class, IHybridCacheSerializerFactory
     {
         _ = Throw.IfNull(builder).Services.AddSingleton<IHybridCacheSerializerFactory, TImplementation>();
+        return builder;
+    }
+
+    /// <summary>
+    /// Register a default <see cref="JsonSerializerOptions"/> for use with JSON serialization.
+    /// </summary>
+    /// <returns>The <see cref="IHybridCacheBuilder"/> instance.</returns>
+    [Experimental(DiagnosticIds.Experiments.HybridCache, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IHybridCacheBuilder WithJsonSerializerOptions(this IHybridCacheBuilder builder, JsonSerializerOptions options)
+    {
+        _ = Throw.IfNull(builder).Services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<>), Throw.IfNull(options));
+        return builder;
+    }
+
+    /// <summary>
+    /// Register a <see cref="JsonSerializerOptions"/> for use with JSON serialization of type <typeparamref name="T"/>.
+    /// </summary>
+    /// <typeparam name="T">The type being serialized.</typeparam>
+    /// <returns>The <see cref="IHybridCacheBuilder"/> instance.</returns>
+    [Experimental(DiagnosticIds.Experiments.HybridCache, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IHybridCacheBuilder WithJsonSerializerOptions<T>(this IHybridCacheBuilder builder, JsonSerializerOptions options)
+    {
+        _ = Throw.IfNull(builder).Services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<T>), Throw.IfNull(options));
         return builder;
     }
 }
