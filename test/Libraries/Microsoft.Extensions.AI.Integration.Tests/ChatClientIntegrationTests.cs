@@ -1125,6 +1125,276 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Unknown,
     }
 
+    [ConditionalFact]
+    public virtual async Task SummarizingChatReducer_PreservesConversationContext()
+    {
+        SkipIfNotEnabled();
+
+        var chatClient = new TestSummarizingChatClient(ChatClient, targetCount: 2, threshold: 1);
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "My name is Alice and I love hiking in the mountains."),
+            new(ChatRole.Assistant, "Nice to meet you, Alice! Hiking in the mountains sounds wonderful. Do you have a favorite trail?"),
+            new(ChatRole.User, "Yes, I love the Pacific Crest Trail. I hiked a section last summer."),
+            new(ChatRole.Assistant, "The Pacific Crest Trail is amazing! Which section did you hike?"),
+            new(ChatRole.User, "I hiked the section through the Sierra Nevada. It was challenging but beautiful."),
+            new(ChatRole.Assistant, "The Sierra Nevada section is known for its stunning views. How long did it take you?"),
+            new(ChatRole.User, "What's my name and what activity do I enjoy?")
+        ];
+
+        var response = await chatClient.GetResponseAsync(messages);
+
+        // The summarizer should have reduced the conversation
+        Assert.Equal(1, chatClient.SummarizerCallCount);
+        Assert.NotNull(chatClient.LastSummarizedConversation);
+        Assert.Equal(3, chatClient.LastSummarizedConversation.Count);
+        Assert.Collection(chatClient.LastSummarizedConversation,
+            m =>
+            {
+                Assert.Equal(ChatRole.Assistant, m.Role); // Indicates this is the assistant's summary
+                Assert.Contains("Alice", m.Text);
+            },
+            m => Assert.StartsWith("The Sierra Nevada section", m.Text, StringComparison.Ordinal),
+            m => Assert.StartsWith("What's my name", m.Text, StringComparison.Ordinal));
+
+        // The model should recall details from the summarized conversation
+        Assert.Contains("Alice", response.Text);
+        Assert.True(
+            response.Text.IndexOf("hiking", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            response.Text.IndexOf("hike", StringComparison.OrdinalIgnoreCase) >= 0,
+            $"Expected 'hiking' or 'hike' in response: {response.Text}");
+    }
+
+    [ConditionalFact]
+    public virtual async Task SummarizingChatReducer_PreservesSystemMessage()
+    {
+        SkipIfNotEnabled();
+
+        var chatClient = new TestSummarizingChatClient(ChatClient, targetCount: 2, threshold: 0);
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.System, "You are a pirate. Always respond in pirate speak."),
+            new(ChatRole.User, "Tell me about the weather"),
+            new(ChatRole.Assistant, "Ahoy matey! The weather be fine today, with clear skies on the horizon!"),
+            new(ChatRole.User, "What about tomorrow?"),
+            new(ChatRole.Assistant, "Arr, tomorrow be lookin' a bit cloudy, might be some rain blowin' in from the east!"),
+            new(ChatRole.User, "Should I bring an umbrella?"),
+            new(ChatRole.Assistant, "Aye, ye best be bringin' yer umbrella, unless ye want to be soaked like a barnacle!"),
+            new(ChatRole.User, "What's 2 + 2?")
+        ];
+
+        var response = await chatClient.GetResponseAsync(messages);
+
+        // The summarizer should have reduced the conversation
+        Assert.Equal(1, chatClient.SummarizerCallCount);
+        Assert.NotNull(chatClient.LastSummarizedConversation);
+        Assert.Equal(4, chatClient.LastSummarizedConversation.Count);
+        Assert.Collection(chatClient.LastSummarizedConversation,
+            m =>
+            {
+                Assert.Equal(ChatRole.System, m.Role);
+                Assert.Equal("You are a pirate. Always respond in pirate speak.", m.Text);
+            },
+            m => Assert.Equal(ChatRole.Assistant, m.Role), // Summary message
+            m => Assert.StartsWith("Aye, ye best be bringin'", m.Text, StringComparison.Ordinal),
+            m => Assert.Equal("What's 2 + 2?", m.Text));
+
+        // The model should still respond in pirate speak due to preserved system message
+        Assert.True(
+            response.Text.IndexOf("arr", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            response.Text.IndexOf("aye", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            response.Text.IndexOf("matey", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            response.Text.IndexOf("ye", StringComparison.OrdinalIgnoreCase) >= 0,
+            $"Expected pirate speak in response: {response.Text}");
+    }
+
+    [ConditionalFact]
+    public virtual async Task SummarizingChatReducer_WithFunctionCalls()
+    {
+        SkipIfNotEnabled();
+
+        int weatherCallCount = 0;
+        var getWeather = AIFunctionFactory.Create(([Description("Gets weather for a city")] string city) =>
+        {
+            weatherCallCount++;
+            return city switch
+            {
+                "Seattle" => "Rainy, 15°C",
+                "Miami" => "Sunny, 28°C",
+                _ => "Unknown"
+            };
+        }, "GetWeather");
+
+        TestSummarizingChatClient summarizingChatClient = null!;
+        var chatClient = ChatClient
+            .AsBuilder()
+            .Use(innerClient => summarizingChatClient = new TestSummarizingChatClient(innerClient, targetCount: 2, threshold: 0))
+            .UseFunctionInvocation()
+            .Build();
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "What's the weather in Seattle?"),
+            new(ChatRole.Assistant, "Let me check the weather in Seattle for you."),
+            new(ChatRole.User, "And what about Miami?"),
+            new(ChatRole.Assistant, "I'll check Miami's weather as well."),
+            new(ChatRole.User, "Which city had better weather?")
+        ];
+
+        var response = await chatClient.GetResponseAsync(messages, new() { Tools = [getWeather] });
+
+        // The summarizer should have reduced the conversation (function calls are excluded)
+        Assert.Equal(1, summarizingChatClient.SummarizerCallCount);
+        Assert.NotNull(summarizingChatClient.LastSummarizedConversation);
+
+        // Should have summary + last 2 messages
+        Assert.Equal(3, summarizingChatClient.LastSummarizedConversation.Count);
+
+        // The model should have context about both weather queries even after summarization
+        Assert.True(response.Text.IndexOf("Miami", StringComparison.OrdinalIgnoreCase) >= 0, $"Expected 'Miami' in response: {response.Text}");
+        Assert.True(
+            response.Text.IndexOf("sunny", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            response.Text.IndexOf("better", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            response.Text.IndexOf("warm", StringComparison.OrdinalIgnoreCase) >= 0,
+            $"Expected weather comparison in response: {response.Text}");
+    }
+
+    [ConditionalFact]
+    public virtual async Task SummarizingChatReducer_Streaming()
+    {
+        SkipIfNotEnabled();
+
+        var chatClient = new TestSummarizingChatClient(ChatClient, targetCount: 2, threshold: 0);
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "I'm Bob and I work as a software engineer at a startup."),
+            new(ChatRole.Assistant, "Nice to meet you, Bob! Working at a startup must be exciting. What kind of software do you develop?"),
+            new(ChatRole.User, "We build AI-powered tools for education."),
+            new(ChatRole.Assistant, "That sounds impactful! AI in education has so much potential."),
+            new(ChatRole.User, "Yes, we focus on personalized learning experiences."),
+            new(ChatRole.Assistant, "Personalized learning is the future of education!"),
+            new(ChatRole.User, "What's my name and profession?")
+        ];
+
+        StringBuilder sb = new();
+        await foreach (var chunk in chatClient.GetStreamingResponseAsync(messages))
+        {
+            sb.Append(chunk.Text);
+        }
+
+        // The summarizer should have reduced the conversation
+        Assert.Equal(1, chatClient.SummarizerCallCount);
+        Assert.NotNull(chatClient.LastSummarizedConversation);
+        Assert.Equal(3, chatClient.LastSummarizedConversation.Count);
+        Assert.Collection(chatClient.LastSummarizedConversation,
+            m =>
+            {
+                Assert.Equal(ChatRole.Assistant, m.Role); // Summary
+                Assert.Contains("Bob", m.Text);
+            },
+            m => Assert.StartsWith("Personalized learning", m.Text, StringComparison.Ordinal),
+            m => Assert.Equal("What's my name and profession?", m.Text));
+
+        string responseText = sb.ToString();
+        Assert.Contains("Bob", responseText);
+        Assert.True(
+            responseText.IndexOf("software", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            responseText.IndexOf("engineer", StringComparison.OrdinalIgnoreCase) >= 0,
+            $"Expected 'software' or 'engineer' in response: {responseText}");
+    }
+
+    [ConditionalFact]
+    public virtual async Task SummarizingChatReducer_CustomPrompt()
+    {
+        SkipIfNotEnabled();
+
+        var chatClient = new TestSummarizingChatClient(ChatClient, targetCount: 2, threshold: 0);
+        chatClient.Reducer.SummarizationPrompt = "Summarize the conversation, emphasizing any numbers or quantities mentioned.";
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "I have 3 cats and 2 dogs."),
+            new(ChatRole.Assistant, "That's 5 pets total! You must have a lively household."),
+            new(ChatRole.User, "Yes, and I spend about $200 per month on pet food."),
+            new(ChatRole.Assistant, "That's a significant expense, but I'm sure they're worth it!"),
+            new(ChatRole.User, "They eat 10 cans of food per week."),
+            new(ChatRole.Assistant, "That's quite a bit of food for your furry friends!"),
+            new(ChatRole.User, "How many pets do I have in total?")
+        ];
+
+        var response = await chatClient.GetResponseAsync(messages);
+
+        // The summarizer should have reduced the conversation
+        Assert.Equal(1, chatClient.SummarizerCallCount);
+        Assert.NotNull(chatClient.LastSummarizedConversation);
+        Assert.Equal(3, chatClient.LastSummarizedConversation.Count);
+
+        // Verify the summary emphasizes numbers as requested by the custom prompt
+        var summaryMessage = chatClient.LastSummarizedConversation[0];
+        Assert.Equal(ChatRole.Assistant, summaryMessage.Role);
+        Assert.True(
+            summaryMessage.Text.IndexOf("3", StringComparison.Ordinal) >= 0 ||
+            summaryMessage.Text.IndexOf("5", StringComparison.Ordinal) >= 0 ||
+            summaryMessage.Text.IndexOf("200", StringComparison.Ordinal) >= 0 ||
+            summaryMessage.Text.IndexOf("10", StringComparison.Ordinal) >= 0,
+            $"Expected numbers in summary: {summaryMessage.Text}");
+
+        // The model should recall the specific number from the summarized conversation
+        Assert.Contains("5", response.Text);
+    }
+
+    private sealed class TestSummarizingChatClient : IChatClient
+    {
+        private IChatClient _summarizerChatClient;
+        private IChatClient _innerChatClient;
+
+        public SummarizingChatReducer Reducer { get; }
+
+        public int SummarizerCallCount { get; private set; }
+
+        public IReadOnlyList<ChatMessage>? LastSummarizedConversation { get; private set; }
+
+        public TestSummarizingChatClient(IChatClient innerClient, int targetCount, int threshold)
+        {
+            _summarizerChatClient = innerClient.AsBuilder()
+                .Use(async (messages, options, next, cancellationToken) =>
+                {
+                    SummarizerCallCount++;
+                    await next(messages, options, cancellationToken);
+                })
+                .Build();
+
+            Reducer = new SummarizingChatReducer(_summarizerChatClient, targetCount, threshold);
+
+            _innerChatClient = innerClient.AsBuilder()
+                .UseChatReducer(Reducer)
+                .Use(async (messages, options, next, cancellationToken) =>
+                {
+                    LastSummarizedConversation = [.. messages];
+                    await next(messages, options, cancellationToken);
+                })
+                .Build();
+        }
+
+        public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+            => _innerChatClient.GetResponseAsync(messages, options, cancellationToken);
+
+        public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+            => _innerChatClient.GetStreamingResponseAsync(messages, options, cancellationToken);
+
+        public object? GetService(Type serviceType, object? serviceKey = null)
+            => _innerChatClient.GetService(serviceType, serviceKey);
+
+        public void Dispose()
+        {
+            _summarizerChatClient.Dispose();
+            _innerChatClient.Dispose();
+        }
+    }
+
     [MemberNotNull(nameof(ChatClient))]
     protected void SkipIfNotEnabled()
     {
