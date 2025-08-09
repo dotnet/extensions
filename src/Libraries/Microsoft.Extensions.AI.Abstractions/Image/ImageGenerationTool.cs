@@ -18,12 +18,12 @@ public class ImageGenerationTool : AITool
     /// Initializes a new instance of the <see cref="ImageGenerationTool"/> class with the specified options.
     /// </summary>
     /// <param name="options">The options to configure the image generation request. If <paramref name="options"/> is <see langword="null"/>, default options will be used.</param>
-    public ImageGenerationTool(TextToImageOptions? options = null)
+    public ImageGenerationTool(ImageGenerationOptions? options = null)
         : base()
     {
         AdditionalProperties = new AdditionalPropertiesDictionary(new Dictionary<string, object?>
         {
-            [nameof(TextToImageOptions)] = options
+            [nameof(ImageGenerationOptions)] = options
         });
     }
 
