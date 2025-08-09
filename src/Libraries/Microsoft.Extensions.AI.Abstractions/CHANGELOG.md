@@ -6,6 +6,10 @@
 - Added `ChatMessage.CreatedAt` so that chat messages can carry their timestamp.
 - Added a `[Description(...)]` attribute to `DataContent.Uri` to clarify its purpose when used in schemas.
 - Added `DataContent.Name` property to associate a name with the binary data, like a filename.
+- Added `HostedFileContent` for representing files hosted by the service.
+- Added `HostedVectorStoreContent` for representing vector stores hosted by the service.
+- Added `HostedFileSearchTool` to represent server-side file search tools.
+- Added `HostedCodeInterpreterTool.Inputs` to supply context about what state is available to the code interpreter tool.
 - Improved handling of function parameter data annotation attributes in `AIJsonUtilities.CreateJsonSchema`.
 - Fixed schema generation to include an items keyword for arrays of objects in `AIJsonUtilities.CreateJsonSchema`.
 

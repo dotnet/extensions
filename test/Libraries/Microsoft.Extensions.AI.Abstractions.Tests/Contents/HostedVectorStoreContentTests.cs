@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class HostedFileStoreContentTests
+public class HostedVectorStoreContentTests
 {
     [Fact]
     public void Constructor_InvalidInput_Throws()
@@ -19,11 +19,10 @@ public class HostedFileStoreContentTests
     [Fact]
     public void Constructor_String_PropsDefault()
     {
-        string fileId = "id123";
-        HostedVectorStoreContent c = new(fileId);
+        HostedVectorStoreContent c = new("id123");
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Equal(fileId, c.VectorStoreId);
+        Assert.Equal("id123", c.VectorStoreId);
     }
 
     [Fact]

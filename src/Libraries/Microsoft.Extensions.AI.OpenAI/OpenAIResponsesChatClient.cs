@@ -625,15 +625,30 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             switch (part.Kind)
             {
-                case ResponseContentPartKind.OutputText:
-                    TextContent text = new(part.Text)
-                    {
-                        RawRepresentation = part,
-                    };
-
+                case ResponseContentPartKind.InputText or ResponseContentPartKind.OutputText:
+                    TextContent text = new(part.Text) { RawRepresentation = part };
                     PopulateAnnotations(part, text);
-
                     results.Add(text);
+                    break;
+
+                case ResponseContentPartKind.InputFile:
+                    if (!string.IsNullOrWhiteSpace(part.InputImageFileId))
+                    {
+                        results.Add(new HostedFileContent(part.InputImageFileId) { RawRepresentation = part });
+                    }
+                    else if (!string.IsNullOrWhiteSpace(part.InputFileId))
+                    {
+                        results.Add(new HostedFileContent(part.InputFileId) { RawRepresentation = part });
+                    }
+                    else if (part.InputFileBytes is not null)
+                    {
+                        results.Add(new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream")
+                        {
+                            Name = part.InputFilename,
+                            RawRepresentation = part,
+                        });
+                    }
+
                     break;
 
                 case ResponseContentPartKind.Refusal:
@@ -645,10 +660,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 default:
-                    results.Add(new()
-                    {
-                        RawRepresentation = part,
-                    });
+                    results.Add(new() { RawRepresentation = part });
                     break;
             }
         }
