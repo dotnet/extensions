@@ -6,33 +6,42 @@ using System.Buffers;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Http.Logging.Internal;
 
 internal sealed class HttpRequestReader : IHttpRequestReader
 {
+    private const int MaxQueryParams = 32;
+    private static readonly ObjectPool<List<KeyValuePair<string, string>>> _queryParamListPool =
+        PoolFactory.CreateListPoolWithCapacity<KeyValuePair<string, string>>(MaxQueryParams);
+
     private readonly IHttpRouteFormatter _routeFormatter;
     private readonly IHttpRouteParser _httpRouteParser;
     private readonly IHttpHeadersReader _httpHeadersReader;
     private readonly FrozenDictionary<string, DataClassification> _defaultSensitiveParameters;
+    private readonly FrozenDictionary<string, DataClassification> _queryParameterDataClasses;
 
     private readonly bool _logRequestBody;
     private readonly bool _logResponseBody;
+    private readonly bool _logRequestQueryParameters;
 
     private readonly bool _logRequestHeaders;
     private readonly bool _logResponseHeaders;
 
     private readonly HttpRouteParameterRedactionMode _routeParameterRedactionMode;
 
-    // These are not registered in DI as handler today is public and we would need to make all of those types public.
+    // These are not registered in DI as handler today is public, and we would need to make all of those types public.
     // They are not implemented as statics to simplify design and pass less arguments around.
     // Also wanted to encapsulate logic of reading each part of the request to simplify handler logic itself.
     private readonly HttpRequestBodyReader _httpRequestBodyReader;
@@ -77,6 +86,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         _downstreamDependencyMetadataManager = downstreamDependencyMetadataManager;
 
         _defaultSensitiveParameters = options.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
+        _queryParameterDataClasses = options.RequestQueryParametersDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
 
         if (options.LogBody)
         {
@@ -86,31 +96,12 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;
         _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
+        _logRequestQueryParameters = options.RequestQueryParametersDataClasses.Count > 0;
 
         _httpRequestBodyReader = new HttpRequestBodyReader(options);
         _httpResponseBodyReader = new HttpResponseBodyReader(options);
 
         _routeParameterRedactionMode = options.RequestPathParameterRedactionMode;
-    }
-
-    public async Task ReadRequestAsync(LogRecord logRecord, HttpRequestMessage request,
-        List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken cancellationToken)
-    {
-        logRecord.Host = request.RequestUri?.Host ?? TelemetryConstants.Unknown;
-        logRecord.Method = request.Method;
-        GetRedactedPathAndParameters(request, logRecord);
-
-        if (_logRequestHeaders)
-        {
-            _httpHeadersReader.ReadRequestHeaders(request, requestHeadersBuffer);
-            logRecord.RequestHeaders = requestHeadersBuffer;
-        }
-
-        if (_logRequestBody)
-        {
-            logRecord.RequestBody = await _httpRequestBodyReader.ReadAsync(request, cancellationToken)
-                .ConfigureAwait(false);
-        }
     }
 
     public async Task ReadResponseAsync(LogRecord logRecord, HttpResponseMessage response,
@@ -129,6 +120,127 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         }
 
         logRecord.StatusCode = (int)response.StatusCode;
+    }
+
+    public async Task ReadRequestAsync(LogRecord logRecord, HttpRequestMessage request,
+            List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken
+            cancellationToken)
+    {
+        logRecord.Host = request.RequestUri?.Host ?? TelemetryConstants.Unknown;
+        logRecord.Method = request.Method;
+        GetRedactedPathAndParameters(request, logRecord);
+
+        if (_logRequestHeaders)
+        {
+            _httpHeadersReader.ReadRequestHeaders(request, requestHeadersBuffer);
+            logRecord.RequestHeaders = requestHeadersBuffer;
+        }
+
+        if (_logRequestBody)
+        {
+            logRecord.RequestBody = await _httpRequestBodyReader.ReadAsync(request, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        logRecord.QueryParameters = GetQueryParameters(request);
+
+        var sb = new StringBuilder();
+        foreach (var kvp in logRecord.QueryParameters)
+        {
+            if (sb.Length > 0)
+            {
+                _ = sb.Append('&');
+            }
+
+            _ = sb.Append(kvp.Key).Append('=').Append(kvp.Value);
+        }
+
+        var queryString = sb.ToString();
+
+        // Avoid double slash when path already starts with a slash
+#if NETCOREAPP || NET5_0_OR_GREATER
+        string pathPrefix = logRecord.Path.StartsWith('/') ? string.Empty : "/";
+#else
+#pragma warning disable EA0003 // Character based overload doesn't exist in net framework
+        string pathPrefix = logRecord.Path.StartsWith("/", StringComparison.Ordinal) ? string.Empty : "/";
+#pragma warning restore EA0003 
+#endif
+        logRecord.FullUrl = string.IsNullOrEmpty(queryString)
+            ? $"{logRecord.Host}{pathPrefix}{logRecord.Path}"
+            : $"{logRecord.Host}{pathPrefix}{logRecord.Path}?{queryString}";
+    }
+
+    private static string UnescapeDataString(ReadOnlySpan<char> value)
+    {
+#if NET9_0_OR_GREATER
+        return Uri.UnescapeDataString(value);
+#else
+        return Uri.UnescapeDataString(value.ToString());
+#endif
+    }
+
+    private KeyValuePair<string, string>[] GetQueryParameters(HttpRequestMessage request)
+    {
+        if (_logRequestQueryParameters && !string.IsNullOrEmpty(request.RequestUri?.Query))
+        {
+            return ExtractAndRedactQueryParameters(request.RequestUri!.Query);
+        }
+
+        return [];
+    }
+
+    private KeyValuePair<string, string>[] ExtractAndRedactQueryParameters(string query)
+    {
+        List<KeyValuePair<string, string>> result = _queryParamListPool.Get();
+        try
+        {
+            ReadOnlySpan<char> querySpan = query.AsSpan();
+            int length = querySpan.Length;
+            int start = 0;
+
+            // Remove leading '?'
+            if (length > 0 && querySpan[0] == '?')
+            {
+                start = 1;
+            }
+
+            while (start < length)
+            {
+                int amp = querySpan.Slice(start).IndexOf('&');
+                int end = amp == -1 ? length : start + amp;
+
+                int eq = querySpan.Slice(start, end - start).IndexOf('=');
+                if (eq >= 0)
+                {
+                    var keySpan = querySpan.Slice(start, eq);
+                    var valueSpan = querySpan.Slice(start + eq + 1, end - (start + eq + 1));
+
+                    string key = UnescapeDataString(keySpan);
+                    string value = UnescapeDataString(valueSpan);
+
+                    // Only process if the key is in the classification dictionary and value is not empty
+                    if (!string.IsNullOrEmpty(value) && _queryParameterDataClasses.TryGetValue(key, out var classification))
+                    {
+                        string redacted = _httpHeadersReader.RedactValue(value, classification);
+                        result.Add(new KeyValuePair<string, string>(key, redacted));
+                    }
+                }
+
+                if (amp == -1)
+                {
+                    break;
+                }
+
+                start = end + 1;
+            }
+
+            return result.ToArray();
+        }
+        finally
+        {
+            result.Clear();
+            _queryParamListPool.Return(result);
+        }
     }
 
     private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)
@@ -185,3 +297,4 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         }
     }
 }
+
