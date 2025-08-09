@@ -1,0 +1,111 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
+using System.Text.Json.Serialization;
+
+namespace Microsoft.Extensions.AI;
+
+/// <summary>Represents the options for an image generation request.</summary>
+[Experimental("MEAI001")]
+public class ImageOptions
+{
+    /// <summary>
+    /// Gets or sets the style of background to use for the generated image. Examples include "opaque" or "transparent".
+    /// </summary>
+    public string? Background { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of images to generate.
+    /// </summary>
+    public int? Count { get; set; }
+
+    /// <summary>
+    /// Gets or sets the size of the generated image.
+    /// If a provider only supports fixed sizes the closest supported size will be used.
+    /// A value of default(Size) indicates the default for the provider should be used.
+    /// </summary>
+    public Size? ImageSize { get; set; }
+
+    /// <summary>
+    /// Gets or sets the media type (also known as MIME type) of the generated image.
+    /// </summary>
+    public string? MediaType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the model ID to use for image generation.
+    /// </summary>
+    public string? ModelId { get; set; }
+
+    /// <summary>
+    /// Gets or sets a callback responsible for creating the raw representation of the image generation options from an underlying implementation.
+    /// </summary>
+    /// <remarks>
+    /// The underlying <see cref="IImageClient" /> implementation may have its own representation of options.
+    /// When <see cref="IImageClient.GenerateImagesAsync" /> is invoked with an <see cref="ImageOptions" />,
+    /// that implementation may convert the provided options into its own representation in order to use it while performing
+    /// the operation. For situations where a consumer knows  which concrete <see cref="IImageClient" /> is being used
+    /// and how it represents options, a new instance of that implementation-specific options type may be returned by this
+    /// callback, for the <see cref="IImageClient" />implementation to use instead of creating a new instance.
+    /// Such implementations may mutate the supplied options instance further based on other settings supplied on this
+    /// <see cref="ImageOptions" /> instance or from other inputs, therefore, it is <b>strongly recommended</b> to not
+    /// return shared instances and instead make the callback return a new instance on each call.
+    /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly-typed
+    /// properties on <see cref="ImageOptions" />.
+    /// </remarks>
+    [JsonIgnore]
+    public Func<IImageClient, object?>? RawRepresentationFactory { get; set; }
+
+    /// <summary>
+    /// Gets or sets the response format of the generated image.
+    /// </summary>
+    public ImageResponseFormat? ResponseFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the style of the generated image to some predefined style supported by the provider.
+    /// </summary>
+    public string? Style { get; set; }
+
+    /// <summary>Produces a clone of the current <see cref="ImageOptions"/> instance.</summary>
+    /// <returns>A clone of the current <see cref="ImageOptions"/> instance.</returns>
+    public virtual ImageOptions Clone()
+    {
+        ImageOptions options = new()
+        {
+            Background = Background,
+            Count = Count,
+            MediaType = MediaType,
+            ImageSize = ImageSize,
+            ModelId = ModelId,
+            RawRepresentationFactory = RawRepresentationFactory,
+            ResponseFormat = ResponseFormat,
+            Style = Style
+        };
+
+        return options;
+    }
+}
+
+/// <summary>
+/// Represents the requested content type of the generated image.
+/// </summary>
+[Experimental("MEAI001")]
+public enum ImageResponseFormat
+{
+    /// <summary>
+    /// The generated image is returned as a URI pointing to the image resource.
+    /// </summary>
+    Uri,
+
+    /// <summary>
+    /// The generated image is returned as in-memory image data.
+    /// </summary>
+    Data,
+
+    /// <summary>
+    /// The generated image is returned as a hosted resource identifier, which can be used to retrieve the image later.
+    /// </summary>
+    Hosted,
+}
