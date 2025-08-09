@@ -49,7 +49,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
     /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
-    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <see cref="AIFunctionDefinition.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
@@ -131,7 +131,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// Any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
     /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
-    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <see cref="AIFunctionDefinition.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
@@ -212,7 +212,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
     /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
-    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <see cref="AIFunctionDefinition.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
@@ -304,7 +304,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// Any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
     /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
-    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <see cref="AIFunctionDefinition.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
@@ -398,7 +398,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
     /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
-    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <see cref="AIFunctionDefinition.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
