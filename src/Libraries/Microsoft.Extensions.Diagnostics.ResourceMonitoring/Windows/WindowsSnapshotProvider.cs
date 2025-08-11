@@ -117,8 +117,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
     internal static long GetCpuTicks()
     {
 #if NET9_0_OR_GREATER
-        var cpuUsage = Environment.CpuUsage;
-        return (cpuUsage.PrivilegedTime + cpuUsage.UserTime).Ticks;
+        return Environment.CpuUsage.TotalTime.Ticks;
 #else
         using var process = Process.GetCurrentProcess();
         return process.TotalProcessorTime.Ticks;
