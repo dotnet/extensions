@@ -24,6 +24,16 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IImageGenerator"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ImageClient"/>.</summary>
 internal sealed class OpenAIImageGenerator : IImageGenerator
 {
+    private static readonly Dictionary<string, string> _mimeTypeToExtension = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["image/png"] = ".png",
+        ["image/jpeg"] = ".jpg",
+        ["image/webp"] = ".webp",
+        ["image/gif"] = ".gif",
+        ["image/bmp"] = ".bmp",
+        ["image/tiff"] = ".tiff",
+    };
+
     /// <summary>Metadata about the client.</summary>
     private readonly ImageGeneratorMetadata _metadata;
 
@@ -72,7 +82,20 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
                 imageStream = MemoryMarshal.TryGetArray(dataContent.Data, out var array) ?
                     new MemoryStream(array.Array!, array.Offset, array.Count) :
                     new MemoryStream(dataContent.Data.ToArray());
-                fileName = dataContent.Name ?? "image";
+                fileName = dataContent.Name;
+
+                if (fileName is null)
+                {
+                    // If no file name is provided, use the default based on the content type.
+                    if (dataContent.MediaType is not null && _mimeTypeToExtension.TryGetValue(dataContent.MediaType, out var extension))
+                    {
+                        fileName = $"image{extension}";
+                    }
+                    else
+                    {
+                        fileName = "image.png"; // Default to PNG if no content type is available.
+                    }
+                }
             }
 
             GeneratedImageCollection editResult = await _imageClient.GenerateImageEditsAsync(

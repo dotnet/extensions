@@ -83,7 +83,7 @@ public abstract class ImageGeneratorIntegrationTests : IDisposable
         SkipIfNotEnabled();
 
         var imageData = GetImageData("dotnet.png");
-        AIContent[] originalImages = [new DataContent(imageData, "image/png")];
+        AIContent[] originalImages = [new DataContent(imageData, "image/png") { Name = "dotnet.png" }];
 
         var options = new ImageGenerationOptions
         {
