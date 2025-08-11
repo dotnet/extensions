@@ -104,7 +104,6 @@ public class ImageGeneratorTests
     {
         var options = new ImageGenerationOptions
         {
-            Background = "transparent",
             ResponseFormat = ImageGenerationResponseFormat.Data,
             Count = 3,
             ImageSize = new Size(1024, 768),
@@ -133,7 +132,6 @@ public class ImageGeneratorTests
     {
         var options = new ImageGenerationOptions
         {
-            Background = "opaque",
             ResponseFormat = ImageGenerationResponseFormat.Uri,
             Count = 2,
             MediaType = "image/jpeg",

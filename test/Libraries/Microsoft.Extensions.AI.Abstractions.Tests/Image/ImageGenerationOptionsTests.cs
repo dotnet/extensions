@@ -14,7 +14,6 @@ public class ImageGenerationOptionsTests
     public void Constructor_Parameterless_PropsDefaulted()
     {
         ImageGenerationOptions options = new();
-        Assert.Null(options.Background);
         Assert.Null(options.ResponseFormat);
         Assert.Null(options.Count);
         Assert.Null(options.ImageSize);
@@ -24,7 +23,6 @@ public class ImageGenerationOptionsTests
         Assert.Null(options.Style);
 
         ImageGenerationOptions clone = options.Clone();
-        Assert.Null(clone.Background);
         Assert.Null(clone.ResponseFormat);
         Assert.Null(clone.Count);
         Assert.Null(clone.ImageSize);
@@ -41,7 +39,6 @@ public class ImageGenerationOptionsTests
 
         Func<IImageGenerator, object?> factory = generator => new { Representation = "raw data" };
 
-        options.Background = "transparent";
         options.ResponseFormat = ImageGenerationResponseFormat.Data;
         options.Count = 5;
         options.ImageSize = new Size(1024, 768);
@@ -50,7 +47,6 @@ public class ImageGenerationOptionsTests
         options.RawRepresentationFactory = factory;
         options.Style = "photorealistic";
 
-        Assert.Equal("transparent", options.Background);
         Assert.Equal(ImageGenerationResponseFormat.Data, options.ResponseFormat);
         Assert.Equal(5, options.Count);
         Assert.Equal(new Size(1024, 768), options.ImageSize);
@@ -60,7 +56,6 @@ public class ImageGenerationOptionsTests
         Assert.Equal("photorealistic", options.Style);
 
         ImageGenerationOptions clone = options.Clone();
-        Assert.Equal("transparent", clone.Background);
         Assert.Equal(ImageGenerationResponseFormat.Data, clone.ResponseFormat);
         Assert.Equal(5, clone.Count);
         Assert.Equal(new Size(1024, 768), clone.ImageSize);
@@ -75,7 +70,6 @@ public class ImageGenerationOptionsTests
     {
         ImageGenerationOptions options = new()
         {
-            Background = "opaque",
             ResponseFormat = ImageGenerationResponseFormat.Data,
             Count = 3,
             ImageSize = new Size(256, 256),
@@ -89,7 +83,6 @@ public class ImageGenerationOptionsTests
         ImageGenerationOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ImageGenerationOptions);
         Assert.NotNull(deserialized);
 
-        Assert.Equal("opaque", deserialized.Background);
         Assert.Equal(ImageGenerationResponseFormat.Data, deserialized.ResponseFormat);
         Assert.Equal(3, deserialized.Count);
         Assert.Equal(new Size(256, 256), deserialized.ImageSize);
@@ -103,7 +96,6 @@ public class ImageGenerationOptionsTests
     {
         ImageGenerationOptions original = new()
         {
-            Background = "transparent",
             ResponseFormat = ImageGenerationResponseFormat.Data,
             Count = 2,
             ImageSize = new Size(512, 512),
@@ -115,7 +107,6 @@ public class ImageGenerationOptionsTests
         ImageGenerationOptions clone = original.Clone();
 
         // Modify original
-        original.Background = "opaque";
         original.ResponseFormat = ImageGenerationResponseFormat.Uri;
         original.Count = 1;
         original.ImageSize = new Size(1024, 1024);
@@ -124,7 +115,6 @@ public class ImageGenerationOptionsTests
         original.Style = "baroque";
 
         // Clone should remain unchanged
-        Assert.Equal("transparent", clone.Background);
         Assert.Equal(ImageGenerationResponseFormat.Data, clone.ResponseFormat);
         Assert.Equal(2, clone.Count);
         Assert.Equal(new Size(512, 512), clone.ImageSize);

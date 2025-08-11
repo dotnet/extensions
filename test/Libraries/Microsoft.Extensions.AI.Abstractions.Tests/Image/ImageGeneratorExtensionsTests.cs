@@ -144,18 +144,6 @@ public class ImageGeneratorExtensionsTests
     }
 
     [Fact]
-    public async Task EditImageAsync_ByteArray_NullData_Throws()
-    {
-        using var testGenerator = new TestImageGenerator();
-
-        await Assert.ThrowsAsync<ArgumentNullException>("originalImageData", async () =>
-        {
-            byte[] nullData = null!;
-            await testGenerator.EditImageAsync(nullData, "test.png", "prompt");
-        });
-    }
-
-    [Fact]
     public async Task EditImageAsync_ByteArray_NullFileName_Throws()
     {
         using var testGenerator = new TestImageGenerator();

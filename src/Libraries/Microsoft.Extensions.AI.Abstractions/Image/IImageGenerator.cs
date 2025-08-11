@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 public interface IImageGenerator : IDisposable
 {
     /// <summary>
-    /// Sends a request the model and returns the generated image as a <see cref="ImageGenerationResponse"/>.
+    /// Sends an image generation request and returns the generated image as a <see cref="ImageGenerationResponse"/>.
     /// </summary>
     /// <param name="request">The image generation request containing the prompt and optional original images for editing.</param>
     /// <param name="options">The image generation options to configure the request.</param>

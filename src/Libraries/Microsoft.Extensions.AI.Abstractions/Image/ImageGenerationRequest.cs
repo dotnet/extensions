@@ -36,8 +36,10 @@ public class ImageGenerationRequest
 
     /// <summary>
     /// Gets or sets the original images to base edits on.
+    /// </summary>
+    /// <remarks>
     /// If this property is set, the request will behave as an image edit operation.
     /// If this property is null or empty, the request will behave as a new image generation operation.
-    /// </summary>
+    /// </remarks>
     public IEnumerable<AIContent>? OriginalImages { get; set; }
 }

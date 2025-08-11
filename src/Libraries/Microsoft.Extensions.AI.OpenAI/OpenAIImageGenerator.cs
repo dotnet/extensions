@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -57,43 +58,21 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
         _ = Throw.IfNull(prompt);
 
         // If the request has original images, treat this as an edit operation
-        if (request.OriginalImages != null)
+        if (request.OriginalImages is not null && request.OriginalImages.Any())
         {
             ImageEditOptions editOptions = ToOpenAIImageEditOptions(options);
             string? fileName = null;
             Stream? imageStream = null;
 
-            foreach (AIContent originalImage in request.OriginalImages)
-            {
-                if (imageStream is not null)
-                {
-                    // We only support a single image for editing.
-                    Throw.ArgumentException(
-                        "Only a single image can be provided for editing.",
-                        nameof(request));
-                }
+            // Currently only a single image is supported for editing.
+            var originalImage = request.OriginalImages.FirstOrDefault();
 
-                if (originalImage is DataContent dataContent)
-                {
-                    imageStream = MemoryMarshal.TryGetArray(dataContent.Data, out var array) ?
-                        new MemoryStream(array.Array!, array.Offset, array.Count) :
-                        new MemoryStream(dataContent.Data.ToArray());
-                    fileName = dataContent.Name ?? dataContent.MediaType switch
-                    {
-                        "image/png" => "image.png",
-                        "image/jpeg" => "image.jpg",
-                        "image/webp" => "image.webp",
-                        _ => "image"
-                    };
-                }
-                else
-                {
-                    // We might be able to handle UriContent by downloading the image, but need to plumb an HttpClient for that.
-                    // For now, we only support DataContent for image editing as OpenAI's API expects image data in a stream.
-                    Throw.ArgumentException(
-                        "The original image must be a DataContent instance containing image data.",
-                        nameof(request));
-                }
+            if (originalImage is DataContent dataContent)
+            {
+                imageStream = MemoryMarshal.TryGetArray(dataContent.Data, out var array) ?
+                    new MemoryStream(array.Array!, array.Offset, array.Count) :
+                    new MemoryStream(dataContent.Data.ToArray());
+                fileName = dataContent.Name ?? "image";
             }
 
             GeneratedImageCollection editResult = await _imageClient.GenerateImageEditsAsync(
@@ -181,15 +160,21 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
     {
         OpenAI.Images.ImageGenerationOptions result = options?.RawRepresentationFactory?.Invoke(this) as OpenAI.Images.ImageGenerationOptions ?? new();
 
-        result.Background ??= options?.Background;
-
-        result.OutputFileFormat ??= options?.MediaType switch
+        if (result.OutputFileFormat is null)
         {
-            "image/png" => GeneratedImageFileFormat.Png,
-            "image/jpeg" => GeneratedImageFileFormat.Jpeg,
-            "image/webp" => GeneratedImageFileFormat.Webp,
-            _ => null,
-        };
+            if (options?.MediaType?.Equals("image/png", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                result.OutputFileFormat = GeneratedImageFileFormat.Png;
+            }
+            else if (options?.MediaType?.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                result.OutputFileFormat = GeneratedImageFileFormat.Jpeg;
+            }
+            else if (options?.MediaType?.Equals("image/webp", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                result.OutputFileFormat = GeneratedImageFileFormat.Webp;
+            }
+        }
 
         result.ResponseFormat ??= options?.ResponseFormat switch
         {
@@ -197,12 +182,15 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
             ImageGenerationResponseFormat.Data => GeneratedImageFormat.Bytes,
 
             // ImageGenerationResponseFormat.Hosted not supported by ImageGenerator, however other OpenAI API support file IDs.
-            _ => null
+            _ => (GeneratedImageFormat?)null
         };
 
         result.Size ??= ToOpenAIImageSize(options?.ImageSize);
 
-        result.Style ??= options?.Style;
+        if (result.Style is null && options?.Style is not null)
+        {
+            result.Style = options.Style;
+        }
 
         return result;
     }
@@ -218,7 +206,7 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
             ImageGenerationResponseFormat.Data => GeneratedImageFormat.Bytes,
 
             // ImageGenerationResponseFormat.Hosted not supported by ImageGenerator, however other OpenAI API support file IDs.
-            _ => null
+            _ => (GeneratedImageFormat?)null
         };
 
         result.Size ??= ToOpenAIImageSize(options?.ImageSize);

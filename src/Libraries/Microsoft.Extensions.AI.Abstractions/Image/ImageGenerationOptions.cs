@@ -13,20 +13,16 @@ namespace Microsoft.Extensions.AI;
 public class ImageGenerationOptions
 {
     /// <summary>
-    /// Gets or sets the style of background to use for the generated image. Examples include "opaque" or "transparent".
-    /// </summary>
-    public string? Background { get; set; }
-
-    /// <summary>
     /// Gets or sets the number of images to generate.
     /// </summary>
     public int? Count { get; set; }
 
     /// <summary>
     /// Gets or sets the size of the generated image.
-    /// If a provider only supports fixed sizes the closest supported size will be used.
-    /// A value of default(Size) indicates the default for the provider should be used.
     /// </summary>
+    /// <remarks>
+    /// If a provider only supports fixed sizes the closest supported size will be used.
+    /// </remarks>
     public Size? ImageSize { get; set; }
 
     /// <summary>
@@ -74,7 +70,6 @@ public class ImageGenerationOptions
     {
         ImageGenerationOptions options = new()
         {
-            Background = Background,
             Count = Count,
             MediaType = MediaType,
             ImageSize = ImageSize,
@@ -89,8 +84,11 @@ public class ImageGenerationOptions
 }
 
 /// <summary>
-/// Represents the requested content type of the generated image.
+/// Represents the requested response format of the generated image.
 /// </summary>
+/// <remarks>
+/// Not all implementations support all response formats and this value may be ignored by the implementation if not supported.
+/// </remarks>
 [Experimental("MEAI001")]
 public enum ImageGenerationResponseFormat
 {
