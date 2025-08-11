@@ -20,7 +20,6 @@ public class ImageGenerationOptionsTests
         Assert.Null(options.MediaType);
         Assert.Null(options.ModelId);
         Assert.Null(options.RawRepresentationFactory);
-        Assert.Null(options.Style);
 
         ImageGenerationOptions clone = options.Clone();
         Assert.Null(clone.ResponseFormat);
@@ -29,7 +28,6 @@ public class ImageGenerationOptionsTests
         Assert.Null(clone.MediaType);
         Assert.Null(clone.ModelId);
         Assert.Null(clone.RawRepresentationFactory);
-        Assert.Null(clone.Style);
     }
 
     [Fact]
@@ -45,7 +43,6 @@ public class ImageGenerationOptionsTests
         options.MediaType = "image/png";
         options.ModelId = "modelId";
         options.RawRepresentationFactory = factory;
-        options.Style = "photorealistic";
 
         Assert.Equal(ImageGenerationResponseFormat.Data, options.ResponseFormat);
         Assert.Equal(5, options.Count);
@@ -53,7 +50,6 @@ public class ImageGenerationOptionsTests
         Assert.Equal("image/png", options.MediaType);
         Assert.Equal("modelId", options.ModelId);
         Assert.Same(factory, options.RawRepresentationFactory);
-        Assert.Equal("photorealistic", options.Style);
 
         ImageGenerationOptions clone = options.Clone();
         Assert.Equal(ImageGenerationResponseFormat.Data, clone.ResponseFormat);
@@ -62,7 +58,6 @@ public class ImageGenerationOptionsTests
         Assert.Equal("image/png", clone.MediaType);
         Assert.Equal("modelId", clone.ModelId);
         Assert.Same(factory, clone.RawRepresentationFactory);
-        Assert.Equal("photorealistic", clone.Style);
     }
 
     [Fact]
@@ -75,7 +70,6 @@ public class ImageGenerationOptionsTests
             ImageSize = new Size(256, 256),
             MediaType = "image/jpeg",
             ModelId = "test-model",
-            Style = "artistic"
         };
 
         string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.ImageGenerationOptions);
@@ -88,7 +82,6 @@ public class ImageGenerationOptionsTests
         Assert.Equal(new Size(256, 256), deserialized.ImageSize);
         Assert.Equal("image/jpeg", deserialized.MediaType);
         Assert.Equal("test-model", deserialized.ModelId);
-        Assert.Equal("artistic", deserialized.Style);
     }
 
     [Fact]
@@ -100,8 +93,7 @@ public class ImageGenerationOptionsTests
             Count = 2,
             ImageSize = new Size(512, 512),
             MediaType = "image/png",
-            ModelId = "original-model",
-            Style = "minimalist"
+            ModelId = "original-model"
         };
 
         ImageGenerationOptions clone = original.Clone();
@@ -112,7 +104,6 @@ public class ImageGenerationOptionsTests
         original.ImageSize = new Size(1024, 1024);
         original.MediaType = "image/jpeg";
         original.ModelId = "modified-model";
-        original.Style = "baroque";
 
         // Clone should remain unchanged
         Assert.Equal(ImageGenerationResponseFormat.Data, clone.ResponseFormat);
@@ -120,7 +111,6 @@ public class ImageGenerationOptionsTests
         Assert.Equal(new Size(512, 512), clone.ImageSize);
         Assert.Equal("image/png", clone.MediaType);
         Assert.Equal("original-model", clone.ModelId);
-        Assert.Equal("minimalist", clone.Style);
     }
 
     [Theory]

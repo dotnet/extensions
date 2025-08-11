@@ -59,11 +59,6 @@ public class ImageGenerationOptions
     /// </summary>
     public ImageGenerationResponseFormat? ResponseFormat { get; set; }
 
-    /// <summary>
-    /// Gets or sets the style of the generated image to some predefined style supported by the provider.
-    /// </summary>
-    public string? Style { get; set; }
-
     /// <summary>Produces a clone of the current <see cref="ImageGenerationOptions"/> instance.</summary>
     /// <returns>A clone of the current <see cref="ImageGenerationOptions"/> instance.</returns>
     public virtual ImageGenerationOptions Clone()
@@ -75,8 +70,7 @@ public class ImageGenerationOptions
             ImageSize = ImageSize,
             ModelId = ModelId,
             RawRepresentationFactory = RawRepresentationFactory,
-            ResponseFormat = ResponseFormat,
-            Style = Style
+            ResponseFormat = ResponseFormat
         };
 
         return options;

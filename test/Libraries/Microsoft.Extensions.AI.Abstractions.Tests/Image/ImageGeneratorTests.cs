@@ -109,7 +109,6 @@ public class ImageGeneratorTests
             ImageSize = new Size(1024, 768),
             MediaType = "image/png",
             ModelId = "test-model",
-            Style = "photorealistic"
         };
 
         var expectedRequest = new ImageGenerationRequest("test prompt");
@@ -136,7 +135,6 @@ public class ImageGeneratorTests
             Count = 2,
             MediaType = "image/jpeg",
             ModelId = "edit-model",
-            Style = "artistic"
         };
 
         AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];

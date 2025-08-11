@@ -210,11 +210,6 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
 
         result.Size ??= ToOpenAIImageSize(options?.ImageSize);
 
-        if (result.Style is null && options?.Style is not null)
-        {
-            result.Style = options.Style;
-        }
-
         return result;
     }
 
