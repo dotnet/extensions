@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class ImageClientStreamingTests
+public class ImageGeneratorStreamingTests
 {
     [Fact]
     public async Task GenerateStreamingImagesAsync_CallsCallback()
@@ -18,7 +18,7 @@ public class ImageClientStreamingTests
         using var cts = new CancellationTokenSource();
         var expectedUpdate = new ImageResponseUpdate();
 
-        using var client = new TestImageClient
+        using var generator = new TestImageGenerator
         {
             GenerateStreamingImagesAsyncCallback = (request, options, cancellationToken) =>
             {
@@ -30,7 +30,7 @@ public class ImageClientStreamingTests
         };
 
         var updates = new List<ImageResponseUpdate>();
-        await foreach (var update in client.GenerateStreamingImagesAsync(expectedRequest, expectedOptions, cts.Token))
+        await foreach (var update in generator.GenerateStreamingImagesAsync(expectedRequest, expectedOptions, cts.Token))
         {
             updates.Add(update);
         }
@@ -42,10 +42,10 @@ public class ImageClientStreamingTests
     [Fact]
     public async Task GenerateStreamingImagesAsync_NoCallback_ReturnsEmptySequence()
     {
-        using var client = new TestImageClient();
+        using var generator = new TestImageGenerator();
         var updates = new List<ImageResponseUpdate>();
 
-        await foreach (var update in client.GenerateStreamingImagesAsync(new ImageRequest("test prompt")))
+        await foreach (var update in generator.GenerateStreamingImagesAsync(new ImageRequest("test prompt")))
         {
             updates.Add(update);
         }

@@ -9,14 +9,14 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides extensions for configuring <see cref="ConfigureOptionsImageClient"/> instances.</summary>
+/// <summary>Provides extensions for configuring <see cref="ConfigureOptionsImageGenerator"/> instances.</summary>
 [Experimental("MEAI001")]
-public static class ConfigureOptionsImageClientBuilderExtensions
+public static class ConfigureOptionsImageGeneratorBuilderExtensions
 {
     /// <summary>
-    /// Adds a callback that configures a <see cref="ImageOptions"/> to be passed to the next client in the pipeline.
+    /// Adds a callback that configures a <see cref="ImageOptions"/> to be passed to the next generator in the pipeline.
     /// </summary>
-    /// <param name="builder">The <see cref="ImageClientBuilder"/>.</param>
+    /// <param name="builder">The <see cref="ImageGeneratorBuilder"/>.</param>
     /// <param name="configure">
     /// The delegate to invoke to configure the <see cref="ImageOptions"/> instance.
     /// It is passed a clone of the caller-supplied <see cref="ImageOptions"/> instance (or a newly constructed instance if the caller-supplied instance is <see langword="null"/>).
@@ -28,12 +28,12 @@ public static class ConfigureOptionsImageClientBuilderExtensions
     /// of the caller-supplied instance if one was supplied.
     /// </remarks>
     /// <returns>The <paramref name="builder"/>.</returns>
-    public static ImageClientBuilder ConfigureOptions(
-        this ImageClientBuilder builder, Action<ImageOptions> configure)
+    public static ImageGeneratorBuilder ConfigureOptions(
+        this ImageGeneratorBuilder builder, Action<ImageOptions> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        return builder.Use(innerClient => new ConfigureOptionsImageClient(innerClient, configure));
+        return builder.Use(innerGenerator => new ConfigureOptionsImageGenerator(innerGenerator, configure));
     }
 }

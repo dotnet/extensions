@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class ImageClientDependencyInjectionPatterns
+public class ImageGeneratorDependencyInjectionPatterns
 {
     private IServiceCollection ServiceCollection { get; } = new ServiceCollection();
 
@@ -15,7 +15,7 @@ public class ImageClientDependencyInjectionPatterns
     public void CanRegisterSingletonUsingFactory()
     {
         // Arrange/Act
-        ServiceCollection.AddImageClient(services => new TestImageClient { Services = services })
+        ServiceCollection.AddImageGenerator(services => new TestImageGenerator { Services = services })
             .UseSingletonMiddleware();
 
         // Assert
@@ -23,23 +23,23 @@ public class ImageClientDependencyInjectionPatterns
         using var scope1 = services.CreateScope();
         using var scope2 = services.CreateScope();
 
-        var instance1 = scope1.ServiceProvider.GetRequiredService<IImageClient>();
-        var instance1Copy = scope1.ServiceProvider.GetRequiredService<IImageClient>();
-        var instance2 = scope2.ServiceProvider.GetRequiredService<IImageClient>();
+        var instance1 = scope1.ServiceProvider.GetRequiredService<IImageGenerator>();
+        var instance1Copy = scope1.ServiceProvider.GetRequiredService<IImageGenerator>();
+        var instance2 = scope2.ServiceProvider.GetRequiredService<IImageGenerator>();
 
         // Each scope gets the same instance, because it's singleton
         var instance = Assert.IsType<SingletonMiddleware>(instance1);
         Assert.Same(instance, instance1Copy);
         Assert.Same(instance, instance2);
-        Assert.IsType<TestImageClient>(instance.InnerClient);
+        Assert.IsType<TestImageGenerator>(instance.InnerGenerator);
     }
 
     [Fact]
     public void CanRegisterSingletonUsingSharedInstance()
     {
         // Arrange/Act
-        using var singleton = new TestImageClient();
-        ServiceCollection.AddImageClient(singleton)
+        using var singleton = new TestImageGenerator();
+        ServiceCollection.AddImageGenerator(singleton)
             .UseSingletonMiddleware();
 
         // Assert
@@ -47,22 +47,22 @@ public class ImageClientDependencyInjectionPatterns
         using var scope1 = services.CreateScope();
         using var scope2 = services.CreateScope();
 
-        var instance1 = scope1.ServiceProvider.GetRequiredService<IImageClient>();
-        var instance1Copy = scope1.ServiceProvider.GetRequiredService<IImageClient>();
-        var instance2 = scope2.ServiceProvider.GetRequiredService<IImageClient>();
+        var instance1 = scope1.ServiceProvider.GetRequiredService<IImageGenerator>();
+        var instance1Copy = scope1.ServiceProvider.GetRequiredService<IImageGenerator>();
+        var instance2 = scope2.ServiceProvider.GetRequiredService<IImageGenerator>();
 
         // Each scope gets the same instance, because it's singleton
         var instance = Assert.IsType<SingletonMiddleware>(instance1);
         Assert.Same(instance, instance1Copy);
         Assert.Same(instance, instance2);
-        Assert.IsType<TestImageClient>(instance.InnerClient);
+        Assert.IsType<TestImageGenerator>(instance.InnerGenerator);
     }
 
     [Fact]
     public void CanRegisterKeyedSingletonUsingFactory()
     {
         // Arrange/Act
-        ServiceCollection.AddKeyedImageClient("mykey", services => new TestImageClient { Services = services })
+        ServiceCollection.AddKeyedImageGenerator("mykey", services => new TestImageGenerator { Services = services })
             .UseSingletonMiddleware();
 
         // Assert
@@ -70,25 +70,25 @@ public class ImageClientDependencyInjectionPatterns
         using var scope1 = services.CreateScope();
         using var scope2 = services.CreateScope();
 
-        Assert.Null(services.GetService<IImageClient>());
+        Assert.Null(services.GetService<IImageGenerator>());
 
-        var instance1 = scope1.ServiceProvider.GetRequiredKeyedService<IImageClient>("mykey");
-        var instance1Copy = scope1.ServiceProvider.GetRequiredKeyedService<IImageClient>("mykey");
-        var instance2 = scope2.ServiceProvider.GetRequiredKeyedService<IImageClient>("mykey");
+        var instance1 = scope1.ServiceProvider.GetRequiredKeyedService<IImageGenerator>("mykey");
+        var instance1Copy = scope1.ServiceProvider.GetRequiredKeyedService<IImageGenerator>("mykey");
+        var instance2 = scope2.ServiceProvider.GetRequiredKeyedService<IImageGenerator>("mykey");
 
         // Each scope gets the same instance, because it's singleton
         var instance = Assert.IsType<SingletonMiddleware>(instance1);
         Assert.Same(instance, instance1Copy);
         Assert.Same(instance, instance2);
-        Assert.IsType<TestImageClient>(instance.InnerClient);
+        Assert.IsType<TestImageGenerator>(instance.InnerGenerator);
     }
 
     [Fact]
     public void CanRegisterKeyedSingletonUsingSharedInstance()
     {
         // Arrange/Act
-        using var singleton = new TestImageClient();
-        ServiceCollection.AddKeyedImageClient("mykey", singleton)
+        using var singleton = new TestImageGenerator();
+        ServiceCollection.AddKeyedImageGenerator("mykey", singleton)
             .UseSingletonMiddleware();
 
         // Assert
@@ -96,17 +96,17 @@ public class ImageClientDependencyInjectionPatterns
         using var scope1 = services.CreateScope();
         using var scope2 = services.CreateScope();
 
-        Assert.Null(services.GetService<IImageClient>());
+        Assert.Null(services.GetService<IImageGenerator>());
 
-        var instance1 = scope1.ServiceProvider.GetRequiredKeyedService<IImageClient>("mykey");
-        var instance1Copy = scope1.ServiceProvider.GetRequiredKeyedService<IImageClient>("mykey");
-        var instance2 = scope2.ServiceProvider.GetRequiredKeyedService<IImageClient>("mykey");
+        var instance1 = scope1.ServiceProvider.GetRequiredKeyedService<IImageGenerator>("mykey");
+        var instance1Copy = scope1.ServiceProvider.GetRequiredKeyedService<IImageGenerator>("mykey");
+        var instance2 = scope2.ServiceProvider.GetRequiredKeyedService<IImageGenerator>("mykey");
 
         // Each scope gets the same instance, because it's singleton
         var instance = Assert.IsType<SingletonMiddleware>(instance1);
         Assert.Same(instance, instance1Copy);
         Assert.Same(instance, instance2);
-        Assert.IsType<TestImageClient>(instance.InnerClient);
+        Assert.IsType<TestImageGenerator>(instance.InnerGenerator);
     }
 
     [Theory]
@@ -114,20 +114,20 @@ public class ImageClientDependencyInjectionPatterns
     [InlineData(ServiceLifetime.Singleton)]
     [InlineData(ServiceLifetime.Scoped)]
     [InlineData(ServiceLifetime.Transient)]
-    public void AddImageClient_RegistersExpectedLifetime(ServiceLifetime? lifetime)
+    public void AddImageGenerator_RegistersExpectedLifetime(ServiceLifetime? lifetime)
     {
         ServiceCollection sc = new();
         ServiceLifetime expectedLifetime = lifetime ?? ServiceLifetime.Singleton;
-        ImageClientBuilder builder = lifetime.HasValue
-            ? sc.AddImageClient(services => new TestImageClient(), lifetime.Value)
-            : sc.AddImageClient(services => new TestImageClient());
+        ImageGeneratorBuilder builder = lifetime.HasValue
+            ? sc.AddImageGenerator(services => new TestImageGenerator(), lifetime.Value)
+            : sc.AddImageGenerator(services => new TestImageGenerator());
 
         ServiceDescriptor sd = Assert.Single(sc);
-        Assert.Equal(typeof(IImageClient), sd.ServiceType);
+        Assert.Equal(typeof(IImageGenerator), sd.ServiceType);
         Assert.False(sd.IsKeyedService);
         Assert.Null(sd.ImplementationInstance);
         Assert.NotNull(sd.ImplementationFactory);
-        Assert.IsType<TestImageClient>(sd.ImplementationFactory(null!));
+        Assert.IsType<TestImageGenerator>(sd.ImplementationFactory(null!));
         Assert.Equal(expectedLifetime, sd.Lifetime);
     }
 
@@ -136,27 +136,27 @@ public class ImageClientDependencyInjectionPatterns
     [InlineData(ServiceLifetime.Singleton)]
     [InlineData(ServiceLifetime.Scoped)]
     [InlineData(ServiceLifetime.Transient)]
-    public void AddKeyedImageClient_RegistersExpectedLifetime(ServiceLifetime? lifetime)
+    public void AddKeyedImageGenerator_RegistersExpectedLifetime(ServiceLifetime? lifetime)
     {
         ServiceCollection sc = new();
         ServiceLifetime expectedLifetime = lifetime ?? ServiceLifetime.Singleton;
-        ImageClientBuilder builder = lifetime.HasValue
-            ? sc.AddKeyedImageClient("key", services => new TestImageClient(), lifetime.Value)
-            : sc.AddKeyedImageClient("key", services => new TestImageClient());
+        ImageGeneratorBuilder builder = lifetime.HasValue
+            ? sc.AddKeyedImageGenerator("key", services => new TestImageGenerator(), lifetime.Value)
+            : sc.AddKeyedImageGenerator("key", services => new TestImageGenerator());
 
         ServiceDescriptor sd = Assert.Single(sc);
-        Assert.Equal(typeof(IImageClient), sd.ServiceType);
+        Assert.Equal(typeof(IImageGenerator), sd.ServiceType);
         Assert.True(sd.IsKeyedService);
         Assert.Equal("key", sd.ServiceKey);
         Assert.Null(sd.KeyedImplementationInstance);
         Assert.NotNull(sd.KeyedImplementationFactory);
-        Assert.IsType<TestImageClient>(sd.KeyedImplementationFactory(null!, null!));
+        Assert.IsType<TestImageGenerator>(sd.KeyedImplementationFactory(null!, null!));
         Assert.Equal(expectedLifetime, sd.Lifetime);
     }
 
-    public class SingletonMiddleware(IImageClient inner, IServiceProvider services) : DelegatingImageClient(inner)
+    public class SingletonMiddleware(IImageGenerator inner, IServiceProvider services) : DelegatingImageGenerator(inner)
     {
-        public new IImageClient InnerClient => base.InnerClient;
+        public new IImageGenerator InnerGenerator => base.InnerGenerator;
         public IServiceProvider Services => services;
     }
 }

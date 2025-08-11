@@ -9,36 +9,36 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class ImageClientTests
+public class ImageGeneratorTests
 {
     [Fact]
     public void GetService_WithServiceKey_ReturnsNull()
     {
-        using var client = new TestImageClient();
-        client.GetServiceCallback = (serviceType, serviceKey) =>
+        using var generator = new TestImageGenerator();
+        generator.GetServiceCallback = (serviceType, serviceKey) =>
         {
             // When serviceKey is not null, should return null per interface contract
             return serviceKey is not null ? null : new object();
         };
 
-        var result = client.GetService(typeof(object), "someKey");
+        var result = generator.GetService(typeof(object), "someKey");
         Assert.Null(result);
     }
 
     [Fact]
     public void GetService_WithoutServiceKey_CallsCallback()
     {
-        using var client = new TestImageClient();
+        using var generator = new TestImageGenerator();
         var expectedResult = new object();
 
-        client.GetServiceCallback = (serviceType, serviceKey) =>
+        generator.GetServiceCallback = (serviceType, serviceKey) =>
         {
             Assert.Equal(typeof(object), serviceType);
             Assert.Null(serviceKey);
             return expectedResult;
         };
 
-        var result = client.GetService(typeof(object));
+        var result = generator.GetService(typeof(object));
         Assert.Same(expectedResult, result);
     }
 
@@ -50,7 +50,7 @@ public class ImageClientTests
         using var cts = new CancellationTokenSource();
         var expectedRequest = new ImageRequest("test prompt");
 
-        using var client = new TestImageClient
+        using var generator = new TestImageGenerator
         {
             GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
             {
@@ -61,15 +61,15 @@ public class ImageClientTests
             }
         };
 
-        var result = await client.GenerateImagesAsync(expectedRequest, expectedOptions, cts.Token);
+        var result = await generator.GenerateImagesAsync(expectedRequest, expectedOptions, cts.Token);
         Assert.Same(expectedResponse, result);
     }
 
     [Fact]
     public async Task GenerateImagesAsync_NoCallback_ReturnsEmptyResponse()
     {
-        using var client = new TestImageClient();
-        var result = await client.GenerateImagesAsync(new ImageRequest("test prompt"), null);
+        using var generator = new TestImageGenerator();
+        var result = await generator.GenerateImagesAsync(new ImageRequest("test prompt"), null);
         Assert.NotNull(result);
         Assert.Empty(result.Contents);
     }
@@ -77,26 +77,26 @@ public class ImageClientTests
     [Fact]
     public void Dispose_SetsFlag()
     {
-        var client = new TestImageClient();
-        Assert.False(client.DisposeInvoked);
+        var generator = new TestImageGenerator();
+        Assert.False(generator.DisposeInvoked);
 
-        client.Dispose();
-        Assert.True(client.DisposeInvoked);
+        generator.Dispose();
+        Assert.True(generator.DisposeInvoked);
     }
 
     [Fact]
     public void Dispose_MultipleCallsSafe()
     {
-        var client = new TestImageClient();
+        var generator = new TestImageGenerator();
 
-        client.Dispose();
-        Assert.True(client.DisposeInvoked);
+        generator.Dispose();
+        Assert.True(generator.DisposeInvoked);
 
         // Second dispose should not throw
 #pragma warning disable S3966
-        client.Dispose();
+        generator.Dispose();
 #pragma warning restore S3966
-        Assert.True(client.DisposeInvoked);
+        Assert.True(generator.DisposeInvoked);
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class ImageClientTests
 
         var expectedRequest = new ImageRequest("test prompt");
 
-        using var client = new TestImageClient
+        using var generator = new TestImageGenerator
         {
             GenerateImagesAsyncCallback = (request, receivedOptions, cancellationToken) =>
             {
@@ -125,7 +125,7 @@ public class ImageClientTests
             }
         };
 
-        await client.GenerateImagesAsync(expectedRequest, options);
+        await generator.GenerateImagesAsync(expectedRequest, options);
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public class ImageClientTests
         AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
         var expectedRequest = new ImageRequest("edit prompt", originalImages);
 
-        using var client = new TestImageClient
+        using var generator = new TestImageGenerator
         {
             GenerateImagesAsyncCallback = (request, receivedOptions, cancellationToken) =>
             {
@@ -154,6 +154,6 @@ public class ImageClientTests
             }
         };
 
-        await client.GenerateImagesAsync(expectedRequest, options);
+        await generator.GenerateImagesAsync(expectedRequest, options);
     }
 }

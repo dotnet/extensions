@@ -8,34 +8,34 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class ConfigureOptionsImageClientTests
+public class ConfigureOptionsImageGeneratorTests
 {
     [Fact]
-    public void ConfigureOptionsImageClient_InvalidArgs_Throws()
+    public void ConfigureOptionsImageGenerator_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("innerClient", () => new ConfigureOptionsImageClient(null!, _ => { }));
-        Assert.Throws<ArgumentNullException>("configure", () => new ConfigureOptionsImageClient(new TestImageClient(), null!));
+        Assert.Throws<ArgumentNullException>("innerGenerator", () => new ConfigureOptionsImageGenerator(null!, _ => { }));
+        Assert.Throws<ArgumentNullException>("configure", () => new ConfigureOptionsImageGenerator(new TestImageGenerator(), null!));
     }
 
     [Fact]
     public void ConfigureOptions_InvalidArgs_Throws()
     {
-        using var innerClient = new TestImageClient();
-        var builder = innerClient.AsBuilder();
+        using var innerGenerator = new TestImageGenerator();
+        var builder = innerGenerator.AsBuilder();
         Assert.Throws<ArgumentNullException>("configure", () => builder.ConfigureOptions(null!));
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ConfigureOptions_ReturnedInstancePassedToNextClient(bool nullProvidedOptions)
+    public async Task ConfigureOptions_ReturnedInstancePassedToNextGenerator(bool nullProvidedOptions)
     {
         ImageOptions? providedOptions = nullProvidedOptions ? null : new() { ModelId = "test" };
         ImageOptions? returnedOptions = null;
         ImageResponse expectedResponse = new([]);
         using CancellationTokenSource cts = new();
 
-        using IImageClient innerClient = new TestImageClient
+        using IImageGenerator innerGenerator = new TestImageGenerator
         {
             GenerateImagesAsyncCallback = (prompt, options, cancellationToken) =>
             {
@@ -46,7 +46,7 @@ public class ConfigureOptionsImageClientTests
 
         };
 
-        using var client = innerClient
+        using var generator = innerGenerator
             .AsBuilder()
             .ConfigureOptions(options =>
             {
@@ -64,7 +64,7 @@ public class ConfigureOptionsImageClientTests
             })
             .Build();
 
-        var response1 = await client.GenerateImagesAsync("test prompt", providedOptions, cts.Token);
+        var response1 = await generator.GenerateImagesAsync("test prompt", providedOptions, cts.Token);
         Assert.Same(expectedResponse, response1);
     }
 }

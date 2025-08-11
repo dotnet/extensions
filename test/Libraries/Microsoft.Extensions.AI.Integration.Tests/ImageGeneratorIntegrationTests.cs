@@ -12,22 +12,22 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public abstract class ImageClientIntegrationTests : IDisposable
+public abstract class ImageGeneratorIntegrationTests : IDisposable
 {
-    private readonly IImageClient? _client;
+    private readonly IImageGenerator? _generator;
 
-    protected ImageClientIntegrationTests()
+    protected ImageGeneratorIntegrationTests()
     {
-        _client = CreateClient();
+        _generator = CreateGenerator();
     }
 
     public void Dispose()
     {
-        _client?.Dispose();
+        _generator?.Dispose();
         GC.SuppressFinalize(this);
     }
 
-    protected abstract IImageClient? CreateClient();
+    protected abstract IImageGenerator? CreateGenerator();
 
     [ConditionalFact]
     public virtual async Task GenerateImagesAsync_SingleImageGeneration()
@@ -39,7 +39,7 @@ public abstract class ImageClientIntegrationTests : IDisposable
             Count = 1
         };
 
-        var response = await _client.GenerateImagesAsync("A simple drawing of a house", options);
+        var response = await _generator.GenerateImagesAsync("A simple drawing of a house", options);
 
         Assert.NotNull(response);
         Assert.NotEmpty(response.Contents);
@@ -62,7 +62,7 @@ public abstract class ImageClientIntegrationTests : IDisposable
             Count = 2
         };
 
-        var response = await _client.GenerateImagesAsync("A cat sitting on a table", options);
+        var response = await _generator.GenerateImagesAsync("A cat sitting on a table", options);
 
         Assert.NotNull(response);
         Assert.NotEmpty(response.Contents);
@@ -90,7 +90,7 @@ public abstract class ImageClientIntegrationTests : IDisposable
             Count = 1
         };
 
-        var response = await _client.EditImagesAsync(originalImages, "Add a red border and make the background tie-dye", options);
+        var response = await _generator.EditImagesAsync(originalImages, "Add a red border and make the background tie-dye", options);
 
         Assert.NotNull(response);
         Assert.NotEmpty(response.Contents);
@@ -105,21 +105,21 @@ public abstract class ImageClientIntegrationTests : IDisposable
 
     private static byte[] GetImageData(string fileName)
     {
-        using Stream? s = typeof(ImageClientIntegrationTests).Assembly.GetManifestResourceStream($"Microsoft.Extensions.AI.Resources.{fileName}");
+        using Stream? s = typeof(ImageGeneratorIntegrationTests).Assembly.GetManifestResourceStream($"Microsoft.Extensions.AI.Resources.{fileName}");
         Assert.NotNull(s);
         using MemoryStream ms = new();
         s.CopyTo(ms);
         return ms.ToArray();
     }
 
-    [MemberNotNull(nameof(_client))]
+    [MemberNotNull(nameof(_generator))]
     protected void SkipIfNotEnabled()
     {
         string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
 
-        if (skipIntegration is not null || _client is null)
+        if (skipIntegration is not null || _generator is null)
         {
-            throw new SkipTestException("Client is not enabled.");
+            throw new SkipTestException("Generator is not enabled.");
         }
     }
 }

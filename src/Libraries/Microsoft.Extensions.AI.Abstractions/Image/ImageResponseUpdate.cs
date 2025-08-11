@@ -9,7 +9,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents a single streaming response chunk from an <see cref="IImageClient"/>.
+/// Represents a single streaming response chunk from an <see cref="IImageGenerator"/>.
 /// </summary>
 /// <remarks>
 /// <para>

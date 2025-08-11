@@ -9,16 +9,16 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class DelegatingImageClientTests
+public class DelegatingImageGeneratorTests
 {
     [Fact]
-    public void RequiresInnerImageClient()
+    public void RequiresInnerImageGenerator()
     {
-        Assert.Throws<ArgumentNullException>("innerClient", () => new NoOpDelegatingImageClient(null!));
+        Assert.Throws<ArgumentNullException>("innerGenerator", () => new NoOpDelegatingImageGenerator(null!));
     }
 
     [Fact]
-    public async Task GenerateImagesAsyncDefaultsToInnerClientAsync()
+    public async Task GenerateImagesAsyncDefaultsToInnerGeneratorAsync()
     {
         // Arrange
         var expectedRequest = new ImageRequest("test prompt");
@@ -26,7 +26,7 @@ public class DelegatingImageClientTests
         var expectedCancellationToken = CancellationToken.None;
         var expectedResult = new TaskCompletionSource<ImageResponse>();
         var expectedResponse = new ImageResponse();
-        using var inner = new TestImageClient
+        using var inner = new TestImageGenerator
         {
             GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
             {
@@ -37,7 +37,7 @@ public class DelegatingImageClientTests
             }
         };
 
-        using var delegating = new NoOpDelegatingImageClient(inner);
+        using var delegating = new NoOpDelegatingImageGenerator(inner);
 
         // Act
         var resultTask = delegating.GenerateImagesAsync(expectedRequest, expectedOptions, expectedCancellationToken);
@@ -50,7 +50,7 @@ public class DelegatingImageClientTests
     }
 
     [Fact]
-    public async Task GenerateStreamingImagesAsyncDefaultsToInnerClientAsync()
+    public async Task GenerateStreamingImagesAsyncDefaultsToInnerGeneratorAsync()
     {
         // Arrange
         var expectedRequest = new ImageRequest("test prompt");
@@ -63,7 +63,7 @@ public class DelegatingImageClientTests
             new ImageResponseUpdate([new UriContent("http://example.com/image2.png", "image/png")])
         ];
 
-        using var inner = new TestImageClient
+        using var inner = new TestImageGenerator
         {
             GenerateStreamingImagesAsyncCallback = (request, options, cancellationToken) =>
             {
@@ -74,7 +74,7 @@ public class DelegatingImageClientTests
             }
         };
 
-        using var delegating = new NoOpDelegatingImageClient(inner);
+        using var delegating = new NoOpDelegatingImageGenerator(inner);
 
         // Act
         var resultAsyncEnumerable = delegating.GenerateStreamingImagesAsync(expectedRequest, expectedOptions, expectedCancellationToken);
@@ -91,8 +91,8 @@ public class DelegatingImageClientTests
     [Fact]
     public void GetServiceThrowsForNullType()
     {
-        using var inner = new TestImageClient();
-        using var delegating = new NoOpDelegatingImageClient(inner);
+        using var inner = new TestImageGenerator();
+        using var delegating = new NoOpDelegatingImageGenerator(inner);
         Assert.Throws<ArgumentNullException>("serviceType", () => delegating.GetService(null!));
     }
 
@@ -100,14 +100,14 @@ public class DelegatingImageClientTests
     public void GetServiceReturnsSelfIfCompatibleWithRequestAndKeyIsNull()
     {
         // Arrange
-        using var inner = new TestImageClient();
-        using var delegating = new NoOpDelegatingImageClient(inner);
+        using var inner = new TestImageGenerator();
+        using var delegating = new NoOpDelegatingImageGenerator(inner);
 
         // Act
-        var client = delegating.GetService<DelegatingImageClient>();
+        var generator = delegating.GetService<DelegatingImageGenerator>();
 
         // Assert
-        Assert.Same(delegating, client);
+        Assert.Same(delegating, generator);
     }
 
     [Fact]
@@ -115,18 +115,18 @@ public class DelegatingImageClientTests
     {
         // Arrange
         var expectedKey = new object();
-        using var expectedResult = new TestImageClient();
-        using var inner = new TestImageClient
+        using var expectedResult = new TestImageGenerator();
+        using var inner = new TestImageGenerator
         {
             GetServiceCallback = (_, _) => expectedResult
         };
-        using var delegating = new NoOpDelegatingImageClient(inner);
+        using var delegating = new NoOpDelegatingImageGenerator(inner);
 
         // Act
-        var client = delegating.GetService<IImageClient>(expectedKey);
+        var generator = delegating.GetService<IImageGenerator>(expectedKey);
 
         // Assert
-        Assert.Same(expectedResult, client);
+        Assert.Same(expectedResult, generator);
     }
 
     [Fact]
@@ -135,13 +135,13 @@ public class DelegatingImageClientTests
         // Arrange
         var expectedResult = TimeZoneInfo.Local;
         var expectedKey = new object();
-        using var inner = new TestImageClient
+        using var inner = new TestImageGenerator
         {
             GetServiceCallback = (type, key) => type == expectedResult.GetType() && key == expectedKey
                 ? expectedResult
                 : throw new InvalidOperationException("Unexpected call")
         };
-        using var delegating = new NoOpDelegatingImageClient(inner);
+        using var delegating = new NoOpDelegatingImageGenerator(inner);
 
         // Act
         var tzi = delegating.GetService<TimeZoneInfo>(expectedKey);
@@ -153,8 +153,8 @@ public class DelegatingImageClientTests
     [Fact]
     public void Dispose_SetsFlag()
     {
-        using var inner = new TestImageClient();
-        var delegating = new NoOpDelegatingImageClient(inner);
+        using var inner = new TestImageGenerator();
+        var delegating = new NoOpDelegatingImageGenerator(inner);
         Assert.False(inner.DisposeInvoked);
 
         delegating.Dispose();
@@ -164,8 +164,8 @@ public class DelegatingImageClientTests
     [Fact]
     public void Dispose_MultipleCallsSafe()
     {
-        using var inner = new TestImageClient();
-        var delegating = new NoOpDelegatingImageClient(inner);
+        using var inner = new TestImageGenerator();
+        var delegating = new NoOpDelegatingImageGenerator(inner);
 
         delegating.Dispose();
         Assert.True(inner.DisposeInvoked);
@@ -177,8 +177,8 @@ public class DelegatingImageClientTests
         Assert.True(inner.DisposeInvoked);
     }
 
-    private sealed class NoOpDelegatingImageClient(IImageClient innerClient)
-        : DelegatingImageClient(innerClient);
+    private sealed class NoOpDelegatingImageGenerator(IImageGenerator innerGenerator)
+        : DelegatingImageGenerator(innerGenerator);
 
     private static async IAsyncEnumerable<T> YieldAsync<T>(params T[] items)
     {

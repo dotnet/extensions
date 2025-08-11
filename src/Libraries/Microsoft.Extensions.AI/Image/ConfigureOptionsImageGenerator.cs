@@ -10,27 +10,27 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents a delegating text to image client that configures a <see cref="ImageOptions"/> instance used by the remainder of the pipeline.</summary>
+/// <summary>Represents a delegating image generator that configures a <see cref="ImageOptions"/> instance used by the remainder of the pipeline.</summary>
 [Experimental("MEAI001")]
-public sealed class ConfigureOptionsImageClient : DelegatingImageClient
+public sealed class ConfigureOptionsImageGenerator : DelegatingImageGenerator
 {
     /// <summary>The callback delegate used to configure options.</summary>
     private readonly Action<ImageOptions> _configureOptions;
 
-    /// <summary>Initializes a new instance of the <see cref="ConfigureOptionsImageClient"/> class with the specified <paramref name="configure"/> callback.</summary>
-    /// <param name="innerClient">The inner client.</param>
+    /// <summary>Initializes a new instance of the <see cref="ConfigureOptionsImageGenerator"/> class with the specified <paramref name="configure"/> callback.</summary>
+    /// <param name="innerGenerator">The inner generator.</param>
     /// <param name="configure">
     /// The delegate to invoke to configure the <see cref="ImageOptions"/> instance. It is passed a clone of the caller-supplied <see cref="ImageOptions"/> instance
     /// (or a newly constructed instance if the caller-supplied instance is <see langword="null"/>).
     /// </param>
-    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerGenerator"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// The <paramref name="configure"/> delegate is passed either a new instance of <see cref="ImageOptions"/> if
     /// the caller didn't supply a <see cref="ImageOptions"/> instance, or a clone (via <see cref="ImageOptions.Clone"/> of the caller-supplied
     /// instance if one was supplied.
     /// </remarks>
-    public ConfigureOptionsImageClient(IImageClient innerClient, Action<ImageOptions> configure)
-        : base(innerClient)
+    public ConfigureOptionsImageGenerator(IImageGenerator innerGenerator, Action<ImageOptions> configure)
+        : base(innerGenerator)
     {
         _configureOptions = Throw.IfNull(configure);
     }
@@ -49,7 +49,7 @@ public sealed class ConfigureOptionsImageClient : DelegatingImageClient
         return base.GenerateStreamingImagesAsync(request, Configure(options), cancellationToken);
     }
 
-    /// <summary>Creates and configures the <see cref="ImageOptions"/> to pass along to the inner client.</summary>
+    /// <summary>Creates and configures the <see cref="ImageOptions"/> to pass along to the inner generator.</summary>
     private ImageOptions Configure(ImageOptions? options)
     {
         options = options?.Clone() ?? new();

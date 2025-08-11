@@ -20,19 +20,19 @@ using OpenAI.Images;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents an <see cref="IImageClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ImageClient"/>.</summary>
-internal sealed class OpenAIImageClient : IImageClient
+/// <summary>Represents an <see cref="IImageGenerator"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ImageClient"/>.</summary>
+internal sealed class OpenAIImageGenerator : IImageGenerator
 {
     /// <summary>Metadata about the client.</summary>
-    private readonly ImageClientMetadata _metadata;
+    private readonly ImageGeneratorMetadata _metadata;
 
     /// <summary>The underlying <see cref="ImageClient" />.</summary>
     private readonly ImageClient _imageClient;
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAIImageClient"/> class for the specified <see cref="ImageClient"/>.</summary>
+    /// <summary>Initializes a new instance of the <see cref="OpenAIImageGenerator"/> class for the specified <see cref="ImageClient"/>.</summary>
     /// <param name="imageClient">The underlying client.</param>
     /// <exception cref="ArgumentNullException"><paramref name="imageClient"/> is <see langword="null"/>.</exception>
-    public OpenAIImageClient(ImageClient imageClient)
+    public OpenAIImageGenerator(ImageClient imageClient)
     {
         _ = Throw.IfNull(imageClient);
 
@@ -136,7 +136,7 @@ internal sealed class OpenAIImageClient : IImageClient
     public object? GetService(Type serviceType, object? serviceKey = null) =>
         serviceType is null ? throw new ArgumentNullException(nameof(serviceType)) :
         serviceKey is not null ? null :
-        serviceType == typeof(ImageClientMetadata) ? _metadata :
+        serviceType == typeof(ImageGeneratorMetadata) ? _metadata :
         serviceType == typeof(ImageClient) ? _imageClient :
         serviceType.IsInstanceOfType(this) ? this :
         null;
@@ -145,7 +145,7 @@ internal sealed class OpenAIImageClient : IImageClient
     /// <inheritdoc />
     void IDisposable.Dispose()
     {
-        // Nothing to dispose. Implementation required for the IImageClient interface.
+        // Nothing to dispose. Implementation required for the IImageGenerator interface.
     }
 
     /// <summary>
@@ -218,7 +218,7 @@ internal sealed class OpenAIImageClient : IImageClient
             ImageResponseFormat.Uri => GeneratedImageFormat.Uri,
             ImageResponseFormat.Data => GeneratedImageFormat.Bytes,
 
-            // ImageResponseFormat.Hosted not supported by ImageClient, however other OpenAI API support file IDs.
+            // ImageResponseFormat.Hosted not supported by ImageGenerator, however other OpenAI API support file IDs.
             _ => null
         };
 
@@ -239,7 +239,7 @@ internal sealed class OpenAIImageClient : IImageClient
             ImageResponseFormat.Uri => GeneratedImageFormat.Uri,
             ImageResponseFormat.Data => GeneratedImageFormat.Bytes,
 
-            // ImageResponseFormat.Hosted not supported by ImageClient, however other OpenAI API support file IDs.
+            // ImageResponseFormat.Hosted not supported by ImageGenerator, however other OpenAI API support file IDs.
             _ => null
         };
 

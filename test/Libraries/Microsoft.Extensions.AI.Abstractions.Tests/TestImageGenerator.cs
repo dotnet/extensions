@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
-public sealed class TestImageClient : IImageClient
+public sealed class TestImageGenerator : IImageGenerator
 {
-    public TestImageClient()
+    public TestImageGenerator()
     {
         GetServiceCallback = DefaultGetServiceCallback;
     }

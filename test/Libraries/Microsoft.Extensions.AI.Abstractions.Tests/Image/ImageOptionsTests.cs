@@ -39,7 +39,7 @@ public class ImageOptionsTests
     {
         ImageOptions options = new();
 
-        Func<IImageClient, object?> factory = client => new { Representation = "raw data" };
+        Func<IImageGenerator, object?> factory = generator => new { Representation = "raw data" };
 
         options.Background = "transparent";
         options.ResponseFormat = ImageResponseFormat.Data;

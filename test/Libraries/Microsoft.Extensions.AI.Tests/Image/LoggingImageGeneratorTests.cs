@@ -13,32 +13,32 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class LoggingImageClientTests
+public class LoggingImageGeneratorTests
 {
     [Fact]
-    public void LoggingImageClient_InvalidArgs_Throws()
+    public void LoggingImageGenerator_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("innerClient", () => new LoggingImageClient(null!, NullLogger.Instance));
-        Assert.Throws<ArgumentNullException>("logger", () => new LoggingImageClient(new TestImageClient(), null!));
+        Assert.Throws<ArgumentNullException>("innerGenerator", () => new LoggingImageGenerator(null!, NullLogger.Instance));
+        Assert.Throws<ArgumentNullException>("logger", () => new LoggingImageGenerator(new TestImageGenerator(), null!));
     }
 
     [Fact]
-    public void UseLogging_AvoidsInjectingNopClient()
+    public void UseLogging_AvoidsInjectingNopGenerator()
     {
-        using var innerClient = new TestImageClient();
+        using var innerGenerator = new TestImageGenerator();
 
-        Assert.Null(innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(LoggingImageClient)));
-        Assert.Same(innerClient, innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(IImageClient)));
+        Assert.Null(innerGenerator.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(LoggingImageGenerator)));
+        Assert.Same(innerGenerator, innerGenerator.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(IImageGenerator)));
 
         using var factory = LoggerFactory.Create(b => b.AddFakeLogging());
-        Assert.NotNull(innerClient.AsBuilder().UseLogging(factory).Build().GetService(typeof(LoggingImageClient)));
+        Assert.NotNull(innerGenerator.AsBuilder().UseLogging(factory).Build().GetService(typeof(LoggingImageGenerator)));
 
         ServiceCollection c = new();
         c.AddFakeLogging();
         var services = c.BuildServiceProvider();
-        Assert.NotNull(innerClient.AsBuilder().UseLogging().Build(services).GetService(typeof(LoggingImageClient)));
-        Assert.NotNull(innerClient.AsBuilder().UseLogging(null).Build(services).GetService(typeof(LoggingImageClient)));
-        Assert.Null(innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build(services).GetService(typeof(LoggingImageClient)));
+        Assert.NotNull(innerGenerator.AsBuilder().UseLogging().Build(services).GetService(typeof(LoggingImageGenerator)));
+        Assert.NotNull(innerGenerator.AsBuilder().UseLogging(null).Build(services).GetService(typeof(LoggingImageGenerator)));
+        Assert.Null(innerGenerator.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build(services).GetService(typeof(LoggingImageGenerator)));
     }
 
     [Theory]
@@ -53,7 +53,7 @@ public class LoggingImageClientTests
         c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
         var services = c.BuildServiceProvider();
 
-        using IImageClient innerClient = new TestImageClient
+        using IImageGenerator innerGenerator = new TestImageGenerator
         {
             GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
             {
@@ -61,12 +61,12 @@ public class LoggingImageClientTests
             },
         };
 
-        using IImageClient client = innerClient
+        using IImageGenerator generator = innerGenerator
             .AsBuilder()
             .UseLogging()
             .Build(services);
 
-        await client.GenerateImagesAsync(
+        await generator.GenerateImagesAsync(
             new ImageRequest("A beautiful sunset"),
             new ImageOptions { ModelId = "dall-e-3" });
 
@@ -75,16 +75,16 @@ public class LoggingImageClientTests
         {
             Assert.Collection(logs,
                 entry => Assert.True(
-                    entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} invoked:") &&
+                    entry.Message.Contains($"{nameof(IImageGenerator.GenerateImagesAsync)} invoked:") &&
                     entry.Message.Contains("A beautiful sunset") &&
                     entry.Message.Contains("dall-e-3")),
-                entry => Assert.Contains($"{nameof(IImageClient.GenerateImagesAsync)} completed:", entry.Message));
+                entry => Assert.Contains($"{nameof(IImageGenerator.GenerateImagesAsync)} completed:", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} invoked.") && !entry.Message.Contains("A beautiful sunset")),
-                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageGenerator.GenerateImagesAsync)} invoked.") && !entry.Message.Contains("A beautiful sunset")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageGenerator.GenerateImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
         }
         else
         {
@@ -101,7 +101,7 @@ public class LoggingImageClientTests
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
 
-        using IImageClient innerClient = new TestImageClient
+        using IImageGenerator innerGenerator = new TestImageGenerator
         {
             GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
             {
@@ -109,13 +109,13 @@ public class LoggingImageClientTests
             }
         };
 
-        using IImageClient client = innerClient
+        using IImageGenerator generator = innerGenerator
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
 
         AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
-        await client.GenerateImagesAsync(
+        await generator.GenerateImagesAsync(
             new ImageRequest("Make it more colorful", originalImages),
             new ImageOptions { ModelId = "dall-e-3" });
 
@@ -124,16 +124,16 @@ public class LoggingImageClientTests
         {
             Assert.Collection(logs,
                 entry => Assert.True(
-                    entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} invoked:") &&
+                    entry.Message.Contains($"{nameof(IImageGenerator.GenerateImagesAsync)} invoked:") &&
                     entry.Message.Contains("Make it more colorful") &&
                     entry.Message.Contains("dall-e-3")),
-                entry => Assert.Contains($"{nameof(IImageClient.GenerateImagesAsync)} completed", entry.Message));
+                entry => Assert.Contains($"{nameof(IImageGenerator.GenerateImagesAsync)} completed", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} invoked.") && !entry.Message.Contains("Make it more colorful")),
-                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageGenerator.GenerateImagesAsync)} invoked.") && !entry.Message.Contains("Make it more colorful")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageGenerator.GenerateImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
         }
         else
         {
@@ -150,7 +150,7 @@ public class LoggingImageClientTests
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
 
-        using IImageClient innerClient = new TestImageClient
+        using IImageGenerator innerGenerator = new TestImageGenerator
         {
             GenerateStreamingImagesAsyncCallback = (request, options, cancellationToken) =>
             {
@@ -158,13 +158,13 @@ public class LoggingImageClientTests
             }
         };
 
-        using IImageClient client = innerClient
+        using IImageGenerator generator = innerGenerator
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
 
         var updates = new List<ImageResponseUpdate>();
-        await foreach (var update in client.GenerateStreamingImagesAsync(
+        await foreach (var update in generator.GenerateStreamingImagesAsync(
             new ImageRequest("A beautiful sunset"),
             new ImageOptions { ModelId = "dall-e-3" }))
         {
@@ -178,16 +178,16 @@ public class LoggingImageClientTests
         {
             Assert.Collection(logs,
                 entry => Assert.True(
-                    entry.Message.Contains($"{nameof(IImageClient.GenerateStreamingImagesAsync)} invoked:") &&
+                    entry.Message.Contains($"{nameof(IImageGenerator.GenerateStreamingImagesAsync)} invoked:") &&
                     entry.Message.Contains("A beautiful sunset") &&
                     entry.Message.Contains("dall-e-3")),
-                entry => Assert.Contains($"{nameof(IImageClient.GenerateStreamingImagesAsync)} completed", entry.Message));
+                entry => Assert.Contains($"{nameof(IImageGenerator.GenerateStreamingImagesAsync)} completed", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateStreamingImagesAsync)} invoked.") && !entry.Message.Contains("A beautiful sunset")),
-                entry => Assert.True(entry.Message.Contains($"{nameof(IImageClient.GenerateStreamingImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageGenerator.GenerateStreamingImagesAsync)} invoked.") && !entry.Message.Contains("A beautiful sunset")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(IImageGenerator.GenerateStreamingImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
         }
         else
         {

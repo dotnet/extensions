@@ -9,50 +9,50 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class ImageClientExtensionsTests
+public class ImageGeneratorExtensionsTests
 {
     [Fact]
     public void GetService_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("client", () =>
+        Assert.Throws<ArgumentNullException>("generator", () =>
         {
-            _ = ImageClientExtensions.GetService<object>(null!);
+            _ = ImageGeneratorExtensions.GetService<object>(null!);
         });
     }
 
     [Fact]
-    public void GetService_ValidClient_CallsUnderlyingGetService()
+    public void GetService_ValidGenerator_CallsUnderlyingGetService()
     {
-        using var testClient = new TestImageClient();
+        using var testGenerator = new TestImageGenerator();
         var expectedResult = new object();
         var expectedServiceKey = new object();
 
-        testClient.GetServiceCallback = (serviceType, serviceKey) =>
+        testGenerator.GetServiceCallback = (serviceType, serviceKey) =>
         {
             Assert.Equal(typeof(object), serviceType);
             Assert.Same(expectedServiceKey, serviceKey);
             return expectedResult;
         };
 
-        var result = testClient.GetService<object>(expectedServiceKey);
+        var result = testGenerator.GetService<object>(expectedServiceKey);
         Assert.Same(expectedResult, result);
     }
 
     [Fact]
     public void GetService_ReturnsCorrectType()
     {
-        using var testClient = new TestImageClient();
-        var metadata = new ImageClientMetadata("test", null, "model");
+        using var testGenerator = new TestImageGenerator();
+        var metadata = new ImageGeneratorMetadata("test", null, "model");
 
-        testClient.GetServiceCallback = (serviceType, serviceKey) =>
+        testGenerator.GetServiceCallback = (serviceType, serviceKey) =>
         {
-            return (serviceType == typeof(ImageClientMetadata)) ? metadata : null;
+            return (serviceType == typeof(ImageGeneratorMetadata)) ? metadata : null;
         };
 
-        var result = testClient.GetService<ImageClientMetadata>();
+        var result = testGenerator.GetService<ImageGeneratorMetadata>();
         Assert.Same(metadata, result);
 
-        var nullResult = testClient.GetService<string>();
+        var nullResult = testGenerator.GetService<string>();
         Assert.Null(nullResult);
     }
 
@@ -60,7 +60,7 @@ public class ImageClientExtensionsTests
     public async Task EditImageAsync_DataContent_CallsGenerateImagesAsync()
     {
         // Arrange
-        using var testClient = new TestImageClient();
+        using var testGenerator = new TestImageGenerator();
         var imageData = new byte[] { 1, 2, 3, 4 };
         var dataContent = new DataContent(imageData, "image/png") { Name = "test.png" };
         var prompt = "Edit this image";
@@ -68,7 +68,7 @@ public class ImageClientExtensionsTests
         var expectedResponse = new ImageResponse();
         var cancellationToken = new CancellationToken(canceled: false);
 
-        testClient.GenerateImagesAsyncCallback = (request, o, ct) =>
+        testGenerator.GenerateImagesAsyncCallback = (request, o, ct) =>
         {
             Assert.NotNull(request.OriginalImages);
             Assert.Single(request.OriginalImages);
@@ -80,7 +80,7 @@ public class ImageClientExtensionsTests
         };
 
         // Act
-        var result = await testClient.EditImageAsync(dataContent, prompt, options, cancellationToken);
+        var result = await testGenerator.EditImageAsync(dataContent, prompt, options, cancellationToken);
 
         // Assert
         Assert.Same(expectedResponse, result);
@@ -89,24 +89,24 @@ public class ImageClientExtensionsTests
     [Fact]
     public async Task EditImageAsync_DataContent_NullArguments_Throws()
     {
-        using var testClient = new TestImageClient();
+        using var testGenerator = new TestImageGenerator();
         var dataContent = new DataContent(new byte[] { 1, 2, 3 }, "image/png");
 
-        await Assert.ThrowsAsync<ArgumentNullException>("client", async () =>
-            await ImageClientExtensions.EditImageAsync(null!, dataContent, "prompt"));
+        await Assert.ThrowsAsync<ArgumentNullException>("generator", async () =>
+            await ImageGeneratorExtensions.EditImageAsync(null!, dataContent, "prompt"));
 
         await Assert.ThrowsAsync<ArgumentNullException>("originalImage", async () =>
-            await testClient.EditImageAsync(null!, "prompt"));
+            await testGenerator.EditImageAsync(null!, "prompt"));
 
         await Assert.ThrowsAsync<ArgumentNullException>("prompt", async () =>
-            await testClient.EditImageAsync(dataContent, null!));
+            await testGenerator.EditImageAsync(dataContent, null!));
     }
 
     [Fact]
     public async Task EditImageAsync_ByteArray_CallsGenerateImagesAsync()
     {
         // Arrange
-        using var testClient = new TestImageClient();
+        using var testGenerator = new TestImageGenerator();
         var imageData = new byte[] { 1, 2, 3, 4 };
         var fileName = "test.jpg";
         var prompt = "Edit this image";
@@ -114,7 +114,7 @@ public class ImageClientExtensionsTests
         var expectedResponse = new ImageResponse();
         var cancellationToken = new CancellationToken(canceled: false);
 
-        testClient.GenerateImagesAsyncCallback = (request, o, ct) =>
+        testGenerator.GenerateImagesAsyncCallback = (request, o, ct) =>
         {
             Assert.NotNull(request.OriginalImages);
             Assert.Single(request.OriginalImages);
@@ -129,51 +129,51 @@ public class ImageClientExtensionsTests
         };
 
         // Act
-        var result = await testClient.EditImageAsync(imageData, fileName, prompt, options, cancellationToken);
+        var result = await testGenerator.EditImageAsync(imageData, fileName, prompt, options, cancellationToken);
 
         // Assert
         Assert.Same(expectedResponse, result);
     }
 
     [Fact]
-    public async Task EditImageAsync_ByteArray_NullClient_Throws()
+    public async Task EditImageAsync_ByteArray_NullGenerator_Throws()
     {
         var imageData = new byte[] { 1, 2, 3 };
 
-        await Assert.ThrowsAsync<ArgumentNullException>("client", async () =>
-            await ImageClientExtensions.EditImageAsync(null!, imageData, "test.png", "prompt"));
+        await Assert.ThrowsAsync<ArgumentNullException>("generator", async () =>
+            await ImageGeneratorExtensions.EditImageAsync(null!, imageData, "test.png", "prompt"));
     }
 
     [Fact]
     public async Task EditImageAsync_ByteArray_NullData_Throws()
     {
-        using var testClient = new TestImageClient();
+        using var testGenerator = new TestImageGenerator();
 
         await Assert.ThrowsAsync<ArgumentNullException>("originalImageData", async () =>
         {
             byte[] nullData = null!;
-            await testClient.EditImageAsync(nullData, "test.png", "prompt");
+            await testGenerator.EditImageAsync(nullData, "test.png", "prompt");
         });
     }
 
     [Fact]
     public async Task EditImageAsync_ByteArray_NullFileName_Throws()
     {
-        using var testClient = new TestImageClient();
+        using var testGenerator = new TestImageGenerator();
         var imageData = new byte[] { 1, 2, 3 };
 
         await Assert.ThrowsAsync<ArgumentNullException>("fileName", async () =>
-            await testClient.EditImageAsync(imageData, null!, "prompt"));
+            await testGenerator.EditImageAsync(imageData, null!, "prompt"));
     }
 
     [Fact]
     public async Task EditImageAsync_ByteArray_NullPrompt_Throws()
     {
-        using var testClient = new TestImageClient();
+        using var testGenerator = new TestImageGenerator();
         var imageData = new byte[] { 1, 2, 3 };
 
         await Assert.ThrowsAsync<ArgumentNullException>("prompt", async () =>
-            await testClient.EditImageAsync(imageData, "test.png", null!));
+            await testGenerator.EditImageAsync(imageData, "test.png", null!));
     }
 
     [Theory]
@@ -190,11 +190,11 @@ public class ImageClientExtensionsTests
     public async Task EditImageAsync_ByteArray_InfersCorrectMediaType(string fileName, string expectedMediaType)
     {
         // Arrange
-        using var testClient = new TestImageClient();
+        using var testGenerator = new TestImageGenerator();
         var imageData = new byte[] { 1, 2, 3, 4 };
         var prompt = "Edit this image";
 
-        testClient.GenerateImagesAsyncCallback = (request, o, ct) =>
+        testGenerator.GenerateImagesAsyncCallback = (request, o, ct) =>
         {
             Assert.NotNull(request.OriginalImages);
             var dataContent = Assert.IsType<DataContent>(Assert.Single(request.OriginalImages));
@@ -203,20 +203,20 @@ public class ImageClientExtensionsTests
         };
 
         // Act & Assert
-        await testClient.EditImageAsync(imageData, fileName, prompt);
+        await testGenerator.EditImageAsync(imageData, fileName, prompt);
     }
 
     [Fact]
     public async Task EditImageAsync_AllMethods_PassDefaultOptionsAndCancellation()
     {
         // Arrange
-        using var testClient = new TestImageClient();
+        using var testGenerator = new TestImageGenerator();
         var imageData = new byte[] { 1, 2, 3, 4 };
         var dataContent = new DataContent(imageData, "image/png");
         var prompt = "Edit this image";
 
         int callCount = 0;
-        testClient.GenerateImagesAsyncCallback = (request, o, ct) =>
+        testGenerator.GenerateImagesAsyncCallback = (request, o, ct) =>
         {
             callCount++;
             Assert.Null(o); // Default options should be null
@@ -226,8 +226,8 @@ public class ImageClientExtensionsTests
         };
 
         // Act - Test all two overloads with default parameters
-        await testClient.EditImageAsync(dataContent, prompt);
-        await testClient.EditImageAsync(imageData, "test.png", prompt);
+        await testGenerator.EditImageAsync(dataContent, prompt);
+        await testGenerator.EditImageAsync(imageData, "test.png", prompt);
 
         // Assert
         Assert.Equal(2, callCount);
@@ -237,13 +237,13 @@ public class ImageClientExtensionsTests
     public async Task GenerateStreamingImagesAsync_WithPrompt_CallsGenerateStreamingImagesAsync()
     {
         // Arrange
-        using var testClient = new TestImageClient();
+        using var testGenerator = new TestImageGenerator();
         var prompt = "A beautiful sunset";
         var options = new ImageOptions { Count = 2 };
         var expectedUpdate = new ImageResponseUpdate();
         var cancellationToken = new CancellationToken(canceled: false);
 
-        testClient.GenerateStreamingImagesAsyncCallback = (request, o, ct) =>
+        testGenerator.GenerateStreamingImagesAsyncCallback = (request, o, ct) =>
         {
             Assert.NotNull(request);
             Assert.Equal(prompt, request.Prompt);
@@ -255,7 +255,7 @@ public class ImageClientExtensionsTests
 
         // Act
         var updates = new List<ImageResponseUpdate>();
-        await foreach (var update in testClient.GenerateStreamingImagesAsync(prompt, options, cancellationToken))
+        await foreach (var update in testGenerator.GenerateStreamingImagesAsync(prompt, options, cancellationToken))
         {
             updates.Add(update);
         }
@@ -266,11 +266,11 @@ public class ImageClientExtensionsTests
     }
 
     [Fact]
-    public async Task GenerateStreamingImagesAsync_NullClient_Throws()
+    public async Task GenerateStreamingImagesAsync_NullGenerator_Throws()
     {
-        await Assert.ThrowsAsync<ArgumentNullException>("client", async () =>
+        await Assert.ThrowsAsync<ArgumentNullException>("generator", async () =>
         {
-            await foreach (var _ in ImageClientExtensions.GenerateStreamingImagesAsync(null!, "prompt"))
+            await foreach (var _ in ImageGeneratorExtensions.GenerateStreamingImagesAsync(null!, "prompt"))
             {
                 // Should not reach here
             }
@@ -280,11 +280,11 @@ public class ImageClientExtensionsTests
     [Fact]
     public async Task GenerateStreamingImagesAsync_NullPrompt_Throws()
     {
-        using var testClient = new TestImageClient();
+        using var testGenerator = new TestImageGenerator();
 
         await Assert.ThrowsAsync<ArgumentNullException>("prompt", async () =>
         {
-            await foreach (var _ in ImageClientExtensions.GenerateStreamingImagesAsync(testClient, null!))
+            await foreach (var _ in ImageGeneratorExtensions.GenerateStreamingImagesAsync(testGenerator, null!))
             {
                 // Should not reach here
             }

@@ -15,10 +15,10 @@ using static Microsoft.Extensions.AI.OpenTelemetryConsts.GenAI;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A delegating text to image client that logs text to image operations to an <see cref="ILogger"/>.</summary>
+/// <summary>A delegating text to image generator that logs text to image operations to an <see cref="ILogger"/>.</summary>
 /// <remarks>
 /// <para>
-/// The provided implementation of <see cref="IImageClient"/> is thread-safe for concurrent use so long as the
+/// The provided implementation of <see cref="IImageGenerator"/> is thread-safe for concurrent use so long as the
 /// <see cref="ILogger"/> employed is also thread-safe for concurrent use.
 /// </para>
 /// <para>
@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// </remarks>
 [Experimental("MEAI001")]
-public partial class LoggingImageClient : DelegatingImageClient
+public partial class LoggingImageGenerator : DelegatingImageGenerator
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
     private readonly ILogger _logger;
@@ -37,12 +37,12 @@ public partial class LoggingImageClient : DelegatingImageClient
     /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization of state written to the logger.</summary>
     private JsonSerializerOptions _jsonSerializerOptions;
 
-    /// <summary>Initializes a new instance of the <see cref="LoggingImageClient"/> class.</summary>
-    /// <param name="innerClient">The underlying <see cref="IImageClient"/>.</param>
+    /// <summary>Initializes a new instance of the <see cref="LoggingImageGenerator"/> class.</summary>
+    /// <param name="innerGenerator">The underlying <see cref="IImageGenerator"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> or <paramref name="logger"/> is <see langword="null"/>.</exception>
-    public LoggingImageClient(IImageClient innerClient, ILogger logger)
-        : base(innerClient)
+    /// <exception cref="ArgumentNullException"><paramref name="innerGenerator"/> or <paramref name="logger"/> is <see langword="null"/>.</exception>
+    public LoggingImageGenerator(IImageGenerator innerGenerator, ILogger logger)
+        : base(innerGenerator)
     {
         _logger = Throw.IfNull(logger);
         _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
@@ -66,7 +66,7 @@ public partial class LoggingImageClient : DelegatingImageClient
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GenerateImagesAsync), request.Prompt ?? string.Empty, AsJson(options), AsJson(this.GetService<ImageClientMetadata>()));
+                LogInvokedSensitive(nameof(GenerateImagesAsync), request.Prompt ?? string.Empty, AsJson(options), AsJson(this.GetService<ImageGeneratorMetadata>()));
             }
             else
             {
@@ -114,7 +114,7 @@ public partial class LoggingImageClient : DelegatingImageClient
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GenerateStreamingImagesAsync), request.Prompt ?? string.Empty, AsJson(options), AsJson(this.GetService<ImageClientMetadata>()));
+                LogInvokedSensitive(nameof(GenerateStreamingImagesAsync), request.Prompt ?? string.Empty, AsJson(options), AsJson(this.GetService<ImageGeneratorMetadata>()));
             }
             else
             {
@@ -152,8 +152,8 @@ public partial class LoggingImageClient : DelegatingImageClient
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
     private partial void LogInvoked(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Prompt: {Prompt}. Options: {ImageOptions}. Metadata: {ImageClientMetadata}.")]
-    private partial void LogInvokedSensitive(string methodName, string prompt, string imageOptions, string imageClientMetadata);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Prompt: {Prompt}. Options: {ImageOptions}. Metadata: {ImageGeneratorMetadata}.")]
+    private partial void LogInvokedSensitive(string methodName, string prompt, string imageOptions, string imageGeneratorMetadata);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
     private partial void LogCompleted(string methodName);
