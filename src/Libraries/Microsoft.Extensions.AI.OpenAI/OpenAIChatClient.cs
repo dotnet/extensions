@@ -281,6 +281,9 @@ internal sealed class OpenAIChatClient : IChatClient
 
             case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
                 return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf");
+
+            case HostedFileContent fileContent:
+                return ChatMessageContentPart.CreateFilePart(fileContent.FileId);
         }
 
         return null;
@@ -674,21 +677,31 @@ internal sealed class OpenAIChatClient : IChatClient
     {
         AIContent? aiContent = null;
 
-        if (contentPart.Kind == ChatMessageContentPartKind.Text)
+        switch (contentPart.Kind)
         {
-            aiContent = new TextContent(contentPart.Text);
-        }
-        else if (contentPart.Kind == ChatMessageContentPartKind.Image)
-        {
-            aiContent =
-                contentPart.ImageUri is not null ? new UriContent(contentPart.ImageUri, "image/*") :
-                contentPart.ImageBytes is not null ? new DataContent(contentPart.ImageBytes.ToMemory(), contentPart.ImageBytesMediaType) :
-                null;
+            case ChatMessageContentPartKind.Text:
+                aiContent = new TextContent(contentPart.Text);
+                break;
 
-            if (aiContent is not null && contentPart.ImageDetailLevel?.ToString() is string detail)
-            {
-                (aiContent.AdditionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
-            }
+            case ChatMessageContentPartKind.Image:
+                aiContent =
+                    contentPart.ImageUri is not null ? new UriContent(contentPart.ImageUri, "image/*") :
+                    contentPart.ImageBytes is not null ? new DataContent(contentPart.ImageBytes.ToMemory(), contentPart.ImageBytesMediaType) :
+                    null;
+
+                if (aiContent is not null && contentPart.ImageDetailLevel?.ToString() is string detail)
+                {
+                    (aiContent.AdditionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
+                }
+
+                break;
+
+            case ChatMessageContentPartKind.File:
+                aiContent =
+                    contentPart.FileId is not null ? new HostedFileContent(contentPart.FileId) :
+                    contentPart.FileBytes is not null ? new DataContent(contentPart.FileBytes.ToMemory(), contentPart.FileBytesMediaType) { Name = contentPart.Filename } :
+                    null;
+                break;
         }
 
         if (aiContent is not null)
