@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,13 +39,6 @@ public sealed class ConfigureOptionsImageGenerator : DelegatingImageGenerator
         ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await base.GenerateAsync(request, Configure(options), cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public override IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(
-        ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        return base.GenerateStreamingImagesAsync(request, Configure(options), cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="ImageGenerationOptions"/> to pass along to the inner generator.</summary>

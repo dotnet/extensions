@@ -110,28 +110,6 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(
-        ImageGenerationRequest request,
-        ImageGenerationOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(request);
-
-        // OpenAI does not currently support streaming image generation in the managed client, though it does
-        // in the REST API.
-        // It does so by setting partial_images to 1-3 and gets multiple updates of the same image.
-        // We don't yet know what form this will take in the managed client.
-
-        // For now, we'll simulate streaming by yielding a single update with the complete result
-        var response = await GenerateAsync(request, options, cancellationToken).ConfigureAwait(false);
-
-        yield return new ImageResponseUpdate(response.Contents)
-        {
-            RawRepresentation = response.RawRepresentation
-        };
-    }
-
-    /// <inheritdoc />
 #pragma warning disable S1067 // Expressions should not be too complex
     public object? GetService(Type serviceType, object? serviceKey = null) =>
         serviceType is null ? throw new ArgumentNullException(nameof(serviceType)) :

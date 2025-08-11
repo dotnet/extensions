@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -231,70 +230,5 @@ public class ImageGeneratorExtensionsTests
 
         // Assert
         Assert.Equal(2, callCount);
-    }
-
-    [Fact]
-    public async Task GenerateStreamingImagesAsync_WithPrompt_CallsGenerateStreamingImagesAsync()
-    {
-        // Arrange
-        using var testGenerator = new TestImageGenerator();
-        var prompt = "A beautiful sunset";
-        var options = new ImageGenerationOptions { Count = 2 };
-        var expectedUpdate = new ImageResponseUpdate();
-        var cancellationToken = new CancellationToken(canceled: false);
-
-        testGenerator.GenerateStreamingImagesAsyncCallback = (request, o, ct) =>
-        {
-            Assert.NotNull(request);
-            Assert.Equal(prompt, request.Prompt);
-            Assert.Null(request.OriginalImages);
-            Assert.Same(options, o);
-            Assert.Equal(cancellationToken, ct);
-            return YieldAsync(expectedUpdate);
-        };
-
-        // Act
-        var updates = new List<ImageResponseUpdate>();
-        await foreach (var update in testGenerator.GenerateStreamingImagesAsync(prompt, options, cancellationToken))
-        {
-            updates.Add(update);
-        }
-
-        // Assert
-        Assert.Single(updates);
-        Assert.Same(expectedUpdate, updates[0]);
-    }
-
-    [Fact]
-    public async Task GenerateStreamingImagesAsync_NullGenerator_Throws()
-    {
-        await Assert.ThrowsAsync<ArgumentNullException>("generator", async () =>
-        {
-            await foreach (var _ in ImageGeneratorExtensions.GenerateStreamingImagesAsync(null!, "prompt"))
-            {
-                // Should not reach here
-            }
-        });
-    }
-
-    [Fact]
-    public async Task GenerateStreamingImagesAsync_NullPrompt_Throws()
-    {
-        using var testGenerator = new TestImageGenerator();
-
-        await Assert.ThrowsAsync<ArgumentNullException>("prompt", async () =>
-        {
-            await foreach (var _ in ImageGeneratorExtensions.GenerateStreamingImagesAsync(testGenerator, null!))
-            {
-                // Should not reach here
-            }
-        });
-    }
-
-    private static async IAsyncEnumerable<T> YieldAsync<T>(T item)
-    {
-        // Helper method to yield an item asynchronously
-        await Task.Yield();
-        yield return item;
     }
 }

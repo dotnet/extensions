@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -101,49 +99,6 @@ public partial class LoggingImageGenerator : DelegatingImageGenerator
         {
             LogInvocationFailed(nameof(GenerateAsync), ex);
             throw;
-        }
-    }
-
-    /// <inheritdoc/>
-    public override IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(
-        ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(request);
-
-        if (_logger.IsEnabled(LogLevel.Debug))
-        {
-            if (_logger.IsEnabled(LogLevel.Trace))
-            {
-                LogInvokedSensitive(nameof(GenerateStreamingImagesAsync), request.Prompt ?? string.Empty, AsJson(options), AsJson(this.GetService<ImageGeneratorMetadata>()));
-            }
-            else
-            {
-                LogInvoked(nameof(GenerateStreamingImagesAsync));
-            }
-        }
-
-        return LogStreamingUpdatesAsync(base.GenerateStreamingImagesAsync(request, options, cancellationToken), cancellationToken);
-    }
-
-    private async IAsyncEnumerable<ImageResponseUpdate> LogStreamingUpdatesAsync(
-        IAsyncEnumerable<ImageResponseUpdate> updates,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in updates.WithCancellation(cancellationToken))
-        {
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                if (_logger.IsEnabled(LogLevel.Trace) && update.Contents.All(c => c is not DataContent))
-                {
-                    LogCompletedSensitive(nameof(GenerateStreamingImagesAsync), AsJson(update));
-                }
-                else
-                {
-                    LogCompleted(nameof(GenerateStreamingImagesAsync));
-                }
-            }
-
-            yield return update;
         }
     }
 
