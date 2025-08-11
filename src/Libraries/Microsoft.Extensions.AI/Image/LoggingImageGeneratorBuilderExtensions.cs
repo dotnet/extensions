@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public static class LoggingImageGeneratorBuilderExtensions
 {
-    /// <summary>Adds logging to the text to image generator pipeline.</summary>
+    /// <summary>Adds logging to the image generator pipeline.</summary>
     /// <param name="builder">The <see cref="ImageGeneratorBuilder"/>.</param>
     /// <param name="loggerFactory">
     /// An optional <see cref="ILoggerFactory"/> used to create a logger with which logging should be performed.

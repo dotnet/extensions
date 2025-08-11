@@ -15,7 +15,7 @@ using static Microsoft.Extensions.AI.OpenTelemetryConsts.GenAI;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A delegating text to image generator that logs text to image operations to an <see cref="ILogger"/>.</summary>
+/// <summary>A delegating image generator that logs image generation operations to an <see cref="ILogger"/>.</summary>
 /// <remarks>
 /// <para>
 /// The provided implementation of <see cref="IImageGenerator"/> is thread-safe for concurrent use so long as the

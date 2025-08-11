@@ -29,7 +29,7 @@ public class ImageResponse
         _contents = contents;
     }
 
-    /// <summary>Gets or sets the raw representation of the text to image response from an underlying implementation.</summary>
+    /// <summary>Gets or sets the raw representation of the image generation response from an underlying implementation.</summary>
     /// <remarks>
     /// If a <see cref="ImageResponse"/> is created to represent some underlying object from another object
     /// model, this property can be used to store that original object. This can be useful for debugging or
