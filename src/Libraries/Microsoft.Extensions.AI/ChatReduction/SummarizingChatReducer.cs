@@ -15,8 +15,11 @@ namespace Microsoft.Extensions.AI;
 /// Provides functionality to reduce a collection of chat messages into a summarized form.
 /// </summary>
 /// <remarks>
-/// This class implements the <see cref="IChatReducer"/> interface to process and summarize chat
-/// messages.
+/// This reducer is useful for scenarios where it is necessary to constrain the size of a chat history,
+/// such as when preparing input for models with context length limits. The reducer automatically summarizes
+/// older messages when the conversation exceeds a specified length, preserving context while reducing message
+/// count. The reducer maintains system messages and excludes messages containing function call or function
+/// result content from summarization.
 /// </remarks>
 [Experimental("MEAI001")]
 public sealed class SummarizingChatReducer : IChatReducer
@@ -64,7 +67,7 @@ public sealed class SummarizingChatReducer : IChatReducer
     public SummarizingChatReducer(IChatClient chatClient, int targetCount, int? threshold)
     {
         _chatClient = Throw.IfNull(chatClient);
-        _targetCount = Throw.IfLessThanOrEqual(targetCount, 0);
+        _targetCount = Throw.IfLessThanOrEqual(targetCount, min: 0);
         _thresholdCount = Throw.IfLessThan(threshold ?? 0, min: 0, nameof(threshold));
     }
 
