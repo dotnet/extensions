@@ -13,8 +13,8 @@ public class ImageGeneratorStreamingTests
     [Fact]
     public async Task GenerateStreamingImagesAsync_CallsCallback()
     {
-        var expectedRequest = new ImageRequest("test prompt");
-        var expectedOptions = new ImageOptions();
+        var expectedRequest = new ImageGenerationRequest("test prompt");
+        var expectedOptions = new ImageGenerationOptions();
         using var cts = new CancellationTokenSource();
         var expectedUpdate = new ImageResponseUpdate();
 
@@ -45,7 +45,7 @@ public class ImageGeneratorStreamingTests
         using var generator = new TestImageGenerator();
         var updates = new List<ImageResponseUpdate>();
 
-        await foreach (var update in generator.GenerateStreamingImagesAsync(new ImageRequest("test prompt")))
+        await foreach (var update in generator.GenerateStreamingImagesAsync(new ImageGenerationRequest("test prompt")))
         {
             updates.Add(update);
         }

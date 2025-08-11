@@ -57,8 +57,8 @@ public partial class LoggingImageGenerator : DelegatingImageGenerator
     }
 
     /// <inheritdoc/>
-    public override async Task<ImageResponse> GenerateImagesAsync(
-        ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ImageGenerationResponse> GenerateImagesAsync(
+        ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(request);
 
@@ -106,7 +106,7 @@ public partial class LoggingImageGenerator : DelegatingImageGenerator
 
     /// <inheritdoc/>
     public override IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(
-        ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
+        ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(request);
 
@@ -152,14 +152,14 @@ public partial class LoggingImageGenerator : DelegatingImageGenerator
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
     private partial void LogInvoked(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Prompt: {Prompt}. Options: {ImageOptions}. Metadata: {ImageGeneratorMetadata}.")]
-    private partial void LogInvokedSensitive(string methodName, string prompt, string imageOptions, string imageGeneratorMetadata);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Prompt: {Prompt}. Options: {ImageGenerationOptions}. Metadata: {ImageGeneratorMetadata}.")]
+    private partial void LogInvokedSensitive(string methodName, string prompt, string imageGenerationOptions, string imageGeneratorMetadata);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
     private partial void LogCompleted(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {ImageResponse}.")]
-    private partial void LogCompletedSensitive(string methodName, string imageResponse);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {ImageGenerationResponse}.")]
+    private partial void LogCompletedSensitive(string methodName, string imageGenerationResponse);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
     private partial void LogInvocationCanceled(string methodName);

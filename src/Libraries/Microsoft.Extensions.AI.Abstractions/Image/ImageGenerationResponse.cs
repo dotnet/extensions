@@ -11,27 +11,27 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an image generation request.</summary>
 [Experimental("MEAI001")]
-public class ImageResponse
+public class ImageGenerationResponse
 {
     /// <summary>The content items in the generated text response.</summary>
     private IList<AIContent>? _contents;
 
-    /// <summary>Initializes a new instance of the <see cref="ImageResponse"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ImageGenerationResponse"/> class.</summary>
     [JsonConstructor]
-    public ImageResponse()
+    public ImageGenerationResponse()
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="ImageResponse"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ImageGenerationResponse"/> class.</summary>
     /// <param name="contents">The contents for this response.</param>
-    public ImageResponse(IList<AIContent>? contents)
+    public ImageGenerationResponse(IList<AIContent>? contents)
     {
         _contents = contents;
     }
 
     /// <summary>Gets or sets the raw representation of the image generation response from an underlying implementation.</summary>
     /// <remarks>
-    /// If a <see cref="ImageResponse"/> is created to represent some underlying object from another object
+    /// If a <see cref="ImageGenerationResponse"/> is created to represent some underlying object from another object
     /// model, this property can be used to store that original object. This can be useful for debugging or
     /// for enabling a consumer to access the underlying object model if needed.
     /// </remarks>

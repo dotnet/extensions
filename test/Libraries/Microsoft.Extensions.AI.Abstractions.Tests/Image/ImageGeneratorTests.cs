@@ -45,10 +45,10 @@ public class ImageGeneratorTests
     [Fact]
     public async Task GenerateImagesAsync_CallsCallback()
     {
-        var expectedResponse = new ImageResponse();
-        var expectedOptions = new ImageOptions();
+        var expectedResponse = new ImageGenerationResponse();
+        var expectedOptions = new ImageGenerationOptions();
         using var cts = new CancellationTokenSource();
-        var expectedRequest = new ImageRequest("test prompt");
+        var expectedRequest = new ImageGenerationRequest("test prompt");
 
         using var generator = new TestImageGenerator
         {
@@ -69,7 +69,7 @@ public class ImageGeneratorTests
     public async Task GenerateImagesAsync_NoCallback_ReturnsEmptyResponse()
     {
         using var generator = new TestImageGenerator();
-        var result = await generator.GenerateImagesAsync(new ImageRequest("test prompt"), null);
+        var result = await generator.GenerateImagesAsync(new ImageGenerationRequest("test prompt"), null);
         Assert.NotNull(result);
         Assert.Empty(result.Contents);
     }
@@ -102,10 +102,10 @@ public class ImageGeneratorTests
     [Fact]
     public async Task GenerateImagesAsync_WithOptions_PassesThroughCorrectly()
     {
-        var options = new ImageOptions
+        var options = new ImageGenerationOptions
         {
             Background = "transparent",
-            ResponseFormat = ImageResponseFormat.Data,
+            ResponseFormat = ImageGenerationResponseFormat.Data,
             Count = 3,
             ImageSize = new Size(1024, 768),
             MediaType = "image/png",
@@ -113,7 +113,7 @@ public class ImageGeneratorTests
             Style = "photorealistic"
         };
 
-        var expectedRequest = new ImageRequest("test prompt");
+        var expectedRequest = new ImageGenerationRequest("test prompt");
 
         using var generator = new TestImageGenerator
         {
@@ -121,7 +121,7 @@ public class ImageGeneratorTests
             {
                 Assert.Same(expectedRequest, request);
                 Assert.Same(options, receivedOptions);
-                return Task.FromResult(new ImageResponse());
+                return Task.FromResult(new ImageGenerationResponse());
             }
         };
 
@@ -131,10 +131,10 @@ public class ImageGeneratorTests
     [Fact]
     public async Task GenerateImagesAsync_WithEditRequest_PassesThroughCorrectly()
     {
-        var options = new ImageOptions
+        var options = new ImageGenerationOptions
         {
             Background = "opaque",
-            ResponseFormat = ImageResponseFormat.Uri,
+            ResponseFormat = ImageGenerationResponseFormat.Uri,
             Count = 2,
             MediaType = "image/jpeg",
             ModelId = "edit-model",
@@ -142,7 +142,7 @@ public class ImageGeneratorTests
         };
 
         AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
-        var expectedRequest = new ImageRequest("edit prompt", originalImages);
+        var expectedRequest = new ImageGenerationRequest("edit prompt", originalImages);
 
         using var generator = new TestImageGenerator
         {
@@ -150,7 +150,7 @@ public class ImageGeneratorTests
             {
                 Assert.Same(expectedRequest, request);
                 Assert.Same(options, receivedOptions);
-                return Task.FromResult(new ImageResponse());
+                return Task.FromResult(new ImageGenerationResponse());
             }
         };
 

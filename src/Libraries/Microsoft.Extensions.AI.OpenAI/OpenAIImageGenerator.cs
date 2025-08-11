@@ -49,7 +49,7 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
     }
 
     /// <inheritdoc />
-    public async Task<ImageResponse> GenerateImagesAsync(ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ImageGenerationResponse> GenerateImagesAsync(ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(request);
 
@@ -99,20 +99,20 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
             GeneratedImageCollection editResult = await _imageClient.GenerateImageEditsAsync(
                 imageStream, fileName, prompt, options?.Count ?? 1, editOptions, cancellationToken).ConfigureAwait(false);
 
-            return ToImageResponse(editResult);
+            return ToImageGenerationResponse(editResult);
         }
 
-        ImageGenerationOptions openAIOptions = ToOpenAIImageGenerationOptions(options);
+        OpenAI.Images.ImageGenerationOptions openAIOptions = ToOpenAIImageGenerationOptions(options);
 
         GeneratedImageCollection result = await _imageClient.GenerateImagesAsync(prompt, options?.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
 
-        return ToImageResponse(result);
+        return ToImageGenerationResponse(result);
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(
-        ImageRequest request,
-        ImageOptions? options = null,
+        ImageGenerationRequest request,
+        ImageGenerationOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(request);
@@ -156,8 +156,8 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
     private static GeneratedImageSize? ToOpenAIImageSize(Size? requestedSize) =>
         requestedSize is null ? null : new GeneratedImageSize(requestedSize.Value.Width, requestedSize.Value.Height);
 
-    /// <summary>Converts a <see cref="GeneratedImageCollection"/> to a <see cref="ImageResponse"/>.</summary>
-    private static ImageResponse ToImageResponse(GeneratedImageCollection generatedImages)
+    /// <summary>Converts a <see cref="GeneratedImageCollection"/> to a <see cref="ImageGenerationResponse"/>.</summary>
+    private static ImageGenerationResponse ToImageGenerationResponse(GeneratedImageCollection generatedImages)
     {
         string contentType = "image/png"; // Default content type for images
 
@@ -192,16 +192,16 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
             }
         }
 
-        return new ImageResponse(contents)
+        return new ImageGenerationResponse(contents)
         {
             RawRepresentation = generatedImages
         };
     }
 
-    /// <summary>Converts a <see cref="ImageOptions"/> to a <see cref="ImageGenerationOptions"/>.</summary>
-    private ImageGenerationOptions ToOpenAIImageGenerationOptions(ImageOptions? options)
+    /// <summary>Converts a <see cref="ImageGenerationOptions"/> to a <see cref="OpenAI.Images.ImageGenerationOptions"/>.</summary>
+    private OpenAI.Images.ImageGenerationOptions ToOpenAIImageGenerationOptions(ImageGenerationOptions? options)
     {
-        ImageGenerationOptions result = options?.RawRepresentationFactory?.Invoke(this) as ImageGenerationOptions ?? new();
+        OpenAI.Images.ImageGenerationOptions result = options?.RawRepresentationFactory?.Invoke(this) as OpenAI.Images.ImageGenerationOptions ?? new();
 
         result.Background ??= options?.Background;
 
@@ -215,10 +215,10 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
 
         result.ResponseFormat ??= options?.ResponseFormat switch
         {
-            ImageResponseFormat.Uri => GeneratedImageFormat.Uri,
-            ImageResponseFormat.Data => GeneratedImageFormat.Bytes,
+            ImageGenerationResponseFormat.Uri => GeneratedImageFormat.Uri,
+            ImageGenerationResponseFormat.Data => GeneratedImageFormat.Bytes,
 
-            // ImageResponseFormat.Hosted not supported by ImageGenerator, however other OpenAI API support file IDs.
+            // ImageGenerationResponseFormat.Hosted not supported by ImageGenerator, however other OpenAI API support file IDs.
             _ => null
         };
 
@@ -229,17 +229,17 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
         return result;
     }
 
-    /// <summary>Converts a <see cref="ImageOptions"/> to a <see cref="ImageEditOptions"/>.</summary>
-    private ImageEditOptions ToOpenAIImageEditOptions(ImageOptions? options)
+    /// <summary>Converts a <see cref="ImageGenerationOptions"/> to a <see cref="ImageEditOptions"/>.</summary>
+    private ImageEditOptions ToOpenAIImageEditOptions(ImageGenerationOptions? options)
     {
         ImageEditOptions result = options?.RawRepresentationFactory?.Invoke(this) as ImageEditOptions ?? new();
 
         result.ResponseFormat ??= options?.ResponseFormat switch
         {
-            ImageResponseFormat.Uri => GeneratedImageFormat.Uri,
-            ImageResponseFormat.Data => GeneratedImageFormat.Bytes,
+            ImageGenerationResponseFormat.Uri => GeneratedImageFormat.Uri,
+            ImageGenerationResponseFormat.Data => GeneratedImageFormat.Bytes,
 
-            // ImageResponseFormat.Hosted not supported by ImageGenerator, however other OpenAI API support file IDs.
+            // ImageGenerationResponseFormat.Hosted not supported by ImageGenerator, however other OpenAI API support file IDs.
             _ => null
         };
 

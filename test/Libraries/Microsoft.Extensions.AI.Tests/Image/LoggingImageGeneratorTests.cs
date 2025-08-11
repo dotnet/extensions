@@ -57,7 +57,7 @@ public class LoggingImageGeneratorTests
         {
             GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
             {
-                return Task.FromResult(new ImageResponse());
+                return Task.FromResult(new ImageGenerationResponse());
             },
         };
 
@@ -67,8 +67,8 @@ public class LoggingImageGeneratorTests
             .Build(services);
 
         await generator.GenerateImagesAsync(
-            new ImageRequest("A beautiful sunset"),
-            new ImageOptions { ModelId = "dall-e-3" });
+            new ImageGenerationRequest("A beautiful sunset"),
+            new ImageGenerationOptions { ModelId = "dall-e-3" });
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
@@ -105,7 +105,7 @@ public class LoggingImageGeneratorTests
         {
             GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
             {
-                return Task.FromResult(new ImageResponse());
+                return Task.FromResult(new ImageGenerationResponse());
             }
         };
 
@@ -116,8 +116,8 @@ public class LoggingImageGeneratorTests
 
         AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
         await generator.GenerateImagesAsync(
-            new ImageRequest("Make it more colorful", originalImages),
-            new ImageOptions { ModelId = "dall-e-3" });
+            new ImageGenerationRequest("Make it more colorful", originalImages),
+            new ImageGenerationOptions { ModelId = "dall-e-3" });
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
@@ -165,8 +165,8 @@ public class LoggingImageGeneratorTests
 
         var updates = new List<ImageResponseUpdate>();
         await foreach (var update in generator.GenerateStreamingImagesAsync(
-            new ImageRequest("A beautiful sunset"),
-            new ImageOptions { ModelId = "dall-e-3" }))
+            new ImageGenerationRequest("A beautiful sunset"),
+            new ImageGenerationOptions { ModelId = "dall-e-3" }))
         {
             updates.Add(update);
         }

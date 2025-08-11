@@ -64,8 +64,8 @@ public class ImageGeneratorExtensionsTests
         var imageData = new byte[] { 1, 2, 3, 4 };
         var dataContent = new DataContent(imageData, "image/png") { Name = "test.png" };
         var prompt = "Edit this image";
-        var options = new ImageOptions { Count = 2 };
-        var expectedResponse = new ImageResponse();
+        var options = new ImageGenerationOptions { Count = 2 };
+        var expectedResponse = new ImageGenerationResponse();
         var cancellationToken = new CancellationToken(canceled: false);
 
         testGenerator.GenerateImagesAsyncCallback = (request, o, ct) =>
@@ -110,8 +110,8 @@ public class ImageGeneratorExtensionsTests
         var imageData = new byte[] { 1, 2, 3, 4 };
         var fileName = "test.jpg";
         var prompt = "Edit this image";
-        var options = new ImageOptions { Count = 2 };
-        var expectedResponse = new ImageResponse();
+        var options = new ImageGenerationOptions { Count = 2 };
+        var expectedResponse = new ImageGenerationResponse();
         var cancellationToken = new CancellationToken(canceled: false);
 
         testGenerator.GenerateImagesAsyncCallback = (request, o, ct) =>
@@ -199,7 +199,7 @@ public class ImageGeneratorExtensionsTests
             Assert.NotNull(request.OriginalImages);
             var dataContent = Assert.IsType<DataContent>(Assert.Single(request.OriginalImages));
             Assert.Equal(expectedMediaType, dataContent.MediaType);
-            return Task.FromResult(new ImageResponse());
+            return Task.FromResult(new ImageGenerationResponse());
         };
 
         // Act & Assert
@@ -222,7 +222,7 @@ public class ImageGeneratorExtensionsTests
             Assert.Null(o); // Default options should be null
             Assert.Equal(CancellationToken.None, ct); // Default cancellation token
             Assert.NotNull(request.OriginalImages); // Should have original images for editing
-            return Task.FromResult(new ImageResponse());
+            return Task.FromResult(new ImageGenerationResponse());
         };
 
         // Act - Test all two overloads with default parameters
@@ -239,7 +239,7 @@ public class ImageGeneratorExtensionsTests
         // Arrange
         using var testGenerator = new TestImageGenerator();
         var prompt = "A beautiful sunset";
-        var options = new ImageOptions { Count = 2 };
+        var options = new ImageGenerationOptions { Count = 2 };
         var expectedUpdate = new ImageResponseUpdate();
         var cancellationToken = new CancellationToken(canceled: false);
 

@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the options for an image generation request.</summary>
 [Experimental("MEAI001")]
-public class ImageOptions
+public class ImageGenerationOptions
 {
     /// <summary>
     /// Gets or sets the style of background to use for the generated image. Examples include "opaque" or "transparent".
@@ -44,16 +44,16 @@ public class ImageOptions
     /// </summary>
     /// <remarks>
     /// The underlying <see cref="IImageGenerator" /> implementation may have its own representation of options.
-    /// When <see cref="IImageGenerator.GenerateImagesAsync" /> is invoked with an <see cref="ImageOptions" />,
+    /// When <see cref="IImageGenerator.GenerateImagesAsync" /> is invoked with an <see cref="ImageGenerationOptions" />,
     /// that implementation may convert the provided options into its own representation in order to use it while performing
     /// the operation. For situations where a consumer knows  which concrete <see cref="IImageGenerator" /> is being used
     /// and how it represents options, a new instance of that implementation-specific options type may be returned by this
     /// callback, for the <see cref="IImageGenerator" />implementation to use instead of creating a new instance.
     /// Such implementations may mutate the supplied options instance further based on other settings supplied on this
-    /// <see cref="ImageOptions" /> instance or from other inputs, therefore, it is <b>strongly recommended</b> to not
+    /// <see cref="ImageGenerationOptions" /> instance or from other inputs, therefore, it is <b>strongly recommended</b> to not
     /// return shared instances and instead make the callback return a new instance on each call.
     /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly-typed
-    /// properties on <see cref="ImageOptions" />.
+    /// properties on <see cref="ImageGenerationOptions" />.
     /// </remarks>
     [JsonIgnore]
     public Func<IImageGenerator, object?>? RawRepresentationFactory { get; set; }
@@ -61,18 +61,18 @@ public class ImageOptions
     /// <summary>
     /// Gets or sets the response format of the generated image.
     /// </summary>
-    public ImageResponseFormat? ResponseFormat { get; set; }
+    public ImageGenerationResponseFormat? ResponseFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the style of the generated image to some predefined style supported by the provider.
     /// </summary>
     public string? Style { get; set; }
 
-    /// <summary>Produces a clone of the current <see cref="ImageOptions"/> instance.</summary>
-    /// <returns>A clone of the current <see cref="ImageOptions"/> instance.</returns>
-    public virtual ImageOptions Clone()
+    /// <summary>Produces a clone of the current <see cref="ImageGenerationOptions"/> instance.</summary>
+    /// <returns>A clone of the current <see cref="ImageGenerationOptions"/> instance.</returns>
+    public virtual ImageGenerationOptions Clone()
     {
-        ImageOptions options = new()
+        ImageGenerationOptions options = new()
         {
             Background = Background,
             Count = Count,
@@ -92,7 +92,7 @@ public class ImageOptions
 /// Represents the requested content type of the generated image.
 /// </summary>
 [Experimental("MEAI001")]
-public enum ImageResponseFormat
+public enum ImageGenerationResponseFormat
 {
     /// <summary>
     /// The generated image is returned as a URI pointing to the image resource.

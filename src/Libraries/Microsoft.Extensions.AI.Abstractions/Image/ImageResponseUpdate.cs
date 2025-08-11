@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.AI;
 /// image generation where partial images or progress updates can be received.
 /// </para>
 /// <para>
-/// The relationship between <see cref="ImageResponse"/> and <see cref="ImageResponseUpdate"/> is
+/// The relationship between <see cref="ImageGenerationResponse"/> and <see cref="ImageResponseUpdate"/> is
 /// similar to the relationship between <see cref="ChatResponse"/> and <see cref="ChatResponseUpdate"/>.
 /// Multiple updates can be combined to form a complete response.
 /// </para>

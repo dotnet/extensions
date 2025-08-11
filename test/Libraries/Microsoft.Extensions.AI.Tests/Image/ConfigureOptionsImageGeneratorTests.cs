@@ -30,9 +30,9 @@ public class ConfigureOptionsImageGeneratorTests
     [InlineData(true)]
     public async Task ConfigureOptions_ReturnedInstancePassedToNextGenerator(bool nullProvidedOptions)
     {
-        ImageOptions? providedOptions = nullProvidedOptions ? null : new() { ModelId = "test" };
-        ImageOptions? returnedOptions = null;
-        ImageResponse expectedResponse = new([]);
+        ImageGenerationOptions? providedOptions = nullProvidedOptions ? null : new() { ModelId = "test" };
+        ImageGenerationOptions? returnedOptions = null;
+        ImageGenerationResponse expectedResponse = new([]);
         using CancellationTokenSource cts = new();
 
         using IImageGenerator innerGenerator = new TestImageGenerator

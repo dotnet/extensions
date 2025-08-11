@@ -37,7 +37,7 @@ public class ImageGeneratorMetadata
     /// <summary>Gets the ID of the default model used by this image generator.</summary>
     /// <remarks>
     /// This value can be <see langword="null"/> if no default model is set on the corresponding <see cref="IImageGenerator"/>.
-    /// An individual request may override this value via <see cref="ImageOptions.ModelId"/>.
+    /// An individual request may override this value via <see cref="ImageGenerationOptions.ModelId"/>.
     /// </remarks>
     public string? DefaultModelId { get; }
 }

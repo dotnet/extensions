@@ -10,47 +10,47 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents a delegating image generator that configures a <see cref="ImageOptions"/> instance used by the remainder of the pipeline.</summary>
+/// <summary>Represents a delegating image generator that configures a <see cref="ImageGenerationOptions"/> instance used by the remainder of the pipeline.</summary>
 [Experimental("MEAI001")]
 public sealed class ConfigureOptionsImageGenerator : DelegatingImageGenerator
 {
     /// <summary>The callback delegate used to configure options.</summary>
-    private readonly Action<ImageOptions> _configureOptions;
+    private readonly Action<ImageGenerationOptions> _configureOptions;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigureOptionsImageGenerator"/> class with the specified <paramref name="configure"/> callback.</summary>
     /// <param name="innerGenerator">The inner generator.</param>
     /// <param name="configure">
-    /// The delegate to invoke to configure the <see cref="ImageOptions"/> instance. It is passed a clone of the caller-supplied <see cref="ImageOptions"/> instance
+    /// The delegate to invoke to configure the <see cref="ImageGenerationOptions"/> instance. It is passed a clone of the caller-supplied <see cref="ImageGenerationOptions"/> instance
     /// (or a newly constructed instance if the caller-supplied instance is <see langword="null"/>).
     /// </param>
     /// <exception cref="ArgumentNullException"><paramref name="innerGenerator"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The <paramref name="configure"/> delegate is passed either a new instance of <see cref="ImageOptions"/> if
-    /// the caller didn't supply a <see cref="ImageOptions"/> instance, or a clone (via <see cref="ImageOptions.Clone"/> of the caller-supplied
+    /// The <paramref name="configure"/> delegate is passed either a new instance of <see cref="ImageGenerationOptions"/> if
+    /// the caller didn't supply a <see cref="ImageGenerationOptions"/> instance, or a clone (via <see cref="ImageGenerationOptions.Clone"/> of the caller-supplied
     /// instance if one was supplied.
     /// </remarks>
-    public ConfigureOptionsImageGenerator(IImageGenerator innerGenerator, Action<ImageOptions> configure)
+    public ConfigureOptionsImageGenerator(IImageGenerator innerGenerator, Action<ImageGenerationOptions> configure)
         : base(innerGenerator)
     {
         _configureOptions = Throw.IfNull(configure);
     }
 
     /// <inheritdoc/>
-    public override async Task<ImageResponse> GenerateImagesAsync(
-        ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ImageGenerationResponse> GenerateImagesAsync(
+        ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await base.GenerateImagesAsync(request, Configure(options), cancellationToken);
     }
 
     /// <inheritdoc/>
     public override IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(
-        ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
+        ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         return base.GenerateStreamingImagesAsync(request, Configure(options), cancellationToken);
     }
 
-    /// <summary>Creates and configures the <see cref="ImageOptions"/> to pass along to the inner generator.</summary>
-    private ImageOptions Configure(ImageOptions? options)
+    /// <summary>Creates and configures the <see cref="ImageGenerationOptions"/> to pass along to the inner generator.</summary>
+    private ImageGenerationOptions Configure(ImageGenerationOptions? options)
     {
         options = options?.Clone() ?? new();
 

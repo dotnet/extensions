@@ -8,24 +8,24 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a request for image generation.</summary>
 [Experimental("MEAI001")]
-public class ImageRequest
+public class ImageGenerationRequest
 {
-    /// <summary>Initializes a new instance of the <see cref="ImageRequest"/> class.</summary>
-    public ImageRequest()
+    /// <summary>Initializes a new instance of the <see cref="ImageGenerationRequest"/> class.</summary>
+    public ImageGenerationRequest()
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="ImageRequest"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ImageGenerationRequest"/> class.</summary>
     /// <param name="prompt">The prompt to guide the image generation.</param>
-    public ImageRequest(string prompt)
+    public ImageGenerationRequest(string prompt)
     {
         Prompt = prompt;
     }
 
-    /// <summary>Initializes a new instance of the <see cref="ImageRequest"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ImageGenerationRequest"/> class.</summary>
     /// <param name="prompt">The prompt to guide the image generation.</param>
     /// <param name="originalImages">The original images to base edits on.</param>
-    public ImageRequest(string prompt, IEnumerable<AIContent>? originalImages)
+    public ImageGenerationRequest(string prompt, IEnumerable<AIContent>? originalImages)
     {
         Prompt = prompt;
         OriginalImages = originalImages;

@@ -21,11 +21,11 @@ public class DelegatingImageGeneratorTests
     public async Task GenerateImagesAsyncDefaultsToInnerGeneratorAsync()
     {
         // Arrange
-        var expectedRequest = new ImageRequest("test prompt");
-        var expectedOptions = new ImageOptions();
+        var expectedRequest = new ImageGenerationRequest("test prompt");
+        var expectedOptions = new ImageGenerationOptions();
         var expectedCancellationToken = CancellationToken.None;
-        var expectedResult = new TaskCompletionSource<ImageResponse>();
-        var expectedResponse = new ImageResponse();
+        var expectedResult = new TaskCompletionSource<ImageGenerationResponse>();
+        var expectedResponse = new ImageGenerationResponse();
         using var inner = new TestImageGenerator
         {
             GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
@@ -53,8 +53,8 @@ public class DelegatingImageGeneratorTests
     public async Task GenerateStreamingImagesAsyncDefaultsToInnerGeneratorAsync()
     {
         // Arrange
-        var expectedRequest = new ImageRequest("test prompt");
-        var expectedOptions = new ImageOptions();
+        var expectedRequest = new ImageGenerationRequest("test prompt");
+        var expectedOptions = new ImageGenerationOptions();
         var expectedCancellationToken = CancellationToken.None;
         var expectedResult = new TaskCompletionSource<IAsyncEnumerable<ImageResponseUpdate>>();
         ImageResponseUpdate[] expectedResults =

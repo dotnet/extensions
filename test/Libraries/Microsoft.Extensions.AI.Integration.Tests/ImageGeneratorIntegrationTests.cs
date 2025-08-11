@@ -34,7 +34,7 @@ public abstract class ImageGeneratorIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        var options = new ImageOptions
+        var options = new ImageGenerationOptions
         {
             Count = 1
         };
@@ -57,7 +57,7 @@ public abstract class ImageGeneratorIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        var options = new ImageOptions
+        var options = new ImageGenerationOptions
         {
             Count = 2
         };
@@ -85,7 +85,7 @@ public abstract class ImageGeneratorIntegrationTests : IDisposable
         var imageData = GetImageData("dotnet.png");
         AIContent[] originalImages = [new DataContent(imageData, "image/png")];
 
-        var options = new ImageOptions
+        var options = new ImageGenerationOptions
         {
             Count = 1
         };

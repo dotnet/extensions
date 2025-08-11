@@ -17,9 +17,9 @@ public sealed class TestImageGenerator : IImageGenerator
 
     public IServiceProvider? Services { get; set; }
 
-    public Func<ImageRequest, ImageOptions?, CancellationToken, Task<ImageResponse>>? GenerateImagesAsyncCallback { get; set; }
+    public Func<ImageGenerationRequest, ImageGenerationOptions?, CancellationToken, Task<ImageGenerationResponse>>? GenerateImagesAsyncCallback { get; set; }
 
-    public Func<ImageRequest, ImageOptions?, CancellationToken, IAsyncEnumerable<ImageResponseUpdate>>? GenerateStreamingImagesAsyncCallback { get; set; }
+    public Func<ImageGenerationRequest, ImageGenerationOptions?, CancellationToken, IAsyncEnumerable<ImageResponseUpdate>>? GenerateStreamingImagesAsyncCallback { get; set; }
 
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
 
@@ -28,13 +28,13 @@ public sealed class TestImageGenerator : IImageGenerator
     private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey)
         => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
-    public Task<ImageResponse> GenerateImagesAsync(ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<ImageGenerationResponse> GenerateImagesAsync(ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         return GenerateImagesAsyncCallback?.Invoke(request, options, cancellationToken) ??
-            Task.FromResult(new ImageResponse());
+            Task.FromResult(new ImageGenerationResponse());
     }
 
-    public IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(ImageRequest request, ImageOptions? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ImageResponseUpdate> GenerateStreamingImagesAsync(ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         return GenerateStreamingImagesAsyncCallback?.Invoke(request, options, cancellationToken) ??
             EmptyAsyncEnumerable();
