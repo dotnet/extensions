@@ -41,10 +41,10 @@ public class DelegatingImageGenerator : IImageGenerator
     protected IImageGenerator InnerGenerator { get; }
 
     /// <inheritdoc />
-    public virtual Task<ImageGenerationResponse> GenerateImagesAsync(
+    public virtual Task<ImageGenerationResponse> GenerateAsync(
         ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerGenerator.GenerateImagesAsync(request, options, cancellationToken);
+        return InnerGenerator.GenerateAsync(request, options, cancellationToken);
     }
 
     /// <inheritdoc />

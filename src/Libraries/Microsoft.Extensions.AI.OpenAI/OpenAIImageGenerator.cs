@@ -49,7 +49,7 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
     }
 
     /// <inheritdoc />
-    public async Task<ImageGenerationResponse> GenerateImagesAsync(ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ImageGenerationResponse> GenerateAsync(ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(request);
 
@@ -123,7 +123,7 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
         // We don't yet know what form this will take in the managed client.
 
         // For now, we'll simulate streaming by yielding a single update with the complete result
-        var response = await GenerateImagesAsync(request, options, cancellationToken).ConfigureAwait(false);
+        var response = await GenerateAsync(request, options, cancellationToken).ConfigureAwait(false);
 
         yield return new ImageResponseUpdate(response.Contents)
         {

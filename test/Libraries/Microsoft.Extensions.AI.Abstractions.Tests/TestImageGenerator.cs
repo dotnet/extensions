@@ -28,7 +28,7 @@ public sealed class TestImageGenerator : IImageGenerator
     private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey)
         => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
-    public Task<ImageGenerationResponse> GenerateImagesAsync(ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<ImageGenerationResponse> GenerateAsync(ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         return GenerateImagesAsyncCallback?.Invoke(request, options, cancellationToken) ??
             Task.FromResult(new ImageGenerationResponse());

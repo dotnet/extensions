@@ -101,7 +101,7 @@ public static class ImageGeneratorExtensions
         _ = Throw.IfNull(generator);
         _ = Throw.IfNull(prompt);
 
-        return generator.GenerateImagesAsync(new ImageGenerationRequest(prompt), options, cancellationToken);
+        return generator.GenerateAsync(new ImageGenerationRequest(prompt), options, cancellationToken);
     }
 
     /// <summary>
@@ -125,7 +125,7 @@ public static class ImageGeneratorExtensions
         _ = Throw.IfNull(originalImages);
         _ = Throw.IfNull(prompt);
 
-        return generator.GenerateImagesAsync(new ImageGenerationRequest(prompt, originalImages), options, cancellationToken);
+        return generator.GenerateAsync(new ImageGenerationRequest(prompt, originalImages), options, cancellationToken);
     }
 
     /// <summary>
@@ -149,7 +149,7 @@ public static class ImageGeneratorExtensions
         _ = Throw.IfNull(originalImage);
         _ = Throw.IfNull(prompt);
 
-        return generator.GenerateImagesAsync(new ImageGenerationRequest(prompt, [originalImage]), options, cancellationToken);
+        return generator.GenerateAsync(new ImageGenerationRequest(prompt, [originalImage]), options, cancellationToken);
     }
 
     /// <summary>
@@ -183,7 +183,7 @@ public static class ImageGeneratorExtensions
         string mediaType = GetMediaTypeFromFileName(fileName);
 
         var dataContent = new DataContent(originalImageData, mediaType) { Name = fileName };
-        return generator.GenerateImagesAsync(new ImageGenerationRequest(prompt, [dataContent]), options, cancellationToken);
+        return generator.GenerateAsync(new ImageGenerationRequest(prompt, [dataContent]), options, cancellationToken);
     }
 
     /// <summary>

@@ -44,7 +44,7 @@ public class ImageGenerationOptions
     /// </summary>
     /// <remarks>
     /// The underlying <see cref="IImageGenerator" /> implementation may have its own representation of options.
-    /// When <see cref="IImageGenerator.GenerateImagesAsync" /> is invoked with an <see cref="ImageGenerationOptions" />,
+    /// When <see cref="IImageGenerator.GenerateAsync" /> is invoked with an <see cref="ImageGenerationOptions" />,
     /// that implementation may convert the provided options into its own representation in order to use it while performing
     /// the operation. For situations where a consumer knows  which concrete <see cref="IImageGenerator" /> is being used
     /// and how it represents options, a new instance of that implementation-specific options type may be returned by this

@@ -61,7 +61,7 @@ public class ImageGeneratorTests
             }
         };
 
-        var result = await generator.GenerateImagesAsync(expectedRequest, expectedOptions, cts.Token);
+        var result = await generator.GenerateAsync(expectedRequest, expectedOptions, cts.Token);
         Assert.Same(expectedResponse, result);
     }
 
@@ -69,7 +69,7 @@ public class ImageGeneratorTests
     public async Task GenerateImagesAsync_NoCallback_ReturnsEmptyResponse()
     {
         using var generator = new TestImageGenerator();
-        var result = await generator.GenerateImagesAsync(new ImageGenerationRequest("test prompt"), null);
+        var result = await generator.GenerateAsync(new ImageGenerationRequest("test prompt"), null);
         Assert.NotNull(result);
         Assert.Empty(result.Contents);
     }
@@ -125,7 +125,7 @@ public class ImageGeneratorTests
             }
         };
 
-        await generator.GenerateImagesAsync(expectedRequest, options);
+        await generator.GenerateAsync(expectedRequest, options);
     }
 
     [Fact]
@@ -154,6 +154,6 @@ public class ImageGeneratorTests
             }
         };
 
-        await generator.GenerateImagesAsync(expectedRequest, options);
+        await generator.GenerateAsync(expectedRequest, options);
     }
 }

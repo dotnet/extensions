@@ -36,10 +36,10 @@ public sealed class ConfigureOptionsImageGenerator : DelegatingImageGenerator
     }
 
     /// <inheritdoc/>
-    public override async Task<ImageGenerationResponse> GenerateImagesAsync(
+    public override async Task<ImageGenerationResponse> GenerateAsync(
         ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await base.GenerateImagesAsync(request, Configure(options), cancellationToken);
+        return await base.GenerateAsync(request, Configure(options), cancellationToken);
     }
 
     /// <inheritdoc/>

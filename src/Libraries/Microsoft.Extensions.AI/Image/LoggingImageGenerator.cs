@@ -57,7 +57,7 @@ public partial class LoggingImageGenerator : DelegatingImageGenerator
     }
 
     /// <inheritdoc/>
-    public override async Task<ImageGenerationResponse> GenerateImagesAsync(
+    public override async Task<ImageGenerationResponse> GenerateAsync(
         ImageGenerationRequest request, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(request);
@@ -66,27 +66,27 @@ public partial class LoggingImageGenerator : DelegatingImageGenerator
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GenerateImagesAsync), request.Prompt ?? string.Empty, AsJson(options), AsJson(this.GetService<ImageGeneratorMetadata>()));
+                LogInvokedSensitive(nameof(GenerateAsync), request.Prompt ?? string.Empty, AsJson(options), AsJson(this.GetService<ImageGeneratorMetadata>()));
             }
             else
             {
-                LogInvoked(nameof(GenerateImagesAsync));
+                LogInvoked(nameof(GenerateAsync));
             }
         }
 
         try
         {
-            var response = await base.GenerateImagesAsync(request, options, cancellationToken);
+            var response = await base.GenerateAsync(request, options, cancellationToken);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 if (_logger.IsEnabled(LogLevel.Trace) && response.Contents.All(c => c is not DataContent))
                 {
-                    LogCompletedSensitive(nameof(GenerateImagesAsync), AsJson(response));
+                    LogCompletedSensitive(nameof(GenerateAsync), AsJson(response));
                 }
                 else
                 {
-                    LogCompleted(nameof(GenerateImagesAsync));
+                    LogCompleted(nameof(GenerateAsync));
                 }
             }
 
@@ -94,12 +94,12 @@ public partial class LoggingImageGenerator : DelegatingImageGenerator
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(GenerateImagesAsync));
+            LogInvocationCanceled(nameof(GenerateAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(GenerateImagesAsync), ex);
+            LogInvocationFailed(nameof(GenerateAsync), ex);
             throw;
         }
     }

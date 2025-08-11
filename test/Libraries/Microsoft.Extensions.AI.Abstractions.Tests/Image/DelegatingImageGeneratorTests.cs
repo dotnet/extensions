@@ -40,7 +40,7 @@ public class DelegatingImageGeneratorTests
         using var delegating = new NoOpDelegatingImageGenerator(inner);
 
         // Act
-        var resultTask = delegating.GenerateImagesAsync(expectedRequest, expectedOptions, expectedCancellationToken);
+        var resultTask = delegating.GenerateAsync(expectedRequest, expectedOptions, expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);
