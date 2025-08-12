@@ -6,12 +6,11 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
-
 
 #if NET9_0_OR_GREATER
 using Microsoft.Extensions.Configuration;
@@ -63,10 +62,12 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
         // Mock registering keyed IDistributedCache from client side
         services.TryAddKeyedSingleton<IDistributedCache, RedisCache>(name);
 
+#pragma warning disable CACHE001
         services.AddHybridCache(name, options =>
         {
             options.MaximumKeyLength = 937;
         });
+#pragma warning restore CACHE001
         using var provider = services.BuildServiceProvider();
 
         var hybridCacheOption = provider.GetRequiredService<IOptionsMonitor<HybridCacheOptions>>().Get(name);

@@ -49,6 +49,7 @@ public static class HybridCacheServiceExtensions
     /// Adds support for keyed multi-tier caching services.
     /// </summary>
     /// <returns>A builder instance that allows further configuration of the <see cref="HybridCache"/> system.</returns>
+    [System.Diagnostics.CodeAnalysis.Experimental("CACHE001")]
     public static IHybridCacheBuilder AddHybridCache(this IServiceCollection services, string name, Action<HybridCacheOptions> setupAction)
     {
         _ = Throw.IfNull(services);
