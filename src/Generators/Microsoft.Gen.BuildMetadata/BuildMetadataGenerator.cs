@@ -26,18 +26,9 @@ public class BuildMetadataGenerator : IIncrementalGenerator
 
         OverwriteModelValuesForTesting(compilation.Assembly.GetAttributes());
 
-        EnsureBackwardsCompatibility(context);
-
         var e = new Emitter();
         var result = e.EmitExtensions(context.CancellationToken);
         context.AddSource("BuildMetadataExtensions.g.cs", SourceText.From(result, Encoding.UTF8));
-    }
-
-    private static void EnsureBackwardsCompatibility(SourceProductionContext context)
-    {
-        var e = new Emitter();
-        var result = e.Emit(context.CancellationToken);
-        context.AddSource("BuildMetadataInitializer.g.cs", SourceText.From(result, Encoding.UTF8));
     }
 
     private static void OverwriteModelValuesForTesting(ImmutableArray<AttributeData> attributes)
@@ -56,11 +47,11 @@ public class BuildMetadataGenerator : IIncrementalGenerator
 #pragma warning disable S109 // Magic numbers should not be used
 #pragma warning disable S1067 // Expressions should not be too complex
         if (
-        attribute.ConstructorArguments[0].Value is string buildId &&
-        attribute.ConstructorArguments[1].Value is string buildNumber &&
-        attribute.ConstructorArguments[2].Value is string sourceBranchName &&
-        attribute.ConstructorArguments[3].Value is string sourceVersion &&
-        attribute.ConstructorArguments[4].Value is int buildDateTime)
+            attribute.ConstructorArguments[0].Value is string buildId &&
+            attribute.ConstructorArguments[1].Value is string buildNumber &&
+            attribute.ConstructorArguments[2].Value is string sourceBranchName &&
+            attribute.ConstructorArguments[3].Value is string sourceVersion &&
+            attribute.ConstructorArguments[4].Value is int buildDateTime)
         {
             Model.IsAzureDevOps = true;
             Model.AzureBuildId = buildId;

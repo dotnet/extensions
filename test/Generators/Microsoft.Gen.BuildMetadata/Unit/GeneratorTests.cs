@@ -80,7 +80,7 @@ public class GeneratorTests
         var (d, sources) = await RunGenerator(source, additionalRef: additionalRef);
 
         d.Should().BeEmpty();
-        sources.Should().HaveCount(2);
+        sources.Should().HaveCount(1);
 
         var settings = new VerifySettings(_verifySettings);
         settings.DisableRequireUniquePrefix();

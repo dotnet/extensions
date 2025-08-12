@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.AmbientMetadata;
 /// </summary>
 /// <remarks>
 /// The values are automatically grabbed from environment variables at build time in CI pipeline and saved in generated code.
-/// At startup time, the class properties will be initalized from the generated code.
+/// At startup time, the class properties will be initialized from the generated code.
 /// Currently supported CI pipelines:
 /// <list type="bullet">
 /// <item><see href="https://learn.microsoft.com/azure/devops/pipelines/build/variables#build-variables-devops-services">Azure DevOps</see></item>

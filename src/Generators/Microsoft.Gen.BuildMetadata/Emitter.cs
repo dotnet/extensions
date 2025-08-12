@@ -12,7 +12,6 @@ internal sealed class Emitter : EmitterBase
     public string Emit(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        GenerateBuildMetadataInitializer();
         return Capture();
     }
 
@@ -21,29 +20,6 @@ internal sealed class Emitter : EmitterBase
         cancellationToken.ThrowIfCancellationRequested();
         GenerateBuildMetadataExtensions();
         return Capture();
-    }
-
-    [SuppressMessage("Format", "IDE0055", Justification = "For better visualization of how the generated code will look like.")]
-    private void GenerateBuildMetadataInitializer()
-    {
-        OutLn($"namespace Microsoft.Extensions.AmbientMetadata");
-        OutOpenBrace();
-            OutGeneratedCodeAttribute();
-            OutLn($"internal static class BuildMetadataInitializer");
-            OutOpenBrace();
-                OutLn($"public static BuildMetadata WithEnvironmentVariables()");
-                OutOpenBrace();
-                    OutLn($"return new BuildMetadata");
-                    OutOpenBrace();
-                        OutLn($"BuildId = \"{Model.BuildId}\",");
-                        OutLn($"BuildNumber = \"{Model.BuildNumber}\",");
-                        OutLn($"SourceBranchName = \"{Model.SourceBranchName}\",");
-                        OutLn($"SourceVersion = \"{Model.SourceVersion}\",");
-                        OutLn($"BuildDateTime = \"{Model.BuildDateTime:s}\",");
-                    OutCloseBraceWithExtra(";");
-                OutCloseBrace();
-            OutCloseBrace();
-        OutCloseBrace();
     }
 
     [SuppressMessage("Format", "IDE0055", Justification = "For better visualization of how the generated code will look like.")]
