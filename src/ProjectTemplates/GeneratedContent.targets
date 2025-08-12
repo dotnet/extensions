@@ -35,7 +35,7 @@
     <PropertyGroup>
       <TemplatePackageVersion_Aspire>9.3.0</TemplatePackageVersion_Aspire>
       <TemplatePackageVersion_Aspire_Preview>9.3.0-preview.1.25265.20</TemplatePackageVersion_Aspire_Preview>
-      <TemplatePackageVersion_AzureAIOpenAI>2.2.0-beta.4</TemplatePackageVersion_AzureAIOpenAI>
+      <TemplatePackageVersion_AzureAIOpenAI>2.3.0-beta.1</TemplatePackageVersion_AzureAIOpenAI>
       <TemplatePackageVersion_AzureAIProjects>1.0.0-beta.9</TemplatePackageVersion_AzureAIProjects>
       <TemplatePackageVersion_AzureIdentity>1.14.0</TemplatePackageVersion_AzureIdentity>
       <TemplatePackageVersion_AzureSearchDocuments>11.6.0</TemplatePackageVersion_AzureSearchDocuments>
