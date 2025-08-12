@@ -1,6 +1,6 @@
 # Release History
 
-## NOT YET RELEASED
+## 9.8.0-preview.1.25412.6
 
 - Updated to depend on OpenAI 2.3.0.
 - Added more conversion helpers for converting bidirectionally between Microsoft.Extensions.AI messages and OpenAI messages.
@@ -10,6 +10,7 @@
 ## 9.7.1-preview.1.25365.4
 
 - Added some conversion helpers for converting Microsoft.Extensions.AI messages to OpenAI messages.
+- Enabled specifying "strict" via ChatOptions for OpenAI clients.
 
 ## 9.7.0-preview.1.25356.2
 
