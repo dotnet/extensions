@@ -467,6 +467,38 @@ public static partial class AIFunctionFactory
         AIFunctionFactoryOptions? options = null) =>
         ReflectionAIFunction.Build(method, createInstanceFunc, options ?? _defaultOptions);
 
+    /// <summary>Creates an <see cref="AIFunctionDefinition"/> using the specified parameters as the implementation of its corresponding properties.</summary>
+    /// <param name="name">The name of the function.</param>
+    /// <param name="description">A description of the function, suitable for use in describing the purpose to a model.</param>
+    /// <param name="jsonSchema">A JSON schema describing the function and its input parameters.</param>
+    /// <param name="returnJsonSchema">A JSON schema describing the function's return value.</param>
+    /// <returns>The created <see cref="AIFunctionDefinition"/> that describes a function.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// <see cref="CreateDefinition"/> creates an <see cref="AIFunctionDefinition"/> that can be used to describe a function
+    /// but not invoke it. To create an invocable <see cref="AIFunction"/>, use Create.
+    /// </remarks>
+    public static AIFunctionDefinition CreateDefinition(
+        string name,
+        string? description,
+        JsonElement jsonSchema,
+        JsonElement? returnJsonSchema = null) =>
+        new DefaultAIFunctionDefinition(
+            Throw.IfNullOrEmpty(name),
+            description ?? string.Empty,
+            jsonSchema,
+            returnJsonSchema);
+
+    private sealed class DefaultAIFunctionDefinition(
+        string name, string description, JsonElement jsonSchema, JsonElement? returnJsonSchema) :
+        AIFunctionDefinition
+    {
+        public override string Name => name;
+        public override string Description => description;
+        public override JsonElement JsonSchema => jsonSchema;
+        public override JsonElement? ReturnJsonSchema => returnJsonSchema;
+    }
+
     private sealed class ReflectionAIFunction : AIFunction
     {
         public static ReflectionAIFunction Build(MethodInfo method, object? target, AIFunctionFactoryOptions options)

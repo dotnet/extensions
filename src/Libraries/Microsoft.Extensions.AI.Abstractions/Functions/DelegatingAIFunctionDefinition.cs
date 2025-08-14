@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Provides an optional base class for an <see cref="AIFunctionDefinition"/> that passes through calls to another instance.
 /// </summary>
-public class DelegatingAIFunctionDefinition : AIFunctionDefinition
+internal class DelegatingAIFunctionDefinition : AIFunctionDefinition // could be made public in the future if there's demand
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DelegatingAIFunctionDefinition"/> class as a wrapper around <paramref name="innerFunction"/>.

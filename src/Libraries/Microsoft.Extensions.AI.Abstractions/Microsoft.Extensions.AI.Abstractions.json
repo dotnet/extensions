@@ -322,6 +322,10 @@
         {
           "Member": "static Microsoft.Extensions.AI.AIFunction Microsoft.Extensions.AI.AIFunctionFactory.Create(System.Reflection.MethodInfo method, System.Func<Microsoft.Extensions.AI.AIFunctionArguments, object> createInstanceFunc, Microsoft.Extensions.AI.AIFunctionFactoryOptions? options = null);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.AIFunctionDefinition Microsoft.Extensions.AI.AIFunctionFactory.CreateDefinition(string name, string? description, System.Text.Json.JsonElement jsonSchema, System.Text.Json.JsonElement? returnJsonSchema = null);",
+          "Stage": "Stable"
         }
       ]
     },
@@ -1505,46 +1509,6 @@
         },
         {
           "Member": "override System.Reflection.MethodInfo? Microsoft.Extensions.AI.DelegatingAIFunction.UnderlyingMethod { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.AI.DelegatingAIFunctionDefinition : Microsoft.Extensions.AI.AIFunctionDefinition",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.DelegatingAIFunctionDefinition.DelegatingAIFunctionDefinition(Microsoft.Extensions.AI.AIFunctionDefinition innerFunction);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunctionDefinition.ToString();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.AIFunctionDefinition Microsoft.Extensions.AI.DelegatingAIFunctionDefinition.InnerFunction { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.DelegatingAIFunctionDefinition.AdditionalProperties { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunctionDefinition.Description { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "override System.Text.Json.JsonElement Microsoft.Extensions.AI.DelegatingAIFunctionDefinition.JsonSchema { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunctionDefinition.Name { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "override System.Text.Json.JsonElement? Microsoft.Extensions.AI.DelegatingAIFunctionDefinition.ReturnJsonSchema { get; }",
           "Stage": "Stable"
         }
       ]
