@@ -25,7 +25,7 @@ internal class DelegatingAIFunctionDefinition : AIFunctionDefinition // could be
         InnerFunction = Throw.IfNull(innerFunction);
     }
 
-    /// <summary>Gets the inner <see cref="AIFunction" />.</summary>
+    /// <summary>Gets the inner <see cref="AIFunctionDefinition" />.</summary>
     protected AIFunctionDefinition InnerFunction { get; }
 
     /// <inheritdoc />
