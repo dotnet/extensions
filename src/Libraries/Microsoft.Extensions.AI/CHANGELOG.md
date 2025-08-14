@@ -1,13 +1,16 @@
 # Release History
 
-## NOT YET RELEASED
+## 9.8.0
 
 - Added `FunctionInvokingChatClient.AdditionalTools` to allow `FunctionInvokingChatClient` to have access to tools not included in `ChatOptions.Tools` but known to the target service via pre-configuration.
+- Added [Experimental] `IChatReducer` and supporting types
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.7.1
 
+- Added `FunctionInvokingChatClient.FunctionInvoker` to simplify customizing how functions are invoked.
 - Increased the default `FunctionInvokingChatClient.MaximumIterationsPerRequest` value from 10 to 40.
+- Updated the Open Telemetry instrumentation to conform to the latest 1.36.0 draft specification of the Semantic Conventions for Generative AI systems.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.7.0
