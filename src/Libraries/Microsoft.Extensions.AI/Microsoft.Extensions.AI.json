@@ -546,6 +546,10 @@
         {
           "Member": "int Microsoft.Extensions.AI.FunctionInvokingChatClient.MaximumIterationsPerRequest { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.FunctionInvokingChatClient.TerminateOnUnknownCalls { get; set; }",
+          "Stage": "Stable"
         }
       ]
     },

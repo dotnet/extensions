@@ -1,5 +1,10 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Updated tool mapping to recognize any `AIFunctionDefinition`.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.8.0-preview.1.25412.6
 
 - Updated to depend on OpenAI 2.3.0.

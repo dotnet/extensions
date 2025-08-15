@@ -931,6 +931,26 @@ public partial class AIFunctionFactoryTest
         static int Add(int a, int b) => a + b;
     }
 
+    [Fact]
+    public void CreateDefinition_Roundtrips()
+    {
+        JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(int), serializerOptions: AIJsonUtilities.DefaultOptions);
+
+        AIFunctionDefinition f = AIFunctionFactory.CreateDefinition("something", "amazing", schema);
+        Assert.Equal("something", f.Name);
+        Assert.Equal("amazing", f.Description);
+        Assert.Equal("""{"type":"integer"}""", f.JsonSchema.ToString());
+        Assert.Null(f.ReturnJsonSchema);
+
+        f = AIFunctionFactory.CreateDefinition("other", null, default, schema);
+        Assert.Equal("other", f.Name);
+        Assert.Empty(f.Description);
+        Assert.Equal(default, f.JsonSchema);
+        Assert.Equal("""{"type":"integer"}""", f.ReturnJsonSchema.ToString());
+
+        Assert.Throws<ArgumentNullException>("name", () => AIFunctionFactory.CreateDefinition(null!, "description", default));
+    }
+
     private sealed class MyService(int value)
     {
         public int Value => value;
