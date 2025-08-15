@@ -1,5 +1,9 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Fixed `GetResponseAsync<T>` to only look at the contents of the last message in the response.
+
 ## 9.8.0
 
 - Added `FunctionInvokingChatClient.AdditionalTools` to allow `FunctionInvokingChatClient` to have access to tools not included in `ChatOptions.Tools` but known to the target service via pre-configuration.
