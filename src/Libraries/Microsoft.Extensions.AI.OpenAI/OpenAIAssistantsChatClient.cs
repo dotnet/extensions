@@ -245,6 +245,12 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
 
                         if (fileId is not null)
                         {
+                            if (textUpdate.Contents.Count == 0)
+                            {
+                                // In case a chunk doesn't have text content, create one with empty text to hold the annotation.
+                                textUpdate.Contents.Add(new TextContent(string.Empty));
+                            }
+
                             (((TextContent)textUpdate.Contents[0]).Annotations ??= []).Add(new CitationAnnotation
                             {
                                 RawRepresentation = tau,
