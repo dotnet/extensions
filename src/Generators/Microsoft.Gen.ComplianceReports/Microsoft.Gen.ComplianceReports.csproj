@@ -21,6 +21,7 @@
     <Compile Include="..\Shared\TypeDeclarationSyntaxReceiver.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\GeneratorUtilities.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\EmitterBase.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\JsonEmitterBase.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
