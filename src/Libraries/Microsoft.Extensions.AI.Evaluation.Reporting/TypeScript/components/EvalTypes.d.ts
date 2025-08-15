@@ -39,6 +39,7 @@ type ChatDetails = {
 type ChatTurnDetails = {
     latency: number;
     model?: string;
+    modelProvider?: string;
     usage?: UsageDetails;
     cacheKey?: string;
     cacheHit?: boolean;
