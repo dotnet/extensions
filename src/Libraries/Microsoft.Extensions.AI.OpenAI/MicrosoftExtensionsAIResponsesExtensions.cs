@@ -7,6 +7,8 @@ using System.Threading;
 using Microsoft.Extensions.AI;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable S3254 // Default parameter values should not be passed as arguments
+
 namespace OpenAI.Responses;
 
 /// <summary>Provides extension methods for working with content associated with OpenAI.Responses.</summary>
@@ -57,8 +59,9 @@ public static class MicrosoftExtensionsAIResponsesExtensions
 
     /// <summary>Creates an OpenAI <see cref="OpenAIResponse"/> from a <see cref="ChatResponse"/>.</summary>
     /// <param name="response">The response to convert.</param>
+    /// <param name="options">The options employed in the creation of the response.</param>
     /// <returns>The created <see cref="OpenAIResponse"/>.</returns>
-    internal static OpenAIResponse AsOpenAIResponse(this ChatResponse response) // Implement and make public once OpenAIResponse can be constructed external to the OpenAI library.
+    public static OpenAIResponse AsOpenAIResponse(this ChatResponse response, ChatOptions? options = null)
     {
         _ = Throw.IfNull(response);
 
@@ -67,6 +70,18 @@ public static class MicrosoftExtensionsAIResponsesExtensions
             return openAIResponse;
         }
 
-        throw new NotSupportedException();
+        return OpenAIResponsesModelFactory.OpenAIResponse(
+            response.ResponseId,
+            response.CreatedAt ?? default,
+            ResponseStatus.Completed,
+            usage: null, // No way to construct a ResponseTokenUsage right now from external to the OpenAI library
+            maxOutputTokenCount: options?.MaxOutputTokens,
+            outputItems: OpenAIResponsesChatClient.ToOpenAIResponseItems(response.Messages, options),
+            parallelToolCallsEnabled: options?.AllowMultipleToolCalls ?? false,
+            model: response.ModelId ?? options?.ModelId,
+            temperature: options?.Temperature,
+            topP: options?.TopP,
+            previousResponseId: options?.ConversationId,
+            instructions: options?.Instructions);
     }
 }

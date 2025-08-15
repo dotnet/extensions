@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -148,7 +149,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case ReasoningResponseItem reasoningItem when reasoningItem.GetSummaryText() is string summary:
-                    message.Contents.Add(new TextReasoningContent(summary) { RawRepresentation = reasoningItem });
+                    message.Contents.Add(new TextReasoningContent(summary) { RawRepresentation = outputItem });
                     break;
 
                 case FunctionCallResponseItem functionCall:
@@ -201,6 +202,18 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         await foreach (var streamingUpdate in streamingResponseUpdates.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
+            // Create an update populated with the current state of the response.
+            ChatResponseUpdate CreateUpdate(AIContent? content = null) =>
+                new(lastRole, content is not null ? [content] : null)
+                {
+                    ConversationId = conversationId,
+                    CreatedAt = createdAt,
+                    MessageId = lastMessageId,
+                    ModelId = modelId,
+                    RawRepresentation = streamingUpdate,
+                    ResponseId = responseId,
+                };
+
             switch (streamingUpdate)
             {
                 case StreamingResponseCreatedUpdate createdUpdate:
@@ -211,21 +224,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     goto default;
 
                 case StreamingResponseCompletedUpdate completedUpdate:
-                    yield return new()
-                    {
-                        Contents = ToUsageDetails(completedUpdate.Response) is { } usage ? [new UsageContent(usage)] : [],
-                        ConversationId = conversationId,
-                        CreatedAt = createdAt,
-                        FinishReason =
-                            ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
-                            (functionCallInfos is not null ? ChatFinishReason.ToolCalls : ChatFinishReason.Stop),
-                        MessageId = lastMessageId,
-                        ModelId = modelId,
-                        RawRepresentation = streamingUpdate,
-                        ResponseId = responseId,
-                        Role = lastRole,
-                    };
+                {
+                    var update = CreateUpdate(ToUsageDetails(completedUpdate.Response) is { } usage ? new UsageContent(usage) : null);
+                    update.FinishReason =
+                        ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
+                        (functionCallInfos is not null ? ChatFinishReason.ToolCalls :
+                        ChatFinishReason.Stop);
+                    yield return update;
                     break;
+                }
 
                 case StreamingResponseOutputItemAddedUpdate outputItemAddedUpdate:
                     switch (outputItemAddedUpdate.Item)
@@ -243,22 +250,32 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate:
                     _ = outputIndexToMessages.Remove(outputItemDoneUpdate.OutputIndex);
+
+                    if (outputItemDoneUpdate.Item is MessageResponseItem item &&
+                        item.Content is { Count: > 0 } content &&
+                        content.Any(c => c.OutputTextAnnotations is { Count: > 0 }))
+                    {
+                        AIContent annotatedContent = new();
+                        foreach (var c in content)
+                        {
+                            PopulateAnnotations(c, annotatedContent);
+                        }
+
+                        yield return CreateUpdate(annotatedContent);
+                        break;
+                    }
+
                     goto default;
 
                 case StreamingResponseOutputTextDeltaUpdate outputTextDeltaUpdate:
+                {
                     _ = outputIndexToMessages.TryGetValue(outputTextDeltaUpdate.OutputIndex, out MessageResponseItem? messageItem);
                     lastMessageId = messageItem?.Id;
                     lastRole = ToChatRole(messageItem?.Role);
-                    yield return new ChatResponseUpdate(lastRole, outputTextDeltaUpdate.Delta)
-                    {
-                        ConversationId = conversationId,
-                        CreatedAt = createdAt,
-                        MessageId = lastMessageId,
-                        ModelId = modelId,
-                        RawRepresentation = streamingUpdate,
-                        ResponseId = responseId,
-                    };
+
+                    yield return CreateUpdate(new TextContent(outputTextDeltaUpdate.Delta));
                     break;
+                }
 
                 case StreamingResponseFunctionCallArgumentsDeltaUpdate functionCallArgumentsDeltaUpdate:
                 {
@@ -283,16 +300,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         lastMessageId = callInfo.ResponseItem.Id;
                         lastRole = ChatRole.Assistant;
-                        yield return new ChatResponseUpdate(lastRole, [fcc])
-                        {
-                            ConversationId = conversationId,
-                            CreatedAt = createdAt,
-                            MessageId = lastMessageId,
-                            ModelId = modelId,
-                            RawRepresentation = streamingUpdate,
-                            ResponseId = responseId,
-                        };
 
+                        yield return CreateUpdate(fcc);
                         break;
                     }
 
@@ -300,51 +309,22 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 }
 
                 case StreamingResponseErrorUpdate errorUpdate:
-                    yield return new ChatResponseUpdate
+                    yield return CreateUpdate(new ErrorContent(errorUpdate.Message)
                     {
-                        Contents =
-                        [
-                            new ErrorContent(errorUpdate.Message)
-                            {
-                                ErrorCode = errorUpdate.Code,
-                                Details = errorUpdate.Param,
-                            }
-                        ],
-                        ConversationId = conversationId,
-                        CreatedAt = createdAt,
-                        MessageId = lastMessageId,
-                        ModelId = modelId,
-                        RawRepresentation = streamingUpdate,
-                        ResponseId = responseId,
-                        Role = lastRole,
-                    };
+                        ErrorCode = errorUpdate.Code,
+                        Details = errorUpdate.Param,
+                    });
                     break;
 
                 case StreamingResponseRefusalDoneUpdate refusalDone:
-                    yield return new ChatResponseUpdate
+                    yield return CreateUpdate(new ErrorContent(refusalDone.Refusal)
                     {
-                        Contents = [new ErrorContent(refusalDone.Refusal) { ErrorCode = nameof(ResponseContentPart.Refusal) }],
-                        ConversationId = conversationId,
-                        CreatedAt = createdAt,
-                        MessageId = lastMessageId,
-                        ModelId = modelId,
-                        RawRepresentation = streamingUpdate,
-                        ResponseId = responseId,
-                        Role = lastRole,
-                    };
+                        ErrorCode = nameof(ResponseContentPart.Refusal),
+                    });
                     break;
 
                 default:
-                    yield return new ChatResponseUpdate
-                    {
-                        ConversationId = conversationId,
-                        CreatedAt = createdAt,
-                        MessageId = lastMessageId,
-                        ModelId = modelId,
-                        RawRepresentation = streamingUpdate,
-                        ResponseId = responseId,
-                        Role = lastRole,
-                    };
+                    yield return CreateUpdate();
                     break;
             }
         }
@@ -423,21 +403,44 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         result.Tools.Add(ToResponseTool(aiFunction, options));
                         break;
 
-                    case HostedWebSearchTool:
+                    case HostedWebSearchTool webSearchTool:
                         WebSearchUserLocation? location = null;
-                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchUserLocation), out object? objLocation))
+                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchUserLocation), out object? objLocation))
                         {
                             location = objLocation as WebSearchUserLocation;
                         }
 
                         WebSearchContextSize? size = null;
-                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchContextSize), out object? objSize) &&
+                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchContextSize), out object? objSize) &&
                             objSize is WebSearchContextSize)
                         {
                             size = (WebSearchContextSize)objSize;
                         }
 
                         result.Tools.Add(ResponseTool.CreateWebSearchTool(location, size));
+                        break;
+
+                    case HostedFileSearchTool fileSearchTool:
+                        result.Tools.Add(ResponseTool.CreateFileSearchTool(
+                            fileSearchTool.Inputs?.OfType<HostedVectorStoreContent>().Select(c => c.VectorStoreId) ?? [],
+                            fileSearchTool.MaximumResultCount));
+                        break;
+
+                    case HostedCodeInterpreterTool codeTool:
+                        string json;
+                        if (codeTool.Inputs is { Count: > 0 } inputs)
+                        {
+                            string jsonArray = JsonSerializer.Serialize(
+                                inputs.OfType<HostedFileContent>().Select(c => c.FileId),
+                                OpenAIJsonContext.Default.IEnumerableString);
+                            json = $$"""{"type":"code_interpreter","container":{"type":"auto",files:{{jsonArray}}} }""";
+                        }
+                        else
+                        {
+                            json = """{"type":"code_interpreter","container":"auto"}""";
+                        }
+
+                        result.Tools.Add(ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString(json)));
                         break;
                 }
             }
@@ -514,7 +517,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             if (input.Role == ChatRole.User)
             {
-                yield return ResponseItem.CreateUserMessageItem(ToOpenAIResponsesContent(input.Contents));
+                yield return ResponseItem.CreateUserMessageItem(ToResponseContentParts(input.Contents));
                 continue;
             }
 
@@ -622,28 +625,30 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             switch (part.Kind)
             {
-                case ResponseContentPartKind.OutputText:
-                    TextContent text = new(part.Text)
-                    {
-                        RawRepresentation = part,
-                    };
+                case ResponseContentPartKind.InputText or ResponseContentPartKind.OutputText:
+                    TextContent text = new(part.Text) { RawRepresentation = part };
+                    PopulateAnnotations(part, text);
+                    results.Add(text);
+                    break;
 
-                    if (part.OutputTextAnnotations is { Count: > 0 })
+                case ResponseContentPartKind.InputFile:
+                    if (!string.IsNullOrWhiteSpace(part.InputImageFileId))
                     {
-                        foreach (var ota in part.OutputTextAnnotations)
+                        results.Add(new HostedFileContent(part.InputImageFileId) { RawRepresentation = part });
+                    }
+                    else if (!string.IsNullOrWhiteSpace(part.InputFileId))
+                    {
+                        results.Add(new HostedFileContent(part.InputFileId) { RawRepresentation = part });
+                    }
+                    else if (part.InputFileBytes is not null)
+                    {
+                        results.Add(new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream")
                         {
-                            (text.Annotations ??= []).Add(new CitationAnnotation
-                            {
-                                RawRepresentation = ota,
-                                AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = ota.UriCitationStartIndex, EndIndex = ota.UriCitationEndIndex }],
-                                Title = ota.UriCitationTitle,
-                                Url = ota.UriCitationUri,
-                                FileId = ota.FileCitationFileId ?? ota.FilePathFileId,
-                            });
-                        }
+                            Name = part.InputFilename,
+                            RawRepresentation = part,
+                        });
                     }
 
-                    results.Add(text);
                     break;
 
                 case ResponseContentPartKind.Refusal:
@@ -655,10 +660,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 default:
-                    results.Add(new()
-                    {
-                        RawRepresentation = part,
-                    });
+                    results.Add(new() { RawRepresentation = part });
                     break;
             }
         }
@@ -666,8 +668,27 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         return results;
     }
 
+    /// <summary>Converts any annotations from <paramref name="source"/> and stores them in <paramref name="destination"/>.</summary>
+    private static void PopulateAnnotations(ResponseContentPart source, AIContent destination)
+    {
+        if (source.OutputTextAnnotations is { Count: > 0 })
+        {
+            foreach (var ota in source.OutputTextAnnotations)
+            {
+                (destination.Annotations ??= []).Add(new CitationAnnotation
+                {
+                    RawRepresentation = ota,
+                    AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = ota.UriCitationStartIndex, EndIndex = ota.UriCitationEndIndex }],
+                    Title = ota.UriCitationTitle,
+                    Url = ota.UriCitationUri,
+                    FileId = ota.FileCitationFileId ?? ota.FilePathFileId,
+                });
+            }
+        }
+    }
+
     /// <summary>Convert a list of <see cref="AIContent"/>s to a list of <see cref="ResponseContentPart"/>.</summary>
-    private static List<ResponseContentPart> ToOpenAIResponsesContent(IList<AIContent> contents)
+    private static List<ResponseContentPart> ToResponseContentParts(IList<AIContent> contents)
     {
         List<ResponseContentPart> parts = [];
         foreach (var content in contents)
@@ -692,6 +713,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
                     parts.Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
+                    break;
+
+                case HostedFileContent fileContent:
+                    parts.Add(ResponseContentPart.CreateInputFilePart(fileContent.FileId));
                     break;
 
                 case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):

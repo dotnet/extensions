@@ -17,9 +17,12 @@ namespace Microsoft.Extensions.Http.Logging.Internal;
 [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Event ID's.")]
 internal static partial class Log
 {
-    internal const string OriginalFormat = "{OriginalFormat}";
+    private const int MinimalPropertyCount = 5;
 
-    private const int MinimalPropertyCount = 4;
+    private const string OriginalFormat = "{OriginalFormat}";
+
+    private const string OriginalFormatValue =
+        $"{{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}/{{{HttpClientLoggingTagNames.Path}}}";
 
     private const string RequestReadErrorMessage =
         "An error occurred while reading the request data to fill the logger context for request: " +
@@ -133,8 +136,11 @@ internal static partial class Log
 
         if (record.ResponseBody is not null)
         {
-            loggerMessageState.TagArray[index] = new(HttpClientLoggingTagNames.ResponseBody, record.ResponseBody);
+            loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.ResponseBody, record.ResponseBody);
         }
+
+        // "{OriginalFormat}" property needs to be the last tag in the list.
+        loggerMessageState.TagArray[index] = new(OriginalFormat, OriginalFormatValue);
 
         logger.Log(
             level,

@@ -13,6 +13,7 @@ using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
+using OpenAI.Images;
 using OpenAI.Responses;
 
 #pragma warning disable S103 // Lines should not be too long
@@ -153,6 +154,14 @@ public static class OpenAIClientExtensions
     [Experimental("MEAI001")]
     public static ISpeechToTextClient AsISpeechToTextClient(this AudioClient audioClient) =>
         new OpenAISpeechToTextClient(audioClient);
+
+    /// <summary>Gets an <see cref="IImageGenerator"/> for use with this <see cref="ImageClient"/>.</summary>
+    /// <param name="imageClient">The client.</param>
+    /// <returns>An <see cref="IImageGenerator"/> that can be used to generate images via the <see cref="ImageClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="imageClient"/> is <see langword="null"/>.</exception>
+    [Experimental("MEAI001")]
+    public static IImageGenerator AsIImageGenerator(this ImageClient imageClient) =>
+        new OpenAIImageGenerator(imageClient);
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="EmbeddingClient"/>.</summary>
     /// <param name="embeddingClient">The client.</param>

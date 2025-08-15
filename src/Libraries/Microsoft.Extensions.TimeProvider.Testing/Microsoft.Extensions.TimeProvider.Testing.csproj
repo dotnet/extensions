@@ -9,7 +9,6 @@
     <Workstream>Fundamentals</Workstream>
     <Category>Testing</Category>
     <PackageTags>$(PackageTags);Testing;TimeProvider;FakeTimeProvider</PackageTags>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
   </PropertyGroup>
 

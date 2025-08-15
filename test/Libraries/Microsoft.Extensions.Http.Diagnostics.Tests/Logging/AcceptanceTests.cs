@@ -385,14 +385,14 @@ public class AcceptanceTests
         if (parameterRedactionMode == HttpRouteParameterRedactionMode.None)
         {
             loggedPath.Should().Be(httpRequestMessage.RequestUri.AbsolutePath);
-            state.Should().HaveCount(5);
+            state.Should().HaveCount(6);
         }
         else
         {
             loggedPath.Should().Be(RequestRoute);
             state.Should().ContainSingle(kvp => kvp.Key == "userId").Which.Value.Should().Be(expectedUserId);
             state.Should().ContainSingle(kvp => kvp.Key == "unitId").Which.Value.Should().Be(expectedUnitId);
-            state.Should().HaveCount(7);
+            state.Should().HaveCount(8);
         }
     }
 

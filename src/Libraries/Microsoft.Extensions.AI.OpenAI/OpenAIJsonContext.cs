@@ -15,5 +15,6 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(OpenAIClientExtensions.ToolJson))]
 [JsonSerializable(typeof(IDictionary<string, object?>))]
 [JsonSerializable(typeof(string[]))]
+[JsonSerializable(typeof(IEnumerable<string>))]
 [JsonSerializable(typeof(JsonElement))]
 internal sealed partial class OpenAIJsonContext : JsonSerializerContext;

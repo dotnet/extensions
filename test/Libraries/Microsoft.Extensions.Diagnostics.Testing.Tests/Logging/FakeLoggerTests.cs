@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
@@ -282,5 +280,62 @@ public class FakeLoggerTests
         Assert.Equal(2, logger.LatestRecord.Scopes.Count);
         Assert.Equal(42, (int)logger.LatestRecord.Scopes[0]!);
         Assert.Equal("Hello World", (string)logger.LatestRecord.Scopes[1]!);
+    }
+
+    [Theory]
+    [InlineData(false, 2)]
+    [InlineData(true, 1)]
+    public void FilterByCustomFilter(bool useErrorLevelFilter, int expectedRecordCount)
+    {
+        const string NotIgnoredMessage1 = "Not ignored message 1";
+        const string NotIgnoredMessage2 = "Not ignored message 2";
+        const string IgnoredMessage = "Ignored message";
+
+        // Given
+        var options = new FakeLogCollectorOptions
+        {
+            CustomFilter = r => r.Message != IgnoredMessage,
+            FilteredLevels = useErrorLevelFilter ? [LogLevel.Error] : new HashSet<LogLevel>(),
+        };
+
+        var collector = FakeLogCollector.Create(options);
+        var logger = new FakeLogger(collector);
+
+        // When
+        logger.LogInformation(NotIgnoredMessage1);
+        logger.LogInformation(IgnoredMessage);
+        logger.LogError(IgnoredMessage);
+        logger.LogError(NotIgnoredMessage2);
+        logger.LogCritical(IgnoredMessage);
+
+        var records = logger.Collector.GetSnapshot();
+
+        // Then
+        Assert.Equal(expectedRecordCount, records.Count);
+        Assert.Equal(expectedRecordCount, logger.Collector.Count);
+
+        IList<(string message, LogLevel level, string prefix)> expectationsInOrder = useErrorLevelFilter
+            ? [(NotIgnoredMessage2, LogLevel.Error, "error] ")]
+            : [(NotIgnoredMessage1, LogLevel.Information, "info] "), (NotIgnoredMessage2, LogLevel.Error, "error] ")];
+
+        for (var i = 0; i < expectedRecordCount; i++)
+        {
+            var (expectedMessage, expectedLevel, expectedPrefix) = expectationsInOrder[i];
+            var record = records[i];
+
+            Assert.Equal(expectedMessage, record.Message);
+            Assert.Equal(expectedLevel, record.Level);
+            Assert.Null(record.Exception);
+            Assert.Null(record.Category);
+            Assert.True(record.LevelEnabled);
+            Assert.Empty(record.Scopes);
+            Assert.Equal(0, record.Id.Id);
+            Assert.EndsWith($"{expectedPrefix}{expectedMessage}", record.ToString());
+
+            if (i == expectedRecordCount - 1)
+            {
+                Assert.Equivalent(record, logger.LatestRecord);
+            }
+        }
     }
 }

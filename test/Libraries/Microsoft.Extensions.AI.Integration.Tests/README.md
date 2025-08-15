@@ -17,6 +17,7 @@ Optionally also run the following. The values shown here are the defaults if you
 ```
 dotnet user-secrets set OpenAI:ChatModel gpt-4o-mini
 dotnet user-secrets set OpenAI:EmbeddingModel text-embedding-3-small
+dotnet user-secrets set OpenAI:ImageModel dall-e-3
 ```
 
 ### Configuring OpenAI tests (Azure OpenAI)
@@ -35,6 +36,7 @@ Optionally also run the following. The values shown here are the defaults if you
 ```
 dotnet user-secrets set OpenAI:ChatModel gpt-4o-mini
 dotnet user-secrets set OpenAI:EmbeddingModel text-embedding-3-small
+dotnet user-secrets set OpenAI:ImageModel dall-e-3
 ```
 
 Your account must have models matching these names.

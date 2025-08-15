@@ -22,6 +22,7 @@
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\AssertExtensions.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestSpeechToTextClient.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestImageGenerator.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestEmbeddingGenerator.cs" />
   </ItemGroup>
 

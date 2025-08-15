@@ -20,6 +20,8 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(SpeechToTextResponseUpdate))]
 [JsonSerializable(typeof(SpeechToTextResponseUpdateKind))]
 [JsonSerializable(typeof(SpeechToTextOptions))]
+[JsonSerializable(typeof(ImageGenerationResponse))]
+[JsonSerializable(typeof(ImageGenerationOptions))]
 [JsonSerializable(typeof(ChatOptions))]
 [JsonSerializable(typeof(EmbeddingGenerationOptions))]
 [JsonSerializable(typeof(Dictionary<string, object?>))]

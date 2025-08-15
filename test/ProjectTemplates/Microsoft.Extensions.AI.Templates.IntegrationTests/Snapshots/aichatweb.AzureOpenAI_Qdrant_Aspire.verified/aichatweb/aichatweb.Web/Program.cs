@@ -2,7 +2,6 @@
 using aichatweb.Web.Components;
 using aichatweb.Web.Services;
 using aichatweb.Web.Services.Ingestion;
-using OpenAI;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -15,7 +14,7 @@ openai.AddChatClient("gpt-4o-mini")
         c.EnableSensitiveData = builder.Environment.IsDevelopment());
 openai.AddEmbeddingGenerator("text-embedding-3-small");
 
-builder.AddAzureSearchClient("azureAISearch");
+builder.AddAzureSearchClient("search");
 builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-aichatweb-chunks");
 builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-aichatweb-documents");
 builder.Services.AddScoped<DataIngestor>();

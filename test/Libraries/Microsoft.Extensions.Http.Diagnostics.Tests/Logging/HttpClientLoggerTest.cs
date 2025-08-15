@@ -252,6 +252,7 @@ public class HttpClientLoggerTest
         logRecordState.Contains(testSharedResponseHeaderKey, expectedLogRecord.ResponseHeaders[1].Value);
         logRecordState.Contains(testSharedRequestHeaderKey, expectedLogRecord.RequestHeaders[1].Value);
         logRecordState.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
+        EnsureLogRecordContainsOriginalFormat(logRecord);
     }
 
     [Fact]
@@ -344,6 +345,7 @@ public class HttpClientLoggerTest
         logRecordRequest.NotContains(HttpClientLoggingTagNames.StatusCode);
         logRecordRequest.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
         logRecordRequest.NotContains(testEnricher.KvpRequest.Key);
+        EnsureLogRecordContainsOriginalFormat(logRecords[0]);
 
         var logRecordFull = logRecords[1].GetStructuredState();
         logRecordFull.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
@@ -357,6 +359,7 @@ public class HttpClientLoggerTest
         logRecordFull.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders.FirstOrDefault().Value);
         logRecordFull.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
         logRecordFull.Contains(testEnricher.KvpResponse.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpResponse.Key));
+        EnsureLogRecordContainsOriginalFormat(logRecords[1]);
     }
 
     [Fact]
@@ -453,6 +456,7 @@ public class HttpClientLoggerTest
         logRecordState.NotContains(testEnricher.KvpResponse.Key);
         logRecordState.Contains(HttpClientLoggingTagNames.Duration, EnsureLogRecordDuration);
         Assert.DoesNotContain(logRecordState, kvp => kvp.Key.StartsWith(HttpClientLoggingTagNames.ResponseHeaderPrefix));
+        EnsureLogRecordContainsOriginalFormat(logRecord);
     }
 
     [Fact(Skip = "Flaky test, see https://github.com/dotnet/extensions/issues/4530")]
@@ -568,6 +572,7 @@ public class HttpClientLoggerTest
         logRecordState.Contains(testEnricher.KvpResponse.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpResponse.Key));
         logRecordState.Contains(HttpClientLoggingTagNames.Duration, EnsureLogRecordDuration);
         Assert.DoesNotContain(logRecordState, kvp => kvp.Key.StartsWith(HttpClientLoggingTagNames.ResponseHeaderPrefix));
+        EnsureLogRecordContainsOriginalFormat(logRecord);
     }
 
     [Fact]
@@ -657,6 +662,7 @@ public class HttpClientLoggerTest
         logRecordState.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
         logRecordState.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders.FirstOrDefault().Value);
         logRecordState.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
+        EnsureLogRecordContainsOriginalFormat(logRecord);
     }
 
     [Fact]
@@ -918,18 +924,20 @@ public class HttpClientLoggerTest
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
-        var logRecord = Assert.Single(logRecords).GetStructuredState();
+        var logRecord = Assert.Single(logRecords);
+        var logRecordState = logRecord.GetStructuredState();
 
-        logRecord.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
-        logRecord.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
-        logRecord.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
-        logRecord.Contains(HttpClientLoggingTagNames.Duration, EnsureLogRecordDuration);
-        logRecord.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
-        logRecord.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
-        logRecord.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
-        logRecord.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
-        logRecord.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders.FirstOrDefault().Value);
-        logRecord.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
+        logRecordState.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecordState.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecordState.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecordState.Contains(HttpClientLoggingTagNames.Duration, EnsureLogRecordDuration);
+        logRecordState.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
+        logRecordState.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecordState.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
+        logRecordState.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
+        logRecordState.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders.FirstOrDefault().Value);
+        logRecordState.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
+        EnsureLogRecordContainsOriginalFormat(logRecord);
     }
 
     [Theory]
@@ -1024,4 +1032,11 @@ public class HttpClientLoggerTest
 
     private static IOutgoingRequestContext RequestMetadataContext
         => new Mock<IOutgoingRequestContext>().Object;
+
+    private static void EnsureLogRecordContainsOriginalFormat(FakeLogRecord logRecord)
+    {
+        var pair = logRecord.StructuredState!.Last();
+        Assert.Equal("{OriginalFormat}", pair.Key);
+        Assert.Equal("{http.request.method} {server.address}/{url.path}", pair.Value);
+    }
 }

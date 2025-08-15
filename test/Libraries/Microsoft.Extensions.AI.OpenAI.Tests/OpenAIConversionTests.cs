@@ -112,7 +112,7 @@ public class OpenAIConversionTests
             Assert.Equal(6, convertedMessages.Length);
 
             index = 1;
-            SystemChatMessage instructionsMessage = Assert.IsType<SystemChatMessage>(convertedMessages[0]);
+            SystemChatMessage instructionsMessage = Assert.IsType<SystemChatMessage>(convertedMessages[0], exactMatch: false);
             Assert.Equal("You talk like a parrot.", Assert.Single(instructionsMessage.Content).Text);
         }
         else
@@ -120,13 +120,13 @@ public class OpenAIConversionTests
             Assert.Equal(5, convertedMessages.Length);
         }
 
-        SystemChatMessage m0 = Assert.IsType<SystemChatMessage>(convertedMessages[index]);
+        SystemChatMessage m0 = Assert.IsType<SystemChatMessage>(convertedMessages[index], exactMatch: false);
         Assert.Equal("You are a helpful assistant.", Assert.Single(m0.Content).Text);
 
-        UserChatMessage m1 = Assert.IsType<UserChatMessage>(convertedMessages[index + 1]);
+        UserChatMessage m1 = Assert.IsType<UserChatMessage>(convertedMessages[index + 1], exactMatch: false);
         Assert.Equal("Hello", Assert.Single(m1.Content).Text);
 
-        AssistantChatMessage m2 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 2]);
+        AssistantChatMessage m2 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 2], exactMatch: false);
         Assert.Single(m2.Content);
         Assert.Equal("Hi there!", m2.Content[0].Text);
         var tc = Assert.Single(m2.ToolCalls);
@@ -138,11 +138,11 @@ public class OpenAIConversionTests
             ["param2"] = 42
         }), JsonSerializer.Deserialize<JsonElement>(tc.FunctionArguments.ToMemory().Span)));
 
-        ToolChatMessage m3 = Assert.IsType<ToolChatMessage>(convertedMessages[index + 3]);
+        ToolChatMessage m3 = Assert.IsType<ToolChatMessage>(convertedMessages[index + 3], exactMatch: false);
         Assert.Equal("callid123", m3.ToolCallId);
         Assert.Equal("theresult", Assert.Single(m3.Content).Text);
 
-        AssistantChatMessage m4 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 4]);
+        AssistantChatMessage m4 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 4], exactMatch: false);
         Assert.Equal("The answer is 42.", Assert.Single(m4.Content).Text);
     }
 
@@ -229,9 +229,9 @@ public class OpenAIConversionTests
         Assert.Equal(ChatRole.User, message.Role);
 
         Assert.Equal(3, message.Contents.Count);
-        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(message.Contents[0]).Text);
-        Assert.Equal("http://example.com/image.png", Assert.IsType<UriContent>(message.Contents[1]).Uri.ToString());
-        Assert.Equal("functionName", Assert.IsType<FunctionCallContent>(message.Contents[2]).Name);
+        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(message.Contents[0], exactMatch: false).Text);
+        Assert.Equal("http://example.com/image.png", Assert.IsType<UriContent>(message.Contents[1], exactMatch: false).Uri.ToString());
+        Assert.Equal("functionName", Assert.IsType<FunctionCallContent>(message.Contents[2], exactMatch: false).Name);
     }
 
     [Fact]
@@ -260,9 +260,9 @@ public class OpenAIConversionTests
         Assert.Equal(ChatRole.Assistant, message.Role);
 
         Assert.Equal(3, message.Contents.Count);
-        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(message.Contents[0]).Text);
-        Assert.Equal("http://example.com/image.png", Assert.IsType<UriContent>(message.Contents[1]).Uri.ToString());
-        Assert.Equal("functionName", Assert.IsType<FunctionCallContent>(message.Contents[2]).Name);
+        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(message.Contents[0], exactMatch: false).Text);
+        Assert.Equal("http://example.com/image.png", Assert.IsType<UriContent>(message.Contents[1], exactMatch: false).Uri.ToString());
+        Assert.Equal("functionName", Assert.IsType<FunctionCallContent>(message.Contents[2], exactMatch: false).Name);
 
         static async IAsyncEnumerable<StreamingChatCompletionUpdate> CreateUpdates()
         {
@@ -845,6 +845,264 @@ public class OpenAIConversionTests
         Assert.Equal("response-123", result[1].CompletionId);
         Assert.Equal("world!", Assert.Single(result[1].ContentUpdate).Text);
         Assert.Equal(OpenAI.Chat.ChatFinishReason.Stop, result[1].FinishReason);
+    }
+
+    [Fact]
+    public void AsOpenAIResponse_WithNullArgument_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>("response", () => ((ChatResponse)null!).AsOpenAIResponse());
+    }
+
+    [Fact]
+    public void AsOpenAIResponse_WithRawRepresentation_ReturnsOriginal()
+    {
+        var originalOpenAIResponse = OpenAIResponsesModelFactory.OpenAIResponse(
+            "original-response-id",
+            new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            ResponseStatus.Completed,
+            usage: null,
+            maxOutputTokenCount: 100,
+            outputItems: [],
+            parallelToolCallsEnabled: false,
+            model: "gpt-4",
+            temperature: 0.7f,
+            topP: 0.9f,
+            previousResponseId: "prev-id",
+            instructions: "Test instructions");
+
+        var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Test"))
+        {
+            RawRepresentation = originalOpenAIResponse
+        };
+
+        var result = chatResponse.AsOpenAIResponse();
+
+        Assert.Same(originalOpenAIResponse, result);
+    }
+
+    [Fact]
+    public void AsOpenAIResponse_WithBasicChatResponse_CreatesValidOpenAIResponse()
+    {
+        var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Hello, world!"))
+        {
+            ResponseId = "test-response-id",
+            ModelId = "gpt-4-turbo",
+            CreatedAt = new DateTimeOffset(2025, 1, 15, 10, 30, 0, TimeSpan.Zero),
+            FinishReason = ChatFinishReason.Stop
+        };
+
+        var openAIResponse = chatResponse.AsOpenAIResponse();
+
+        Assert.NotNull(openAIResponse);
+        Assert.Equal("test-response-id", openAIResponse.Id);
+        Assert.Equal("gpt-4-turbo", openAIResponse.Model);
+        Assert.Equal(new DateTimeOffset(2025, 1, 15, 10, 30, 0, TimeSpan.Zero), openAIResponse.CreatedAt);
+        Assert.Equal(ResponseStatus.Completed, openAIResponse.Status);
+        Assert.NotNull(openAIResponse.OutputItems);
+        Assert.Single(openAIResponse.OutputItems);
+
+        var outputItem = Assert.IsAssignableFrom<MessageResponseItem>(openAIResponse.OutputItems.First());
+        Assert.Equal("Hello, world!", Assert.Single(outputItem.Content).Text);
+    }
+
+    [Fact]
+    public void AsOpenAIResponse_WithChatOptions_IncludesOptionsInResponse()
+    {
+        var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Test message"))
+        {
+            ResponseId = "options-test",
+            ModelId = "gpt-3.5-turbo"
+        };
+
+        var options = new ChatOptions
+        {
+            MaxOutputTokens = 500,
+            AllowMultipleToolCalls = true,
+            ConversationId = "conversation-123",
+            Instructions = "You are a helpful assistant.",
+            Temperature = 0.8f,
+            TopP = 0.95f,
+            ModelId = "override-model"
+        };
+
+        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+
+        Assert.Equal("options-test", openAIResponse.Id);
+        Assert.Equal("gpt-3.5-turbo", openAIResponse.Model);
+        Assert.Equal(500, openAIResponse.MaxOutputTokenCount);
+        Assert.True(openAIResponse.ParallelToolCallsEnabled);
+        Assert.Equal("conversation-123", openAIResponse.PreviousResponseId);
+        Assert.Equal("You are a helpful assistant.", openAIResponse.Instructions);
+        Assert.Equal(0.8f, openAIResponse.Temperature);
+        Assert.Equal(0.95f, openAIResponse.TopP);
+    }
+
+    [Fact]
+    public void AsOpenAIResponse_WithEmptyMessages_CreatesResponseWithEmptyOutputItems()
+    {
+        var chatResponse = new ChatResponse([])
+        {
+            ResponseId = "empty-response",
+            ModelId = "gpt-4"
+        };
+
+        var openAIResponse = chatResponse.AsOpenAIResponse();
+
+        Assert.Equal("empty-response", openAIResponse.Id);
+        Assert.Equal("gpt-4", openAIResponse.Model);
+        Assert.Empty(openAIResponse.OutputItems);
+    }
+
+    [Fact]
+    public void AsOpenAIResponse_WithMultipleMessages_ConvertsAllMessages()
+    {
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.Assistant, "First message"),
+            new(ChatRole.Assistant, "Second message"),
+            new(ChatRole.Assistant,
+            [
+                new TextContent("Third message with function call"),
+                new FunctionCallContent("call-123", "TestFunction", new Dictionary<string, object?> { ["param"] = "value" })
+            ])
+        };
+
+        var chatResponse = new ChatResponse(messages)
+        {
+            ResponseId = "multi-message-response"
+        };
+
+        var openAIResponse = chatResponse.AsOpenAIResponse();
+
+        Assert.Equal(4, openAIResponse.OutputItems.Count);
+
+        var messageItems = openAIResponse.OutputItems.OfType<MessageResponseItem>().ToArray();
+        var functionCallItems = openAIResponse.OutputItems.OfType<FunctionCallResponseItem>().ToArray();
+
+        Assert.Equal(3, messageItems.Length);
+        Assert.Single(functionCallItems);
+
+        Assert.Equal("First message", Assert.Single(messageItems[0].Content).Text);
+        Assert.Equal("Second message", Assert.Single(messageItems[1].Content).Text);
+        Assert.Equal("Third message with function call", Assert.Single(messageItems[2].Content).Text);
+
+        Assert.Equal("call-123", functionCallItems[0].CallId);
+        Assert.Equal("TestFunction", functionCallItems[0].FunctionName);
+    }
+
+    [Fact]
+    public void AsOpenAIResponse_WithToolMessages_ConvertsCorrectly()
+    {
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.Assistant,
+            [
+                new TextContent("I'll call a function"),
+                new FunctionCallContent("call-456", "GetWeather", new Dictionary<string, object?> { ["location"] = "Seattle" })
+            ]),
+            new(ChatRole.Tool, [new FunctionResultContent("call-456", "The weather is sunny")]),
+            new(ChatRole.Assistant, "The weather in Seattle is sunny!")
+        };
+
+        var chatResponse = new ChatResponse(messages)
+        {
+            ResponseId = "tool-message-test"
+        };
+
+        var openAIResponse = chatResponse.AsOpenAIResponse();
+
+        var outputItems = openAIResponse.OutputItems.ToArray();
+        Assert.Equal(4, outputItems.Length);
+
+        // Should have message, function call, function output, and final message
+        Assert.IsType<MessageResponseItem>(outputItems[0], exactMatch: false);
+        Assert.IsType<FunctionCallResponseItem>(outputItems[1], exactMatch: false);
+        Assert.IsType<FunctionCallOutputResponseItem>(outputItems[2], exactMatch: false);
+        Assert.IsType<MessageResponseItem>(outputItems[3], exactMatch: false);
+
+        var functionCallOutput = (FunctionCallOutputResponseItem)outputItems[2];
+        Assert.Equal("call-456", functionCallOutput.CallId);
+        Assert.Equal("The weather is sunny", functionCallOutput.FunctionOutput);
+    }
+
+    [Fact]
+    public void AsOpenAIResponse_WithSystemAndUserMessages_ConvertsCorrectly()
+    {
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.System, "You are a helpful assistant."),
+            new(ChatRole.User, "Hello, how are you?"),
+            new(ChatRole.Assistant, "I'm doing well, thank you for asking!")
+        };
+
+        var chatResponse = new ChatResponse(messages)
+        {
+            ResponseId = "system-user-test"
+        };
+
+        var openAIResponse = chatResponse.AsOpenAIResponse();
+
+        var outputItems = openAIResponse.OutputItems.ToArray();
+        Assert.Equal(3, outputItems.Length);
+
+        var systemMessage = Assert.IsType<MessageResponseItem>(outputItems[0], exactMatch: false);
+        var userMessage = Assert.IsType<MessageResponseItem>(outputItems[1], exactMatch: false);
+        var assistantMessage = Assert.IsType<MessageResponseItem>(outputItems[2], exactMatch: false);
+
+        Assert.Equal("You are a helpful assistant.", Assert.Single(systemMessage.Content).Text);
+        Assert.Equal("Hello, how are you?", Assert.Single(userMessage.Content).Text);
+        Assert.Equal("I'm doing well, thank you for asking!", Assert.Single(assistantMessage.Content).Text);
+    }
+
+    [Fact]
+    public void AsOpenAIResponse_WithDefaultValues_UsesExpectedDefaults()
+    {
+        var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Default test"));
+
+        var openAIResponse = chatResponse.AsOpenAIResponse();
+
+        Assert.NotNull(openAIResponse);
+        Assert.Equal(ResponseStatus.Completed, openAIResponse.Status);
+        Assert.False(openAIResponse.ParallelToolCallsEnabled);
+        Assert.Null(openAIResponse.MaxOutputTokenCount);
+        Assert.Null(openAIResponse.Temperature);
+        Assert.Null(openAIResponse.TopP);
+        Assert.Null(openAIResponse.PreviousResponseId);
+        Assert.Null(openAIResponse.Instructions);
+        Assert.NotNull(openAIResponse.OutputItems);
+    }
+
+    [Fact]
+    public void AsOpenAIResponse_WithOptionsButNoModelId_UsesOptionsModelId()
+    {
+        var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Model test"));
+
+        var options = new ChatOptions
+        {
+            ModelId = "options-model-id"
+        };
+
+        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+
+        Assert.Equal("options-model-id", openAIResponse.Model);
+    }
+
+    [Fact]
+    public void AsOpenAIResponse_WithBothModelIds_PrefersChatResponseModelId()
+    {
+        var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Model priority test"))
+        {
+            ModelId = "response-model-id"
+        };
+
+        var options = new ChatOptions
+        {
+            ModelId = "options-model-id"
+        };
+
+        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+
+        Assert.Equal("response-model-id", openAIResponse.Model);
     }
 
     private static async IAsyncEnumerable<T> CreateAsyncEnumerable<T>(IEnumerable<T> source)

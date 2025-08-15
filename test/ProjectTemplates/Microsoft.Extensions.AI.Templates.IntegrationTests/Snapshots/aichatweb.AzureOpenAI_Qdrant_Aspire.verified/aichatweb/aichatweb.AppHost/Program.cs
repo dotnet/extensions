@@ -1,19 +1,29 @@
 ﻿var builder = DistributedApplication.CreateBuilder(args);
 
-// You will need to set the connection string to your own value
-// You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
-//   cd this-project-directory
-//   dotnet user-secrets set ConnectionStrings:openai "Endpoint=https://YOUR-DEPLOYMENT-NAME.openai.azure.com;Key=YOUR-API-KEY"
-var openai = builder.AddConnectionString("openai");
+// See https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration
+// for instructions providing configuration values
+var openai = builder.AddAzureOpenAI("openai");
 
-// You will need to set the connection string to your own value
-// You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
-//   cd this-project-directory
-//   dotnet user-secrets set ConnectionStrings:azureAISearch "Endpoint=https://YOUR-DEPLOYMENT-NAME.search.windows.net;Key=YOUR-API-KEY"
-var azureAISearch = builder.AddConnectionString("azureAISearch");
+openai.AddDeployment(
+    name: "gpt-4o-mini",
+    modelName: "gpt-4o-mini",
+    modelVersion: "2024-07-18");
+
+openai.AddDeployment(
+    name: "text-embedding-3-small",
+    modelName: "text-embedding-3-small",
+    modelVersion: "1");
+
+// See https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration
+// for instructions providing configuration values
+var search = builder.AddAzureSearch("search");
 
 var webApp = builder.AddProject<Projects.aichatweb_Web>("aichatweb-app");
-webApp.WithReference(openai);
-webApp.WithReference(azureAISearch);
+webApp
+    .WithReference(openai)
+    .WaitFor(openai);
+webApp
+    .WithReference(search)
+    .WaitFor(search);
 
 builder.Build().Run();
