@@ -12,11 +12,13 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 internal sealed class SimpleChatClient : DelegatingChatClient
 {
     private readonly ChatDetails _chatDetails;
+    private readonly ChatClientMetadata? _metadata;
 
     internal SimpleChatClient(IChatClient originalChatClient, ChatDetails chatDetails)
         : base(originalChatClient)
     {
         _chatDetails = chatDetails;
+        _metadata = this.GetService<ChatClientMetadata>();
     }
 
     public async override Task<ChatResponse> GetResponseAsync(
@@ -41,6 +43,7 @@ internal sealed class SimpleChatClient : DelegatingChatClient
                     new ChatTurnDetails(
                         latency: stopwatch.Elapsed,
                         model: response.ModelId,
+                        modelProvider: _metadata?.ProviderName,
                         usage: response.Usage));
             }
         }
@@ -78,6 +81,7 @@ internal sealed class SimpleChatClient : DelegatingChatClient
                     new ChatTurnDetails(
                         latency: stopwatch.Elapsed,
                         model: response.ModelId,
+                        modelProvider: _metadata?.ProviderName,
                         usage: response.Usage));
             }
         }

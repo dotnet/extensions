@@ -14,6 +14,7 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
 {
     private readonly ChatDetails _chatDetails;
     private readonly ConcurrentDictionary<string, Stopwatch> _stopWatches;
+    private readonly ChatClientMetadata? _metadata;
 
     internal ResponseCachingChatClient(
         IChatClient originalChatClient,
@@ -23,8 +24,10 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
             : base(originalChatClient, cache)
     {
         CacheKeyAdditionalValues = [.. cachingKeys];
+
         _chatDetails = chatDetails;
         _stopWatches = new ConcurrentDictionary<string, Stopwatch>();
+        _metadata = this.GetService<ChatClientMetadata>();
     }
 
     protected override async Task<ChatResponse?> ReadCacheAsync(string key, CancellationToken cancellationToken)
@@ -45,6 +48,7 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
                     model: response.ModelId,
+                    modelProvider: _metadata?.ProviderName,
                     usage: response.Usage,
                     cacheKey: key,
                     cacheHit: true));
@@ -75,6 +79,7 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
                     model: response.ModelId,
+                    modelProvider: _metadata?.ProviderName,
                     usage: response.Usage,
                     cacheKey: key,
                     cacheHit: true));
@@ -95,6 +100,7 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
                     model: value.ModelId,
+                    modelProvider: _metadata?.ProviderName,
                     usage: value.Usage,
                     cacheKey: key,
                     cacheHit: false));
@@ -117,6 +123,7 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
                     model: response.ModelId,
+                    modelProvider: _metadata?.ProviderName,
                     usage: response.Usage,
                     cacheKey: key,
                     cacheHit: false));
