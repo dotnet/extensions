@@ -12,4 +12,11 @@ namespace Microsoft.Extensions.AI;
 /// Use <see cref="HostedMcpServerToolApprovalMode.NeverRequire"/> to get an instance of <see cref="HostedMcpServerToolNeverRequireApprovalMode"/>.
 /// </remarks>
 [DebuggerDisplay(nameof(NeverRequire))]
-public sealed class HostedMcpServerToolNeverRequireApprovalMode : HostedMcpServerToolApprovalMode;
+public sealed class HostedMcpServerToolNeverRequireApprovalMode : HostedMcpServerToolApprovalMode
+{
+    /// <inheritdoc/>
+    public override bool Equals(object? obj) => obj is HostedMcpServerToolNeverRequireApprovalMode;
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => typeof(HostedMcpServerToolNeverRequireApprovalMode).GetHashCode();
+}

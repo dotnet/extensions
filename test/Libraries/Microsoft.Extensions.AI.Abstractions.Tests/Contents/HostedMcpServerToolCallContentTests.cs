@@ -12,13 +12,13 @@ public class HostedMcpServerToolCallContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        HostedMcpServerToolCallContent c = new("callId1", "name", "serverName");
+        HostedMcpServerToolCallContent c = new("callId1", "toolName", "serverName");
 
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
 
         Assert.Equal("callId1", c.CallId);
-        Assert.Equal("name", c.Name);
+        Assert.Equal("toolName", c.ToolName);
         Assert.Equal("serverName", c.ServerName);
 
         Assert.Null(c.Arguments);
@@ -27,7 +27,7 @@ public class HostedMcpServerToolCallContentTests
     [Fact]
     public void Constructor_PropsRoundtrip()
     {
-        HostedMcpServerToolCallContent c = new("callId1", "name", "serverName");
+        HostedMcpServerToolCallContent c = new("callId1", "toolName", "serverName");
 
         Assert.Null(c.RawRepresentation);
         object raw = new();
@@ -45,7 +45,7 @@ public class HostedMcpServerToolCallContentTests
         Assert.Same(props, c.AdditionalProperties);
 
         Assert.Equal("callId1", c.CallId);
-        Assert.Equal("name", c.Name);
+        Assert.Equal("toolName", c.ToolName);
         Assert.Equal("serverName", c.ServerName);
     }
 
@@ -53,11 +53,11 @@ public class HostedMcpServerToolCallContentTests
     public void Constructor_Throws()
     {
         Assert.Throws<ArgumentException>("callId", () => new HostedMcpServerToolCallContent(string.Empty, "name", "serverName"));
-        Assert.Throws<ArgumentException>("name", () => new HostedMcpServerToolCallContent("callId1", string.Empty, "serverName"));
+        Assert.Throws<ArgumentException>("toolName", () => new HostedMcpServerToolCallContent("callId1", string.Empty, "serverName"));
         Assert.Throws<ArgumentException>("serverName", () => new HostedMcpServerToolCallContent("callId1", "name", string.Empty));
 
         Assert.Throws<ArgumentNullException>("callId", () => new HostedMcpServerToolCallContent(null!, "name", "serverName"));
-        Assert.Throws<ArgumentNullException>("name", () => new HostedMcpServerToolCallContent("callId1", null!, "serverName"));
+        Assert.Throws<ArgumentNullException>("toolName", () => new HostedMcpServerToolCallContent("callId1", null!, "serverName"));
         Assert.Throws<ArgumentNullException>("serverName", () => new HostedMcpServerToolCallContent("callId1", "name", null!));
     }
 }

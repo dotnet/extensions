@@ -15,12 +15,12 @@ public class HostedMcpServerToolCallContent : AIContent
     /// Initializes a new instance of the <see cref="HostedMcpServerToolCallContent"/> class.
     /// </summary>
     /// <param name="callId">The tool call ID.</param>
-    /// <param name="name">The tool name.</param>
+    /// <param name="toolName">The tool name.</param>
     /// <param name="serverName">The MCP server name.</param>
-    public HostedMcpServerToolCallContent(string callId, string name, string serverName)
+    public HostedMcpServerToolCallContent(string callId, string toolName, string serverName)
     {
         CallId = Throw.IfNullOrWhitespace(callId);
-        Name = Throw.IfNullOrWhitespace(name);
+        ToolName = Throw.IfNullOrWhitespace(toolName);
         ServerName = Throw.IfNullOrWhitespace(serverName);
     }
 
@@ -32,7 +32,7 @@ public class HostedMcpServerToolCallContent : AIContent
     /// <summary>
     /// Gets the name of the tool called.
     /// </summary>
-    public string Name { get; }
+    public string ToolName { get; }
 
     /// <summary>
     /// Gets the name of the MCP server.

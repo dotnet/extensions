@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -31,7 +32,7 @@ public class HostedMcpServerToolResultContent : AIContent
     public IList<AIContent>? Output { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the result was an error.
+    /// Gets a value indicating whether the tool call was successful.
     /// </summary>
-    public bool IsError { get; set; }
+    public virtual bool Success => Output is not null && Output.Count is not 0 && !Output.OfType<ErrorContent>().Any();
 }

@@ -17,7 +17,7 @@ public class HostedMcpServerToolResultContentTests
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
         Assert.Null(c.Output);
-        Assert.False(c.IsError);
+        Assert.False(c.Success);
     }
 
     [Fact]
@@ -41,10 +41,6 @@ public class HostedMcpServerToolResultContentTests
         IList<AIContent> output = [];
         c.Output = output;
         Assert.Same(output, c.Output);
-
-        Assert.False(c.IsError);
-        c.IsError = true;
-        Assert.True(c.IsError);
     }
 
     [Fact]
@@ -52,5 +48,22 @@ public class HostedMcpServerToolResultContentTests
     {
         Assert.Throws<ArgumentException>("callId", () => new HostedMcpServerToolResultContent(string.Empty));
         Assert.Throws<ArgumentNullException>("callId", () => new HostedMcpServerToolResultContent(null!));
+    }
+
+    [Fact]
+    public void Success_FalseIf_OutputNullOrEmptyOrContainsError()
+    {
+        HostedMcpServerToolResultContent c = new("callId");
+        Assert.Null(c.Output);
+        Assert.False(c.Success);
+
+        c.Output = [];
+        Assert.False(c.Success);
+
+        c.Output.Add(new AIContent());
+        Assert.True(c.Success);
+
+        c.Output.Add(new ErrorContent("An error occurred"));
+        Assert.False(c.Success);
     }
 }
