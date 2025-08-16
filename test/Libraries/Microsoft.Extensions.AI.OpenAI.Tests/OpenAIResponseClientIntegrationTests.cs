@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TestUtilities;
+using OpenAI;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -18,7 +19,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
     public override bool FunctionInvokingChatClientSetsConversationId => true;
 
-    // Test structure doesn't make sense with Respones.
+    // Test structure doesn't make sense with Responses.
     public override Task Caching_AfterFunctionInvocation_FunctionOutputUnchangedAsync() => Task.CompletedTask;
 
     [ConditionalFact]
