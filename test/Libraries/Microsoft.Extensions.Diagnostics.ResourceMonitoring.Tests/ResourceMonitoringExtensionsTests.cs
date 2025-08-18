@@ -16,9 +16,9 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 
-[OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
 public sealed class ResourceMonitoringExtensionsTests
 {
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
     [ConditionalFact]
     public void Throw_Null_When_Registration_Ingredients_Null()
     {
@@ -30,6 +30,7 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Throws<ArgumentNullException>(() => services.AddResourceMonitoring((b) => b.ConfigureMonitor((Action<ResourceMonitoringOptions>)null!)));
     }
 
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
     [ConditionalFact]
     public void AddsResourceMonitoringService_ToServicesCollection()
     {
@@ -50,6 +51,7 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
     [ConditionalFact]
     public void AddsResourceMonitoringService_ToServicesCollection_NoArgs()
     {
@@ -66,6 +68,7 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
     [ConditionalFact]
     public void AddsResourceMonitoringService_AsHostedService()
     {
@@ -87,6 +90,7 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
     [ConditionalFact]
     public void ConfigureResourceUtilization_InitializeTrackerProperly()
     {
@@ -113,6 +117,7 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.NotNull(publisher);
     }
 
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
     [ConditionalFact]
     public void ConfigureMonitor_GivenOptionsDelegate_InitializeTrackerWithOptionsProperly()
     {
@@ -141,6 +146,7 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Equal(TimeSpan.FromSeconds(CalculationPeriodValue), options!.Value.PublishingWindow);
     }
 
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
     [ConditionalFact]
     public void ConfigureMonitor_GivenIConfigurationSection_InitializeTrackerWithOptionsProperly()
     {
@@ -182,6 +188,7 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Equal(TimeSpan.FromSeconds(CalculationPeriod), options!.Value.PublishingWindow);
     }
 
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
     [ConditionalFact]
     public void Registering_Resource_Utilization_Adds_Only_One_Object_Of_Type_ResourceUtilizationService_To_DI_Container()
     {
@@ -203,5 +210,47 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.IsAssignableFrom<ResourceMonitorService>(tracker);
         Assert.IsAssignableFrom<ResourceMonitorService>(background);
         Assert.Same(tracker as ResourceMonitorService, background as ResourceMonitorService);
+    }
+
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows, SkipReason = "For MacOs only.")]
+    [ConditionalFact]
+    public void AddResourceMonitoringInternal_WhenMacOs_ReturnsSameServiceCollection()
+    {
+        var services = new ServiceCollection();
+
+        // Act
+        IServiceCollection result = services.AddResourceMonitoring();
+
+        // Assert
+        Assert.Same(services, result);
+        Assert.DoesNotContain(services, s => s.ServiceType == typeof(ISnapshotProvider));
+    }
+
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
+    [ConditionalFact]
+    public void AddResourceMonitoring_AddsISnapshotProvider()
+    {
+        var services = new ServiceCollection();
+
+        // Act
+        IServiceCollection result = services.AddResourceMonitoring();
+
+        // Assert
+        Assert.Same(services, result);
+        Assert.Contains(services, s => s.ServiceType == typeof(ISnapshotProvider));
+    }
+
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
+    [ConditionalFact]
+    public void AddResourceMonitoringInternal_CallsConfigureDelegate()
+    {
+        var services = new ServiceCollection();
+        bool delegateCalled = false;
+
+        // Act
+        services.AddResourceMonitoring(_ => delegateCalled = true);
+
+        // Assert
+        Assert.True(delegateCalled);
     }
 }

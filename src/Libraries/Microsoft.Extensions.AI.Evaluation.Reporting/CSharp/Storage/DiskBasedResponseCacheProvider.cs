@@ -14,21 +14,31 @@ using Microsoft.Extensions.Caching.Distributed;
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
 /// <summary>
-/// An <see cref="IResponseCacheProvider"/> that returns an <see cref="IDistributedCache"/> that can cache AI responses
-/// for a particular <see cref="ScenarioRun"/> under the specified <paramref name="storageRootPath"/> on disk.
+/// An <see cref="IEvaluationResponseCacheProvider"/> that returns an <see cref="IDistributedCache"/> that can cache
+/// AI responses for a particular <see cref="ScenarioRun"/> under the specified <paramref name="storageRootPath"/> on
+/// disk.
 /// </summary>
 /// <param name="storageRootPath">
 /// The path to a directory on disk under which the cached AI responses should be stored.
 /// </param>
-public sealed class DiskBasedResponseCacheProvider(string storageRootPath) : IResponseCacheProvider
+/// <param name="timeToLiveForCacheEntries">
+/// An optional <see cref="TimeSpan"/> that specifies the maximum amount of time that cached AI responses should
+/// survive in the cache before they are considered expired and evicted.
+/// </param>
+public sealed class DiskBasedResponseCacheProvider(
+    string storageRootPath,
+    TimeSpan? timeToLiveForCacheEntries = null) : IEvaluationResponseCacheProvider
 {
     private readonly Func<DateTime> _provideDateTime = () => DateTime.UtcNow;
 
     /// <remarks>
     /// Intended for testing purposes only.
     /// </remarks>
-    internal DiskBasedResponseCacheProvider(string storageRootPath, Func<DateTime> provideDateTime)
-        : this(storageRootPath)
+    internal DiskBasedResponseCacheProvider(
+        string storageRootPath,
+        Func<DateTime> provideDateTime,
+        TimeSpan? timeToLiveForCacheEntries = null)
+            : this(storageRootPath, timeToLiveForCacheEntries)
     {
         _provideDateTime = provideDateTime;
     }
@@ -39,7 +49,13 @@ public sealed class DiskBasedResponseCacheProvider(string storageRootPath) : IRe
         string iterationName,
         CancellationToken cancellationToken = default)
     {
-        var cache = new DiskBasedResponseCache(storageRootPath, scenarioName, iterationName, _provideDateTime);
+        var cache =
+            new DiskBasedResponseCache(
+                storageRootPath,
+                scenarioName,
+                iterationName,
+                _provideDateTime,
+                timeToLiveForCacheEntries);
 
         return new ValueTask<IDistributedCache>(cache);
     }

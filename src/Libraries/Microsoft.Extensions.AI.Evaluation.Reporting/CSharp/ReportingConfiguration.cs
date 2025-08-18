@@ -16,7 +16,9 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// used by these <see cref="IEvaluator"/>s, how the resulting <see cref="ScenarioRunResult"/>s should be persisted,
 /// and how AI responses should be cached.
 /// </summary>
-/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">Tutorial: Evaluate a model's response with response caching and reporting.</related>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">
+/// Tutorial: Evaluate a model's response with response caching and reporting.
+/// </related>
 public sealed class ReportingConfiguration
 {
     /// <summary>
@@ -25,21 +27,21 @@ public sealed class ReportingConfiguration
     public IReadOnlyList<IEvaluator> Evaluators { get; }
 
     /// <summary>
-    /// Gets the <see cref="IResultStore"/> that should be used to persist the <see cref="ScenarioRunResult"/>s.
+    /// Gets the <see cref="IEvaluationResultStore"/> that should be used to persist the
+    /// <see cref="ScenarioRunResult"/>s.
     /// </summary>
-    public IResultStore ResultStore { get; }
+    public IEvaluationResultStore ResultStore { get; }
 
     /// <summary>
-    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <see cref="Evaluators"/> included in this
-    /// <see cref="ReportingConfiguration"/>.
+    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
+    /// AI-based <see cref="Evaluators"/> included in this <see cref="ReportingConfiguration"/>.
     /// </summary>
     public ChatConfiguration? ChatConfiguration { get; }
 
     /// <summary>
-    /// Gets the <see cref="IResponseCacheProvider"/> that should be used to cache AI responses.
+    /// Gets the <see cref="IEvaluationResponseCacheProvider"/> that should be used to cache AI responses.
     /// </summary>
-    public IResponseCacheProvider? ResponseCacheProvider { get; }
+    public IEvaluationResponseCacheProvider? ResponseCacheProvider { get; }
 
     /// <summary>
     /// Gets the collection of unique strings that should be hashed when generating the cache keys for cached AI
@@ -100,17 +102,16 @@ public sealed class ReportingConfiguration
     /// The set of <see cref="IEvaluator"/>s that should be invoked to evaluate AI responses.
     /// </param>
     /// <param name="resultStore">
-    /// The <see cref="IResultStore"/> that should be used to persist the <see cref="ScenarioRunResult"/>s.
+    /// The <see cref="IEvaluationResultStore"/> that should be used to persist the <see cref="ScenarioRunResult"/>s.
     /// </param>
     /// <param name="chatConfiguration">
-    /// A <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <paramref name="evaluators"/> included in this
-    /// <see cref="ReportingConfiguration"/>. Can be omitted if none of the included <paramref name="evaluators"/> are
-    /// AI-based.
+    /// A <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
+    /// AI-based <paramref name="evaluators"/> included in this <see cref="ReportingConfiguration"/>. Can be omitted if
+    /// none of the included <paramref name="evaluators"/> are AI-based.
     /// </param>
     /// <param name="responseCacheProvider">
-    /// The <see cref="IResponseCacheProvider"/> that should be used to cache AI responses. If omitted, AI responses
-    /// will not be cached.
+    /// The <see cref="IEvaluationResponseCacheProvider"/> that should be used to cache AI responses. If omitted, AI
+    /// responses will not be cached.
     /// </param>
     /// <param name="cachingKeys">
     /// An optional collection of unique strings that should be hashed when generating the cache keys for cached AI
@@ -134,9 +135,9 @@ public sealed class ReportingConfiguration
 #pragma warning disable S107 // Methods should not have too many parameters
     public ReportingConfiguration(
         IEnumerable<IEvaluator> evaluators,
-        IResultStore resultStore,
+        IEvaluationResultStore resultStore,
         ChatConfiguration? chatConfiguration = null,
-        IResponseCacheProvider? responseCacheProvider = null,
+        IEvaluationResponseCacheProvider? responseCacheProvider = null,
         IEnumerable<string>? cachingKeys = null,
         string executionName = Defaults.DefaultExecutionName,
         Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,
@@ -181,7 +182,9 @@ public sealed class ReportingConfiguration
     /// A new <see cref="ScenarioRun"/> with the specified <paramref name="scenarioName"/> and
     /// <paramref name="iterationName"/>.
     /// </returns>
-    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">Tutorial: Evaluate a model's response with response caching and reporting.</related>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">
+    /// Tutorial: Evaluate a model's response with response caching and reporting.
+    /// </related>
     public async ValueTask<ScenarioRun> CreateScenarioRunAsync(
         string scenarioName,
         string iterationName = Defaults.DefaultIterationName,
@@ -246,7 +249,7 @@ public sealed class ReportingConfiguration
             }
 #pragma warning restore CA2000
 
-            chatConfiguration = new ChatConfiguration(chatClient, chatConfiguration.TokenCounter);
+            chatConfiguration = new ChatConfiguration(chatClient);
         }
 
         return new ScenarioRun(
@@ -263,18 +266,12 @@ public sealed class ReportingConfiguration
 
     private static IEnumerable<string> GetCachingKeysForChatClient(IChatClient chatClient)
     {
-        var metadata = chatClient.GetService<ChatClientMetadata>();
+        ChatClientMetadata? metadata = chatClient.GetService<ChatClientMetadata>();
 
         string? providerName = metadata?.ProviderName;
         if (!string.IsNullOrWhiteSpace(providerName))
         {
             yield return providerName!;
-        }
-
-        Uri? providerUri = metadata?.ProviderUri;
-        if (providerUri is not null)
-        {
-            yield return providerUri.AbsoluteUri;
         }
 
         string? modelId = metadata?.DefaultModelId;

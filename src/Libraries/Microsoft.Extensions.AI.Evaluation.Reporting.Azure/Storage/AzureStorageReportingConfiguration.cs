@@ -24,18 +24,17 @@ public static class AzureStorageReportingConfiguration
     /// <param name="evaluators">
     /// The set of <see cref="IEvaluator"/>s that should be invoked to evaluate AI responses.
     /// </param>
-    /// <param name="timeToLiveForCacheEntries">
-    /// An optional <see cref="TimeSpan"/> that specifies the maximum amount of time that cached AI responses should
-    /// survive in the cache before they are considered expired and evicted.
-    /// </param>
     /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <paramref name="evaluators"/> included in the
-    /// returned <see cref="ReportingConfiguration"/>. Can be omitted if none of the included
-    /// <paramref name="evaluators"/> are AI-based.
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by AI-based
+    /// <paramref name="evaluators"/> included in the returned <see cref="ReportingConfiguration"/>. Can be omitted if
+    /// none of the included <paramref name="evaluators"/> are AI-based.
     /// </param>
     /// <param name="enableResponseCaching">
     /// <see langword="true"/> to enable caching of AI responses; <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="timeToLiveForCacheEntries">
+    /// An optional <see cref="TimeSpan"/> that specifies the maximum amount of time that cached AI responses should
+    /// survive in the cache before they are considered expired and evicted.
     /// </param>
     /// <param name="cachingKeys">
     /// An optional collection of unique strings that should be hashed when generating the cache keys for cached AI
@@ -60,25 +59,32 @@ public static class AzureStorageReportingConfiguration
     /// A <see cref="ReportingConfiguration"/> that persists <see cref="ScenarioRunResult"/>s to Azure Storage
     /// and also uses Azure Storage to cache AI responses.
     /// </returns>
+    /// <remarks>
+    /// Note that when <paramref name="enableResponseCaching"/> is set to <see langword="true"/>, the cache keys used
+    /// for the cached responses are not guaranteed to be stable across releases of the library. In other words, when
+    /// you update your code to reference a newer version of the library, it is possible that old cached responses
+    /// (persisted to the cache using older versions of the library) will no longer be used - instead new responses
+    /// will be fetched from the LLM and added to the cache for use in subsequent executions.
+    /// </remarks>
 #pragma warning disable S107 // Methods should not have too many parameters
     public static ReportingConfiguration Create(
         DataLakeDirectoryClient client,
         IEnumerable<IEvaluator> evaluators,
-        TimeSpan? timeToLiveForCacheEntries = null,
         ChatConfiguration? chatConfiguration = null,
         bool enableResponseCaching = true,
+        TimeSpan? timeToLiveForCacheEntries = null,
         IEnumerable<string>? cachingKeys = null,
         string executionName = Defaults.DefaultExecutionName,
         Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,
         IEnumerable<string>? tags = null)
 #pragma warning restore S107
     {
-        IResponseCacheProvider? responseCacheProvider =
+        IEvaluationResponseCacheProvider? responseCacheProvider =
             chatConfiguration is not null && enableResponseCaching
                 ? new AzureStorageResponseCacheProvider(client, timeToLiveForCacheEntries)
                 : null;
 
-        IResultStore resultStore = new AzureStorageResultStore(client);
+        IEvaluationResultStore resultStore = new AzureStorageResultStore(client);
 
         return new ReportingConfiguration(
             evaluators,

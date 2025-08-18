@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Threading;
@@ -17,6 +18,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 {
     private const double One = 1.0d;
     private const double Hundred = 100.0d;
+    private const double TicksPerSecondDouble = TimeSpan.TicksPerSecond;
 
     private readonly Lazy<MEMORYSTATUSEX> _memoryStatus;
 
@@ -27,6 +29,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
+    private readonly object _processMemoryLocker = new();
     private readonly TimeProvider _timeProvider;
     private readonly IProcessInfo _processInfo;
     private readonly ILogger<WindowsContainerSnapshotProvider> _logger;
@@ -40,8 +43,10 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private long _oldCpuTimeTicks;
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
+    private DateTimeOffset _refreshAfterProcessMemory;
     private double _cpuPercentage = double.NaN;
-    private double _memoryPercentage;
+    private ulong _memoryUsage;
+    private double _processMemoryPercentage;
 
     public SystemResources Resources { get; }
 
@@ -73,7 +78,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         ResourceMonitoringOptions options)
     {
         _logger = logger ?? NullLogger<WindowsContainerSnapshotProvider>.Instance;
-        Log.RunningInsideJobObject(_logger);
+        _logger.RunningInsideJobObject();
 
         _metricValueMultiplier = options.UseZeroToOneRangeForMetrics ? One : Hundred;
 
@@ -85,18 +90,18 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         _timeProvider = timeProvider;
 
-        using var jobHandle = _createJobHandleObject();
+        using IJobHandle jobHandle = _createJobHandleObject();
 
-        var memoryLimitLong = GetMemoryLimit(jobHandle);
+        ulong memoryLimitLong = GetMemoryLimit(jobHandle);
         _memoryLimit = memoryLimitLong;
         _cpuLimit = GetCpuLimit(jobHandle, systemInfo);
 
         // CPU request (aka guaranteed CPU units) is not supported on Windows, so we set it to the same value as CPU limit (aka maximum CPU units).
         // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
-        var cpuRequest = _cpuLimit;
-        var memoryRequest = memoryLimitLong;
+        double cpuRequest = _cpuLimit;
+        ulong memoryRequest = memoryLimitLong;
         Resources = new SystemResources(cpuRequest, _cpuLimit, memoryRequest, memoryLimitLong);
-        Log.SystemResourcesInfo(_logger, _cpuLimit, cpuRequest, memoryLimitLong, memoryRequest);
+        _logger.SystemResourcesInfo(_cpuLimit, cpuRequest, memoryLimitLong, memoryRequest);
 
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
         _oldCpuUsageTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
@@ -105,21 +110,44 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         _memoryRefreshInterval = options.MemoryConsumptionRefreshInterval;
         _refreshAfterCpu = _timeProvider.GetUtcNow();
         _refreshAfterMemory = _timeProvider.GetUtcNow();
+        _refreshAfterProcessMemory = _timeProvider.GetUtcNow();
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // We don't dispose the meter because IMeterFactory handles that
         // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
         // Related documentation: https://github.com/dotnet/docs/pull/37170
-        var meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
+        Meter meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         // Container based metrics:
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetMemoryUsage()));
+        _ = meter.CreateObservableCounter(
+            name: ResourceUtilizationInstruments.ContainerCpuTime,
+            observeValues: GetCpuTime,
+            unit: "s",
+            description: "CPU time used by the container.");
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization,
+            observeValue: CpuPercentage);
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization,
+            observeValue: () => Math.Min(_metricValueMultiplier, MemoryUsage() / _memoryLimit * _metricValueMultiplier));
+
+        _ = meter.CreateObservableUpDownCounter(
+            name: ResourceUtilizationInstruments.ContainerMemoryUsage,
+            observeValue: () => (long)MemoryUsage(),
+            unit: "By",
+            description: "Memory usage of the container.");
 
         // Process based metrics:
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetCurrentProcessMemoryUsage()));
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ProcessCpuUtilization,
+            observeValue: CpuPercentage);
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ProcessMemoryUtilization,
+            observeValue: ProcessMemoryPercentage);
     }
 
     public Snapshot GetSnapshot()
@@ -155,7 +183,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             cpuRatio = cpuLimit.CpuRate / CpuCycles;
         }
 
-        var systemInfoValue = systemInfo.GetSystemInfo();
+        SYSTEM_INFO systemInfoValue = systemInfo.GetSystemInfo();
 
         // Multiply the cpu ratio by the number of processors to get you the portion
         // of processors used from the system.
@@ -172,7 +200,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         if (memoryLimitInBytes <= 0)
         {
-            var memoryStatus = _memoryStatus.Value;
+            MEMORYSTATUSEX memoryStatus = _memoryStatus.Value;
 
             // Technically, the unconstrained limit is memoryStatus.TotalPageFile.
             // Leaving this at physical as it is more understandable to consumers.
@@ -182,33 +210,70 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         return memoryLimitInBytes;
     }
 
-    private double MemoryPercentage(Func<ulong> getMemoryUsage)
+    private double ProcessMemoryPercentage()
     {
-        var now = _timeProvider.GetUtcNow();
+        DateTimeOffset now = _timeProvider.GetUtcNow();
+
+        lock (_processMemoryLocker)
+        {
+            if (now < _refreshAfterProcessMemory)
+            {
+                return _processMemoryPercentage;
+            }
+        }
+
+        ulong processMemoryUsage = _processInfo.GetCurrentProcessMemoryUsage();
+
+        lock (_processMemoryLocker)
+        {
+            if (now >= _refreshAfterProcessMemory)
+            {
+                _processMemoryPercentage = Math.Min(_metricValueMultiplier, processMemoryUsage / _memoryLimit * _metricValueMultiplier);
+                _refreshAfterProcessMemory = now.Add(_memoryRefreshInterval);
+
+                _logger.ProcessMemoryPercentageData(processMemoryUsage, _memoryLimit, _processMemoryPercentage);
+            }
+
+            return _processMemoryPercentage;
+        }
+    }
+
+    private ulong MemoryUsage()
+    {
+        DateTimeOffset now = _timeProvider.GetUtcNow();
 
         lock (_memoryLocker)
         {
             if (now < _refreshAfterMemory)
             {
-                return _memoryPercentage;
+                return _memoryUsage;
             }
         }
 
-        var memoryUsage = getMemoryUsage();
+        ulong memoryUsage = _processInfo.GetMemoryUsage();
 
         lock (_memoryLocker)
         {
             if (now >= _refreshAfterMemory)
             {
-                // Don't change calculation order, otherwise we loose some precision:
-                _memoryPercentage = Math.Min(_metricValueMultiplier, memoryUsage / _memoryLimit * _metricValueMultiplier);
+                _memoryUsage = memoryUsage;
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
+                _logger.ContainerMemoryUsageData(_memoryUsage, _memoryLimit);
             }
 
-            Log.MemoryUsageData(_logger, memoryUsage, _memoryLimit, _memoryPercentage);
-
-            return _memoryPercentage;
+            return _memoryUsage;
         }
+    }
+
+    private IEnumerable<Measurement<double>> GetCpuTime()
+    {
+        using IJobHandle jobHandle = _createJobHandleObject();
+        var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
+
+        yield return new Measurement<double>(basicAccountingInfo.TotalUserTime / TicksPerSecondDouble,
+            [new KeyValuePair<string, object?>("cpu.mode", "user")]);
+        yield return new Measurement<double>(basicAccountingInfo.TotalKernelTime / TicksPerSecondDouble,
+            [new KeyValuePair<string, object?>("cpu.mode", "system")]);
     }
 
     private double CpuPercentage()
@@ -238,8 +303,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
                     // Don't change calculation order, otherwise precision is lost:
                     _cpuPercentage = Math.Min(_metricValueMultiplier, usageTickDelta / timeTickDelta * _metricValueMultiplier);
 
-                    Log.CpuContainerUsageData(
-                        _logger, basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, _cpuLimit, _cpuPercentage);
+                    _logger.CpuContainerUsageData(
+                        basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, _cpuLimit, _cpuPercentage);
 
                     _oldCpuUsageTicks = currentCpuTicks;
                     _oldCpuTimeTicks = now.Ticks;

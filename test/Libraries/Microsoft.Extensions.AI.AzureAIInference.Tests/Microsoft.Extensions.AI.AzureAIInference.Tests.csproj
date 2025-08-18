@@ -6,7 +6,16 @@
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);S104</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\Shared\ImageDataUri\dotnet.png" Link="Resources\dotnet.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Shared\ImageDataUri\ImageDataUri.cs" Link="Shared\ImageDataUri\ImageDataUri.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\AssertExtensions.cs" />
@@ -14,9 +23,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.AI.Integration.Tests\Microsoft.Extensions.AI.Integration.Tests.csproj" ProjectUnderTest="true" />
-    
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.AzureAIInference\Microsoft.Extensions.AI.AzureAIInference.csproj" ProjectUnderTest="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.AI.Inference" />
+    <PackageReference Include="PdfPig" />
   </ItemGroup>
 </Project>

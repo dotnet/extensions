@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>A dotnet tool for managing the evaluation data and generating reports.</Description>
+    <Description>A command line dotnet tool for generating reports and managing evaluation data.</Description>
     <OutputType>Exe</OutputType>
-    <!-- Building only one TFM due to bug: https://github.com/dotnet/sdk/issues/47696 
-         Once this is fixed, we can go back to building multiple. -->
-    <TargetFrameworks>$(MinimumSupportedTfmForPackaging)</TargetFrameworks>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation.Console</RootNamespace>
     <!-- EA0000: Use source generated logging methods for improved performance. -->
     <NoWarn>$(NoWarn);EA0000</NoWarn>
@@ -15,12 +13,25 @@
 
   <PropertyGroup>
     <Workstream>AIEval</Workstream>
-    <Stage>preview</Stage>
+    <Stage>normal</Stage>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
-    <EnablePackageValidation>false</EnablePackageValidation>
-    <MinCodeCoverage>8</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
   </PropertyGroup>
+
+  <!--
+  Disable parallel build to work around https://github.com/dotnet/sdk/issues/47696. The problem has been fixed in
+  https://github.com/dotnet/sdk/pull/47788, however the fix has not yet been back ported to the dotnet 9 SDK. We can
+  remove this workaround once the fix is available in the dotnet 9 SDK.
+  -->
+  <PropertyGroup>
+    <BuildInParallel>false</BuildInParallel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\BuiltInEvaluatorUtilities.cs" Link="Utilities\BuiltInEvaluatorUtilities.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\TimingHelper.cs" Link="Utilities\TimingHelper.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />

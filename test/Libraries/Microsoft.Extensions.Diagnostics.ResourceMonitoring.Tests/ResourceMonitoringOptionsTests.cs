@@ -19,5 +19,17 @@ public sealed class ResourceMonitoringOptionsTests
         };
 
         Assert.NotNull(options);
+        Assert.False(options.UseLinuxCalculationV2);
+    }
+
+    [Fact]
+    public void CalculateCpuUsageWithoutHostDelta_WhenSet_ReturnsExpectedValue()
+    {
+        var options = new ResourceMonitoringOptions
+        {
+            UseLinuxCalculationV2 = true
+        };
+
+        Assert.True(options.UseLinuxCalculationV2);
     }
 }

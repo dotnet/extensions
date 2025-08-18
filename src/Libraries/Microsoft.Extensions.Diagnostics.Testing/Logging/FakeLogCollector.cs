@@ -208,6 +208,13 @@ public class FakeLogCollector
             return;
         }
 
+        var customFilter = _options.CustomFilter;
+        if (customFilter is not null && !customFilter(record))
+        {
+            // record was filtered out by a custom filter
+            return;
+        }
+
         List<Waiter>? waitersToWakeUp;
 
         lock (_records)

@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
+#pragma warning disable S3358 // Ternary operators should not be nested
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -116,15 +118,16 @@ public class ChatResponseUpdate
     /// </remarks>
     public string? MessageId { get; set; }
 
-    /// <summary>Gets or sets the chat thread ID associated with the chat response of which this update is a part.</summary>
+    /// <summary>Gets or sets an identifier for the state of the conversation of which this update is a part.</summary>
     /// <remarks>
-    /// Some <see cref="IChatClient"/> implementations are capable of storing the state for a chat thread, such that
+    /// Some <see cref="IChatClient"/> implementations are capable of storing the state for a conversation, such that
     /// the input messages supplied to <see cref="IChatClient.GetStreamingResponseAsync"/> need only be the additional messages beyond
     /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
-    /// and it should be used in a subsequent <see cref="ChatOptions.ChatThreadId"/> instead of supplying the same messages
-    /// (and this streaming message) as part of the <c>messages</c> parameter.
+    /// and it should be used in a subsequent <see cref="ChatOptions.ConversationId"/> instead of supplying the same messages
+    /// (and this streaming message) as part of the <c>messages</c> parameter. Note that the value may or may not differ on every
+    /// response, depending on whether the underlying provider uses a fixed ID for each conversation or updates it for each message.
     /// </remarks>
-    public string? ChatThreadId { get; set; }
+    public string? ConversationId { get; set; }
 
     /// <summary>Gets or sets a timestamp for the response update.</summary>
     public DateTimeOffset? CreatedAt { get; set; }
@@ -140,7 +143,17 @@ public class ChatResponseUpdate
 
     /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private AIContent? ContentForDebuggerDisplay => _contents is { Count: > 0 } ? _contents[0] : null;
+    private AIContent? ContentForDebuggerDisplay
+    {
+        get
+        {
+            string text = Text;
+            return
+                !string.IsNullOrWhiteSpace(text) ? new TextContent(text) :
+                _contents is { Count: > 0 } ? _contents[0] :
+                null;
+        }
+    }
 
     /// <summary>Gets an indication for the debugger display of whether there's more content.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

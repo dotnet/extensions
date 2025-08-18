@@ -4,6 +4,7 @@
 using System;
 using System.ClientModel;
 using Azure.AI.OpenAI;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using OpenAI;
 
@@ -16,20 +17,27 @@ internal static class IntegrationTestHelpers
     public static OpenAIClient? GetOpenAIClient()
     {
         var configuration = TestRunnerConfiguration.Instance;
-        string? apiKey = configuration["OpenAI:Key"];
 
-        if (apiKey is not null)
+        string? apiKey = configuration["OpenAI:Key"];
+        string? mode = configuration["OpenAI:Mode"];
+
+        if (string.Equals(mode, "AzureOpenAI", StringComparison.OrdinalIgnoreCase))
         {
-            if (string.Equals(configuration["OpenAI:Mode"], "AzureOpenAI", StringComparison.OrdinalIgnoreCase))
+            var endpoint = configuration["OpenAI:Endpoint"]
+                ?? throw new InvalidOperationException("To use AzureOpenAI, set a value for OpenAI:Endpoint");
+
+            if (apiKey is not null)
             {
-                var endpoint = configuration["OpenAI:Endpoint"]
-                    ?? throw new InvalidOperationException("To use AzureOpenAI, set a value for OpenAI:Endpoint");
                 return new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey));
             }
             else
             {
-                return new OpenAIClient(apiKey);
+                return new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential());
             }
+        }
+        else if (apiKey is not null)
+        {
+            return new OpenAIClient(apiKey);
         }
 
         return null;

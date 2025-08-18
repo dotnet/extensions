@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Data.Validation;
 using Microsoft.Shared.DiagnosticIds;
 
@@ -97,4 +98,25 @@ public partial class ResourceMonitoringOptions
         UrlFormat = DiagnosticIds.UrlFormat)]
     [TimeSpan(MinimumCachingInterval, MaximumCachingInterval)]
     public TimeSpan MemoryConsumptionRefreshInterval { get; set; } = DefaultRefreshInterval;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether CPU metrics for Linux are calculated using V2 method - via cgroup CPU limits instead of Host CPU delta.
+    /// </summary>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
+    /// <remarks>
+    /// This applies to cgroups v2 only and not supported on cgroups v1.
+    /// This is a more accurate way to calculate CPU utilization on Linux systems, please enable if possible.
+    /// It will be the default in the future.
+    /// </remarks>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
+    public bool UseLinuxCalculationV2 { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether disk I/O metrics should be enabled.
+    /// </summary>
+    /// <remarks>Previously <c>EnableDiskIoMetrics</c>.</remarks>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
+    public bool EnableSystemDiskIoMetrics { get; set; }
 }

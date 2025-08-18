@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
@@ -15,22 +15,27 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
-    <NoWarn>$(NoWarn);CA1063;CA1508;CA2227;SA1316;S1121;S3358;EA0002;OPENAI002</NoWarn>
+    <NoWarn>$(NoWarn);CA1063;CA1508;CA2227;SA1316;S1121;S3358;EA0002</NoWarn>
+    <NoWarn>$(NoWarn);OPENAI001;OPENAI002;MEAI001</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
-    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
-    <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
-    <InjectSharedServerSentEvents>true</InjectSharedServerSentEvents>
-    <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
     <InjectCompilerFeatureRequiredOnLegacy>true</InjectCompilerFeatureRequiredOnLegacy>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+    <InjectSharedServerSentEvents>true</InjectSharedServerSentEvents>
+    <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="OpenAI" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>

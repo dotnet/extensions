@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Xunit;
 using Xunit.Sdk;
 
@@ -52,19 +53,29 @@ internal static class AssertExtensions
     public static void EqualFunctionCallResults(object? expected, object? actual, JsonSerializerOptions? options = null)
         => AreJsonEquivalentValues(expected, actual, options);
 
-    private static void AreJsonEquivalentValues(object? expected, object? actual, JsonSerializerOptions? options, string? propertyName = null)
+    /// <summary>
+    /// Asserts that the two JSON values are equal.
+    /// </summary>
+    public static void EqualJsonValues(JsonElement expectedJson, JsonElement actualJson, string? propertyName = null)
     {
-        options ??= JsonSerializerOptions.Default;
-        JsonElement expectedElement = NormalizeToElement(expected, options);
-        JsonElement actualElement = NormalizeToElement(actual, options);
-        if (!JsonElement.DeepEquals(expectedElement, actualElement))
+        if (!JsonNode.DeepEquals(
+            JsonSerializer.SerializeToNode(expectedJson, AIJsonUtilities.DefaultOptions),
+            JsonSerializer.SerializeToNode(actualJson, AIJsonUtilities.DefaultOptions)))
         {
             string message = propertyName is null
-                ? $"Function result does not match expected JSON.\r\nExpected: {expectedElement.GetRawText()}\r\nActual:   {actualElement.GetRawText()}"
-                : $"Parameter '{propertyName}' does not match expected JSON.\r\nExpected: {expectedElement.GetRawText()}\r\nActual:   {actualElement.GetRawText()}";
+                ? $"JSON result does not match expected JSON.\r\nExpected: {expectedJson.GetRawText()}\r\nActual:   {actualJson.GetRawText()}"
+                : $"Parameter '{propertyName}' does not match expected JSON.\r\nExpected: {expectedJson.GetRawText()}\r\nActual:   {actualJson.GetRawText()}";
 
             throw new XunitException(message);
         }
+    }
+
+    private static void AreJsonEquivalentValues(object? expected, object? actual, JsonSerializerOptions? options, string? propertyName = null)
+    {
+        options ??= AIJsonUtilities.DefaultOptions;
+        JsonElement expectedElement = NormalizeToElement(expected, options);
+        JsonElement actualElement = NormalizeToElement(actual, options);
+        EqualJsonValues(expectedElement, actualElement, propertyName);
 
         static JsonElement NormalizeToElement(object? value, JsonSerializerOptions options)
             => value is JsonElement e ? e : JsonSerializer.SerializeToElement(value, options);

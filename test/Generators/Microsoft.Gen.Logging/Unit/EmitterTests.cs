@@ -45,6 +45,7 @@ public class EmitterTests
                 Assembly.GetAssembly(typeof(IRedactorProvider))!,
                 Assembly.GetAssembly(typeof(PrivateDataAttribute))!,
                 Assembly.GetAssembly(typeof(BigInteger))!,
+                Assembly.GetAssembly(typeof(ObjectToLog))!
             },
             sources,
             symbols)

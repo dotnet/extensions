@@ -8,7 +8,7 @@
   -->
 
   <PropertyGroup>
-    <Description>A library for aggregating and reporting evaluation data. This library also includes support for caching LLM responses.</Description>
+    <Description>A library that contains support for caching LLM responses, storing the results of evaluations and generating reports from that data.</Description>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation.Reporting</RootNamespace>
     <!-- EA0002: Use System.TimeProvider to make the code easier to test. -->
@@ -17,23 +17,22 @@
 
   <PropertyGroup>
     <Workstream>AIEval</Workstream>
-    <Stage>preview</Stage>
+    <Stage>normal</Stage>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
-    <EnablePackageValidation>false</EnablePackageValidation>
-    <MinCodeCoverage>66</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
-    <ProjectReference Include="..\..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Condition="'$(EnableEvaluationReportBuild)'=='true'"
         Include="..\TypeScript\html-report\dist\index.html" Visible="false">
       <LogicalName>Reporting.HTML.index.html</LogicalName>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

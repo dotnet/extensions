@@ -40,6 +40,7 @@ if (!newestDistFile || newestDistFile.mtimeMs < Math.max(newestReportFile.mtimeM
     // Run the build
     exec("npm run build", (err, stdout, stderr) => {
         if (err) {
+            console.log(stdout);
             console.error(err);
             return;
         }

@@ -12,15 +12,20 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 internal static partial class Log
 {
     [LoggerMessage(1, LogLevel.Error, "Unable to gather utilization statistics.")]
-    public static partial void HandledGatherStatisticsException(ILogger logger, Exception e);
+    public static partial void HandledGatherStatisticsException(
+        this ILogger logger,
+        Exception e);
 
     [LoggerMessage(2, LogLevel.Error, "Publisher `{Publisher}` was unable to publish utilization statistics.")]
-    public static partial void HandlePublishUtilizationException(ILogger logger, Exception e, string publisher);
+    public static partial void HandlePublishUtilizationException(
+        this ILogger logger,
+        Exception e,
+        string publisher);
 
     [LoggerMessage(3, LogLevel.Debug,
         "Snapshot received: TotalTimeSinceStart={totalTimeSinceStart}, KernelTimeSinceStart={kernelTimeSinceStart}, UserTimeSinceStart={userTimeSinceStart}, MemoryUsageInBytes={memoryUsageInBytes}.")]
     public static partial void SnapshotReceived(
-        ILogger logger,
+        this ILogger logger,
         TimeSpan totalTimeSinceStart,
         TimeSpan kernelTimeSinceStart,
         TimeSpan userTimeSinceStart,
