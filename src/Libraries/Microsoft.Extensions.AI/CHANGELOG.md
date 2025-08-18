@@ -1,5 +1,9 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Added non-invocable `AIFunctionDefinition` as a base class for `AIFunction`, `AIFunctionFactory.CreateDefinition`, and `AIFunction.AsDefinitionOnly`.
+
 ## 9.8.0
 
 - Added `FunctionInvokingChatClient.AdditionalTools` to allow `FunctionInvokingChatClient` to have access to tools not included in `ChatOptions.Tools` but known to the target service via pre-configuration.

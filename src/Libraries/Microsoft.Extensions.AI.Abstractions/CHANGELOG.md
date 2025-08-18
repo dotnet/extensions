@@ -1,5 +1,9 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Added `FunctionInvokingChatClient` support for non-invocable tools and `TerminateOnUnknownCalls` property.
+
 ## 9.8.0
 
 - Added `AIAnnotation` and related types to represent citations and other annotations in chat messages.
