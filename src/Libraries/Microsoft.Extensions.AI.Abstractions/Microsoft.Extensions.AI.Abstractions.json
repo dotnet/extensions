@@ -134,11 +134,11 @@
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.AIAnnotation.AdditionalProperties { get; set; }",
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AnnotatedRegion>? Microsoft.Extensions.AI.AIAnnotation.AnnotatedRegions { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AnnotatedRegion>? Microsoft.Extensions.AI.AIAnnotation.AnnotatedRegions { get; set; }",
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.AIAnnotation.AdditionalProperties { get; set; }",
           "Stage": "Stable"
         },
         {
@@ -970,11 +970,11 @@
           "Stage": "Stable"
         },
         {
-          "Member": "float? Microsoft.Extensions.AI.ChatOptions.FrequencyPenalty { get; set; }",
+          "Member": "string? Microsoft.Extensions.AI.ChatOptions.Instructions { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.AI.ChatOptions.Instructions { get; set; }",
+          "Member": "float? Microsoft.Extensions.AI.ChatOptions.FrequencyPenalty { get; set; }",
           "Stage": "Stable"
         },
         {
@@ -1372,14 +1372,6 @@
       ],
       "Properties": [
         {
-          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.FileId { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.Snippet { get; set; }",
-          "Stage": "Stable"
-        },
-        {
           "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.Title { get; set; }",
           "Stage": "Stable"
         },
@@ -1389,6 +1381,14 @@
         },
         {
           "Member": "System.Uri? Microsoft.Extensions.AI.CitationAnnotation.Url { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.FileId { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.Snippet { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -1424,11 +1424,11 @@
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.AI.DataContent.MediaType { get; }",
+          "Member": "string? Microsoft.Extensions.AI.DataContent.Name { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.AI.DataContent.Name { get; set; }",
+          "Member": "string Microsoft.Extensions.AI.DataContent.MediaType { get; }",
           "Stage": "Stable"
         },
         {
@@ -1451,20 +1451,20 @@
         },
         {
           "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunction.ToString();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunction Microsoft.Extensions.AI.DelegatingAIFunction.InnerFunction { get; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.DelegatingAIFunction.AdditionalProperties { get; }",
           "Stage": "Stable"
         },
         {
           "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunction.Description { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.AIFunction Microsoft.Extensions.AI.DelegatingAIFunction.InnerFunction { get; }",
           "Stage": "Stable"
         },
         {
@@ -2374,10 +2374,6 @@
         {
           "Member": "string Microsoft.Extensions.AI.SpeechToTextResponse.Text { get; }",
           "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.UsageDetails? Microsoft.Extensions.AI.SpeechToTextResponse.Usage { get; set; }",
-          "Stage": "Experimental"
         }
       ]
     },
@@ -2588,11 +2584,11 @@
       ],
       "Properties": [
         {
-          "Member": "int? Microsoft.Extensions.AI.TextSpanAnnotatedRegion.EndIndex { get; set; }",
+          "Member": "int? Microsoft.Extensions.AI.TextSpanAnnotatedRegion.StartIndex { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "int? Microsoft.Extensions.AI.TextSpanAnnotatedRegion.StartIndex { get; set; }",
+          "Member": "int? Microsoft.Extensions.AI.TextSpanAnnotatedRegion.EndIndex { get; set; }",
           "Stage": "Stable"
         }
       ]
