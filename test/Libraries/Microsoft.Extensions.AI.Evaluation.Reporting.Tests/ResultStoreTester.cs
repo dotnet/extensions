@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting.Tests;
 
 public abstract class ResultStoreTester
 {
-    public abstract IResultStore CreateResultStore();
+    public abstract IEvaluationResultStore CreateResultStore();
 
     public abstract bool IsConfigured { get; }
 
@@ -22,7 +22,7 @@ public abstract class ResultStoreTester
         BooleanMetric booleanMetric = new BooleanMetric("boolean", value: true);
 
         NumericMetric numericMetric = new NumericMetric("numeric", value: 3);
-        numericMetric.AddDiagnostic(EvaluationDiagnostic.Informational("Informational Message"));
+        numericMetric.AddDiagnostics(EvaluationDiagnostic.Informational("Informational Message"));
 
         StringMetric stringMetric = new StringMetric("string", value: "Good");
 
@@ -39,7 +39,8 @@ public abstract class ResultStoreTester
     private static string ScenarioName(int n) => $"Test.Scenario.{n}";
     private static string IterationName(int n) => $"Iteration {n}";
 
-    private static async Task<IEnumerable<(string executionName, string scenarioName, string iterationName)>> LoadResultsAsync(int n, IResultStore resultStore)
+    private static async Task<IEnumerable<(string executionName, string scenarioName, string iterationName)>>
+        LoadResultsAsync(int n, IEvaluationResultStore resultStore)
     {
         List<(string executionName, string scenarioName, string iterationName)> results = [];
         await foreach (string executionName in resultStore.GetLatestExecutionNamesAsync(n))
@@ -69,7 +70,7 @@ public abstract class ResultStoreTester
     {
         SkipIfNotConfigured();
 
-        IResultStore resultStore = CreateResultStore();
+        IEvaluationResultStore resultStore = CreateResultStore();
         Assert.NotNull(resultStore);
 
         string newExecutionName = $"Test Execution {Path.GetRandomFileName()}";
@@ -104,11 +105,55 @@ public abstract class ResultStoreTester
     }
 
     [ConditionalFact]
+    public async Task WriteAndReadHistoricalResults()
+    {
+        SkipIfNotConfigured();
+
+        IEvaluationResultStore resultStore = CreateResultStore();
+        Assert.NotNull(resultStore);
+
+        string firstExecutionName = $"Test Execution {Path.GetRandomFileName()}";
+        IEnumerable<ScenarioRunResult> testResults = [
+            CreateTestResult(ScenarioName(0), IterationName(0), firstExecutionName),
+            CreateTestResult(ScenarioName(1), IterationName(2), firstExecutionName),
+            CreateTestResult(ScenarioName(2), IterationName(4), firstExecutionName),
+        ];
+        await resultStore.WriteResultsAsync(testResults);
+
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
+
+        string secondExecutionName = $"Test Execution {Path.GetRandomFileName()}";
+        testResults = [
+            CreateTestResult(ScenarioName(0), IterationName(0), secondExecutionName),
+            CreateTestResult(ScenarioName(1), IterationName(2), secondExecutionName),
+            CreateTestResult(ScenarioName(2), IterationName(4), secondExecutionName),
+        ];
+        await resultStore.WriteResultsAsync(testResults);
+
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
+
+        string thirdExecutionName = $"Test Execution {Path.GetRandomFileName()}";
+        testResults = [
+            CreateTestResult(ScenarioName(0), IterationName(0), thirdExecutionName),
+            CreateTestResult(ScenarioName(1), IterationName(2), thirdExecutionName),
+            CreateTestResult(ScenarioName(2), IterationName(4), thirdExecutionName),
+        ];
+        await resultStore.WriteResultsAsync(testResults);
+
+        (string executionName, string scenarioName, string iterationName)[] results = [.. await LoadResultsAsync(n: 5, resultStore)];
+        Assert.Equal(9, results.Length);
+
+        Assert.True(results.Take(3).All(r => r.executionName == thirdExecutionName));
+        Assert.True(results.Skip(3).Take(3).All(r => r.executionName == secondExecutionName));
+        Assert.True(results.Skip(6).Take(3).All(r => r.executionName == firstExecutionName));
+    }
+
+    [ConditionalFact]
     public async Task DeleteExecutions()
     {
         SkipIfNotConfigured();
 
-        IResultStore resultStore = CreateResultStore();
+        IEvaluationResultStore resultStore = CreateResultStore();
         Assert.NotNull(resultStore);
 
         string executionName = $"Test Execution {Path.GetRandomFileName()}";
@@ -132,7 +177,7 @@ public abstract class ResultStoreTester
     {
         SkipIfNotConfigured();
 
-        IResultStore resultStore = CreateResultStore();
+        IEvaluationResultStore resultStore = CreateResultStore();
         Assert.NotNull(resultStore);
 
         string executionName0 = $"Test Execution {Path.GetRandomFileName()}";
@@ -167,7 +212,7 @@ public abstract class ResultStoreTester
     {
         SkipIfNotConfigured();
 
-        IResultStore resultStore = CreateResultStore();
+        IEvaluationResultStore resultStore = CreateResultStore();
         Assert.NotNull(resultStore);
 
         string executionName = $"Test Execution {Path.GetRandomFileName()}";
@@ -202,7 +247,7 @@ public abstract class ResultStoreTester
     {
         SkipIfNotConfigured();
 
-        IResultStore resultStore = CreateResultStore();
+        IEvaluationResultStore resultStore = CreateResultStore();
         Assert.NotNull(resultStore);
 
         string executionName = $"Test Execution {Path.GetRandomFileName()}";

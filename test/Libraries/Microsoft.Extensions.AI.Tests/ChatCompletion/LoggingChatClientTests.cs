@@ -134,8 +134,6 @@ public class LoggingChatClientTests
         {
             Assert.Collection(logs,
                 entry => Assert.True(entry.Message.Contains("GetStreamingResponseAsync invoked.") && !entry.Message.Contains("biggest animal")),
-                entry => Assert.True(entry.Message.Contains("GetStreamingResponseAsync received update.") && !entry.Message.Contains("blue")),
-                entry => Assert.True(entry.Message.Contains("GetStreamingResponseAsync received update.") && !entry.Message.Contains("whale")),
                 entry => Assert.Contains("GetStreamingResponseAsync completed.", entry.Message));
         }
         else

@@ -10,7 +10,9 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// <summary>
 /// Evaluates responses produced by an AI model.
 /// </summary>
-/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/evaluate-ai-response">Evaluate a model's response.</related>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/evaluate-ai-response">
+/// Evaluate a model's response.
+/// </related>
 public interface IEvaluator
 {
     /// <summary>
@@ -38,8 +40,8 @@ public interface IEvaluator
     /// </param>
     /// <param name="modelResponse">The response that is to be evaluated.</param>
     /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that should be used if the evaluation is performed using an AI model.
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that should be used if one or
+    /// more composed <see cref="IEvaluator"/>s use an AI model to perform evaluation.
     /// </param>
     /// <param name="additionalContext">
     /// Additional contextual information (beyond that which is available in <paramref name="messages"/>) that the
@@ -49,7 +51,9 @@ public interface IEvaluator
     /// A <see cref="CancellationToken"/> that can cancel the evaluation operation.
     /// </param>
     /// <returns>An <see cref="EvaluationResult"/> containing one or more <see cref="EvaluationMetric"/>s.</returns>
-    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/evaluate-ai-response">Evaluate a model's response.</related>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/evaluate-ai-response">
+    /// Evaluate a model's response.
+    /// </related>
     ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
         ChatResponse modelResponse,

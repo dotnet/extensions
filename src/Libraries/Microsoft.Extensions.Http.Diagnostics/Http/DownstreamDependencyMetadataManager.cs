@@ -100,31 +100,40 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
         var trieCurrent = routeMetadataTrieRoot;
         trieCurrent.Parent = trieCurrent;
 
-        ReadOnlySpan<char> requestRouteAsSpan = routeMetadata.RequestRoute.AsSpan();
-
-        if (requestRouteAsSpan.Length > 0)
+        var route = routeMetadata.RequestRoute;
+        if (!string.IsNullOrEmpty(route))
         {
-            if (requestRouteAsSpan[0] != '/')
+            var routeSpan = route.AsSpan();
+            if (routeSpan.StartsWith("//".AsSpan()))
             {
-                requestRouteAsSpan = $"/{routeMetadata.RequestRoute}".AsSpan();
-            }
-            else if (requestRouteAsSpan.StartsWith("//".AsSpan(), StringComparison.OrdinalIgnoreCase))
-            {
-                requestRouteAsSpan = requestRouteAsSpan.Slice(1);
+                routeSpan = routeSpan.Slice(1);
             }
 
-            if (requestRouteAsSpan.Length > 1 && requestRouteAsSpan[requestRouteAsSpan.Length - 1] == '/')
+            if (routeSpan.Length > 1 && routeSpan[routeSpan.Length - 1] == '/')
             {
-                requestRouteAsSpan = requestRouteAsSpan.Slice(0, requestRouteAsSpan.Length - 1);
+                routeSpan = routeSpan.Slice(0, routeSpan.Length - 1);
             }
+
+            if (routeSpan[0] != '/')
+            {
+#if NET
+                route = $"/{routeSpan}";
+#else
+                route = $"/{routeSpan.ToString()}";
+#endif
+            }
+            else if (routeSpan.Length != route.Length)
+            {
+                route = routeSpan.ToString();
+            }
+
+            route = _routeRegex.Replace(route, "*").ToUpperInvariant();
         }
         else
         {
-            requestRouteAsSpan = "/".AsSpan();
+            route = "/";
         }
 
-        var route = _routeRegex.Replace(requestRouteAsSpan.ToString(), "*");
-        route = route.ToUpperInvariant();
         for (int i = 0; i < route.Length; i++)
         {
             char ch = route[i];

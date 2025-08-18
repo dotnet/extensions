@@ -39,6 +39,6 @@ internal sealed class AnonymousDelegatingEmbeddingGenerator<TInput, TEmbedding> 
     {
         _ = Throw.IfNull(values);
 
-        return await _generateFunc(values, options, InnerGenerator, cancellationToken).ConfigureAwait(false);
+        return await _generateFunc(values, options, InnerGenerator, cancellationToken);
     }
 }

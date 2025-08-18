@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
+using Polly.Retry;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
@@ -52,9 +53,7 @@ public static class HttpRetryStrategyOptionsExtensions
         {
             var result = await shouldHandle(args).ConfigureAwait(args.Context.ContinueOnCapturedContext);
 
-            if (result &&
-                args.Outcome.Result is HttpResponseMessage response &&
-                response.RequestMessage is HttpRequestMessage request)
+            if (result && GetRequestMessage(args) is HttpRequestMessage request)
             {
                 return !methods.Contains(request.Method);
             }
@@ -62,5 +61,8 @@ public static class HttpRetryStrategyOptionsExtensions
             return result;
         };
     }
+
+    private static HttpRequestMessage? GetRequestMessage(RetryPredicateArguments<HttpResponseMessage> args) =>
+        args.Outcome.Result?.RequestMessage ?? args.Context.GetRequestMessage();
 }
 

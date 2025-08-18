@@ -1,8 +1,42 @@
 # Release History
 
+## 9.8.0-preview.1.25412.6
+
+- Updated to depend on Azure.AI.Inference 1.0.0-beta.5.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.7.0-preview.1.25356.2
+
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.6.0-preview.1.25310.2
+
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.5.0-preview.1.25265.7
+
+- Added `AsIEmbeddingGenerator` for Azure.AI.Inference `ImageEmbeddingsClient`.
+- Updated to accommodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.4.4-preview.1.25259.16
+
+- Added an `AsIEmbeddingGenerator` extension method for `ImageEmbeddingsClient`.
+- Updated to accommodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.4.3-preview.1.25230.7
+
+- Updated to accommodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.4.0-preview.1.25207.5
+
+- Updated to Azure.AI.Inference 1.0.0-beta.4.
+- Renamed `AsChatClient`/`AsEmbeddingGenerator` extension methods to `AsIChatClient`/`AsIEmbeddingGenerator`.
+- Removed the public `AzureAIInferenceChatClient`/`AzureAIInferenceEmbeddingGenerator` types. These are only created now via the extension methods.
+- Updated to accommodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.3.0-preview.1.25161.3
 
-- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+- Updated to accommodate the changes in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.3.0-preview.1.25114.11
 
@@ -29,4 +63,4 @@
 
 ## 9.0.0-preview.9.24507.7
 
-Initial Preview
+- Initial Preview

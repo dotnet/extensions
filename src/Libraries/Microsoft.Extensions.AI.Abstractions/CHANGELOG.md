@@ -1,5 +1,83 @@
 # Release History
 
+## 9.8.0
+
+- Added `AIAnnotation` and related types to represent citations and other annotations in chat messages.
+- Added `ChatMessage.CreatedAt` so that chat messages can carry their timestamp.
+- Added a `[Description(...)]` attribute to `DataContent.Uri` to clarify its purpose when used in schemas.
+- Added `DataContent.Name` property to associate a name with the binary data, like a filename.
+- Added `HostedFileContent` for representing files hosted by the service.
+- Added `HostedVectorStoreContent` for representing vector stores hosted by the service.
+- Added `HostedFileSearchTool` to represent server-side file search tools.
+- Added `HostedCodeInterpreterTool.Inputs` to supply context about what state is available to the code interpreter tool.
+- Added [Experimental] `IImageGenerator` and supporting types.
+- Improved handling of function parameter data annotation attributes in `AIJsonUtilities.CreateJsonSchema`.
+- Fixed schema generation to include an items keyword for arrays of objects in `AIJsonUtilities.CreateJsonSchema`.
+
+## 9.7.1
+
+- Fixed schema generation for nullable function parameters in `AIJsonUtilities.CreateJsonSchema`.
+- Added a flag for `AIFunctionFactory` to control whether return schemas are generated.
+- Added `DelegatingAIFunction` to simplify creating `AIFunction`s that call other `AIFunction`s.
+- Updated `AIFunctionFactory` to tolerate JSON string function parameters.
+- Fixed schema generation for nullable value type parameters.
+
+## 9.7.0
+
+- Added `ChatOptions.Instructions` property for configuring system instructions separate from chat messages.
+- Added `Usage` property to `SpeechToTextResponse` to provide details about the token usage.
+- Augmented `AIJsonUtilities.CreateJsonSchema` with support for data annotations.
+
+## 9.6.0
+
+- Added `AIFunction.ReturnJsonSchema` to represent the JSON schema of the return value of a function.
+- Removed title and description keywords from root-level schemas in `AIFunctionFactory`.
+
+## 9.5.0
+
+- Moved `AIFunctionFactory` down from `Microsoft.Extensions.AI` to `Microsoft.Extensions.AI.Abstractions`.
+- Added `BinaryEmbedding` type for representing bit embeddings.
+- Added `TextReasoningContent` to represent reasoning content in chat messages.
+- Added `ChatOptions.AllowMultipleToolCalls` for configuring parallel tool calling.
+- Added a public constructor to the base `AIContent`.
+- Added a missing `[DebuggerDisplay]` attribute on `AIFunctionArguments`.
+- Added `ChatOptions.RawRepresentationFactory` to facilitate passing raw options to the underlying service.
+- Added an `AIJsonSchemaTransformOptions` property inside `AIJsonSchemaCreateOptions`.
+- Added `DataContent.Base64Data` property for easier and more efficient handling of base64-encoded data.
+- Added JSON schema transformation functionality to `AIJsonUtilities`.
+- Fixed `AIJsonUtilities.CreateJsonSchema` to handle `JsonSerializerOptions` that do not have a `TypeInfoResolver` configured.
+- Fixed `AIFunctionFactory` handling of default struct arguments.
+- Fixed schema generation to ensure the type keyword is included when generating schemas for nullable enums.
+- Renamed the `GenerateXx` extension methods on `IEmbeddingGenerator<>`.
+- Renamed `ChatThreadId` to `ConversationId` across the libraries.
+- Replaced `Type targetType` parameter in `AIFunctionFactory.Create` with a delegate.
+- Remove `[Obsolete]` members from previews.
+
+## 9.4.4-preview.1.25259.16
+
+- Added `AIJsonUtilities.TransformSchema` and supporting types.
+- Added `BinaryEmbedding` for bit embeddings.
+- Added `ChatOptions.RawRepresentationFactory` to make it easier to pass options to the underlying service.
+- Added `Base64Data` property to `DataContent`.
+- Moved `AIFunctionFactory` to `Microsoft.Extensions.AI.Abstractions`.
+- Fixed `AIFunctionFactory` handling of default struct arguments.
+
+## 9.4.3-preview.1.25230.7
+
+- Renamed `ChatThreadId` to `ConversationId` on `ChatResponse`, `ChatResponseUpdate`, and `ChatOptions`.
+- Renamed `EmbeddingGeneratorExtensions` method `GenerateEmbeddingAsync` to `GenerateAsync` and `GenerateEmbeddingVectorAsync` to `GenerateVectorAsync`.
+- Made `AIContent`'s constructor `public` instead of `protected`.
+- Fixed `AIJsonUtilities.CreateJsonSchema` to tolerate `JsonSerializerOptions` instances that don't have a `TypeInfoResolver` already configured.
+
+## 9.4.0-preview.1.25207.5
+
+- Added `ErrorContent` and `TextReasoningContent`.
+- Added `MessageId` to `ChatMessage` and `ChatResponseUpdate`.
+- Added `AIFunctionArguments`, changing `AIFunction.InvokeAsync` to accept one and to return a `ValueTask`.
+- Updated `AIJsonUtilities`'s schema generation to not use `default` when `RequireAllProperties` is set to `true`.
+- Added [Experimental] `ISpeechToTextClient` and supporting types.
+- Fixed several issues related to Native AOT support.
+
 ## 9.3.0-preview.1.25161.3
 
 - Changed `IChatClient.GetResponseAsync` and `IChatClient.GetStreamingResponseAsync` to accept an `IEnumerable<ChatMessage>` rather than an `IList<ChatMessage>`. It is no longer mutated by implementations.
@@ -74,4 +152,4 @@
 
 ## 9.0.0-preview.9.24507.7
 
-Initial Preview
+- Initial Preview

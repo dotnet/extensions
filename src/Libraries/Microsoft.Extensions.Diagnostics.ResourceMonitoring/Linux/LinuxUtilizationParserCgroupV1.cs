@@ -94,6 +94,12 @@ internal sealed class LinuxUtilizationParserCgroupV1 : ILinuxUtilizationParser
         _userHz = userHz.Value;
     }
 
+    public float GetCgroupLimitV2() => throw new NotSupportedException();
+    public float GetCgroupRequestCpuV2() => throw new NotSupportedException();
+    public long GetCgroupCpuUsageInNanosecondsV2() => throw new NotSupportedException();
+    public (long cpuUsageNanoseconds, long elapsedPeriods) GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2() => throw new NotSupportedException();
+    public long GetCgroupPeriodsIntervalInMicroSecondsV2() => throw new NotSupportedException();
+
     public long GetCgroupCpuUsageInNanoseconds()
     {
         using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
@@ -145,7 +151,7 @@ internal sealed class LinuxUtilizationParserCgroupV1 : ILinuxUtilizationParser
                     $"'{_procStat}' should contain whitespace separated values according to POSIX. We've failed trying to get {i}th value. File content: '{new string(stat)}'.");
             }
 
-            stat = stat.Slice(next, stat.Length - next);
+            stat = stat.Slice(next);
         }
 
         return (long)(total / (double)_userHz * NanosecondsInSecond);

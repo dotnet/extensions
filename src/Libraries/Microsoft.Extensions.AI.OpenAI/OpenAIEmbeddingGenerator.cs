@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
-using OpenAI;
 using OpenAI.Embeddings;
 
 #pragma warning disable S1067 // Expressions should not be too complex
@@ -55,10 +54,7 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             ?.GetValue(embeddingClient) as Uri)?.ToString() ??
             DefaultOpenAIEndpoint;
 
-        FieldInfo? modelField = typeof(EmbeddingClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        string? modelId = modelField?.GetValue(embeddingClient) as string;
-
-        _metadata = CreateMetadata("openai", providerUrl, modelId, defaultModelDimensions);
+        _metadata = CreateMetadata("openai", providerUrl, _embeddingClient.Model, defaultModelDimensions);
     }
 
     /// <inheritdoc />
@@ -107,21 +103,14 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         new(providerName, Uri.TryCreate(providerUrl, UriKind.Absolute, out Uri? providerUri) ? providerUri : null, defaultModelId, defaultModelDimensions);
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    private OpenAI.Embeddings.EmbeddingGenerationOptions? ToOpenAIOptions(EmbeddingGenerationOptions? options)
+    private OpenAI.Embeddings.EmbeddingGenerationOptions ToOpenAIOptions(EmbeddingGenerationOptions? options)
     {
-        OpenAI.Embeddings.EmbeddingGenerationOptions openAIOptions = new()
+        if (options?.RawRepresentationFactory?.Invoke(this) is not OpenAI.Embeddings.EmbeddingGenerationOptions result)
         {
-            Dimensions = options?.Dimensions ?? _dimensions,
-        };
-
-        if (options?.AdditionalProperties is { Count: > 0 } additionalProperties)
-        {
-            if (additionalProperties.TryGetValue(nameof(openAIOptions.EndUserId), out string? endUserId))
-            {
-                openAIOptions.EndUserId = endUserId;
-            }
+            result = new OpenAI.Embeddings.EmbeddingGenerationOptions();
         }
 
-        return openAIOptions;
+        result.Dimensions ??= options?.Dimensions ?? _dimensions;
+        return result;
     }
 }

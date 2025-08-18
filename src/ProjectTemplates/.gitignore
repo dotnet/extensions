@@ -9,6 +9,7 @@ package-lock.json
 */src/**/*.sln
 */src/**/NuGet.config
 */src/**/Directory.Build.targets
+*/src/**/Directory.Build.props
 */src/**/ingestioncache.*
 
 # launchSettings.json files are required for the templates.

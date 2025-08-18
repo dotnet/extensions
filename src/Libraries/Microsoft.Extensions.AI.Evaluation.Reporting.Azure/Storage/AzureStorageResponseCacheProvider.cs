@@ -15,8 +15,8 @@ using Microsoft.Extensions.Caching.Distributed;
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
 /// <summary>
-/// An <see cref="IResponseCacheProvider"/> that returns an <see cref="IDistributedCache"/> that can cache AI responses
-/// for a particular <see cref="ScenarioRun"/> under an Azure Storage container.
+/// An <see cref="IEvaluationResponseCacheProvider"/> that returns an <see cref="IDistributedCache"/> that can cache AI
+/// responses for a particular <see cref="ScenarioRun"/> under an Azure Storage container.
 /// </summary>
 /// <param name="client">
 /// A <see cref="DataLakeDirectoryClient"/> with access to an Azure Storage container under which the cached AI
@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 /// </param>
 public sealed class AzureStorageResponseCacheProvider(
     DataLakeDirectoryClient client,
-    TimeSpan? timeToLiveForCacheEntries = null) : IResponseCacheProvider
+    TimeSpan? timeToLiveForCacheEntries = null) : IEvaluationResponseCacheProvider
 {
     private readonly Func<DateTime> _provideDateTime = () => DateTime.Now;
 

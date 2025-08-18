@@ -65,12 +65,16 @@ public class HttpRetryStrategyOptionsExtensionsTests
     }
 
     [Fact]
-    public async Task DisableFor_ResponseMessageIsNull_DoesNotDisableRetries()
+    public async Task DisableFor_ResponseMessageIsNull_RetrievesRequestMessageFromContext()
     {
         var options = new HttpRetryStrategyOptions { ShouldHandle = _ => PredicateResult.True() };
         options.DisableFor(HttpMethod.Post);
 
-        Assert.True(await options.ShouldHandle(CreatePredicateArguments(null)));
+        using var request = new HttpRequestMessage { Method = HttpMethod.Post };
+        var context = ResilienceContextPool.Shared.Get();
+        context.SetRequestMessage(request);
+
+        Assert.False(await options.ShouldHandle(CreatePredicateArguments(null, context)));
     }
 
     [Fact]
@@ -80,8 +84,10 @@ public class HttpRetryStrategyOptionsExtensionsTests
         options.DisableFor(HttpMethod.Post);
 
         using var response = new HttpResponseMessage { RequestMessage = null };
+        var context = ResilienceContextPool.Shared.Get();
+        context.SetRequestMessage(null);
 
-        Assert.True(await options.ShouldHandle(CreatePredicateArguments(response)));
+        Assert.True(await options.ShouldHandle(CreatePredicateArguments(response, context)));
     }
 
     [Theory]
@@ -105,10 +111,10 @@ public class HttpRetryStrategyOptionsExtensionsTests
         Assert.Equal(shouldHandle, await options.ShouldHandle(CreatePredicateArguments(response)));
     }
 
-    private static RetryPredicateArguments<HttpResponseMessage> CreatePredicateArguments(HttpResponseMessage? response)
+    private static RetryPredicateArguments<HttpResponseMessage> CreatePredicateArguments(HttpResponseMessage? response, ResilienceContext? context = null)
     {
         return new RetryPredicateArguments<HttpResponseMessage>(
-            ResilienceContextPool.Shared.Get(),
+            context ?? ResilienceContextPool.Shared.Get(),
             Outcome.FromResult(response),
             attemptNumber: 1);
     }

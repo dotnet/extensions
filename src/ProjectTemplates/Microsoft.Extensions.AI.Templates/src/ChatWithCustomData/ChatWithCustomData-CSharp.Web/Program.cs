@@ -1,6 +1,4 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
 using ChatWithCustomData_CSharp.Web.Services.Ingestion;
@@ -8,8 +6,6 @@ using ChatWithCustomData_CSharp.Web.Services.Ingestion;
 using Azure;
 #if (UseManagedIdentity)
 using Azure.Identity;
-#else
-using System.ClientModel;
 #endif
 #endif
 #if (IsOllama)
@@ -20,10 +16,6 @@ using System.ClientModel;
 #else
 using Azure.AI.OpenAI;
 using System.ClientModel;
-#endif
-#if (UseAzureAISearch)
-using Azure.Search.Documents.Indexes;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
@@ -86,29 +78,29 @@ var embeddingGenerator = azureOpenAi.GetEmbeddingClient("text-embedding-3-small"
 #if (!UseManagedIdentity)
 //   dotnet user-secrets set AzureAISearch:Key YOUR-API-KEY
 #endif
-var vectorStore = new AzureAISearchVectorStore(
-    new SearchIndexClient(
-        new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.")),
+var azureAISearchEndpoint = new Uri(builder.Configuration["AzureAISearch:Endpoint"]
+    ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details."));
 #if (UseManagedIdentity)
-        new DefaultAzureCredential()));
+var azureAISearchCredential = new DefaultAzureCredential();
 #else
-        new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details."))));
+var azureAISearchCredential = new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"]
+    ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details."));
 #endif
+builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks", azureAISearchEndpoint, azureAISearchCredential);
+builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents", azureAISearchEndpoint, azureAISearchCredential);
 #else // UseLocalVectorStore
-var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
+var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
+var vectorStoreConnectionString = $"Data Source={vectorStorePath}";
+builder.Services.AddSqliteCollection<string, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks", vectorStoreConnectionString);
+builder.Services.AddSqliteCollection<string, IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents", vectorStoreConnectionString);
 #endif
 
-builder.Services.AddSingleton<IVectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
 builder.Services.AddEmbeddingGenerator(embeddingGenerator);
 
-builder.Services.AddDbContext<IngestionCacheDbContext>(options =>
-    options.UseSqlite("Data Source=ingestioncache.db"));
-
 var app = builder.Build();
-IngestionCacheDbContext.Initialize(app.Services);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

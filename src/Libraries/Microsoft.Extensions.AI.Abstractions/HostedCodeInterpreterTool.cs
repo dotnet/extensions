@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a hosted tool that can be specified to an AI service to enable it to execute code it generates.</summary>
@@ -14,4 +16,12 @@ public class HostedCodeInterpreterTool : AITool
     public HostedCodeInterpreterTool()
     {
     }
+
+    /// <summary>Gets or sets a collection of <see cref="AIContent"/> to be used as input to the code interpreter tool.</summary>
+    /// <remarks>
+    /// Services support different varied kinds of inputs. Most support the IDs of files that are hosted by the service,
+    /// represented via <see cref="HostedFileContent"/>. Some also support binary data, represented via <see cref="DataContent"/>.
+    /// Unsupported inputs will be ignored by the <see cref="IChatClient"/> to which the tool is passed.
+    /// </remarks>
+    public IList<AIContent>? Inputs { get; set; }
 }

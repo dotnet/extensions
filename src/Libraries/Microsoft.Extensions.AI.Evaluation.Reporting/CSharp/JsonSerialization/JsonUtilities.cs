@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -12,14 +13,13 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting.JsonSerialization;
 
 internal static partial class JsonUtilities
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Default matches the generated source naming convention.")]
+    [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Default matches the generated source naming convention.")]
     internal static class Default
     {
         private static JsonSerializerOptions? _options;
         internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: true);
         internal static JsonTypeInfo<Dataset> DatasetTypeInfo => Options.GetTypeInfo<Dataset>();
         internal static JsonTypeInfo<CacheEntry> CacheEntryTypeInfo => Options.GetTypeInfo<CacheEntry>();
-        internal static JsonTypeInfo<CacheOptions> CacheOptionsTypeInfo => Options.GetTypeInfo<CacheOptions>();
         internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
     }
 
@@ -29,7 +29,6 @@ internal static partial class JsonUtilities
         internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: false);
         internal static JsonTypeInfo<Dataset> DatasetTypeInfo => Options.GetTypeInfo<Dataset>();
         internal static JsonTypeInfo<CacheEntry> CacheEntryTypeInfo => Options.GetTypeInfo<CacheEntry>();
-        internal static JsonTypeInfo<CacheOptions> CacheOptionsTypeInfo => Options.GetTypeInfo<CacheOptions>();
         internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
     }
 
@@ -47,21 +46,19 @@ internal static partial class JsonUtilities
         return options;
     }
 
-    [JsonSerializable(typeof(EvaluationResult))]
+    [JsonSerializable(typeof(ScenarioRunResult))]
     [JsonSerializable(typeof(Dataset))]
     [JsonSerializable(typeof(CacheEntry))]
-    [JsonSerializable(typeof(CacheOptions))]
     [JsonSourceGenerationOptions(
         Converters = [
             typeof(CamelCaseEnumConverter<EvaluationDiagnosticSeverity>),
             typeof(CamelCaseEnumConverter<EvaluationRating>),
-            typeof(CamelCaseEnumConverter<CacheMode>),
-            typeof(TimeSpanConverter)
+            typeof(TimeSpanConverter),
+            typeof(EvaluationContextConverter)
         ],
         WriteIndented = true,
         IgnoreReadOnlyProperties = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
     private sealed partial class JsonContext : JsonSerializerContext;
-
 }

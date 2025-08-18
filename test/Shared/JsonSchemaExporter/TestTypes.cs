@@ -9,10 +9,11 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+#if TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
 using System.Text.Json.Schema;
+#endif
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
 
@@ -102,7 +103,7 @@ public static partial class TestTypes
         yield return new TestData<JsonNode>(JsonNode.Parse("""[{ "x" : 42 }]"""), "true");
         yield return new TestData<JsonValue>((JsonValue)42, "true");
         yield return new TestData<JsonObject>(new() { ["x"] = 42 }, """{"type":["object","null"]}""");
-        yield return new TestData<JsonArray>([1, 2, 3], """{"type":["array","null"]}""");
+        yield return new TestData<JsonArray>([(JsonNode)1, (JsonNode)2, (JsonNode)3], """{"type":["array","null"]}""");
 
         // Enum types
         yield return new TestData<IntEnum>(IntEnum.A, """{"type":"integer"}""");
@@ -131,6 +132,21 @@ public static partial class TestTypes
             }
             """);
 
+#if !NET9_0 && TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
+        // Regression test for https://github.com/dotnet/runtime/issues/117493
+        yield return new TestData<int?>(
+            Value: 42,
+            AdditionalValues: [null],
+            ExpectedJsonSchema: """{"type":["integer","null"]}""",
+            ExporterOptions: new() { TreatNullObliviousAsNonNullable = true });
+
+        yield return new TestData<DateTimeOffset?>(
+            Value: DateTimeOffset.MinValue,
+            AdditionalValues: [null],
+            ExpectedJsonSchema: """{"type":["string","null"],"format":"date-time"}""",
+            ExporterOptions: new() { TreatNullObliviousAsNonNullable = true });
+#endif
+
         // User-defined POCOs
         yield return new TestData<SimplePoco>(
             Value: new() { String = "string", StringNullable = "string", Int = 42, Double = 3.14, Boolean = true },
@@ -148,6 +164,7 @@ public static partial class TestTypes
             }
             """);
 
+#if TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
         // Same as above but with nullable types set to non-nullable
         yield return new TestData<SimplePoco>(
             Value: new() { String = "string", StringNullable = "string", Int = 42, Double = 3.14, Boolean = true },
@@ -164,7 +181,8 @@ public static partial class TestTypes
                 }
             }
             """,
-            ExporterOptions: new() { TreatNullObliviousAsNonNullable = true });
+            ExporterOptions: new JsonSchemaExporterOptions { TreatNullObliviousAsNonNullable = true });
+#endif
 
         yield return new TestData<SimpleRecord>(
             Value: new(1, "two", true, 3.14),
@@ -305,6 +323,7 @@ public static partial class TestTypes
             }
             """);
 
+#if TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
         // Same as above but with non-nullable reference types by default.
         yield return new TestData<PocoWithRecursiveMembers>(
             Value: new() { Value = 1, Next = new() { Value = 2, Next = new() { Value = 3 } } },
@@ -324,9 +343,8 @@ public static partial class TestTypes
                 }
             }
             """,
-            ExporterOptions: new() { TreatNullObliviousAsNonNullable = true });
+            ExporterOptions: new JsonSchemaExporterOptions { TreatNullObliviousAsNonNullable = true });
 
-#if !NET9_0 // Disable until https://github.com/dotnet/runtime/pull/108764 gets backported
         SimpleRecord recordValue = new(42, "str", true, 3.14);
         yield return new TestData<PocoWithNonRecursiveDuplicateOccurrences>(
             Value: new() { Value1 = recordValue, Value2 = recordValue, ArrayValue = [recordValue], ListValue = [recordValue] },
@@ -755,6 +773,7 @@ public static partial class TestTypes
             }
             """);
 
+#if TEST
         yield return new TestData<ClassWithComponentModelAttributes>(
             Value: new("string", -1),
             ExpectedJsonSchema: """
@@ -767,7 +786,7 @@ public static partial class TestTypes
                 "required": ["StringValue","IntValue"]
             }
             """,
-            ExporterOptions: new()
+            ExporterOptions: new JsonSchemaExporterOptions
             {
                 TransformSchemaNode = static (ctx, schema) =>
                 {
@@ -789,6 +808,7 @@ public static partial class TestTypes
                     return jObj;
                 }
             });
+#endif
 
         // Collection types
         yield return new TestData<int[]>([1, 2, 3], """{"type":["array","null"],"items":{"type":"integer"}}""");
@@ -1156,7 +1176,7 @@ public static partial class TestTypes
         public int Count => _dictionary.Count;
         public bool ContainsKey(TKey key) => _dictionary.ContainsKey(key);
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _dictionary.GetEnumerator();
-#if NETCOREAPP
+#if NET
         public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value) => _dictionary.TryGetValue(key, out value);
 #else
         public bool TryGetValue(TKey key, out TValue value) => _dictionary.TryGetValue(key, out value);
@@ -1241,6 +1261,7 @@ public static partial class TestTypes
     [JsonSerializable(typeof(IntEnum?))]
     [JsonSerializable(typeof(StringEnum?))]
     [JsonSerializable(typeof(SimpleRecordStruct?))]
+    [JsonSerializable(typeof(DateTimeOffset?))]
     // User-defined POCOs
     [JsonSerializable(typeof(SimplePoco))]
     [JsonSerializable(typeof(SimpleRecord))]
@@ -1291,25 +1312,4 @@ public static partial class TestTypes
     [JsonSerializable(typeof(StructDictionary<string, int>))]
     [JsonSerializable(typeof(XElement))]
     public partial class TestTypesContext : JsonSerializerContext;
-
-    private static TAttribute? ResolveAttribute<TAttribute>(this JsonSchemaExporterContext ctx)
-        where TAttribute : Attribute
-    {
-        // Resolve attributes from locations in the following order:
-        // 1. Property-level attributes
-        // 2. Parameter-level attributes and
-        // 3. Type-level attributes.
-        return
-#if NET9_0_OR_GREATER || !TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
-            GetAttrs(ctx.PropertyInfo?.AttributeProvider) ??
-            GetAttrs(ctx.PropertyInfo?.AssociatedParameter?.AttributeProvider) ??
-#else
-            GetAttrs(ctx.PropertyAttributeProvider) ??
-            GetAttrs(ctx.ParameterInfo) ??
-#endif
-            GetAttrs(ctx.TypeInfo.Type);
-
-        static TAttribute? GetAttrs(ICustomAttributeProvider? provider) =>
-            (TAttribute?)provider?.GetCustomAttributes(typeof(TAttribute), inherit: false).FirstOrDefault();
-    }
 }

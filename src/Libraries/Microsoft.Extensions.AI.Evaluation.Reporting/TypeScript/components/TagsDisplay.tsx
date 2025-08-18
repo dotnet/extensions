@@ -29,15 +29,17 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    ':focus': {
+      outline: `2px solid ${tokens.colorNeutralForeground3}`,
+    },
     ':hover': {
       opacity: 0.9,
       boxShadow: tokens.shadow4,
     },
     '&.selected': {
       boxShadow: tokens.shadow8,
-      outline: `2px solid ${tokens.colorNeutralForeground3}`,
-      outlineOffset: '0px',
-      border: 'none'
+      border: `1px solid ${tokens.colorNeutralForeground3}`,
+      backgroundColor: tokens.colorNeutralBackground3Pressed,
     }
   },
   globalTagBubble: {
@@ -46,7 +48,8 @@ const useStyles = makeStyles({
     cursor: 'default',
     ':hover': {
       backgroundColor: tokens.colorBrandBackground2,
-      boxShadow: 'none'
+      boxShadow: 'none',
+      cursor: 'default'
     },
     '&.selected': {
       backgroundColor: tokens.colorBrandBackground2
@@ -56,14 +59,15 @@ const useStyles = makeStyles({
 
 export type TagInfo = { tag: string; count: number };
 
-export function categorizeAndSortTags(dataset: Dataset): { 
+export function categorizeAndSortTags(dataset: Dataset, primaryExecutionName: string): { 
   globalTags: TagInfo[];
   filterableTags: TagInfo[];
 } {
   const tagCounts = new Map<string, number>();
-  const totalResults = dataset.scenarioRunResults.length;
+  const primaryResults = dataset.scenarioRunResults.filter(result => result.executionName === primaryExecutionName);
+  const totalResults = primaryResults.length;
   
-  dataset.scenarioRunResults.forEach(result => {
+  primaryResults.forEach(result => {
     if (result.tags) {
       result.tags.forEach(tag => {
         const currentCount = tagCounts.get(tag) || 0;
@@ -134,7 +138,11 @@ export function FilterableTagsDisplay({ filterableTags }: FilterableTagsDisplayP
             className={`${classes.tagBubble} ${isSelected(tag) ? 'selected' : ''}`}
             title={`${tag} (appears on ${count} results) - Click to filter by this tag`}
             onClick={() => handleTagClick(tag)}
-          >
+            onKeyDown={(e) => e.key === 'Enter' && handleTagClick(tag)}
+            tabIndex={0}
+            role="checkbox"
+            aria-checked={isSelected(tag)}
+            >
             {tag}
           </div>
         ))}

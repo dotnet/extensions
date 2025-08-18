@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,12 +16,13 @@ using Xunit;
 
 #pragma warning disable IDE0004 // Remove Unnecessary Cast
 #pragma warning disable S107 // Methods should not have too many parameters
+#pragma warning disable S2760 // Sequential tests should not check the same condition
 #pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable S5034 // "ValueTask" should be consumed correctly
 
 namespace Microsoft.Extensions.AI;
 
-public class AIFunctionFactoryTest
+public partial class AIFunctionFactoryTest
 {
     [Fact]
     public void InvalidArguments_Throw()
@@ -27,7 +31,8 @@ public class AIFunctionFactoryTest
         Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!, target: new object()));
         Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!, target: new object(), name: "myAiFunk"));
         Assert.Throws<ArgumentNullException>("target", () => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, (object?)null));
-        Assert.Throws<ArgumentNullException>("targetType", () => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, (Type)null!));
+        Assert.Throws<ArgumentNullException>("createInstanceFunc", () =>
+            AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, (Func<AIFunctionArguments, object>)null!));
         Assert.Throws<ArgumentException>("method", () => AIFunctionFactory.Create(typeof(List<>).GetMethod("Add")!, new List<int>()));
     }
 
@@ -73,6 +78,69 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
+    public async Task Parameters_ToleratesJsonEncodedParameters()
+    {
+        AIFunction func = AIFunctionFactory.Create((int x, int y, int z, int w, int u) => x + y + z + w + u);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["x"] = "1",
+            ["y"] = JsonNode.Parse("2"),
+            ["z"] = JsonDocument.Parse("3"),
+            ["w"] = JsonDocument.Parse("4").RootElement,
+            ["u"] = 5M, // boxed decimal cannot be cast to int, requires conversion
+        });
+
+        AssertExtensions.EqualFunctionCallResults(15, result);
+    }
+
+    [Theory]
+    [InlineData("   null")]
+    [InlineData("   false   ")]
+    [InlineData("true   ")]
+    [InlineData("42")]
+    [InlineData("0.0")]
+    [InlineData("-1e15")]
+    [InlineData("  \"I am a string!\" ")]
+    [InlineData("  {}")]
+    [InlineData("[]")]
+    [InlineData("// single-line comment\r\nnull")]
+    [InlineData("/* multi-line\r\ncomment */\r\nnull")]
+    public async Task Parameters_ToleratesJsonStringParameters(string jsonStringParam)
+    {
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { ReadCommentHandling = JsonCommentHandling.Skip };
+        AIFunction func = AIFunctionFactory.Create((JsonElement param) => param, serializerOptions: options);
+        JsonElement expectedResult = JsonDocument.Parse(jsonStringParam, new() { CommentHandling = JsonCommentHandling.Skip }).RootElement;
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["param"] = jsonStringParam
+        });
+
+        AssertExtensions.EqualFunctionCallResults(expectedResult, result);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("                 \r\n")]
+    [InlineData("I am a string!")]
+    [InlineData("/* Code snippet */ int main(void) { return 0; }")]
+    [InlineData("let rec Y F x = F (Y F) x")]
+    [InlineData("+3")]
+    public async Task Parameters_ToleratesInvalidJsonStringParameters(string invalidJsonParam)
+    {
+        AIFunction func = AIFunctionFactory.Create((JsonElement param) => param);
+        JsonElement expectedResult = JsonDocument.Parse(JsonSerializer.Serialize(invalidJsonParam, JsonContext.Default.String)).RootElement;
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["param"] = invalidJsonParam
+        });
+
+        AssertExtensions.EqualFunctionCallResults(expectedResult, result);
+    }
+
+    [Fact]
     public async Task Parameters_MappedByType_Async()
     {
         using var cts = new CancellationTokenSource();
@@ -97,23 +165,28 @@ public class AIFunctionFactoryTest
         AIFunction func;
 
         func = AIFunctionFactory.Create(Task<string> (string a) => Task.FromResult(a + " " + a));
+        Assert.Equal("""{"type":"string"}""", func.ReturnJsonSchema.ToString());
         AssertExtensions.EqualFunctionCallResults("test test", await func.InvokeAsync(new() { ["a"] = "test" }));
 
         func = AIFunctionFactory.Create(ValueTask<string> (string a, string b) => new ValueTask<string>(b + " " + a));
+        Assert.Equal("""{"type":"string"}""", func.ReturnJsonSchema.ToString());
         AssertExtensions.EqualFunctionCallResults("hello world", await func.InvokeAsync(new() { ["b"] = "hello", ["a"] = "world" }));
 
         long result = 0;
         func = AIFunctionFactory.Create(async Task (int a, long b) => { result = a + b; await Task.Yield(); });
+        Assert.Null(func.ReturnJsonSchema);
         AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new() { ["a"] = 1, ["b"] = 2L }));
         Assert.Equal(3, result);
 
         result = 0;
         func = AIFunctionFactory.Create(async ValueTask (int a, long b) => { result = a + b; await Task.Yield(); });
+        Assert.Null(func.ReturnJsonSchema);
         AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new() { ["a"] = 1, ["b"] = 2L }));
         Assert.Equal(3, result);
 
-        func = AIFunctionFactory.Create((int count) => SimpleIAsyncEnumerable(count));
-        AssertExtensions.EqualFunctionCallResults(new int[] { 0, 1, 2, 3, 4 }, await func.InvokeAsync(new() { ["count"] = 5 }));
+        func = AIFunctionFactory.Create((int count) => SimpleIAsyncEnumerable(count), serializerOptions: JsonContext.Default.Options);
+        Assert.Equal("""{"type":"array","items":{"type":"integer"}}""", func.ReturnJsonSchema.ToString());
+        AssertExtensions.EqualFunctionCallResults(new int[] { 0, 1, 2, 3, 4 }, await func.InvokeAsync(new() { ["count"] = 5 }), JsonContext.Default.Options);
 
         static async IAsyncEnumerable<int> SimpleIAsyncEnumerable(int count)
         {
@@ -124,7 +197,7 @@ public class AIFunctionFactoryTest
             }
         }
 
-        func = AIFunctionFactory.Create(() => (IAsyncEnumerable<int>)new ThrowingAsyncEnumerable());
+        func = AIFunctionFactory.Create(() => (IAsyncEnumerable<int>)new ThrowingAsyncEnumerable(), serializerOptions: JsonContext.Default.Options);
         await Assert.ThrowsAsync<NotImplementedException>(() => func.InvokeAsync().AsTask());
     }
 
@@ -202,6 +275,7 @@ public class AIFunctionFactoryTest
         Assert.Null(options.SerializerOptions);
         Assert.Null(options.JsonSchemaCreateOptions);
         Assert.Null(options.ConfigureParameterBinding);
+        Assert.False(options.ExcludeResultSchema);
     }
 
     [Fact]
@@ -217,6 +291,8 @@ public class AIFunctionFactoryTest
         Assert.DoesNotContain("firstParameter", func.JsonSchema.ToString());
         Assert.Contains("secondParameter", func.JsonSchema.ToString());
 
+        Assert.Equal("""{"type":"string"}""", func.ReturnJsonSchema.ToString());
+
         var result = (JsonElement?)await func.InvokeAsync(new()
         {
             ["firstParameter"] = "test",
@@ -224,6 +300,21 @@ public class AIFunctionFactoryTest
         });
         Assert.NotNull(result);
         Assert.Contains("test42", result.ToString());
+    }
+
+    [Fact]
+    public void AIFunctionFactoryOptions_SupportsSkippingReturnSchema()
+    {
+        AIFunction func = AIFunctionFactory.Create(
+            (string firstParameter, int secondParameter) => firstParameter + secondParameter,
+            new()
+            {
+                ExcludeResultSchema = true,
+            });
+
+        Assert.Contains("firstParameter", func.JsonSchema.ToString());
+        Assert.Contains("secondParameter", func.JsonSchema.ToString());
+        Assert.Null(func.ReturnJsonSchema);
     }
 
     [Fact]
@@ -262,7 +353,9 @@ public class AIFunctionFactoryTest
         Assert.DoesNotContain("services", func.JsonSchema.ToString());
         Assert.DoesNotContain("arguments", func.JsonSchema.ToString());
 
-        await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync(arguments).AsTask());
+        Assert.Equal("""{"type":"integer"}""", func.ReturnJsonSchema.ToString());
+
+        await Assert.ThrowsAsync<ArgumentNullException>("arguments.Services", () => func.InvokeAsync(arguments).AsTask());
 
         arguments.Services = sp;
         var result = await func.InvokeAsync(arguments);
@@ -310,11 +403,12 @@ public class AIFunctionFactoryTest
 
         AIFunction func = AIFunctionFactory.Create(
             typeof(MyFunctionTypeWithOneArg).GetMethod(nameof(MyFunctionTypeWithOneArg.InstanceMethod))!,
-            typeof(MyFunctionTypeWithOneArg),
-            new()
+            static arguments =>
             {
-                MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
-            });
+                Assert.NotNull(arguments.Services);
+                return ActivatorUtilities.CreateInstance(arguments.Services, typeof(MyFunctionTypeWithOneArg));
+            },
+            new() { MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result) });
 
         Assert.NotNull(func);
         var result = (Tuple<MyFunctionTypeWithOneArg, MyArgumentType>?)await func.InvokeAsync(new() { Services = sp });
@@ -323,31 +417,25 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task Create_NoInstance_UsesActivatorWhenServicesUnavailable()
+    public async Task Create_CreateInstanceReturnsNull_ThrowsDuringInvocation()
     {
         AIFunction func = AIFunctionFactory.Create(
-            typeof(MyFunctionTypeWithNoArgs).GetMethod(nameof(MyFunctionTypeWithNoArgs.InstanceMethod))!,
-            typeof(MyFunctionTypeWithNoArgs),
-            new()
-            {
-                MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
-            });
+            typeof(MyFunctionTypeWithOneArg).GetMethod(nameof(MyFunctionTypeWithOneArg.InstanceMethod))!,
+            static _ => null!);
 
         Assert.NotNull(func);
-        Assert.Equal("42", await func.InvokeAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await func.InvokeAsync());
     }
 
     [Fact]
-    public async Task Create_NoInstance_ThrowsWhenCantConstructInstance()
+    public async Task Create_WrongConstructedType_ThrowsDuringInvocation()
     {
-        var sp = new ServiceCollection().BuildServiceProvider();
-
         AIFunction func = AIFunctionFactory.Create(
             typeof(MyFunctionTypeWithOneArg).GetMethod(nameof(MyFunctionTypeWithOneArg.InstanceMethod))!,
-            typeof(MyFunctionTypeWithOneArg));
+            static _ => new MyFunctionTypeWithNoArgs());
 
         Assert.NotNull(func);
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await func.InvokeAsync(new() { Services = sp }));
+        await Assert.ThrowsAsync<TargetException>(async () => await func.InvokeAsync());
     }
 
     [Fact]
@@ -355,15 +443,7 @@ public class AIFunctionFactoryTest
     {
         Assert.Throws<ArgumentException>("method", () => AIFunctionFactory.Create(
             typeof(MyFunctionTypeWithNoArgs).GetMethod(nameof(MyFunctionTypeWithNoArgs.StaticMethod))!,
-            typeof(MyFunctionTypeWithNoArgs)));
-    }
-
-    [Fact]
-    public void Create_NoInstance_ThrowsForMismatchedMethod()
-    {
-        Assert.Throws<ArgumentException>("targetType", () => AIFunctionFactory.Create(
-            typeof(MyFunctionTypeWithNoArgs).GetMethod(nameof(MyFunctionTypeWithNoArgs.InstanceMethod))!,
-            typeof(MyFunctionTypeWithOneArg)));
+            static _ => new MyFunctionTypeWithNoArgs()));
     }
 
     [Fact]
@@ -371,7 +451,7 @@ public class AIFunctionFactoryTest
     {
         AIFunction func = AIFunctionFactory.Create(
             typeof(DisposableService).GetMethod(nameof(DisposableService.GetThis))!,
-            typeof(DisposableService),
+            static _ => new DisposableService(),
             new()
             {
                 MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
@@ -390,7 +470,7 @@ public class AIFunctionFactoryTest
     {
         AIFunction func = AIFunctionFactory.Create(
             typeof(AsyncDisposableService).GetMethod(nameof(AsyncDisposableService.GetThis))!,
-            typeof(AsyncDisposableService),
+            static _ => new AsyncDisposableService(),
             new()
             {
                 MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
@@ -409,7 +489,7 @@ public class AIFunctionFactoryTest
     {
         AIFunction func = AIFunctionFactory.Create(
             typeof(DisposableAndAsyncDisposableService).GetMethod(nameof(DisposableAndAsyncDisposableService.GetThis))!,
-            typeof(DisposableAndAsyncDisposableService),
+            static _ => new DisposableAndAsyncDisposableService(),
             new()
             {
                 MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
@@ -426,7 +506,7 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task ConfigureParameterBinding_CanBeUsedToSupportFromKeyedServices()
+    public async Task FromKeyedServices_ResolvesFromServiceProvider()
     {
         MyService service = new(42);
 
@@ -434,35 +514,63 @@ public class AIFunctionFactoryTest
         sc.AddKeyedSingleton("key", service);
         IServiceProvider sp = sc.BuildServiceProvider();
 
-        AIFunction f = AIFunctionFactory.Create(
-            ([FromKeyedServices("key")] MyService service, int myInteger) => service.Value + myInteger,
-            new AIFunctionFactoryOptions
-            {
-                ConfigureParameterBinding = p =>
-                {
-                    if (p.GetCustomAttribute<FromKeyedServicesAttribute>() is { } attr)
-                    {
-                        return new()
-                        {
-                            BindParameter = (p, a) =>
-                                (a.Services as IKeyedServiceProvider)?.GetKeyedService(p.ParameterType, attr.Key) is { } s ? s :
-                                p.HasDefaultValue ? p.DefaultValue :
-                                throw new ArgumentException($"Unable to resolve argument for '{p.Name}'."),
-                            ExcludeFromSchema = true
-                        };
-                    }
-
-                    return default;
-                },
-            });
+        AIFunction f = AIFunctionFactory.Create(([FromKeyedServices("key")] MyService service, int myInteger) => service.Value + myInteger,
+            CreateKeyedServicesSupportOptions());
 
         Assert.Contains("myInteger", f.JsonSchema.ToString());
         Assert.DoesNotContain("service", f.JsonSchema.ToString());
 
-        Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
-        Assert.Contains("Unable to resolve", e.Message);
+        Assert.Equal("""{"type":"integer"}""", f.ReturnJsonSchema.ToString());
+
+        Exception e = await Assert.ThrowsAsync<ArgumentException>("arguments.Services", () => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
 
         var result = await f.InvokeAsync(new() { ["myInteger"] = 1, Services = sp });
+        Assert.Contains("43", result?.ToString());
+    }
+
+    [Fact]
+    public async Task FromKeyedServices_NullKeysBindToNonKeyedServices()
+    {
+        MyService service = new(42);
+
+        ServiceCollection sc = new();
+        sc.AddSingleton(service);
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction f = AIFunctionFactory.Create(([FromKeyedServices(null!)] MyService service, int myInteger) => service.Value + myInteger,
+            CreateKeyedServicesSupportOptions());
+
+        Assert.Contains("myInteger", f.JsonSchema.ToString());
+        Assert.DoesNotContain("service", f.JsonSchema.ToString());
+
+        Assert.Equal("""{"type":"integer"}""", f.ReturnJsonSchema.ToString());
+
+        Exception e = await Assert.ThrowsAsync<ArgumentException>("arguments.Services", () => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
+
+        var result = await f.InvokeAsync(new() { ["myInteger"] = 1, Services = sp });
+        Assert.Contains("43", result?.ToString());
+    }
+
+    [Fact]
+    public async Task FromKeyedServices_OptionalDefaultsToNull()
+    {
+        MyService service = new(42);
+
+        ServiceCollection sc = new();
+        sc.AddKeyedSingleton("key", service);
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction f = AIFunctionFactory.Create(([FromKeyedServices("key")] MyService? service = null, int myInteger = 0) =>
+            service is null ? "null " + 1 : (service.Value + myInteger).ToString(),
+            CreateKeyedServicesSupportOptions());
+
+        Assert.Contains("myInteger", f.JsonSchema.ToString());
+        Assert.DoesNotContain("service", f.JsonSchema.ToString());
+
+        var result = await f.InvokeAsync(new() { ["myInteger"] = 1 });
+        Assert.Contains("null 1", result?.ToString());
+
+        result = await f.InvokeAsync(new() { ["myInteger"] = 1, Services = sp });
         Assert.Contains("43", result?.ToString());
     }
 
@@ -729,10 +837,98 @@ public class AIFunctionFactoryTest
                     Assert.Equal(cts.Token, cancellationToken);
                     return "marshalResultInvoked";
                 },
+                SerializerOptions = JsonContext.Default.Options,
             });
 
         object? result = await f.InvokeAsync(new() { ["i"] = 42 }, cts.Token);
         Assert.Equal("marshalResultInvoked", result);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_DefaultDefaultParameter()
+    {
+        Assert.NotEqual(new StructWithDefaultCtor().Value, default(StructWithDefaultCtor).Value);
+
+        AIFunction f = AIFunctionFactory.Create((Guid g = default, StructWithDefaultCtor s = default) => g.ToString() + "," + s.Value.ToString(), serializerOptions: JsonContext.Default.Options);
+
+        object? result = await f.InvokeAsync();
+        Assert.Contains("00000000-0000-0000-0000-000000000000,0", result?.ToString());
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_NullableParameters()
+    {
+        Assert.NotEqual(new StructWithDefaultCtor().Value, default(StructWithDefaultCtor).Value);
+
+        AIFunction f = AIFunctionFactory.Create(
+            (int? limit = null, DateTime? from = null) => Enumerable.Repeat(from ?? default, limit ?? 4).Select(d => d.Year).ToArray(),
+            serializerOptions: JsonContext.Default.Options);
+
+        JsonElement expectedSchema = JsonDocument.Parse("""
+        {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": ["integer", "null"],
+                    "default": null
+                },
+                "from": {
+                    "type": ["string", "null"],
+                    "format": "date-time",
+                    "default": null
+                }
+            }
+        }
+        """).RootElement;
+
+        AssertExtensions.EqualJsonValues(expectedSchema, f.JsonSchema);
+
+        object? result = await f.InvokeAsync();
+        Assert.Contains("[1,1,1,1]", result?.ToString());
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_NullableParameters_AllowReadingFromString()
+    {
+        JsonSerializerOptions options = new(JsonContext.Default.Options) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
+        Assert.NotEqual(new StructWithDefaultCtor().Value, default(StructWithDefaultCtor).Value);
+
+        AIFunction f = AIFunctionFactory.Create(
+            (int? limit = null, DateTime? from = null) => Enumerable.Repeat(from ?? default, limit ?? 4).Select(d => d.Year).ToArray(),
+            serializerOptions: options);
+
+        JsonElement expectedSchema = JsonDocument.Parse("""
+        {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": ["integer", "null"],
+                    "default": null
+                },
+                "from": {
+                    "type": ["string", "null"],
+                    "format": "date-time",
+                    "default": null
+                }
+            }
+        }
+        """).RootElement;
+
+        AssertExtensions.EqualJsonValues(expectedSchema, f.JsonSchema);
+
+        object? result = await f.InvokeAsync();
+        Assert.Contains("[1,1,1,1]", result?.ToString());
+    }
+
+    [Fact]
+    public void AIFunctionFactory_ReturnTypeWithDescriptionAttribute()
+    {
+        AIFunction f = AIFunctionFactory.Create(Add, serializerOptions: JsonContext.Default.Options);
+
+        Assert.Equal("""{"description":"The summed result","type":"integer"}""", f.ReturnJsonSchema.ToString());
+
+        [return: Description("The summed result")]
+        static int Add(int a, int b) => a + b;
     }
 
     private sealed class MyService(int value)
@@ -779,11 +975,7 @@ public class AIFunctionFactoryTest
 
     private sealed class MyFunctionTypeWithNoArgs
     {
-        private string _value = "42";
-
         public static void StaticMethod() => throw new NotSupportedException();
-
-        public string InstanceMethod() => _value;
     }
 
     private sealed class MyFunctionTypeWithOneArg(MyArgumentType arg)
@@ -796,4 +988,44 @@ public class AIFunctionFactoryTest
     private class A;
     private class B : A;
     private sealed class C : B;
+
+    public readonly struct StructWithDefaultCtor
+    {
+        public int Value { get; }
+        public StructWithDefaultCtor()
+        {
+            Value = 42;
+        }
+    }
+
+    private static AIFunctionFactoryOptions CreateKeyedServicesSupportOptions() =>
+        new AIFunctionFactoryOptions
+        {
+            ConfigureParameterBinding = p =>
+            {
+                if (p.GetCustomAttribute<FromKeyedServicesAttribute>() is { } attr)
+                {
+                    return new()
+                    {
+                        BindParameter = (p, a) =>
+                            (a.Services as IKeyedServiceProvider)?.GetKeyedService(p.ParameterType, attr.Key) is { } s ? s :
+                            p.HasDefaultValue ? p.DefaultValue :
+                            throw new ArgumentException($"Unable to resolve argument for '{p.Name}'.", "arguments.Services"),
+                        ExcludeFromSchema = true
+                    };
+                }
+
+                return default;
+            },
+        };
+
+    [JsonSerializable(typeof(IAsyncEnumerable<int>))]
+    [JsonSerializable(typeof(int[]))]
+    [JsonSerializable(typeof(string))]
+    [JsonSerializable(typeof(Guid))]
+    [JsonSerializable(typeof(StructWithDefaultCtor))]
+    [JsonSerializable(typeof(B))]
+    [JsonSerializable(typeof(int?))]
+    [JsonSerializable(typeof(DateTime?))]
+    private partial class JsonContext : JsonSerializerContext;
 }

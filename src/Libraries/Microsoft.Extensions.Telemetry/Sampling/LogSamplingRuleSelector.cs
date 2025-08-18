@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
@@ -18,38 +17,9 @@ internal sealed class LogSamplingRuleSelector<T>
 {
     private readonly ConcurrentDictionary<(string, LogLevel, EventId), T?> _ruleCache = new();
 
-    public void InvalidateCache()
+    public static bool IsBetter(T rule, T? current, string category, LogLevel logLevel, EventId eventId)
     {
-        _ruleCache.Clear();
-    }
-
-    public T? Select(IList<T> rules, string category, LogLevel logLevel, EventId eventId)
-    {
-        return _ruleCache.GetOrAdd((category, logLevel, eventId), _ =>
-        {
-            // Filter rule selection:
-            // 0. Ignore rules whose LogLevel is defined but lower than the requested logLevel
-            // 1. Ignore rules whose EventId is defined but different from the requested eventId
-            // 2. For category filtering, handle optional wildcards (only one '*' allowed) and match the prefix/suffix ignoring case
-            // 3. Out of the matched set, pick the rule with the longest matching category
-            // 4. If no rules match by category, accept rules without a category
-            // 5. If exactly one rule remains, use it; if multiple remain, select the last in the list
-            T? current = null;
-            foreach (T rule in rules)
-            {
-                if (IsBetter(rule, current, category, logLevel, eventId))
-                {
-                    current = rule;
-                }
-            }
-
-            return current;
-        });
-    }
-
-    private static bool IsBetter(T rule, T? current, string category, LogLevel logLevel, EventId eventId)
-    {
-        // Skip rules with inapplicable log level
+        // Skip rules with an inapplicable log level
         if (rule.LogLevel is not null && rule.LogLevel < logLevel)
         {
             return false;
@@ -93,7 +63,7 @@ internal sealed class LogSamplingRuleSelector<T>
             }
         }
 
-        // Decide whose category is better - rule vs current
+        // Decide whose category is better - rule vs. current
         if (current?.CategoryName is not null)
         {
             if (rule.CategoryName is null)
@@ -107,7 +77,7 @@ internal sealed class LogSamplingRuleSelector<T>
             }
         }
 
-        // Decide whose log level is better - rule vs current
+        // Decide whose log level is better - rule vs. current
         if (current?.LogLevel is not null)
         {
             if (rule.LogLevel is null)
@@ -121,7 +91,7 @@ internal sealed class LogSamplingRuleSelector<T>
             }
         }
 
-        // Decide whose event id is better - rule vs current
+        // Decide whose event id is better - rule vs. current
         if (rule.EventId is null)
         {
             if (current?.EventId is not null)
@@ -131,5 +101,15 @@ internal sealed class LogSamplingRuleSelector<T>
         }
 
         return true;
+    }
+
+    public void InvalidateCache()
+    {
+        _ruleCache.Clear();
+    }
+
+    public T? Select(IList<T> rules, string category, LogLevel logLevel, EventId eventId)
+    {
+        return _ruleCache.GetOrAdd((category, logLevel, eventId), rules.GetBestMatchFor(category, logLevel, eventId));
     }
 }

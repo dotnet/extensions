@@ -1,20 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>A library containing a set of evaluators for evaluating the quality (coherence, relevance, truth, completeness, groundedness, fluency, equivalence etc.) of responses received from an LLM.</Description>
+    <Description>A library containing evaluators that can be used to evaluate the quality of AI responses in your projects including Relevance, Truth, Completeness, Fluency, Coherence, Retrieval, Equivalence and Groundedness.</Description>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation.Quality</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup>
     <Workstream>AIEval</Workstream>
-    <Stage>preview</Stage>
+    <Stage>normal</Stage>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
-    <EnablePackageValidation>false</EnablePackageValidation>
     <!-- The evaluators in this assembly need AI and the tests that cover them are not being run in CI at the moment. -->
-    <MinCodeCoverage>4</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\BuiltInEvaluatorUtilities.cs" Link="Utilities\BuiltInEvaluatorUtilities.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\TimingHelper.cs" Link="Utilities\TimingHelper.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />

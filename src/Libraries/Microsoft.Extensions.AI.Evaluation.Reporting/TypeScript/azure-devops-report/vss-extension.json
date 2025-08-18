@@ -7,7 +7,7 @@
     "description": "Display an AI Evaluation report tab in Azure DevOps build results",
     "public": false,
     "categories": ["Azure Pipelines"],
-    "tags": ["Preview"],
+    "tags": [],
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"

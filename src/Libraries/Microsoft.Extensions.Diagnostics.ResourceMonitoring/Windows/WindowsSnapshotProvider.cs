@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if !NET9_0_OR_GREATER
 using System.Diagnostics;
+#endif
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
@@ -57,7 +59,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
     {
         _logger = logger ?? NullLogger<WindowsSnapshotProvider>.Instance;
 
-        Log.RunningOutsideJobObject(_logger);
+        _logger.RunningOutsideJobObject();
 
         _metricValueMultiplier = options.UseZeroToOneRangeForMetrics ? One : Hundred;
 
@@ -68,7 +70,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         // any resource requests or resource limits, therefore using physical values
         // such as number of CPUs and physical memory and using it for both requests and limits (aka 'guaranteed' and 'max'):
         Resources = new SystemResources(_cpuUnits, _cpuUnits, totalMemory, totalMemory);
-        Log.SystemResourcesInfo(_logger, _cpuUnits, _cpuUnits, totalMemory, totalMemory);
+        _logger.SystemResourcesInfo(_cpuUnits, _cpuUnits, totalMemory, totalMemory);
 
         _timeProvider = timeProvider;
         _getCpuTicksFunc = getCpuTicksFunc;
@@ -95,18 +97,31 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
 
     public Snapshot GetSnapshot()
     {
+#if NET9_0_OR_GREATER
+        var cpuUsage = Environment.CpuUsage;
+        return new Snapshot(
+            totalTimeSinceStart: TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
+            kernelTimeSinceStart: cpuUsage.PrivilegedTime,
+            userTimeSinceStart: cpuUsage.UserTime,
+            memoryUsageInBytes: (ulong)Environment.WorkingSet);
+#else
         using var process = Process.GetCurrentProcess();
-
-        return new Snapshot(totalTimeSinceStart: TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
+        return new Snapshot(
+            totalTimeSinceStart: TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
             kernelTimeSinceStart: process.PrivilegedProcessorTime,
             userTimeSinceStart: process.UserProcessorTime,
             memoryUsageInBytes: (ulong)Environment.WorkingSet);
+#endif
     }
 
     internal static long GetCpuTicks()
     {
+#if NET9_0_OR_GREATER
+        return Environment.CpuUsage.TotalTime.Ticks;
+#else
         using var process = Process.GetCurrentProcess();
         return process.TotalProcessorTime.Ticks;
+#endif
     }
 
     internal static int GetCpuUnits() => Environment.ProcessorCount;
@@ -144,7 +159,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
-            Log.MemoryUsageData(_logger, (ulong)currentMemoryUsage, _totalMemory, _memoryPercentage);
+            _logger.ProcessMemoryPercentageData((ulong)currentMemoryUsage, _totalMemory, _memoryPercentage);
 
             return _memoryPercentage;
         }
@@ -175,7 +190,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
                     // Don't change calculation order, otherwise we loose some precision:
                     _cpuPercentage = Math.Min(_metricValueMultiplier, usageTickDelta / (double)timeTickDelta * _metricValueMultiplier);
 
-                    Log.CpuUsageData(_logger, currentCpuTicks, _oldCpuUsageTicks, timeTickDelta, _cpuUnits, _cpuPercentage);
+                    _logger.CpuUsageData(currentCpuTicks, _oldCpuUsageTicks, timeTickDelta, _cpuUnits, _cpuPercentage);
 
                     _oldCpuUsageTicks = currentCpuTicks;
                     _oldCpuTimeTicks = now.Ticks;

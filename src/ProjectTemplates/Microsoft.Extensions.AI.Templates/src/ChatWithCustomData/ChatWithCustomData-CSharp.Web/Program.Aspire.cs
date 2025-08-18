@@ -1,16 +1,11 @@
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
 using ChatWithCustomData_CSharp.Web.Services.Ingestion;
 #if (IsOllama)
-#else // IsAzureOpenAI || IsOpenAI || IsGHModels
+#elif (IsOpenAI || IsGHModels)
 using OpenAI;
-#endif
-#if (UseAzureAISearch)
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-#elif (UseQdrant)
-using Microsoft.SemanticKernel.Connectors.Qdrant;
+#else // IsAzureOpenAI
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,8 +21,12 @@ builder.AddOllamaApiClient("chat")
 builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
 #elif (IsAzureAiFoundry)
-#else // IsAzureOpenAI || IsOpenAI || IsGHModels
+#else // (IsOpenAI || IsAzureOpenAI || IsGHModels)
+#if (IsOpenAI)
+var openai = builder.AddOpenAIClient("openai");
+#else
 var openai = builder.AddAzureOpenAIClient("openai");
+#endif
 openai.AddChatClient("gpt-4o-mini")
     .UseFunctionInvocation()
     .UseOpenTelemetry(configure: c =>
@@ -36,23 +35,23 @@ openai.AddEmbeddingGenerator("text-embedding-3-small");
 #endif
 
 #if (UseAzureAISearch)
-builder.AddAzureSearchClient("azureAISearch");
-
-builder.Services.AddSingleton<IVectorStore, AzureAISearchVectorStore>();
+builder.AddAzureSearchClient("search");
+builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks");
+builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents");
 #elif (UseQdrant)
 builder.AddQdrantClient("vectordb");
-
-builder.Services.AddSingleton<IVectorStore, QdrantVectorStore>();
+builder.Services.AddQdrantCollection<Guid, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks");
+builder.Services.AddQdrantCollection<Guid, IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents");
 #else // UseLocalVectorStore
-var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
-builder.Services.AddSingleton<IVectorStore>(vectorStore);
+var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
+var vectorStoreConnectionString = $"Data Source={vectorStorePath}";
+builder.Services.AddSqliteCollection<string, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks", vectorStoreConnectionString);
+builder.Services.AddSqliteCollection<string, IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents", vectorStoreConnectionString);
 #endif
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
-builder.AddSqliteDbContext<IngestionCacheDbContext>("ingestionCache");
 
 var app = builder.Build();
-IngestionCacheDbContext.Initialize(app.Services);
 
 app.MapDefaultEndpoints();
 

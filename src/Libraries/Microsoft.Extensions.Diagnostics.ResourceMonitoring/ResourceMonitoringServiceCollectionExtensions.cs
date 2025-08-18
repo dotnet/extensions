@@ -3,14 +3,17 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 #if !NETFRAMEWORK
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 
 #endif
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Network;
 using Microsoft.Shared.DiagnosticIds;
@@ -57,19 +60,21 @@ public static class ResourceMonitoringServiceCollectionExtensions
         return services.AddResourceMonitoringInternal(configure);
     }
 
-    // can't easily test the exception throwing case
-    [ExcludeFromCodeCoverage]
     private static IServiceCollection AddResourceMonitoringInternal(
         this IServiceCollection services,
         Action<IResourceMonitorBuilder> configure)
     {
-        var builder = new ResourceMonitorBuilder(services);
-
         _ = services.AddMetrics();
-
+        var builder = new ResourceMonitorBuilder(services);
 #if NETFRAMEWORK
         _ = builder.AddWindowsProvider();
 #else
+        bool isSupportedOs = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
+        if (!isSupportedOs)
+        {
+            return services;
+        }
+
         if (OperatingSystem.IsWindows())
         {
             _ = builder.AddWindowsProvider();
@@ -78,10 +83,6 @@ public static class ResourceMonitoringServiceCollectionExtensions
         {
             _ = builder.AddLinuxProvider();
         }
-        else
-        {
-            throw new PlatformNotSupportedException();
-        }
 #endif
 
         configure.Invoke(builder);
@@ -89,6 +90,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         return services;
     }
 
+    [SupportedOSPlatform("windows")]
     private static ResourceMonitorBuilder AddWindowsProvider(this ResourceMonitorBuilder builder)
     {
         builder.PickWindowsSnapshotProvider();
@@ -96,6 +98,12 @@ public static class ResourceMonitoringServiceCollectionExtensions
         _ = builder.Services
             .AddActivatedSingleton<WindowsNetworkMetrics>()
             .AddActivatedSingleton<ITcpStateInfoProvider, WindowsTcpStateInfo>();
+
+        builder.Services.TryAddSingleton(TimeProvider.System);
+
+        _ = builder.Services
+            .AddActivatedSingleton<WindowsDiskMetrics>()
+            .AddActivatedSingleton<IPerformanceCounterFactory, PerformanceCounterFactory>();
 
         return builder;
     }
@@ -120,6 +128,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
 
         builder.Services.TryAddActivatedSingleton<ISnapshotProvider, LinuxUtilizationProvider>();
 
+        builder.Services.TryAddSingleton(TimeProvider.System);
         builder.Services.TryAddSingleton<IFileSystem, OSFileSystem>();
         builder.Services.TryAddSingleton<IUserHz, UserHz>();
         builder.PickLinuxParser();
@@ -127,7 +136,9 @@ public static class ResourceMonitoringServiceCollectionExtensions
         _ = builder.Services
             .AddActivatedSingleton<LinuxNetworkUtilizationParser>()
             .AddActivatedSingleton<LinuxNetworkMetrics>()
-            .AddActivatedSingleton<ITcpStateInfoProvider, LinuxTcpStateInfo>();
+            .AddActivatedSingleton<ITcpStateInfoProvider, LinuxTcpStateInfo>()
+            .AddActivatedSingleton<IDiskStatsReader, DiskStatsReader>()
+            .AddActivatedSingleton<LinuxSystemDiskMetrics>();
 
         return builder;
     }

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { mergeClasses, Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, TableCellLayout } from "@fluentui/react-components";
 import { ChevronDown12Regular, ChevronRight12Regular } from "@fluentui/react-icons";
 import { useState } from "react";
@@ -30,7 +33,8 @@ export const ScenarioRunHistory = ({ scoreSummary, scenario }: { scoreSummary: S
     const latestExecution = mergeClasses(classes.verticalText, classes.currentExecutionForeground);
 
     return (
-        <div className={classes.section}>
+        <div className={classes.section} tabIndex={0}
+                onKeyUp={e => e.key === 'Enter' && setIsExpanded(!isExpanded)}>
             <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
                 {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
                 <h3 className={classes.sectionHeaderText}>Trends</h3>

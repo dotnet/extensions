@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Evaluation;
 using Microsoft.Extensions.AI.Evaluation.Reporting;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
+using Microsoft.Extensions.AI.Evaluation.Tests;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
@@ -419,32 +420,32 @@ public class ResultsTests
         ReportingConfiguration reportingConfiguration = CreateReportingConfiguration(evaluator);
 
         var metric1 = new BooleanMetric("Metric with all diagnostic severities");
-        metric1.AddDiagnostic(EvaluationDiagnostic.Error("Error 1"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Error("Error 2"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 1"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 1"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 2"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Error("Error 1"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Error("Error 2"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 1"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 1"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 2"));
         metric1.Reason = "Reason for metric 1";
 
         var metric2 = new BooleanMetric("Metric with warning and informational diagnostics");
-        metric2.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 1"));
-        metric2.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 2"));
-        metric2.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 2"));
+        metric2.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 1"));
+        metric2.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 2"));
+        metric2.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 2"));
         metric2.Reason = "Reason for metric 2";
 
         var metric3 = new EvaluationMetric("Metric with error diagnostics only");
-        metric3.AddDiagnostic(EvaluationDiagnostic.Error("Error 1"));
-        metric3.AddDiagnostic(EvaluationDiagnostic.Error("Error 2"));
+        metric3.AddDiagnostics(EvaluationDiagnostic.Error("Error 1"));
+        metric3.AddDiagnostics(EvaluationDiagnostic.Error("Error 2"));
         metric3.Reason = "Reason for metric 3";
 
         HashSet<string> allowedValues = ["A", "B", "C"];
         var metric4 = new StringMetric("Metric with warning diagnostics only");
-        metric4.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 1"));
-        metric4.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 2"));
+        metric4.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 1"));
+        metric4.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 2"));
         metric4.Reason = "Reason for metric 4";
 
         var metric5 = new NumericMetric("Metric with informational diagnostics only");
-        metric5.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 1"));
+        metric5.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 1"));
         metric5.Reason = "Reason for metric 5";
 
         evaluator.TestMetrics = [metric1, metric2, metric3, metric4, metric5];
@@ -472,32 +473,32 @@ public class ResultsTests
         ReportingConfiguration reportingConfiguration = CreateReportingConfiguration(evaluator);
 
         var metric1 = new BooleanMetric("Metric with all diagnostic severities");
-        metric1.AddDiagnostic(EvaluationDiagnostic.Error("Error 1"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Error("Error 2"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 1"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 1"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 2"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Error("Error 1"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Error("Error 2"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 1"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 1"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 2"));
         metric1.Reason = "Reason for metric 1";
 
         var metric2 = new BooleanMetric("Metric with warning and informational diagnostics");
-        metric2.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 1"));
-        metric2.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 2"));
-        metric2.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 2"));
+        metric2.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 1"));
+        metric2.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 2"));
+        metric2.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 2"));
         metric2.Reason = "Reason for metric 2";
 
         var metric3 = new EvaluationMetric("Metric with error diagnostics only");
-        metric3.AddDiagnostic(EvaluationDiagnostic.Error("Error 1"));
-        metric3.AddDiagnostic(EvaluationDiagnostic.Error("Error 2"));
+        metric3.AddDiagnostics(EvaluationDiagnostic.Error("Error 1"));
+        metric3.AddDiagnostics(EvaluationDiagnostic.Error("Error 2"));
         metric3.Reason = "Reason for metric 3";
 
         HashSet<string> allowedValues = ["A", "B", "C"];
         var metric4 = new StringMetric("Metric with warning diagnostics only");
-        metric4.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 1"));
-        metric4.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 2"));
+        metric4.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 1"));
+        metric4.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 2"));
         metric4.Reason = "Reason for metric 4";
 
         var metric5 = new NumericMetric("Metric with informational diagnostics only");
-        metric5.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 1"));
+        metric5.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 1"));
         metric5.Reason = "Reason for metric 5";
 
         evaluator.TestMetrics = [metric1, metric2, metric3, metric4, metric5];
@@ -531,32 +532,32 @@ public class ResultsTests
         ReportingConfiguration reportingConfiguration = CreateReportingConfiguration(evaluator);
 
         var metric1 = new BooleanMetric("Metric with all diagnostic severities", value: true);
-        metric1.AddDiagnostic(EvaluationDiagnostic.Error("Error 1"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Error("Error 2"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 1"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 1"));
-        metric1.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 2"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Error("Error 1"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Error("Error 2"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 1"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 1"));
+        metric1.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 2"));
         metric1.Reason = "Reason for metric 1";
 
         var metric2 = new BooleanMetric("Metric with warning and informational diagnostics", value: true);
-        metric2.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 1"));
-        metric2.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 2"));
-        metric2.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 2"));
+        metric2.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 1"));
+        metric2.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 2"));
+        metric2.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 2"));
         metric2.Reason = "Reason for metric 2";
 
         var metric3 = new NumericMetric("Metric with error diagnostics only", value: 5);
-        metric3.AddDiagnostic(EvaluationDiagnostic.Error("Error 1"));
-        metric3.AddDiagnostic(EvaluationDiagnostic.Error("Error 2"));
+        metric3.AddDiagnostics(EvaluationDiagnostic.Error("Error 1"));
+        metric3.AddDiagnostics(EvaluationDiagnostic.Error("Error 2"));
         metric3.Reason = "Reason for metric 3";
 
         HashSet<string> allowedValues = ["A", "B", "C"];
         var metric4 = new StringMetric("Metric with warning diagnostics only", value: "A");
-        metric4.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 1"));
-        metric4.AddDiagnostic(EvaluationDiagnostic.Warning("Warning 2"));
+        metric4.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 1"));
+        metric4.AddDiagnostics(EvaluationDiagnostic.Warning("Warning 2"));
         metric4.Reason = "Reason for metric 4";
 
         var metric5 = new NumericMetric("Metric with informational diagnostics only", value: 4);
-        metric5.AddDiagnostic(EvaluationDiagnostic.Informational("Informational 1"));
+        metric5.AddDiagnostics(EvaluationDiagnostic.Informational("Informational 1"));
         metric5.Reason = "Reason for metric 5";
 
         evaluator.TestMetrics = [metric1, metric2, metric3, metric4, metric5];
