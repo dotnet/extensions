@@ -196,6 +196,50 @@ public partial class ChatClientStructuredOutputExtensionsTests
     }
 
     [Fact]
+    public async Task OnlyUsesLastMessage()
+    {
+        var expectedResult = new Envelope<int> { data = 123 };
+        var expectedResponse = new ChatResponse(
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new TextContent("I'm going to invoke a function to get the data."),
+                new FunctionCallContent("callid123", "get_data"),
+            ]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callid123", "result")]),
+            new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, JsonContext2.Default.Options))
+        ]);
+
+        using var client = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
+                Assert.Equal("""
+                    {
+                      "$schema": "https://json-schema.org/draft/2020-12/schema",
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$schema": "https://json-schema.org/draft/2020-12/schema",
+                          "type": "integer"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "data"
+                      ]
+                    }
+                    """, responseFormat.Schema.ToString());
+                return Task.FromResult(expectedResponse);
+            },
+        };
+
+        var response = await client.GetResponseAsync<int>("Hello");
+        Assert.Equal(123, response.Result);
+    }
+
+    [Fact]
     public async Task FailureUsage_InvalidJson()
     {
         var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "This is not valid JSON"));
