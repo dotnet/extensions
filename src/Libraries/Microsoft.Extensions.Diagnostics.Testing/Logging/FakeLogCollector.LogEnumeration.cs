@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,7 +11,10 @@ namespace Microsoft.Extensions.Logging.Testing;
 
 public partial class FakeLogCollector
 {
-    private List<TaskCompletionSource<bool>> _logEnumerationWaiters = [];
+    private TaskCompletionSource<bool> _logEnumerationSharedWaiter =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    private int _waitingEnumeratorCount;
 
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(
         int startingIndex = 0,
@@ -54,7 +58,6 @@ public partial class FakeLogCollector
 
         private readonly CancellationTokenSource _masterCts;
         private readonly CancellationTokenSource? _timeoutCts;
-        private TaskCompletionSource<bool>? _waitingTcs;
 
         private FakeLogRecord? _current;
         private int _index;
@@ -96,51 +99,83 @@ public partial class FakeLogCollector
             {
                 return false;
             }
+            
+            var masterCancellationToken = _masterCts.Token;
+
+            if (masterCancellationToken.IsCancellationRequested)
+            {
+                _completed = true;
+                _current = null;
+                return false;
+            }
 
             while (true)
             {
-                _masterCts.Token.ThrowIfCancellationRequested();
-
-                TaskCompletionSource<bool> waitingTcs;
-                CancellationTokenRegistration cancellationTokenRegistration;
-
-                lock (_collector._records)
-                {
-                    if (_index < _collector._records.Count)
-                    {
-                        _current = _collector._records[_index++];
-                        return true;
-                    }
-
-                    waitingTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    _waitingTcs = waitingTcs;
-
-                    // pass tcs as state to avoid closure allocation
-                    cancellationTokenRegistration = _masterCts.Token.Register(
-                        static state => ((TaskCompletionSource<bool>)state!).TrySetCanceled(),
-                        waitingTcs);
-
-                    // waiter needs to be added within records lock
-                    // if not: more records could be added in the meantime and the waiter could be stuck waiting even though the index is behind the actual count
-                    _collector._logEnumerationWaiters.Add(waitingTcs);
-                }
-
+                TaskCompletionSource<bool>? waiter = null;
+                
                 try
                 {
-                    using (cancellationTokenRegistration)
+                    masterCancellationToken.ThrowIfCancellationRequested();
+    
+                    lock (_collector._records)
                     {
-                        await waitingTcs.Task.ConfigureAwait(false);                        
+                        if (_index < _collector._records.Count)
+                        {
+                            _current = _collector._records[_index++];
+                            return true;
+                        }
+    
+                        // waiter needs to be subscribed within records lock
+                        // if not: more records could be added in the meantime and the waiter could be stuck waiting even though the index is behind the actual count
+                        waiter = _collector._logEnumerationSharedWaiter;
+                        _collector._waitingEnumeratorCount++;
                     }
+                
+                    // Compatibility path for net462: emulate Task.WaitAsync(cancellationToken).
+                    await AwaitWithCancellationAsync(waiter.Task, masterCancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
+                    lock (_collector._records)
+                    {
+                        // We only decrement if the shared waiter has not yet been swaped. Otherwise, the counter has been reset.
+                        if (
+                            waiter is not null
+                            && _collector._waitingEnumeratorCount > 0
+                            && waiter == _collector._logEnumerationSharedWaiter)
+                        {
+                            _collector._waitingEnumeratorCount--;
+                        }
+                    }
+
                     _completed = true;
+                    _current = null;
                     return false;
                 }
-                finally
-                {
-                    _waitingTcs = null;
-                }
+            }
+        }
+        
+        private static async Task AwaitWithCancellationAsync(Task task, CancellationToken cancellationToken)
+        {
+            if (!cancellationToken.CanBeCanceled || task.IsCompleted)
+            {
+                await task.ConfigureAwait(false);
+                return;
+            }
+
+            var cancelTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            CancellationTokenRegistration ctr = default;
+            try
+            {
+                ctr = cancellationToken.Register(static s =>
+                    ((TaskCompletionSource<bool>)s!).TrySetCanceled(), cancelTcs);
+
+                var completed = await Task.WhenAny(task, cancelTcs.Task).ConfigureAwait(false);
+                await completed.ConfigureAwait(false);
+            }
+            finally
+            {
+                ctr.Dispose();
             }
         }
 
@@ -154,17 +189,6 @@ public partial class FakeLogCollector
             _disposed = true;
 
             _masterCts.Cancel();
-
-            var waitingTcs = Interlocked.Exchange(ref _waitingTcs, null);
-            if (waitingTcs is not null)
-            {
-                // TODO TW: explain very well how exactly is this lock is needed
-                lock (_collector._records)
-                {
-                    _ = _collector._logEnumerationWaiters.Remove(waitingTcs);
-                }
-            }
-
             _masterCts.Dispose();
             _timeoutCts?.Dispose();
 
