@@ -239,6 +239,64 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ResponseItem))]
+    private static DataContent GetContentFromImageGenPartialImageEvent(StreamingResponseUpdate update)
+    {
+        const BindingFlags InternalBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        var partialImageEventType = Type.GetType("OpenAI.Responses.InternalResponseImageGenCallPartialImageEvent, OpenAI");
+        if (partialImageEventType == null)
+        {
+            throw new InvalidOperationException("Unable to determine the type of the image generation result.");
+        }
+
+        var imageGenResult = partialImageEventType.GetProperty("PartialImageB64", InternalBindingFlags)?.GetValue(update) as string;
+        var imageGenItemId = partialImageEventType.GetProperty("ItemId", InternalBindingFlags)?.GetValue(update) as string;
+        var imageGenOutputIndex = partialImageEventType.GetProperty("OutputIndex", InternalBindingFlags)?.GetValue(update) as int?;
+        var imageGenPartialImageIndex = partialImageEventType.GetProperty("PartialImageIndex", InternalBindingFlags)?.GetValue(update) as int?;
+
+        IDictionary<string, BinaryData>? additionalRawData = partialImageEventType
+            .GetProperty("SerializedAdditionalRawData", InternalBindingFlags)
+            ?.GetValue(update) as IDictionary<string, BinaryData>;
+
+        // Properties
+        //   background
+        //   output_format
+        //   quality
+        //   revised_prompt
+        //   size
+
+        string outputFormat = getStringProperty("output_format") ?? "png";
+
+        var resultBytes = Convert.FromBase64String(imageGenResult ?? string.Empty);
+
+        return new DataContent(resultBytes, $"image/{outputFormat}")
+        {
+            RawRepresentation = update,
+            AdditionalProperties = new()
+            {
+                ["ItemId"] = imageGenItemId,
+                ["OutputIndex"] = imageGenOutputIndex,
+                ["PartialImageIndex"] = imageGenPartialImageIndex,
+                ["background"] = getStringProperty("background"),
+                ["output_format"] = outputFormat,
+                ["quality"] = getStringProperty("quality"),
+                ["revised_prompt"] = getStringProperty("revised_prompt"),
+                ["size"] = getStringProperty("size"),
+            }
+        };
+
+        string? getStringProperty(string name)
+        {
+            if (additionalRawData?.TryGetValue(name, out var outputFormat) == true)
+            {
+                var stringJsonTypeInfo = (JsonTypeInfo<string>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(string));
+                return JsonSerializer.Deserialize(outputFormat, stringJsonTypeInfo);
+            }
+
+            return null;
+        }
+    }
+
     /// <inheritdoc />
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -389,7 +447,16 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 default:
-                    yield return CreateUpdate();
+
+                    if (streamingUpdate.GetType().Name == "InternalResponseImageGenCallPartialImageEvent")
+                    {
+                        yield return CreateUpdate(GetContentFromImageGenPartialImageEvent(streamingUpdate));
+                    }
+                    else
+                    {
+                        yield return CreateUpdate();
+                    }
+
                     break;
             }
         }
