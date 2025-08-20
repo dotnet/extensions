@@ -24,6 +24,12 @@ public partial class FakeLogCollectorTests
     }
 
     [Fact]
+    public async Task JustSomeTest()
+    {
+
+    }
+
+    [Fact]
     public async Task Test()
     {
         var collector = FakeLogCollector.Create(new FakeLogCollectorOptions());
@@ -45,9 +51,7 @@ public partial class FakeLogCollectorTests
         var toCollect = new HashSet<string> {"Item 1", "Item 4", "Item 9",};
         var collected = new HashSet<string>();
 
-        var enumeration = collector.GetLogsAsync(true, CancellationToken.None);
-
-        await foreach (var log in enumeration)
+        await foreach (var log in collector.GetLogsAsync(0, null, CancellationToken.None))
         {
             _outputHelper.WriteLine($"-- Got new item: {log.Message} at {DateTime.Now}");
 
@@ -65,12 +69,12 @@ public partial class FakeLogCollectorTests
 
         _outputHelper.WriteLine($"------ Finished waiting for the first set at {DateTime.Now}");
 
-        await Task.Delay(20_000);
+        //await Task.Delay(20_000);
 
         var toCollect2 = new HashSet<string> {"Item 20",};
         var collected2 = new HashSet<string>();
 
-        await foreach (var log in enumeration)
+        await foreach (var log in collector.GetLogsAsync(3, null, CancellationToken.None))
         {
             _outputHelper.WriteLine($"Got new item: {log.Message} at {DateTime.Now}");
 

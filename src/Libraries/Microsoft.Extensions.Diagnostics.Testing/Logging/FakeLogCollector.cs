@@ -216,7 +216,7 @@ public partial class FakeLogCollector
         }
 
         List<Waiter>? waitersToWakeUp;
-        List<TaskCompletionSource<bool>>? streamWaitersToWake;
+        List<TaskCompletionSource<bool>>? logEnumerationWaitersToWake = null;
 
         lock (_records)
         {
@@ -233,8 +233,12 @@ public partial class FakeLogCollector
                     _waiters[i].RemoveFromWaiting(false);
                 }
             }
-
-            streamWaitersToWake = _streamWaiters.Count > 0 ? [.._streamWaiters] : null;
+            
+            if (_logEnumerationWaiters.Count != 0)
+            {
+                logEnumerationWaitersToWake = _logEnumerationWaiters;
+                _logEnumerationWaiters = [];
+            }
         }
 
         if (waitersToWakeUp is not null)
@@ -246,12 +250,12 @@ public partial class FakeLogCollector
             }
         }
 
-        if (streamWaitersToWake is not null)
+        if (logEnumerationWaitersToWake is not null)
         {
-            foreach (var streamWaiterToWake in streamWaitersToWake)
+            foreach (var logEnumerationWaiterToWake in logEnumerationWaitersToWake)
             {
-                _ = streamWaiterToWake.TrySetResult(true); // it is possible the task was already completed, but it does not matter and we can avoid locking
-                _ = _streamWaiters.Remove(streamWaiterToWake);
+                // it is possible the task was already completed, but it does not matter and we can avoid locking
+                _ = logEnumerationWaiterToWake.TrySetResult(true);
             }
         }
 
