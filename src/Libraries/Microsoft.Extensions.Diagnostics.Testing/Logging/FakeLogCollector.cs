@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Logging.Testing;
 /// </summary>
 [DebuggerDisplay("Count = {Count}, LatestRecord = {LatestRecord}")]
 [DebuggerTypeProxy(typeof(FakeLogCollectorDebugView))]
-public class FakeLogCollector
+public partial class FakeLogCollector
 {
     /// <summary>
     /// Arbitrary low number threshold for stack allocation path to avoid stack overflow.
@@ -216,6 +216,7 @@ public class FakeLogCollector
         }
 
         List<Waiter>? waitersToWakeUp;
+        List<TaskCompletionSource<bool>>? streamWaitersToWake;
 
         lock (_records)
         {
@@ -232,6 +233,8 @@ public class FakeLogCollector
                     _waiters[i].RemoveFromWaiting(false);
                 }
             }
+
+            streamWaitersToWake = _streamWaiters.Count > 0 ? [.._streamWaiters] : null;
         }
 
         if (waitersToWakeUp is not null)
@@ -240,6 +243,15 @@ public class FakeLogCollector
             {
                 // trigger the task from outside the lock
                 waiterToWakeUp.ResolveByResult(true);
+            }
+        }
+
+        if (streamWaitersToWake is not null)
+        {
+            foreach (var streamWaiterToWake in streamWaitersToWake)
+            {
+                _ = streamWaiterToWake.TrySetResult(true); // it is possible the task was already completed, but it does not matter and we can avoid locking
+                _ = _streamWaiters.Remove(streamWaiterToWake);
             }
         }
 
