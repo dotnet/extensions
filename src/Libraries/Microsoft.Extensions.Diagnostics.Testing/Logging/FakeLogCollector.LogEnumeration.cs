@@ -16,7 +16,7 @@ public partial class FakeLogCollector
 
     private int _waitingEnumeratorCount;
 
-    public async Task<int> WaitForLogAsync2(
+    public async Task<int> WaitForLogsAsync(
         Func<FakeLogRecord, bool> predicate,
         int startingIndex = 0,
         TimeSpan? timeout = null,
@@ -192,6 +192,7 @@ public partial class FakeLogCollector
             }
         }
 
+        // TODO TW: consider pending wait and exception handling
         public ValueTask DisposeAsync()
         {
             if (_disposed)
