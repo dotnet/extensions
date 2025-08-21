@@ -18,11 +18,6 @@ namespace Microsoft.Extensions.Logging.Testing;
 [DebuggerTypeProxy(typeof(FakeLogCollectorDebugView))]
 public partial class FakeLogCollector
 {
-    /// <summary>
-    /// Arbitrary low number threshold for stack allocation path to avoid stack overflow.
-    /// </summary>
-    private const int StackAllocThreshold = 100;
-
     private readonly List<FakeLogRecord> _records = [];
     private readonly FakeLogCollectorOptions _options;
 
