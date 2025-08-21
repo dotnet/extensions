@@ -5,79 +5,113 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging.Testing;
 
 public partial class FakeLogCollector
 {
-    private readonly List<TaskCompletionSource<bool>> _streamWaiters = [];
+    private TaskCompletionSource<bool> _logEnumerationSharedWaiter =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    private int _waitingEnumeratorCount;
+
+    public async Task<int> WaitForLogAsync2(
+        Func<FakeLogRecord, bool> predicate,
+        int startingIndex = 0,
+        TimeSpan? timeout = null,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(predicate);
+
+        int index = startingIndex;
+        await foreach (var item in GetLogsAsync(startingIndex, timeout, cancellationToken).ConfigureAwait(false))
+        {
+            if (predicate(item))
+            {
+                return index;
+            }
+
+            index++;
+        }
+
+        return -1;
+    }
 
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(
-        bool continueOnMultipleEnumerations = false,
+        int startingIndex = 0,
+        TimeSpan? timeout = null,
         CancellationToken cancellationToken = default)
-            => new LogAsyncEnumerable(continueOnMultipleEnumerations, this, cancellationToken);
+    {
+        _ = Throw.IfOutOfRange(startingIndex, 0, int.MaxValue);
+
+        return new LogAsyncEnumerable(this, startingIndex, timeout, cancellationToken);
+    }
 
     private class LogAsyncEnumerable : IAsyncEnumerable<FakeLogRecord>
     {
-        internal readonly object EnumeratorLock = new();
-        internal int LastIndex;
-        internal StreamEnumerator? Enumerator;
-
-        private readonly bool _continueOnMultipleEnumerations;
+        private readonly int _startingIndex;
+        private readonly TimeSpan? _timeout;
         private readonly FakeLogCollector _collector;
-        private readonly CancellationToken _externalToken;
+        private readonly CancellationToken _enumerableCancellationToken;
 
         internal LogAsyncEnumerable(
-            bool continueOnMultipleEnumerations,
             FakeLogCollector collector,
-            CancellationToken externalToken)
+            int startingIndex,
+            TimeSpan? timeout,
+            CancellationToken enumerableCancellationToken)
         {
-            _continueOnMultipleEnumerations = continueOnMultipleEnumerations;
             _collector = collector;
-            _externalToken = externalToken;
+            _startingIndex = startingIndex;
+            _timeout = timeout;
+            _enumerableCancellationToken = enumerableCancellationToken;
         }
 
-        public IAsyncEnumerator<FakeLogRecord> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        public IAsyncEnumerator<FakeLogRecord> GetAsyncEnumerator(CancellationToken enumeratorCancellationToken = default)
         {
-            lock (EnumeratorLock)
-            {
-                int startingPos = _continueOnMultipleEnumerations ? LastIndex : 0;
-
-                var linked = CancellationTokenSource.CreateLinkedTokenSource(_externalToken, cancellationToken);
-                Enumerator = new StreamEnumerator(
-                    startingPos,
-                    this,
-                    _collector,
-                    linked);
-            }
-
-            return Enumerator;
+            return new StreamEnumerator(
+                _collector,
+                _startingIndex,
+                _enumerableCancellationToken,
+                enumeratorCancellationToken,
+                _timeout);
         }
     }
 
     private sealed class StreamEnumerator : IAsyncEnumerator<FakeLogRecord>
     {
-        internal int Index;
-        private readonly LogAsyncEnumerable _logAsyncEnumerable;
-
         private readonly FakeLogCollector _collector;
-        private readonly CancellationTokenSource _cts;
-        private readonly CancellationToken _cancellationToken;
-        private TaskCompletionSource<bool>? _waitingTsc;
-        private bool _disposed;
+
+        private readonly CancellationTokenSource _masterCts;
+        private readonly CancellationTokenSource? _timeoutCts;
+
         private FakeLogRecord? _current;
+        private int _index; // TODO TW: when the logs are cleared, this index remains at the value...
+        private bool _disposed;
 
         public StreamEnumerator(
-            int startingPos,
-            LogAsyncEnumerable logAsyncEnumerable,
             FakeLogCollector collector,
-            CancellationTokenSource cts)
+            int startingIndex,
+            CancellationToken enumerableCancellationToken,
+            CancellationToken enumeratorCancellationToken,
+            TimeSpan? timeout = null)
         {
             _collector = collector;
-            _cts = cts;
-            _cancellationToken = cts.Token;
-            Index = startingPos;
-            _logAsyncEnumerable = logAsyncEnumerable;
+            _index = startingIndex;
+
+            CancellationToken[] cancellationTokens;
+            if (timeout.HasValue)
+            {
+                var timeoutCts = new CancellationTokenSource(timeout.Value);
+                _timeoutCts = timeoutCts;
+                cancellationTokens = [enumerableCancellationToken, enumeratorCancellationToken, timeoutCts.Token];
+            }
+            else
+            {
+                cancellationTokens = [enumerableCancellationToken, enumeratorCancellationToken];
+            }
+
+            _masterCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokens);
         }
 
         public FakeLogRecord Current => _current ?? throw new InvalidOperationException("Enumeration not started.");
@@ -86,35 +120,75 @@ public partial class FakeLogCollector
         {
             ThrowIfDisposed();
 
+            var masterCancellationToken = _masterCts.Token;
+
+            masterCancellationToken.ThrowIfCancellationRequested();
+
             while (true)
             {
-                _cancellationToken.ThrowIfCancellationRequested();
-
-                lock (_collector._records)
-                {
-                    if (Index < _collector._records.Count)
-                    {
-                        _logAsyncEnumerable.LastIndex = Index;
-                        _current = _collector._records[Index++];
-                        return true;
-                    }
-
-                    _waitingTsc ??= new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    _collector._streamWaiters.Add(_waitingTsc);
-                }
+                TaskCompletionSource<bool>? waiter = null;
 
                 try
                 {
-                    await (_waitingTsc?.Task ?? Task.CompletedTask).ConfigureAwait(false);
+                    masterCancellationToken.ThrowIfCancellationRequested();
+
+                    lock (_collector._records)
+                    {
+                        if (_index < _collector._records.Count)
+                        {
+                            _current = _collector._records[_index++];
+                            return true;
+                        }
+
+                        // waiter needs to be subscribed within records lock
+                        // if not: more records could be added in the meantime and the waiter could be stuck waiting even though the index is behind the actual count
+                        waiter = _collector._logEnumerationSharedWaiter;
+                        _collector._waitingEnumeratorCount++;
+                    }
+
+                    // Compatibility path for net462: emulate Task.WaitAsync(cancellationToken).
+                    await AwaitWithCancellationAsync(waiter.Task, masterCancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
-                    return false;
+                    lock (_collector._records)
+                    {
+                        // We only decrement if the shared waiter has not yet been swaped. Otherwise, the counter has been reset.
+                        if (
+                            waiter is not null
+                            && _collector._waitingEnumeratorCount > 0
+                            && waiter == _collector._logEnumerationSharedWaiter)
+                        {
+                            _collector._waitingEnumeratorCount--;
+                        }
+                    }
+
+                    throw;
                 }
-                finally
-                {
-                    _waitingTsc = null;
-                }
+            }
+        }
+
+        private static async Task AwaitWithCancellationAsync(Task task, CancellationToken cancellationToken)
+        {
+            if (!cancellationToken.CanBeCanceled || task.IsCompleted)
+            {
+                await task.ConfigureAwait(false);
+                return;
+            }
+
+            var cancelTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            CancellationTokenRegistration ctr = default;
+            try
+            {
+                ctr = cancellationToken.Register(static s =>
+                    ((TaskCompletionSource<bool>)s!).TrySetCanceled(), cancelTcs);
+
+                var completed = await Task.WhenAny(task, cancelTcs.Task).ConfigureAwait(false);
+                await completed.ConfigureAwait(false);
+            }
+            finally
+            {
+                ctr.Dispose();
             }
         }
 
@@ -127,24 +201,9 @@ public partial class FakeLogCollector
 
             _disposed = true;
 
-            _cts.Cancel();
-
-            if (_waitingTsc is not null)
-            {
-                lock (_collector._records)
-                {
-                    _ = _collector._streamWaiters.Remove(_waitingTsc);
-                }
-
-                _ = _waitingTsc.TrySetCanceled(_cancellationToken);
-            }
-
-            _cts.Dispose();
-
-            lock (_logAsyncEnumerable.EnumeratorLock)
-            {
-                _logAsyncEnumerable.Enumerator = null;
-            }
+            _masterCts.Cancel();
+            _masterCts.Dispose();
+            _timeoutCts?.Dispose();
 
             return default;
         }

@@ -216,7 +216,7 @@ public partial class FakeLogCollector
         }
 
         List<Waiter>? waitersToWakeUp;
-        List<TaskCompletionSource<bool>>? streamWaitersToWake;
+        TaskCompletionSource<bool>? logEnumerationSharedWaiterToWake = null;
 
         lock (_records)
         {
@@ -233,8 +233,13 @@ public partial class FakeLogCollector
                     _waiters[i].RemoveFromWaiting(false);
                 }
             }
-
-            streamWaitersToWake = _streamWaiters.Count > 0 ? [.._streamWaiters] : null;
+            
+            if (_waitingEnumeratorCount > 0)
+            {
+                logEnumerationSharedWaiterToWake = _logEnumerationSharedWaiter;
+                _logEnumerationSharedWaiter = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _waitingEnumeratorCount = 0;
+            }
         }
 
         if (waitersToWakeUp is not null)
@@ -246,14 +251,9 @@ public partial class FakeLogCollector
             }
         }
 
-        if (streamWaitersToWake is not null)
-        {
-            foreach (var streamWaiterToWake in streamWaitersToWake)
-            {
-                _ = streamWaiterToWake.TrySetResult(true); // it is possible the task was already completed, but it does not matter and we can avoid locking
-                _ = _streamWaiters.Remove(streamWaiterToWake);
-            }
-        }
+        // it is possible the task was already completed, but it does not matter and we can avoid locking
+        // TODO TW: is the above still true?
+        _ = logEnumerationSharedWaiterToWake?.TrySetResult(true);
 
         _options.OutputSink?.Invoke(_options.OutputFormatter(record));
     }
