@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging.Testing;
 
@@ -16,11 +16,37 @@ public partial class FakeLogCollector
 
     private int _waitingEnumeratorCount;
 
+    public async Task<int> WaitForLogAsync2(
+        Func<FakeLogRecord, bool> predicate,
+        int startingIndex = 0,
+        TimeSpan? timeout = null,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(predicate);
+
+        int index = startingIndex;
+        await foreach (var item in GetLogsAsync(startingIndex, timeout, cancellationToken).ConfigureAwait(false))
+        {
+            if (predicate(item))
+            {
+                return index;
+            }
+
+            index++;
+        }
+
+        return -1;
+    }
+
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(
         int startingIndex = 0,
         TimeSpan? timeout = null,
         CancellationToken cancellationToken = default)
-        => new LogAsyncEnumerable(this, startingIndex, timeout, cancellationToken);
+    {
+        _ = Throw.IfOutOfRange(startingIndex, 0, int.MaxValue);
+
+        return new LogAsyncEnumerable(this, startingIndex, timeout, cancellationToken);
+    }
 
     private class LogAsyncEnumerable : IAsyncEnumerable<FakeLogRecord>
     {
@@ -60,9 +86,8 @@ public partial class FakeLogCollector
         private readonly CancellationTokenSource? _timeoutCts;
 
         private FakeLogRecord? _current;
-        private int _index;
+        private int _index; // TODO TW: when the logs are cleared, this index remains at the value...
         private bool _disposed;
-        private bool _completed;
 
         public StreamEnumerator(
             FakeLogCollector collector,
@@ -95,28 +120,18 @@ public partial class FakeLogCollector
         {
             ThrowIfDisposed();
 
-            if (_completed)
-            {
-                return false;
-            }
-            
             var masterCancellationToken = _masterCts.Token;
 
-            if (masterCancellationToken.IsCancellationRequested)
-            {
-                _completed = true;
-                _current = null;
-                return false;
-            }
+            masterCancellationToken.ThrowIfCancellationRequested();
 
             while (true)
             {
                 TaskCompletionSource<bool>? waiter = null;
-                
+
                 try
                 {
                     masterCancellationToken.ThrowIfCancellationRequested();
-    
+
                     lock (_collector._records)
                     {
                         if (_index < _collector._records.Count)
@@ -124,13 +139,13 @@ public partial class FakeLogCollector
                             _current = _collector._records[_index++];
                             return true;
                         }
-    
+
                         // waiter needs to be subscribed within records lock
                         // if not: more records could be added in the meantime and the waiter could be stuck waiting even though the index is behind the actual count
                         waiter = _collector._logEnumerationSharedWaiter;
                         _collector._waitingEnumeratorCount++;
                     }
-                
+
                     // Compatibility path for net462: emulate Task.WaitAsync(cancellationToken).
                     await AwaitWithCancellationAsync(waiter.Task, masterCancellationToken).ConfigureAwait(false);
                 }
@@ -148,13 +163,11 @@ public partial class FakeLogCollector
                         }
                     }
 
-                    _completed = true;
-                    _current = null;
-                    return false;
+                    throw;
                 }
             }
         }
-        
+
         private static async Task AwaitWithCancellationAsync(Task task, CancellationToken cancellationToken)
         {
             if (!cancellationToken.CanBeCanceled || task.IsCompleted)
