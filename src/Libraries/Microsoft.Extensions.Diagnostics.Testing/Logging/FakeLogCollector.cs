@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
@@ -51,11 +50,18 @@ public partial class FakeLogCollector
     /// <summary>
     /// Removes all accumulated log records from the collector.
     /// </summary>
-    public void Clear()
+    public void Clear(int? count = 0)
     {
         lock (_records)
         {
-            _records.Clear();
+            if (!count.HasValue || count.Value == _records.Count)
+            {
+                _records.Clear();
+            }
+            else
+            {
+                _records.RemoveRange(0, count.Value);
+            }
         }
     }
 
@@ -153,7 +159,6 @@ public partial class FakeLogCollector
         }
 
         // it is possible the task was already completed, but it does not matter and we can avoid locking
-        // TODO TW: is the above still true?
         _ = logEnumerationSharedWaiterToWake?.TrySetResult(true);
 
         _options.OutputSink?.Invoke(_options.OutputFormatter(record));

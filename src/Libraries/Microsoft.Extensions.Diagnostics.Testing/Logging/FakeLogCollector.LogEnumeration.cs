@@ -16,28 +16,6 @@ public partial class FakeLogCollector
 
     private int _waitingEnumeratorCount;
 
-    public async Task<int> WaitForLogsAsync(
-        Func<FakeLogRecord, bool> predicate,
-        int startingIndex = 0,
-        TimeSpan? timeout = null,
-        CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(predicate);
-
-        int index = startingIndex; // This index may be too weak
-        await foreach (var item in GetLogsAsync(startingIndex, timeout, cancellationToken).ConfigureAwait(false))
-        {
-            if (predicate(item))
-            {
-                return index;
-            }
-
-            index++;
-        }
-
-        return -1;
-    }
-
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(
         int startingIndex = 0,
         TimeSpan? timeout = null,
