@@ -11,6 +11,8 @@ namespace Microsoft.Extensions.Logging.Testing;
 
 public partial class FakeLogCollector
 {
+    private readonly List<Action<int>> _indexUpdates = new();
+
     private TaskCompletionSource<bool> _logEnumerationSharedWaiter =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -47,24 +49,38 @@ public partial class FakeLogCollector
 
         public IAsyncEnumerator<FakeLogRecord> GetAsyncEnumerator(CancellationToken enumeratorCancellationToken = default)
         {
-            return new StreamEnumerator(
-                _collector,
-                _startingIndex,
-                _enumerableCancellationToken,
-                enumeratorCancellationToken,
-                _timeout);
+            // Locking to protect against race between the enumerator creation and callback registration
+            lock (_collector._records)
+            {
+                var enumerator = new StreamEnumerator(
+                    _collector,
+                    _startingIndex,
+                    _enumerableCancellationToken,
+                    enumeratorCancellationToken,
+                    e =>
+                    {
+                        lock (_collector._records)
+                        {
+                            _ = _collector._indexUpdates.Remove(e.UpdateIndexByRemoved);
+                        }
+                    },
+                    _timeout);
+
+                _collector._indexUpdates.Add(enumerator.UpdateIndexByRemoved);
+                return enumerator;
+            }
         }
     }
 
     private sealed class StreamEnumerator : IAsyncEnumerator<FakeLogRecord>
     {
         private readonly FakeLogCollector _collector;
-
         private readonly CancellationTokenSource _masterCts;
         private readonly CancellationTokenSource? _timeoutCts;
+        private readonly Action<StreamEnumerator>? _onDispose;
 
         private FakeLogRecord? _current;
-        private int _index; // TODO TW: when the logs are cleared, this index remains at the value...
+        private int _index;
         private bool _disposed;
 
         // Concurrent MoveNextAsync guard
@@ -75,10 +91,12 @@ public partial class FakeLogCollector
             int startingIndex,
             CancellationToken enumerableCancellationToken,
             CancellationToken enumeratorCancellationToken,
+            Action<StreamEnumerator>? onDispose,
             TimeSpan? timeout = null)
         {
             _collector = collector;
             _index = startingIndex;
+            _onDispose = onDispose;
 
             CancellationToken[] cancellationTokens;
             if (timeout.HasValue)
@@ -93,6 +111,12 @@ public partial class FakeLogCollector
             }
 
             _masterCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokens);
+        }
+
+        public void UpdateIndexByRemoved(int removedItems)
+        {
+            // performed under lock by the calling mechanism during Clear()
+            _index = Math.Max(0, _index - removedItems);
         }
 
         public FakeLogRecord Current => _current ?? throw new InvalidOperationException("Enumeration not started.");
@@ -198,6 +222,8 @@ public partial class FakeLogCollector
             }
 
             _disposed = true;
+
+            _onDispose?.Invoke(this);
 
             _masterCts.Cancel();
             _masterCts.Dispose();
