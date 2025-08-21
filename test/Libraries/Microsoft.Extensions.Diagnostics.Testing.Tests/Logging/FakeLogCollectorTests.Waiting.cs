@@ -7,8 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoFixture.Kernel;
-using Castle.Components.DictionaryAdapter;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,73 +21,11 @@ public partial class FakeLogCollectorTests
         _outputHelper = outputHelper;
     }
 
-    [Fact]
-    public async Task Test()
-    {
-        var collector = FakeLogCollector.Create(new FakeLogCollectorOptions());
-
-        var eventTracker = new ConcurrentQueue<string>();
-
-        var logEmittingTask = EmitLogs(
-            collector,
-            Enumerable.Range(0, 20).Select(i => $"Item {i}"),
-            eventTracker,
-            TimeSpan.FromMilliseconds(1_000));
-
-        var toCollect = new HashSet<string> {"Item 1", "Item 4", "Item 9",};
-        var collected = new HashSet<string>();
-
-        await foreach (var log in collector.GetLogsAsync(0, null, CancellationToken.None))
-        {
-            eventTracker.Enqueue($"-- Got new item: {log.Message} at {DateTime.Now}");
-
-            if (toCollect.Contains(log.Message))
-            {
-                eventTracker.Enqueue($"⏹️ Collected item: {log.Message} at {DateTime.Now}");
-                collected.Add(log.Message);
-            }
-
-            if (collected.Count == toCollect.Count)
-            {
-                break;
-            }
-        }
-
-        eventTracker.Enqueue($"------ Finished waiting for the first set at {DateTime.Now}");
-
-        //await Task.Delay(20_000);
-
-        var toCollect2 = new HashSet<string> {"Item 17",};
-        var collected2 = new HashSet<string>();
-
-        await foreach (var log in collector.GetLogsAsync(3, null, CancellationToken.None))
-        {
-            eventTracker.Enqueue($"Got new item: {log.Message} at {DateTime.Now}");
-
-            if (toCollect2.Contains(log.Message))
-            {
-                eventTracker.Enqueue($"⏹️ Collected item: {log.Message} at {DateTime.Now}");
-                collected2.Add(log.Message);
-            }
-
-            if (collected2.Count == toCollect2.Count)
-            {
-                break;
-            }
-        }
-
-        eventTracker.Enqueue($"------ Finished waiting for the second set at {DateTime.Now}");
-
-        await logEmittingTask;
-
-        OutputEventTracker(_outputHelper, eventTracker);
-    }
-
     [Theory]
     [InlineData(true, false, false)]
     [InlineData(true, false, true)]
     [InlineData(false, true, false)]
-    public async Task Test3(bool arrivesInAwaitedOrder, bool expectedToCancel, bool useClear)
+    public async Task LogAwaitingDemo(bool arrivesInAwaitedOrder, bool expectedToCancel, bool useClear)
     {
         var collector = FakeLogCollector.Create(new FakeLogCollectorOptions());
         var eventTracker = new ConcurrentQueue<string>();
