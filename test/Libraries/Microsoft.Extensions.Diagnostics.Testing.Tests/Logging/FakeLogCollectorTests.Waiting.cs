@@ -23,20 +23,8 @@ public partial class FakeLogCollectorTests
     public async Task Test()
     {
         var collector = FakeLogCollector.Create(new FakeLogCollectorOptions());
-        var logger = new FakeLogger(collector);
 
-        _ = Task.Run(async () =>
-        {
-            int i = 0;
-            while (i < 21)
-            {
-                logger.Log(LogLevel.Critical, $"Item {i}");
-                _outputHelper.WriteLine($"Written item: Item {i} at {DateTime.Now}, currently items: {logger.Collector.Count}");
-
-                await Task.Delay(3_000, CancellationToken.None);
-                i++;
-            }
-        });
+        var logEmittingTask = EmitLogs(collector, 20, TimeSpan.FromMilliseconds(1_000));
 
         var toCollect = new HashSet<string> {"Item 1", "Item 4", "Item 9",};
         var collected = new HashSet<string>();
@@ -61,7 +49,7 @@ public partial class FakeLogCollectorTests
 
         //await Task.Delay(20_000);
 
-        var toCollect2 = new HashSet<string> {"Item 20",};
+        var toCollect2 = new HashSet<string> {"Item 17",};
         var collected2 = new HashSet<string>();
 
         await foreach (var log in collector.GetLogsAsync(3, null, CancellationToken.None))
@@ -81,26 +69,16 @@ public partial class FakeLogCollectorTests
         }
 
         _outputHelper.WriteLine($"------ Finished waiting for the second set at {DateTime.Now}");
+
+        await logEmittingTask;
     }
 
     [Fact]
     public async Task Test2()
     {
         var collector = FakeLogCollector.Create(new FakeLogCollectorOptions());
-        var logger = new FakeLogger(collector);
 
-        _ = Task.Run(async () =>
-        {
-            int i = 0;
-            while (i < 21)
-            {
-                logger.Log(LogLevel.Critical, $"Item {i}");
-                _outputHelper.WriteLine($"Written item: Item {i} at {DateTime.Now}, currently items: {logger.Collector.Count}");
-
-                await Task.Delay(3_000, CancellationToken.None);
-                i++;
-            }
-        });
+        var logEmittingTask = EmitLogs(collector, 20, TimeSpan.FromMilliseconds(1_000));
 
         var toCollect = new HashSet<string> {"Item 1", "Item 4", "Item 9",};
         var collected = new HashSet<string>();
@@ -127,7 +105,7 @@ public partial class FakeLogCollectorTests
 
         //await Task.Delay(20_000);
 
-        var toCollect2 = new HashSet<string> {"Item 20",};
+        var toCollect2 = new HashSet<string> {"Item 9999",};
         var collected2 = new HashSet<string>();
 
         var waitingForLogs = collector.WaitForLogsAsync(log =>
@@ -146,13 +124,11 @@ public partial class FakeLogCollectorTests
             }
 
             return false;
-        }, timeout: TimeSpan.FromMilliseconds(2_000));
-
-        var pauseToTimeout = Task.Delay(99_000_000);
+        }, timeout: TimeSpan.FromMilliseconds(3_000));
 
         try
         {
-            await await Task.WhenAny(waitingForLogs, pauseToTimeout);
+            await waitingForLogs;
         }
         catch (OperationCanceledException)
         {
@@ -160,5 +136,31 @@ public partial class FakeLogCollectorTests
         }
 
         _outputHelper.WriteLine($"------ Finished waiting for the second set at {DateTime.Now}");
+
+        await logEmittingTask;
+    }
+
+    private async Task EmitLogs(FakeLogCollector fakeLogCollector, int count, TimeSpan? delayBetweenEmissions = null)
+    {
+        var logger = new FakeLogger(fakeLogCollector);
+
+        await Task.Run(async () =>
+        {
+            int i = 0;
+            while (i < count)
+            {
+                logger.Log(LogLevel.Debug, $"Item {i}");
+                _outputHelper.WriteLine($"Written item: Item {i} at {DateTime.Now}, currently items: {logger.Collector.Count}");
+
+                if (delayBetweenEmissions.HasValue)
+                {
+                    await Task.Delay(delayBetweenEmissions.Value, CancellationToken.None);
+                }
+
+                i++;
+            }
+        });
+
+        _outputHelper.WriteLine($"Finished emitting logs at {DateTime.Now}");
     }
 }

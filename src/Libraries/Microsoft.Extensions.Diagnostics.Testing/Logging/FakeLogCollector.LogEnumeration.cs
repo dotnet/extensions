@@ -24,7 +24,7 @@ public partial class FakeLogCollector
     {
         _ = Throw.IfNull(predicate);
 
-        int index = startingIndex;
+        int index = startingIndex; // This index may be too weak
         await foreach (var item in GetLogsAsync(startingIndex, timeout, cancellationToken).ConfigureAwait(false))
         {
             if (predicate(item))
