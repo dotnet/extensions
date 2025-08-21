@@ -89,6 +89,9 @@ public partial class FakeLogCollector
         private int _index; // TODO TW: when the logs are cleared, this index remains at the value...
         private bool _disposed;
 
+        // Concurrent MoveNextAsync guard
+        private int _moveNextActive; // 0 = inactive, 1 = active (for net462 compatibility)
+
         public StreamEnumerator(
             FakeLogCollector collector,
             int startingIndex,
@@ -118,53 +121,67 @@ public partial class FakeLogCollector
 
         public async ValueTask<bool> MoveNextAsync()
         {
-            ThrowIfDisposed();
-
-            var masterCancellationToken = _masterCts.Token;
-
-            masterCancellationToken.ThrowIfCancellationRequested();
-
-            while (true)
+            if (Interlocked.CompareExchange(ref _moveNextActive, 1, 0) == 1)
             {
-                TaskCompletionSource<bool>? waiter = null;
+                throw new InvalidOperationException("MoveNextAsync is already in progress. Await the previous call before calling again.");
+            }
 
-                try
+            try
+            {
+
+                ThrowIfDisposed();
+
+                var masterCancellationToken = _masterCts.Token;
+
+                masterCancellationToken.ThrowIfCancellationRequested();
+
+                while (true)
                 {
-                    masterCancellationToken.ThrowIfCancellationRequested();
+                    TaskCompletionSource<bool>? waiter = null;
 
-                    lock (_collector._records)
+                    try
                     {
-                        if (_index < _collector._records.Count)
+                        masterCancellationToken.ThrowIfCancellationRequested();
+
+                        lock (_collector._records)
                         {
-                            _current = _collector._records[_index++];
-                            return true;
+                            if (_index < _collector._records.Count)
+                            {
+                                _current = _collector._records[_index++];
+                                return true;
+                            }
+
+                            // waiter needs to be subscribed within records lock
+                            // if not: more records could be added in the meantime and the waiter could be stuck waiting even though the index is behind the actual count
+                            waiter = _collector._logEnumerationSharedWaiter;
+                            _collector._waitingEnumeratorCount++;
                         }
 
-                        // waiter needs to be subscribed within records lock
-                        // if not: more records could be added in the meantime and the waiter could be stuck waiting even though the index is behind the actual count
-                        waiter = _collector._logEnumerationSharedWaiter;
-                        _collector._waitingEnumeratorCount++;
+                        // Compatibility path for net462: emulate Task.WaitAsync(cancellationToken).
+                        await AwaitWithCancellationAsync(waiter.Task, masterCancellationToken).ConfigureAwait(false);
                     }
-
-                    // Compatibility path for net462: emulate Task.WaitAsync(cancellationToken).
-                    await AwaitWithCancellationAsync(waiter.Task, masterCancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    lock (_collector._records)
+                    catch (OperationCanceledException)
                     {
-                        // We only decrement if the shared waiter has not yet been swaped. Otherwise, the counter has been reset.
-                        if (
-                            waiter is not null
-                            && _collector._waitingEnumeratorCount > 0
-                            && waiter == _collector._logEnumerationSharedWaiter)
+                        lock (_collector._records)
                         {
-                            _collector._waitingEnumeratorCount--;
+                            // We only decrement if the shared waiter has not yet been swaped. Otherwise, the counter has been reset.
+                            if (
+                                waiter is not null
+                                && _collector._waitingEnumeratorCount > 0
+                                && waiter == _collector._logEnumerationSharedWaiter)
+                            {
+                                _collector._waitingEnumeratorCount--;
+                            }
                         }
-                    }
 
-                    throw;
+                        throw;
+                    }
                 }
+
+            }
+            finally
+            {
+                Volatile.Write(ref _moveNextActive, 0);
             }
         }
 
