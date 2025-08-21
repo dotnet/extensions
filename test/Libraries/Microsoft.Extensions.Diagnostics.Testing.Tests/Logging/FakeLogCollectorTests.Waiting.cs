@@ -83,7 +83,7 @@ public partial class FakeLogCollectorTests
         var toCollect = new HashSet<string> {"Item 1", "Item 4", "Item 9",};
         var collected = new HashSet<string>();
 
-        await collector.WaitForLogsAsync(log =>
+        var index = await collector.WaitForLogsAsync(log =>
         {
             _outputHelper.WriteLine($"-- Got new item: {log.Message} at {DateTime.Now}");
 
@@ -101,7 +101,7 @@ public partial class FakeLogCollectorTests
             return false;
         });
 
-        _outputHelper.WriteLine($"------ Finished waiting for the first set at {DateTime.Now}");
+        _outputHelper.WriteLine($"------ Finished waiting for the first set at {DateTime.Now}. Got index: {index}");
 
         //await Task.Delay(20_000);
 
@@ -124,7 +124,7 @@ public partial class FakeLogCollectorTests
             }
 
             return false;
-        }, timeout: TimeSpan.FromMilliseconds(3_000));
+        }, startingIndex: index + 1, timeout: TimeSpan.FromMilliseconds(3_000));
 
         try
         {
