@@ -123,12 +123,11 @@ public partial class FakeLogCollector
         {
             if (Interlocked.CompareExchange(ref _moveNextActive, 1, 0) == 1)
             {
-                throw new InvalidOperationException("MoveNextAsync is already in progress. Await the previous call before calling again.");
+                throw new InvalidOperationException("MoveNextAsync is already in progress. Concurrent calls are not allowed.");
             }
 
             try
             {
-
                 ThrowIfDisposed();
 
                 var masterCancellationToken = _masterCts.Token;
@@ -158,19 +157,22 @@ public partial class FakeLogCollector
                         }
 
                         // Compatibility path for net462: emulate Task.WaitAsync(cancellationToken).
+                        // After the wait is complete in normal flow, no need to decrement because the shared waiter will be swapped and counter reset.
                         await AwaitWithCancellationAsync(waiter.Task, masterCancellationToken).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException)
                     {
-                        lock (_collector._records)
+                        if (waiter is not null)
                         {
-                            // We only decrement if the shared waiter has not yet been swaped. Otherwise, the counter has been reset.
-                            if (
-                                waiter is not null
-                                && _collector._waitingEnumeratorCount > 0
-                                && waiter == _collector._logEnumerationSharedWaiter)
+                            lock (_collector._records)
                             {
-                                _collector._waitingEnumeratorCount--;
+                                if (
+                                    _collector._waitingEnumeratorCount > 0 // counter can be zero during the cancellation path
+                                    && waiter == _collector._logEnumerationSharedWaiter // makes sure we adjust the counter for the same shared waiting session
+                                )
+                                {
+                                    _collector._waitingEnumeratorCount--;
+                                }
                             }
                         }
 
