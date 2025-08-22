@@ -151,7 +151,7 @@ public class OpenTelemetryChatClientTests
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
 
-        Assert.Equal("http://localhost:12345/something", activity.GetTagItem("server.address"));
+        Assert.Equal("localhost", activity.GetTagItem("server.address"));
         Assert.Equal(12345, (int)activity.GetTagItem("server.port")!);
 
         Assert.Equal("chat replacementmodel", activity.DisplayName);
