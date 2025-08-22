@@ -33,8 +33,8 @@ public partial class FakeLogCollectorTests
         var waitingTimeout = TimeSpan.FromMilliseconds(1_000);
 
         string[] logsToEmit = arrivesInAwaitedOrder
-            ? ["Sync", "Log A", "Sync", "Sync", "Log B", "Sync", "Sync", "Log C", "Sync", "Sync", "Sync"]
-            : ["Sync", "Log A", "Sync", "Sync", "Log B", "Sync", "Sync", "Log C", "Log D"] // Log C is not followed by Sync
+            ? ["Sync", "Log A", "LogC", "Sync", "Sync", "Log B", "Sync", "Sync", "Log C", "Sync", "Sync", "Sync"]
+            : ["Sync", "Log A", "LogC", "Sync", "Sync", "Log B", "Sync", "Sync", "Log C", "Log D"] // Log C after A, B, C progression is not followed by Sync
         ;
 
         var logEmittingTask = EmitLogs(collector, logsToEmit, eventTracker);
@@ -47,7 +47,7 @@ public partial class FakeLogCollectorTests
             timeout: waitingTimeout);
 
         Assert.False(res.wasCancelled);
-        Assert.Equal(5, res.index);
+        Assert.Equal(6, res.index);
 
         if (useClear)
         {
@@ -67,7 +67,7 @@ public partial class FakeLogCollectorTests
             timeout: waitingTimeout);
 
         Assert.Equal(expectedToCancel, res.wasCancelled);
-        Assert.Equal(expectedToCancel ? -1 : (useClear ? 2 : 8), res.index);
+        Assert.Equal(expectedToCancel ? -1 : (useClear ? 2 : 9), res.index);
 
         await logEmittingTask;
 
