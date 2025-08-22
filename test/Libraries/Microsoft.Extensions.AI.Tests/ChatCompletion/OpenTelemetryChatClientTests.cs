@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -215,5 +216,49 @@ public class OpenTelemetryChatClientTests
         {
             Assert.Equal(new KeyValuePair<string, string?>("gen_ai.system", "testservice"), ((IList<KeyValuePair<string, string?>>)log.State!)[1]);
         });
+
+        // Verify that span events are also recorded on the Activity
+        Assert.NotEmpty(activity.Events);
+        var spanEvents = activity.Events.ToList();
+        
+        // We expect 7 span events (same as log events): system, user, assistant, tool, assistant, user, choice
+        Assert.Equal(7, spanEvents.Count);
+        
+        Assert.Collection(spanEvents,
+            evt => {
+                Assert.Equal("gen_ai.system.message", evt.Name);
+                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.system.message");
+                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
+            },
+            evt => {
+                Assert.Equal("gen_ai.user.message", evt.Name);
+                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.user.message");
+                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
+            },
+            evt => {
+                Assert.Equal("gen_ai.assistant.message", evt.Name);
+                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.assistant.message");
+                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
+            },
+            evt => {
+                Assert.Equal("gen_ai.tool.message", evt.Name);
+                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.tool.message");
+                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
+            },
+            evt => {
+                Assert.Equal("gen_ai.assistant.message", evt.Name);
+                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.assistant.message");
+                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
+            },
+            evt => {
+                Assert.Equal("gen_ai.user.message", evt.Name);
+                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.user.message");
+                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
+            },
+            evt => {
+                Assert.Equal("gen_ai.choice", evt.Name);
+                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.choice");
+                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
+            });
     }
 }

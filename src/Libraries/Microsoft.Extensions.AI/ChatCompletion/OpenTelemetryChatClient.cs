@@ -139,7 +139,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _defaultModelId;
 
-        LogChatMessages(messages);
+        LogChatMessages(messages, activity);
 
         ChatResponse? response = null;
         Exception? error = null;
@@ -170,7 +170,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _defaultModelId;
 
-        LogChatMessages(messages);
+        LogChatMessages(messages, activity);
 
         IAsyncEnumerable<ChatResponseUpdate> updates;
         try
@@ -377,7 +377,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         if (response is not null)
         {
-            LogChatResponse(response);
+            LogChatResponse(response, activity);
 
             if (activity is not null)
             {
@@ -451,9 +451,10 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
     }
 
-    private void LogChatMessages(IEnumerable<ChatMessage> messages)
+    private void LogChatMessages(IEnumerable<ChatMessage> messages, Activity? activity)
     {
-        if (!_logger.IsEnabled(EventLogLevel))
+        // Log and add span events if logging is enabled OR if we have an activity
+        if (!_logger.IsEnabled(EventLogLevel) && activity is null)
         {
             return;
         }
@@ -463,7 +464,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             if (message.Role == ChatRole.Assistant)
             {
                 Log(new(1, OpenTelemetryConsts.GenAI.Assistant.Message),
-                    JsonSerializer.Serialize(CreateAssistantEvent(message.Contents), OtelContext.Default.AssistantEvent));
+                    JsonSerializer.Serialize(CreateAssistantEvent(message.Contents), OtelContext.Default.AssistantEvent),
+                    activity);
             }
             else if (message.Role == ChatRole.Tool)
             {
@@ -476,7 +478,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                             Content = EnableSensitiveData && frc.Result is object result ?
                                 JsonSerializer.SerializeToNode(result, _jsonSerializerOptions.GetTypeInfo(result.GetType())) :
                                 null,
-                        }, OtelContext.Default.ToolEvent));
+                        }, OtelContext.Default.ToolEvent),
+                        activity);
                 }
             }
             else
@@ -486,14 +489,16 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     {
                         Role = message.Role != ChatRole.System && message.Role != ChatRole.User && !string.IsNullOrWhiteSpace(message.Role.Value) ? message.Role.Value : null,
                         Content = GetMessageContent(message.Contents),
-                    }, OtelContext.Default.SystemOrUserEvent));
+                    }, OtelContext.Default.SystemOrUserEvent),
+                    activity);
             }
         }
     }
 
-    private void LogChatResponse(ChatResponse response)
+    private void LogChatResponse(ChatResponse response, Activity? activity)
     {
-        if (!_logger.IsEnabled(EventLogLevel))
+        // Log and add span events if logging is enabled OR if we have an activity
+        if (!_logger.IsEnabled(EventLogLevel) && activity is null)
         {
             return;
         }
@@ -504,10 +509,15 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             FinishReason = response.FinishReason?.Value ?? "error",
             Index = 0,
             Message = CreateAssistantEvent(response.Messages is { Count: 1 } ? response.Messages[0].Contents : response.Messages.SelectMany(m => m.Contents)),
-        }, OtelContext.Default.ChoiceEvent));
+        }, OtelContext.Default.ChoiceEvent), activity);
     }
 
     private void Log(EventId id, [StringSyntax(StringSyntaxAttribute.Json)] string eventBodyJson)
+    {
+        Log(id, eventBodyJson, activity: null);
+    }
+
+    private void Log(EventId id, [StringSyntax(StringSyntaxAttribute.Json)] string eventBodyJson, Activity? activity)
     {
         // This is not the idiomatic way to log, but it's necessary for now in order to structure
         // the data in a way that the OpenTelemetry collector can work with it. The event body
@@ -519,7 +529,23 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             new(OpenTelemetryConsts.GenAI.SystemName, _system),
         ];
 
-        _logger.Log(EventLogLevel, id, tags, null, (_, __) => eventBodyJson);
+        // Only log to ILogger if logging is enabled
+        if (_logger.IsEnabled(EventLogLevel))
+        {
+            _logger.Log(EventLogLevel, id, tags, null, (_, __) => eventBodyJson);
+        }
+
+        // Add span event for OpenTelemetry tracing if activity is provided
+        if (activity is not null && id.Name is not null)
+        {
+            var eventTags = new ActivityTagsCollection
+            {
+                [OpenTelemetryConsts.Event.Name] = id.Name,
+                [OpenTelemetryConsts.GenAI.SystemName] = _system
+            };
+
+            activity.AddEvent(new ActivityEvent(id.Name, DateTimeOffset.UtcNow, eventTags));
+        }
     }
 
     private AssistantEvent CreateAssistantEvent(IEnumerable<AIContent> contents)
