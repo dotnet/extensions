@@ -224,41 +224,66 @@ public class OpenTelemetryChatClientTests
         // We expect 7 span events (same as log events): system, user, assistant, tool, assistant, user, choice
         Assert.Equal(7, spanEvents.Count);
         
-        Assert.Collection(spanEvents,
-            evt => {
-                Assert.Equal("gen_ai.system.message", evt.Name);
-                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.system.message");
-                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
-            },
-            evt => {
-                Assert.Equal("gen_ai.user.message", evt.Name);
-                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.user.message");
-                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
-            },
-            evt => {
-                Assert.Equal("gen_ai.assistant.message", evt.Name);
-                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.assistant.message");
-                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
-            },
-            evt => {
-                Assert.Equal("gen_ai.tool.message", evt.Name);
-                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.tool.message");
-                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
-            },
-            evt => {
-                Assert.Equal("gen_ai.assistant.message", evt.Name);
-                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.assistant.message");
-                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
-            },
-            evt => {
-                Assert.Equal("gen_ai.user.message", evt.Name);
-                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.user.message");
-                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
-            },
-            evt => {
-                Assert.Equal("gen_ai.choice", evt.Name);
-                Assert.Contains(evt.Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == "gen_ai.choice");
-                Assert.Contains(evt.Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
-            });
+        // Verify event names match the logged events
+        var expectedEventNames = new[]
+        {
+            "gen_ai.system.message", 
+            "gen_ai.user.message", 
+            "gen_ai.assistant.message", 
+            "gen_ai.tool.message", 
+            "gen_ai.assistant.message", 
+            "gen_ai.user.message", 
+            "gen_ai.choice"
+        };
+        
+        for (int i = 0; i < expectedEventNames.Length; i++)
+        {
+            Assert.Equal(expectedEventNames[i], spanEvents[i].Name);
+            Assert.Contains(spanEvents[i].Tags, tag => tag.Key == "event.name" && tag.Value?.ToString() == expectedEventNames[i]);
+            Assert.Contains(spanEvents[i].Tags, tag => tag.Key == "gen_ai.system" && tag.Value?.ToString() == "testservice");
+        }
+    }
+
+    [Fact]
+    public async Task SpanEventsRecordedEvenWhenLoggingDisabled()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        // Create a logger that has logging disabled
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Error));
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Hello"));
+            }
+        };
+
+        using var chatClient = new OpenTelemetryChatClient(innerClient, loggerFactory.CreateLogger("test"), sourceName);
+
+        await chatClient.GetResponseAsync([new ChatMessage(ChatRole.User, "Hi!")]);
+
+        var activity = Assert.Single(activities);
+        
+        // Verify that even though logging was disabled (LogLevel.Error), span events are still recorded
+        Assert.NotEmpty(activity.Events);
+        var spanEvents = activity.Events.ToList();
+        
+        // Should have at least user message and choice events
+        Assert.True(spanEvents.Count >= 2);
+        Assert.Contains(spanEvents, evt => evt.Name == "gen_ai.user.message");
+        Assert.Contains(spanEvents, evt => evt.Name == "gen_ai.choice");
+        
+        // Verify that ILogger events were NOT recorded (due to LogLevel.Error)
+        var logs = collector.GetSnapshot();
+        Assert.Empty(logs);
     }
 }
