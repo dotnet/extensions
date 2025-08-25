@@ -12,7 +12,6 @@ using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Logging.Internal;
@@ -40,7 +39,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
     private readonly OutgoingPathLoggingMode _outgoingPathLogMode;
     private readonly IOutgoingRequestContext _requestMetadataContext;
-    private readonly IDownstreamDependencyMetadataManager? _downstreamDependencyMetadataManager;
+    private readonly DownstreamDependencyMetadataManager? _downstreamDependencyMetadataManager;
 
     public HttpRequestReader(
         IServiceProvider serviceProvider,
@@ -48,7 +47,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         IHttpRouteFormatter routeFormatter,
         IHttpRouteParser httpRouteParser,
         IOutgoingRequestContext requestMetadataContext,
-        IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null,
+        DownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null,
         [ServiceKey] string? serviceKey = null)
         : this(
               optionsMonitor.GetKeyedOrCurrent(serviceKey),
@@ -66,7 +65,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         IHttpRouteParser httpRouteParser,
         IHttpHeadersReader httpHeadersReader,
         IOutgoingRequestContext requestMetadataContext,
-        IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null)
+        DownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null)
     {
         _outgoingPathLogMode = Throw.IfOutOfRange(options.RequestPathLoggingMode);
         _httpHeadersReader = httpHeadersReader;

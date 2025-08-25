@@ -4,14 +4,14 @@
 using System;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Telemetry.Internal;
+using Microsoft.Extensions.Http.Diagnostics;
 using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Telemetry;
 
 public class DownstreamDependencyMetadataManagerTests : IDisposable
 {
-    private readonly IDownstreamDependencyMetadataManager _depMetadataManager;
+    private readonly DownstreamDependencyMetadataManager _depMetadataManager;
     private readonly ServiceProvider _sp;
 
     public DownstreamDependencyMetadataManagerTests()
@@ -20,7 +20,7 @@ public class DownstreamDependencyMetadataManagerTests : IDisposable
             .AddDownstreamDependencyMetadata(new BackslashDownstreamDependencyMetadata())
             .AddDownstreamDependencyMetadata(new EmptyRouteDependencyMetadata())
             .BuildServiceProvider();
-        _depMetadataManager = _sp.GetRequiredService<IDownstreamDependencyMetadataManager>();
+        _depMetadataManager = _sp.GetRequiredService<DownstreamDependencyMetadataManager>();
     }
 
     [Theory]
