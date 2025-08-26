@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging.Testing;
 
@@ -17,9 +16,7 @@ public partial class FakeLogCollector
     private int _waitingEnumeratorCount;
 
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(CancellationToken cancellationToken = default)
-    {
-        return new LogAsyncEnumerable(this, cancellationToken);
-    }
+        => new LogAsyncEnumerable(this, cancellationToken);
 
     private class LogAsyncEnumerable : IAsyncEnumerable<FakeLogRecord>
     {
@@ -34,19 +31,9 @@ public partial class FakeLogCollector
             _enumerableCancellationToken = enumerableCancellationToken;
         }
 
-        public IAsyncEnumerator<FakeLogRecord> GetAsyncEnumerator(CancellationToken enumeratorCancellationToken = default)
-        {
-            // Locking to protect against race between the enumerator creation and callback registration
-            lock (_collector._records)
-            {
-                var enumerator = new StreamEnumerator(
-                    _collector,
-                    _enumerableCancellationToken,
-                    enumeratorCancellationToken);
-
-                return enumerator;
-            }
-        }
+        public IAsyncEnumerator<FakeLogRecord> GetAsyncEnumerator(
+            CancellationToken enumeratorCancellationToken = default)
+                => new StreamEnumerator(_collector, _enumerableCancellationToken, enumeratorCancellationToken);
     }
 
     private sealed class StreamEnumerator : IAsyncEnumerator<FakeLogRecord>
@@ -67,7 +54,6 @@ public partial class FakeLogCollector
             CancellationToken enumeratorCancellationToken)
         {
             _collector = collector;
-
             _masterCts = CancellationTokenSource.CreateLinkedTokenSource([enumerableCancellationToken, enumeratorCancellationToken]);
         }
 

@@ -50,18 +50,11 @@ public partial class FakeLogCollector
     /// <summary>
     /// Removes all accumulated log records from the collector.
     /// </summary>
-    public void Clear(int? count = null)
+    public void Clear()
     {
         lock (_records)
         {
-            if (!count.HasValue || count.Value >= _records.Count)
-            {
-                _records.Clear();
-            }
-            else
-            {
-                _records.RemoveRange(0, count.Value);
-            }
+            _records.Clear();
         }
     }
 

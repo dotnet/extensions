@@ -22,10 +22,9 @@ public partial class FakeLogCollectorTests
     }
 
     [Theory]
-    [InlineData(true, false, false)]
-    [InlineData(true, false, true)]
-    [InlineData(false, true, false)]
-    public async Task LogAwaitingDemo(bool arrivesInAwaitedOrder, bool expectedToCancel, bool useClear)
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task LogAwaitingDemo(bool arrivesInAwaitedOrder, bool expectedToCancel)
     {
         var collector = FakeLogCollector.Create(new FakeLogCollectorOptions());
         var eventTracker = new ConcurrentQueue<string>();
@@ -49,29 +48,22 @@ public partial class FakeLogCollectorTests
         Assert.False(res.wasCancelled);
         Assert.Equal(6, res.index);
 
-        if (useClear)
-        {
-            var countToClear = res.index + 1;
-            eventTracker.Enqueue($"Clearing collector by {countToClear} items at {DateTime.Now}");
-            collector.Clear(countToClear);
-        }
-
         // This gap simulates an action on the tested running code expected to trigger event C followed by Sync
         await Task.Delay(2_000);
 
         res = await AwaitSequence(
             new Queue<string>(["Log C", "Sync"]), // Wait for Log C followed by Sync
-            fromIndex: useClear ? 0 : res.index + 1,
+            fromIndex: res.index + 1,
             collector,
             eventTracker,
             timeout: waitingTimeout);
 
         Assert.Equal(expectedToCancel, res.wasCancelled);
-        Assert.Equal(expectedToCancel ? -1 : (useClear ? 2 : 9), res.index);
+        Assert.Equal(expectedToCancel ? -1 : 9, res.index);
 
         await logEmittingTask;
 
-        if (!useClear && !expectedToCancel)
+        if (!expectedToCancel)
         {
             // The user may want to await partial states to perform actions, but then perform a sanity check on the whole history
             var snapshot = collector.GetSnapshot();
