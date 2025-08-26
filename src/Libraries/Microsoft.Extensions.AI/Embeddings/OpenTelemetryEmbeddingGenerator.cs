@@ -59,7 +59,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             _defaultModelId = metadata.DefaultModelId;
             _defaultModelDimensions = metadata.DefaultModelDimensions;
             _modelProvider = metadata.ProviderName;
-            _endpointAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
+            _endpointAddress = metadata.ProviderUri?.Host;
             _endpointPort = metadata.ProviderUri?.Port ?? 0;
         }
 

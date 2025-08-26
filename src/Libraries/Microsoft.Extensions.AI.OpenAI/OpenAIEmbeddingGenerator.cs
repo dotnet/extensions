@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
-using OpenAI;
 using OpenAI.Embeddings;
 
 #pragma warning disable S1067 // Expressions should not be too complex
@@ -55,10 +54,7 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             ?.GetValue(embeddingClient) as Uri)?.ToString() ??
             DefaultOpenAIEndpoint;
 
-        FieldInfo? modelField = typeof(EmbeddingClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        string? modelId = modelField?.GetValue(embeddingClient) as string;
-
-        _metadata = CreateMetadata("openai", providerUrl, modelId, defaultModelDimensions);
+        _metadata = CreateMetadata("openai", providerUrl, _embeddingClient.Model, defaultModelDimensions);
     }
 
     /// <inheritdoc />

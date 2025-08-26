@@ -14,6 +14,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
@@ -112,7 +113,7 @@ public static partial class AIJsonUtilities
 
             JsonNode parameterSchema = CreateJsonSchemaCore(
                 type: parameter.ParameterType,
-                parameterName: parameter.Name,
+                parameter: parameter,
                 description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 hasDefaultValue: parameter.HasDefaultValue,
                 defaultValue: GetDefaultValueNormalized(parameter),
@@ -177,7 +178,7 @@ public static partial class AIJsonUtilities
     {
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
-        JsonNode schema = CreateJsonSchemaCore(type, parameterName: null, description, hasDefaultValue, defaultValue, serializerOptions, inferenceOptions);
+        JsonNode schema = CreateJsonSchemaCore(type, parameter: null, description, hasDefaultValue, defaultValue, serializerOptions, inferenceOptions);
 
         // Finally, apply any schema transformations if specified.
         if (inferenceOptions.TransformOptions is { } options)
@@ -207,7 +208,7 @@ public static partial class AIJsonUtilities
 #endif
     private static JsonNode CreateJsonSchemaCore(
         Type? type,
-        string? parameterName,
+        ParameterInfo? parameter,
         string? description,
         bool hasDefaultValue,
         object? defaultValue,
@@ -271,14 +272,14 @@ public static partial class AIJsonUtilities
                 // The resulting schema might be a $ref using a pointer to a different location in the document.
                 // As JSON pointer doesn't support relative paths, parameter schemas need to fix up such paths
                 // to accommodate the fact that they're being nested inside of a higher-level schema.
-                if (parameterName is not null && objSchema.TryGetPropertyValue(RefPropertyName, out JsonNode? paramName))
+                if (parameter?.Name is not null && objSchema.TryGetPropertyValue(RefPropertyName, out JsonNode? paramName))
                 {
                     // Fix up any $ref URIs to match the path from the root document.
                     string refUri = paramName!.GetValue<string>();
                     Debug.Assert(refUri is "#" || refUri.StartsWith("#/", StringComparison.Ordinal), $"Expected {nameof(refUri)} to be either # or start with #/, got {refUri}");
                     refUri = refUri == "#"
-                        ? $"#/{PropertiesPropertyName}/{parameterName}"
-                        : $"#/{PropertiesPropertyName}/{parameterName}/{refUri.AsMemory("#/".Length)}";
+                        ? $"#/{PropertiesPropertyName}/{parameter.Name}"
+                        : $"#/{PropertiesPropertyName}/{parameter.Name}/{refUri.AsMemory("#/".Length)}";
 
                     objSchema[RefPropertyName] = (JsonNode)refUri;
                 }
@@ -289,23 +290,54 @@ public static partial class AIJsonUtilities
                     objSchema.InsertAtStart(TypePropertyName, "string");
                 }
 
-                // Include the type keyword in nullable enum types
-                if (Nullable.GetUnderlyingType(ctx.TypeInfo.Type)?.IsEnum is true && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
+                // Include a trivial items keyword if missing
+                if (ctx.TypeInfo.Kind is JsonTypeInfoKind.Enumerable && !objSchema.ContainsKey(ItemsPropertyName))
                 {
-                    objSchema.InsertAtStart(TypePropertyName, new JsonArray { (JsonNode)"string", (JsonNode)"null" });
+                    objSchema.Add(ItemsPropertyName, new JsonObject());
                 }
 
                 // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
                 // schemas with "type": [...], and only understand "type" being a single value.
                 // In certain configurations STJ represents .NET numeric types as ["string", "number"], which will then lead to an error.
-                if (TypeIsIntegerWithStringNumberHandling(ctx, objSchema, out string? numericType))
+                if (TypeIsIntegerWithStringNumberHandling(ctx, objSchema, out string? numericType, out bool isNullable))
                 {
                     // We don't want to emit any array for "type". In this case we know it contains "integer" or "number",
                     // so reduce the type to that alone, assuming it's the most specific type.
                     // This makes schemas for Int32 (etc) work with Ollama.
                     JsonObject obj = ConvertSchemaToObject(ref schema);
-                    obj[TypePropertyName] = numericType;
+                    if (isNullable)
+                    {
+                        // If the type is nullable, we still need use a type array
+                        obj[TypePropertyName] = new JsonArray { (JsonNode)numericType, (JsonNode)"null" };
+                    }
+                    else
+                    {
+                        obj[TypePropertyName] = (JsonNode)numericType;
+                    }
+
                     _ = obj.Remove(PatternPropertyName);
+                }
+
+                if (Nullable.GetUnderlyingType(ctx.TypeInfo.Type) is Type nullableElement)
+                {
+                    // Account for bug https://github.com/dotnet/runtime/issues/117493
+                    // To be removed once System.Text.Json v10 becomes the lowest supported version.
+                    // null not inserted in the type keyword for root-level Nullable<T> types.
+                    if (objSchema.TryGetPropertyValue(TypePropertyName, out JsonNode? typeKeyWord) &&
+                        typeKeyWord?.GetValueKind() is JsonValueKind.String)
+                    {
+                        string typeValue = typeKeyWord.GetValue<string>()!;
+                        if (typeValue is not "null")
+                        {
+                            objSchema[TypePropertyName] = new JsonArray { (JsonNode)typeValue, (JsonNode)"null" };
+                        }
+                    }
+
+                    // Include the type keyword in nullable enum types
+                    if (nullableElement.IsEnum && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
+                    {
+                        objSchema.InsertAtStart(TypePropertyName, new JsonArray { (JsonNode)"string", (JsonNode)"null" });
+                    }
                 }
             }
 
@@ -327,7 +359,7 @@ public static partial class AIJsonUtilities
                 ConvertSchemaToObject(ref schema).InsertAtStart(SchemaPropertyName, (JsonNode)SchemaKeywordUri);
             }
 
-            ApplyDataAnnotations(parameterName, ref schema, ctx);
+            ApplyDataAnnotations(ref schema, ctx);
 
             // Finally, apply any user-defined transformations if specified.
             if (inferenceOptions.TransformSchemaNode is { } transformer)
@@ -357,30 +389,30 @@ public static partial class AIJsonUtilities
                 }
             }
 
-            void ApplyDataAnnotations(string? parameterName, ref JsonNode schema, AIJsonSchemaCreateContext ctx)
+            void ApplyDataAnnotations(ref JsonNode schema, AIJsonSchemaCreateContext ctx)
             {
-                if (ctx.GetCustomAttribute<DisplayNameAttribute>() is { } displayNameAttribute)
+                if (ResolveAttribute<DisplayNameAttribute>() is { } displayNameAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[TitlePropertyName] ??= displayNameAttribute.DisplayName;
                 }
 
 #if NET || NETFRAMEWORK
-                if (ctx.GetCustomAttribute<EmailAddressAttribute>() is { } emailAttribute)
+                if (ResolveAttribute<EmailAddressAttribute>() is { } emailAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[FormatPropertyName] ??= "email";
                 }
 
-                if (ctx.GetCustomAttribute<UrlAttribute>() is { } urlAttribute)
+                if (ResolveAttribute<UrlAttribute>() is { } urlAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[FormatPropertyName] ??= "uri";
                 }
 
-                if (ctx.GetCustomAttribute<RegularExpressionAttribute>() is { } regexAttribute)
+                if (ResolveAttribute<RegularExpressionAttribute>() is { } regexAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[PatternPropertyName] ??= regexAttribute.Pattern;
                 }
 
-                if (ctx.GetCustomAttribute<StringLengthAttribute>() is { } stringLengthAttribute)
+                if (ResolveAttribute<StringLengthAttribute>() is { } stringLengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
 
@@ -392,7 +424,7 @@ public static partial class AIJsonUtilities
                     obj[MaxLengthStringPropertyName] ??= stringLengthAttribute.MaximumLength;
                 }
 
-                if (ctx.GetCustomAttribute<MinLengthAttribute>() is { } minLengthAttribute)
+                if (ResolveAttribute<MinLengthAttribute>() is { } minLengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
                     if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
@@ -405,7 +437,7 @@ public static partial class AIJsonUtilities
                     }
                 }
 
-                if (ctx.GetCustomAttribute<MaxLengthAttribute>() is { } maxLengthAttribute)
+                if (ResolveAttribute<MaxLengthAttribute>() is { } maxLengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
                     if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
@@ -418,7 +450,7 @@ public static partial class AIJsonUtilities
                     }
                 }
 
-                if (ctx.GetCustomAttribute<RangeAttribute>() is { } rangeAttribute)
+                if (ResolveAttribute<RangeAttribute>() is { } rangeAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
 
@@ -489,12 +521,12 @@ public static partial class AIJsonUtilities
 #endif
 
 #if NET
-                if (ctx.GetCustomAttribute<Base64StringAttribute>() is { } base64Attribute)
+                if (ResolveAttribute<Base64StringAttribute>() is { } base64Attribute)
                 {
                     ConvertSchemaToObject(ref schema)[ContentEncodingPropertyName] ??= "base64";
                 }
 
-                if (ctx.GetCustomAttribute<LengthAttribute>() is { } lengthAttribute)
+                if (ResolveAttribute<LengthAttribute>() is { } lengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
 
@@ -518,7 +550,7 @@ public static partial class AIJsonUtilities
                     }
                 }
 
-                if (ctx.GetCustomAttribute<AllowedValuesAttribute>() is { } allowedValuesAttribute)
+                if (ResolveAttribute<AllowedValuesAttribute>() is { } allowedValuesAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
                     if (!obj.ContainsKey(EnumPropertyName))
@@ -530,7 +562,7 @@ public static partial class AIJsonUtilities
                     }
                 }
 
-                if (ctx.GetCustomAttribute<DeniedValuesAttribute>() is { } deniedValuesAttribute)
+                if (ResolveAttribute<DeniedValuesAttribute>() is { } deniedValuesAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
 
@@ -565,7 +597,7 @@ public static partial class AIJsonUtilities
                     return enumArray;
                 }
 
-                if (ctx.GetCustomAttribute<DataTypeAttribute>() is { } dataTypeAttribute)
+                if (ResolveAttribute<DataTypeAttribute>() is { } dataTypeAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
                     switch (dataTypeAttribute.DataType)
@@ -597,15 +629,27 @@ public static partial class AIJsonUtilities
                     }
                 }
 #endif
+                TAttribute? ResolveAttribute<TAttribute>()
+                    where TAttribute : Attribute
+                {
+                    // If this is the root schema, check for any parameter attributes first.
+                    if (ctx.Path.IsEmpty && parameter?.GetCustomAttribute<TAttribute>(inherit: true) is TAttribute attr)
+                    {
+                        return attr;
+                    }
+
+                    return ctx.GetCustomAttribute<TAttribute>(inherit: true);
+                }
             }
         }
     }
 
-    private static bool TypeIsIntegerWithStringNumberHandling(AIJsonSchemaCreateContext ctx, JsonObject schema, [NotNullWhen(true)] out string? numericType)
+    private static bool TypeIsIntegerWithStringNumberHandling(AIJsonSchemaCreateContext ctx, JsonObject schema, [NotNullWhen(true)] out string? numericType, out bool isNullable)
     {
         numericType = null;
+        isNullable = false;
 
-        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray { Count: 2 } typeArray)
+        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray typeArray)
         {
             bool allowString = false;
 
@@ -617,11 +661,23 @@ public static partial class AIJsonUtilities
                     switch (type)
                     {
                         case "integer" or "number":
+                            if (numericType is not null)
+                            {
+                                // Conflicting numeric type
+                                return false;
+                            }
+
                             numericType = type;
                             break;
                         case "string":
                             allowString = true;
                             break;
+                        case "null":
+                            isNullable = true;
+                            break;
+                        default:
+                            // keyword is not valid in the context of numeric types.
+                            return false;
                     }
                 }
             }
@@ -665,7 +721,7 @@ public static partial class AIJsonUtilities
 
         if (defaultValue is null || (defaultValue == DBNull.Value && parameterType != typeof(DBNull)))
         {
-            return parameterType.IsValueType
+            return parameterType.IsValueType && Nullable.GetUnderlyingType(parameterType) is null
 #if NET
                 ? RuntimeHelpers.GetUninitializedObject(parameterType)
 #else

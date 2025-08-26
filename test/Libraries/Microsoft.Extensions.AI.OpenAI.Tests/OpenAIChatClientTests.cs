@@ -398,7 +398,7 @@ public class OpenAIChatClientTests
                     ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
                 };
                 openAIOptions.StopSequences.Add("hello");
-                openAIOptions.Tools.Add(OpenAIClientExtensions.AsOpenAIChatTool(tool));
+                openAIOptions.Tools.Add(tool.AsOpenAIChatTool());
                 return openAIOptions;
             },
             ModelId = null,
@@ -475,7 +475,7 @@ public class OpenAIChatClientTests
                     ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
                 };
                 openAIOptions.StopSequences.Add("hello");
-                openAIOptions.Tools.Add(OpenAIClientExtensions.AsOpenAIChatTool(tool));
+                openAIOptions.Tools.Add(tool.AsOpenAIChatTool());
                 return openAIOptions;
             },
             ModelId = null, // has no effect, you cannot change the model of an OpenAI's ChatClient.

@@ -72,6 +72,7 @@ public sealed class EquivalenceEvaluator : IEvaluator
 
         var metric = new NumericMetric(EquivalenceMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {

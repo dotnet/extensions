@@ -171,6 +171,21 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateJsonSchema_TrivialArray_GeneratesExpectedJsonSchema()
+    {
+        JsonElement expected = JsonDocument.Parse("""
+            {
+                "type": "array",
+                "items": {}
+            }
+            """).RootElement;
+
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(object[]), serializerOptions: JsonContext.Default.Options);
+
+        AssertDeepEquals(expected, actual);
+    }
+
+    [Fact]
     public static void CreateJsonSchema_OverriddenParameters_GeneratesExpectedJsonSchema()
     {
         JsonElement expected = JsonDocument.Parse("""
@@ -354,13 +369,21 @@ public static partial class AIJsonUtilitiesTests
         int i = 0;
         foreach (JsonProperty property in schemaParameters.EnumerateObject())
         {
-            string numericType = Type.GetTypeCode(parameters[i].ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
-                ? "number"
-                : "integer";
+            bool isNullable = false;
+            Type type = parameters[i].ParameterType;
+            if (Nullable.GetUnderlyingType(type) is { } elementType)
+            {
+                type = elementType;
+                isNullable = true;
+            }
+
+            string numericType = Type.GetTypeCode(type) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
+                ? "\"number\""
+                : "\"integer\"";
 
             JsonElement expected = JsonDocument.Parse($$"""
                 {
-                  "type": "{{numericType}}"
+                  "type": {{(isNullable ? $"[{numericType}, \"null\"]" : numericType)}}
                 }
                 """).RootElement;
 
@@ -378,6 +401,26 @@ public static partial class AIJsonUtilitiesTests
     {
         A = 1,
         B = 2
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_ReadsParameterDataAnnotationAttributes()
+    {
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
+        AIFunction func = AIFunctionFactory.Create(([Range(1, 10)] int num, [StringLength(100, MinimumLength = 1)] string str) => num + str.Length, serializerOptions: options);
+
+        using JsonDocument expectedSchema = JsonDocument.Parse("""
+            {
+                "type":"object",
+                "properties": {
+                    "num": { "type":"integer", "minimum": 1, "maximum": 10 },
+                    "str": { "type":"string", "minLength": 1, "maxLength": 100 }
+                },
+                "required":["num","str"]
+            }
+            """);
+
+        AssertDeepEquals(expectedSchema.RootElement, func.JsonSchema);
     }
 
     [Fact]
@@ -935,13 +978,14 @@ public static partial class AIJsonUtilitiesTests
         JsonSerializerOptions options = new()
         {
             TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
         options.AddAIContentType<DerivedAIContent>("derivativeContent");
 
         AIContent c = new DerivedAIContent { DerivedValue = 42 };
         string json = JsonSerializer.Serialize(c, options);
-        Assert.Equal("""{"$type":"derivativeContent","DerivedValue":42,"AdditionalProperties":null}""", json);
+        Assert.Equal("""{"$type":"derivativeContent","DerivedValue":42}""", json);
 
         AIContent? deserialized = JsonSerializer.Deserialize<AIContent>(json, options);
         Assert.IsType<DerivedAIContent>(deserialized);
@@ -1317,6 +1361,7 @@ public static partial class AIJsonUtilitiesTests
     [JsonSerializable(typeof(DerivedAIContent))]
     [JsonSerializable(typeof(MyPoco))]
     [JsonSerializable(typeof(MyEnumValue?))]
+    [JsonSerializable(typeof(object[]))]
     private partial class JsonContext : JsonSerializerContext;
 
     private static bool DeepEquals(JsonElement element1, JsonElement element2)

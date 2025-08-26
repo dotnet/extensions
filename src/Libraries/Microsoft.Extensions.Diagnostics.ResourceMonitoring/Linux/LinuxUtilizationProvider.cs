@@ -37,7 +37,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private DateTimeOffset _refreshAfterMemory;
     private double _cpuPercentage = double.NaN;
     private double _lastCpuCoresUsed = double.NaN;
-    private double _memoryPercentage;
+    private ulong _memoryUsage;
     private long _previousCgroupCpuTime;
     private long _previousHostCpuTime;
     private long _previousCgroupCpuPeriodCounter;
@@ -116,12 +116,18 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         _ = meter.CreateObservableGauge(
             name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization,
-            observeValues: () => GetMeasurementWithRetry(MemoryUtilization),
+            observeValues: () => GetMeasurementWithRetry(MemoryPercentage),
             unit: "1");
+
+        _ = meter.CreateObservableUpDownCounter(
+            name: ResourceUtilizationInstruments.ContainerMemoryUsage,
+            observeValues: () => GetMeasurementWithRetry(() => (long)MemoryUsage()),
+            unit: "By",
+            description: "Memory usage of the container.");
 
         _ = meter.CreateObservableGauge(
             name: ResourceUtilizationInstruments.ProcessMemoryUtilization,
-            observeValues: () => GetMeasurementWithRetry(MemoryUtilization),
+            observeValues: () => GetMeasurementWithRetry(MemoryPercentage),
             unit: "1");
 
         // cpuRequest is a CPU request (aka guaranteed number of CPU units) for pod, for host its 1 core
@@ -216,7 +222,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         return _cpuPercentage;
     }
 
-    public double MemoryUtilization()
+    public ulong MemoryUsage()
     {
         DateTimeOffset now = _timeProvider.GetUtcNow();
 
@@ -224,26 +230,24 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         {
             if (now < _refreshAfterMemory)
             {
-                return _memoryPercentage;
+                return _memoryUsage;
             }
         }
 
-        ulong memoryUsed = _parser.GetMemoryUsageInBytes();
+        ulong memoryUsage = _parser.GetMemoryUsageInBytes();
 
         lock (_memoryLocker)
         {
             if (now >= _refreshAfterMemory)
             {
-                double memoryPercentage = Math.Min(One, (double)memoryUsed / _memoryLimit);
-
-                _memoryPercentage = memoryPercentage;
+                _memoryUsage = memoryUsage;
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
         }
 
-        _logger.MemoryUsageData(memoryUsed, _memoryLimit, _memoryPercentage);
+        _logger.MemoryUsageData(_memoryUsage);
 
-        return _memoryPercentage;
+        return _memoryUsage;
     }
 
     /// <remarks>
@@ -264,14 +268,24 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             memoryUsageInBytes: memoryUsed);
     }
 
-    private Measurement<double>[] GetMeasurementWithRetry(Func<double> func)
+    private double MemoryPercentage()
     {
-        if (!TryGetValueWithRetry(func, out double value))
+        ulong memoryUsage = MemoryUsage();
+        double memoryPercentage = Math.Min(One, (double)memoryUsage / _memoryLimit);
+
+        _logger.MemoryPercentageData(memoryUsage, _memoryLimit, memoryPercentage);
+        return memoryPercentage;
+    }
+
+    private Measurement<T>[] GetMeasurementWithRetry<T>(Func<T> func)
+        where T : struct
+    {
+        if (!TryGetValueWithRetry(func, out T value))
         {
-            return Array.Empty<Measurement<double>>();
+            return Array.Empty<Measurement<T>>();
         }
 
-        return new[] { new Measurement<double>(value) };
+        return new[] { new Measurement<T>(value) };
     }
 
     private bool TryGetValueWithRetry<T>(Func<T> func, out T value)

@@ -61,7 +61,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         {
             _defaultModelId = metadata.DefaultModelId;
             _system = metadata.ProviderName;
-            _serverAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
+            _serverAddress = metadata.ProviderUri?.Host;
             _serverPort = metadata.ProviderUri?.Port ?? 0;
         }
 

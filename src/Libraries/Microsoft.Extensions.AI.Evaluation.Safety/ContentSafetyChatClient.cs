@@ -20,7 +20,8 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 internal sealed class ContentSafetyChatClient : IChatClient
 {
-    private const string Moniker = "Azure AI Foundry Evaluation";
+    private const string ProviderName = "azure.ai.foundry";
+    private const string ModelId = $"{ProviderName}.evaluation";
 
     private readonly ContentSafetyService _service;
     private readonly IChatClient? _originalChatClient;
@@ -35,27 +36,14 @@ internal sealed class ContentSafetyChatClient : IChatClient
 
         ChatClientMetadata? originalMetadata = _originalChatClient?.GetService<ChatClientMetadata>();
 
-        string providerName =
-            $"{Moniker} (" +
-            $"Subscription: {contentSafetyServiceConfiguration.SubscriptionId}, " +
-            $"Resource Group: {contentSafetyServiceConfiguration.ResourceGroupName}, " +
-            $"Project: {contentSafetyServiceConfiguration.ProjectName})";
-
+        string providerName = ProviderName;
         if (originalMetadata?.ProviderName is string originalProviderName &&
             !string.IsNullOrWhiteSpace(originalProviderName))
         {
-            providerName = $"{originalProviderName}; {providerName}";
+            providerName = $"{providerName}; {originalProviderName}";
         }
 
-        string modelId = Moniker;
-
-        if (originalMetadata?.DefaultModelId is string originalModelId &&
-            !string.IsNullOrWhiteSpace(originalModelId))
-        {
-            modelId = $"{originalModelId}; {modelId}";
-        }
-
-        _metadata = new ChatClientMetadata(providerName, originalMetadata?.ProviderUri, modelId);
+        _metadata = new ChatClientMetadata(providerName, defaultModelId: ModelId);
     }
 
     public async Task<ChatResponse> GetResponseAsync(
@@ -77,7 +65,7 @@ internal sealed class ContentSafetyChatClient : IChatClient
 
             return new ChatResponse(new ChatMessage(ChatRole.Assistant, annotationResult))
             {
-                ModelId = Moniker
+                ModelId = ModelId
             };
         }
         else
@@ -110,7 +98,7 @@ internal sealed class ContentSafetyChatClient : IChatClient
 
             yield return new ChatResponseUpdate(ChatRole.Assistant, annotationResult)
             {
-                ModelId = Moniker
+                ModelId = ModelId
             };
         }
         else

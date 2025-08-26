@@ -587,4 +587,26 @@ public class LogPropertiesTests
 
         latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
     }
+
+    [Fact]
+    public void LogPropertiesCorrectlyLogsObjectFromAnotherAssembly()
+    {
+        LogObjectFromAnotherAssembly(_logger, new ObjectToLog
+        {
+            PropertyToIgnore = "Foo",
+            PropertyToLog = "Bar",
+            FieldToLog = new FieldToLog { Name = "Fizz", Value = "Buzz" }
+        });
+
+        Assert.Equal(1, _logger.Collector.Count);
+
+        var state = _logger.Collector.LatestRecord.StructuredState!
+            .ToDictionary(p => p.Key, p => p.Value);
+
+        Assert.Equal(4, state.Count);
+        Assert.Contains("{OriginalFormat}", state);
+        Assert.Contains("logObject.PropertyToLog", state);
+        Assert.Contains("logObject.FieldToLog.Name", state);
+        Assert.Contains("logObject.FieldToLog.Value", state);
+    }
 }
