@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Xunit;
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements
+#pragma warning disable EXTAI0001 // Suppress experimental warnings for testing
 
 namespace Microsoft.Extensions.AI;
 
@@ -19,6 +20,340 @@ public class ChatResponseUpdateExtensionsTests
     public void InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("updates", () => ((List<ChatResponseUpdate>)null!).ToChatResponse());
+    }
+
+    [Fact]
+    public void ApplyUpdate_InvalidArgs_Throws()
+    {
+        var response = new ChatResponse();
+        var update = new ChatResponseUpdate();
+
+        Assert.Throws<ArgumentNullException>("response", () => ((ChatResponse)null!).ApplyUpdate(update));
+        Assert.Throws<ArgumentNullException>("update", () => response.ApplyUpdate(null!));
+    }
+
+    [Fact]
+    public void ApplyUpdate_WithDefaultOptions_UpdatesResponse()
+    {
+        // Arrange
+        var response = new ChatResponse();
+        var update = new ChatResponseUpdate(ChatRole.Assistant, "Hello, world!")
+        {
+            ResponseId = "resp123",
+            MessageId = "msg456",
+            CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero),
+            ModelId = "model789",
+            ConversationId = "conv101112",
+            FinishReason = ChatFinishReason.Stop
+        };
+
+        // Act
+        response.ApplyUpdate(update);
+
+        // Assert
+        Assert.Equal("resp123", response.ResponseId);
+        Assert.Equal("model789", response.ModelId);
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero), response.CreatedAt);
+        Assert.Equal("conv101112", response.ConversationId);
+        Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
+
+        var message = Assert.Single(response.Messages);
+        Assert.Equal("msg456", message.MessageId);
+        Assert.Equal(ChatRole.Assistant, message.Role);
+        Assert.Equal("Hello, world!", message.Text);
+    }
+
+    [Fact]
+    public void ApplyUpdate_WithOptions_UsesCoalescingOptions()
+    {
+        // Arrange
+        var response = new ChatResponse();
+        var existingDataContent = new DataContent("data:text/plain;base64,aGVsbG8=")
+        {
+            Name = "test-data"
+        };
+        response.Messages.Add(new ChatMessage(ChatRole.Assistant, [existingDataContent]));
+
+        var newDataContent = new DataContent("data:text/plain;base64,d29ybGQ=")
+        {
+            Name = "test-data"  // Same name as existing
+        };
+        var update = new ChatResponseUpdate
+        {
+            Contents = [newDataContent]
+        };
+
+        var options = new ChatResponseUpdateCoalescingOptions
+        {
+            ReplaceDataContentWithSameName = true
+        };
+
+        // Act
+        response.ApplyUpdate(update, options);
+
+        // Assert
+        var message = Assert.Single(response.Messages);
+        var dataContent = Assert.Single(message.Contents.OfType<DataContent>());
+        Assert.Equal("data:text/plain;base64,d29ybGQ=", dataContent.Uri);
+        Assert.Equal("test-data", dataContent.Name);
+    }
+
+    [Fact]
+    public void ApplyUpdate_WithNullOptions_WorksCorrectly()
+    {
+        // Arrange
+        var response = new ChatResponse();
+        var update = new ChatResponseUpdate(ChatRole.User, "Test message");
+
+        // Act - explicitly pass null options
+        response.ApplyUpdate(update, null);
+
+        // Assert
+        var message = Assert.Single(response.Messages);
+        Assert.Equal("Test message", message.Text);
+        Assert.Equal(ChatRole.User, message.Role);
+    }
+
+    [Fact]
+    public void ApplyUpdates_InvalidArgs_Throws()
+    {
+        var response = new ChatResponse();
+        var updates = new List<ChatResponseUpdate>();
+
+        Assert.Throws<ArgumentNullException>("response", () => ((ChatResponse)null!).ApplyUpdates(updates));
+        Assert.Throws<ArgumentNullException>("updates", () => response.ApplyUpdates(null!));
+    }
+
+    [Fact]
+    public void ApplyUpdates_WithDefaultOptions_UpdatesResponse()
+    {
+        // Arrange
+        var response = new ChatResponse();
+        var updates = new List<ChatResponseUpdate>
+        {
+            new(ChatRole.Assistant, "Hello") { MessageId = "msg1", ResponseId = "resp1" },
+            new(null, ", ") { MessageId = "msg1" },
+            new(null, "world!") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero) },
+            new() { Contents = [new UsageContent(new() { InputTokenCount = 10, OutputTokenCount = 5 })] }
+        };
+
+        // Act
+        response.ApplyUpdates(updates);
+
+        // Assert
+        Assert.Equal("resp1", response.ResponseId);
+        Assert.NotNull(response.Usage);
+        Assert.Equal(10, response.Usage.InputTokenCount);
+        Assert.Equal(5, response.Usage.OutputTokenCount);
+
+        var message = Assert.Single(response.Messages);
+        Assert.Equal("msg1", message.MessageId);
+        Assert.Equal("Hello, world!", message.Text);
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero), message.CreatedAt);
+    }
+
+    [Fact]
+    public void ApplyUpdates_WithOptions_UsesCoalescingOptions()
+    {
+        // Arrange
+        var response = new ChatResponse();
+        var existingDataContent = new DataContent("data:text/plain;base64,aGVsbG8=")
+        {
+            Name = "shared-name"
+        };
+        response.Messages.Add(new ChatMessage(ChatRole.Assistant, [existingDataContent]));
+
+        var sharedNameDataContent = new DataContent("data:text/plain;base64,dXBkYXRl")
+        {
+            Name = "shared-name"  // Same name
+        };
+        var otherNameDataContent = new DataContent("data:text/plain;base64,b3RoZXI=")
+        {
+            Name = "other-name"  // Different name
+        };
+        var updates = new List<ChatResponseUpdate>
+        {
+            new() { Contents = [sharedNameDataContent] },
+            new() { Contents = [otherNameDataContent] }
+        };
+
+        var options = new ChatResponseUpdateCoalescingOptions
+        {
+            ReplaceDataContentWithSameName = true
+        };
+
+        // Act
+        response.ApplyUpdates(updates, options);
+
+        // Assert
+        var message = Assert.Single(response.Messages);
+        Assert.Equal(2, message.Contents.Count);
+
+        var sharedNameContent = message.Contents.OfType<DataContent>().First(c => c.Name == "shared-name");
+        Assert.Equal("data:text/plain;base64,dXBkYXRl", sharedNameContent.Uri); // Should be replaced
+
+        var otherNameContent = message.Contents.OfType<DataContent>().First(c => c.Name == "other-name");
+        Assert.Equal("data:text/plain;base64,b3RoZXI=", otherNameContent.Uri); // Should be added
+    }
+
+    [Fact]
+    public void ApplyUpdates_WithEmptyCollection_DoesNothing()
+    {
+        // Arrange
+        var response = new ChatResponse();
+        var updates = new List<ChatResponseUpdate>();
+
+        // Act
+        response.ApplyUpdates(updates);
+
+        // Assert
+        Assert.Empty(response.Messages);
+    }
+
+    [Fact]
+    public void ApplyUpdates_WithNullOptions_WorksCorrectly()
+    {
+        // Arrange
+        var response = new ChatResponse();
+        var sharedNameDataContent = new DataContent("data:text/plain;base64,dXBkYXRl")
+        {
+            Name = "shared-name"  // Same name
+        };
+        var updates = new List<ChatResponseUpdate>
+        {
+            new(ChatRole.System, [sharedNameDataContent]),
+            new(ChatRole.System, [sharedNameDataContent])
+        };
+
+        // Act - explicitly pass null options
+        response.ApplyUpdates(updates, null);
+
+        // Assert
+        Assert.Single(response.Messages);
+        Assert.All(response.Messages[0].Contents, c => Assert.IsType<DataContent>(c));
+    }
+
+    [Fact]
+    public async Task ApplyUpdatesAsync_InvalidArgs_Throws()
+    {
+        var response = new ChatResponse();
+        var updates = YieldAsync(new List<ChatResponseUpdate>());
+
+        await Assert.ThrowsAsync<ArgumentNullException>("response", () => ((ChatResponse)null!).ApplyUpdatesAsync(updates));
+        await Assert.ThrowsAsync<ArgumentNullException>("updates", () => response.ApplyUpdatesAsync(null!));
+    }
+
+    [Fact]
+    public async Task ApplyUpdatesAsync_WithDefaultOptions_UpdatesResponse()
+    {
+        // Arrange
+        var response = new ChatResponse();
+        var updates = new List<ChatResponseUpdate>
+        {
+            new(ChatRole.Assistant, "Hello") { MessageId = "msg1", ResponseId = "resp1" },
+            new(null, " async") { MessageId = "msg1" },
+            new(null, " world!") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 11, 0, 0, TimeSpan.Zero) },
+            new() { Contents = [new UsageContent(new() { InputTokenCount = 15, OutputTokenCount = 8 })] }
+        };
+
+        // Act
+        await response.ApplyUpdatesAsync(YieldAsync(updates));
+
+        // Assert
+        Assert.Equal("resp1", response.ResponseId);
+        Assert.NotNull(response.Usage);
+        Assert.Equal(15, response.Usage.InputTokenCount);
+        Assert.Equal(8, response.Usage.OutputTokenCount);
+
+        var message = Assert.Single(response.Messages);
+        Assert.Equal("msg1", message.MessageId);
+        Assert.Equal("Hello async world!", message.Text);
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 11, 0, 0, TimeSpan.Zero), message.CreatedAt);
+    }
+
+    [Fact]
+    public async Task ApplyUpdatesAsync_WithOptions_UsesCoalescingOptions()
+    {
+        // Arrange
+        var response = new ChatResponse();
+        var existingDataContent = new DataContent("data:text/plain;base64,b3JpZ2luYWw=")
+        {
+            Name = "data-key"
+        };
+        response.Messages.Add(new ChatMessage(ChatRole.Assistant, [existingDataContent]));
+
+        var newDataContent = new DataContent("data:text/plain;base64,bmV3VmFsdWU=")
+        {
+            Name = "data-key"  // Same name
+        };
+        var updates = new List<ChatResponseUpdate>
+        {
+            new() { Contents = [newDataContent] },
+        };
+
+        var options = new ChatResponseUpdateCoalescingOptions
+        {
+            ReplaceDataContentWithSameName = true
+        };
+
+        // Act
+        await response.ApplyUpdatesAsync(YieldAsync(updates), options);
+
+        // Assert
+        var message = Assert.Single(response.Messages);
+        var dataContent = Assert.Single(message.Contents.OfType<DataContent>());
+        Assert.Equal("data:text/plain;base64,bmV3VmFsdWU=", dataContent.Uri); // Should be replaced
+        Assert.Equal("data-key", dataContent.Name);
+    }
+
+    [Fact]
+    public async Task ApplyUpdatesAsync_WithNullOptions_WorksCorrectly()
+    {
+        // Arrange
+        var response = new ChatResponse();
+        var updates = new List<ChatResponseUpdate>
+        {
+            new(ChatRole.Assistant, "Async message with null options")
+        };
+
+        // Act - explicitly pass null options
+        await response.ApplyUpdatesAsync(YieldAsync(updates), null);
+
+        // Assert
+        var message = Assert.Single(response.Messages);
+        Assert.Equal("Async message with null options", message.Text);
+    }
+
+    [Fact]
+    public async Task ApplyUpdatesAsync_MultipleMessages_ProcessedCorrectly()
+    {
+        // Arrange
+        var response = new ChatResponse();
+        var updates = new List<ChatResponseUpdate>
+        {
+            new(ChatRole.Assistant, "First") { MessageId = "msg1" },
+            new(null, " message") { MessageId = "msg1" },
+            new(ChatRole.User, "Second") { MessageId = "msg2" },
+            new(null, " message") { MessageId = "msg2" },
+            new(ChatRole.Assistant, "Third message") { MessageId = "msg3" }
+        };
+
+        // Act
+        await response.ApplyUpdatesAsync(YieldAsync(updates));
+
+        // Assert
+        Assert.Equal(3, response.Messages.Count);
+        Assert.Equal("First message", response.Messages[0].Text);
+        Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
+        Assert.Equal("msg1", response.Messages[0].MessageId);
+
+        Assert.Equal("Second message", response.Messages[1].Text);
+        Assert.Equal(ChatRole.User, response.Messages[1].Role);
+        Assert.Equal("msg2", response.Messages[1].MessageId);
+
+        Assert.Equal("Third message", response.Messages[2].Text);
+        Assert.Equal(ChatRole.Assistant, response.Messages[2].Role);
+        Assert.Equal("msg3", response.Messages[2].MessageId);
     }
 
     [Theory]
