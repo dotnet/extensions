@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
-//using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes;
 
 #if !NETFRAMEWORK
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
@@ -77,6 +76,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
             return services;
         }
 
+        _ = builder.Services.AddActivatedSingleton<KubernetesResourceQuotasProvider>();
         if (OperatingSystem.IsWindows())
         {
             _ = builder.AddWindowsProvider();
