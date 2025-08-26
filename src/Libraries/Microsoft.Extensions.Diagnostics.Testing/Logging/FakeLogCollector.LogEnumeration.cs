@@ -11,35 +11,26 @@ namespace Microsoft.Extensions.Logging.Testing;
 
 public partial class FakeLogCollector
 {
-    private readonly List<Action<int>> _indexUpdates = new();
-
     private TaskCompletionSource<bool> _logEnumerationSharedWaiter =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     private int _waitingEnumeratorCount;
 
-    public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(
-        int startingIndex = 0,
-        CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfOutOfRange(startingIndex, 0, int.MaxValue);
-
-        return new LogAsyncEnumerable(this, startingIndex, cancellationToken);
+        return new LogAsyncEnumerable(this, cancellationToken);
     }
 
     private class LogAsyncEnumerable : IAsyncEnumerable<FakeLogRecord>
     {
-        private readonly int _startingIndex;
         private readonly FakeLogCollector _collector;
         private readonly CancellationToken _enumerableCancellationToken;
 
         internal LogAsyncEnumerable(
             FakeLogCollector collector,
-            int startingIndex,
             CancellationToken enumerableCancellationToken)
         {
             _collector = collector;
-            _startingIndex = startingIndex;
             _enumerableCancellationToken = enumerableCancellationToken;
         }
 
@@ -50,18 +41,9 @@ public partial class FakeLogCollector
             {
                 var enumerator = new StreamEnumerator(
                     _collector,
-                    _startingIndex,
                     _enumerableCancellationToken,
-                    enumeratorCancellationToken,
-                    e =>
-                    {
-                        lock (_collector._records)
-                        {
-                            _ = _collector._indexUpdates.Remove(e.UpdateIndexByRemoved);
-                        }
-                    });
+                    enumeratorCancellationToken);
 
-                _collector._indexUpdates.Add(enumerator.UpdateIndexByRemoved);
                 return enumerator;
             }
         }
@@ -71,8 +53,6 @@ public partial class FakeLogCollector
     {
         private readonly FakeLogCollector _collector;
         private readonly CancellationTokenSource _masterCts;
-        private readonly CancellationTokenSource? _timeoutCts;
-        private readonly Action<StreamEnumerator>? _onDispose;
 
         private FakeLogRecord? _current;
         private int _index;
@@ -83,22 +63,12 @@ public partial class FakeLogCollector
 
         public StreamEnumerator(
             FakeLogCollector collector,
-            int startingIndex,
             CancellationToken enumerableCancellationToken,
-            CancellationToken enumeratorCancellationToken,
-            Action<StreamEnumerator>? onDispose)
+            CancellationToken enumeratorCancellationToken)
         {
             _collector = collector;
-            _index = startingIndex;
-            _onDispose = onDispose;
 
             _masterCts = CancellationTokenSource.CreateLinkedTokenSource([enumerableCancellationToken, enumeratorCancellationToken]);
-        }
-
-        public void UpdateIndexByRemoved(int removedItems)
-        {
-            // performed under lock by the calling mechanism during Clear()
-            _index = Math.Max(0, _index - removedItems);
         }
 
         public FakeLogRecord Current => _current ?? throw new InvalidOperationException("Enumeration not started.");
@@ -205,11 +175,8 @@ public partial class FakeLogCollector
 
             _disposed = true;
 
-            _onDispose?.Invoke(this);
-
             _masterCts.Cancel();
             _masterCts.Dispose();
-            _timeoutCts?.Dispose();
 
             return default;
         }

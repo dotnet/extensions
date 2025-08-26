@@ -54,21 +54,13 @@ public partial class FakeLogCollector
     {
         lock (_records)
         {
-            int removedCount;
             if (!count.HasValue || count.Value >= _records.Count)
             {
-                removedCount = _records.Count;
                 _records.Clear();
             }
             else
             {
-                removedCount = count.Value;
                 _records.RemoveRange(0, count.Value);
-            }
-
-            foreach(var indexUpdate in _indexUpdates)
-            {
-                indexUpdate(removedCount);
             }
         }
     }

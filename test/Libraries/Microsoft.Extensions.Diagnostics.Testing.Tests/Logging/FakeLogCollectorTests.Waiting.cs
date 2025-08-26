@@ -106,11 +106,16 @@ public partial class FakeLogCollectorTests
         using var cts = timeout.HasValue ? new CancellationTokenSource(timeout.Value) : new CancellationTokenSource();
         try
         {
-            int index = fromIndex - 1;
-            var enumeration = collector.GetLogsAsync(startingIndex: fromIndex, cancellationToken: cts.Token);
+            int index = -1;
+            var enumeration = collector.GetLogsAsync(cancellationToken: cts.Token);
             await foreach (var log in enumeration)
             {
                 index++;
+
+                if (index < fromIndex)
+                {
+                    continue;
+                }
 
                 var msg = log.Message;
                 var currentExpectation = sequence.Peek();
