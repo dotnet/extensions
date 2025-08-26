@@ -18,8 +18,8 @@ namespace Microsoft.Extensions.Http.Logging.Internal;
 
 internal sealed class HttpRequestReader : IHttpRequestReader
 {
-    private readonly IHttpRouteFormatter _routeFormatter;
-    private readonly IHttpRouteParser _httpRouteParser;
+    private readonly HttpRouteFormatter _routeFormatter;
+    private readonly HttpRouteParser _httpRouteParser;
     private readonly IHttpHeadersReader _httpHeadersReader;
     private readonly FrozenDictionary<string, DataClassification> _defaultSensitiveParameters;
 
@@ -44,8 +44,8 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     public HttpRequestReader(
         IServiceProvider serviceProvider,
         IOptionsMonitor<LoggingOptions> optionsMonitor,
-        IHttpRouteFormatter routeFormatter,
-        IHttpRouteParser httpRouteParser,
+        HttpRouteFormatter routeFormatter,
+        HttpRouteParser httpRouteParser,
         IOutgoingRequestContext requestMetadataContext,
         DownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null,
         [ServiceKey] string? serviceKey = null)
@@ -61,8 +61,8 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
     internal HttpRequestReader(
         LoggingOptions options,
-        IHttpRouteFormatter routeFormatter,
-        IHttpRouteParser httpRouteParser,
+        HttpRouteFormatter routeFormatter,
+        HttpRouteParser httpRouteParser,
         IHttpHeadersReader httpHeadersReader,
         IOutgoingRequestContext requestMetadataContext,
         DownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null)

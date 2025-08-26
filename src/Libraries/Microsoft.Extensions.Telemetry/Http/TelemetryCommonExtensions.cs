@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Diagnostics;
 
@@ -20,8 +19,8 @@ internal static class TelemetryCommonExtensions
     /// <returns>Returns <see cref="IServiceCollection"/> object.</returns>
     public static IServiceCollection AddHttpRouteProcessor(this IServiceCollection services)
     {
-        services.TryAddActivatedSingleton<IHttpRouteParser, HttpRouteParser>();
-        services.TryAddActivatedSingleton<IHttpRouteFormatter, HttpRouteFormatter>();
+        services.TryAddActivatedSingleton<HttpRouteParser, DefaultHttpRouteParser>();
+        services.TryAddActivatedSingleton<HttpRouteFormatter, DefaultHttpRouteFormatter>();
         return services;
     }
 }

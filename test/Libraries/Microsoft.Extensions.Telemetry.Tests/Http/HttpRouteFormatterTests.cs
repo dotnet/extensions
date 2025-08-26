@@ -496,7 +496,7 @@ public class HttpRouteFormatterTests
     {
         var redactorProvider = new FakeRedactorProvider(
             new FakeRedactorOptions { RedactionFormat = "Redacted:{0}" });
-        var httpParser = new HttpRouteParser(redactorProvider);
-        return new HttpRouteFormatter(httpParser, redactorProvider);
+        var httpParser = new DefaultHttpRouteParser(redactorProvider);
+        return new DefaultHttpRouteFormatter(httpParser, redactorProvider);
     }
 }

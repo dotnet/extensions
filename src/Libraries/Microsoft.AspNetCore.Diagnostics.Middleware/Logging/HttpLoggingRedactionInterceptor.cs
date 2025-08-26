@@ -26,8 +26,8 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
     private readonly IncomingPathLoggingMode _requestPathLogMode;
     private readonly HttpRouteParameterRedactionMode _parameterRedactionMode;
     private readonly ILogger<HttpLoggingRedactionInterceptor> _logger;
-    private readonly IHttpRouteParser _httpRouteParser;
-    private readonly IHttpRouteFormatter _httpRouteFormatter;
+    private readonly HttpRouteParser _httpRouteParser;
+    private readonly HttpRouteFormatter _httpRouteFormatter;
     private readonly IIncomingHttpRouteUtility _httpRouteUtility;
     private readonly HeaderReader _requestHeadersReader;
     private readonly HeaderReader _responseHeadersReader;
@@ -39,8 +39,8 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         IOptions<LoggingRedactionOptions> options,
         ILogger<HttpLoggingRedactionInterceptor> logger,
         IEnumerable<IHttpLogEnricher> httpLogEnrichers,
-        IHttpRouteParser httpRouteParser,
-        IHttpRouteFormatter httpRouteFormatter,
+        HttpRouteParser httpRouteParser,
+        HttpRouteFormatter httpRouteFormatter,
         IRedactorProvider redactorProvider,
         IIncomingHttpRouteUtility httpRouteUtility)
     {

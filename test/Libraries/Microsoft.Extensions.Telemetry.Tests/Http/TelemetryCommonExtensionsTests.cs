@@ -37,7 +37,7 @@ public class TelemetryCommonExtensionsTests
     {
         var sp = new ServiceCollection().AddFakeRedaction().AddHttpRouteProcessor().BuildServiceProvider();
 
-        Assert.NotNull(sp.GetRequiredService<IHttpRouteParser>());
-        Assert.NotNull(sp.GetRequiredService<IHttpRouteFormatter>());
+        Assert.NotNull(sp.GetRequiredService<HttpRouteParser>());
+        Assert.NotNull(sp.GetRequiredService<HttpRouteFormatter>());
     }
 }

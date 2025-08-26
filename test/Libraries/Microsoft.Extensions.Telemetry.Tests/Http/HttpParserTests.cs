@@ -643,8 +643,8 @@ public class HttpParserTests
     {
         var sp = new ServiceCollection().AddHttpRouteProcessor().AddFakeRedaction().BuildServiceProvider();
 
-        var httpRouteParser = sp.GetRequiredService<IHttpRouteParser>();
-        var httpRouteFormatter = sp.GetRequiredService<IHttpRouteFormatter>();
+        var httpRouteParser = sp.GetRequiredService<HttpRouteParser>();
+        var httpRouteFormatter = sp.GetRequiredService<HttpRouteFormatter>();
 
         Assert.NotNull(httpRouteParser);
         Assert.NotNull(httpRouteFormatter);
@@ -654,7 +654,7 @@ public class HttpParserTests
     {
         var redactorProvider = new FakeRedactorProvider(
             new FakeRedactorOptions { RedactionFormat = "Redacted:{0}" });
-        return new HttpRouteParser(redactorProvider);
+        return new DefaultHttpRouteParser(redactorProvider);
     }
 
     private static void ValidateRouteParameter(

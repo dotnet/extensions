@@ -1,13 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
+
 namespace Microsoft.Extensions.Http.Diagnostics;
 
 #pragma warning disable CA1815 // Override equals and operator equals on value types
 /// <summary>
 /// Struct to hold metadata about a route parameter.
 /// </summary>
-internal readonly struct HttpRouteParameter
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+public readonly struct HttpRouteParameter
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 {
     /// <summary>

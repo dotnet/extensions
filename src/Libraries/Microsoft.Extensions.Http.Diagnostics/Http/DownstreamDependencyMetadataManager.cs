@@ -115,7 +115,7 @@ public abstract class DownstreamDependencyMetadataManager
 
     private static void AddRouteToTrie(RequestMetadata routeMetadata, Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap)
     {
-        if (!dependencyTrieMap.TryGetValue(routeMetadata.DependencyName, out var routeMetadataTrieRoot))
+        if (!dependencyTrieMap.TryGetValue(routeMetadata.DependencyName, out RequestMetadataTrieNode? routeMetadataTrieRoot))
         {
             routeMetadataTrieRoot = new RequestMetadataTrieNode();
             dependencyTrieMap.Add(routeMetadata.DependencyName, routeMetadataTrieRoot);
@@ -213,11 +213,6 @@ public abstract class DownstreamDependencyMetadataManager
         return finalArrayDict;
     }
 
-    // This method has 100% coverage but there is some issue with the code coverage tool in the CI pipeline which makes it
-    // buggy and complain about some parts the code in this method as not covered. If you make changes to this method, please
-    // remove the ExlcudeCodeCoverage attribute and ensure it's covered fully using local runs and enable it back before
-    // pushing the change to PR.
-    [ExcludeFromCodeCoverage]
     private static ProcessedMetadata ProcessDownstreamDependencyMetadataInternal(RequestMetadataTrieNode requestMetadataTrieRoot)
     {
         Queue<RequestMetadataTrieNode> queue = new();
@@ -231,9 +226,9 @@ public abstract class DownstreamDependencyMetadataManager
             for (int i = 0; i < Constants.ASCIICharCount; i++)
             {
                 RequestMetadataTrieNode node = trieNode.Nodes[i];
-                if (node != null)
+                if (node is not null)
                 {
-                    if (node.RequestMetadata != null)
+                    if (node.RequestMetadata is not null)
                     {
                         requestMetadataArraySize++;
                     }
