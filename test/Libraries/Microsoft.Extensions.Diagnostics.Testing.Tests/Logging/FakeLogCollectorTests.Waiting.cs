@@ -103,10 +103,11 @@ public partial class FakeLogCollectorTests
         ConcurrentQueue<string> eventTracker,
         TimeSpan? timeout = null)
     {
+        using var cts = timeout.HasValue ? new CancellationTokenSource(timeout.Value) : new CancellationTokenSource();
         try
         {
             int index = fromIndex - 1;
-            var enumeration = collector.GetLogsAsync(startingIndex: fromIndex, timeout: timeout);
+            var enumeration = collector.GetLogsAsync(startingIndex: fromIndex, cancellationToken: cts.Token);
             await foreach (var log in enumeration)
             {
                 index++;

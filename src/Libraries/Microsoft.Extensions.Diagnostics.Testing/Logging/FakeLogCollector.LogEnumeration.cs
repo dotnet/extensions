@@ -20,30 +20,26 @@ public partial class FakeLogCollector
 
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(
         int startingIndex = 0,
-        TimeSpan? timeout = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfOutOfRange(startingIndex, 0, int.MaxValue);
 
-        return new LogAsyncEnumerable(this, startingIndex, timeout, cancellationToken);
+        return new LogAsyncEnumerable(this, startingIndex, cancellationToken);
     }
 
     private class LogAsyncEnumerable : IAsyncEnumerable<FakeLogRecord>
     {
         private readonly int _startingIndex;
-        private readonly TimeSpan? _timeout;
         private readonly FakeLogCollector _collector;
         private readonly CancellationToken _enumerableCancellationToken;
 
         internal LogAsyncEnumerable(
             FakeLogCollector collector,
             int startingIndex,
-            TimeSpan? timeout,
             CancellationToken enumerableCancellationToken)
         {
             _collector = collector;
             _startingIndex = startingIndex;
-            _timeout = timeout;
             _enumerableCancellationToken = enumerableCancellationToken;
         }
 
@@ -63,8 +59,7 @@ public partial class FakeLogCollector
                         {
                             _ = _collector._indexUpdates.Remove(e.UpdateIndexByRemoved);
                         }
-                    },
-                    _timeout);
+                    });
 
                 _collector._indexUpdates.Add(enumerator.UpdateIndexByRemoved);
                 return enumerator;
@@ -91,26 +86,13 @@ public partial class FakeLogCollector
             int startingIndex,
             CancellationToken enumerableCancellationToken,
             CancellationToken enumeratorCancellationToken,
-            Action<StreamEnumerator>? onDispose,
-            TimeSpan? timeout = null)
+            Action<StreamEnumerator>? onDispose)
         {
             _collector = collector;
             _index = startingIndex;
             _onDispose = onDispose;
 
-            CancellationToken[] cancellationTokens;
-            if (timeout.HasValue)
-            {
-                var timeoutCts = new CancellationTokenSource(timeout.Value);
-                _timeoutCts = timeoutCts;
-                cancellationTokens = [enumerableCancellationToken, enumeratorCancellationToken, timeoutCts.Token];
-            }
-            else
-            {
-                cancellationTokens = [enumerableCancellationToken, enumeratorCancellationToken];
-            }
-
-            _masterCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokens);
+            _masterCts = CancellationTokenSource.CreateLinkedTokenSource([enumerableCancellationToken, enumeratorCancellationToken]);
         }
 
         public void UpdateIndexByRemoved(int removedItems)
