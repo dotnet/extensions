@@ -130,19 +130,19 @@ public class ChatResponse
             ChatMessage message = _messages![i];
             updates[i] = new ChatResponseUpdate
             {
-                ConversationId = ConversationId,
-
                 AdditionalProperties = message.AdditionalProperties,
                 AuthorName = message.AuthorName,
                 Contents = message.Contents,
+                MessageId = message.MessageId,
                 RawRepresentation = message.RawRepresentation,
                 Role = message.Role,
 
-                ResponseId = ResponseId,
-                MessageId = message.MessageId,
-                CreatedAt = CreatedAt,
+                ConversationId = ConversationId,
                 FinishReason = FinishReason,
-                ModelId = ModelId
+                ModelId = ModelId,
+                ResponseId = ResponseId,
+
+                CreatedAt = message.CreatedAt ?? CreatedAt,
             };
         }
 

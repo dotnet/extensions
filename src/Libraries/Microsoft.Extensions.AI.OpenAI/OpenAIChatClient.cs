@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -46,10 +47,8 @@ internal sealed class OpenAIChatClient : IChatClient
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(ChatClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
-        string? model = typeof(ChatClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(chatClient) as string;
 
-        _metadata = new("openai", providerUrl, model);
+        _metadata = new("openai", providerUrl, _chatClient.Model);
     }
 
     /// <inheritdoc />
@@ -128,6 +127,12 @@ internal sealed class OpenAIChatClient : IChatClient
 
         foreach (ChatMessage input in inputs)
         {
+            if (input.RawRepresentation is OpenAI.Chat.ChatMessage raw)
+            {
+                yield return raw;
+                continue;
+            }
+
             if (input.Role == ChatRole.System ||
                 input.Role == ChatRole.User ||
                 input.Role == OpenAIClientExtensions.ChatRoleDeveloper)
@@ -218,15 +223,22 @@ internal sealed class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentPart"/>.</summary>
-    private static List<ChatMessageContentPart> ToOpenAIChatContent(IList<AIContent> contents)
+    internal static List<ChatMessageContentPart> ToOpenAIChatContent(IEnumerable<AIContent> contents)
     {
         List<ChatMessageContentPart> parts = [];
 
         foreach (var content in contents)
         {
-            if (ToChatMessageContentPart(content) is { } part)
+            if (content.RawRepresentation is ChatMessageContentPart raw)
             {
-                parts.Add(part);
+                parts.Add(raw);
+            }
+            else
+            {
+                if (ToChatMessageContentPart(content) is { } part)
+                {
+                    parts.Add(part);
+                }
             }
         }
 
@@ -242,6 +254,9 @@ internal sealed class OpenAIChatClient : IChatClient
     {
         switch (content)
         {
+            case AIContent when content.RawRepresentation is ChatMessageContentPart rawContentPart:
+                return rawContentPart;
+
             case TextContent textContent:
                 return ChatMessageContentPart.CreateTextPart(textContent.Text);
 
@@ -267,8 +282,8 @@ internal sealed class OpenAIChatClient : IChatClient
             case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
                 return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf");
 
-            case AIContent when content.RawRepresentation is ChatMessageContentPart rawContentPart:
-                return rawContentPart;
+            case HostedFileContent fileContent:
+                return ChatMessageContentPart.CreateFilePart(fileContent.FileId);
         }
 
         return null;
@@ -289,7 +304,7 @@ internal sealed class OpenAIChatClient : IChatClient
         return null;
     }
 
-    private static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
+    internal static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
         IAsyncEnumerable<StreamingChatCompletionUpdate> updates,
         ChatCompletionOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -327,13 +342,7 @@ internal sealed class OpenAIChatClient : IChatClient
             // Transfer over content update items.
             if (update.ContentUpdate is { Count: > 0 })
             {
-                foreach (ChatMessageContentPart contentPart in update.ContentUpdate)
-                {
-                    if (ToAIContent(contentPart) is AIContent aiContent)
-                    {
-                        responseUpdate.Contents.Add(aiContent);
-                    }
-                }
+                ConvertContentParts(update.ContentUpdate, responseUpdate.Contents);
             }
 
             if (update.OutputAudioUpdate is { } audioUpdate)
@@ -401,7 +410,7 @@ internal sealed class OpenAIChatClient : IChatClient
                 FunctionCallInfo fci = entry.Value;
                 if (!string.IsNullOrWhiteSpace(fci.Name))
                 {
-                    var callContent = ParseCallContentFromJsonString(
+                    var callContent = OpenAIClientExtensions.ParseCallContent(
                         fci.Arguments?.ToString() ?? string.Empty,
                         fci.CallId!,
                         fci.Name!);
@@ -438,6 +447,7 @@ internal sealed class OpenAIChatClient : IChatClient
         // Create the return message.
         ChatMessage returnMessage = new()
         {
+            CreatedAt = openAICompletion.CreatedAt,
             MessageId = openAICompletion.Id, // There's no per-message ID, so we use the same value as the response ID
             RawRepresentation = openAICompletion,
             Role = FromOpenAIChatRole(openAICompletion.Role),
@@ -466,7 +476,7 @@ internal sealed class OpenAIChatClient : IChatClient
         {
             if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
             {
-                var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
+                var callContent = OpenAIClientExtensions.ParseCallContent(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
                 callContent.RawRepresentation = toolCall;
 
                 returnMessage.Contents.Add(callContent);
@@ -477,6 +487,30 @@ internal sealed class OpenAIChatClient : IChatClient
         if (openAICompletion.Refusal is string refusal)
         {
             returnMessage.Contents.Add(new ErrorContent(refusal) { ErrorCode = nameof(openAICompletion.Refusal) });
+        }
+
+        // And add annotations. OpenAI chat completion specifies annotations at the message level (and as such they can't be
+        // roundtripped back); we store them either on the first text content, assuming there is one, or on a dedicated content
+        // instance if not.
+        if (openAICompletion.Annotations is { Count: > 0 })
+        {
+            TextContent? annotationContent = returnMessage.Contents.OfType<TextContent>().FirstOrDefault();
+            if (annotationContent is null)
+            {
+                annotationContent = new(null);
+                returnMessage.Contents.Add(annotationContent);
+            }
+
+            foreach (var annotation in openAICompletion.Annotations)
+            {
+                (annotationContent.Annotations ??= []).Add(new CitationAnnotation
+                {
+                    RawRepresentation = annotation,
+                    AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = annotation.StartIndex, EndIndex = annotation.EndIndex }],
+                    Title = annotation.WebResourceTitle,
+                    Url = annotation.WebResourceUri,
+                });
+            }
         }
 
         // Wrap the content in a ChatResponse to return.
@@ -622,6 +656,20 @@ internal sealed class OpenAIChatClient : IChatClient
             _ => new ChatRole(role.ToString()),
         };
 
+    /// <summary>Creates <see cref="AIContent"/>s from <see cref="ChatMessageContent"/>.</summary>
+    /// <param name="content">The content parts to convert into a content.</param>
+    /// <param name="results">The result collection into which to write the resulting content.</param>
+    internal static void ConvertContentParts(ChatMessageContent content, IList<AIContent> results)
+    {
+        foreach (ChatMessageContentPart contentPart in content)
+        {
+            if (ToAIContent(contentPart) is { } aiContent)
+            {
+                results.Add(aiContent);
+            }
+        }
+    }
+
     /// <summary>Creates an <see cref="AIContent"/> from a <see cref="ChatMessageContentPart"/>.</summary>
     /// <param name="contentPart">The content part to convert into a content.</param>
     /// <returns>The constructed <see cref="AIContent"/>, or <see langword="null"/> if the content part could not be converted.</returns>
@@ -629,21 +677,31 @@ internal sealed class OpenAIChatClient : IChatClient
     {
         AIContent? aiContent = null;
 
-        if (contentPart.Kind == ChatMessageContentPartKind.Text)
+        switch (contentPart.Kind)
         {
-            aiContent = new TextContent(contentPart.Text);
-        }
-        else if (contentPart.Kind == ChatMessageContentPartKind.Image)
-        {
-            aiContent =
-                contentPart.ImageUri is not null ? new UriContent(contentPart.ImageUri, "image/*") :
-                contentPart.ImageBytes is not null ? new DataContent(contentPart.ImageBytes.ToMemory(), contentPart.ImageBytesMediaType) :
-                null;
+            case ChatMessageContentPartKind.Text:
+                aiContent = new TextContent(contentPart.Text);
+                break;
 
-            if (aiContent is not null && contentPart.ImageDetailLevel?.ToString() is string detail)
-            {
-                (aiContent.AdditionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
-            }
+            case ChatMessageContentPartKind.Image:
+                aiContent =
+                    contentPart.ImageUri is not null ? new UriContent(contentPart.ImageUri, "image/*") :
+                    contentPart.ImageBytes is not null ? new DataContent(contentPart.ImageBytes.ToMemory(), contentPart.ImageBytesMediaType) :
+                    null;
+
+                if (aiContent is not null && contentPart.ImageDetailLevel?.ToString() is string detail)
+                {
+                    (aiContent.AdditionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
+                }
+
+                break;
+
+            case ChatMessageContentPartKind.File:
+                aiContent =
+                    contentPart.FileId is not null ? new HostedFileContent(contentPart.FileId) :
+                    contentPart.FileBytes is not null ? new DataContent(contentPart.FileBytes.ToMemory(), contentPart.FileBytesMediaType) { Name = contentPart.Filename } :
+                    null;
+                break;
         }
 
         if (aiContent is not null)
@@ -670,14 +728,6 @@ internal sealed class OpenAIChatClient : IChatClient
             OpenAI.Chat.ChatFinishReason.ToolCalls or OpenAI.Chat.ChatFinishReason.FunctionCall => ChatFinishReason.ToolCalls,
             _ => new ChatFinishReason(s),
         };
-
-    private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
-        FunctionCallContent.CreateFromParsedArguments(json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, OpenAIJsonContext.Default.IDictionaryStringObject)!);
-
-    private static FunctionCallContent ParseCallContentFromBinaryData(BinaryData ut8Json, string callId, string name) =>
-        FunctionCallContent.CreateFromParsedArguments(ut8Json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, OpenAIJsonContext.Default.IDictionaryStringObject)!);
 
     /// <summary>POCO representing function calling info. Used to concatenation information for a single function call from across multiple streaming updates.</summary>
     private sealed class FunctionCallInfo

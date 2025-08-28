@@ -12,6 +12,7 @@ using Microsoft.Extensions.AI.Evaluation.Reporting;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 using Microsoft.Extensions.AI.Evaluation.Safety;
 using Microsoft.Extensions.AI.Evaluation.Tests;
+using Microsoft.Extensions.AI.Evaluation.Utilities;
 using Microsoft.TestUtilities;
 using Xunit;
 
@@ -58,8 +59,10 @@ public class SafetyEvaluatorTests
             ChatClientMetadata? clientMetadata =
                 contentSafetyChatConfiguration.ChatClient.GetService<ChatClientMetadata>();
 
-            string provider = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
-            string model = $"Model: {clientMetadata?.DefaultModelId ?? "Unknown"}";
+            const string Model = $"Model: {ModelInfo.KnownModels.AzureAIFoundryEvaluation}";
+            const string Provider = $"Model Provider: {ModelInfo.KnownModelProviders.AzureAIFoundry}";
+            string model2 = $"Model: {clientMetadata?.DefaultModelId ?? "Unknown"}";
+            string provider2 = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
 
             IEvaluator hateAndUnfairnessEvaluator = new HateAndUnfairnessEvaluator();
             IEvaluator selfHarmEvaluator = new SelfHarmEvaluator();
@@ -82,7 +85,7 @@ public class SafetyEvaluatorTests
                         indirectAttackEvaluator],
                     chatConfiguration: contentSafetyChatConfiguration,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature, usesContext]);
+                    tags: [version, date, projectName, testClass, Model, Provider, model2, provider2, temperature, usesContext]);
 
             ChatConfiguration contentSafetyChatConfigurationWithoutLLM =
                 contentSafetyServiceConfiguration.ToChatConfiguration();
@@ -97,7 +100,7 @@ public class SafetyEvaluatorTests
                         indirectAttackEvaluator],
                     chatConfiguration: contentSafetyChatConfigurationWithoutLLM,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature]);
+                    tags: [version, date, projectName, testClass, Model, Provider, model2, provider2, temperature]);
 
             IEvaluator codeVulnerabilityEvaluator = new CodeVulnerabilityEvaluator();
 
@@ -107,7 +110,7 @@ public class SafetyEvaluatorTests
                     evaluators: [codeVulnerabilityEvaluator],
                     chatConfiguration: contentSafetyChatConfigurationWithoutLLM,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature]);
+                    tags: [version, date, projectName, testClass, Model, Provider, model2, provider2, temperature]);
 
             IEvaluator fluencyEvaluator = new FluencyEvaluator();
             IEvaluator contentHarmEvaluator = new ContentHarmEvaluator();
@@ -118,7 +121,7 @@ public class SafetyEvaluatorTests
                     evaluators: [fluencyEvaluator, contentHarmEvaluator],
                     chatConfiguration: contentSafetyChatConfiguration,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature]);
+                    tags: [version, date, projectName, testClass, Model, Provider, model2, provider2, temperature]);
 
             var hubBasedContentSafetyServiceConfiguration =
                 new ContentSafetyServiceConfiguration(
@@ -132,8 +135,8 @@ public class SafetyEvaluatorTests
 
             clientMetadata = hubBasedContentSafetyChatConfiguration.ChatClient.GetService<ChatClientMetadata>();
 
-            provider = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
-            model = $"Model: {clientMetadata?.DefaultModelId ?? "Unknown"}";
+            model2 = $"Model: {clientMetadata?.DefaultModelId ?? "Unknown"}";
+            provider2 = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
 
             _hubBasedContentSafetyReportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
@@ -147,7 +150,7 @@ public class SafetyEvaluatorTests
                         indirectAttackEvaluator],
                     chatConfiguration: hubBasedContentSafetyChatConfiguration,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature, usesContext]);
+                    tags: [version, date, projectName, testClass, Model, Provider, model2, provider2, temperature, usesContext]);
         }
     }
 

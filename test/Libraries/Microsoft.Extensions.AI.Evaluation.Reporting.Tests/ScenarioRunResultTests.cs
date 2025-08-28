@@ -64,6 +64,7 @@ public class ScenarioRunResultTests
             new ChatTurnDetails(
                 latency: TimeSpan.FromSeconds(1),
                 model: "gpt-4o",
+                modelProvider: "openai",
                 usage: new UsageDetails { InputTokenCount = 10, OutputTokenCount = 20, TotalTokenCount = 30 },
                 cacheKey: Guid.NewGuid().ToString(),
                 cacheHit: true);
@@ -155,6 +156,7 @@ public class ScenarioRunResultTests
             new ChatTurnDetails(
                 latency: TimeSpan.FromSeconds(1),
                 model: "gpt-4o",
+                modelProvider: "openai",
                 usage: new UsageDetails { InputTokenCount = 10, OutputTokenCount = 20, TotalTokenCount = 30 },
                 cacheKey: Guid.NewGuid().ToString(),
                 cacheHit: true);
@@ -392,6 +394,8 @@ public class ScenarioRunResultTests
 #pragma warning disable S1067 // Expressions should not be too complex
         public bool Equals(ChatTurnDetails? x, ChatTurnDetails? y) =>
             x?.Latency == y?.Latency &&
+            x?.Model == y?.Model &&
+            x?.ModelProvider == y?.ModelProvider &&
             x?.Usage?.InputTokenCount == y?.Usage?.InputTokenCount &&
             x?.Usage?.OutputTokenCount == y?.Usage?.OutputTokenCount &&
             x?.Usage?.TotalTokenCount == y?.Usage?.TotalTokenCount &&

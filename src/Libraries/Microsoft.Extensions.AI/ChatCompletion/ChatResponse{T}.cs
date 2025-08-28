@@ -127,7 +127,7 @@ public class ChatResponse<T> : ChatResponse
             return _deserializedResult;
         }
 
-        var json = Text;
+        var json = Messages.Count > 0 ? Messages[Messages.Count - 1].Text : string.Empty;
         if (string.IsNullOrEmpty(json))
         {
             failureReason = FailureReason.ResultDidNotContainJson;

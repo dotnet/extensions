@@ -13,6 +13,7 @@ using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
+using OpenAI.Images;
 using OpenAI.Responses;
 
 #pragma warning disable S103 // Lines should not be too long
@@ -154,6 +155,14 @@ public static class OpenAIClientExtensions
     public static ISpeechToTextClient AsISpeechToTextClient(this AudioClient audioClient) =>
         new OpenAISpeechToTextClient(audioClient);
 
+    /// <summary>Gets an <see cref="IImageGenerator"/> for use with this <see cref="ImageClient"/>.</summary>
+    /// <param name="imageClient">The client.</param>
+    /// <returns>An <see cref="IImageGenerator"/> that can be used to generate images via the <see cref="ImageClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="imageClient"/> is <see langword="null"/>.</exception>
+    [Experimental("MEAI001")]
+    public static IImageGenerator AsIImageGenerator(this ImageClient imageClient) =>
+        new OpenAIImageGenerator(imageClient);
+
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="EmbeddingClient"/>.</summary>
     /// <param name="embeddingClient">The client.</param>
     /// <param name="defaultModelDimensions">The number of dimensions to generate in each embedding.</param>
@@ -183,6 +192,28 @@ public static class OpenAIClientExtensions
 
         return functionParameters;
     }
+
+    /// <summary>Creates a new instance of <see cref="FunctionCallContent"/> parsing arguments using a specified encoding and parser.</summary>
+    /// <param name="json">The input arguments to be parsed.</param>
+    /// <param name="callId">The function call ID.</param>
+    /// <param name="name">The function name.</param>
+    /// <returns>A new instance of <see cref="FunctionCallContent"/> containing the parse result.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="callId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    internal static FunctionCallContent ParseCallContent(string json, string callId, string name) =>
+        FunctionCallContent.CreateFromParsedArguments(json, callId, name,
+            static json => JsonSerializer.Deserialize(json, OpenAIJsonContext.Default.IDictionaryStringObject)!);
+
+    /// <summary>Creates a new instance of <see cref="FunctionCallContent"/> parsing arguments using a specified encoding and parser.</summary>
+    /// <param name="utf8json">The input arguments to be parsed.</param>
+    /// <param name="callId">The function call ID.</param>
+    /// <param name="name">The function name.</param>
+    /// <returns>A new instance of <see cref="FunctionCallContent"/> containing the parse result.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="callId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    internal static FunctionCallContent ParseCallContent(BinaryData utf8json, string callId, string name) =>
+        FunctionCallContent.CreateFromParsedArguments(utf8json, callId, name,
+            static utf8json => JsonSerializer.Deserialize(utf8json, OpenAIJsonContext.Default.IDictionaryStringObject)!);
 
     /// <summary>Used to create the JSON payload for an OpenAI tool description.</summary>
     internal sealed class ToolJson

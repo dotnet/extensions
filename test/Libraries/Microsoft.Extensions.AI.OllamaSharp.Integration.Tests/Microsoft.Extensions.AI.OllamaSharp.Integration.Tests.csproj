@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.AI.Ollama.Tests\Microsoft.Extensions.AI.Ollama.Tests.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\Microsoft.Extensions.AI.Integration.Tests\Microsoft.Extensions.AI.Integration.Tests.csproj" ProjectUnderTest="true" />
   </ItemGroup>
 
   <ItemGroup>

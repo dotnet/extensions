@@ -1,12 +1,11 @@
 <Project>
   <PropertyGroup Label="Version settings">
     <MajorVersion>9</MajorVersion>
-    <MinorVersion>8</MinorVersion>
+    <MinorVersion>9</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
-    <ApiCompatBaselineVersion>9.6.0</ApiCompatBaselineVersion>
     <AssemblyVersion>$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
@@ -34,57 +33,57 @@
   -->
   <PropertyGroup Label="Automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
-    <MicrosoftBclAsyncInterfacesVersion>9.0.7</MicrosoftBclAsyncInterfacesVersion>
-    <MicrosoftBclTimeProviderVersion>9.0.7</MicrosoftBclTimeProviderVersion>
-    <MicrosoftExtensionsCachingAbstractionsVersion>9.0.7</MicrosoftExtensionsCachingAbstractionsVersion>
-    <MicrosoftExtensionsCachingMemoryVersion>9.0.7</MicrosoftExtensionsCachingMemoryVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsVersion>9.0.7</MicrosoftExtensionsConfigurationAbstractionsVersion>
-    <MicrosoftExtensionsConfigurationBinderVersion>9.0.7</MicrosoftExtensionsConfigurationBinderVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>9.0.7</MicrosoftExtensionsConfigurationJsonVersion>
-    <MicrosoftExtensionsConfigurationVersion>9.0.7</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>9.0.7</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>9.0.7</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsDiagnosticsVersion>9.0.7</MicrosoftExtensionsDiagnosticsVersion>
-    <MicrosoftExtensionsHostingAbstractionsVersion>9.0.7</MicrosoftExtensionsHostingAbstractionsVersion>
-    <MicrosoftExtensionsHostingVersion>9.0.7</MicrosoftExtensionsHostingVersion>
-    <MicrosoftExtensionsHttpVersion>9.0.7</MicrosoftExtensionsHttpVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.7</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingConfigurationVersion>9.0.7</MicrosoftExtensionsLoggingConfigurationVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>9.0.7</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingVersion>9.0.7</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>9.0.7</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
-    <MicrosoftExtensionsOptionsVersion>9.0.7</MicrosoftExtensionsOptionsVersion>
-    <MicrosoftNETCoreAppRefVersion>9.0.7</MicrosoftNETCoreAppRefVersion>
-    <MicrosoftNETCoreAppRuntimewinx64Version>9.0.7</MicrosoftNETCoreAppRuntimewinx64Version>
-    <SystemCollectionsImmutableVersion>9.0.7</SystemCollectionsImmutableVersion>
-    <SystemConfigurationConfigurationManagerVersion>9.0.7</SystemConfigurationConfigurationManagerVersion>
-    <SystemDiagnosticsDiagnosticSourceVersion>9.0.7</SystemDiagnosticsDiagnosticSourceVersion>
-    <SystemDiagnosticsPerformanceCounterVersion>9.0.7</SystemDiagnosticsPerformanceCounterVersion>
-    <SystemIOHashingVersion>9.0.7</SystemIOHashingVersion>
-    <SystemIOPipelinesVersion>9.0.7</SystemIOPipelinesVersion>
-    <SystemMemoryDataVersion>9.0.7</SystemMemoryDataVersion>
-    <SystemNetHttpJsonVersion>9.0.7</SystemNetHttpJsonVersion>
-    <SystemRuntimeCachingVersion>9.0.7</SystemRuntimeCachingVersion>
-    <SystemSecurityCryptographyPkcsVersion>9.0.7</SystemSecurityCryptographyPkcsVersion>
-    <SystemSecurityCryptographyXmlVersion>9.0.7</SystemSecurityCryptographyXmlVersion>
-    <SystemTextEncodingsWebVersion>9.0.7</SystemTextEncodingsWebVersion>
-    <SystemNumericsTensorsVersion>9.0.7</SystemNumericsTensorsVersion>
-    <SystemTextJsonVersion>9.0.7</SystemTextJsonVersion>
-    <SystemThreadingChannelsVersion>9.0.7</SystemThreadingChannelsVersion>
+    <MicrosoftBclAsyncInterfacesVersion>9.0.8</MicrosoftBclAsyncInterfacesVersion>
+    <MicrosoftBclTimeProviderVersion>9.0.8</MicrosoftBclTimeProviderVersion>
+    <MicrosoftExtensionsCachingAbstractionsVersion>9.0.8</MicrosoftExtensionsCachingAbstractionsVersion>
+    <MicrosoftExtensionsCachingMemoryVersion>9.0.8</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>9.0.8</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationBinderVersion>9.0.8</MicrosoftExtensionsConfigurationBinderVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>9.0.8</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationVersion>9.0.8</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>9.0.8</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>9.0.8</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDiagnosticsVersion>9.0.8</MicrosoftExtensionsDiagnosticsVersion>
+    <MicrosoftExtensionsHostingAbstractionsVersion>9.0.8</MicrosoftExtensionsHostingAbstractionsVersion>
+    <MicrosoftExtensionsHostingVersion>9.0.8</MicrosoftExtensionsHostingVersion>
+    <MicrosoftExtensionsHttpVersion>9.0.8</MicrosoftExtensionsHttpVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.8</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingConfigurationVersion>9.0.8</MicrosoftExtensionsLoggingConfigurationVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>9.0.8</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingVersion>9.0.8</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>9.0.8</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
+    <MicrosoftExtensionsOptionsVersion>9.0.8</MicrosoftExtensionsOptionsVersion>
+    <MicrosoftNETCoreAppRefVersion>9.0.8</MicrosoftNETCoreAppRefVersion>
+    <MicrosoftNETCoreAppRuntimewinx64Version>9.0.8</MicrosoftNETCoreAppRuntimewinx64Version>
+    <SystemCollectionsImmutableVersion>9.0.8</SystemCollectionsImmutableVersion>
+    <SystemConfigurationConfigurationManagerVersion>9.0.8</SystemConfigurationConfigurationManagerVersion>
+    <SystemDiagnosticsDiagnosticSourceVersion>9.0.8</SystemDiagnosticsDiagnosticSourceVersion>
+    <SystemDiagnosticsPerformanceCounterVersion>9.0.8</SystemDiagnosticsPerformanceCounterVersion>
+    <SystemIOHashingVersion>9.0.8</SystemIOHashingVersion>
+    <SystemIOPipelinesVersion>9.0.8</SystemIOPipelinesVersion>
+    <SystemMemoryDataVersion>9.0.8</SystemMemoryDataVersion>
+    <SystemNetHttpJsonVersion>9.0.8</SystemNetHttpJsonVersion>
+    <SystemRuntimeCachingVersion>9.0.8</SystemRuntimeCachingVersion>
+    <SystemSecurityCryptographyPkcsVersion>9.0.8</SystemSecurityCryptographyPkcsVersion>
+    <SystemSecurityCryptographyXmlVersion>9.0.8</SystemSecurityCryptographyXmlVersion>
+    <SystemTextEncodingsWebVersion>9.0.8</SystemTextEncodingsWebVersion>
+    <SystemNumericsTensorsVersion>9.0.8</SystemNumericsTensorsVersion>
+    <SystemTextJsonVersion>9.0.8</SystemTextJsonVersion>
+    <SystemThreadingChannelsVersion>9.0.8</SystemThreadingChannelsVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefVersion>9.0.7</MicrosoftAspNetCoreAppRefVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64Version>9.0.7</MicrosoftAspNetCoreAppRuntimewinx64Version>
-    <MicrosoftAspNetCoreMvcTestingVersion>9.0.7</MicrosoftAspNetCoreMvcTestingVersion>
-    <MicrosoftAspNetCoreTestHostVersion>9.0.7</MicrosoftAspNetCoreTestHostVersion>
-    <MicrosoftExtensionsCachingSqlServerVersion>9.0.7</MicrosoftExtensionsCachingSqlServerVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisVersion>9.0.7</MicrosoftExtensionsCachingStackExchangeRedisVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>9.0.7</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
-    <MicrosoftExtensionsHttpPollyVersion>9.0.7</MicrosoftExtensionsHttpPollyVersion>
-    <MicrosoftExtensionsObjectPoolVersion>9.0.7</MicrosoftExtensionsObjectPoolVersion>
+    <MicrosoftAspNetCoreAppRefVersion>9.0.8</MicrosoftAspNetCoreAppRefVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>9.0.8</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftAspNetCoreMvcTestingVersion>9.0.8</MicrosoftAspNetCoreMvcTestingVersion>
+    <MicrosoftAspNetCoreTestHostVersion>9.0.8</MicrosoftAspNetCoreTestHostVersion>
+    <MicrosoftExtensionsCachingSqlServerVersion>9.0.8</MicrosoftExtensionsCachingSqlServerVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisVersion>9.0.8</MicrosoftExtensionsCachingStackExchangeRedisVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>9.0.8</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
+    <MicrosoftExtensionsHttpPollyVersion>9.0.8</MicrosoftExtensionsHttpPollyVersion>
+    <MicrosoftExtensionsObjectPoolVersion>9.0.8</MicrosoftExtensionsObjectPoolVersion>
     <!-- Dependencies from https://github.com/dotnet/efcore -->
-    <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.7</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.8</MicrosoftEntityFrameworkCoreSqliteVersion>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksTemplatingVersion>9.0.0-beta.25325.4</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>9.0.0-beta.25415.3</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <PropertyGroup Label="No longer automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
@@ -108,8 +107,8 @@
     <MicrosoftExtensionsLoggingLTSVersion>8.0.1</MicrosoftExtensionsLoggingLTSVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsLTSVersion>8.0.0</MicrosoftExtensionsOptionsConfigurationExtensionsLTSVersion>
     <MicrosoftExtensionsOptionsLTSVersion>8.0.2</MicrosoftExtensionsOptionsLTSVersion>
-    <MicrosoftNETCoreAppRefLTSVersion>8.0.18</MicrosoftNETCoreAppRefLTSVersion>
-    <MicrosoftNETCoreAppRuntimewinx64LTSVersion>8.0.18</MicrosoftNETCoreAppRuntimewinx64LTSVersion>
+    <MicrosoftNETCoreAppRefLTSVersion>8.0.19</MicrosoftNETCoreAppRefLTSVersion>
+    <MicrosoftNETCoreAppRuntimewinx64LTSVersion>8.0.19</MicrosoftNETCoreAppRuntimewinx64LTSVersion>
     <SystemCollectionsImmutableLTSVersion>8.0.0</SystemCollectionsImmutableLTSVersion>
     <SystemConfigurationConfigurationManagerLTSVersion>8.0.1</SystemConfigurationConfigurationManagerLTSVersion>
     <SystemDiagnosticsDiagnosticSourceLTSVersion>8.0.1</SystemDiagnosticsDiagnosticSourceLTSVersion>
@@ -126,17 +125,17 @@
     <SystemTextJsonLTSVersion>8.0.6</SystemTextJsonLTSVersion>
     <SystemThreadingChannelsLTSVersion>8.0.0</SystemThreadingChannelsLTSVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefLTSVersion>8.0.18</MicrosoftAspNetCoreAppRefLTSVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64LTSVersion>8.0.18</MicrosoftAspNetCoreAppRuntimewinx64LTSVersion>
-    <MicrosoftAspNetCoreMvcTestingLTSVersion>8.0.18</MicrosoftAspNetCoreMvcTestingLTSVersion>
-    <MicrosoftAspNetCoreTestHostLTSVersion>8.0.18</MicrosoftAspNetCoreTestHostLTSVersion>
-    <MicrosoftExtensionsCachingSqlServerLTSVersion>8.0.18</MicrosoftExtensionsCachingSqlServerLTSVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>8.0.18</MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>8.0.18</MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>
-    <MicrosoftExtensionsHttpPollyLTSVersion>8.0.18</MicrosoftExtensionsHttpPollyLTSVersion>
-    <MicrosoftExtensionsObjectPoolLTSVersion>8.0.18</MicrosoftExtensionsObjectPoolLTSVersion>
+    <MicrosoftAspNetCoreAppRefLTSVersion>8.0.19</MicrosoftAspNetCoreAppRefLTSVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64LTSVersion>8.0.19</MicrosoftAspNetCoreAppRuntimewinx64LTSVersion>
+    <MicrosoftAspNetCoreMvcTestingLTSVersion>8.0.19</MicrosoftAspNetCoreMvcTestingLTSVersion>
+    <MicrosoftAspNetCoreTestHostLTSVersion>8.0.19</MicrosoftAspNetCoreTestHostLTSVersion>
+    <MicrosoftExtensionsCachingSqlServerLTSVersion>8.0.19</MicrosoftExtensionsCachingSqlServerLTSVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>8.0.19</MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>8.0.19</MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>
+    <MicrosoftExtensionsHttpPollyLTSVersion>8.0.19</MicrosoftExtensionsHttpPollyLTSVersion>
+    <MicrosoftExtensionsObjectPoolLTSVersion>8.0.19</MicrosoftExtensionsObjectPoolLTSVersion>
     <!-- Dependencies from https://github.com/dotnet/efcore -->
-    <MicrosoftEntityFrameworkCoreSqliteLTSVersion>8.0.18</MicrosoftEntityFrameworkCoreSqliteLTSVersion>
+    <MicrosoftEntityFrameworkCoreSqliteLTSVersion>8.0.19</MicrosoftEntityFrameworkCoreSqliteLTSVersion>
   </PropertyGroup>
   <!--
 
