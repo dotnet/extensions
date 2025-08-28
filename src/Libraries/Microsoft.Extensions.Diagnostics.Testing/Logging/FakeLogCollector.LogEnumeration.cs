@@ -15,30 +15,36 @@ public partial class FakeLogCollector
 
     private int _waitingEnumeratorCount;
 
-    public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(CancellationToken cancellationToken = default)
-        => new LogAsyncEnumerable(this, cancellationToken);
+    public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(
+        int count = int.MaxValue,
+        CancellationToken cancellationToken = default)
+            => new LogAsyncEnumerable(this, count, cancellationToken);
 
     private class LogAsyncEnumerable : IAsyncEnumerable<FakeLogRecord>
     {
         private readonly FakeLogCollector _collector;
+        private readonly int _count;
         private readonly CancellationToken _enumerableCancellationToken;
 
         internal LogAsyncEnumerable(
             FakeLogCollector collector,
+            int count,
             CancellationToken enumerableCancellationToken)
         {
             _collector = collector;
+            _count = count;
             _enumerableCancellationToken = enumerableCancellationToken;
         }
 
         public IAsyncEnumerator<FakeLogRecord> GetAsyncEnumerator(
             CancellationToken enumeratorCancellationToken = default)
-                => new StreamEnumerator(_collector, _enumerableCancellationToken, enumeratorCancellationToken);
+                => new StreamEnumerator(_collector, _count, _enumerableCancellationToken, enumeratorCancellationToken);
     }
 
     private sealed class StreamEnumerator : IAsyncEnumerator<FakeLogRecord>
     {
         private readonly FakeLogCollector _collector;
+        private readonly int _logCount;
         private readonly CancellationTokenSource _masterCts;
 
         private FakeLogRecord? _current;
@@ -50,10 +56,12 @@ public partial class FakeLogCollector
 
         public StreamEnumerator(
             FakeLogCollector collector,
+            int logCount,
             CancellationToken enumerableCancellationToken,
             CancellationToken enumeratorCancellationToken)
         {
             _collector = collector;
+            _logCount = logCount;
             _masterCts = CancellationTokenSource.CreateLinkedTokenSource([enumerableCancellationToken, enumeratorCancellationToken]);
         }
 
@@ -77,6 +85,12 @@ public partial class FakeLogCollector
                 while (true)
                 {
                     TaskCompletionSource<bool>? waiter = null;
+
+                    if (_index >= _logCount)
+                    {
+                        _current = null;
+                        return false;
+                    }
 
                     try
                     {

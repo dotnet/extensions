@@ -21,6 +21,33 @@ public partial class FakeLogCollectorTests
         _outputHelper = outputHelper;
     }
 
+    [Fact]
+    public async Task AwaitLogCount()
+    {
+        var collector = FakeLogCollector.Create(new FakeLogCollectorOptions());
+        var eventTracker = new ConcurrentQueue<string>();
+
+        string[] logsToEmit = ["1", "2", "3", "4"];
+
+        var logEmittingTask = EmitLogs(collector, logsToEmit, eventTracker);
+
+        var retrievedLogs = new List<string>();
+
+        var enumeration = collector.GetLogsAsync(count: 2, cancellationToken: CancellationToken.None);
+        await foreach (var log in enumeration)
+        {
+            var msg = log.Message;
+            eventTracker.Enqueue($"Received log: \"{msg}\".");
+            retrievedLogs.Add(msg);
+        }
+
+        await logEmittingTask;
+
+        Assert.Equivalent(new[] { "1", "2" }, retrievedLogs);
+
+        OutputEventTracker(_outputHelper, eventTracker);
+    }
+
     [Theory]
     [InlineData(true, false)]
     [InlineData(false, true)]
