@@ -635,10 +635,12 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+        logRecord.QueryParameters.Should().NotBeNullOrEmpty();
+        logRecord.QueryString.Should().Contain("userId=REDACTED");
     }
 
     [Fact]
-    public async Task ReadAsync_SetsFullUrl_WhenClassificationEmpty()
+    public async Task ReadAsync_SkipsQueryString_WhenClassificationEmpty()
     {
         var options = new LoggingOptions
         {
@@ -661,7 +663,7 @@ public class HttpRequestReaderTest
 
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
-
+        logRecord.QueryString.Should().BeNullOrEmpty();
     }
 
     [Fact]
@@ -727,7 +729,9 @@ public class HttpRequestReaderTest
 
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
-
+        logRecord.QueryString.Should().NotBeNullOrEmpty();
+        logRecord.QueryString.Should().Contain("userId=REDACTED&token=REDACTED");
+        logRecord.QueryParameters!.Length.Should().Be(2);
     }
 
     [Fact]
@@ -785,7 +789,7 @@ public class HttpRequestReaderTest
     }
 
     [Fact]
-    public async Task ReadAsync_SetsFullUrl_WhenValueEmpty()
+    public async Task ReadAsync_DoesntSetQueryString_WhenQueryValueEmpty()
     {
         var options = new LoggingOptions
         {
@@ -815,9 +819,8 @@ public class HttpRequestReaderTest
 
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
-
-        // Would log a combination of requested host and path
-        // But shouldn't log query parameter as it's value is empty 
+        logRecord.QueryString.Should().BeNullOrEmpty();
+        logRecord.QueryParameters!.Length.Should().Be(0);
     }
 
     [Fact]
