@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Compliance.Classification;
@@ -144,30 +143,27 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         logRecord.QueryParameters = GetQueryParameters(request);
 
-        var sb = new StringBuilder();
-        foreach (var kvp in logRecord.QueryParameters)
+        if (logRecord.QueryParameters is { Length: > 0 })
         {
-            if (sb.Length > 0)
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < logRecord.QueryParameters.Length; i++)
             {
-                _ = sb.Append('&');
+                if (i > 0)
+                {
+                    _ = sb.Append('&');
+                }
+
+                _ = sb.Append(Uri.EscapeDataString(logRecord.QueryParameters[i].Key))
+                    .Append('=')
+                    .Append(Uri.EscapeDataString(logRecord.QueryParameters[i].Value));
             }
 
-            _ = sb.Append(kvp.Key).Append('=').Append(kvp.Value);
+            logRecord.QueryString = sb.ToString();
         }
-
-        var queryString = sb.ToString();
-
-        // Avoid double slash when path already starts with a slash
-#if NETCOREAPP || NET5_0_OR_GREATER
-        string pathPrefix = logRecord.Path.StartsWith('/') ? string.Empty : "/";
-#else
-#pragma warning disable EA0003 // Character based overload doesn't exist in net framework
-        string pathPrefix = logRecord.Path.StartsWith("/", StringComparison.Ordinal) ? string.Empty : "/";
-#pragma warning restore EA0003 
-#endif
-        logRecord.FullUrl = string.IsNullOrEmpty(queryString)
-            ? $"{logRecord.Host}{pathPrefix}{logRecord.Path}"
-            : $"{logRecord.Host}{pathPrefix}{logRecord.Path}?{queryString}";
+        else
+        {
+            logRecord.QueryString = string.Empty;
+        }
     }
 
     private static string UnescapeDataString(ReadOnlySpan<char> value)
