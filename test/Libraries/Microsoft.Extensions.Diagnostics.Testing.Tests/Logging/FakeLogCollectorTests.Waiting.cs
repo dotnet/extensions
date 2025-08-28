@@ -33,7 +33,7 @@ public partial class FakeLogCollectorTests
 
         var retrievedLogs = new List<string>();
 
-        var enumeration = collector.GetLogsAsync(count: 2, cancellationToken: CancellationToken.None);
+        var enumeration = collector.GetLogsAsync(maxItems: 2, cancellationToken: CancellationToken.None);
         await foreach (var log in enumeration)
         {
             var msg = log.Message;

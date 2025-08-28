@@ -55,6 +55,7 @@ public partial class FakeLogCollector
         lock (_records)
         {
             _records.Clear();
+            _recordCollectionVersion++;
         }
     }
 
@@ -137,7 +138,7 @@ public partial class FakeLogCollector
             return;
         }
 
-        TaskCompletionSource<bool>? logEnumerationSharedWaiterToWake = null;
+        TaskCompletionSource<object?>? logEnumerationSharedWaiterToWake = null;
 
         lock (_records)
         {
@@ -146,13 +147,13 @@ public partial class FakeLogCollector
             if (_waitingEnumeratorCount > 0)
             {
                 logEnumerationSharedWaiterToWake = _logEnumerationSharedWaiter;
-                _logEnumerationSharedWaiter = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _logEnumerationSharedWaiter = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _waitingEnumeratorCount = 0;
             }
         }
 
         // it is possible the task was already completed, but it does not matter and we can avoid locking
-        _ = logEnumerationSharedWaiterToWake?.TrySetResult(true);
+        _ = logEnumerationSharedWaiterToWake?.TrySetResult(null);
 
         _options.OutputSink?.Invoke(_options.OutputFormatter(record));
     }

@@ -2,67 +2,83 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging.Testing;
 
 public partial class FakeLogCollector
 {
-    private TaskCompletionSource<bool> _logEnumerationSharedWaiter =
+    private int _recordCollectionVersion = 0;
+
+    private TaskCompletionSource<object?> _logEnumerationSharedWaiter =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     private int _waitingEnumeratorCount;
 
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(
-        int count = int.MaxValue,
+        int? maxItems = null,
         CancellationToken cancellationToken = default)
-            => new LogAsyncEnumerable(this, count, cancellationToken);
+    {
+        if (maxItems < 0)
+        {
+            Throw.ArgumentOutOfRangeException(nameof(maxItems), maxItems, "Must be null (unlimited) or non-negative integer value.");
+        }
+
+        return new LogAsyncEnumerable(this, maxItems, cancellationToken);
+    }
 
     private class LogAsyncEnumerable : IAsyncEnumerable<FakeLogRecord>
     {
         private readonly FakeLogCollector _collector;
-        private readonly int _count;
+        private readonly int? _maxItems;
         private readonly CancellationToken _enumerableCancellationToken;
 
         internal LogAsyncEnumerable(
             FakeLogCollector collector,
-            int count,
+            int? maxItems,
             CancellationToken enumerableCancellationToken)
         {
             _collector = collector;
-            _count = count;
+            _maxItems = maxItems;
             _enumerableCancellationToken = enumerableCancellationToken;
         }
 
         public IAsyncEnumerator<FakeLogRecord> GetAsyncEnumerator(
             CancellationToken enumeratorCancellationToken = default)
-                => new StreamEnumerator(_collector, _count, _enumerableCancellationToken, enumeratorCancellationToken);
+                => new StreamEnumerator(_collector, _maxItems, _enumerableCancellationToken, enumeratorCancellationToken);
     }
 
     private sealed class StreamEnumerator : IAsyncEnumerator<FakeLogRecord>
     {
         private readonly FakeLogCollector _collector;
-        private readonly int _logCount;
+        private readonly int? _maxItems;
         private readonly CancellationTokenSource _masterCts;
 
         private FakeLogRecord? _current;
         private int _index;
         private bool _disposed;
+        private int _observedRecordCollectionVersion;
+        private int _returnedItemCount;
 
         // Concurrent MoveNextAsync guard
         private int _moveNextActive; // 0 = inactive, 1 = active (for net462 compatibility)
 
         public StreamEnumerator(
             FakeLogCollector collector,
-            int logCount,
+            int? maxItems,
             CancellationToken enumerableCancellationToken,
             CancellationToken enumeratorCancellationToken)
         {
             _collector = collector;
-            _logCount = logCount;
-            _masterCts = CancellationTokenSource.CreateLinkedTokenSource([enumerableCancellationToken, enumeratorCancellationToken]);
+            _maxItems = maxItems;
+            _masterCts = enumerableCancellationToken.CanBeCanceled || enumeratorCancellationToken.CanBeCanceled
+                ? CancellationTokenSource.CreateLinkedTokenSource([enumerableCancellationToken, enumeratorCancellationToken])
+                : new CancellationTokenSource();
+            _observedRecordCollectionVersion = collector._recordCollectionVersion;
         }
 
         public FakeLogRecord Current => _current ?? throw new InvalidOperationException("Enumeration not started.");
@@ -84,13 +100,7 @@ public partial class FakeLogCollector
 
                 while (true)
                 {
-                    TaskCompletionSource<bool>? waiter = null;
-
-                    if (_index >= _logCount)
-                    {
-                        _current = null;
-                        return false;
-                    }
+                    TaskCompletionSource<object?>? waiter = null;
 
                     try
                     {
@@ -98,9 +108,22 @@ public partial class FakeLogCollector
 
                         lock (_collector._records)
                         {
+                            if (_observedRecordCollectionVersion != _collector._recordCollectionVersion)
+                            {
+                                _index = 0; // based on assumption that version changed on full collection clear
+                                _observedRecordCollectionVersion = _collector._recordCollectionVersion;
+                            }
+
+                            if (_maxItems.HasValue && _returnedItemCount >= _maxItems)
+                            {
+                                _current = null;
+                                return false;
+                            }
+
                             if (_index < _collector._records.Count)
                             {
                                 _current = _collector._records[_index++];
+                                _returnedItemCount++;
                                 return true;
                             }
 
