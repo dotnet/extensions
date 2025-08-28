@@ -76,7 +76,6 @@ public static class ResourceMonitoringServiceCollectionExtensions
             return services;
         }
 
-        _ = builder.Services.AddActivatedSingleton<KubernetesResourceQuotasProvider>();
         if (OperatingSystem.IsWindows())
         {
             _ = builder.AddWindowsProvider();

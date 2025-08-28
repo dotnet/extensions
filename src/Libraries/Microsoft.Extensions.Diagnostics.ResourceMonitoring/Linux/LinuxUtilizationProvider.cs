@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Threading;
+using Microsoft.Extensions.ClusterMetadata.Kubernetes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Instruments;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
@@ -22,8 +24,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly object _memoryLocker = new();
     private readonly ILogger<LinuxUtilizationProvider> _logger;
     private readonly ILinuxUtilizationParser _parser;
-    private readonly double _memoryLimit;
-    private readonly double _cpuLimit;
+    private double _memoryLimit;
+    private double _cpuLimit;
     private ulong _memoryRequest;
     private double _cpuRequest;
     private readonly long _cpuPeriodsInterval;
@@ -50,7 +52,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         IOptions<ResourceMonitoringOptions> options,
         ILinuxUtilizationParser parser,
         IMeterFactory meterFactory,
-        KubernetesResourceQuotasProvider quotasProvider,
+        IOptions<KubernetesClusterMetadata> clusterMetadata,
         ILogger<LinuxUtilizationProvider>? logger = null,
         TimeProvider? timeProvider = null)
     {
@@ -67,17 +69,13 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         if (options.Value.UseKubernetesLimitsAndRequests)
         {
-            KubernetesResourceQuotas quotas = quotasProvider.GetResourceLimits();
-            _memoryLimit = quotas.MemoryLimit;
-            _cpuLimit = quotas.CpuLimit;
-            _memoryRequest = quotas.MemoryRequest;
-            _cpuRequest = quotas.CpuRequest;
+            ExtractResourceQuotas(clusterMetadata.Value);
         }
         else
         {
             _memoryLimit = _parser.GetAvailableMemoryInBytes();
             _cpuLimit = _parser.GetCgroupLimitedCpus();
-            _memoryRequest = _memoryLimit; // TO see if we can get it from cgroups
+            _memoryRequest = _memoryLimit; // TODO: see if we can get it from cgroups
             _cpuRequest = _parser.GetCgroupRequestCpu();
 
         }
@@ -363,5 +361,42 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         {
             yield return new Measurement<double>(userCpuTime, [new KeyValuePair<string, object?>("cpu.mode", "user")]);
         }
+    }
+
+    private void ExtractResourceQuotas(KubernetesClusterMetadata clusterMetadata)
+    {
+        _cpuRequest = ConvertMillicoreToUnit(clusterMetadata.RequestsCpu);
+        _cpuLimit = ConvertMillicoreToUnit(clusterMetadata.LimitsCpu);
+        _memoryRequest = clusterMetadata.RequestsMemory;
+        _memoryLimit = clusterMetadata.LimitsMemory;
+
+        if (_cpuRequest <= 0)
+        {
+            Throw.InvalidOperationException($"REQUESTS_CPU detected value is {_cpuRequest}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_cpuLimit <= 0)
+        {
+            Throw.InvalidOperationException($"LIMITS_CPU detected value is {_cpuLimit}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_memoryRequest <= 0)
+        {
+            Throw.InvalidOperationException($"REQUESTS_MEMORY detected value is {_memoryRequest}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_memoryLimit <= 0)
+        {
+            Throw.InvalidOperationException($"LIMITS_MEMORY detected value is {_memoryLimit}, " +
+                $"environment variables may be misconfigured");
+        }
+    }
+
+    private static double ConvertMillicoreToUnit(ulong millicores)
+    {
+        return millicores / 1000.0;
     }
 }

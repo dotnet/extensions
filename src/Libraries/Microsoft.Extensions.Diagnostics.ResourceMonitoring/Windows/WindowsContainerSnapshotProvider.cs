@@ -6,10 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Threading;
+using Microsoft.Extensions.ClusterMetadata.Kubernetes;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Instruments;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
@@ -32,8 +34,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private readonly TimeProvider _timeProvider;
     private readonly IProcessInfo _processInfo;
     private readonly ILogger<WindowsContainerSnapshotProvider> _logger;
-    private readonly double _memoryLimit;
-    private readonly double _cpuLimit;
+    private double _memoryLimit;
+    private double _cpuLimit;
     private ulong _memoryRequest;
     private double _cpuRequest;
     private readonly TimeSpan _cpuRefreshInterval;
@@ -56,9 +58,9 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         ILogger<WindowsContainerSnapshotProvider>? logger,
         IMeterFactory meterFactory,
         IOptions<ResourceMonitoringOptions> options,
-        KubernetesResourceQuotasProvider quotasProvider)
+        IOptions<KubernetesClusterMetadata> clusterMetadata)
         : this(new MemoryInfo(), new SystemInfo(), new ProcessInfo(), logger, meterFactory,
-              static () => new JobHandleWrapper(), TimeProvider.System, options.Value, quotasProvider)
+              static () => new JobHandleWrapper(), TimeProvider.System, options.Value, clusterMetadata.Value)
     {
     }
 
@@ -76,7 +78,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         Func<IJobHandle> createJobHandleObject,
         TimeProvider timeProvider,
         ResourceMonitoringOptions options,
-        KubernetesResourceQuotasProvider quotasProvider)
+        KubernetesClusterMetadata clusterMetadata)
     {
         _logger = logger ?? NullLogger<WindowsContainerSnapshotProvider>.Instance;
         _logger.RunningInsideJobObject();
@@ -95,11 +97,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         if (options.UseKubernetesLimitsAndRequests)
         {
-            KubernetesResourceQuotas quotas = quotasProvider.GetResourceLimits();
-            _memoryLimit = quotas.MemoryLimit;
-            _cpuLimit = quotas.CpuLimit;
-            _memoryRequest = quotas.MemoryRequest;
-            _cpuRequest = quotas.CpuRequest;
+            ExtractResourceQuotas(clusterMetadata);
         }
         else
         {
@@ -287,5 +285,42 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
             return _cpuPercentage;
         }
+    }
+
+    private void ExtractResourceQuotas(KubernetesClusterMetadata clusterMetadata)
+    {
+        _cpuRequest = ConvertMillicoreToUnit(clusterMetadata.RequestsCpu);
+        _cpuLimit = ConvertMillicoreToUnit(clusterMetadata.LimitsCpu);
+        _memoryRequest = clusterMetadata.RequestsMemory;
+        _memoryLimit = clusterMetadata.LimitsMemory;
+
+        if (_cpuRequest <= 0)
+        {
+            Throw.InvalidOperationException($"REQUESTS_CPU detected value is {_cpuRequest}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_cpuLimit <= 0)
+        {
+            Throw.InvalidOperationException($"LIMITS_CPU detected value is {_cpuLimit}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_memoryRequest <= 0)
+        {
+            Throw.InvalidOperationException($"REQUESTS_MEMORY detected value is {_memoryRequest}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_memoryLimit <= 0)
+        {
+            Throw.InvalidOperationException($"LIMITS_MEMORY detected value is {_memoryLimit}, " +
+                $"environment variables may be misconfigured");
+        }
+    }
+
+    private static double ConvertMillicoreToUnit(ulong millicores)
+    {
+        return millicores / 1000.0;
     }
 }
