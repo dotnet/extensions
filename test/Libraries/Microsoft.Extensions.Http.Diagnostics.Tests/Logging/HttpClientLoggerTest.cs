@@ -97,7 +97,7 @@ public class HttpClientLoggerTest
         using var handler = new TestLoggingHandler(
             new HttpClientLogger(
                 NullLogger<HttpClientLogger>.Instance,
-                new HttpRequestReader(options, GetHttpRouteFormatter(), Mock.Of<IHttpRouteParser>(), headersReader, RequestMetadataContext),
+                new HttpRequestReader(options, GetHttpRouteFormatter(), new Mock<HttpRouteParser>(new FakeRedactorProvider()).Object, headersReader, RequestMetadataContext),
                 Enumerable.Empty<IHttpClientLogEnricher>(),
                 options),
             new TestingHandlerStub((_, _) => throw exception));
@@ -225,7 +225,7 @@ public class HttpClientLoggerTest
             new HttpRequestReader(
                 options,
                 GetHttpRouteFormatter(),
-                Mock.Of<IHttpRouteParser>(),
+                new Mock<HttpRouteParser>(new FakeRedactorProvider()).Object,
                 headersReader, RequestMetadataContext),
             new List<IHttpClientLogEnricher> { testEnricher },
             options);
@@ -322,7 +322,7 @@ public class HttpClientLoggerTest
             new HttpRequestReader(
                 options,
                 GetHttpRouteFormatter(),
-                Mock.Of<IHttpRouteParser>(),
+                new Mock<HttpRouteParser>(new FakeRedactorProvider()).Object,
                 headersReader, RequestMetadataContext),
             new List<IHttpClientLogEnricher> { testEnricher },
             options);
@@ -429,7 +429,7 @@ public class HttpClientLoggerTest
                 new HttpRequestReader(
                     options,
                     GetHttpRouteFormatter(),
-                    Mock.Of<IHttpRouteParser>(),
+                    new Mock<HttpRouteParser>(new FakeRedactorProvider()).Object,
                     headersReader, RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { testEnricher },
                 options),
@@ -523,7 +523,7 @@ public class HttpClientLoggerTest
 
         var exception = new InvalidOperationException("test");
 
-        var actualRequestReader = new HttpRequestReader(options, GetHttpRouteFormatter(), Mock.Of<IHttpRouteParser>(), headersReader, RequestMetadataContext);
+        var actualRequestReader = new HttpRequestReader(options, GetHttpRouteFormatter(), Mock.Of<HttpRouteParser>(), headersReader, RequestMetadataContext);
         var mockedRequestReader = new Mock<IHttpRequestReader>();
         mockedRequestReader
             .Setup(m =>
@@ -639,7 +639,7 @@ public class HttpClientLoggerTest
                 new HttpRequestReader(
                     options,
                     GetHttpRouteFormatter(),
-                    Mock.Of<IHttpRouteParser>(),
+                    new Mock<HttpRouteParser>(new FakeRedactorProvider()).Object,
                     headersReader, RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { testEnricher },
                 options),
@@ -682,7 +682,7 @@ public class HttpClientLoggerTest
                 new HttpRequestReader(
                     options,
                     GetHttpRouteFormatter(),
-                    Mock.Of<IHttpRouteParser>(),
+                    new Mock<HttpRouteParser>(new FakeRedactorProvider()).Object,
                     new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object),
                     RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object },
@@ -725,7 +725,7 @@ public class HttpClientLoggerTest
                 new HttpRequestReader(
                     options,
                     GetHttpRouteFormatter(),
-                    Mock.Of<IHttpRouteParser>(),
+                    new Mock<HttpRouteParser>(new FakeRedactorProvider()).Object,
                     new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object),
                     RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object },
@@ -762,7 +762,7 @@ public class HttpClientLoggerTest
         var fakeLogger = new FakeLogger<HttpClientLogger>();
         var options = new LoggingOptions();
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), Mock.Of<IHttpHeadersRedactor>());
-        var requestReader = new HttpRequestReader(options, GetHttpRouteFormatter(), Mock.Of<IHttpRouteParser>(), headersReader, RequestMetadataContext);
+        var requestReader = new HttpRequestReader(options, GetHttpRouteFormatter(), new Mock<HttpRouteParser>(new FakeRedactorProvider()).Object, headersReader, RequestMetadataContext);
         var enrichers = new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object };
 
         using var handler = new TestLoggingHandler(
@@ -910,7 +910,7 @@ public class HttpClientLoggerTest
                 new HttpRequestReader(
                     options,
                     GetHttpRouteFormatter(),
-                    Mock.Of<IHttpRouteParser>(),
+                    new Mock<HttpRouteParser>(new FakeRedactorProvider()).Object,
                     headersReader, RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { testEnricher },
                 options),
@@ -954,7 +954,7 @@ public class HttpClientLoggerTest
         var options = new LoggingOptions();
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), new Mock<IHttpHeadersRedactor>().Object);
         var requestReader = new HttpRequestReader(
-            options, GetHttpRouteFormatter(), Mock.Of<IHttpRouteParser>(), headersReader, RequestMetadataContext);
+            options, GetHttpRouteFormatter(), new Mock<HttpRouteParser>(new FakeRedactorProvider()).Object, headersReader, RequestMetadataContext);
 
         using var handler = new TestLoggingHandler(
             new HttpClientLogger(fakeLogger, requestReader, Array.Empty<IHttpClientLogEnricher>(), options),
@@ -965,7 +965,7 @@ public class HttpClientLoggerTest
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
-            RequestUri = new($"http://default-uri.com/foo/bar"),
+            RequestUri = new Uri($"http://default-uri.com/foo/bar"),
             Content = new StringContent("request_content", Encoding.UTF8, TextPlain)
         };
 
@@ -1003,7 +1003,7 @@ public class HttpClientLoggerTest
         var options = new LoggingOptions();
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), Mock.Of<IHttpHeadersRedactor>());
         var requestReader = new HttpRequestReader(
-            options, GetHttpRouteFormatter(), Mock.Of<IHttpRouteParser>(), headersReader, RequestMetadataContext);
+            options, GetHttpRouteFormatter(), new Mock<HttpRouteParser>(new FakeRedactorProvider()).Object, headersReader, RequestMetadataContext);
 
         var logger = new HttpClientLogger(new FakeLogger<HttpClientLogger>(), requestReader, Array.Empty<IHttpClientLogEnricher>(), options);
         using var httpRequestMessage = new HttpRequestMessage();
@@ -1014,14 +1014,14 @@ public class HttpClientLoggerTest
         Assert.Throws<NotSupportedException>(() => logger.LogRequestFailed(null, httpRequestMessage, null, new InvalidOperationException(), TimeSpan.Zero));
     }
 
-    private static IHttpRouteFormatter GetHttpRouteFormatter()
+    private static HttpRouteFormatter GetHttpRouteFormatter()
     {
         var builder = new ServiceCollection()
             .AddFakeRedaction()
             .AddHttpRouteProcessor()
             .BuildServiceProvider();
 
-        return builder.GetService<IHttpRouteFormatter>()!;
+        return builder.GetService<HttpRouteFormatter>()!;
     }
 
     private static void EnsureLogRecordDuration(string? actualValue)
