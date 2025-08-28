@@ -41,12 +41,6 @@ public sealed class RequiredChatToolMode : ChatToolMode
         RequiredFunctionName = requiredFunctionName;
     }
 
-    // The reason for not overriding Equals/GetHashCode (e.g., so two instances are equal if they
-    // have the same RequiredFunctionName) is to leave open the option to unseal the type in the
-    // future. If we did define equality based on RequiredFunctionName but a subclass added further
-    // fields, this would lead to wrong behavior unless the subclass author remembers to re-override
-    // Equals/GetHashCode as well, which they likely won't.
-
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"Required: {RequiredFunctionName ?? "Any"}";
