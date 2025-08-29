@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Provides constants used by various telemetry services.</summary>
 internal static class OpenTelemetryConsts
 {
-    public const string DefaultSourceName = "Experimental.Microsoft.Extensions.AI";
+    public const string DefaultSourceName = "Microsoft.Extensions.AI";
 
     public const string SecondsUnit = "s";
     public const string TokensUnit = "token";
