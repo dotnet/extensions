@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -75,6 +76,16 @@ internal sealed class LogRecord : IResettable
     /// </summary>
     public int PathParametersCount { get; set; }
 
+    /// <summary>
+    /// Gets or sets request query string parameters.
+    /// </summary>
+    public KeyValuePair<string, string>[]? QueryParameters { get; set; }
+
+    /// <summary>
+    /// Gets or sets formatted query string parameters.
+    /// </summary>
+    public string? QueryString { get; set; }
+
     public bool TryReset()
     {
         if (PathParameters != null)
@@ -94,6 +105,8 @@ internal sealed class LogRecord : IResettable
         RequestHeaders = null;
         ResponseHeaders = null;
         PathParametersCount = 0;
+        QueryParameters = null;
+        QueryString = string.Empty;
         return true;
     }
 }
