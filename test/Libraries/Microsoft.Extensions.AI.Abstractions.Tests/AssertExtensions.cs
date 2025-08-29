@@ -13,6 +13,44 @@ namespace Microsoft.Extensions.AI;
 internal static class AssertExtensions
 {
     /// <summary>
+    /// Asserts that the two message lists are equal.
+    /// </summary>
+    public static void EqualMessageLists(List<ChatMessage> expectedMessages, List<ChatMessage> actualMessages)
+    {
+        Assert.Equal(expectedMessages.Count, actualMessages.Count);
+        for (int i = 0; i < expectedMessages.Count; i++)
+        {
+            var expectedMessage = expectedMessages[i];
+            var chatMessage = actualMessages[i];
+
+            Assert.Equal(expectedMessage.Role, chatMessage.Role);
+            Assert.Equal(expectedMessage.Text, chatMessage.Text);
+            Assert.Equal(expectedMessage.GetType(), chatMessage.GetType());
+
+            Assert.Equal(expectedMessage.Contents.Count, chatMessage.Contents.Count);
+            for (int j = 0; j < expectedMessage.Contents.Count; j++)
+            {
+                var expectedItem = expectedMessage.Contents[j];
+                var chatItem = chatMessage.Contents[j];
+
+                Assert.Equal(expectedItem.GetType(), chatItem.GetType());
+                Assert.Equal(expectedItem.ToString(), chatItem.ToString());
+                if (expectedItem is FunctionCallContent expectedFunctionCall)
+                {
+                    var chatFunctionCall = (FunctionCallContent)chatItem;
+                    Assert.Equal(expectedFunctionCall.Name, chatFunctionCall.Name);
+                    AssertExtensions.EqualFunctionCallParameters(expectedFunctionCall.Arguments, chatFunctionCall.Arguments);
+                }
+                else if (expectedItem is FunctionResultContent expectedFunctionResult)
+                {
+                    var chatFunctionResult = (FunctionResultContent)chatItem;
+                    AssertExtensions.EqualFunctionCallResults(expectedFunctionResult.Result, chatFunctionResult.Result);
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Asserts that the two function call parameters are equal, up to JSON equivalence.
     /// </summary>
     public static void EqualFunctionCallParameters(

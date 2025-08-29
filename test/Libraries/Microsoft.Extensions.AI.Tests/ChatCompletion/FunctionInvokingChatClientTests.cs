@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -1116,37 +1115,7 @@ public class FunctionInvokingChatClientTests
         chat.AddRange(result.Messages);
 
         expected ??= plan;
-        Assert.Equal(expected.Count, chat.Count);
-        for (int i = 0; i < expected.Count; i++)
-        {
-            var expectedMessage = expected[i];
-            var chatMessage = chat[i];
-
-            Assert.Equal(expectedMessage.Role, chatMessage.Role);
-            Assert.Equal(expectedMessage.Text, chatMessage.Text);
-            Assert.Equal(expectedMessage.GetType(), chatMessage.GetType());
-
-            Assert.Equal(expectedMessage.Contents.Count, chatMessage.Contents.Count);
-            for (int j = 0; j < expectedMessage.Contents.Count; j++)
-            {
-                var expectedItem = expectedMessage.Contents[j];
-                var chatItem = chatMessage.Contents[j];
-
-                Assert.Equal(expectedItem.GetType(), chatItem.GetType());
-                Assert.Equal(expectedItem.ToString(), chatItem.ToString());
-                if (expectedItem is FunctionCallContent expectedFunctionCall)
-                {
-                    var chatFunctionCall = (FunctionCallContent)chatItem;
-                    Assert.Equal(expectedFunctionCall.Name, chatFunctionCall.Name);
-                    AssertExtensions.EqualFunctionCallParameters(expectedFunctionCall.Arguments, chatFunctionCall.Arguments);
-                }
-                else if (expectedItem is FunctionResultContent expectedFunctionResult)
-                {
-                    var chatFunctionResult = (FunctionResultContent)chatItem;
-                    AssertExtensions.EqualFunctionCallResults(expectedFunctionResult.Result, chatFunctionResult.Result);
-                }
-            }
-        }
+        AssertExtensions.EqualMessageLists(expected, chat);
 
         // Usage should be aggregated over all responses, including AdditionalUsage
         var actualUsage = result.Usage!;
@@ -1210,38 +1179,8 @@ public class FunctionInvokingChatClientTests
         chat.AddRange(result.Messages);
 
         expected ??= plan;
-        Assert.Equal(expected.Count, chat.Count);
-        for (int i = 0; i < expected.Count; i++)
-        {
-            var expectedMessage = expected[i];
-            var chatMessage = chat[i];
 
-            Assert.Equal(expectedMessage.Role, chatMessage.Role);
-            Assert.Equal(expectedMessage.Text, chatMessage.Text);
-            Assert.Equal(expectedMessage.GetType(), chatMessage.GetType());
-
-            Assert.Equal(expectedMessage.Contents.Count, chatMessage.Contents.Count);
-            for (int j = 0; j < expectedMessage.Contents.Count; j++)
-            {
-                var expectedItem = expectedMessage.Contents[j];
-                var chatItem = chatMessage.Contents[j];
-
-                Assert.Equal(expectedItem.GetType(), chatItem.GetType());
-                Assert.Equal(expectedItem.ToString(), chatItem.ToString());
-                if (expectedItem is FunctionCallContent expectedFunctionCall)
-                {
-                    var chatFunctionCall = (FunctionCallContent)chatItem;
-                    Assert.Equal(expectedFunctionCall.Name, chatFunctionCall.Name);
-                    AssertExtensions.EqualFunctionCallParameters(expectedFunctionCall.Arguments, chatFunctionCall.Arguments);
-                }
-                else if (expectedItem is FunctionResultContent expectedFunctionResult)
-                {
-                    var chatFunctionResult = (FunctionResultContent)chatItem;
-                    AssertExtensions.EqualFunctionCallResults(expectedFunctionResult.Result, chatFunctionResult.Result);
-                }
-            }
-        }
-
+        AssertExtensions.EqualMessageLists(expected, chat);
         return chat;
     }
 
@@ -1252,25 +1191,5 @@ public class FunctionInvokingChatClientTests
         {
             yield return item;
         }
-    }
-
-    private sealed class EnumeratedOnceEnumerable<T>(IEnumerable<T> items) : IEnumerable<T>
-    {
-        private int _iterated;
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            if (Interlocked.Exchange(ref _iterated, 1) != 0)
-            {
-                throw new InvalidOperationException("This enumerable can only be enumerated once.");
-            }
-
-            foreach (var item in items)
-            {
-                yield return item;
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
