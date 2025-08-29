@@ -670,22 +670,22 @@ public static partial class AIJsonUtilitiesTests
                             "string",
                             "null"
                         ],
-                        "minItems": 5
+                        "minLength": 5
                     },
                     "MaxLengthProp": {
                         "type": [
                             "string",
                             "null"
                         ],
-                        "maxItems": 50
+                        "maxLength": 50
                     },
                     "LengthProp": {
                         "type": [
                             "string",
                             "null"
                         ],
-                        "minItems": 3,
-                        "maxItems": 10
+                        "minLength": 3,
+                        "maxLength": 10
                     },
                     "MinLengthArrayProp": {
                         "type": [
@@ -848,14 +848,14 @@ public static partial class AIJsonUtilitiesTests
                             "string",
                             "null"
                         ],
-                        "minItems": 5
+                        "minLength": 5
                     },
                     "MaxLengthProp": {
                         "type": [
                             "string",
                             "null"
                         ],
-                        "maxItems": 50
+                        "maxLength": 50
                     },
                     "MinLengthArrayProp": {
                         "type": [
