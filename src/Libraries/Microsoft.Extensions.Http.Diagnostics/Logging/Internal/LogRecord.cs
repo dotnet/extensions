@@ -82,7 +82,7 @@ internal sealed class LogRecord : IResettable
     public KeyValuePair<string, string>[]? QueryParameters { get; set; }
 
     /// <summary>
-    /// Gets or sets formatted query string parameters>.
+    /// Gets or sets formatted query string parameters.
     /// </summary>
     public string? QueryString { get; set; }
 
