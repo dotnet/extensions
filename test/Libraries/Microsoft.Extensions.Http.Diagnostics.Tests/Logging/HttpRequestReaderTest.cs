@@ -672,9 +672,9 @@ public class HttpRequestReaderTest
         var options = new LoggingOptions
         {
             RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
-        {
-            { "otherParam", FakeTaxonomy.PrivateData }
-        }
+            {
+                { "otherParam", FakeTaxonomy.PrivateData }
+            }
         };
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
@@ -703,10 +703,10 @@ public class HttpRequestReaderTest
         var options = new LoggingOptions
         {
             RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
-        {
-            { "userId", FakeTaxonomy.PrivateData },
-            { "token", FakeTaxonomy.PrivateData }
-        }
+            {
+                { "userId", FakeTaxonomy.PrivateData },
+                { "token", FakeTaxonomy.PrivateData }
+            }
         };
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
@@ -794,9 +794,9 @@ public class HttpRequestReaderTest
         var options = new LoggingOptions
         {
             RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
-        {
-            { "userId", FakeTaxonomy.PrivateData }
-        }
+            {
+                { "userId", FakeTaxonomy.PrivateData }
+            }
         };
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
@@ -836,9 +836,9 @@ public class HttpRequestReaderTest
         var options = new LoggingOptions
         {
             RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
-        {
-            { queryParamName, FakeTaxonomy.PrivateData }
-        },
+            {
+                { queryParamName, FakeTaxonomy.PrivateData }
+            },
             LogBody = true,
             RequestPathLoggingMode = OutgoingPathLoggingMode.Formatted
         };
