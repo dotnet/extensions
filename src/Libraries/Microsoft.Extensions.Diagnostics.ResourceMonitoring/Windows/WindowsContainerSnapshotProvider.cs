@@ -6,10 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Threading;
+using Microsoft.Extensions.ClusterMetadata.Kubernetes;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Instruments;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
@@ -29,12 +31,13 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
-    private readonly object _processMemoryLocker = new();
     private readonly TimeProvider _timeProvider;
     private readonly IProcessInfo _processInfo;
     private readonly ILogger<WindowsContainerSnapshotProvider> _logger;
-    private readonly double _memoryLimit;
-    private readonly double _cpuLimit;
+    private double _memoryLimit;
+    private double _cpuLimit;
+    private ulong _memoryRequest;
+    private double _cpuRequest;
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
     private readonly double _metricValueMultiplier;
@@ -43,10 +46,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private long _oldCpuTimeTicks;
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
-    private DateTimeOffset _refreshAfterProcessMemory;
     private double _cpuPercentage = double.NaN;
-    private ulong _memoryUsage;
-    private double _processMemoryPercentage;
+    private double _memoryPercentage;
 
     public SystemResources Resources { get; }
 
@@ -56,9 +57,10 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     public WindowsContainerSnapshotProvider(
         ILogger<WindowsContainerSnapshotProvider>? logger,
         IMeterFactory meterFactory,
-        IOptions<ResourceMonitoringOptions> options)
+        IOptions<ResourceMonitoringOptions> options,
+        IOptions<KubernetesClusterMetadata> clusterMetadata)
         : this(new MemoryInfo(), new SystemInfo(), new ProcessInfo(), logger, meterFactory,
-              static () => new JobHandleWrapper(), TimeProvider.System, options.Value)
+              static () => new JobHandleWrapper(), TimeProvider.System, options.Value, clusterMetadata.Value)
     {
     }
 
@@ -75,7 +77,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         IMeterFactory meterFactory,
         Func<IJobHandle> createJobHandleObject,
         TimeProvider timeProvider,
-        ResourceMonitoringOptions options)
+        ResourceMonitoringOptions options,
+        KubernetesClusterMetadata clusterMetadata)
     {
         _logger = logger ?? NullLogger<WindowsContainerSnapshotProvider>.Instance;
         _logger.RunningInsideJobObject();
@@ -92,16 +95,25 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         using IJobHandle jobHandle = _createJobHandleObject();
 
-        ulong memoryLimitLong = GetMemoryLimit(jobHandle);
-        _memoryLimit = memoryLimitLong;
-        _cpuLimit = GetCpuLimit(jobHandle, systemInfo);
+        if (options.UseKubernetesLimitsAndRequests)
+        {
+            ExtractResourceQuotas(clusterMetadata);
+        }
+        else
+        {
+            ulong memoryLimitLong = GetMemoryLimit(jobHandle);
+            _memoryLimit = memoryLimitLong;
+            _cpuLimit = GetCpuLimit(jobHandle, systemInfo);
 
-        // CPU request (aka guaranteed CPU units) is not supported on Windows, so we set it to the same value as CPU limit (aka maximum CPU units).
-        // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
-        double cpuRequest = _cpuLimit;
-        ulong memoryRequest = memoryLimitLong;
-        Resources = new SystemResources(cpuRequest, _cpuLimit, memoryRequest, memoryLimitLong);
-        _logger.SystemResourcesInfo(_cpuLimit, cpuRequest, memoryLimitLong, memoryRequest);
+            // CPU request (aka guaranteed CPU units) is not supported on Windows in non K8s, so we set it to the same value as CPU limit (aka maximum CPU units).
+            // Memory request (aka guaranteed memory) is not supported on Windows in non K8s, so we set it to the same value as memory limit (aka maximum memory).
+            _cpuRequest = _cpuLimit;
+            _memoryRequest = memoryLimitLong;
+        }
+
+        ulong memoryLimitRounded = (ulong)Math.Round(_memoryLimit);
+        Resources = new SystemResources(_cpuRequest, _cpuLimit, _memoryRequest, memoryLimitRounded);
+        _logger.SystemResourcesInfo(_cpuLimit, _cpuRequest, memoryLimitRounded, _memoryRequest);
 
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
         _oldCpuUsageTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
@@ -110,7 +122,6 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         _memoryRefreshInterval = options.MemoryConsumptionRefreshInterval;
         _refreshAfterCpu = _timeProvider.GetUtcNow();
         _refreshAfterMemory = _timeProvider.GetUtcNow();
-        _refreshAfterProcessMemory = _timeProvider.GetUtcNow();
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // We don't dispose the meter because IMeterFactory handles that
@@ -120,34 +131,20 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         // Container based metrics:
-        _ = meter.CreateObservableCounter(
-            name: ResourceUtilizationInstruments.ContainerCpuTime,
-            observeValues: GetCpuTime,
-            unit: "s",
-            description: "CPU time used by the container.");
+        _ = meter.CreateObservableCounter(name: ResourceUtilizationInstruments.ContainerCpuTime, observeValues: GetCpuTime, unit: "s", description: "CPU time used by the container.");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetMemoryUsage()));
 
-        _ = meter.CreateObservableGauge(
-            name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization,
-            observeValue: CpuPercentage);
-
-        _ = meter.CreateObservableGauge(
-            name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization,
-            observeValue: () => Math.Min(_metricValueMultiplier, MemoryUsage() / _memoryLimit * _metricValueMultiplier));
-
-        _ = meter.CreateObservableUpDownCounter(
-            name: ResourceUtilizationInstruments.ContainerMemoryUsage,
-            observeValue: () => (long)MemoryUsage(),
-            unit: "By",
-            description: "Memory usage of the container.");
+        // Kubernetes enables metrics:
+        if (options.UseKubernetesLimitsAndRequests)
+        {
+            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuPercentageForRequests()); // todo implement
+            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryRequestUtilization, observeValue: () => MemoryPercentaForRequests()); // todo implement
+        }
 
         // Process based metrics:
-        _ = meter.CreateObservableGauge(
-            name: ResourceUtilizationInstruments.ProcessCpuUtilization,
-            observeValue: CpuPercentage);
-
-        _ = meter.CreateObservableGauge(
-            name: ResourceUtilizationInstruments.ProcessMemoryUtilization,
-            observeValue: ProcessMemoryPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetCurrentProcessMemoryUsage()));
     }
 
     public Snapshot GetSnapshot()
@@ -210,35 +207,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         return memoryLimitInBytes;
     }
 
-    private double ProcessMemoryPercentage()
-    {
-        DateTimeOffset now = _timeProvider.GetUtcNow();
-
-        lock (_processMemoryLocker)
-        {
-            if (now < _refreshAfterProcessMemory)
-            {
-                return _processMemoryPercentage;
-            }
-        }
-
-        ulong processMemoryUsage = _processInfo.GetCurrentProcessMemoryUsage();
-
-        lock (_processMemoryLocker)
-        {
-            if (now >= _refreshAfterProcessMemory)
-            {
-                _processMemoryPercentage = Math.Min(_metricValueMultiplier, processMemoryUsage / _memoryLimit * _metricValueMultiplier);
-                _refreshAfterProcessMemory = now.Add(_memoryRefreshInterval);
-
-                _logger.ProcessMemoryPercentageData(processMemoryUsage, _memoryLimit, _processMemoryPercentage);
-            }
-
-            return _processMemoryPercentage;
-        }
-    }
-
-    private ulong MemoryUsage()
+    private double MemoryPercentage(Func<ulong> getMemoryUsage)
     {
         DateTimeOffset now = _timeProvider.GetUtcNow();
 
@@ -246,22 +215,24 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         {
             if (now < _refreshAfterMemory)
             {
-                return _memoryUsage;
+                return _memoryPercentage;
             }
         }
 
-        ulong memoryUsage = _processInfo.GetMemoryUsage();
+        ulong memoryUsage = getMemoryUsage();
 
         lock (_memoryLocker)
         {
             if (now >= _refreshAfterMemory)
             {
-                _memoryUsage = memoryUsage;
+                // Don't change calculation order, otherwise we loose some precision:
+                _memoryPercentage = Math.Min(_metricValueMultiplier, memoryUsage / _memoryLimit * _metricValueMultiplier);
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
-                _logger.ContainerMemoryUsageData(_memoryUsage, _memoryLimit);
             }
 
-            return _memoryUsage;
+            _logger.MemoryUsageData(memoryUsage, _memoryLimit, _memoryPercentage);
+
+            return _memoryPercentage;
         }
     }
 
@@ -314,5 +285,42 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
             return _cpuPercentage;
         }
+    }
+
+    private void ExtractResourceQuotas(KubernetesClusterMetadata clusterMetadata)
+    {
+        _cpuRequest = ConvertMillicoreToUnit(clusterMetadata.RequestsCpu);
+        _cpuLimit = ConvertMillicoreToUnit(clusterMetadata.LimitsCpu);
+        _memoryRequest = clusterMetadata.RequestsMemory;
+        _memoryLimit = clusterMetadata.LimitsMemory;
+
+        if (_cpuRequest <= 0)
+        {
+            Throw.InvalidOperationException($"REQUESTS_CPU detected value is {_cpuRequest}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_cpuLimit <= 0)
+        {
+            Throw.InvalidOperationException($"LIMITS_CPU detected value is {_cpuLimit}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_memoryRequest <= 0)
+        {
+            Throw.InvalidOperationException($"REQUESTS_MEMORY detected value is {_memoryRequest}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_memoryLimit <= 0)
+        {
+            Throw.InvalidOperationException($"LIMITS_MEMORY detected value is {_memoryLimit}, " +
+                $"environment variables may be misconfigured");
+        }
+    }
+
+    private static double ConvertMillicoreToUnit(ulong millicores)
+    {
+        return millicores / 1000.0;
     }
 }
