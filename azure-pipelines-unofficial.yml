@@ -233,7 +233,6 @@ extends:
             timeoutInMinutes: 180
 
             pool:
-              ${{ if eq(variables['runAsPublic'], 'true') }}:
               name: NetCore1ESPool-Internal
               image: 1es-mariner-2
               os: linux
