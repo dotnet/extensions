@@ -317,9 +317,23 @@ public class OpenAIResponseClientTests
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("o4-mini-2025-04-16", updates[i].ModelId);
             Assert.Null(updates[i].AdditionalProperties);
-#pragma warning disable S1067 // Expressions should not be too complex
-            Assert.Equal((i >= 4 && i <= 8) || (i >= 14 && i <= 25) || i == 29 ? 1 : 0, updates[i].Contents.Count);
-#pragma warning restore S1067 // Expressions should not be too complex
+
+            if (i is (>= 4 and <= 8))
+            {
+                // Reasoning updates
+                Assert.Single(updates[i].Contents);
+            }
+            else if (i is (>= 14 and <= 25) or 29)
+            {
+                // Response Complete and Assistant message updates
+                Assert.Single(updates[i].Contents);
+            }
+            else
+            {
+                // Other updates
+                Assert.Empty(updates[i].Contents);
+            }
+
             Assert.Equal(i < updates.Count - 1 ? null : ChatFinishReason.Stop, updates[i].FinishReason);
         }
 
