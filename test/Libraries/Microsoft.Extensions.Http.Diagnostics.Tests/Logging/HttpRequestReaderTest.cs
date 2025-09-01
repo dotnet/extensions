@@ -55,7 +55,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted), new("Header3", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            QueryParameters = [],
+
             QueryString = string.Empty,
         };
 
@@ -123,7 +123,7 @@ public class HttpRequestReaderTest
             StatusCode = 200,
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            QueryParameters = [],
+
             QueryString = string.Empty
         };
 
@@ -185,7 +185,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            QueryParameters = [],
+
             QueryString = string.Empty
         };
 
@@ -259,7 +259,6 @@ public class HttpRequestReaderTest
             RequestBody = requestContent,
             ResponseBody = responseContent,
             PathParametersCount = 1,
-            QueryParameters = [],
             QueryString = string.Empty
         };
 
@@ -334,7 +333,6 @@ public class HttpRequestReaderTest
             Path = "/foo/bar/123",
             RequestHeaders = [new("Header1", Redacted)],
             RequestBody = requestContent,
-            QueryParameters = [],
             QueryString = string.Empty
         };
 
@@ -396,7 +394,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            QueryParameters = [],
+
             QueryString = string.Empty
         };
 
@@ -469,7 +467,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            QueryParameters = [],
+
             QueryString = string.Empty
         };
 
@@ -538,7 +536,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            QueryParameters = [],
+
             QueryString = string.Empty
         };
 
@@ -635,7 +633,7 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
-        logRecord.QueryParameters.Should().NotBeNullOrEmpty();
+        logRecord.QueryString.Should().NotBeNullOrEmpty();
         logRecord.QueryString.Should().Contain("userId=REDACTED");
     }
 
@@ -694,7 +692,7 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
-        logRecord.QueryParameters.Should().BeEmpty();
+        logRecord.QueryString.Should().BeNullOrEmpty();
     }
 
     [Fact]
@@ -730,8 +728,7 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
         logRecord.QueryString.Should().NotBeNullOrEmpty();
-        logRecord.QueryString.Should().Contain("userId=REDACTED&token=REDACTED");
-        logRecord.QueryParameters!.Length.Should().Be(2);
+        logRecord.QueryString.Should().Be("userId=REDACTED&token=REDACTED");
     }
 
     [Fact]
@@ -820,7 +817,6 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
         logRecord.QueryString.Should().BeNullOrEmpty();
-        logRecord.QueryParameters!.Length.Should().Be(0);
     }
 
     [Fact]
@@ -881,6 +877,10 @@ public class HttpRequestReaderTest
         // Assert: path parameter is redacted in the path
         logRecord.Path.Should().NotContain(pathParamValue);
         logRecord.Path.Should().Contain(Redacted);
+
+        logRecord.QueryString.Should().NotBeNullOrEmpty();
+        logRecord.QueryString.Should().Contain($"{queryParamName}={Redacted}");
+        logRecord.QueryString.Should().NotContain(queryParamValue);
     }
 
     private static ServiceProvider GetServiceProvider(

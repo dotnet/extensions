@@ -11,20 +11,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
-using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Http.Logging.Internal;
 
 internal sealed class HttpRequestReader : IHttpRequestReader
 {
-    private const int MaxQueryParams = 32;
-    private static readonly ObjectPool<List<KeyValuePair<string, string>>> _queryParamListPool =
-        PoolFactory.CreateListPoolWithCapacity<KeyValuePair<string, string>>(MaxQueryParams);
-
     private readonly IHttpRouteFormatter _routeFormatter;
     private readonly IHttpRouteParser _httpRouteParser;
     private readonly IHttpHeadersReader _httpHeadersReader;
@@ -141,24 +135,9 @@ internal sealed class HttpRequestReader : IHttpRequestReader
                 .ConfigureAwait(false);
         }
 
-        logRecord.QueryParameters = GetQueryParameters(request);
-
-        if (logRecord.QueryParameters is { Length: > 0 })
+        if (_logRequestQueryParameters && !string.IsNullOrEmpty(request.RequestUri?.Query))
         {
-            var sb = new System.Text.StringBuilder();
-            for (int i = 0; i < logRecord.QueryParameters.Length; i++)
-            {
-                if (i > 0)
-                {
-                    _ = sb.Append('&');
-                }
-
-                _ = sb.Append(Uri.EscapeDataString(logRecord.QueryParameters[i].Key))
-                    .Append('=')
-                    .Append(Uri.EscapeDataString(logRecord.QueryParameters[i].Value));
-            }
-
-            logRecord.QueryString = sb.ToString();
+            logRecord.QueryString = ExtractAndRedactQueryParameters(request.RequestUri!.Query);
         }
         else
         {
@@ -175,68 +154,59 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 #endif
     }
 
-    private KeyValuePair<string, string>[] GetQueryParameters(HttpRequestMessage request)
+    private string ExtractAndRedactQueryParameters(string query)
     {
-        if (_logRequestQueryParameters && !string.IsNullOrEmpty(request.RequestUri?.Query))
+        var sb = new System.Text.StringBuilder();
+        ReadOnlySpan<char> querySpan = query.AsSpan();
+        int length = querySpan.Length;
+        int start = 0;
+
+        // Remove leading '?'
+        if (length > 0 && querySpan[0] == '?')
         {
-            return ExtractAndRedactQueryParameters(request.RequestUri!.Query);
+            start = 1;
         }
 
-        return [];
-    }
-
-    private KeyValuePair<string, string>[] ExtractAndRedactQueryParameters(string query)
-    {
-        List<KeyValuePair<string, string>> result = _queryParamListPool.Get();
-        try
+        while (start < length)
         {
-            ReadOnlySpan<char> querySpan = query.AsSpan();
-            int length = querySpan.Length;
-            int start = 0;
+            int amp = querySpan.Slice(start).IndexOf('&');
+            int end = amp == -1 ? length : start + amp;
 
-            // Remove leading '?'
-            if (length > 0 && querySpan[0] == '?')
+            int eq = querySpan.Slice(start, end - start).IndexOf('=');
+            if (eq >= 0)
             {
-                start = 1;
-            }
+                var keySpan = querySpan.Slice(start, eq);
+                var valueSpan = querySpan.Slice(start + eq + 1, end - (start + eq + 1));
 
-            while (start < length)
-            {
-                int amp = querySpan.Slice(start).IndexOf('&');
-                int end = amp == -1 ? length : start + amp;
+                string key = UnescapeDataString(keySpan);
+                string value = UnescapeDataString(valueSpan);
 
-                int eq = querySpan.Slice(start, end - start).IndexOf('=');
-                if (eq >= 0)
+                // Only process if the key is in the classification dictionary and value is not empty
+                if (!string.IsNullOrEmpty(value) && _queryParameterDataClasses.TryGetValue(key, out var classification))
                 {
-                    var keySpan = querySpan.Slice(start, eq);
-                    var valueSpan = querySpan.Slice(start + eq + 1, end - (start + eq + 1));
+                    string redacted = _httpHeadersReader.RedactValue(value, classification);
 
-                    string key = UnescapeDataString(keySpan);
-                    string value = UnescapeDataString(valueSpan);
-
-                    // Only process if the key is in the classification dictionary and value is not empty
-                    if (!string.IsNullOrEmpty(value) && _queryParameterDataClasses.TryGetValue(key, out var classification))
+                    // Append to string builder directly with proper encoding
+                    if (sb.Length > 0)
                     {
-                        string redacted = _httpHeadersReader.RedactValue(value, classification);
-                        result.Add(new KeyValuePair<string, string>(key, redacted));
+                        _ = sb.Append('&');
                     }
-                }
 
-                if (amp == -1)
-                {
-                    break;
+                    _ = sb.Append(Uri.EscapeDataString(key))
+                        .Append('=')
+                        .Append(Uri.EscapeDataString(redacted));
                 }
-
-                start = end + 1;
             }
 
-            return result.ToArray();
+            if (amp == -1)
+            {
+                break;
+            }
+
+            start = end + 1;
         }
-        finally
-        {
-            result.Clear();
-            _queryParamListPool.Return(result);
-        }
+
+        return sb.ToString();
     }
 
     private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)

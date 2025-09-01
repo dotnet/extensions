@@ -77,12 +77,7 @@ internal sealed class LogRecord : IResettable
     public int PathParametersCount { get; set; }
 
     /// <summary>
-    /// Gets or sets request query string parameters.
-    /// </summary>
-    public KeyValuePair<string, string>[]? QueryParameters { get; set; }
-
-    /// <summary>
-    /// Gets or sets formatted query string parameters.
+    /// Gets or sets formatted query parameters.
     /// </summary>
     public string? QueryString { get; set; }
 
@@ -105,7 +100,6 @@ internal sealed class LogRecord : IResettable
         RequestHeaders = null;
         ResponseHeaders = null;
         PathParametersCount = 0;
-        QueryParameters = null;
         QueryString = string.Empty;
         return true;
     }
