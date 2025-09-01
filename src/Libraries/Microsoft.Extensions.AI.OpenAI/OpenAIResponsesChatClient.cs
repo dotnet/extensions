@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -26,6 +27,9 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an <see cref="OpenAIResponseClient"/>.</summary>
 internal sealed class OpenAIResponsesChatClient : IChatClient
 {
+    /// <summary>Type info for serializing and deserializing arbitrary JSON objects.</summary>
+    private static readonly JsonTypeInfo _jsonTypeInfo = AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object));
+
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -324,8 +328,25 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 default:
+                {
+                    // Breaking-Glass capture of streaming reasoning contents
+                    if (streamingUpdate.GetType().Name == "InternalResponseReasoningSummaryTextDeltaEvent")
+                    {
+                        var responseDeltaElement = JsonSerializer.Deserialize(
+                            JsonSerializer.Serialize(streamingUpdate, _jsonTypeInfo),
+                            OpenAIJsonContext.Default.JsonElement);
+
+                        if (responseDeltaElement.TryGetProperty("delta", out var deltaProperty))
+                        {
+                            yield return CreateUpdate(new TextReasoningContent(deltaProperty.GetString()));
+                            break;
+                        }
+                    }
+
                     yield return CreateUpdate();
                     break;
+                }
+
             }
         }
     }
