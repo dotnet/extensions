@@ -14,6 +14,7 @@ using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Http.Logging.Internal;
 
@@ -156,57 +157,64 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
     private string ExtractAndRedactQueryParameters(string query)
     {
-        var sb = new System.Text.StringBuilder();
-        ReadOnlySpan<char> querySpan = query.AsSpan();
-        int length = querySpan.Length;
-        int start = 0;
-
-        // Remove leading '?'
-        if (length > 0 && querySpan[0] == '?')
+        var stringBuilder = PoolFactory.SharedStringBuilderPool.Get();
+        try
         {
-            start = 1;
-        }
+            ReadOnlySpan<char> querySpan = query.AsSpan();
+            int length = querySpan.Length;
+            int start = 0;
 
-        while (start < length)
-        {
-            int amp = querySpan.Slice(start).IndexOf('&');
-            int end = amp == -1 ? length : start + amp;
-
-            int eq = querySpan.Slice(start, end - start).IndexOf('=');
-            if (eq >= 0)
+            // Remove leading '?'
+            if (length > 0 && querySpan[0] == '?')
             {
-                var keySpan = querySpan.Slice(start, eq);
-                var valueSpan = querySpan.Slice(start + eq + 1, end - (start + eq + 1));
+                start = 1;
+            }
 
-                string key = UnescapeDataString(keySpan);
-                string value = UnescapeDataString(valueSpan);
+            while (start < length)
+            {
+                int amp = querySpan.Slice(start).IndexOf('&');
+                int end = amp == -1 ? length : start + amp;
 
-                // Only process if the key is in the classification dictionary and value is not empty
-                if (!string.IsNullOrEmpty(value) && _queryParameterDataClasses.TryGetValue(key, out var classification))
+                int eq = querySpan.Slice(start, end - start).IndexOf('=');
+                if (eq >= 0)
                 {
-                    string redacted = _httpHeadersReader.RedactValue(value, classification);
+                    var keySpan = querySpan.Slice(start, eq);
+                    var valueSpan = querySpan.Slice(start + eq + 1, end - (start + eq + 1));
 
-                    // Append to string builder directly with proper encoding
-                    if (sb.Length > 0)
+                    string key = UnescapeDataString(keySpan);
+                    string value = UnescapeDataString(valueSpan);
+
+                    // Only process if the key is in the classification dictionary and value is not empty
+                    if (!string.IsNullOrEmpty(value) && _queryParameterDataClasses.TryGetValue(key, out var classification))
                     {
-                        _ = sb.Append('&');
+                        string redacted = _httpHeadersReader.RedactValue(value, classification);
+
+                        // Append to string builder directly with proper encoding
+                        if (stringBuilder.Length > 0)
+                        {
+                            _ = stringBuilder.Append('&');
+                        }
+
+                        _ = stringBuilder.Append(Uri.EscapeDataString(key))
+                            .Append('=')
+                            .Append(Uri.EscapeDataString(redacted));
                     }
-
-                    _ = sb.Append(Uri.EscapeDataString(key))
-                        .Append('=')
-                        .Append(Uri.EscapeDataString(redacted));
                 }
+
+                if (amp == -1)
+                {
+                    break;
+                }
+
+                start = end + 1;
             }
 
-            if (amp == -1)
-            {
-                break;
-            }
-
-            start = end + 1;
+            return stringBuilder.ToString();
         }
-
-        return sb.ToString();
+        finally
+        {
+            PoolFactory.SharedStringBuilderPool.Return(stringBuilder);
+        }
     }
 
     private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)
