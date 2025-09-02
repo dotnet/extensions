@@ -322,6 +322,11 @@ public class OpenAIResponseClientTests
             {
                 // Reasoning updates
                 Assert.Single(updates[i].Contents);
+                Assert.Null(updates[i].Role);
+
+                var reasoning = Assert.IsType<TextReasoningContent>(updates[i].Contents.Single());
+                Assert.NotNull(reasoning);
+                Assert.NotNull(reasoning.Text);
             }
             else if (i is (>= 14 and <= 25) or 29)
             {
@@ -335,15 +340,6 @@ public class OpenAIResponseClientTests
             }
 
             Assert.Equal(i < updates.Count - 1 ? null : ChatFinishReason.Stop, updates[i].FinishReason);
-        }
-
-        // Reasoning Content Check
-        for (int i = 4; i <= 8; i++)
-        {
-            Assert.Null(updates[i].Role);
-            var reasoning = Assert.IsType<TextReasoningContent>(updates[i].Contents.Single());
-            Assert.NotNull(reasoning);
-            Assert.NotNull(reasoning.Text);
         }
 
         UsageContent usage = updates.SelectMany(u => u.Contents).OfType<UsageContent>().Single();
