@@ -1062,6 +1062,121 @@ public class FunctionInvokingChatClientTests
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configurePipeline);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TerminateOnUnknownCalls_ControlsBehaviorForUnknownFunctions(bool terminateOnUnknown)
+    {
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create((int i) => $"Known: {i}", "KnownFunc")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
+            s => new FunctionInvokingChatClient(s) { TerminateOnUnknownCalls = terminateOnUnknown });
+
+        if (!terminateOnUnknown)
+        {
+            List<ChatMessage> planForContinue =
+            [
+                new(ChatRole.User, "hello"),
+                new(ChatRole.Assistant, [
+                    new FunctionCallContent("callId1", "UnknownFunc", new Dictionary<string, object?> { ["i"] = 1 }),
+                    new FunctionCallContent("callId2", "KnownFunc", new Dictionary<string, object?> { ["i"] = 2 })
+                ]),
+                new(ChatRole.Tool, [
+                    new FunctionResultContent("callId1", result: "Error: Requested function \"UnknownFunc\" not found."),
+                    new FunctionResultContent("callId2", result: "Known: 2")
+                ]),
+                new(ChatRole.Assistant, "done"),
+            ];
+
+            await InvokeAndAssertAsync(options, planForContinue, configurePipeline: configure);
+            await InvokeAndAssertStreamingAsync(options, planForContinue, configurePipeline: configure);
+        }
+        else
+        {
+            List<ChatMessage> fullPlanWithUnknown =
+            [
+                new(ChatRole.User, "hello"),
+                new(ChatRole.Assistant, [
+                    new FunctionCallContent("callId1", "UnknownFunc", new Dictionary<string, object?> { ["i"] = 1 }),
+                    new FunctionCallContent("callId2", "KnownFunc", new Dictionary<string, object?> { ["i"] = 2 })
+                ]),
+                new(ChatRole.Tool, [
+                    new FunctionResultContent("callId1", result: "Error: Requested function \"UnknownFunc\" not found."),
+                    new FunctionResultContent("callId2", result: "Known: 2")
+                ]),
+                new(ChatRole.Assistant, "done"),
+            ];
+
+            var expected = fullPlanWithUnknown.Take(2).ToList();
+            await InvokeAndAssertAsync(options, fullPlanWithUnknown, expected, configure);
+            await InvokeAndAssertStreamingAsync(options, fullPlanWithUnknown, expected, configure);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RequestsWithOnlyFunctionDeclarations_TerminatesRegardlessOfTerminateOnUnknownCalls(bool terminateOnUnknown)
+    {
+        var declarationOnly = AIFunctionFactory.Create(() => "unused", "DefOnly").AsDeclarationOnly();
+
+        ChatOptions options = new() { Tools = [declarationOnly] };
+
+        List<ChatMessage> fullPlan =
+        [
+            new(ChatRole.User, "hello"),
+            new(ChatRole.Assistant, [new FunctionCallContent("callId1", "DefOnly")]),
+            new(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Should not be produced")]),
+            new(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> expected = fullPlan.Take(2).ToList();
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
+            s => new FunctionInvokingChatClient(s) { TerminateOnUnknownCalls = terminateOnUnknown });
+
+        await InvokeAndAssertAsync(options, fullPlan, expected, configure);
+        await InvokeAndAssertStreamingAsync(options, fullPlan, expected, configure);
+    }
+
+    [Fact]
+    public async Task MixedKnownFunctionAndDeclaration_TerminatesWithoutInvokingKnown()
+    {
+        int invoked = 0;
+        var known = AIFunctionFactory.Create(() => { invoked++; return "OK"; }, "Known");
+        var defOnly = AIFunctionFactory.Create(() => "unused", "DefOnly").AsDeclarationOnly();
+
+        var options = new ChatOptions
+        {
+            Tools = [known, defOnly]
+        };
+
+        List<ChatMessage> fullPlan =
+        [
+            new(ChatRole.User, "hi"),
+            new(ChatRole.Assistant, [
+                new FunctionCallContent("callId1", "Known"),
+                new FunctionCallContent("callId2", "DefOnly")
+            ]),
+            new(ChatRole.Tool, [new FunctionResultContent("callId1", result: "OK"), new FunctionResultContent("callId2", result: "nope")]),
+            new(ChatRole.Assistant, "done"),
+        ];
+
+        List<ChatMessage> expected = fullPlan.Take(2).ToList();
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(s => new FunctionInvokingChatClient(s) { TerminateOnUnknownCalls = false });
+        await InvokeAndAssertAsync(options, fullPlan, expected, configure);
+        Assert.Equal(0, invoked);
+
+        invoked = 0;
+        configure = b => b.Use(s => new FunctionInvokingChatClient(s) { TerminateOnUnknownCalls = true });
+        await InvokeAndAssertStreamingAsync(options, fullPlan, expected, configure);
+        Assert.Equal(0, invoked);
+    }
+
     private sealed class CustomSynchronizationContext : SynchronizationContext
     {
         public override void Post(SendOrPostCallback d, object? state)
