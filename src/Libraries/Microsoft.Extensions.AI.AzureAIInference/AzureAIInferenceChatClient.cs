@@ -343,7 +343,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
         {
             foreach (AITool tool in tools)
             {
-                if (tool is AIFunction af)
+                if (tool is AIFunctionDeclaration af)
                 {
                     result.Tools.Add(ToAzureAIChatTool(af));
                 }
@@ -410,7 +410,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
     private static readonly BinaryData _falseString = BinaryData.FromString("false");
 
     /// <summary>Converts an Extensions function to an AzureAI chat tool.</summary>
-    private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
+    private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunctionDeclaration aiFunction)
     {
         // Map to an intermediate model so that redundant properties are skipped.
         var tool = JsonSerializer.Deserialize(SchemaTransformCache.GetOrCreateTransformedSchema(aiFunction), JsonContext.Default.AzureAIChatToolJson)!;

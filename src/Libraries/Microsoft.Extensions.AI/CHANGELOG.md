@@ -2,6 +2,7 @@
 
 ## NOT YET RELEASED
 
+- Added `FunctionInvokingChatClient` support for non-invocable tools and `TerminateOnUnknownCalls` property.
 - Fixed `GetResponseAsync<T>` to only look at the contents of the last message in the response.
 
 ## 9.8.0
