@@ -27,7 +27,7 @@ var openai = builder.AddOpenAIClient("openai");
 #else
 var openai = builder.AddAzureOpenAIClient("openai");
 #endif
-openai.AddChatClient("gpt-4o-mini")
+openai.AddResponsesChatClient("gpt-4o-mini")
     .UseFunctionInvocation()
     .UseOpenTelemetry(configure: c =>
         c.EnableSensitiveData = builder.Environment.IsDevelopment());

@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>d5681fae-b21b-4114-b781-48180f08c0c4</UserSecretsId>
+<!--#if (IsAzureOpenAI || IsOpenAI)
+    <NoWarn>OPENAI001</NoWarn>
+#endif -->
   </PropertyGroup>
 
   <ItemGroup>

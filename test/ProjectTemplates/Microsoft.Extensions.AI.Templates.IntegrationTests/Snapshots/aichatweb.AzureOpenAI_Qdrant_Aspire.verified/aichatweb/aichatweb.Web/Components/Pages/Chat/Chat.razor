@@ -66,10 +66,11 @@
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
         currentResponseCancellation = new();
-        await foreach (var update in ChatClient.GetStreamingResponseAsync([.. messages], chatOptions, currentResponseCancellation.Token))
+        await foreach (var update in ChatClient.GetStreamingResponseAsync([userMessage], chatOptions, currentResponseCancellation.Token))
         {
             messages.AddMessages(update, filter: c => c is not TextContent);
             responseText.Text += update.Text;
+            chatOptions.ConversationId = update.ConversationId; //Update conversation ID from current response
             ChatMessageItem.NotifyChanged(currentResponseMessage);
         }
 
@@ -96,6 +97,7 @@
         CancelAnyCurrentResponse();
         messages.Clear();
         messages.Add(new(ChatRole.System, SystemPrompt));
+        chatOptions.ConversationId = null;
         chatSuggestions?.Clear();
         await chatInput!.FocusAsync();
     }
