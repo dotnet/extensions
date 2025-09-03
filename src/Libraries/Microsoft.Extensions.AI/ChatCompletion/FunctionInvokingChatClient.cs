@@ -932,7 +932,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             ActivityKind.Internal,
             default(ActivityContext),
             [
-                new(OpenTelemetryConsts.GenAI.Operation.Name, "execute_tool"),
+                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteTool),
+                new(OpenTelemetryConsts.GenAI.Tool.Type, OpenTelemetryConsts.ToolTypeFunction),
                 new(OpenTelemetryConsts.GenAI.Tool.Call.Id, context.CallContent.CallId),
                 new(OpenTelemetryConsts.GenAI.Tool.Name, context.Function.Name),
                 new(OpenTelemetryConsts.GenAI.Tool.Description, context.Function.Description),
@@ -962,7 +963,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             if (activity is not null)
             {
-                _ = activity.SetTag("error.type", e.GetType().FullName)
+                _ = activity.SetTag(OpenTelemetryConsts.Error.Type, e.GetType().FullName)
                             .SetStatus(ActivityStatusCode.Error, e.Message);
             }
 
