@@ -1927,7 +1927,6 @@
       "Type": "class Microsoft.Extensions.AI.HostedMcpServerTool : Microsoft.Extensions.AI.AITool",
       "Stage": "Stable",
       "Methods": [
-
         {
           "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, string url);",
           "Stage": "Stable"
