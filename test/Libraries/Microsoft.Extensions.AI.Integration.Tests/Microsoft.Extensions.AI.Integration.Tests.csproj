@@ -47,6 +47,7 @@
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
     <PackageReference Include="PdfPig" />
     <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
 
   <ItemGroup>

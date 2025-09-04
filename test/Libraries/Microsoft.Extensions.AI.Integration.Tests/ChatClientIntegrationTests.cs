@@ -41,6 +41,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     protected IChatClient? ChatClient { get; }
 
+    protected IEmbeddingGenerator<string, Embedding<float>>? EmbeddingGenerator { get; private set; }
+
     public void Dispose()
     {
         ChatClient?.Dispose();
@@ -48,6 +50,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     protected abstract IChatClient? CreateChatClient();
+
+    /// <summary>
+    /// Optionally supplies an embedding generator for integration tests that exercise
+    /// embedding-based components (e.g., tool reduction). Default returns null and
+    /// tests depending on embeddings will skip if not overridden.
+    /// </summary>
+    protected virtual IEmbeddingGenerator<string, Embedding<float>>? CreateEmbeddingGenerator() => null;
 
     [ConditionalFact]
     public virtual async Task GetResponseAsync_SingleRequestMessage()
@@ -1395,6 +1404,144 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
     }
 
+    [ConditionalFact]
+    public virtual async Task ToolReduction_SingleRelevantToolSelected()
+    {
+        SkipIfNotEnabled();
+        EnsureEmbeddingGenerator();
+
+        // Strategy: pick top 1 tool
+        var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 1);
+
+        // Define several tools with clearly distinct domains
+        var weatherTool = AIFunctionFactory.Create(
+            () => "Weather data",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetWeatherForecast",
+                Description = "Returns weather forecast and temperature for a given city."
+            });
+
+        var stockTool = AIFunctionFactory.Create(
+            () => "Stock data",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetStockQuote",
+                Description = "Retrieves live stock market price for a company ticker symbol."
+            });
+
+        var translateTool = AIFunctionFactory.Create(
+            () => "Translated text",
+            new AIFunctionFactoryOptions
+            {
+                Name = "TranslateText",
+                Description = "Translates text between human languages."
+            });
+
+        var mathTool = AIFunctionFactory.Create(
+            () => 42,
+            new AIFunctionFactoryOptions
+            {
+                Name = "SolveMath",
+                Description = "Solves arithmetic or algebraic math problems."
+            });
+
+        var allTools = new List<AITool> { weatherTool, stockTool, translateTool, mathTool };
+
+        IList<AITool>? capturedTools = null;
+
+        using var client = ChatClient!
+            .AsBuilder()
+            .UseToolReduction(strategy)
+            // Capture the tools after reduction, before invoking the underlying model.
+            .Use((messages, options, next, ct) =>
+            {
+                capturedTools = options?.Tools;
+                return next(messages, options, ct);
+            })
+            .Build();
+
+        var question = "What will the weather be in Paris tomorrow?";
+        _ = await client.GetResponseAsync([new(ChatRole.User, question)], new ChatOptions
+        {
+            Tools = allTools
+        });
+
+        Assert.NotNull(capturedTools);
+        Assert.Single(capturedTools!);
+        Assert.Equal("GetWeatherForecast", capturedTools![0].Name);
+    }
+
+    [ConditionalFact]
+    public virtual async Task ToolReduction_MultiConceptQuery_SelectsTwoRelevantTools()
+    {
+        SkipIfNotEnabled();
+        EnsureEmbeddingGenerator();
+
+        var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 2);
+
+        var weatherTool = AIFunctionFactory.Create(
+            () => "Weather data",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetWeatherForecast",
+                Description = "Returns weather forecast and temperature for a given city."
+            });
+
+        var translateTool = AIFunctionFactory.Create(
+            () => "Translated text",
+            new AIFunctionFactoryOptions
+            {
+                Name = "TranslateText",
+                Description = "Translates text between human languages."
+            });
+
+        var stockTool = AIFunctionFactory.Create(
+            () => "Stock data",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetStockQuote",
+                Description = "Retrieves live stock market price for a company ticker symbol."
+            });
+
+        var mathTool = AIFunctionFactory.Create(
+            () => 42,
+            new AIFunctionFactoryOptions
+            {
+                Name = "SolveMath",
+                Description = "Solves arithmetic or algebraic math problems."
+            });
+
+        var allTools = new List<AITool> { weatherTool, translateTool, stockTool, mathTool };
+
+        IList<AITool>? capturedTools = null;
+
+        using var client = ChatClient!
+            .AsBuilder()
+            .UseToolReduction(strategy)
+            .Use((messages, options, next, ct) =>
+            {
+                capturedTools = options?.Tools;
+                return next(messages, options, ct);
+            })
+            .Build();
+
+        // Query intentionally references two distinct semantic domains: weather + translation.
+        var question = "Please translate 'good morning' into Spanish and also tell me the weather forecast for Barcelona.";
+        _ = await client.GetResponseAsync([new(ChatRole.User, question)], new ChatOptions
+        {
+            Tools = allTools
+        });
+
+        Assert.NotNull(capturedTools);
+        Assert.Equal(2, capturedTools!.Count);
+
+        // Order is not guaranteed; assert membership.
+        var names = capturedTools.Select(t => t.Name).ToList();
+        Assert.Contains("GetWeatherForecast", names);
+        Assert.Contains("TranslateText", names);
+    }
+
     [MemberNotNull(nameof(ChatClient))]
     protected void SkipIfNotEnabled()
     {
@@ -1403,6 +1550,17 @@ public abstract class ChatClientIntegrationTests : IDisposable
         if (skipIntegration is not null || ChatClient is null)
         {
             throw new SkipTestException("Client is not enabled.");
+        }
+    }
+
+    [MemberNotNull(nameof(EmbeddingGenerator))]
+    protected void EnsureEmbeddingGenerator()
+    {
+        EmbeddingGenerator ??= CreateEmbeddingGenerator();
+
+        if (EmbeddingGenerator is null)
+        {
+            throw new SkipTestException("Embedding generator is not enabled.");
         }
     }
 }
