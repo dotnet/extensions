@@ -1,22 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents the result of a hosted MCP server tool call.
+/// Represents the result of a MCP server tool call.
 /// </summary>
-public class HostedMcpServerToolResultContent : AIContent
+public class McpServerToolResultContent : AIContent
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="HostedMcpServerToolResultContent"/> class.
+    /// Initializes a new instance of the <see cref="McpServerToolResultContent"/> class.
     /// </summary>
     /// <param name="callId">The tool call ID.</param>
-    public HostedMcpServerToolResultContent(string callId)
+    /// <exception cref="ArgumentNullException"><paramref name="callId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="callId"/> is empty or composed entirely of whitespace.</exception>
+    public McpServerToolResultContent(string callId)
     {
         CallId = Throw.IfNullOrWhitespace(callId);
     }
@@ -30,9 +32,4 @@ public class HostedMcpServerToolResultContent : AIContent
     /// Gets or sets the output of the tool call.
     /// </summary>
     public IList<AIContent>? Output { get; set; }
-
-    /// <summary>
-    /// Gets a value indicating whether the tool call was successful.
-    /// </summary>
-    public virtual bool Success => Output is not null && Output.Count is not 0 && !Output.OfType<ErrorContent>().Any();
 }

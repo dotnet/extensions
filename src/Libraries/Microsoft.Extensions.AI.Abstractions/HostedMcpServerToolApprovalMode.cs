@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 /// <remarks>
 /// The predefined values <see cref="AlwaysRequire" />, and <see cref="NeverRequire"/> are provided to specify handling for all tools.
-/// To specify approval behavior for individual tool names, use <see cref="RequireSpecific(HashSet{string}, HashSet{string})"/>.
+/// To specify approval behavior for individual tool names, use <see cref="RequireSpecific(IList{string}, IList{string})"/>.
 /// </remarks>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(HostedMcpServerToolNeverRequireApprovalMode), typeDiscriminator: "never")]
@@ -41,6 +41,6 @@ public class HostedMcpServerToolApprovalMode
     /// <param name="alwaysRequireApprovalToolNames">The list of tools names that always require approval.</param>
     /// <param name="neverRequireApprovalToolNames">The list of tools names that never require approval.</param>
     /// <returns>An instance of <see cref="HostedMcpServerToolRequireSpecificApprovalMode"/> for the specified tool names.</returns>
-    public static HostedMcpServerToolRequireSpecificApprovalMode RequireSpecific(HashSet<string>? alwaysRequireApprovalToolNames, HashSet<string>? neverRequireApprovalToolNames)
+    public static HostedMcpServerToolRequireSpecificApprovalMode RequireSpecific(IList<string>? alwaysRequireApprovalToolNames, IList<string>? neverRequireApprovalToolNames)
         => new(alwaysRequireApprovalToolNames, neverRequireApprovalToolNames);
 }

@@ -1,23 +1,26 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents a tool call request to a hosted MCP server.
+/// Represents a tool call request to a MCP server.
 /// </summary>
-public class HostedMcpServerToolCallContent : AIContent
+public class McpServerToolCallContent : AIContent
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="HostedMcpServerToolCallContent"/> class.
+    /// Initializes a new instance of the <see cref="McpServerToolCallContent"/> class.
     /// </summary>
     /// <param name="callId">The tool call ID.</param>
     /// <param name="toolName">The tool name.</param>
     /// <param name="serverName">The MCP server name.</param>
-    public HostedMcpServerToolCallContent(string callId, string toolName, string serverName)
+    /// <exception cref="ArgumentNullException"><paramref name="callId"/>, <paramref name="toolName"/>, or <paramref name="serverName"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="callId"/>, <paramref name="toolName"/>, or <paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
+    public McpServerToolCallContent(string callId, string toolName, string serverName)
     {
         CallId = Throw.IfNullOrWhitespace(callId);
         ToolName = Throw.IfNullOrWhitespace(toolName);

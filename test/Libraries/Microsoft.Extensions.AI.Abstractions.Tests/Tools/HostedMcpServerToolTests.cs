@@ -12,7 +12,7 @@ public class HostedMcpServerToolTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"));
+        HostedMcpServerTool tool = new("serverName", "https://localhost/");
 
         Assert.Empty(tool.AdditionalProperties);
 
@@ -27,7 +27,7 @@ public class HostedMcpServerToolTests
     [Fact]
     public void Constructor_Roundtrips()
     {
-        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"));
+        HostedMcpServerTool tool = new("serverName", "https://localhost/");
 
         Assert.Empty(tool.AdditionalProperties);
         Assert.Empty(tool.Description);
@@ -69,6 +69,8 @@ public class HostedMcpServerToolTests
     {
         Assert.Throws<ArgumentException>(() => new HostedMcpServerTool(string.Empty, new Uri("https://localhost/")));
         Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool(null!, new Uri("https://localhost/")));
-        Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool("name", null!));
+        Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool("name", (Uri)null!));
+        Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool("name", (string)null!));
+        Assert.Throws<UriFormatException>(() => new HostedMcpServerTool("name", string.Empty));
     }
 }

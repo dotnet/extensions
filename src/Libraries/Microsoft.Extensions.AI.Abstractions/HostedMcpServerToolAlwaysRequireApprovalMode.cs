@@ -14,6 +14,12 @@ namespace Microsoft.Extensions.AI;
 [DebuggerDisplay(nameof(AlwaysRequire))]
 public sealed class HostedMcpServerToolAlwaysRequireApprovalMode : HostedMcpServerToolApprovalMode
 {
+    /// <summary>Initializes a new instance of the <see cref="HostedMcpServerToolAlwaysRequireApprovalMode"/> class.</summary>
+    /// <remarks>Use <see cref="HostedMcpServerToolApprovalMode.AlwaysRequire"/> to get an instance of <see cref="HostedMcpServerToolAlwaysRequireApprovalMode"/>.</remarks>
+    public HostedMcpServerToolAlwaysRequireApprovalMode()
+    {
+    }
+
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is HostedMcpServerToolAlwaysRequireApprovalMode;
 

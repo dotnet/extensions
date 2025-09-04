@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI.Abstractions, Version=9.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI.Abstractions, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.AI.AdditionalPropertiesDictionary : Microsoft.Extensions.AI.AdditionalPropertiesDictionary<object?>",
@@ -1927,6 +1927,11 @@
       "Type": "class Microsoft.Extensions.AI.HostedMcpServerTool : Microsoft.Extensions.AI.AITool",
       "Stage": "Stable",
       "Methods": [
+
+        {
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, string url);",
+          "Stage": "Stable"
+        },
         {
           "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, System.Uri url);",
           "Stage": "Stable"
@@ -1982,7 +1987,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode.RequireSpecific(System.Collections.Generic.HashSet<string>? alwaysRequireApprovalToolNames, System.Collections.Generic.HashSet<string>? neverRequireApprovalToolNames);",
+          "Member": "static Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode.RequireSpecific(System.Collections.Generic.IList<string>? alwaysRequireApprovalToolNames, System.Collections.Generic.IList<string>? neverRequireApprovalToolNames);",
           "Stage": "Stable"
         }
       ],
@@ -1993,34 +1998,6 @@
         },
         {
           "Member": "static Microsoft.Extensions.AI.HostedMcpServerToolNeverRequireApprovalMode Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode.NeverRequire { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.AI.HostedMcpServerToolCallContent : Microsoft.Extensions.AI.AIContent",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.HostedMcpServerToolCallContent.HostedMcpServerToolCallContent(string callId, string toolName, string serverName);",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, object?>? Microsoft.Extensions.AI.HostedMcpServerToolCallContent.Arguments { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string Microsoft.Extensions.AI.HostedMcpServerToolCallContent.CallId { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string Microsoft.Extensions.AI.HostedMcpServerToolCallContent.ServerName { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string Microsoft.Extensions.AI.HostedMcpServerToolCallContent.ToolName { get; }",
           "Stage": "Stable"
         }
       ]
@@ -2048,7 +2025,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.HostedMcpServerToolRequireSpecificApprovalMode(System.Collections.Generic.HashSet<string>? alwaysRequireApprovalToolNames, System.Collections.Generic.HashSet<string>? neverRequireApprovalToolNames);",
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.HostedMcpServerToolRequireSpecificApprovalMode(System.Collections.Generic.IList<string>? alwaysRequireApprovalToolNames, System.Collections.Generic.IList<string>? neverRequireApprovalToolNames);",
           "Stage": "Stable"
         },
         {
@@ -2062,35 +2039,59 @@
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.HashSet<string>? Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.AlwaysRequireApprovalToolNames { get; set; }",
+          "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.AlwaysRequireApprovalToolNames { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.HashSet<string>? Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.NeverRequireApprovalToolNames { get; set; }",
+          "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.NeverRequireApprovalToolNames { get; set; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.HostedMcpServerToolResultContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.McpServerToolCallContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.HostedMcpServerToolResultContent.HostedMcpServerToolResultContent(string callId);",
+          "Member": "Microsoft.Extensions.AI.McpServerToolCallContent.McpServerToolCallContent(string callId, string toolName, string serverName);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.AI.HostedMcpServerToolResultContent.CallId { get; }",
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, object?>? Microsoft.Extensions.AI.McpServerToolCallContent.Arguments { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedMcpServerToolResultContent.Output { get; set; }",
+          "Member": "string Microsoft.Extensions.AI.McpServerToolCallContent.CallId { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "virtual bool Microsoft.Extensions.AI.HostedMcpServerToolResultContent.Success { get; }",
+          "Member": "string Microsoft.Extensions.AI.McpServerToolCallContent.ServerName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.McpServerToolCallContent.ToolName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.McpServerToolResultContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.McpServerToolResultContent.McpServerToolResultContent(string callId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.McpServerToolResultContent.CallId { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.McpServerToolResultContent.Output { get; set; }",
           "Stage": "Stable"
         }
       ]
