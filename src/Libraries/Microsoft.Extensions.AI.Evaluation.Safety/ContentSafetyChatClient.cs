@@ -14,15 +14,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Evaluation.Utilities;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 internal sealed class ContentSafetyChatClient : IChatClient
 {
-    private const string ProviderName = "azure.ai.foundry";
-    private const string ModelId = $"{ProviderName}.evaluation";
-
     private readonly ContentSafetyService _service;
     private readonly IChatClient? _originalChatClient;
     private readonly ChatClientMetadata _metadata;
@@ -35,15 +33,23 @@ internal sealed class ContentSafetyChatClient : IChatClient
         _originalChatClient = originalChatClient;
 
         ChatClientMetadata? originalMetadata = _originalChatClient?.GetService<ChatClientMetadata>();
-
-        string providerName = ProviderName;
-        if (originalMetadata?.ProviderName is string originalProviderName &&
-            !string.IsNullOrWhiteSpace(originalProviderName))
+        if (originalMetadata is null)
         {
-            providerName = $"{providerName}; {originalProviderName}";
+            _metadata =
+                new ChatClientMetadata(
+                    providerName: ModelInfo.KnownModelProviders.AzureAIFoundry,
+                    defaultModelId: ModelInfo.KnownModels.AzureAIFoundryEvaluation);
         }
-
-        _metadata = new ChatClientMetadata(providerName, defaultModelId: ModelId);
+        else
+        {
+            // If we are wrapping an existing client, prefer its metadata. Preserving the metadata of the inner client
+            // (when available) ensures that the contained information remains available for requests that are
+            // delegated to the inner client and serviced by an LLM endpoint. For requests that are not delegated, the
+            // ChatResponse.ModelId for the produced response would be sufficient to identify that the model used was
+            // the finetuned model provided by the Azure AI Foundry Evaluation service (even though the outer client's
+            // metadata will not reflect this).
+            _metadata = originalMetadata;
+        }
     }
 
     public async Task<ChatResponse> GetResponseAsync(
@@ -65,7 +71,7 @@ internal sealed class ContentSafetyChatClient : IChatClient
 
             return new ChatResponse(new ChatMessage(ChatRole.Assistant, annotationResult))
             {
-                ModelId = ModelId
+                ModelId = ModelInfo.KnownModels.AzureAIFoundryEvaluation
             };
         }
         else
@@ -98,7 +104,7 @@ internal sealed class ContentSafetyChatClient : IChatClient
 
             yield return new ChatResponseUpdate(ChatRole.Assistant, annotationResult)
             {
-                ModelId = ModelId
+                ModelId = ModelInfo.KnownModels.AzureAIFoundryEvaluation
             };
         }
         else

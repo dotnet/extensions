@@ -101,7 +101,7 @@ internal sealed class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
-    internal static ChatTool ToOpenAIChatTool(AIFunction aiFunction, ChatOptions? options = null)
+    internal static ChatTool ToOpenAIChatTool(AIFunctionDeclaration aiFunction, ChatOptions? options = null)
     {
         bool? strict =
             OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
@@ -564,7 +564,7 @@ internal sealed class OpenAIChatClient : IChatClient
         {
             foreach (AITool tool in tools)
             {
-                if (tool is AIFunction af)
+                if (tool is AIFunctionDeclaration af)
                 {
                     result.Tools.Add(ToOpenAIChatTool(af, options));
                 }

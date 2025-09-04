@@ -43,8 +43,8 @@ public class QualityEvaluatorTests
             string date = $"Date: {DateTime.UtcNow:dddd, dd MMMM yyyy}";
             string projectName = $"Project: Integration Tests";
             string testClass = $"Test Class: {nameof(QualityEvaluatorTests)}";
-            string provider = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
             string model = $"Model: {clientMetadata?.DefaultModelId ?? "Unknown"}";
+            string provider = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
             string temperature = $"Temperature: {_chatOptions.Temperature}";
             string usesContext = $"Feature: Context";
 
@@ -60,7 +60,7 @@ public class QualityEvaluatorTests
                     evaluators: [rtcEvaluator, coherenceEvaluator, fluencyEvaluator, relevanceEvaluator],
                     chatConfiguration: chatConfiguration,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature,]);
+                    tags: [version, date, projectName, testClass, model, provider, temperature]);
 
             IEvaluator groundednessEvaluator = new GroundednessEvaluator();
             IEvaluator equivalenceEvaluator = new EquivalenceEvaluator();
@@ -73,7 +73,7 @@ public class QualityEvaluatorTests
                     evaluators: [groundednessEvaluator, equivalenceEvaluator, completenessEvaluator, retrievalEvaluator],
                     chatConfiguration: chatConfiguration,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature, usesContext]);
+                    tags: [version, date, projectName, testClass, model, provider, temperature, usesContext]);
         }
     }
 

@@ -19,7 +19,7 @@ internal static class AIToolExtensions
 
         var toolDefinitionsJsonArray = new JsonArray();
 
-        foreach (AIFunction function in toolDefinitions.OfType<AIFunction>())
+        foreach (AIFunctionDeclaration function in toolDefinitions.OfType<AIFunctionDeclaration>())
         {
             JsonNode functionJsonNode =
                 new JsonObject

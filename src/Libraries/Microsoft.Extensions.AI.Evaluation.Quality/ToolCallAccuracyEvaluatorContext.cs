@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// </para>
 /// <para>
 /// Note that at the moment, <see cref="ToolCallAccuracyEvaluator"/> only supports evaluating calls to tools that are
-/// defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions that are supplied via
+/// defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions that are supplied via
 /// <see cref="ToolDefinitions"/> will be ignored.
 /// </para>
 /// </remarks>
@@ -38,7 +38,7 @@ public sealed class ToolCallAccuracyEvaluatorContext : EvaluationContext
     /// </para>
     /// <para>
     /// Note that at the moment, <see cref="ToolCallAccuracyEvaluator"/> only supports evaluating calls to tools that
-    /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
+    /// are defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
     public ToolCallAccuracyEvaluatorContext(params AITool[] toolDefinitions)
@@ -57,7 +57,7 @@ public sealed class ToolCallAccuracyEvaluatorContext : EvaluationContext
     /// </para>
     /// <para>
     /// Note that at the moment, <see cref="ToolCallAccuracyEvaluator"/> only supports evaluating calls to tools that
-    /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
+    /// are defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
     public ToolCallAccuracyEvaluatorContext(IEnumerable<AITool> toolDefinitions)
@@ -85,7 +85,7 @@ public sealed class ToolCallAccuracyEvaluatorContext : EvaluationContext
     /// </para>
     /// <para>
     /// Note that at the moment, <see cref="ToolCallAccuracyEvaluator"/> only supports evaluating calls to tools that
-    /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions that are supplied via
+    /// are defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions that are supplied via
     /// <see cref="ToolDefinitions"/> will be ignored.
     /// </para>
     /// </remarks>

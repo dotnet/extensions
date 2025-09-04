@@ -1,5 +1,9 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Added non-invocable `AIFunctionDeclaration` (base class for `AIFunction`), `AIFunctionFactory.CreateDeclaration`, and `AIFunction.AsDeclarationOnly`.
+
 ## 9.8.0
 
 - Added `AIAnnotation` and related types to represent citations and other annotations in chat messages.

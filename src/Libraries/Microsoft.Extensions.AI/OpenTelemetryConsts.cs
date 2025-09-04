@@ -14,10 +14,13 @@ internal static class OpenTelemetryConsts
     public const string SecondsUnit = "s";
     public const string TokensUnit = "token";
 
-    public static class Event
-    {
-        public const string Name = "event.name";
-    }
+    public const string ToolTypeFunction = "function";
+
+    public const string TypeText = "text";
+    public const string TypeJson = "json";
+
+    public const string TokenTypeInput = "input";
+    public const string TokenTypeOutput = "output";
 
     public static class Error
     {
@@ -26,17 +29,11 @@ internal static class OpenTelemetryConsts
 
     public static class GenAI
     {
-        public const string Choice = "gen_ai.choice";
-        public const string SystemName = "gen_ai.system";
-
         public const string Chat = "chat";
         public const string Embeddings = "embeddings";
         public const string ExecuteTool = "execute_tool";
 
-        public static class Assistant
-        {
-            public const string Message = "gen_ai.assistant.message";
-        }
+        public const string SystemInstructions = "gen_ai.system_instructions";
 
         public static class Client
         {
@@ -60,6 +57,11 @@ internal static class OpenTelemetryConsts
             public const string Id = "gen_ai.conversation.id";
         }
 
+        public static class Input
+        {
+            public const string Messages = "gen_ai.input.messages";
+        }
+
         public static class Operation
         {
             public const string Name = "gen_ai.operation.name";
@@ -67,7 +69,13 @@ internal static class OpenTelemetryConsts
 
         public static class Output
         {
+            public const string Messages = "gen_ai.output.messages";
             public const string Type = "gen_ai.output.type";
+        }
+
+        public static class Provider
+        {
+            public const string Name = "gen_ai.provider.name";
         }
 
         public static class Request
@@ -83,7 +91,7 @@ internal static class OpenTelemetryConsts
             public const string TopK = "gen_ai.request.top_k";
             public const string TopP = "gen_ai.request.top_p";
 
-            public static string PerProvider(string providerName, string parameterName) => $"gen_ai.{providerName}.request.{parameterName}";
+            public static string PerProvider(string providerName, string parameterName) => $"{providerName}.request.{parameterName}";
         }
 
         public static class Response
@@ -92,12 +100,7 @@ internal static class OpenTelemetryConsts
             public const string Id = "gen_ai.response.id";
             public const string Model = "gen_ai.response.model";
 
-            public static string PerProvider(string providerName, string parameterName) => $"gen_ai.{providerName}.response.{parameterName}";
-        }
-
-        public static class System
-        {
-            public const string Message = "gen_ai.system.message";
+            public static string PerProvider(string providerName, string parameterName) => $"{providerName}.response.{parameterName}";
         }
 
         public static class Token
@@ -110,6 +113,7 @@ internal static class OpenTelemetryConsts
             public const string Name = "gen_ai.tool.name";
             public const string Description = "gen_ai.tool.description";
             public const string Message = "gen_ai.tool.message";
+            public const string Type = "gen_ai.tool.type";
 
             public static class Call
             {
@@ -121,11 +125,6 @@ internal static class OpenTelemetryConsts
         {
             public const string InputTokens = "gen_ai.usage.input_tokens";
             public const string OutputTokens = "gen_ai.usage.output_tokens";
-        }
-
-        public static class User
-        {
-            public const string Message = "gen_ai.user.message";
         }
     }
 

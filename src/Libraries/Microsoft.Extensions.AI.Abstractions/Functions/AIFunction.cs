@@ -6,44 +6,17 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
+#pragma warning disable SA1202 // Elements should be ordered by access
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a function that can be described to an AI service and invoked.</summary>
-public abstract class AIFunction : AITool
+public abstract class AIFunction : AIFunctionDeclaration
 {
-    /// <summary>Gets a JSON Schema describing the function and its input parameters.</summary>
-    /// <remarks>
-    /// <para>
-    /// When specified, declares a self-contained JSON schema document that describes the function and its input parameters.
-    /// A simple example of a JSON schema for a function that adds two numbers together is shown below:
-    /// </para>
-    /// <code>
-    /// {
-    ///   "title" : "addNumbers",
-    ///   "description": "A simple function that adds two numbers together.",
-    ///   "type": "object",
-    ///   "properties": {
-    ///     "a" : { "type": "number" },
-    ///     "b" : { "type": "number", "default": 1 }
-    ///   }, 
-    ///   "required" : ["a"]
-    /// }
-    /// </code>
-    /// <para>
-    /// The metadata present in the schema document plays an important role in guiding AI function invocation.
-    /// </para>
-    /// <para>
-    /// When no schema is specified, consuming chat clients should assume the "{}" or "true" schema, indicating that any JSON input is admissible.
-    /// </para>
-    /// </remarks>
-    public virtual JsonElement JsonSchema => AIJsonUtilities.DefaultJsonSchema;
-
-    /// <summary>Gets a JSON Schema describing the function's return value.</summary>
-    /// <remarks>
-    /// A <see langword="null"/> typically reflects a function that doesn't specify a return schema
-    /// or a function that returns <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>.
-    /// </remarks>
-    public virtual JsonElement? ReturnJsonSchema => null;
+    /// <summary>Initializes a new instance of the <see cref="AIFunction"/> class.</summary>
+    protected AIFunction()
+    {
+    }
 
     /// <summary>
     /// Gets the underlying <see cref="MethodInfo"/> that this <see cref="AIFunction"/> might be wrapping.
@@ -72,4 +45,14 @@ public abstract class AIFunction : AITool
     protected abstract ValueTask<object?> InvokeCoreAsync(
         AIFunctionArguments arguments,
         CancellationToken cancellationToken);
+
+    /// <summary>Creates a <see cref="AIFunctionDeclaration"/> representation of this <see cref="AIFunction"/> that can't be invoked.</summary>
+    /// <returns>The created instance.</returns>
+    /// <remarks>
+    /// <see cref="AIFunction"/> derives from <see cref="AIFunctionDeclaration"/>, layering on the ability to invoke the function in addition
+    /// to describing it. <see cref="AsDeclarationOnly"/> creates a new object that describes the function but that can't be invoked.
+    /// </remarks>
+    public AIFunctionDeclaration AsDeclarationOnly() => new NonInvocableAIFunction(this);
+
+    private sealed class NonInvocableAIFunction(AIFunction function) : DelegatingAIFunctionDeclaration(function);
 }

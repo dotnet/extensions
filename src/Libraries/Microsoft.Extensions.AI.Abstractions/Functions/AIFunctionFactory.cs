@@ -49,7 +49,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
     /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
-    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <see cref="AIFunctionDeclaration.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
@@ -131,7 +131,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// Any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
     /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
-    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <see cref="AIFunctionDeclaration.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
@@ -212,7 +212,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
     /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
-    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <see cref="AIFunctionDeclaration.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
@@ -304,7 +304,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// Any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
     /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
-    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <see cref="AIFunctionDeclaration.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
@@ -398,7 +398,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
     /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
-    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <see cref="AIFunctionDeclaration.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
@@ -466,6 +466,39 @@ public static partial class AIFunctionFactory
         Func<AIFunctionArguments, object> createInstanceFunc,
         AIFunctionFactoryOptions? options = null) =>
         ReflectionAIFunction.Build(method, createInstanceFunc, options ?? _defaultOptions);
+
+    /// <summary>Creates an <see cref="AIFunctionDeclaration"/> using the specified parameters as the implementation of its corresponding properties.</summary>
+    /// <param name="name">The name of the function.</param>
+    /// <param name="description">A description of the function, suitable for use in describing the purpose to a model.</param>
+    /// <param name="jsonSchema">A JSON schema describing the function and its input parameters.</param>
+    /// <param name="returnJsonSchema">A JSON schema describing the function's return value.</param>
+    /// <returns>The created <see cref="AIFunctionDeclaration"/> that describes a function.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// <see cref="CreateDeclaration"/> creates an <see cref="AIFunctionDeclaration"/> that can be used to describe a function
+    /// but not invoke it. To create an invocable <see cref="AIFunction"/>, use Create. A non-invocable <see cref="AIFunctionDeclaration"/>
+    /// may also be created from an invocable <see cref="AIFunction"/> using that function's <see cref="AIFunction.AsDeclarationOnly"/> method.
+    /// </remarks>
+    public static AIFunctionDeclaration CreateDeclaration(
+        string name,
+        string? description,
+        JsonElement jsonSchema,
+        JsonElement? returnJsonSchema = null) =>
+        new DefaultAIFunctionDeclaration(
+            Throw.IfNullOrEmpty(name),
+            description ?? string.Empty,
+            jsonSchema,
+            returnJsonSchema);
+
+    private sealed class DefaultAIFunctionDeclaration(
+        string name, string description, JsonElement jsonSchema, JsonElement? returnJsonSchema) :
+        AIFunctionDeclaration
+    {
+        public override string Name => name;
+        public override string Description => description;
+        public override JsonElement JsonSchema => jsonSchema;
+        public override JsonElement? ReturnJsonSchema => returnJsonSchema;
+    }
 
     private sealed class ReflectionAIFunction : AIFunction
     {

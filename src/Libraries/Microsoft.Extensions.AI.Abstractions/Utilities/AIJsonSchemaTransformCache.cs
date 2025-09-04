@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.Shared.Diagnostics;
@@ -23,10 +24,10 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 public sealed class AIJsonSchemaTransformCache
 {
-    private readonly ConditionalWeakTable<AIFunction, object> _functionSchemaCache = new();
+    private readonly ConditionalWeakTable<AIFunctionDeclaration, object> _functionSchemaCache = new();
     private readonly ConditionalWeakTable<ChatResponseFormatJson, object> _responseFormatCache = new();
 
-    private readonly ConditionalWeakTable<AIFunction, object>.CreateValueCallback _functionSchemaCreateValueCallback;
+    private readonly ConditionalWeakTable<AIFunctionDeclaration, object>.CreateValueCallback _functionSchemaCreateValueCallback;
     private readonly ConditionalWeakTable<ChatResponseFormatJson, object>.CreateValueCallback _responseFormatCreateValueCallback;
 
     /// <summary>
@@ -57,7 +58,16 @@ public sealed class AIJsonSchemaTransformCache
     /// </summary>
     /// <param name="function">The function whose JSON schema we want to transform.</param>
     /// <returns>The transformed JSON schema corresponding to <see cref="TransformOptions"/>.</returns>
-    public JsonElement GetOrCreateTransformedSchema(AIFunction function)
+    [EditorBrowsable(EditorBrowsableState.Never)] // maintained for binary compat; functionality for AIFunction is satisfied by AIFunctionDeclaration overload
+    public JsonElement GetOrCreateTransformedSchema(AIFunction function) =>
+        GetOrCreateTransformedSchema((AIFunctionDeclaration)function);
+
+    /// <summary>
+    /// Gets or creates a transformed JSON schema for the specified <see cref="AIFunctionDeclaration"/> instance.
+    /// </summary>
+    /// <param name="function">The function whose JSON schema we want to transform.</param>
+    /// <returns>The transformed JSON schema corresponding to <see cref="TransformOptions"/>.</returns>
+    public JsonElement GetOrCreateTransformedSchema(AIFunctionDeclaration function)
     {
         _ = Throw.IfNull(function);
         return (JsonElement)_functionSchemaCache.GetValue(function, _functionSchemaCreateValueCallback);

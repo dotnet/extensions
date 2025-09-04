@@ -24,6 +24,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Microsoft.Extensions.AI.Evaluation\Utilities\ModelInfo.cs" Link="Utilities\ModelInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Condition="'$(EnableEvaluationReportBuild)'=='true'"
         Include="..\TypeScript\html-report\dist\index.html" Visible="false">
       <LogicalName>Reporting.HTML.index.html</LogicalName>

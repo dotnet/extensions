@@ -54,8 +54,8 @@ public class AgentQualityEvaluatorTests
             string date = $"Date: {DateTime.UtcNow:dddd, dd MMMM yyyy}";
             string projectName = $"Project: Integration Tests";
             string testClass = $"Test Class: {nameof(AgentQualityEvaluatorTests)}";
-            string provider = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
             string model = $"Model: {clientMetadata?.DefaultModelId ?? "Unknown"}";
+            string provider = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
             string temperature = $"Temperature: {_chatOptionsWithTools.Temperature}";
             string usesContext = $"Feature: Context";
 
@@ -69,7 +69,7 @@ public class AgentQualityEvaluatorTests
                     evaluators: [taskAdherenceEvaluator, intentResolutionEvaluator],
                     chatConfiguration: chatConfigurationWithToolCalling,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature]);
+                    tags: [version, date, projectName, testClass, model, provider, temperature]);
 
             _needsContextReportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
@@ -77,7 +77,7 @@ public class AgentQualityEvaluatorTests
                     evaluators: [toolCallAccuracyEvaluator, taskAdherenceEvaluator, intentResolutionEvaluator],
                     chatConfiguration: chatConfigurationWithToolCalling,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature, usesContext]);
+                    tags: [version, date, projectName, testClass, model, provider, temperature, usesContext]);
         }
     }
 

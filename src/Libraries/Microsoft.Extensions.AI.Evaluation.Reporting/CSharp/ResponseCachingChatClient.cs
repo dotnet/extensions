@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Evaluation.Utilities;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting;
@@ -14,6 +15,7 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
 {
     private readonly ChatDetails _chatDetails;
     private readonly ConcurrentDictionary<string, Stopwatch> _stopWatches;
+    private readonly ChatClientMetadata? _metadata;
 
     internal ResponseCachingChatClient(
         IChatClient originalChatClient,
@@ -23,8 +25,10 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
             : base(originalChatClient, cache)
     {
         CacheKeyAdditionalValues = [.. cachingKeys];
+
         _chatDetails = chatDetails;
         _stopWatches = new ConcurrentDictionary<string, Stopwatch>();
+        _metadata = this.GetService<ChatClientMetadata>();
     }
 
     protected override async Task<ChatResponse?> ReadCacheAsync(string key, CancellationToken cancellationToken)
@@ -41,10 +45,14 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
         {
             stopwatch.Stop();
 
+            string? model = response.ModelId;
+            string? modelProvider = ModelInfo.GetModelProvider(model, _metadata);
+
             _chatDetails.AddTurnDetails(
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
-                    model: response.ModelId,
+                    model,
+                    modelProvider,
                     usage: response.Usage,
                     cacheKey: key,
                     cacheHit: true));
@@ -71,10 +79,14 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
             stopwatch.Stop();
 
             ChatResponse response = updates.ToChatResponse();
+            string? model = response.ModelId;
+            string? modelProvider = ModelInfo.GetModelProvider(model, _metadata);
+
             _chatDetails.AddTurnDetails(
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
-                    model: response.ModelId,
+                    model,
+                    modelProvider,
                     usage: response.Usage,
                     cacheKey: key,
                     cacheHit: true));
@@ -91,10 +103,14 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
         {
             stopwatch.Stop();
 
+            string? model = value.ModelId;
+            string? modelProvider = ModelInfo.GetModelProvider(model, _metadata);
+
             _chatDetails.AddTurnDetails(
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
-                    model: value.ModelId,
+                    model,
+                    modelProvider,
                     usage: value.Usage,
                     cacheKey: key,
                     cacheHit: false));
@@ -113,10 +129,14 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
             stopwatch.Stop();
 
             ChatResponse response = value.ToChatResponse();
+            string? model = response.ModelId;
+            string? modelProvider = ModelInfo.GetModelProvider(model, _metadata);
+
             _chatDetails.AddTurnDetails(
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
-                    model: response.ModelId,
+                    model,
+                    modelProvider,
                     usage: response.Usage,
                     cacheKey: key,
                     cacheHit: false));

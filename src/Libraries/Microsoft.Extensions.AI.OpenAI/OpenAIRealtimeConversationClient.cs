@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Provides helpers for interacting with OpenAI Realtime.</summary>
 internal sealed class OpenAIRealtimeConversationClient
 {
-    public static ConversationFunctionTool ToOpenAIConversationFunctionTool(AIFunction aiFunction, ChatOptions? options = null)
+    public static ConversationFunctionTool ToOpenAIConversationFunctionTool(AIFunctionDeclaration aiFunction, ChatOptions? options = null)
     {
         bool? strict =
             OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??

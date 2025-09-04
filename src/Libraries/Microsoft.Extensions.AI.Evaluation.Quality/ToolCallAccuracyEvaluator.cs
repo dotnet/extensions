@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// </para>
 /// <para>
 /// Note that at the moment, <see cref="ToolCallAccuracyEvaluator"/> only supports evaluating calls to tools that are
-/// defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions that are supplied via
+/// defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions that are supplied via
 /// <see cref="ToolCallAccuracyEvaluatorContext.ToolDefinitions"/> will be ignored.
 /// </para>
 /// <para>

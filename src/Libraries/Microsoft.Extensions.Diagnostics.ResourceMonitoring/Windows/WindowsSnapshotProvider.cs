@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if !NET9_0_OR_GREATER
 using System.Diagnostics;
+#endif
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
@@ -95,18 +97,31 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
 
     public Snapshot GetSnapshot()
     {
+#if NET9_0_OR_GREATER
+        var cpuUsage = Environment.CpuUsage;
+        return new Snapshot(
+            totalTimeSinceStart: TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
+            kernelTimeSinceStart: cpuUsage.PrivilegedTime,
+            userTimeSinceStart: cpuUsage.UserTime,
+            memoryUsageInBytes: (ulong)Environment.WorkingSet);
+#else
         using var process = Process.GetCurrentProcess();
-
-        return new Snapshot(totalTimeSinceStart: TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
+        return new Snapshot(
+            totalTimeSinceStart: TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
             kernelTimeSinceStart: process.PrivilegedProcessorTime,
             userTimeSinceStart: process.UserProcessorTime,
             memoryUsageInBytes: (ulong)Environment.WorkingSet);
+#endif
     }
 
     internal static long GetCpuTicks()
     {
+#if NET9_0_OR_GREATER
+        return Environment.CpuUsage.TotalTime.Ticks;
+#else
         using var process = Process.GetCurrentProcess();
         return process.TotalProcessorTime.Ticks;
+#endif
     }
 
     internal static int GetCpuUnits() => Environment.ProcessorCount;
