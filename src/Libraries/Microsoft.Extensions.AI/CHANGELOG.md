@@ -2,6 +2,8 @@
 
 ## NOT YET RELEASED
 
+- Added `FunctionInvokingChatClient` support for non-invocable tools and `TerminateOnUnknownCalls` property.
+- Updated the Open Telemetry instrumentation to conform to the latest 1.37.0 draft specification of the Semantic Conventions for Generative AI systems.
 - Fixed `GetResponseAsync<T>` to only look at the contents of the last message in the response.
 
 ## 9.8.0
