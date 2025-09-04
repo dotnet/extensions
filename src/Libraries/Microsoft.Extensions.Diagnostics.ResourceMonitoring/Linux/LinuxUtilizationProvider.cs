@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Threading;
+using Microsoft.Extensions.ClusterMetadata.Kubernetes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Instruments;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
@@ -22,7 +24,10 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly object _memoryLocker = new();
     private readonly ILogger<LinuxUtilizationProvider> _logger;
     private readonly ILinuxUtilizationParser _parser;
-    private readonly ulong _memoryLimit;
+    private double _memoryLimit;
+    private double _cpuLimit;
+    private ulong _memoryRequest;
+    private double _cpuRequest;
     private readonly long _cpuPeriodsInterval;
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
@@ -43,8 +48,13 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private long _previousCgroupCpuPeriodCounter;
     public SystemResources Resources { get; }
 
-    public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, ILinuxUtilizationParser parser,
-        IMeterFactory meterFactory, ILogger<LinuxUtilizationProvider>? logger = null, TimeProvider? timeProvider = null)
+    public LinuxUtilizationProvider(
+        IOptions<ResourceMonitoringOptions> options,
+        ILinuxUtilizationParser parser,
+        IMeterFactory meterFactory,
+        IOptions<KubernetesClusterMetadata> clusterMetadata,
+        ILogger<LinuxUtilizationProvider>? logger = null,
+        TimeProvider? timeProvider = null)
     {
         _parser = parser;
         _logger = logger ?? NullLogger<LinuxUtilizationProvider>.Instance;
@@ -54,15 +64,25 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _memoryRefreshInterval = options.Value.MemoryConsumptionRefreshInterval;
         _refreshAfterCpu = now;
         _refreshAfterMemory = now;
-        _memoryLimit = _parser.GetAvailableMemoryInBytes();
         _previousHostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
         _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
 
+        if (options.Value.UseKubernetesLimitsAndRequests)
+        {
+            ExtractResourceQuotas(clusterMetadata.Value);
+        }
+        else
+        {
+            _memoryLimit = _parser.GetAvailableMemoryInBytes();
+            _cpuLimit = _parser.GetCgroupLimitedCpus();
+            _memoryRequest = _memoryLimit; // TODO: see if we can get it from cgroups
+            _cpuRequest = _parser.GetCgroupRequestCpu();
+
+        }
+
         float hostCpus = _parser.GetHostCpuCount();
-        float cpuLimit = _parser.GetCgroupLimitedCpus();
-        float cpuRequest = _parser.GetCgroupRequestCpu();
-        float scaleRelativeToCpuLimit = hostCpus / cpuLimit;
-        float scaleRelativeToCpuRequest = hostCpus / cpuRequest;
+        double scaleRelativeToCpuLimit = hostCpus / _cpuLimit;
+        double scaleRelativeToCpuRequest = hostCpus / _cpuRequest;
         _scaleRelativeToCpuRequestForTrackerApi = hostCpus; // the division by cpuRequest is performed later on in the ResourceUtilization class
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
@@ -74,8 +94,11 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         if (options.Value.UseLinuxCalculationV2)
         {
-            cpuLimit = _parser.GetCgroupLimitV2();
-            cpuRequest = _parser.GetCgroupRequestCpuV2();
+            if (!options.Value.UseKubernetesLimitsAndRequests)
+            {
+                _cpuLimit = _parser.GetCgroupLimitV2();
+                _cpuRequest = _parser.GetCgroupRequestCpuV2();
+            }
 
             // Get Cpu periods interval from cgroup
             _cpuPeriodsInterval = _parser.GetCgroupPeriodsIntervalInMicroSecondsV2();
@@ -83,12 +106,12 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
             _ = meter.CreateObservableGauge(
                 name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization,
-                observeValues: () => GetMeasurementWithRetry(() => CpuUtilizationLimit(cpuLimit)),
+                observeValues: () => GetMeasurementWithRetry(() => CpuUtilizationLimit(_cpuLimit)),
                 unit: "1");
 
             _ = meter.CreateObservableGauge(
                 name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization,
-                observeValues: () => GetMeasurementWithRetry(() => CpuUtilizationRequest(cpuRequest)),
+                observeValues: () => GetMeasurementWithRetry(() => CpuUtilizationRequest(_cpuRequest)),
                 unit: "1");
 
             _ = meter.CreateObservableGauge(
@@ -119,6 +142,14 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             observeValues: () => GetMeasurementWithRetry(MemoryPercentage),
             unit: "1");
 
+        if (options.Value.UseKubernetesLimitsAndRequests)
+        {
+            _ = meter.CreateObservableGauge(
+                name: ResourceUtilizationInstruments.ContainerMemoryRequestUtilization,
+                observeValue: () => GetMeasurementWithRetry(MemoryPercantageForRequest), // todo implement
+                unit: "1");
+        }
+
         _ = meter.CreateObservableUpDownCounter(
             name: ResourceUtilizationInstruments.ContainerMemoryUsage,
             observeValues: () => GetMeasurementWithRetry(() => (long)MemoryUsage()),
@@ -130,12 +161,9 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             observeValues: () => GetMeasurementWithRetry(MemoryPercentage),
             unit: "1");
 
-        // cpuRequest is a CPU request (aka guaranteed number of CPU units) for pod, for host its 1 core
-        // cpuLimit is a CPU limit (aka max CPU units available) for a pod or for a host.
-        // _memoryLimit - Resource Memory Limit (in k8s terms)
-        // _memoryLimit - To keep the contract, this parameter will get the Host available memory
-        Resources = new SystemResources(cpuRequest, cpuLimit, _memoryLimit, _memoryLimit);
-        _logger.SystemResourcesInfo(cpuLimit, cpuRequest, _memoryLimit, _memoryLimit);
+        ulong memoryLimitRounded = (ulong)Math.Round(_memoryLimit);
+        Resources = new SystemResources(_cpuRequest, _cpuLimit, _memoryRequest, memoryLimitRounded);
+        _logger.SystemResourcesInfo(_cpuLimit, _cpuRequest, memoryLimitRounded, _memoryRequest);
     }
 
     public double CpuUtilizationV2()
@@ -333,5 +361,42 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         {
             yield return new Measurement<double>(userCpuTime, [new KeyValuePair<string, object?>("cpu.mode", "user")]);
         }
+    }
+
+    private void ExtractResourceQuotas(KubernetesClusterMetadata clusterMetadata)
+    {
+        _cpuRequest = ConvertMillicoreToUnit(clusterMetadata.RequestsCpu);
+        _cpuLimit = ConvertMillicoreToUnit(clusterMetadata.LimitsCpu);
+        _memoryRequest = clusterMetadata.RequestsMemory;
+        _memoryLimit = clusterMetadata.LimitsMemory;
+
+        if (_cpuRequest <= 0)
+        {
+            Throw.InvalidOperationException($"REQUESTS_CPU detected value is {_cpuRequest}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_cpuLimit <= 0)
+        {
+            Throw.InvalidOperationException($"LIMITS_CPU detected value is {_cpuLimit}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_memoryRequest <= 0)
+        {
+            Throw.InvalidOperationException($"REQUESTS_MEMORY detected value is {_memoryRequest}, " +
+                $"environment variables may be misconfigured");
+        }
+
+        if (_memoryLimit <= 0)
+        {
+            Throw.InvalidOperationException($"LIMITS_MEMORY detected value is {_memoryLimit}, " +
+                $"environment variables may be misconfigured");
+        }
+    }
+
+    private static double ConvertMillicoreToUnit(ulong millicores)
+    {
+        return millicores / 1000.0;
     }
 }
