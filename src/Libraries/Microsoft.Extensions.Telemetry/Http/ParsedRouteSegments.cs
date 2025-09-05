@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Diagnostics;
@@ -8,9 +10,10 @@ namespace Microsoft.Extensions.Http.Diagnostics;
 /// <summary>
 /// Struct to hold the route segments created after parsing the route.
 /// </summary>
-#pragma warning disable CA1815 // Override equals and operator equals on value types
-internal readonly struct ParsedRouteSegments
-#pragma warning restore CA1815 // Override equals and operator equals on value types
+[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Comparing instances is not an expected scenario.")]
+[SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Preferring array for performance reasons, immutability is not a concern.")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+public readonly struct ParsedRouteSegments
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ParsedRouteSegments"/> struct.
@@ -24,7 +27,7 @@ internal readonly struct ParsedRouteSegments
         Segments = segments;
 
         var paramCount = 0;
-        foreach (var segment in segments)
+        foreach (Segment segment in segments)
         {
             if (segment.IsParam)
             {
@@ -44,13 +47,10 @@ internal readonly struct ParsedRouteSegments
     /// <summary>
     /// Gets all segments of the route.
     /// </summary>
-#pragma warning disable CA1819 // Properties should not return arrays
     public Segment[] Segments { get; }
-#pragma warning restore CA1819 // Properties should not return arrays
 
     /// <summary>
     /// Gets the count of parameters in the route.
     /// </summary>
     public int ParameterCount { get; }
 }
-

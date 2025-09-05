@@ -3,19 +3,25 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
-using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Http.Diagnostics;
 
-internal sealed class HttpRouteFormatter : IHttpRouteFormatter
+/// <summary>
+/// Formats HTTP request paths using route templates with sensitive parameters optionally redacted.
+/// </summary>
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+[SuppressMessage("Minor Code Smell", "S1694:An abstract class should have both abstract and concrete methods", Justification = "Abstract for extensibility; no abstract members required now.")]
+public abstract class HttpRouteFormatter
 {
     private const char ForwardSlashSymbol = '/';
 
-#if NET6_0_OR_GREATER
+#if NET
     private const char ForwardSlash = ForwardSlashSymbol;
 #else
 #pragma warning disable IDE1006 // Naming Styles
@@ -23,50 +29,77 @@ internal sealed class HttpRouteFormatter : IHttpRouteFormatter
 #pragma warning restore IDE1006 // Naming Styles
 #endif
 
-    private readonly IHttpRouteParser _httpRouteParser;
+    private readonly HttpRouteParser _httpRouteParser;
     private readonly IRedactorProvider _redactorProvider;
 
-    public HttpRouteFormatter(IHttpRouteParser httpRouteParser, IRedactorProvider redactorProvider)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpRouteFormatter"/> class.
+    /// </summary>
+    /// <param name="httpRouteParser">The route parser.</param>
+    /// <param name="redactorProvider">The redactor provider used to redact sensitive parameters.</param>
+    protected HttpRouteFormatter(HttpRouteParser httpRouteParser, IRedactorProvider redactorProvider)
     {
         _httpRouteParser = httpRouteParser;
         _redactorProvider = redactorProvider;
     }
 
-    public string Format(string httpRoute, string httpPath, HttpRouteParameterRedactionMode redactionMode, IReadOnlyDictionary<string, DataClassification> parametersToRedact)
+    /// <summary>
+    /// Format the http path using the route template with sensitive parameters redacted.
+    /// </summary>
+    /// <param name="httpRoute">Http request route template.</param>
+    /// <param name="httpPath">Http request's absolute path.</param>
+    /// <param name="redactionMode">Strategy to decide how parameters are redacted.</param>
+    /// <param name="parametersToRedact">Dictionary of parameters with their data classification that needs to be redacted.</param>
+    /// <returns>Returns formatted path with sensitive parameter values redacted.</returns>
+    public virtual string Format(string httpRoute, string httpPath, HttpRouteParameterRedactionMode redactionMode, IReadOnlyDictionary<string, DataClassification> parametersToRedact)
     {
-        var routeSegments = _httpRouteParser.ParseRoute(httpRoute);
+        ParsedRouteSegments routeSegments = _httpRouteParser.ParseRoute(httpRoute);
         return Format(routeSegments, httpPath, redactionMode, parametersToRedact);
     }
 
-    public string Format(
+    /// <summary>
+    /// Format the http path using the route template with sensitive parameters redacted.
+    /// </summary>
+    /// <param name="routeSegments">Http request's route segments.</param>
+    /// <param name="httpPath">Http request's absolute path.</param>
+    /// <param name="redactionMode">Strategy to decide how parameters are redacted.</param>
+    /// <param name="parametersToRedact">Dictionary of parameters with their data classification that needs to be redacted.</param>
+    /// <returns>Returns formatted path with sensitive parameter values redacted.</returns>
+    public virtual string Format(
         in ParsedRouteSegments routeSegments,
         string httpPath,
         HttpRouteParameterRedactionMode redactionMode,
         IReadOnlyDictionary<string, DataClassification> parametersToRedact)
     {
-        if (routeSegments.ParameterCount == 0 ||
+        if (httpPath is null)
+        {
+            return string.Empty;
+        }
+
+        if (parametersToRedact is null ||
+            routeSegments.ParameterCount == 0 ||
             !IsRedactionRequired(routeSegments, redactionMode, parametersToRedact))
         {
             return httpPath.Trim(ForwardSlash);
         }
 
-        var httpPathAsSpan = httpPath.AsSpan().TrimStart(ForwardSlash);
-        var pathStringBuilder = PoolFactory.SharedStringBuilderPool.Get();
+        ReadOnlySpan<char> httpPathAsSpan = httpPath.AsSpan().TrimStart(ForwardSlash);
+        StringBuilder pathStringBuilder = PoolFactory.SharedStringBuilderPool.Get();
 
         try
         {
             int offset = 0;
 
-            for (var i = 0; i < routeSegments.Segments.Length; i++)
+            for (int i = 0; i < routeSegments.Segments.Length; i++)
             {
-                var segment = routeSegments.Segments[i];
+                Segment segment = routeSegments.Segments[i];
 
                 if (segment.IsParam)
                 {
-                    var parameterContent = segment.Content;
-                    var parameterTemplateLength = parameterContent.Length + 2;
+                    string parameterContent = segment.Content;
+                    int parameterTemplateLength = parameterContent.Length + 2;
 
-                    var startIndex = segment.Start + offset;
+                    int startIndex = segment.Start + offset;
 
                     // If we exceed a length of the http path it means that the appropriate http route
                     // has optional parameters or parameters with default values, and these parameters
@@ -121,35 +154,42 @@ internal sealed class HttpRouteFormatter : IHttpRouteFormatter
             return false;
         }
 
-        foreach (var segment in routeSegments.Segments)
+        foreach (Segment segment in routeSegments.Segments)
         {
             if (!segment.IsParam)
             {
                 continue;
             }
 
-            if (redactionMode == HttpRouteParameterRedactionMode.Strict)
+            switch (redactionMode)
             {
-                // If no data class exists for a parameter, and the parameter is not a well known parameter, then we redact it.
-                // If data class exists and it's anything other than DataClassification.None, then also we redact it.
-                if ((!parametersToRedact.TryGetValue(segment.ParamName, out DataClassification classification) &&
-                    !Segment.IsKnownUnredactableParameter(segment.ParamName)) ||
-                    classification != DataClassification.None)
+                case HttpRouteParameterRedactionMode.Strict:
                 {
-                    return true;
+                    // If no data class exists for a parameter, and the parameter is not a well known parameter, then we redact it.
+                    // If data class exists, and it's anything other than DataClassification.None, then also we redact it.
+                    if ((!parametersToRedact.TryGetValue(segment.ParamName, out DataClassification classification) &&
+                         !Segment.IsKnownUnredactableParameter(segment.ParamName)) ||
+                        classification != DataClassification.None)
+                    {
+                        return true;
+                    }
+
+                    break;
                 }
-            }
-            else if (redactionMode == HttpRouteParameterRedactionMode.Loose)
-            {
-                // If data class exists for a parameter and it's anything other than DataClassification.None, then we redact it.
-                if (parametersToRedact.TryGetValue(segment.ParamName, out DataClassification classification) && classification != DataClassification.None)
+
+                case HttpRouteParameterRedactionMode.Loose:
                 {
-                    return true;
+                    // If data class exists for a parameter, and it's anything other than DataClassification.None, then we redact it.
+                    if (parametersToRedact.TryGetValue(segment.ParamName, out DataClassification classification) && classification != DataClassification.None)
+                    {
+                        return true;
+                    }
+
+                    break;
                 }
-            }
-            else
-            {
-                throw new InvalidOperationException(TelemetryCommonExtensions.UnsupportedEnumValueExceptionMessage);
+
+                default:
+                    throw new InvalidOperationException(TelemetryCommonExtensions.UnsupportedEnumValueExceptionMessage);
             }
         }
 
@@ -158,14 +198,15 @@ internal sealed class HttpRouteFormatter : IHttpRouteFormatter
 
     private static void RemoveTrailingForwardSlash(StringBuilder formattedHttpPath)
     {
-        if (formattedHttpPath.Length > 1)
+        if (formattedHttpPath.Length <= 1)
         {
-            int index = formattedHttpPath.Length - 1;
+            return;
+        }
 
-            if (formattedHttpPath[index] == ForwardSlashSymbol)
-            {
-                _ = formattedHttpPath.Remove(index, 1);
-            }
+        int lastCharIndex = formattedHttpPath.Length - 1;
+        if (formattedHttpPath[lastCharIndex] == ForwardSlashSymbol)
+        {
+            _ = formattedHttpPath.Remove(lastCharIndex, 1);
         }
     }
 
@@ -178,15 +219,14 @@ internal sealed class HttpRouteFormatter : IHttpRouteFormatter
         IReadOnlyDictionary<string, DataClassification> parametersToRedact,
         StringBuilder outputBuffer)
     {
-        if (redactionMode == HttpRouteParameterRedactionMode.Strict)
+        switch (redactionMode)
         {
-            FormatParameterInStrictMode(httpPath, segment, startIndex, length, parametersToRedact, outputBuffer);
-            return;
-        }
-
-        if (redactionMode == HttpRouteParameterRedactionMode.Loose)
-        {
-            FormatParameterInLooseMode(httpPath, segment, startIndex, length, parametersToRedact, outputBuffer);
+            case HttpRouteParameterRedactionMode.Strict:
+                FormatParameterInStrictMode(httpPath, segment, startIndex, length, parametersToRedact, outputBuffer);
+                return;
+            case HttpRouteParameterRedactionMode.Loose:
+                FormatParameterInLooseMode(httpPath, segment, startIndex, length, parametersToRedact, outputBuffer);
+                break;
         }
     }
 
@@ -202,12 +242,12 @@ internal sealed class HttpRouteFormatter : IHttpRouteFormatter
         {
             if (classification != DataClassification.None)
             {
-                var redactor = _redactorProvider.GetRedactor(classification);
+                Redactor redactor = _redactorProvider.GetRedactor(classification);
                 _ = outputBuffer.AppendRedacted(redactor, httpPath.Slice(startIndex, length));
             }
             else
             {
-#if NETCOREAPP3_1_OR_GREATER
+#if NET
                 _ = outputBuffer.Append(httpPath.Slice(startIndex, length));
 #else
                 _ = outputBuffer.Append(httpPath.Slice(startIndex, length).ToString());
@@ -216,7 +256,7 @@ internal sealed class HttpRouteFormatter : IHttpRouteFormatter
         }
         else if (Segment.IsKnownUnredactableParameter(httpRouteSegment.ParamName))
         {
-#if NETCOREAPP3_1_OR_GREATER
+#if NET
             _ = outputBuffer.Append(httpPath.Slice(startIndex, length));
 #else
             _ = outputBuffer.Append(httpPath.Slice(startIndex, length).ToString());
@@ -224,7 +264,7 @@ internal sealed class HttpRouteFormatter : IHttpRouteFormatter
         }
         else
         {
-#if NETCOREAPP3_1_OR_GREATER
+#if NET
             _ = outputBuffer.Append(TelemetryConstants.Redacted.AsSpan());
 #else
             _ = outputBuffer.Append(TelemetryConstants.Redacted);
@@ -243,12 +283,12 @@ internal sealed class HttpRouteFormatter : IHttpRouteFormatter
         if (parametersToRedact.TryGetValue(httpRouteSegment.ParamName, out DataClassification classification)
             && classification != DataClassification.None)
         {
-            var redactor = _redactorProvider.GetRedactor(classification);
+            Redactor redactor = _redactorProvider.GetRedactor(classification);
             _ = outputBuffer.AppendRedacted(redactor, httpPath.Slice(startIndex, length));
         }
         else
         {
-#if NETCOREAPP3_1_OR_GREATER
+#if NET
             _ = outputBuffer.Append(httpPath.Slice(startIndex, length));
 #else
             _ = outputBuffer.Append(httpPath.Slice(startIndex, length).ToString());
