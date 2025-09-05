@@ -4,6 +4,7 @@
 using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -26,6 +27,11 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an <see cref="OpenAIResponseClient"/>.</summary>
 internal sealed class OpenAIResponsesChatClient : IChatClient
 {
+    // Fix this to not use reflection once https://github.com/openai/openai-dotnet/issues/643 is addressed.
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+    private static readonly Type? _internalResponseReasoningSummaryTextDeltaEventType = Type.GetType("OpenAI.Responses.InternalResponseReasoningSummaryTextDeltaEvent, OpenAI");
+    private static readonly PropertyInfo? _summaryTextDeltaProperty = _internalResponseReasoningSummaryTextDeltaEventType?.GetProperty("Delta");
+
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -324,8 +330,17 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 default:
+                {
+                    if (streamingUpdate.GetType() == _internalResponseReasoningSummaryTextDeltaEventType &&
+                        _summaryTextDeltaProperty?.GetValue(streamingUpdate) is string delta)
+                    {
+                        yield return CreateUpdate(new TextReasoningContent(delta));
+                        break;
+                    }
+
                     yield return CreateUpdate();
                     break;
+                }
             }
         }
     }
