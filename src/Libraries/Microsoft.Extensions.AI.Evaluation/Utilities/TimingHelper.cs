@@ -3,12 +3,16 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI.Evaluation.Utilities;
 
 internal static class TimingHelper
 {
+    internal static string ToMillisecondsText(this TimeSpan duration) =>
+        duration.TotalMilliseconds.ToString("F2", CultureInfo.InvariantCulture);
+
     internal static TimeSpan ExecuteWithTiming(Action operation)
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
@@ -42,7 +46,7 @@ internal static class TimingHelper
         return (result, duration: stopwatch.Elapsed);
     }
 
-#pragma warning disable EA0014 // The async method doesn't support cancellation
+#pragma warning disable EA0014 // The async method doesn't support cancellation.
     internal static async ValueTask<TimeSpan> ExecuteWithTimingAsync(Func<Task> operation)
     {
         Stopwatch stopwatch = Stopwatch.StartNew();

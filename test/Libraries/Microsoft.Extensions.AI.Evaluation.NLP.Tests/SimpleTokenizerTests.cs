@@ -6,8 +6,6 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
 
-#pragma warning disable AIEVAL001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
 public class SimpleTokenizerTests
 {
     [Theory]

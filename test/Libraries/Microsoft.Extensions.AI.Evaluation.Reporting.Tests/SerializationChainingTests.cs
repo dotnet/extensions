@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.AI.Evaluation.Reporting.JsonSerialization;
@@ -24,17 +23,14 @@ public class SerializationChainingTests
             messages: [],
             modelResponse: new ChatResponse
             {
-                Messages = new List<ChatMessage>
-                {
+                Messages =
+                [
                     new ChatMessage
                     {
                         Role = ChatRole.User,
-                        Contents = new List<AIContent>
-                        {
-                            new TextContent("A user message"),
-                        },
+                        Contents = [new TextContent("A user message")]
                     },
-                },
+                ],
                 AdditionalProperties = new AdditionalPropertiesDictionary
                 {
                     { "model", "gpt-7" },

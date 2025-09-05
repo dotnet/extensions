@@ -173,7 +173,7 @@ public abstract class ContentSafetyEvaluator(
                     metric.AddDiagnostics(diagnostics);
                 }
 
-#pragma warning disable S125 // Sections of code should not be commented out
+#pragma warning disable S125 // Sections of code should not be commented out.
                 // The following commented code can be useful for debugging purposes.
                 // metric.LogJsonData(payload);
                 // metric.LogJsonData(annotationResult);
