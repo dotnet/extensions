@@ -331,7 +331,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 default:
                 {
-                    // Breaking-Glass capture of streaming reasoning contents
                     if (streamingUpdate.GetType() == _internalResponseReasoningSummaryTextDeltaEventType &&
                         _summaryTextDeltaProperty?.GetValue(streamingUpdate) is string delta)
                     {
