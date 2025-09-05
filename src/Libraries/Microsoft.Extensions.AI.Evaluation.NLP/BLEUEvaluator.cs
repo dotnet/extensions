@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,16 +78,27 @@ public sealed class BLEUEvaluator : IEvaluator
             return new ValueTask<EvaluationResult>(result);
         }
 
-        (double score, TimeSpan duration) = TimingHelper.ExecuteWithTiming(() =>
-        {
-            string[][] references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference).ToArray()).ToArray();
-            string[] hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
-            return BLEUAlgorithm.SentenceBLEU(references, hypothesis, BLEUAlgorithm.DefaultBLEUWeights, SmoothingFunction.Method4);
-        });
+        (double score, TimeSpan duration) =
+            TimingHelper.ExecuteWithTiming(() =>
+            {
+                string[][] references =
+                    context.References.Select(
+                        reference => SimpleWordTokenizer.WordTokenize(reference).ToArray()).ToArray();
+
+                string[] hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
+
+                double score =
+                    BLEUAlgorithm.SentenceBLEU(
+                        references,
+                        hypothesis,
+                        BLEUAlgorithm.DefaultBLEUWeights,
+                        SmoothingFunction.Method4);
+
+                return score;
+            });
 
         metric.Value = score;
-        string durationText = $"{duration.TotalSeconds.ToString("F4", CultureInfo.InvariantCulture)} s";
-        metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
+        metric.AddOrUpdateDurationMetadata(duration);
         metric.AddOrUpdateContext(context);
         metric.Interpretation = metric.Interpret();
 

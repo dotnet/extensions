@@ -173,7 +173,8 @@ public static class EvaluationResultExtensions
     /// <param name="response">The <see cref="ChatResponse"/> that contains metadata to be added or updated.</param>
     /// <param name="duration">
     /// An optional duration that represents the amount of time that it took for the AI model to produce the supplied
-    /// <paramref name="response"/>. If supplied, the duration will also be included as part of the added metadata.
+    /// <paramref name="response"/>. If supplied, the duration (in milliseconds) will also be included as part of the
+    /// added metadata.
     /// </param>
     public static void AddOrUpdateChatMetadataInAllMetrics(
         this EvaluationResult result,
@@ -185,6 +186,26 @@ public static class EvaluationResultExtensions
         foreach (EvaluationMetric metric in result.Metrics.Values)
         {
             metric.AddOrUpdateChatMetadata(response, duration);
+        }
+    }
+
+    /// <summary>
+    /// Adds or updates metadata identifying the amount of time (in milliseconds) that it took to perform the
+    /// evaluation in all <see cref="EvaluationMetric"/>s contained in the supplied <paramref name="result"/>.
+    /// </summary>
+    /// <param name="result">
+    /// The <see cref="EvaluationResult"/> containing the <see cref="EvaluationMetric"/>s that are to be altered.
+    /// </param>
+    /// <param name="duration">
+    /// The amount of time that it took to perform the evaluation that produced the supplied <paramref name="result"/>.
+    /// </param>
+    public static void AddOrUpdateDurationMetadataInAllMetrics(this EvaluationResult result, TimeSpan duration)
+    {
+        _ = Throw.IfNull(result);
+
+        foreach (EvaluationMetric metric in result.Metrics.Values)
+        {
+            metric.AddOrUpdateDurationMetadata(duration);
         }
     }
 }
