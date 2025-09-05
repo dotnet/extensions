@@ -27,10 +27,17 @@ var openai = builder.AddOpenAIClient("openai");
 #else
 var openai = builder.AddAzureOpenAIClient("openai");
 #endif
+#if (IsGHModels)
+openai.AddChatClient("gpt-4o-mini")
+    .UseFunctionInvocation()
+    .UseOpenTelemetry(configure: c =>
+        c.EnableSensitiveData = builder.Environment.IsDevelopment());
+#else  // (IsOpenAI || IsAzureOpenAI)
 openai.AddResponsesChatClient("gpt-4o-mini")
     .UseFunctionInvocation()
     .UseOpenTelemetry(configure: c =>
         c.EnableSensitiveData = builder.Environment.IsDevelopment());
+#endif
 openai.AddEmbeddingGenerator("text-embedding-3-small");
 #endif
 

@@ -4,7 +4,6 @@ using aichatweb.Web.Services;
 using aichatweb.Web.Services.Ingestion;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.AddServiceDefaults();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 

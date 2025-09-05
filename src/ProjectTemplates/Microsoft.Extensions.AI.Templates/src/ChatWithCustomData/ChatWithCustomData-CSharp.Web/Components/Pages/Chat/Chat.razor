@@ -67,7 +67,7 @@
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
         currentResponseCancellation = new();
 @*#if (IsAzureOpenAI || IsOpenAI)
-        await foreach (var update in ChatClient.GetStreamingResponseAsync([userMessage], chatOptions, currentResponseCancellation.Token))
+        await foreach (var update in ChatClient.GetStreamingResponseAsync(userMessage, chatOptions, currentResponseCancellation.Token))
         {
             messages.AddMessages(update, filter: c => c is not TextContent);
             responseText.Text += update.Text;
