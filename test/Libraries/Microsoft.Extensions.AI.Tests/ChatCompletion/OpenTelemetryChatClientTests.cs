@@ -163,16 +163,16 @@ public class OpenTelemetryChatClientTests
         Assert.Equal(7, activity.GetTagItem("gen_ai.request.top_k"));
         Assert.Equal(123, activity.GetTagItem("gen_ai.request.max_tokens"));
         Assert.Equal("""["hello", "world"]""", activity.GetTagItem("gen_ai.request.stop_sequences"));
-        Assert.Equal(enableSensitiveData ? "value1" : null, activity.GetTagItem("testservice.request.service_tier"));
-        Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("testservice.request.something_else"));
+        Assert.Equal(enableSensitiveData ? "value1" : null, activity.GetTagItem("service_tier"));
+        Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("SomethingElse"));
         Assert.Equal(42L, activity.GetTagItem("gen_ai.request.seed"));
 
         Assert.Equal("id123", activity.GetTagItem("gen_ai.response.id"));
         Assert.Equal("""["stop"]""", activity.GetTagItem("gen_ai.response.finish_reasons"));
         Assert.Equal(10, activity.GetTagItem("gen_ai.usage.input_tokens"));
         Assert.Equal(20, activity.GetTagItem("gen_ai.usage.output_tokens"));
-        Assert.Equal(enableSensitiveData ? "abcdefgh" : null, activity.GetTagItem("testservice.response.system_fingerprint"));
-        Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("testservice.response.and_something_else"));
+        Assert.Equal(enableSensitiveData ? "abcdefgh" : null, activity.GetTagItem("system_fingerprint"));
+        Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("AndSomethingElse"));
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
 
