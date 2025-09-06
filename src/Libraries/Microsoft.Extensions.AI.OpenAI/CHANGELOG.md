@@ -4,6 +4,7 @@
 
 - Updated tool mappings to recognize any `AIFunctionDeclaration`.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated to depend on OpenAI 2.4.0
 
 ## 9.8.0-preview.1.25412.6
 
