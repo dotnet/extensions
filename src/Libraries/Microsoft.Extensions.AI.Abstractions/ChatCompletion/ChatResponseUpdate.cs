@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// <para>
 /// The relationship between <see cref="ChatResponse"/> and <see cref="ChatResponseUpdate"/> is
-/// codified in the <see cref="ChatResponseExtensions.ToChatResponseAsync"/> and
+/// codified in the <see cref="ChatResponseExtensions.ToChatResponseAsync(IAsyncEnumerable{ChatResponseUpdate}, System.Threading.CancellationToken)"/> and
 /// <see cref="ChatResponse.ToChatResponseUpdates"/>, which enable bidirectional conversions
 /// between the two. Note, however, that the provided conversions may be lossy, for example if multiple
 /// updates all have different <see cref="RawRepresentation"/> objects whereas there's only one slot for

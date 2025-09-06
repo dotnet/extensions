@@ -9,9 +9,11 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
+using OpenAI.Images;
 using OpenAI.Responses;
 
 #pragma warning disable S907 // "goto" statement should not be used
@@ -164,7 +166,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 default:
-                    message.Contents.Add(new() { RawRepresentation = outputItem });
+                    if (outputItem.GetType().Name == "InternalImageGenToolCallItemResource")
+                    {
+                        message.Contents.Add(GetContentFromImageGen(outputItem));
+                    }
+                    else
+                    {
+                        message.Contents.Add(new() { RawRepresentation = outputItem });
+                    }
+
                     break;
             }
         }
@@ -172,6 +182,118 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         if (message is not null)
         {
             yield return message;
+        }
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ResponseItem))]
+    private static DataContent GetContentFromImageGen(ResponseItem outputItem)
+    {
+        const BindingFlags InternalBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        var imageGenResultType = Type.GetType("OpenAI.Responses.InternalImageGenToolCallItemResource, OpenAI");
+        if (imageGenResultType == null)
+        {
+            throw new InvalidOperationException("Unable to determine the type of the image generation result.");
+        }
+
+        var imageGenStatus = imageGenResultType.GetProperty("Status", InternalBindingFlags)?.GetValue(outputItem)?.ToString();
+        var imageGenResult = imageGenResultType.GetProperty("Result", InternalBindingFlags)?.GetValue(outputItem) as string;
+
+        IDictionary<string, BinaryData>? additionalRawData = imageGenResultType
+            .GetProperty("SerializedAdditionalRawData", InternalBindingFlags)
+            ?.GetValue(outputItem) as IDictionary<string, BinaryData>;
+
+        // Properties
+        //   background
+        //   output_format
+        //   quality
+        //   revised_prompt
+        //   size
+
+        string outputFormat = getStringProperty("output_format") ?? "png";
+
+        var resultBytes = Convert.FromBase64String(imageGenResult ?? string.Empty);
+
+        return new DataContent(resultBytes, $"image/{outputFormat}")
+        {
+            RawRepresentation = outputItem,
+            AdditionalProperties = new()
+            {
+                ["background"] = getStringProperty("background"),
+                ["output_format"] = outputFormat,
+                ["quality"] = getStringProperty("quality"),
+                ["revised_prompt"] = getStringProperty("revised_prompt"),
+                ["size"] = getStringProperty("size"),
+                ["status"] = imageGenStatus,
+            }
+        };
+
+        string? getStringProperty(string name)
+        {
+            if (additionalRawData?.TryGetValue(name, out var outputFormat) == true)
+            {
+                var stringJsonTypeInfo = (JsonTypeInfo<string>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(string));
+                return JsonSerializer.Deserialize(outputFormat, stringJsonTypeInfo);
+            }
+
+            return null;
+        }
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ResponseItem))]
+    private static DataContent GetContentFromImageGenPartialImageEvent(StreamingResponseUpdate update)
+    {
+        const BindingFlags InternalBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        var partialImageEventType = Type.GetType("OpenAI.Responses.InternalResponseImageGenCallPartialImageEvent, OpenAI");
+        if (partialImageEventType == null)
+        {
+            throw new InvalidOperationException("Unable to determine the type of the image generation result.");
+        }
+
+        var imageGenResult = partialImageEventType.GetProperty("PartialImageB64", InternalBindingFlags)?.GetValue(update) as string;
+        var imageGenItemId = partialImageEventType.GetProperty("ItemId", InternalBindingFlags)?.GetValue(update) as string;
+        var imageGenOutputIndex = partialImageEventType.GetProperty("OutputIndex", InternalBindingFlags)?.GetValue(update) as int?;
+        var imageGenPartialImageIndex = partialImageEventType.GetProperty("PartialImageIndex", InternalBindingFlags)?.GetValue(update) as int?;
+
+        IDictionary<string, BinaryData>? additionalRawData = partialImageEventType
+            .GetProperty("SerializedAdditionalRawData", InternalBindingFlags)
+            ?.GetValue(update) as IDictionary<string, BinaryData>;
+
+        // Properties
+        //   background
+        //   output_format
+        //   quality
+        //   revised_prompt
+        //   size
+
+        string outputFormat = getStringProperty("output_format") ?? "png";
+
+        var resultBytes = Convert.FromBase64String(imageGenResult ?? string.Empty);
+
+        return new DataContent(resultBytes, $"image/{outputFormat}")
+        {
+            RawRepresentation = update,
+            AdditionalProperties = new()
+            {
+                ["ItemId"] = imageGenItemId,
+                ["OutputIndex"] = imageGenOutputIndex,
+                ["PartialImageIndex"] = imageGenPartialImageIndex,
+                ["background"] = getStringProperty("background"),
+                ["output_format"] = outputFormat,
+                ["quality"] = getStringProperty("quality"),
+                ["revised_prompt"] = getStringProperty("revised_prompt"),
+                ["size"] = getStringProperty("size"),
+            }
+        };
+
+        string? getStringProperty(string name)
+        {
+            if (additionalRawData?.TryGetValue(name, out var outputFormat) == true)
+            {
+                var stringJsonTypeInfo = (JsonTypeInfo<string>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(string));
+                return JsonSerializer.Deserialize(outputFormat, stringJsonTypeInfo);
+            }
+
+            return null;
         }
     }
 
@@ -322,7 +444,16 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 default:
-                    yield return CreateUpdate();
+
+                    if (streamingUpdate.GetType().Name == "InternalResponseImageGenCallPartialImageEvent")
+                    {
+                        yield return CreateUpdate(GetContentFromImageGenPartialImageEvent(streamingUpdate));
+                    }
+                    else
+                    {
+                        yield return CreateUpdate();
+                    }
+
                     break;
             }
         }
@@ -345,6 +476,59 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction, strict),
             strict,
             aiFunction.Description);
+    }
+
+    internal static ResponseTool ToImageResponseTool(ImageGenerationTool imageGenerationTool, ChatOptions? options = null)
+    {
+        ImageGenerationOptions? imageGenerationOptions = null;
+        if (imageGenerationTool.AdditionalProperties.TryGetValue(nameof(ImageGenerationOptions), out object? optionsObj))
+        {
+            imageGenerationOptions = optionsObj as ImageGenerationOptions;
+        }
+        else if (options?.AdditionalProperties?.TryGetValue(nameof(ImageGenerationOptions), out object? optionsObj2) ?? false)
+        {
+            imageGenerationOptions = optionsObj2 as ImageGenerationOptions;
+        }
+
+        var toolOptions = imageGenerationOptions?.RawRepresentationFactory?.Invoke(null!) as Dictionary<string, object> ?? new();
+        toolOptions["type"] = "image_generation";
+
+        // Size: Image dimensions (e.g., 1024x1024, 1024x1536)
+        if (imageGenerationOptions?.ImageSize is not null && !toolOptions.ContainsKey("size"))
+        {
+            // Use a custom type to ensure the size is formatted correctly.
+            // This is a workaround for OpenAI's specific size format requirements.
+            toolOptions["size"] = new GeneratedImageSize(
+                imageGenerationOptions.ImageSize.Value.Width,
+                imageGenerationOptions.ImageSize.Value.Height).ToString();
+        }
+
+        // Format: File output format
+        if (imageGenerationOptions?.MediaType is not null && !toolOptions.ContainsKey("format"))
+        {
+            toolOptions["output_format"] = imageGenerationOptions.MediaType switch
+            {
+                "image/png" => GeneratedImageFileFormat.Png.ToString(),
+                "image/jpeg" => GeneratedImageFileFormat.Jpeg.ToString(),
+                "image/webp" => GeneratedImageFileFormat.Webp.ToString(),
+                _ => string.Empty,
+            };
+        }
+
+        // unexposed properties, string unless noted
+        // background: transparent, opaque, auto
+        // input_fidelity: effort model exerts to match input (high, low)
+        // input_image_mask: optional image mask for inpainting.  Object with property file_id string or image_url data string.
+        // model: Model ID to use for image generation
+        // moderation: Moderation level (auto, low)
+        // output_compression: (int) Compression level (0-100%) for JPEG and WebP formats
+        // partial_images: (int) Number of partial images to return (0-3)
+        // quality: Rendering quality (e.g. low, medium, high)
+
+        // Can't create the tool, but we can deserialize it from Json
+        BinaryData? toolOptionsData = BinaryData.FromBytes(
+            JsonSerializer.SerializeToUtf8Bytes(toolOptions, OpenAIJsonContext.Default.IDictionaryStringObject));
+        return ModelReaderWriter.Read<ResponseTool>(toolOptionsData, ModelReaderWriterOptions.Json)!;
     }
 
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
@@ -399,6 +583,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 {
                     case AIFunctionDeclaration aiFunction:
                         result.Tools.Add(ToResponseTool(aiFunction, options));
+                        break;
+
+                    case ImageGenerationTool imageGenerationTool:
+                        result.Tools.Add(ToImageResponseTool(imageGenerationTool, options));
                         break;
 
                     case HostedWebSearchTool webSearchTool:
