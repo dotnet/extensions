@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -175,19 +174,13 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.EmbeddingDimensions, dimensionsValue);
                 }
 
-                // Log all additional request options as per-provider tags. This is non-normative, but it covers cases where
-                // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.request.service_tier),
-                // and more generally cases where there's additional useful information to be logged.
+                // Log all additional request options as raw values on the span.
                 // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
-                if (EnableSensitiveData &&
-                    _providerName is not null &&
-                    options?.AdditionalProperties is { } props)
+                if (EnableSensitiveData && options?.AdditionalProperties is { } props)
                 {
                     foreach (KeyValuePair<string, object?> prop in props)
                     {
-                        _ = activity.AddTag(
-                            OpenTelemetryConsts.GenAI.Request.PerProvider(_providerName, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)),
-                            prop.Value);
+                        _ = activity.AddTag(prop.Key, prop.Value);
                     }
                 }
             }
@@ -255,18 +248,13 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
                 _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Model, responseModelId);
             }
 
-            // Log all additional response properties as per-provider tags. This is non-normative, but it covers cases where
-            // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.response.system_fingerprint),
-            // and more generally cases where there's additional useful information to be logged.
-            if (EnableSensitiveData &&
-                _providerName is not null &&
-                embeddings?.AdditionalProperties is { } props)
+            // Log all additional response properties as raw values on the span.
+            // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
+            if (EnableSensitiveData && embeddings?.AdditionalProperties is { } props)
             {
                 foreach (KeyValuePair<string, object?> prop in props)
                 {
-                    _ = activity.AddTag(
-                        OpenTelemetryConsts.GenAI.Response.PerProvider(_providerName, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)),
-                        prop.Value);
+                    _ = activity.AddTag(prop.Key, prop.Value);
                 }
             }
         }
