@@ -45,18 +45,9 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
     /// <exception cref="ArgumentNullException"><paramref name="imageClient"/> is <see langword="null"/>.</exception>
     public OpenAIImageGenerator(ImageClient imageClient)
     {
-        _ = Throw.IfNull(imageClient);
+        _imageClient = Throw.IfNull(imageClient);
 
-        _imageClient = imageClient;
-
-        // https://github.com/openai/openai-dotnet/issues/215
-        // The endpoint and model aren't currently exposed, so use reflection to get at them, temporarily. Once packages
-        // implement the abstractions directly rather than providing adapters on top of the public APIs,
-        // the package can provide such implementations separate from what's exposed in the public API.
-        Uri providerUrl = typeof(ImageClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(imageClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
-
-        _metadata = new("openai", providerUrl, _imageClient.Model);
+        _metadata = new("openai", imageClient.Endpoint, _imageClient.Model);
     }
 
     /// <inheritdoc />
@@ -143,7 +134,7 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
 
         // OpenAI doesn't expose the content type, so we need to read from the internal JSON representation.
         // https://github.com/openai/openai-dotnet/issues/561
-        IDictionary<string, BinaryData>? additionalRawData = typeof(GeneratedImageCollection)
+        var additionalRawData = typeof(GeneratedImageCollection)
             .GetProperty("SerializedAdditionalRawData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(generatedImages) as IDictionary<string, BinaryData>;
 
@@ -154,7 +145,7 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
             contentType = $"image/{outputFormatString}";
         }
 
-        List<AIContent> contents = new();
+        List<AIContent> contents = [];
 
         foreach (GeneratedImage image in generatedImages)
         {

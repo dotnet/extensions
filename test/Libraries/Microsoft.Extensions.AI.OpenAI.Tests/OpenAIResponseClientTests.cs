@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -543,20 +542,70 @@ public class OpenAIResponseClientTests
     {
         const string Input = """
             {
-              "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"hello"}]}],
-              "model":"gpt-4o-mini",
-              "max_output_tokens":10,
-              "previous_response_id":"resp_42",
-              "top_p":0.5,
-              "temperature":0.5,
-              "parallel_tool_calls":true,
-              "text": {"format": {"type": "text"}
-            },
-              "tool_choice":"auto",
-              "tools":[
-                {"description":"Gets the age of the specified person.","name":"GetPersonAge","parameters":{"additionalProperties":false,"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}},"required":["personName"],"type":"object"},"strict":false,"type":"function"},
-                {"description":"Gets the age of the specified person.","name":"GetPersonAge","parameters":{"additionalProperties":false,"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}},"required":["personName"],"type":"object"},"strict":false,"type":"function"}
-              ]
+                "temperature": 0.5,
+                "top_p": 0.5,
+                "previous_response_id": "resp_42",
+                "model": "gpt-4o-mini",
+                "max_output_tokens": 10,
+                "text": {
+                    "format": {
+                        "type": "text"
+                    }
+                },
+                "tools": [
+                    {
+                        "type": "function",
+                        "name": "GetPersonAge",
+                        "description": "Gets the age of the specified person.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [
+                                "personName"
+                            ],
+                            "properties": {
+                                "personName": {
+                                    "description": "The person whose age is being requested",
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "strict": null
+                    },
+                    {
+                        "type": "function",
+                        "name": "GetPersonAge",
+                        "description": "Gets the age of the specified person.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [
+                                "personName"
+                            ],
+                            "properties": {
+                                "personName": {
+                                    "description": "The person whose age is being requested",
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "strict": null
+                    }
+                ],
+                "tool_choice": "auto",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ],
+                "parallel_tool_calls": true
             }
             """;
 
@@ -640,7 +689,7 @@ public class OpenAIResponseClientTests
                         TextFormat = ResponseTextFormat.CreateTextFormat()
                     },
                 };
-                openAIOptions.Tools.Add(ToOpenAIResponseChatTool(tool));
+                openAIOptions.Tools.Add(tool.AsOpenAIResponseTool());
                 return openAIOptions;
             },
             ModelId = null,
@@ -773,14 +822,6 @@ public class OpenAIResponseClientTests
         Assert.Equal(26, response.Usage.InputTokenCount);
         Assert.Equal(10, response.Usage.OutputTokenCount);
         Assert.Equal(36, response.Usage.TotalTokenCount);
-    }
-
-    /// <summary>Converts an Extensions function to an OpenAI response chat tool.</summary>
-    private static ResponseTool ToOpenAIResponseChatTool(AIFunction aiFunction)
-    {
-        var tool = JsonSerializer.Deserialize<OpenAIChatClientTests.ChatToolJson>(aiFunction.JsonSchema)!;
-        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool));
-        return ResponseTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters);
     }
 
     private static IChatClient CreateResponseClient(HttpClient httpClient, string modelId) =>

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -50,17 +49,9 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
     {
         _client = Throw.IfNull(assistantClient);
         _assistantId = Throw.IfNullOrWhitespace(assistantId);
-
         _defaultThreadId = defaultThreadId;
 
-        // https://github.com/openai/openai-dotnet/issues/215
-        // The endpoint isn't currently exposed, so use reflection to get at it, temporarily. Once packages
-        // implement the abstractions directly rather than providing adapters on top of the public APIs,
-        // the package can provide such implementations separate from what's exposed in the public API.
-        Uri providerUrl = typeof(AssistantClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(assistantClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
-
-        _metadata = new("openai", providerUrl);
+        _metadata = new("openai", assistantClient.Endpoint);
     }
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantsChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>

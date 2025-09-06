@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,16 +46,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         _responseClient = responseClient;
 
-        // https://github.com/openai/openai-dotnet/issues/215
-        // The endpoint and model aren't currently exposed, so use reflection to get at them, temporarily. Once packages
-        // implement the abstractions directly rather than providing adapters on top of the public APIs,
-        // the package can provide such implementations separate from what's exposed in the public API.
-        Uri providerUrl = typeof(OpenAIResponseClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(responseClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
+        // https://github.com/openai/openai-dotnet/issues/662
+        // Update to avoid reflection once OpenAIResponseClient.Model is exposed publicly.
         string? model = typeof(OpenAIResponseClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(responseClient) as string;
 
-        _metadata = new("openai", providerUrl, model);
+        _metadata = new("openai", responseClient.Endpoint, model);
     }
 
     /// <inheritdoc />
@@ -204,7 +199,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         string? lastMessageId = null;
         ChatRole? lastRole = null;
         Dictionary<int, MessageResponseItem> outputIndexToMessages = [];
-        Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
+        Dictionary<int, FunctionCallResponseItem>? functionCallItems = null;
 
         await foreach (var streamingUpdate in streamingResponseUpdates.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
@@ -234,7 +229,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     var update = CreateUpdate(ToUsageDetails(completedUpdate.Response) is { } usage ? new UsageContent(usage) : null);
                     update.FinishReason =
                         ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
-                        (functionCallInfos is not null ? ChatFinishReason.ToolCalls :
+                        (functionCallItems is not null ? ChatFinishReason.ToolCalls :
                         ChatFinishReason.Stop);
                     yield return update;
                     break;
@@ -248,7 +243,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case FunctionCallResponseItem fcri:
-                            (functionCallInfos ??= [])[outputItemAddedUpdate.OutputIndex] = new(fcri);
+                            (functionCallItems ??= [])[outputItemAddedUpdate.OutputIndex] = fcri;
                             break;
                     }
 
@@ -283,28 +278,18 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
                 }
 
-                case StreamingResponseFunctionCallArgumentsDeltaUpdate functionCallArgumentsDeltaUpdate:
-                {
-                    if (functionCallInfos?.TryGetValue(functionCallArgumentsDeltaUpdate.OutputIndex, out FunctionCallInfo? callInfo) is true)
-                    {
-                        _ = (callInfo.Arguments ??= new()).Append(functionCallArgumentsDeltaUpdate.Delta);
-                    }
-
-                    goto default;
-                }
-
                 case StreamingResponseFunctionCallArgumentsDoneUpdate functionCallOutputDoneUpdate:
                 {
-                    if (functionCallInfos?.TryGetValue(functionCallOutputDoneUpdate.OutputIndex, out FunctionCallInfo? callInfo) is true)
+                    if (functionCallItems?.TryGetValue(functionCallOutputDoneUpdate.OutputIndex, out FunctionCallResponseItem? callInfo) is true)
                     {
-                        _ = functionCallInfos.Remove(functionCallOutputDoneUpdate.OutputIndex);
+                        _ = functionCallItems.Remove(functionCallOutputDoneUpdate.OutputIndex);
 
                         var fcc = OpenAIClientExtensions.ParseCallContent(
-                            callInfo.Arguments?.ToString() ?? string.Empty,
-                            callInfo.ResponseItem.CallId,
-                            callInfo.ResponseItem.FunctionName);
+                            functionCallOutputDoneUpdate.FunctionArguments.ToString(),
+                            callInfo.CallId,
+                            callInfo.FunctionName);
 
-                        lastMessageId = callInfo.ResponseItem.Id;
+                        lastMessageId = callInfo.Id;
                         lastRole = ChatRole.Assistant;
 
                         yield return CreateUpdate(fcc);
@@ -329,18 +314,16 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     });
                     break;
 
-                default:
-                {
-                    if (streamingUpdate.GetType() == _internalResponseReasoningSummaryTextDeltaEventType &&
-                        _summaryTextDeltaProperty?.GetValue(streamingUpdate) is string delta)
-                    {
-                        yield return CreateUpdate(new TextReasoningContent(delta));
-                        break;
-                    }
+                // Replace with public StreamingResponseReasoningSummaryTextDelta when available
+                case StreamingResponseUpdate when
+                        streamingUpdate.GetType() == _internalResponseReasoningSummaryTextDeltaEventType &&
+                        _summaryTextDeltaProperty?.GetValue(streamingUpdate) is string delta:
+                    yield return CreateUpdate(new TextReasoningContent(delta));
+                    break;
 
+                default:
                     yield return CreateUpdate();
                     break;
-                }
             }
         }
     }
@@ -351,7 +334,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Nothing to dispose. Implementation required for the IChatClient interface.
     }
 
-    internal static ResponseTool ToResponseTool(AIFunctionDeclaration aiFunction, ChatOptions? options = null)
+    internal static FunctionTool ToResponseTool(AIFunctionDeclaration aiFunction, ChatOptions? options = null)
     {
         bool? strict =
             OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
@@ -359,9 +342,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         return ResponseTool.CreateFunctionTool(
             aiFunction.Name,
-            aiFunction.Description,
             OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction, strict),
-            strict ?? false);
+            strict,
+            aiFunction.Description);
     }
 
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
@@ -419,17 +402,17 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         break;
 
                     case HostedWebSearchTool webSearchTool:
-                        WebSearchUserLocation? location = null;
-                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchUserLocation), out object? objLocation))
+                        WebSearchToolLocation? location = null;
+                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchToolLocation), out object? objLocation))
                         {
-                            location = objLocation as WebSearchUserLocation;
+                            location = objLocation as WebSearchToolLocation;
                         }
 
-                        WebSearchContextSize? size = null;
-                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchContextSize), out object? objSize) &&
-                            objSize is WebSearchContextSize)
+                        WebSearchToolContextSize? size = null;
+                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchToolContextSize), out object? objSize) &&
+                            objSize is WebSearchToolContextSize)
                         {
-                            size = (WebSearchContextSize)objSize;
+                            size = (WebSearchToolContextSize)objSize;
                         }
 
                         result.Tools.Add(ResponseTool.CreateWebSearchTool(location, size));
@@ -690,14 +673,29 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             foreach (var ota in source.OutputTextAnnotations)
             {
-                (destination.Annotations ??= []).Add(new CitationAnnotation
+                CitationAnnotation ca = new()
                 {
                     RawRepresentation = ota,
-                    AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = ota.UriCitationStartIndex, EndIndex = ota.UriCitationEndIndex }],
-                    Title = ota.UriCitationTitle,
-                    Url = ota.UriCitationUri,
-                    FileId = ota.FileCitationFileId ?? ota.FilePathFileId,
-                });
+                };
+
+                switch (ota)
+                {
+                    case UriCitationMessageAnnotation ucma:
+                        ca.AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = ucma.StartIndex, EndIndex = ucma.EndIndex }];
+                        ca.Title = ucma.Title;
+                        ca.Url = ucma.Uri;
+                        break;
+
+                    case FilePathMessageAnnotation fpma:
+                        ca.FileId = fpma.FileId;
+                        break;
+
+                    case FileCitationMessageAnnotation fcma:
+                        ca.FileId = fcma.FileId;
+                        break;
+                }
+
+                (destination.Annotations ??= []).Add(ca);
             }
         }
     }
@@ -746,13 +744,5 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
 
         return parts;
-    }
-
-    /// <summary>POCO representing function calling info.</summary>
-    /// <remarks>Used to concatenation information for a single function call from across multiple streaming updates.</remarks>
-    private sealed class FunctionCallInfo(FunctionCallResponseItem item)
-    {
-        public readonly FunctionCallResponseItem ResponseItem = item;
-        public StringBuilder? Arguments;
     }
 }

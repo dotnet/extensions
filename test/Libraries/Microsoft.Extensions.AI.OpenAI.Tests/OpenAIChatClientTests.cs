@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -653,22 +651,6 @@ public class OpenAIChatClientTests
         }
 
         Assert.Equal("Hello! How can I assist you today?", responseText);
-    }
-
-    /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
-    internal sealed class ChatToolJson
-    {
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "object";
-
-        [JsonPropertyName("required")]
-        public HashSet<string> Required { get; set; } = [];
-
-        [JsonPropertyName("properties")]
-        public Dictionary<string, JsonElement> Properties { get; set; } = [];
-
-        [JsonPropertyName("additionalProperties")]
-        public bool AdditionalProperties { get; set; }
     }
 
     [Fact]
