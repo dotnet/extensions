@@ -18,9 +18,53 @@
     "type": "project"
   },
   "symbols": {
+    "TargetFrameworkOverride": {
+      "type": "parameter",
+      "description": "Overrides the target framework",
+      "displayName": "Target framework override",
+      "replaces": "TargetFrameworkOverride",
+      "datatype": "string",
+      "defaultValue": ""
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "displayName": "Framework",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net10.0",
+          "description": ".NET 10"
+        },
+        {
+          "choice": "net9.0",
+          "description": ".NET 9"
+        },
+        {
+          "choice": "net8.0",
+          "description": ".NET 8"
+        }
+      ],
+      "replaces": "net9.0",
+      "defaultValue": "net9.0"
+    },
     "hostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
+    },
+    "NativeAot": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Enable _native AOT publish",
+      "description": "Whether to enable the MCP server for publishing as a native AOT application."
+    },
+    "SelfContained": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "displayName": "Enable _self contained publish",
+      "description": "Whether to enable the MCP server for publishing as a self contained application."
     }
   },
   "primaryOutputs": [

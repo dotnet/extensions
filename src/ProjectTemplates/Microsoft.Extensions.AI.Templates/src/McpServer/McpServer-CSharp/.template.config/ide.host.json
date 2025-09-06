@@ -2,5 +2,14 @@
   "$schema": "https://json.schemastore.org/ide.host",
   "order": 0,
   "icon": "ide/icon.ico",
-  "symbolInfo": []
+  "symbolInfo": [
+    {
+      "id": "NativeAot",
+      "isVisible": true
+    },
+    {
+      "id": "SelfContained",
+      "isVisible": true
+    }
+  ]
 }
