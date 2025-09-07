@@ -14,6 +14,8 @@ namespace Microsoft.Extensions.AI;
 [JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: "functionResult")]
 [JsonDerivedType(typeof(HostedFileContent), typeDiscriminator: "hostedFile")]
 [JsonDerivedType(typeof(HostedVectorStoreContent), typeDiscriminator: "hostedVectorStore")]
+[JsonDerivedType(typeof(McpServerToolCallContent), typeDiscriminator: "mcpServerToolCall")]
+[JsonDerivedType(typeof(McpServerToolResultContent), typeDiscriminator: "mcpServerToolResult")]
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: "text")]
 [JsonDerivedType(typeof(TextReasoningContent), typeDiscriminator: "reasoning")]
 [JsonDerivedType(typeof(UriContent), typeDiscriminator: "uri")]
