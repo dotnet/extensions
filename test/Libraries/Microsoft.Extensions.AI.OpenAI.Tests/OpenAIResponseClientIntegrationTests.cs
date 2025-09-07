@@ -27,7 +27,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         SkipIfNotEnabled();
 
         var response = await ChatClient.GetResponseAsync(
-            "Write a paragraph about the three most recent blog posts on the .NET blog. Cite your sources.",
+            "Write a paragraph about .NET based on at least three recent news articles. Cite your sources.",
             new() { Tools = [new HostedWebSearchTool()] });
 
         ChatMessage m = Assert.Single(response.Messages);

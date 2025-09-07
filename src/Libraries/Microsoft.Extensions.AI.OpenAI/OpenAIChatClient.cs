@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -37,18 +36,9 @@ internal sealed class OpenAIChatClient : IChatClient
     /// <exception cref="ArgumentNullException"><paramref name="chatClient"/> is <see langword="null"/>.</exception>
     public OpenAIChatClient(ChatClient chatClient)
     {
-        _ = Throw.IfNull(chatClient);
+        _chatClient = Throw.IfNull(chatClient);
 
-        _chatClient = chatClient;
-
-        // https://github.com/openai/openai-dotnet/issues/215
-        // The endpoint and model aren't currently exposed, so use reflection to get at them, temporarily. Once packages
-        // implement the abstractions directly rather than providing adapters on top of the public APIs,
-        // the package can provide such implementations separate from what's exposed in the public API.
-        Uri providerUrl = typeof(ChatClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(chatClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
-
-        _metadata = new("openai", providerUrl, _chatClient.Model);
+        _metadata = new("openai", chatClient.Endpoint, _chatClient.Model);
     }
 
     /// <inheritdoc />
