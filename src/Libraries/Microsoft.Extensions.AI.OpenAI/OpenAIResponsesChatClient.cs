@@ -198,8 +198,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         string? modelId = null;
         string? lastMessageId = null;
         ChatRole? lastRole = null;
-        Dictionary<int, MessageResponseItem> outputIndexToMessages = [];
-        Dictionary<int, FunctionCallResponseItem>? functionCallItems = null;
+        bool anyFunctions = false;
 
         await foreach (var streamingUpdate in streamingResponseUpdates.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
@@ -229,75 +228,48 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     var update = CreateUpdate(ToUsageDetails(completedUpdate.Response) is { } usage ? new UsageContent(usage) : null);
                     update.FinishReason =
                         ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
-                        (functionCallItems is not null ? ChatFinishReason.ToolCalls :
+                        (anyFunctions ? ChatFinishReason.ToolCalls :
                         ChatFinishReason.Stop);
                     yield return update;
                     break;
                 }
 
                 case StreamingResponseOutputItemAddedUpdate outputItemAddedUpdate:
+                    lastMessageId = outputItemAddedUpdate.Item.Id;
                     switch (outputItemAddedUpdate.Item)
                     {
                         case MessageResponseItem mri:
-                            outputIndexToMessages[outputItemAddedUpdate.OutputIndex] = mri;
+                            lastRole = ToChatRole(mri.Role);
                             break;
 
                         case FunctionCallResponseItem fcri:
-                            (functionCallItems ??= [])[outputItemAddedUpdate.OutputIndex] = fcri;
+                            anyFunctions = true;
+                            lastRole = ChatRole.Assistant;
                             break;
-                    }
-
-                    goto default;
-
-                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate:
-                    _ = outputIndexToMessages.Remove(outputItemDoneUpdate.OutputIndex);
-
-                    if (outputItemDoneUpdate.Item is MessageResponseItem item &&
-                        item.Content is { Count: > 0 } content &&
-                        content.Any(c => c.OutputTextAnnotations is { Count: > 0 }))
-                    {
-                        AIContent annotatedContent = new();
-                        foreach (var c in content)
-                        {
-                            PopulateAnnotations(c, annotatedContent);
-                        }
-
-                        yield return CreateUpdate(annotatedContent);
-                        break;
                     }
 
                     goto default;
 
                 case StreamingResponseOutputTextDeltaUpdate outputTextDeltaUpdate:
-                {
-                    _ = outputIndexToMessages.TryGetValue(outputTextDeltaUpdate.OutputIndex, out MessageResponseItem? messageItem);
-                    lastMessageId = messageItem?.Id;
-                    lastRole = ToChatRole(messageItem?.Role);
-
                     yield return CreateUpdate(new TextContent(outputTextDeltaUpdate.Delta));
                     break;
-                }
 
-                case StreamingResponseFunctionCallArgumentsDoneUpdate functionCallOutputDoneUpdate:
-                {
-                    if (functionCallItems?.TryGetValue(functionCallOutputDoneUpdate.OutputIndex, out FunctionCallResponseItem? callInfo) is true)
+                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is FunctionCallResponseItem fcri:
+                    yield return CreateUpdate(OpenAIClientExtensions.ParseCallContent(fcri.FunctionArguments.ToString(), fcri.CallId, fcri.FunctionName));
+                    break;
+
+                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when
+                        outputItemDoneUpdate.Item is MessageResponseItem mri &&
+                        mri.Content is { Count: > 0 } content &&
+                        content.Any(c => c.OutputTextAnnotations is { Count: > 0 }):
+                    AIContent annotatedContent = new();
+                    foreach (var c in content)
                     {
-                        _ = functionCallItems.Remove(functionCallOutputDoneUpdate.OutputIndex);
-
-                        var fcc = OpenAIClientExtensions.ParseCallContent(
-                            functionCallOutputDoneUpdate.FunctionArguments.ToString(),
-                            callInfo.CallId,
-                            callInfo.FunctionName);
-
-                        lastMessageId = callInfo.Id;
-                        lastRole = ChatRole.Assistant;
-
-                        yield return CreateUpdate(fcc);
-                        break;
+                        PopulateAnnotations(c, annotatedContent);
                     }
 
-                    goto default;
-                }
+                    yield return CreateUpdate(annotatedContent);
+                    break;
 
                 case StreamingResponseErrorUpdate errorUpdate:
                     yield return CreateUpdate(new ErrorContent(errorUpdate.Message)
