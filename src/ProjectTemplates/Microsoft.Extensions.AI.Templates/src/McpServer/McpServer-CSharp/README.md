@@ -14,7 +14,7 @@ By default, the template is configured to build for:
 * `linux-arm64`
 * `linux-musl-x64`
 
-If your users have require more platforms to be supported, update the list of runtime identifiers in the project's `<RuntimeIdentifers />` element.
+If your users require more platforms to be supported, update the list of runtime identifiers in the project's `<RuntimeIdentifiers />` element.
 #### ---#else
 The MCP server is built as a framework-dependent application and requires the .NET runtime to be installed on the target machine.
 The application is configured to roll-forward to the next highest major version of the runtime if one is available on the target machine.
