@@ -1,6 +1,19 @@
 ﻿# MCP Server
 
-This README was created using the C# MCP server project template. It demonstrates how you can easily create an MCP server using C# and publish it as a NuGet package.
+This README was created using the C# MCP server project template.
+It demonstrates how you can easily create an MCP server using C# and publish it as a NuGet package.
+
+The MCP server is built as a self-contained application and does not require the .NET runtime to be installed on the target machine.
+However, since it is self-contained, it must be built for each target platform separately.
+By default, the template is configured to build for:
+* `win-x64`
+* `win-arm64`
+* `osx-arm64`
+* `linux-x64`
+* `linux-arm64`
+* `linux-musl-x64`
+
+If your users require more platforms to be supported, update the list of runtime identifiers in the project's `<RuntimeIdentifiers />` element.
 
 See [aka.ms/nuget/mcp/guide](https://aka.ms/nuget/mcp/guide) for the full guide.
 

@@ -1,6 +1,12 @@
 ﻿# MCP Server
 
-This README was created using the C# MCP server project template. It demonstrates how you can easily create an MCP server using C# and publish it as a NuGet package.
+This README was created using the C# MCP server project template.
+It demonstrates how you can easily create an MCP server using C# and publish it as a NuGet package.
+
+The MCP server is built as a framework-dependent application and requires the .NET runtime to be installed on the target machine.
+The application is configured to roll-forward to the next highest major version of the runtime if one is available on the target machine.
+If an applicable .NET runtime is not available, the MCP server will not start.
+Consider building the MCP server as a self-contained application if you want to avoid this dependency.
 
 See [aka.ms/nuget/mcp/guide](https://aka.ms/nuget/mcp/guide) for the full guide.
 
