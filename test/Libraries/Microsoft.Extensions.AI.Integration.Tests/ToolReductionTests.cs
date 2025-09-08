@@ -13,7 +13,14 @@ namespace Microsoft.Extensions.AI;
 public class ToolReductionTests
 {
     [Fact]
-    public async Task Strategy_NoReduction_WhenToolsBelowLimit()
+    public void EmbeddingToolReductionStrategy_Constructor_ThrowsWhenToolLimitIsLessThanOrEqualToZero()
+    {
+        using var gen = new DeterministicTestEmbeddingGenerator();
+        Assert.Throws<ArgumentOutOfRangeException>(() => new EmbeddingToolReductionStrategy(gen, toolLimit: 0));
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_NoReduction_WhenToolsBelowLimit()
     {
         using var gen = new DeterministicTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 5);
@@ -29,7 +36,7 @@ public class ToolReductionTests
     }
 
     [Fact]
-    public async Task Strategy_Reduces_ToLimit_BySimilarity()
+    public async Task EmbeddingToolReductionStrategy_Reduces_ToLimit_BySimilarity()
     {
         using var gen = new DeterministicTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 2);
@@ -57,7 +64,7 @@ public class ToolReductionTests
     }
 
     [Fact]
-    public async Task Strategy_PreserveOriginalOrdering_ReordersAfterSelection()
+    public async Task EmbeddingToolReductionStrategy_PreserveOriginalOrdering_ReordersAfterSelection()
     {
         using var gen = new DeterministicTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 2)
@@ -82,7 +89,7 @@ public class ToolReductionTests
     }
 
     [Fact]
-    public async Task Strategy_EmptyQuery_FallsBackToFirstN()
+    public async Task EmbeddingToolReductionStrategy_EmptyQuery_FallsBackToFirstN()
     {
         using var gen = new DeterministicTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 2);
@@ -100,7 +107,7 @@ public class ToolReductionTests
     }
 
     [Fact]
-    public async Task Strategy_Caching_AvoidsReEmbeddingTools()
+    public async Task EmbeddingToolReductionStrategy_Caching_AvoidsReEmbeddingTools()
     {
         using var gen = new DeterministicTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1);
@@ -115,11 +122,12 @@ public class ToolReductionTests
         _ = await strategy.SelectToolsForRequestAsync(messages, options);
         int afterSecond = gen.TotalValueInputs;
 
+        // The additional embedding generator call is for the message list.
         Assert.Equal(afterFirst + 1, afterSecond);
     }
 
     [Fact]
-    public async Task Strategy_CachingDisabled_ReEmbedsToolsEachCall()
+    public async Task EmbeddingToolReductionStrategy_CachingDisabled_ReEmbedsToolsEachCall()
     {
         using var gen = new DeterministicTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1)
@@ -137,14 +145,168 @@ public class ToolReductionTests
         _ = await strategy.SelectToolsForRequestAsync(messages, options);
         int afterSecond = gen.TotalValueInputs;
 
+        // The additional embedding generator call is for the message list.
         Assert.Equal(afterFirst + tools.Count + 1, afterSecond);
     }
 
     [Fact]
-    public void Strategy_Constructor_ThrowsWhenToolLimitIsLessThanOrEqualToZero()
+    public async Task EmbeddingToolReductionStrategy_OptionsNullOrNoTools_ReturnsEmptyOrOriginal()
     {
         using var gen = new DeterministicTestEmbeddingGenerator();
-        Assert.Throws<ArgumentOutOfRangeException>(() => new EmbeddingToolReductionStrategy(gen, toolLimit: 0));
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 2);
+
+        // Null options => empty result
+        var empty = await strategy.SelectToolsForRequestAsync(new[] { new ChatMessage(ChatRole.User, "anything") }, null);
+        Assert.Empty(empty);
+
+        // Empty tools list => returns that same list
+        var options = new ChatOptions { Tools = [] };
+        var result = await strategy.SelectToolsForRequestAsync(new[] { new ChatMessage(ChatRole.User, "weather") }, options);
+        Assert.Same(options.Tools, result);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_CustomSimilarity_InvertsOrdering()
+    {
+        using var gen = new VectorBasedTestEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1)
+        {
+            // Custom similarity chooses the *smallest* first component instead of largest cosine.
+            Similarity = (q, t) => -t.Span[0]
+        };
+
+        var highTool = new SimpleTool("HighScore", "alpha");   // vector[0] = 10
+        var lowTool = new SimpleTool("LowScore", "beta");      // vector[0] = 1
+        gen.VectorSelector = text => text.Contains("alpha") ? 10f : 1f;
+
+        var reduced = (await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "Pick something") },
+            new ChatOptions { Tools = [highTool, lowTool] })).ToList();
+
+        Assert.Single(reduced);
+
+        // Because we negated similarity, lowest underlying value wins
+        Assert.Equal("LowScore", reduced[0].Name);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_DefaultEmbeddingTextFactory_EmptyDescription_UsesNameOnly()
+    {
+        using var recorder = new RecordingEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(recorder, toolLimit: 1);
+
+        var target = new SimpleTool("ComputeSum", description: "");
+        var filler = new SimpleTool("Other", "Unrelated");
+        await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "math") },
+            new ChatOptions { Tools = new List<AITool> { target, filler } });
+
+        Assert.Contains("ComputeSum", recorder.Inputs);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_DefaultEmbeddingTextFactory_EmptyName_UsesDescriptionOnly()
+    {
+        using var recorder = new RecordingEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(recorder, toolLimit: 1);
+
+        var target = new SimpleTool("", description: "Translates between languages.");
+        var filler = new SimpleTool("Other", "Unrelated");
+        await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "translate") },
+            new ChatOptions { Tools = [target, filler] });
+
+        Assert.Contains("Translates between languages.", recorder.Inputs);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_CustomEmbeddingTextFactory_Applied()
+    {
+        using var recorder = new RecordingEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(recorder, toolLimit: 1)
+        {
+            ToolEmbeddingTextFactory = t => $"NAME:{t.Name}|DESC:{t.Description}"
+        };
+
+        var target = new SimpleTool("WeatherTool", "Gets forecast.");
+        var filler = new SimpleTool("Other", "Irrelevant");
+        await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "weather") },
+            new ChatOptions { Tools = [target, filler] });
+
+        Assert.Contains("NAME:WeatherTool|DESC:Gets forecast.", recorder.Inputs);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_MessagesEmbeddingTextFactory_CustomFiltersMessages()
+    {
+        using var gen = new DeterministicTestEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1);
+
+        // Tools we want to discriminate between
+        var tools = CreateTools("Weather", "Math", "Translate");
+
+        // Earlier message mentions weather, last message mentions math
+        var messages = new[]
+        {
+            new ChatMessage(ChatRole.User, "Please tell me the weather tomorrow."),
+            new ChatMessage(ChatRole.Assistant, "Sure, I can help."),
+            new ChatMessage(ChatRole.User, "Now instead solve a math problem.")
+        };
+
+        // Only consider the last message (so "Math" should clearly win)
+        strategy.MessagesEmbeddingTextFactory = msgs => msgs.LastOrDefault()?.Text ?? string.Empty;
+
+        var reduced = (await strategy.SelectToolsForRequestAsync(
+            messages,
+            new ChatOptions { Tools = tools })).ToList();
+
+        Assert.Single(reduced);
+        Assert.Equal("Math", reduced[0].Name);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_MessagesEmbeddingTextFactory_EmptyResult_FallbacksToFirstN()
+    {
+        using var gen = new DeterministicTestEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 2);
+
+        var tools = CreateTools("Alpha", "Beta", "Gamma");
+
+        // Return only whitespace so strategy should truncate deterministically
+        strategy.MessagesEmbeddingTextFactory = _ => "   ";
+
+        var reduced = (await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "Irrelevant content") },
+            new ChatOptions { Tools = tools })).ToList();
+
+        Assert.Equal(2, reduced.Count);
+        Assert.Equal("Alpha", reduced[0].Name);
+        Assert.Equal("Beta", reduced[1].Name);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_MessagesEmbeddingTextFactory_InvokedOnce()
+    {
+        using var gen = new DeterministicTestEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1);
+
+        var tools = CreateTools("Weather", "Math");
+        int invocationCount = 0;
+
+        strategy.MessagesEmbeddingTextFactory = msgs =>
+        {
+            invocationCount++;
+
+            // Default-like behavior
+            return string.Join("\n", msgs.Select(m => m.Text));
+        };
+
+        _ = await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "weather and math") },
+            new ChatOptions { Tools = tools });
+
+        Assert.Equal(1, invocationCount);
     }
 
     [Fact]
@@ -274,7 +436,7 @@ public class ToolReductionTests
                     }
                 }
 
-                vec[VectorLength - 1] = 1f; // bias
+                vec[^1] = 1f; // bias
                 list.Add(new Embedding<float>(vec));
             }
 
@@ -283,6 +445,61 @@ public class ToolReductionTests
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;
 
+        public void Dispose()
+        {
+            // No-op
+        }
+    }
+
+    private sealed class RecordingEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
+    {
+        public List<string> Inputs { get; } = new();
+
+        public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
+            IEnumerable<string> values,
+            EmbeddingGenerationOptions? options = null,
+            CancellationToken cancellationToken = default)
+        {
+            var list = new List<Embedding<float>>();
+            foreach (var v in values)
+            {
+                Inputs.Add(v);
+
+                // Basic 2-dim vector (length encodes a bit of variability)
+                list.Add(new Embedding<float>(new float[] { v.Length, 1f }));
+            }
+
+            return Task.FromResult(new GeneratedEmbeddings<Embedding<float>>(list));
+        }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+        public void Dispose()
+        {
+            // No-op
+        }
+    }
+
+    private sealed class VectorBasedTestEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
+    {
+        // External control for choosing first component of embedding.
+        public Func<string, float> VectorSelector { get; set; } = _ => 1f;
+
+        public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
+            IEnumerable<string> values,
+            EmbeddingGenerationOptions? options = null,
+            CancellationToken cancellationToken = default)
+        {
+            var list = new List<Embedding<float>>();
+            foreach (var v in values)
+            {
+                float val = VectorSelector(v);
+                list.Add(new Embedding<float>(new float[] { val, 1f }));
+            }
+
+            return Task.FromResult(new GeneratedEmbeddings<Embedding<float>>(list));
+        }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
         public void Dispose()
         {
             // No-op

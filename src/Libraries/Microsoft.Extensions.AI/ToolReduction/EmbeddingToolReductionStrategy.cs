@@ -45,7 +45,7 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
     /// Gets or sets a delegate used to produce the text to embed for a tool.
     /// Defaults to: <c>Name + "\n" + Description</c> (omitting empty parts).
     /// </summary>
-    public Func<AITool, string> EmbeddingTextFactory
+    public Func<AITool, string> ToolEmbeddingTextFactory
     {
         get => field ??= static t =>
         {
@@ -60,6 +60,20 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
             }
 
             return t.Name + "\n" + t.Description;
+        };
+        set => field = Throw.IfNull(value);
+    }
+
+    /// <summary>
+    /// Gets or sets the factory function used to generate a single text string from a collection of chat messages for
+    /// embedding purposes.
+    /// </summary>
+    public Func<IEnumerable<ChatMessage>, string> MessagesEmbeddingTextFactory
+    {
+        get => field ??= static messages =>
+        {
+            var messageTexts = messages.Select(m => m.Text).Where(s => !string.IsNullOrEmpty(s));
+            return string.Join("\n", messageTexts);
         };
         set => field = Throw.IfNull(value);
     }
@@ -85,12 +99,6 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
     /// </summary>
     public bool PreserveOriginalOrdering { get; set; }
 
-    /// <summary>
-    /// Gets or sets the maximum number of most recent messages to include when forming the query embedding.
-    /// Defaults to <see cref="int.MaxValue"/> (all messages).
-    /// </summary>
-    public int MaxMessagesForQueryEmbedding { get; set; } = int.MaxValue;
-
     /// <inheritdoc />
     public async Task<IEnumerable<AITool>> SelectToolsForRequestAsync(
         IEnumerable<ChatMessage> messages,
@@ -113,8 +121,7 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
         }
 
         // Build query text from recent messages.
-        var messageTexts = messages.Select(m => m.Text).Where(s => !string.IsNullOrEmpty(s));
-        var queryText = string.Join("\n", messageTexts);
+        var queryText = MessagesEmbeddingTextFactory(messages);
         if (string.IsNullOrWhiteSpace(queryText))
         {
             // We couldn't build a meaningful query, likely because the message list was empty.
@@ -149,7 +156,7 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
         if (!EnableEmbeddingCaching)
         {
             // Embed all tools in one batch; do not store in cache.
-            return await ComputeEmbeddingsAsync(tools.Select(t => EmbeddingTextFactory(t)), expectedCount: tools.Count);
+            return await ComputeEmbeddingsAsync(tools.Select(t => ToolEmbeddingTextFactory(t)), expectedCount: tools.Count);
         }
 
         var result = new Embedding<float>[tools.Count];
@@ -172,7 +179,7 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
             return result;
         }
 
-        var uncachedEmbeddings = await ComputeEmbeddingsAsync(cacheMisses.Select(t => EmbeddingTextFactory(t.Tool)), expectedCount: cacheMisses.Count);
+        var uncachedEmbeddings = await ComputeEmbeddingsAsync(cacheMisses.Select(t => ToolEmbeddingTextFactory(t.Tool)), expectedCount: cacheMisses.Count);
 
         for (var i = 0; i < cacheMisses.Count; i++)
         {
