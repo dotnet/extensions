@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -48,37 +47,5 @@ public class McpServerToolResultContentTests
     {
         Assert.Throws<ArgumentException>("callId", () => new McpServerToolResultContent(string.Empty));
         Assert.Throws<ArgumentNullException>("callId", () => new McpServerToolResultContent(null!));
-    }
-
-    [Fact]
-    public void ItShouldBeSerializableAndDeserializable()
-    {
-        var sut = new McpServerToolResultContent("id")
-        {
-            Output = [new TextContent("output text")]
-        };
-
-        var json = JsonSerializer.Serialize(sut, TestJsonSerializerContext.Default.Options);
-        var deserializedSut = JsonSerializer.Deserialize<McpServerToolResultContent>(json, TestJsonSerializerContext.Default.Options);
-
-        Assert.NotNull(deserializedSut);
-        Assert.Equal("id", deserializedSut.CallId);
-        Assert.Equal("output text", Assert.IsType<TextContent>(Assert.Single(deserializedSut.Output!)).Text);
-    }
-
-    [Fact]
-    public void ItShouldBeSerializableAndDeserializableAsPolymorphic()
-    {
-        AIContent sut = new McpServerToolResultContent("id")
-        {
-            Output = [new TextContent("output text")]
-        };
-
-        var json = JsonSerializer.Serialize(sut, TestJsonSerializerContext.Default.Options);
-        var deserializedSut = JsonSerializer.Deserialize<AIContent>(json, TestJsonSerializerContext.Default.Options);
-
-        var deserializedToolResultContent = Assert.IsType<McpServerToolResultContent>(deserializedSut);
-        Assert.Equal("id", deserializedToolResultContent.CallId);
-        Assert.Equal("output text", Assert.IsType<TextContent>(Assert.Single(deserializedToolResultContent.Output!)).Text);
     }
 }

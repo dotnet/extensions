@@ -14,8 +14,6 @@ namespace Microsoft.Extensions.AI;
 [JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: "functionResult")]
 [JsonDerivedType(typeof(HostedFileContent), typeDiscriminator: "hostedFile")]
 [JsonDerivedType(typeof(HostedVectorStoreContent), typeDiscriminator: "hostedVectorStore")]
-[JsonDerivedType(typeof(McpServerToolCallContent), typeDiscriminator: "mcpServerToolCall")]
-[JsonDerivedType(typeof(McpServerToolResultContent), typeDiscriminator: "mcpServerToolResult")]
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: "text")]
 [JsonDerivedType(typeof(TextReasoningContent), typeDiscriminator: "reasoning")]
 [JsonDerivedType(typeof(UriContent), typeDiscriminator: "uri")]
@@ -26,6 +24,10 @@ namespace Microsoft.Extensions.AI;
 // experimental types in its source generated files.
 // [JsonDerivedType(typeof(FunctionApprovalRequestContent), typeDiscriminator: "functionApprovalRequest")]
 // [JsonDerivedType(typeof(FunctionApprovalResponseContent), typeDiscriminator: "functionApprovalResponse")]
+// [JsonDerivedType(typeof(McpServerToolCallContent), typeDiscriminator: "mcpServerToolCall")]
+// [JsonDerivedType(typeof(McpServerToolResultContent), typeDiscriminator: "mcpServerToolResult")]
+// [JsonDerivedType(typeof(McpServerToolApprovalRequestContent), typeDiscriminator: "mcpServerToolApprovalRequest")]
+// [JsonDerivedType(typeof(McpServerToolApprovalResponseContent), typeDiscriminator: "mcpServerToolApprovalResponse")]
 
 public class AIContent
 {

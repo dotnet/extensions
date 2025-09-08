@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.AI;
 
@@ -11,6 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// Use <see cref="HostedMcpServerToolApprovalMode.NeverRequire"/> to get an instance of <see cref="HostedMcpServerToolNeverRequireApprovalMode"/>.
 /// </remarks>
+[Experimental("MEAI001")]
 [DebuggerDisplay(nameof(NeverRequire))]
 public sealed class HostedMcpServerToolNeverRequireApprovalMode : HostedMcpServerToolApprovalMode
 {

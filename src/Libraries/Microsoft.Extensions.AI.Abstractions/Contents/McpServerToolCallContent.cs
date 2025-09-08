@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -10,7 +11,12 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a tool call request to a MCP server.
 /// </summary>
-public class McpServerToolCallContent : AIContent
+/// <remarks>
+/// This content type is used to represent an invocation of an MCP server tool by a hosted service.
+/// It is informational only.
+/// </remarks>
+[Experimental("MEAI001")]
+public sealed class McpServerToolCallContent : AIContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="McpServerToolCallContent"/> class.

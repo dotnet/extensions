@@ -11,6 +11,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a hosted MCP server tool that can be specified to an AI service.
 /// </summary>
+[Experimental("MEAI001")]
 public class HostedMcpServerTool : AITool
 {
     /// <summary>

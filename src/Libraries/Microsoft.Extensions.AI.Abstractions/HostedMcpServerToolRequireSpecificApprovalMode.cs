@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.Extensions.AI;
@@ -10,6 +11,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a mode where approval behavior is specified for individual tool names.
 /// </summary>
+[Experimental("MEAI001")]
 public sealed class HostedMcpServerToolRequireSpecificApprovalMode : HostedMcpServerToolApprovalMode
 {
     /// <summary>
@@ -42,20 +44,9 @@ public sealed class HostedMcpServerToolRequireSpecificApprovalMode : HostedMcpSe
     public override int GetHashCode() =>
         HashCode.Combine(GetListHashCode(AlwaysRequireApprovalToolNames), GetListHashCode(NeverRequireApprovalToolNames));
 
-    private static bool ListEquals(IList<string>? list1, IList<string>? list2)
-    {
-        if (ReferenceEquals(list1, list2))
-        {
-            return true;
-        }
-
-        if (list1 is null || list2 is null)
-        {
-            return false;
-        }
-
-        return list1.SequenceEqual(list2);
-    }
+    private static bool ListEquals(IList<string>? list1, IList<string>? list2) =>
+        ReferenceEquals(list1, list2) ||
+        (list1 is not null && list2 is not null && list1.SequenceEqual(list2));
 
     private static int GetListHashCode(IList<string>? list)
     {
@@ -64,7 +55,7 @@ public sealed class HostedMcpServerToolRequireSpecificApprovalMode : HostedMcpSe
             return 0;
         }
 
-        var hc = default(HashCode);
+        HashCode hc = default;
         foreach (string item in list)
         {
             hc.Add(item);
