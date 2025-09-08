@@ -86,5 +86,23 @@
       },
       "continueOnError": true
     }
-  ]
+  ],
+  "SpecialCustomOperations": {
+    "**/*.md": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "#### ---#if" ],
+            "else": [ "#### ---#else" ],
+            "elseif": [ "#### ---#elseif", "#### ---#elif" ],
+            "endif": [ "#### ---#endif" ],
+            "trim": "true",
+            "wholeLine": "true",
+            "evaluator": "C++"
+          }
+        }
+      ]
+    }
+  }
 }
