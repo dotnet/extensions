@@ -63,8 +63,8 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "true",
-      "displayName": "Enable _self contained publish",
-      "description": "Whether to enable the MCP server for publishing as a self contained application."
+      "displayName": "Enable _self-contained publish",
+      "description": "Whether to enable the MCP server for publishing as a self-contained application."
     }
   },
   "primaryOutputs": [
