@@ -24,6 +24,10 @@ namespace Microsoft.Extensions.AI;
 // experimental types in its source generated files.
 // [JsonDerivedType(typeof(FunctionApprovalRequestContent), typeDiscriminator: "functionApprovalRequest")]
 // [JsonDerivedType(typeof(FunctionApprovalResponseContent), typeDiscriminator: "functionApprovalResponse")]
+// [JsonDerivedType(typeof(McpServerToolCallContent), typeDiscriminator: "mcpServerToolCall")]
+// [JsonDerivedType(typeof(McpServerToolResultContent), typeDiscriminator: "mcpServerToolResult")]
+// [JsonDerivedType(typeof(McpServerToolApprovalRequestContent), typeDiscriminator: "mcpServerToolApprovalRequest")]
+// [JsonDerivedType(typeof(McpServerToolApprovalResponseContent), typeDiscriminator: "mcpServerToolApprovalResponse")]
 
 public class AIContent
 {

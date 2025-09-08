@@ -18,7 +18,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
     public override bool FunctionInvokingChatClientSetsConversationId => true;
 
-    // Test structure doesn't make sense with Respones.
+    // Test structure doesn't make sense with Responses.
     public override Task Caching_AfterFunctionInvocation_FunctionOutputUnchangedAsync() => Task.CompletedTask;
 
     [ConditionalFact]
@@ -48,5 +48,129 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             Assert.NotNull(ca.Title);
             Assert.NotEmpty(ca.Title);
         });
+    }
+
+    [ConditionalFact]
+    public async Task RemoteMCP_ListTools()
+    {
+        SkipIfNotEnabled();
+
+        ChatOptions chatOptions = new()
+        {
+            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp") { ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire }],
+        };
+
+        ChatResponse response = await CreateChatClient()!.GetResponseAsync("Which tools are available on the wiki_tools MCP server?", chatOptions);
+
+        Assert.Contains("read_wiki_structure", response.Text);
+        Assert.Contains("read_wiki_contents", response.Text);
+        Assert.Contains("ask_question", response.Text);
+    }
+
+    [ConditionalFact]
+    public async Task RemoteMCP_CallTool_ApprovalNeverRequired()
+    {
+        SkipIfNotEnabled();
+
+        await RunAsync(false, false);
+        await RunAsync(true, true);
+
+        async Task RunAsync(bool streaming, bool requireSpecific)
+        {
+            ChatOptions chatOptions = new()
+            {
+                Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+                    {
+                        ApprovalMode = requireSpecific ?
+                            HostedMcpServerToolApprovalMode.RequireSpecific(null, ["read_wiki_structure", "ask_question"]) :
+                            HostedMcpServerToolApprovalMode.NeverRequire,
+                    }
+                ],
+            };
+
+            using var client = CreateChatClient()!;
+
+            const string Prompt = "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository";
+
+            ChatResponse response = streaming ?
+                await client.GetStreamingResponseAsync(Prompt, chatOptions).ToChatResponseAsync() :
+                await client.GetResponseAsync(Prompt, chatOptions);
+
+            Assert.NotNull(response);
+            Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
+            Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
+            Assert.Empty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
+
+            Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task RemoteMCP_CallTool_ApprovalRequired()
+    {
+        SkipIfNotEnabled();
+
+        await RunAsync(false, false, false);
+        await RunAsync(true, true, false);
+        await RunAsync(false, false, true);
+        await RunAsync(true, true, true);
+
+        async Task RunAsync(bool streaming, bool requireSpecific, bool useConversationId)
+        {
+            ChatOptions chatOptions = new()
+            {
+                Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+                    {
+                        ApprovalMode = requireSpecific ?
+                            HostedMcpServerToolApprovalMode.RequireSpecific(["read_wiki_structure", "ask_question"], null) :
+                            HostedMcpServerToolApprovalMode.AlwaysRequire,
+                    }
+                ],
+            };
+
+            using var client = CreateChatClient()!;
+
+            // Initial request
+            List<ChatMessage> input = [new ChatMessage(ChatRole.User, "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository")];
+            ChatResponse response = streaming ?
+                await client.GetStreamingResponseAsync(input, chatOptions).ToChatResponseAsync() :
+                await client.GetResponseAsync(input, chatOptions);
+
+            // Handle approvals of up to two rounds of tool calls
+            int approvalsCount = 0;
+            for (int i = 0; i < 2; i++)
+            {
+                if (useConversationId)
+                {
+                    chatOptions.ConversationId = response.ConversationId;
+                    input.Clear();
+                }
+                else
+                {
+                    input.AddRange(response.Messages);
+                }
+
+                var approvalResponse = new ChatMessage(ChatRole.Tool,
+                    response.Messages
+                            .SelectMany(m => m.Contents)
+                            .OfType<McpServerToolApprovalRequestContent>()
+                            .Select(c => new McpServerToolApprovalResponseContent(c.ToolCall.CallId, true))
+                            .ToArray());
+                if (approvalResponse.Contents.Count == 0)
+                {
+                    break;
+                }
+
+                approvalsCount += approvalResponse.Contents.Count;
+                input.Add(approvalResponse);
+                response = streaming ?
+                    await client.GetStreamingResponseAsync(input, chatOptions).ToChatResponseAsync() :
+                    await client.GetResponseAsync(input, chatOptions);
+            }
+
+            // Validate final response
+            Assert.Equal(2, approvalsCount);
+            Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
+        }
     }
 }
