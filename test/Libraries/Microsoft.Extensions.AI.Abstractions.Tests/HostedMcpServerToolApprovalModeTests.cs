@@ -45,4 +45,51 @@ public class HostedMcpServerToolApprovalModeTests
         HostedMcpServerToolApprovalMode? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.HostedMcpServerToolApprovalMode);
         Assert.Equal(requireSpecific, result);
     }
+
+    [Fact]
+    public void Equality_RequireSpecific_WorksAsExpected()
+    {
+        var mode1 = HostedMcpServerToolApprovalMode.RequireSpecific(["ToolA", "ToolB"], ["ToolC"]);
+        var mode2 = HostedMcpServerToolApprovalMode.RequireSpecific(["ToolA", "ToolB"], ["ToolC"]);
+        Assert.Equal(mode1, mode2);
+        Assert.Equal(mode1.GetHashCode(), mode2.GetHashCode());
+
+        Assert.NotNull(mode1.AlwaysRequireApprovalToolNames);
+        mode1.AlwaysRequireApprovalToolNames.Add("ToolD");
+        Assert.NotEqual(mode1, mode2);
+        Assert.NotEqual(mode1.GetHashCode(), mode2.GetHashCode());
+
+        Assert.NotNull(mode2.AlwaysRequireApprovalToolNames);
+        mode2.AlwaysRequireApprovalToolNames.Add("ToolD");
+        Assert.Equal(mode1, mode2);
+        Assert.Equal(mode1.GetHashCode(), mode2.GetHashCode());
+
+        Assert.NotNull(mode2.NeverRequireApprovalToolNames);
+        mode2.NeverRequireApprovalToolNames.Add("ToolE");
+        Assert.NotEqual(mode1, mode2);
+        Assert.NotEqual(mode1.GetHashCode(), mode2.GetHashCode());
+
+        Assert.NotNull(mode1.NeverRequireApprovalToolNames);
+        mode1.NeverRequireApprovalToolNames.Add("ToolE");
+        Assert.Equal(mode1, mode2);
+        Assert.Equal(mode1.GetHashCode(), mode2.GetHashCode());
+
+        var mode3 = HostedMcpServerToolApprovalMode.RequireSpecific(null, null);
+        Assert.Equal(mode3.GetHashCode(), mode3.GetHashCode());
+        var mode4 = HostedMcpServerToolApprovalMode.RequireSpecific(["a"], null);
+        Assert.Equal(mode4.GetHashCode(), mode4.GetHashCode());
+        Assert.NotEqual(mode3, mode4);
+        Assert.NotEqual(mode3.GetHashCode(), mode4.GetHashCode());
+
+        var mode5 = HostedMcpServerToolApprovalMode.RequireSpecific(null, ["b"]);
+        Assert.Equal(mode5.GetHashCode(), mode5.GetHashCode());
+        Assert.NotEqual(mode3, mode5);
+        Assert.NotEqual(mode3.GetHashCode(), mode5.GetHashCode());
+        Assert.NotEqual(mode4, mode5);
+        Assert.NotEqual(mode4.GetHashCode(), mode5.GetHashCode());
+
+        var mode6 = HostedMcpServerToolApprovalMode.RequireSpecific([], []);
+        Assert.Equal(mode6.GetHashCode(), mode6.GetHashCode());
+        Assert.NotEqual(mode3, mode6);
+    }
 }

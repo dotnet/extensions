@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
+#pragma warning disable S109 // Magic numbers should not be used
+#pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -42,7 +45,7 @@ public sealed class HostedMcpServerToolRequireSpecificApprovalMode : HostedMcpSe
 
     /// <inheritdoc/>
     public override int GetHashCode() =>
-        HashCode.Combine(GetListHashCode(AlwaysRequireApprovalToolNames), GetListHashCode(NeverRequireApprovalToolNames));
+        Combine(GetListHashCode(AlwaysRequireApprovalToolNames), GetListHashCode(NeverRequireApprovalToolNames));
 
     private static bool ListEquals(IList<string>? list1, IList<string>? list2) =>
         ReferenceEquals(list1, list2) ||
@@ -55,12 +58,32 @@ public sealed class HostedMcpServerToolRequireSpecificApprovalMode : HostedMcpSe
             return 0;
         }
 
+#if NET
         HashCode hc = default;
-        foreach (string item in list)
+        for (int i = 0; i < list.Count; i++)
         {
-            hc.Add(item);
+            hc.Add(list[i]);
         }
 
         return hc.ToHashCode();
+#else
+        int hash = 0;
+        foreach (string item in list)
+        {
+            hash = Combine(hash, item?.GetHashCode() ?? 0);
+        }
+
+        return hash;
+#endif
+    }
+
+    private static int Combine(int h1, int h2)
+    {
+#if NET
+        return HashCode.Combine(h1, h2);
+#else
+        uint rol5 = ((uint)h1 << 5) | ((uint)h1 >> 27);
+        return ((int)rol5 + h1) ^ h2;
+#endif
     }
 }
