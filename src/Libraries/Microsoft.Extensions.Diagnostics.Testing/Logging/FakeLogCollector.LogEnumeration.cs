@@ -2,17 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging.Testing;
 
 public partial class FakeLogCollector
 {
-    private int _recordCollectionVersion = 0;
+    private int _recordCollectionVersion;
 
     private TaskCompletionSource<object?> _logEnumerationSharedWaiter =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -20,9 +18,7 @@ public partial class FakeLogCollector
     private int _waitingEnumeratorCount;
 
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(CancellationToken cancellationToken = default)
-    {
-        return new LogAsyncEnumerable(this, cancellationToken);
-    }
+        => new LogAsyncEnumerable(this, cancellationToken);
 
     private class LogAsyncEnumerable : IAsyncEnumerable<FakeLogRecord>
     {
@@ -45,7 +41,7 @@ public partial class FakeLogCollector
     private sealed class StreamEnumerator : IAsyncEnumerator<FakeLogRecord>
     {
         private readonly FakeLogCollector _collector;
-        private readonly CancellationTokenSource _masterCts;
+        private readonly CancellationTokenSource _mainCts;
 
         private FakeLogRecord? _current;
         private int _index;
@@ -53,7 +49,7 @@ public partial class FakeLogCollector
         private int _observedRecordCollectionVersion;
 
         // Concurrent MoveNextAsync guard
-        private int _moveNextActive; // 0 = inactive, 1 = active (for net462 compatibility)
+        private int _moveNextActive; // 0 = inactive, 1 = active (int type used for net462 compatibility)
 
         public StreamEnumerator(
             FakeLogCollector collector,
@@ -61,7 +57,7 @@ public partial class FakeLogCollector
             CancellationToken enumeratorCancellationToken)
         {
             _collector = collector;
-            _masterCts = enumerableCancellationToken.CanBeCanceled || enumeratorCancellationToken.CanBeCanceled
+            _mainCts = enumerableCancellationToken.CanBeCanceled || enumeratorCancellationToken.CanBeCanceled
                 ? CancellationTokenSource.CreateLinkedTokenSource([enumerableCancellationToken, enumeratorCancellationToken])
                 : new CancellationTokenSource();
             _observedRecordCollectionVersion = collector._recordCollectionVersion;
@@ -80,7 +76,7 @@ public partial class FakeLogCollector
             {
                 ThrowIfDisposed();
 
-                var masterCancellationToken = _masterCts.Token;
+                var masterCancellationToken = _mainCts.Token;
 
                 masterCancellationToken.ThrowIfCancellationRequested();
 
@@ -143,6 +139,21 @@ public partial class FakeLogCollector
             }
         }
 
+        public ValueTask DisposeAsync()
+        {
+            if (_disposed)
+            {
+                return default;
+            }
+
+            _disposed = true;
+
+            _mainCts.Cancel();
+            _mainCts.Dispose();
+
+            return default;
+        }
+
         private static async Task AwaitWithCancellationAsync(Task task, CancellationToken cancellationToken)
         {
             if (!cancellationToken.CanBeCanceled || task.IsCompleted)
@@ -165,22 +176,6 @@ public partial class FakeLogCollector
             {
                 ctr.Dispose();
             }
-        }
-
-        // TODO TW: consider pending wait and exception handling
-        public ValueTask DisposeAsync()
-        {
-            if (_disposed)
-            {
-                return default;
-            }
-
-            _disposed = true;
-
-            _masterCts.Cancel();
-            _masterCts.Dispose();
-
-            return default;
         }
 
         private void ThrowIfDisposed()
