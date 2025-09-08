@@ -68,9 +68,9 @@ public sealed class HostedMcpServerToolRequireSpecificApprovalMode : HostedMcpSe
         return hc.ToHashCode();
 #else
         int hash = 0;
-        foreach (string item in list)
+        for (int i = 0; i < list.Count; i++)
         {
-            hash = Combine(hash, item?.GetHashCode() ?? 0);
+            hash = Combine(hash, list[i]?.GetHashCode() ?? 0);
         }
 
         return hash;
