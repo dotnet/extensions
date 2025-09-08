@@ -19,62 +19,48 @@ public partial class FakeLogCollector
 
     private int _waitingEnumeratorCount;
 
-    public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(
-        int? maxItems = null,
-        CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(CancellationToken cancellationToken = default)
     {
-        if (maxItems < 0)
-        {
-            Throw.ArgumentOutOfRangeException(nameof(maxItems), maxItems, "Must be null (unlimited) or non-negative integer value.");
-        }
-
-        return new LogAsyncEnumerable(this, maxItems, cancellationToken);
+        return new LogAsyncEnumerable(this, cancellationToken);
     }
 
     private class LogAsyncEnumerable : IAsyncEnumerable<FakeLogRecord>
     {
         private readonly FakeLogCollector _collector;
-        private readonly int? _maxItems;
         private readonly CancellationToken _enumerableCancellationToken;
 
         internal LogAsyncEnumerable(
             FakeLogCollector collector,
-            int? maxItems,
             CancellationToken enumerableCancellationToken)
         {
             _collector = collector;
-            _maxItems = maxItems;
             _enumerableCancellationToken = enumerableCancellationToken;
         }
 
         public IAsyncEnumerator<FakeLogRecord> GetAsyncEnumerator(
             CancellationToken enumeratorCancellationToken = default)
-                => new StreamEnumerator(_collector, _maxItems, _enumerableCancellationToken, enumeratorCancellationToken);
+                => new StreamEnumerator(_collector, _enumerableCancellationToken, enumeratorCancellationToken);
     }
 
     private sealed class StreamEnumerator : IAsyncEnumerator<FakeLogRecord>
     {
         private readonly FakeLogCollector _collector;
-        private readonly int? _maxItems;
         private readonly CancellationTokenSource _masterCts;
 
         private FakeLogRecord? _current;
         private int _index;
         private bool _disposed;
         private int _observedRecordCollectionVersion;
-        private int _returnedItemCount;
 
         // Concurrent MoveNextAsync guard
         private int _moveNextActive; // 0 = inactive, 1 = active (for net462 compatibility)
 
         public StreamEnumerator(
             FakeLogCollector collector,
-            int? maxItems,
             CancellationToken enumerableCancellationToken,
             CancellationToken enumeratorCancellationToken)
         {
             _collector = collector;
-            _maxItems = maxItems;
             _masterCts = enumerableCancellationToken.CanBeCanceled || enumeratorCancellationToken.CanBeCanceled
                 ? CancellationTokenSource.CreateLinkedTokenSource([enumerableCancellationToken, enumeratorCancellationToken])
                 : new CancellationTokenSource();
@@ -114,16 +100,9 @@ public partial class FakeLogCollector
                                 _observedRecordCollectionVersion = _collector._recordCollectionVersion;
                             }
 
-                            if (_maxItems.HasValue && _returnedItemCount >= _maxItems)
-                            {
-                                _current = null;
-                                return false;
-                            }
-
                             if (_index < _collector._records.Count)
                             {
                                 _current = _collector._records[_index++];
-                                _returnedItemCount++;
                                 return true;
                             }
 
