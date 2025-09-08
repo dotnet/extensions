@@ -14,6 +14,8 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
+#pragma warning disable IDE0032 // Use auto property, suppressed until repo updates to C# 14
+
 /// <summary>
 /// A tool reduction strategy that ranks tools by embedding similarity to the current conversation context.
 /// </summary>
@@ -27,6 +29,29 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
     private readonly ConditionalWeakTable<AITool, Embedding<float>> _toolEmbeddingsCache = new();
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
     private readonly int _toolLimit;
+
+    private Func<AITool, string> _toolEmbeddingTextFactory = static t =>
+    {
+        if (string.IsNullOrWhiteSpace(t.Name))
+        {
+            return t.Description;
+        }
+
+        if (string.IsNullOrWhiteSpace(t.Description))
+        {
+            return t.Name;
+        }
+
+        return t.Name + "\n" + t.Description;
+    };
+
+    private Func<IEnumerable<ChatMessage>, string> _messagesEmbeddingTextFactory = static messages =>
+    {
+        var messageTexts = messages.Select(m => m.Text).Where(s => !string.IsNullOrEmpty(s));
+        return string.Join("\n", messageTexts);
+    };
+
+    private Func<ReadOnlyMemory<float>, ReadOnlyMemory<float>, float> _similarity = static (a, b) => TensorPrimitives.CosineSimilarity(a.Span, b.Span);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmbeddingToolReductionStrategy"/> class.
@@ -47,21 +72,8 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
     /// </summary>
     public Func<AITool, string> ToolEmbeddingTextFactory
     {
-        get => field ??= static t =>
-        {
-            if (string.IsNullOrWhiteSpace(t.Name))
-            {
-                return t.Description;
-            }
-
-            if (string.IsNullOrWhiteSpace(t.Description))
-            {
-                return t.Name;
-            }
-
-            return t.Name + "\n" + t.Description;
-        };
-        set => field = Throw.IfNull(value);
+        get => _toolEmbeddingTextFactory;
+        set => _toolEmbeddingTextFactory = Throw.IfNull(value);
     }
 
     /// <summary>
@@ -70,12 +82,8 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
     /// </summary>
     public Func<IEnumerable<ChatMessage>, string> MessagesEmbeddingTextFactory
     {
-        get => field ??= static messages =>
-        {
-            var messageTexts = messages.Select(m => m.Text).Where(s => !string.IsNullOrEmpty(s));
-            return string.Join("\n", messageTexts);
-        };
-        set => field = Throw.IfNull(value);
+        get => _messagesEmbeddingTextFactory;
+        set => _messagesEmbeddingTextFactory = Throw.IfNull(value);
     }
 
     /// <summary>
@@ -83,8 +91,8 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
     /// </summary>
     public Func<ReadOnlyMemory<float>, ReadOnlyMemory<float>, float> Similarity
     {
-        get => field ??= static (a, b) => TensorPrimitives.CosineSimilarity(a.Span, b.Span);
-        set => field = Throw.IfNull(value);
+        get => _similarity;
+        set => _similarity = Throw.IfNull(value);
     }
 
     /// <summary>

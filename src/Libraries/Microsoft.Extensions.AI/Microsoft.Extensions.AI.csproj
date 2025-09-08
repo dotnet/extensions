@@ -33,7 +33,6 @@
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
-    <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
   </PropertyGroup>
 
