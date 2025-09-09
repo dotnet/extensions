@@ -26,18 +26,12 @@ internal class HttpLatencyMediator
     private readonly TagToken _responseContentType;
     private readonly TagToken _hasException;
 
-    // Checkpoint tokens
-    private readonly CheckpointToken _enricherInvoked;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpLatencyMediator"/> class.
     /// </summary>
     /// <param name="tokenIssuer">Token issuer for getting latency tokens.</param>
     public HttpLatencyMediator(ILatencyContextTokenIssuer tokenIssuer)
     {
-        // Initialize checkpoint tokens
-        _enricherInvoked = tokenIssuer.GetCheckpointToken(HttpCheckpoints.EnricherInvoked);
-
         // Initialize measure tokens
         _requestContentLength = tokenIssuer.GetMeasureToken("Http.Request.ContentLength");
         _responseContentLength = tokenIssuer.GetMeasureToken("Http.Response.ContentLength");
@@ -62,9 +56,6 @@ internal class HttpLatencyMediator
         {
             return;
         }
-
-        // Add checkpoint for request processing
-        context.AddCheckpoint(_enricherInvoked);
 
         // Collect request-related data
         context.SetTag(_httpMethod, request.Method.Method);
@@ -95,7 +86,9 @@ internal class HttpLatencyMediator
         }
 
         // Add response-related data with culture-invariant string conversion
+#pragma warning disable LA0002
         context.SetTag(_httpStatusCode, ((int)response.StatusCode).ToString(CultureInfo.InvariantCulture));
+#pragma warning restore LA0002
 
         // Collect response content type if available
         if (response.Content?.Headers.ContentType != null)
@@ -147,7 +140,7 @@ internal class HttpLatencyMediator
         _ = stringBuilder.Append(',');
         for (int i = 0; i < latencyData.Checkpoints.Length; i++)
         {
-            var ms = (double)latencyData.Checkpoints[i].Elapsed / latencyData.Checkpoints[i].Frequency * 1000;
+            var ms = ((double)latencyData.Checkpoints[i].Elapsed / latencyData.Checkpoints[i].Frequency) * 1000;
             _ = stringBuilder.Append(ms.ToString(CultureInfo.InvariantCulture));
             _ = stringBuilder.Append('/');
         }

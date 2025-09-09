@@ -24,33 +24,40 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
     private static readonly ObjectPool<StringBuilder> _builderPool = PoolFactory.SharedStringBuilderPool;
     private readonly HttpClientLatencyContext _latencyContext;
     private readonly HttpLatencyMediator _mediator;
+    private readonly CheckpointToken _enricherInvoked;
 
-    public HttpClientLatencyLogEnricher(HttpClientLatencyContext latencyContext, ILatencyContextTokenIssuer tokenIssuer,
+    public HttpClientLatencyLogEnricher(
+        HttpClientLatencyContext latencyContext,
+        ILatencyContextTokenIssuer tokenIssuer,
         HttpLatencyMediator mediator)
     {
         _latencyContext = latencyContext;
         _mediator = mediator;
+        _enricherInvoked = tokenIssuer.GetCheckpointToken(HttpCheckpoints.EnricherInvoked);
     }
 
-    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage request, HttpResponseMessage? response, Exception? exception)
+    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage? request, HttpResponseMessage? response, Exception? exception)
     {
-        var lc = _latencyContext.Get();
-        if (lc == null)
-        {
-            return;
-        }
-
-        // Use the mediator to record metrics
-        _mediator.RecordRequest(lc, request);
-        _mediator.RecordException(lc, exception);
-
         if (response != null)
         {
+            var lc = _latencyContext.Get();
+            if (lc == null)
+            {
+                return;
+            }
+
+            lc.AddCheckpoint(_enricherInvoked);
+
+            // Record request and exception data
+            _mediator.RecordRequest(lc, request);
+            _mediator.RecordException(lc, exception);
+
             // Record response metrics
             _mediator.RecordResponse(lc, response);
 
             StringBuilder stringBuilder = _builderPool.Get();
 
+            // Add serverName to outgoing http logs
             AppendServerName(response.Headers, stringBuilder);
             _ = stringBuilder.Append(',');
 
