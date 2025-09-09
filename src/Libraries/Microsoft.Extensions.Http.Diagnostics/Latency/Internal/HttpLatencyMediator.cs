@@ -14,135 +14,27 @@ namespace Microsoft.Extensions.Http.Latency.Internal;
 /// </summary>
 internal class HttpLatencyMediator
 {
-    // Measure tokens
-    private readonly MeasureToken _requestContentLength;
-    private readonly MeasureToken _responseContentLength;
+#if !NETFRAMEWORK
+    private readonly MeasureToken _gcPauseTime;
+#endif
+    private readonly TagToken _httpVersionTag;
 
-    // Tag tokens
-    private readonly TagToken _httpMethod;
-    private readonly TagToken _httpStatusCode;
-    private readonly TagToken _requestHost;
-    private readonly TagToken _requestPath;
-    private readonly TagToken _responseContentType;
-    private readonly TagToken _hasException;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HttpLatencyMediator"/> class.
-    /// </summary>
-    /// <param name="tokenIssuer">Token issuer for getting latency tokens.</param>
     public HttpLatencyMediator(ILatencyContextTokenIssuer tokenIssuer)
     {
-        // Initialize measure tokens
-        _requestContentLength = tokenIssuer.GetMeasureToken("Http.Request.ContentLength");
-        _responseContentLength = tokenIssuer.GetMeasureToken("Http.Response.ContentLength");
-
-        // Initialize tag tokens
-        _httpMethod = tokenIssuer.GetTagToken("Http.Method");
-        _httpStatusCode = tokenIssuer.GetTagToken("Http.StatusCode");
-        _requestHost = tokenIssuer.GetTagToken("Http.Request.Host");
-        _requestPath = tokenIssuer.GetTagToken("Http.Request.Path");
-        _responseContentType = tokenIssuer.GetTagToken("Http.Response.ContentType");
-        _hasException = tokenIssuer.GetTagToken("Http.HasException");
+#if !NETFRAMEWORK
+        _gcPauseTime = tokenIssuer.GetMeasureToken(HttpMeasures.GCPauseTime);
+#endif
+        _httpVersionTag = tokenIssuer.GetTagToken(HttpTags.HttpVersion);
     }
 
-    /// <summary>
-    /// Records HTTP request information in the latency context.
-    /// </summary>
-    /// <param name="context">The latency context to update.</param>
-    /// <param name="request">The HTTP request message.</param>
-    public virtual void RecordRequest(ILatencyContext context, HttpRequestMessage? request)
+    public void RecordEnd(ILatencyContext latencyContext, HttpRequestMessage? request = null, HttpResponseMessage? response = null)
     {
-        if (context == null || request == null)
+#if NET
+        latencyContext.AddMeasure(_gcPauseTime, (long)GC.GetTotalPauseDuration().TotalMilliseconds);
+#endif
+        if (response != null)
         {
-            return;
-        }
-
-        // Collect request-related data
-        context.SetTag(_httpMethod, request.Method.Method);
-
-        if (request.RequestUri != null)
-        {
-            context.SetTag(_requestHost, request.RequestUri.Host);
-            context.SetTag(_requestPath, request.RequestUri.AbsolutePath);
-        }
-
-        // Collect request content length if available
-        if (request.Content?.Headers.ContentLength.HasValue == true)
-        {
-            context.RecordMeasure(_requestContentLength, request.Content.Headers.ContentLength.Value);
-        }
-    }
-
-    /// <summary>
-    /// Records HTTP response information in the latency context.
-    /// </summary>
-    /// <param name="context">The latency context to update.</param>
-    /// <param name="response">The HTTP response message.</param>
-    public virtual void RecordResponse(ILatencyContext context, HttpResponseMessage response)
-    {
-        if (context == null || response == null)
-        {
-            return;
-        }
-
-        // Add response-related data with culture-invariant string conversion
-#pragma warning disable LA0002
-        context.SetTag(_httpStatusCode, ((int)response.StatusCode).ToString(CultureInfo.InvariantCulture));
-#pragma warning restore LA0002
-
-        // Collect response content type if available
-        if (response.Content?.Headers.ContentType != null)
-        {
-            context.SetTag(_responseContentType, response.Content.Headers.ContentType.MediaType);
-        }
-
-        // Collect response content length if available
-        if (response.Content?.Headers.ContentLength.HasValue == true)
-        {
-            context.RecordMeasure(_responseContentLength, response.Content.Headers.ContentLength.Value);
-        }
-    }
-
-    /// <summary>
-    /// Records exception information in the latency context.
-    /// </summary>
-    /// <param name="context">The latency context to update.</param>
-    /// <param name="exception">The exception that occurred, if any.</param>
-    public virtual void RecordException(ILatencyContext context, Exception? exception)
-    {
-        if (context == null)
-        {
-            return;
-        }
-
-        context.SetTag(_hasException, exception != null ? "true" : "false");
-    }
-
-    /// <summary>
-    /// Appends checkpoint data to the provided string builder.
-    /// </summary>
-    /// <param name="context">The latency context containing checkpoint data.</param>
-    /// <param name="stringBuilder">The string builder to append data to.</param>
-    public virtual void AppendCheckpoints(ILatencyContext context, StringBuilder stringBuilder)
-    {
-        if (context == null || stringBuilder == null)
-        {
-            return;
-        }
-
-        var latencyData = context.LatencyData;
-        for (int i = 0; i < latencyData.Checkpoints.Length; i++)
-        {
-            _ = stringBuilder.Append(latencyData.Checkpoints[i].Name);
-            _ = stringBuilder.Append('/');
-        }
-
-        _ = stringBuilder.Append(',');
-        for (int i = 0; i < latencyData.Checkpoints.Length; i++)
-        {
-            var ms = ((double)latencyData.Checkpoints[i].Elapsed / latencyData.Checkpoints[i].Frequency) * 1000;
-            _ = stringBuilder.Append(ms.ToString(CultureInfo.InvariantCulture));
-            _ = stringBuilder.Append('/');
+            latencyContext.SetTag(_httpVersionTag, response.Version.ToString());
         }
     }
 }

@@ -3,7 +3,6 @@
 
 using System;
 using System.Net.Http;
-using System.Text;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -46,8 +45,6 @@ public class HttpClientLatencyLogEnricherTest
         context.Set(lc.Object);
 
         using HttpResponseMessage httpResponseMessage = new();
-        mockMediator.Setup(m => m.AppendCheckpoints(It.IsAny<ILatencyContext>(), It.IsAny<StringBuilder>()))
-            .Callback<ILatencyContext, StringBuilder>((_, sb) => sb.Append("a/b"));
 
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mockMediator.Object);
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
@@ -71,9 +68,7 @@ public class HttpClientLatencyLogEnricherTest
         using HttpResponseMessage httpResponseMessage = new();
         string serverName = "serverNameVal";
         httpResponseMessage.Headers.Add(TelemetryConstants.ServerApplicationNameHeader, serverName);
-        mockMediator.Setup(m => m.AppendCheckpoints(It.IsAny<ILatencyContext>(), It.IsAny<StringBuilder>()))
-            .Callback<ILatencyContext, StringBuilder>((_, sb) => sb.Append("a/b"));
-
+        
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mockMediator.Object);
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
 

@@ -23,16 +23,16 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
 {
     private static readonly ObjectPool<StringBuilder> _builderPool = PoolFactory.SharedStringBuilderPool;
     private readonly HttpClientLatencyContext _latencyContext;
-    private readonly HttpLatencyMediator _mediator;
+    private readonly HttpLatencyMediator _latencyTelemetryMediator;
     private readonly CheckpointToken _enricherInvoked;
 
     public HttpClientLatencyLogEnricher(
         HttpClientLatencyContext latencyContext,
         ILatencyContextTokenIssuer tokenIssuer,
-        HttpLatencyMediator mediator)
+        HttpLatencyMediator latencyTelemetryMediator)
     {
         _latencyContext = latencyContext;
-        _mediator = mediator;
+        _latencyTelemetryMediator = latencyTelemetryMediator;
         _enricherInvoked = tokenIssuer.GetCheckpointToken(HttpCheckpoints.EnricherInvoked);
     }
 
@@ -46,27 +46,44 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
                 return;
             }
 
+            // Add the checkpoint
             lc.AddCheckpoint(_enricherInvoked);
 
-            // Record request and exception data
-            _mediator.RecordRequest(lc, request);
-            _mediator.RecordException(lc, exception);
-
-            // Record response metrics
-            _mediator.RecordResponse(lc, response);
+            // Use the mediator to record all metrics
+            _latencyTelemetryMediator.RecordEnd(lc, request, response);
 
             StringBuilder stringBuilder = _builderPool.Get();
 
-            // Add serverName to outgoing http logs
-            AppendServerName(response.Headers, stringBuilder);
-            _ = stringBuilder.Append(',');
+            try
+            {
+                /* Add version, serverName, checkpoints, and measures to outgoing http logs.
+                 * Schemas: 1) ServerName,CheckpointName,CheckpointValue
+                 *          2) v1.0,ServerName,TagName,TagValue,CheckpointName,CheckpointValue,MetricName,MetricValue
+                 */
 
-            // Use mediator to append checkpoint data
-            _mediator.AppendCheckpoints(lc, stringBuilder);
+                // Add version
+                _ = stringBuilder.Append("v1.0");
+                _ = stringBuilder.Append(',');
 
-            collector.Add("LatencyInfo", stringBuilder.ToString());
+                // Add server name
+                AppendServerName(response.Headers, stringBuilder);
+                _ = stringBuilder.Append(',');
 
-            _builderPool.Return(stringBuilder);
+                // Add tags, checkpoints, and measures
+                AppendTags(lc, stringBuilder);
+                _ = stringBuilder.Append(',');
+
+                AppendCheckpoints(lc, stringBuilder);
+                _ = stringBuilder.Append(',');
+
+                AppendMeasures(lc, stringBuilder);
+
+                collector.Add("LatencyInfo", stringBuilder.ToString());
+            }
+            finally
+            {
+                _builderPool.Return(stringBuilder);
+            }
         }
     }
 
@@ -75,6 +92,69 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
         if (headers.TryGetValues(TelemetryConstants.ServerApplicationNameHeader, out var values))
         {
             _ = stringBuilder.Append(values.First());
+        }
+    }
+
+    private static void AppendCheckpoints(ILatencyContext latencyContext, StringBuilder stringBuilder)
+    {
+        const int MillisecondsPerSecond = 1000;
+
+        var latencyData = latencyContext.LatencyData;
+        var checkpointCount = latencyData.Checkpoints.Length;
+
+        for (int i = 0; i < checkpointCount; i++)
+        {
+            _ = stringBuilder.Append(latencyData.Checkpoints[i].Name);
+            _ = stringBuilder.Append('/');
+        }
+
+        _ = stringBuilder.Append(',');
+
+        for (int i = 0; i < checkpointCount; i++)
+        {
+            var cp = latencyData.Checkpoints[i];
+            _ = stringBuilder.Append((long)Math.Round(((double)cp.Elapsed / cp.Frequency) * MillisecondsPerSecond));
+            _ = stringBuilder.Append('/');
+        }
+    }
+
+    private static void AppendMeasures(ILatencyContext latencyContext, StringBuilder stringBuilder)
+    {
+        var latencyData = latencyContext.LatencyData;
+        var measureCount = latencyData.Measures.Length;
+
+        for (int i = 0; i < measureCount; i++)
+        {
+            _ = stringBuilder.Append(latencyData.Measures[i].Name);
+            _ = stringBuilder.Append('/');
+        }
+
+        _ = stringBuilder.Append(',');
+
+        for (int i = 0; i < measureCount; i++)
+        {
+            _ = stringBuilder.Append(latencyData.Measures[i].Value);
+            _ = stringBuilder.Append('/');
+        }
+    }
+
+    private static void AppendTags(ILatencyContext latencyContext, StringBuilder stringBuilder)
+    {
+        var latencyData = latencyContext.LatencyData;
+        var tagCount = latencyData.Tags.Length;
+
+        for (int i = 0; i < tagCount; i++)
+        {
+            _ = stringBuilder.Append(latencyData.Tags[i].Name);
+            _ = stringBuilder.Append('/');
+        }
+
+        _ = stringBuilder.Append(',');
+
+        for (int i = 0; i < tagCount; i++)
+        {
+            _ = stringBuilder.Append(latencyData.Tags[i].Value);
+            _ = stringBuilder.Append('/');
         }
     }
 }
