@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Http.Latency.Internal;
 /// <summary>
 /// Mediator for HTTP latency operations that coordinates recording HTTP metrics in a latency context.
 /// </summary>
-internal sealed class HttpLatencyMediator
+internal class HttpLatencyMediator
 {
     // Measure tokens
     private readonly MeasureToken _requestContentLength;
@@ -29,6 +29,10 @@ internal sealed class HttpLatencyMediator
     // Checkpoint tokens
     private readonly CheckpointToken _enricherInvoked;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpLatencyMediator"/> class.
+    /// </summary>
+    /// <param name="tokenIssuer">Token issuer for getting latency tokens.</param>
     public HttpLatencyMediator(ILatencyContextTokenIssuer tokenIssuer)
     {
         // Initialize checkpoint tokens
@@ -50,9 +54,11 @@ internal sealed class HttpLatencyMediator
     /// <summary>
     /// Records HTTP request information in the latency context.
     /// </summary>
-    public void RecordRequest(ILatencyContext context, HttpRequestMessage request)
+    /// <param name="context">The latency context to update.</param>
+    /// <param name="request">The HTTP request message.</param>
+    public virtual void RecordRequest(ILatencyContext context, HttpRequestMessage? request)
     {
-        if (context == null)
+        if (context == null || request == null)
         {
             return;
         }
@@ -79,24 +85,26 @@ internal sealed class HttpLatencyMediator
     /// <summary>
     /// Records HTTP response information in the latency context.
     /// </summary>
-    public void RecordResponse(ILatencyContext context, HttpResponseMessage response)
+    /// <param name="context">The latency context to update.</param>
+    /// <param name="response">The HTTP response message.</param>
+    public virtual void RecordResponse(ILatencyContext context, HttpResponseMessage response)
     {
         if (context == null || response == null)
         {
             return;
         }
 
-        // Add response-related data
+        // Add response-related data with culture-invariant string conversion
         context.SetTag(_httpStatusCode, ((int)response.StatusCode).ToString(CultureInfo.InvariantCulture));
 
         // Collect response content type if available
-        if (response.Content.Headers.ContentType != null)
+        if (response.Content?.Headers.ContentType != null)
         {
-            context.SetTag(_responseContentType, response.Content.Headers.ContentType.MediaType!);
+            context.SetTag(_responseContentType, response.Content.Headers.ContentType.MediaType);
         }
 
         // Collect response content length if available
-        if (response.Content.Headers.ContentLength.HasValue)
+        if (response.Content?.Headers.ContentLength.HasValue == true)
         {
             context.RecordMeasure(_responseContentLength, response.Content.Headers.ContentLength.Value);
         }
@@ -105,7 +113,9 @@ internal sealed class HttpLatencyMediator
     /// <summary>
     /// Records exception information in the latency context.
     /// </summary>
-    public void RecordException(ILatencyContext context, Exception? exception)
+    /// <param name="context">The latency context to update.</param>
+    /// <param name="exception">The exception that occurred, if any.</param>
+    public virtual void RecordException(ILatencyContext context, Exception? exception)
     {
         if (context == null)
         {
@@ -118,7 +128,9 @@ internal sealed class HttpLatencyMediator
     /// <summary>
     /// Appends checkpoint data to the provided string builder.
     /// </summary>
-    public void AppendCheckpoints(ILatencyContext context, StringBuilder stringBuilder)
+    /// <param name="context">The latency context containing checkpoint data.</param>
+    /// <param name="stringBuilder">The string builder to append data to.</param>
+    public virtual void AppendCheckpoints(ILatencyContext context, StringBuilder stringBuilder)
     {
         if (context == null || stringBuilder == null)
         {
@@ -133,10 +145,10 @@ internal sealed class HttpLatencyMediator
         }
 
         _ = stringBuilder.Append(',');
-        foreach (var checkpoint in latencyData.Checkpoints)
+        for (int i = 0; i < latencyData.Checkpoints.Length; i++)
         {
-            var ms = (double)checkpoint.Elapsed / checkpoint.Frequency * 1000;
-            _ = stringBuilder.Append(ms);
+            var ms = (double)latencyData.Checkpoints[i].Elapsed / latencyData.Checkpoints[i].Frequency * 1000;
+            _ = stringBuilder.Append(ms.ToString(CultureInfo.InvariantCulture));
             _ = stringBuilder.Append('/');
         }
     }

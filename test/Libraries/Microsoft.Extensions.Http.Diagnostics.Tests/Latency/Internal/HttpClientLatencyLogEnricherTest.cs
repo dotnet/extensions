@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using System.Text;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -18,6 +19,7 @@ public class HttpClientLatencyLogEnricherTest
     public void HttpClientLatencyLogEnricher_NoOp_OnRequest()
     {
         var lcti = HttpMockProvider.GetTokenIssuer();
+        var mockMediator = new Mock<HttpLatencyMediator>(lcti.Object);
         var checkpoints = new ArraySegment<Checkpoint>(new[] { new Checkpoint("a", default, default), new Checkpoint("b", default, default) });
         var ld = new LatencyData(default, checkpoints, default, default, default);
         var lc = HttpMockProvider.GetLatencyContext();
@@ -25,7 +27,7 @@ public class HttpClientLatencyLogEnricherTest
         var context = new HttpClientLatencyContext();
         context.Set(lc.Object);
 
-        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
+        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mockMediator.Object);
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
         enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, null, null);
         mockEnrichmentPropertyBag.Verify(m => m.Add(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
@@ -35,6 +37,7 @@ public class HttpClientLatencyLogEnricherTest
     public void HttpClientLatencyLogEnricher_Enriches_OnResponseWithoutHeader()
     {
         var lcti = HttpMockProvider.GetTokenIssuer();
+        var mockMediator = new Mock<HttpLatencyMediator>(lcti.Object);
         var checkpoints = new ArraySegment<Checkpoint>(new[] { new Checkpoint("a", default, default), new Checkpoint("b", default, default) });
         var ld = new LatencyData(default, checkpoints, default, default, default);
         var lc = HttpMockProvider.GetLatencyContext();
@@ -43,8 +46,10 @@ public class HttpClientLatencyLogEnricherTest
         context.Set(lc.Object);
 
         using HttpResponseMessage httpResponseMessage = new();
+        mockMediator.Setup(m => m.AppendCheckpoints(It.IsAny<ILatencyContext>(), It.IsAny<StringBuilder>()))
+            .Callback<ILatencyContext, StringBuilder>((_, sb) => sb.Append("a/b"));
 
-        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
+        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mockMediator.Object);
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
 
         enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, httpResponseMessage, null);
@@ -55,6 +60,7 @@ public class HttpClientLatencyLogEnricherTest
     public void HttpClientLatencyLogEnricher_Enriches_OnResponseWithHeader()
     {
         var lcti = HttpMockProvider.GetTokenIssuer();
+        var mockMediator = new Mock<HttpLatencyMediator>(lcti.Object);
         var checkpoints = new ArraySegment<Checkpoint>(new[] { new Checkpoint("a", default, default), new Checkpoint("b", default, default) });
         var ld = new LatencyData(default, checkpoints, default, default, default);
         var lc = HttpMockProvider.GetLatencyContext();
@@ -65,8 +71,10 @@ public class HttpClientLatencyLogEnricherTest
         using HttpResponseMessage httpResponseMessage = new();
         string serverName = "serverNameVal";
         httpResponseMessage.Headers.Add(TelemetryConstants.ServerApplicationNameHeader, serverName);
+        mockMediator.Setup(m => m.AppendCheckpoints(It.IsAny<ILatencyContext>(), It.IsAny<StringBuilder>()))
+            .Callback<ILatencyContext, StringBuilder>((_, sb) => sb.Append("a/b"));
 
-        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
+        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mockMediator.Object);
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
 
         enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, httpResponseMessage, null);

@@ -39,7 +39,7 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
         {
             return;
         }
-        
+
         // Use the mediator to record metrics
         _mediator.RecordRequest(lc, request);
         _mediator.RecordException(lc, exception);
@@ -48,13 +48,12 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
         {
             // Record response metrics
             _mediator.RecordResponse(lc, response);
-            
+
             StringBuilder stringBuilder = _builderPool.Get();
 
-            // Add serverName to outgoing http logs
             AppendServerName(response.Headers, stringBuilder);
-            stringBuilder.Append(',');
-            
+            _ = stringBuilder.Append(',');
+
             // Use mediator to append checkpoint data
             _mediator.AppendCheckpoints(lc, stringBuilder);
 
@@ -68,7 +67,7 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
     {
         if (headers.TryGetValues(TelemetryConstants.ServerApplicationNameHeader, out var values))
         {
-            stringBuilder.Append(values!.First());
+            _ = stringBuilder.Append(values.First());
         }
     }
 }
