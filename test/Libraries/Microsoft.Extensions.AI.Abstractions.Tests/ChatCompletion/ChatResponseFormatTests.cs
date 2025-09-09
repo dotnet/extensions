@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ComponentModel;
 using System.Text.Json;
 using Xunit;
 
@@ -80,5 +81,77 @@ public class ChatResponseFormatTests
         Assert.Equal("[1,2,3]", JsonSerializer.Serialize(actual.Schema, TestJsonSerializerContext.Default.JsonElement));
         Assert.Equal("name", actual.SchemaName);
         Assert.Equal("description", actual.SchemaDescription);
+    }
+
+    [Fact]
+    public void ForJsonSchema_PrimitiveType_Succeeds()
+    {
+        ChatResponseFormatJson format = ChatResponseFormat.ForJsonSchema<int>();
+        Assert.NotNull(format);
+        Assert.NotNull(format.Schema);
+        Assert.Equal("""{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"integer"}""", format.Schema.ToString());
+        Assert.Equal("Int32", format.SchemaName);
+        Assert.Null(format.SchemaDescription);
+    }
+
+    [Fact]
+    public void ForJsonSchema_IncludedType_Succeeds()
+    {
+        ChatResponseFormatJson format = ChatResponseFormat.ForJsonSchema<DataContent>();
+        Assert.NotNull(format);
+        Assert.NotNull(format.Schema);
+        Assert.Contains("\"uri\"", format.Schema.ToString());
+        Assert.Equal("DataContent", format.SchemaName);
+        Assert.Null(format.SchemaDescription);
+    }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("AnotherName", null)]
+    [InlineData(null, "another description")]
+    [InlineData("AnotherName", "another description")]
+    public void ForJsonSchema_ComplexType_Succeeds(string? name, string? description)
+    {
+        ChatResponseFormatJson format = ChatResponseFormat.ForJsonSchema<SomeType>(TestJsonSerializerContext.Default.Options, name, description);
+        Assert.NotNull(format);
+        Assert.Equal(
+            """
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "description": "abcd",
+              "type": "object",
+              "properties": {
+                "someInteger": {
+                  "description": "efg",
+                  "type": "integer"
+                },
+                "someString": {
+                  "description": "hijk",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "someInteger",
+                "someString"
+              ]
+            }
+            """,
+            JsonSerializer.Serialize(format.Schema, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement))));
+        Assert.Equal(name ?? "SomeType", format.SchemaName);
+        Assert.Equal(description ?? "abcd", format.SchemaDescription);
+    }
+
+    [Description("abcd")]
+    public class SomeType
+    {
+        [Description("efg")]
+        public int SomeInteger { get; set; }
+
+        [Description("hijk")]
+        public string? SomeString { get; set; }
     }
 }
