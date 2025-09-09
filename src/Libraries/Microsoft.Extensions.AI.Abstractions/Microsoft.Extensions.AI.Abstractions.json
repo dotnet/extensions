@@ -2422,6 +2422,10 @@
         {
           "Member": "string Microsoft.Extensions.AI.TextReasoningContent.Text { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextReasoningContent.ProtectedData { get; set; }",
+          "Stage": "Stable"
         }
       ]
     },
