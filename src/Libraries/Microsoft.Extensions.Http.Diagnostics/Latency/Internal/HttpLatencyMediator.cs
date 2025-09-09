@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Globalization;
 using System.Net.Http;
-using System.Text;
 using Microsoft.Extensions.Diagnostics.Latency;
 
 namespace Microsoft.Extensions.Http.Latency.Internal;
@@ -25,6 +23,15 @@ internal class HttpLatencyMediator
         _gcPauseTime = tokenIssuer.GetMeasureToken(HttpMeasures.GCPauseTime);
 #endif
         _httpVersionTag = tokenIssuer.GetTagToken(HttpTags.HttpVersion);
+    }
+
+#pragma warning disable CA1822
+    public void RecordStart(ILatencyContext latencyContext, HttpRequestMessage? request = null, HttpResponseMessage? response = null)
+    {
+#pragma warning restore CA1822
+#if NET
+        latencyContext.RecordMeasure(_gcPauseTime, (long)GC.GetTotalPauseDuration().TotalMilliseconds * -1L);
+#endif
     }
 
     public void RecordEnd(ILatencyContext latencyContext, HttpRequestMessage? request = null, HttpResponseMessage? response = null)
