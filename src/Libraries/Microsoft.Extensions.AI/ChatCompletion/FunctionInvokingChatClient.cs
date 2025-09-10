@@ -208,7 +208,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// When function invocations fail with an exception, the <see cref="FunctionInvokingChatClient"/>
     /// continues to make requests to the inner client, optionally supplying exception information (as
     /// controlled by <see cref="IncludeDetailedErrors"/>). This allows the <see cref="IChatClient"/> to
-    /// recover from errors by trying other function parameters that may succeed.
+    /// recover from errors by trying other function parameters that might succeed.
     /// </para>
     /// <para>
     /// However, in case function invocations continue to produce exceptions, this property can be used to
@@ -235,31 +235,33 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// These will not impact the requests sent by the <see cref="FunctionInvokingChatClient"/>, which will pass through the
     /// <see cref="ChatOptions.Tools" /> unmodified. However, if the inner client requests the invocation of a tool
     /// that was not in <see cref="ChatOptions.Tools" />, this <see cref="AdditionalTools"/> collection will also be consulted
-    /// to look for a corresponding tool to invoke. This is useful when the service may have been pre-configured to be aware
+    /// to look for a corresponding tool to invoke. This is useful when the service might have been preconfigured to be aware
     /// of certain tools that aren't also sent on each individual request.
     /// </remarks>
     public IList<AITool>? AdditionalTools { get; set; }
 
     /// <summary>Gets or sets a value indicating whether a request to call an unknown function should terminate the function calling loop.</summary>
+    /// <value>
+    /// <see langword="true"/> to terminate the function calling loop and return the response if a request to call a tool
+    /// that isn't available to the <see cref="FunctionInvokingChatClient"/> is received; <see langword="false"/> to return a
+    /// response message stating that the tool couldn't be found. The default is <see langword="false"/>.
+    /// </value>
     /// <remarks>
     /// <para>
     /// When <see langword="false"/>, call requests to any tools that aren't available to the <see cref="FunctionInvokingChatClient"/>
     /// will result in a response message automatically being created and returned to the inner client stating that the tool couldn't be
-    /// found; this can help in cases where a model hallucinates a function, but it's problematic if the model has been made aware
+    /// found. This behavior can help in cases where a model hallucinates a function, but it's problematic if the model has been made aware
     /// of the existence of tools outside of the normal mechanisms, and requests one of those. <see cref="AdditionalTools"/> can be used
-    /// to help with that, but if instead the consumer wants to know about all function call requests that the client can't handle,
-    /// <see cref="TerminateOnUnknownCalls"/> can be set to <see langword="true"/>, and upon receiving a request to call a function
+    /// to help with that. But if instead the consumer wants to know about all function call requests that the client can't handle,
+    /// <see cref="TerminateOnUnknownCalls"/> can be set to <see langword="true"/>. Upon receiving a request to call a function
     /// that the <see cref="FunctionInvokingChatClient"/> doesn't know about, it will terminate the function calling loop and return
     /// the response, leaving the handling of the function call requests to the consumer of the client.
     /// </para>
     /// <para>
-    /// Note that <see cref="AITool"/>s that the <see cref="FunctionInvokingChatClient"/> is aware of (e.g. because they're in
-    /// <see cref="ChatOptions.Tools"/> or <see cref="AdditionalTools"/>) but that aren't <see cref="AIFunction"/> are not considered
+    /// <see cref="AITool"/>s that the <see cref="FunctionInvokingChatClient"/> is aware of (for example, because they're in
+    /// <see cref="ChatOptions.Tools"/> or <see cref="AdditionalTools"/>) but that aren't <see cref="AIFunction"/>s aren't considered
     /// unknown, just not invocable. Any requests to a non-invocable tool will also result in the function calling loop terminating,
     /// regardless of <see cref="TerminateOnUnknownCalls"/>.
-    /// </para>
-    /// <para>
-    /// This defaults to <see langword="false"/>.
     /// </para>
     /// </remarks>
     public bool TerminateOnUnknownCalls { get; set; }

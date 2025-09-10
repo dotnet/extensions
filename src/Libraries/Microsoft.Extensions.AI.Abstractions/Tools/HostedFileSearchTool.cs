@@ -19,9 +19,9 @@ public class HostedFileSearchTool : AITool
 
     /// <summary>Gets or sets a collection of <see cref="AIContent"/> to be used as input to the file search tool.</summary>
     /// <remarks>
-    /// If no explicit inputs are provided, the service will determine what inputs should be searched. Different services
-    /// support different kinds of inputs, e.g. some may respect <see cref="HostedFileContent"/> using provider-specific file IDs,
-    /// others may support binary data uploaded as part of the request in <see cref="DataContent"/>, while others may support
+    /// If no explicit inputs are provided, the service determines what inputs should be searched. Different services
+    /// support different kinds of inputs, for example, some might respect <see cref="HostedFileContent"/> using provider-specific file IDs,
+    /// others might support binary data uploaded as part of the request in <see cref="DataContent"/>, and others might support
     /// content in a hosted vector store and represented by a <see cref="HostedVectorStoreContent"/>.
     /// </remarks>
     public IList<AIContent>? Inputs { get; set; }
