@@ -243,8 +243,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>Gets or sets a value indicating whether a request to call an unknown function should terminate the function calling loop.</summary>
     /// <value>
     /// <see langword="true"/> to terminate the function calling loop and return the response if a request to call a tool
-    /// that isn't available to the <see cref="FunctionInvokingChatClient"/> is received; <see langword="false"/> to return a
-    /// response message stating that the tool couldn't be found. The default is <see langword="false"/>.
+    /// that isn't available to the <see cref="FunctionInvokingChatClient"/> is received; <see langword="false"/> to create and send a
+    /// function result message to the inner client stating that the tool couldn't be found. The default is <see langword="false"/>.
     /// </value>
     /// <remarks>
     /// <para>

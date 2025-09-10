@@ -42,7 +42,7 @@ public class ImageGenerationResponse
     /// Gets or sets the generated content items.
     /// </summary>
     /// <remarks>
-    /// Content is typically DataContent for images streamed from the generator, or UriContent for remotely hosted images, but
+    /// Content is typically <see cref="DataContent"/> for images streamed from the generator, or <see cref="UriContent"/> for remotely hosted images, but
     /// can also be provider-specific content types that represent the generated images.
     /// </remarks>
     [AllowNull]
