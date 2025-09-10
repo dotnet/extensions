@@ -95,4 +95,76 @@ public class OpenTelemetryEmbeddingGeneratorTests
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
     }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    [InlineData("false", false)]
+    [InlineData("FALSE", false)]
+    [InlineData("True", true)]
+    [InlineData("true", true)]
+    [InlineData("TRUE", true)]
+    [InlineData("yes", false)] // Should only respond to "true"
+    [InlineData("1", false)] // Should only respond to "true"
+    public void EnableSensitiveData_DefaultsBasedOnEnvironmentVariable(string? envVarValue, bool expectedDefault)
+    {
+        // Arrange: Set up environment variable
+        string originalValue = Environment.GetEnvironmentVariable("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT") ?? "";
+        
+        try
+        {
+            if (envVarValue is null)
+            {
+                Environment.SetEnvironmentVariable("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", null);
+            }
+            else
+            {
+                Environment.SetEnvironmentVariable("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", envVarValue);
+            }
+
+            // Act: Create a new instance
+            using var innerGenerator = new TestEmbeddingGenerator<string, Embedding<float>>();
+            using var generator = new OpenTelemetryEmbeddingGenerator<string, Embedding<float>>(innerGenerator);
+
+            // Assert: Check the default value
+            Assert.Equal(expectedDefault, generator.EnableSensitiveData);
+        }
+        finally
+        {
+            // Cleanup: Restore original environment variable
+            Environment.SetEnvironmentVariable("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", 
+                string.IsNullOrEmpty(originalValue) ? null : originalValue);
+        }
+    }
+
+    [Fact]
+    public void EnableSensitiveData_ExplicitSettingOverridesEnvironmentVariable()
+    {
+        // Arrange: Set environment variable to true
+        string originalValue = Environment.GetEnvironmentVariable("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT") ?? "";
+        
+        try
+        {
+            Environment.SetEnvironmentVariable("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", "true");
+
+            // Act: Create instance and explicitly set to false
+            using var innerGenerator = new TestEmbeddingGenerator<string, Embedding<float>>();
+            using var generator = new OpenTelemetryEmbeddingGenerator<string, Embedding<float>>(innerGenerator);
+            
+            // Verify it defaults to true from environment variable
+            Assert.True(generator.EnableSensitiveData);
+            
+            // Explicitly set to false
+            generator.EnableSensitiveData = false;
+
+            // Assert: Explicit setting should override environment variable
+            Assert.False(generator.EnableSensitiveData);
+        }
+        finally
+        {
+            // Cleanup: Restore original environment variable
+            Environment.SetEnvironmentVariable("OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT", 
+                string.IsNullOrEmpty(originalValue) ? null : originalValue);
+        }
+    }
 }

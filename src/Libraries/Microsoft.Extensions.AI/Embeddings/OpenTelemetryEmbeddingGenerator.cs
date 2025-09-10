@@ -81,6 +81,20 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             , advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
 #endif
             );
+
+        // Set the default value of EnableSensitiveData based on the environment variable
+        EnableSensitiveData = ShouldEnableSensitiveDataByDefault();
+    }
+
+    /// <summary>
+    /// Checks the OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT environment variable 
+    /// to determine if sensitive data should be enabled by default.
+    /// </summary>
+    /// <returns>True if the environment variable is set to "true" (case-insensitive), otherwise false.</returns>
+    private static bool ShouldEnableSensitiveDataByDefault()
+    {
+        string? envVar = Environment.GetEnvironmentVariable(OpenTelemetryConsts.GenAICaptureMessageContentEnvVar);
+        return string.Equals(envVar, "true", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -89,11 +103,14 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     /// <value>
     /// <see langword="true"/> if potentially sensitive information should be included in telemetry;
     /// <see langword="false"/> if telemetry shouldn't include raw inputs and outputs.
-    /// The default value is <see langword="false"/>.
+    /// The default value is <see langword="false"/>, unless the <c>OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT</c>
+    /// environment variable is set to "true" (case-insensitive).
     /// </value>
     /// <remarks>
     /// By default, telemetry includes metadata, such as token counts, but not raw inputs
     /// and outputs or additional options data.
+    /// The default value can be overridden by setting the <c>OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT</c>
+    /// environment variable to "true". Explicitly setting this property will override the environment variable.
     /// </remarks>
     public bool EnableSensitiveData { get; set; }
 
