@@ -1128,7 +1128,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             startingTimestamp = Stopwatch.GetTimestamp();
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokingSensitive(context.Function.Name, LoggingHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions));
+                LogInvokingSensitive(context.Function.Name, TelemetryHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions));
             }
             else
             {
@@ -1169,7 +1169,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 if (result is not null && _logger.IsEnabled(LogLevel.Trace))
                 {
-                    LogInvocationCompletedSensitive(context.Function.Name, elapsed, LoggingHelpers.AsJson(result, context.Function.JsonSerializerOptions));
+                    LogInvocationCompletedSensitive(context.Function.Name, elapsed, TelemetryHelpers.AsJson(result, context.Function.JsonSerializerOptions));
                 }
                 else
                 {
