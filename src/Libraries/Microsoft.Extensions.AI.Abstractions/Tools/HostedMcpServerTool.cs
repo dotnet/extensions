@@ -67,11 +67,11 @@ public class HostedMcpServerTool : AITool
     /// </summary>
     /// <remarks>
     /// <para>
-    /// You can set this property to <see cref="HostedMcpServerToolApprovalMode.AlwaysRequire"/> to require approval for all tool calls, 
+    /// You can set this property to <see cref="HostedMcpServerToolApprovalMode.AlwaysRequire"/> to require approval for all tool calls,
     /// or to <see cref="HostedMcpServerToolApprovalMode.NeverRequire"/> to never require approval.
     /// </para>
     /// <para>
-    /// The default value is <see langword="null"/>, which some providers may treat the same as <see cref="HostedMcpServerToolApprovalMode.AlwaysRequire"/>.
+    /// The default value is <see langword="null"/>, which some providers might treat the same as <see cref="HostedMcpServerToolApprovalMode.AlwaysRequire"/>.
     /// </para>
     /// <para>
     /// The underlying provider is not guaranteed to support or honor the approval mode.

@@ -39,10 +39,12 @@ public class ImageGenerationResponse
     public object? RawRepresentation { get; set; }
 
     /// <summary>
-    /// Gets or sets the generated content items.  Content will typically be DataContent for
-    /// images streamed from the generator or UriContent for remotely hosted images, but may also
-    /// be provider specific content types that represent the generated images.
+    /// Gets or sets the generated content items.
     /// </summary>
+    /// <remarks>
+    /// Content is typically <see cref="DataContent"/> for images streamed from the generator, or <see cref="UriContent"/> for remotely hosted images, but
+    /// can also be provider-specific content types that represent the generated images.
+    /// </remarks>
     [AllowNull]
     public IList<AIContent> Contents
     {

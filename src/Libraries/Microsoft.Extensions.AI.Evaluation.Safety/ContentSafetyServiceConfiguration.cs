@@ -15,18 +15,18 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
-/// Specifies configuration parameters such as the Azure AI Foundry project that should be used, and the credentials
+/// Specifies configuration parameters, such as the Azure AI Foundry project and the credentials
 /// that should be used, when a <see cref="ContentSafetyEvaluator"/> communicates with the Azure AI Foundry Evaluation
 /// service to perform evaluations.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Note that Azure AI Foundry supports two kinds of projects - Hub-based projects and non-Hub-based projects (also
-/// known simply as Foundry projects). See https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/create-projects.
+/// Azure AI Foundry supports two kinds of projects - Hub-based projects and non-Hub-based projects (also
+/// known simply as Foundry projects). See <see href="https://learn.microsoft.com/azure/ai-foundry/how-to/create-projects">Create a project for Azure AI Foundry</see>.
 /// </para>
 /// <para>
-/// Hub-based projects are configured by specifying the <see cref="SubscriptionId"/>, the
-/// <see cref="ResourceGroupName"/>, and the <see cref="ProjectName"/> for the project. Non-Hub-based projects, on the
+/// Hub-based projects are configured by specifying the <see cref="SubscriptionId"/>,
+/// <see cref="ResourceGroupName"/>, and <see cref="ProjectName"/> for the project. Non-Hub-based projects, on the
 /// other hand, are configured by specifying only the <see cref="Endpoint"/> for the project. Use the appropriate
 /// constructor overload to initialize <see cref="ContentSafetyServiceConfiguration"/> based on the kind of project you
 /// are working with.
@@ -116,9 +116,8 @@ public sealed class ContentSafetyServiceConfiguration
     /// </param>
     /// <remarks>
     /// <para>
-    /// Note that Azure AI Foundry supports two kinds of projects - Hub-based projects and non-Hub-based projects (also
-    /// known simply as Foundry projects). See
-    /// https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/create-projects.
+    /// Azure AI Foundry supports two kinds of projects - Hub-based projects and non-Hub-based projects (also
+    /// known simply as Foundry projects). See <see href="https://learn.microsoft.com/azure/ai-foundry/how-to/create-projects">Create a project for Azure AI Foundry</see>.
     /// </para>
     /// <para>
     /// Use this constructor overload if you are working with a Hub-based project.
@@ -161,9 +160,8 @@ public sealed class ContentSafetyServiceConfiguration
     /// </param>
     /// <remarks>
     /// <para>
-    /// Note that Azure AI Foundry supports two kinds of projects - Hub-based projects and non-Hub-based projects (also
-    /// known simply as Foundry projects). See
-    /// https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/create-projects.
+    /// Azure AI Foundry supports two kinds of projects - Hub-based projects and non-Hub-based projects (also
+    /// known simply as Foundry projects). See <see href="https://learn.microsoft.com/azure/ai-foundry/how-to/create-projects">Create a project for Azure AI Foundry</see>.
     /// </para>
     /// <para>
     /// Use this constructor overload if you are working with a non-Hub-based project.
@@ -202,9 +200,8 @@ public sealed class ContentSafetyServiceConfiguration
     /// </param>
     /// <remarks>
     /// <para>
-    /// Note that Azure AI Foundry supports two kinds of projects - Hub-based projects and non-Hub-based projects (also
-    /// known simply as Foundry projects). See
-    /// https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/create-projects.
+    /// Azure AI Foundry supports two kinds of projects - Hub-based projects and non-Hub-based projects (also
+    /// known simply as Foundry projects). See <see href="https://learn.microsoft.com/azure/ai-foundry/how-to/create-projects">Create a project for Azure AI Foundry</see>.
     /// </para>
     /// <para>
     /// Use this constructor overload if you are working with a non-Hub-based project.
