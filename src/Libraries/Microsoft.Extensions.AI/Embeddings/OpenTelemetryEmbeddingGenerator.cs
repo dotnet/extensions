@@ -81,9 +81,6 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             , advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
 #endif
             );
-
-        // Set the default value of EnableSensitiveData based on the environment variable
-        EnableSensitiveData = TelemetryHelpers.ShouldEnableSensitiveDataByDefault();
     }
 
     /// <summary>
@@ -101,7 +98,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     /// The default value can be overridden by setting the <c>OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT</c>
     /// environment variable to "true". Explicitly setting this property will override the environment variable.
     /// </remarks>
-    public bool EnableSensitiveData { get; set; }
+    public bool EnableSensitiveData { get; set; } = TelemetryHelpers.EnableSensitiveDataDefault;
 
     /// <inheritdoc/>
     public override object? GetService(Type serviceType, object? serviceKey = null) =>

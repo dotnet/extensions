@@ -4,6 +4,7 @@
 #pragma warning disable CA1031 // Do not catch general exception types
 #pragma warning disable S108 // Nested blocks of code should not be left empty
 #pragma warning disable S2486 // Generic exceptions should not be ignored
+#pragma warning disable SA1623 // Property summary documentation should match accessors
 
 using System;
 using System.Text.Json;
@@ -13,16 +14,11 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Provides internal helpers for implementing telemetry.</summary>
 internal static class TelemetryHelpers
 {
-    /// <summary>
-    /// Checks the OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT environment variable 
-    /// to determine if sensitive data should be enabled by default.
-    /// </summary>
-    /// <returns>True if the environment variable is set to "true" (case-insensitive), otherwise false.</returns>
-    public static bool ShouldEnableSensitiveDataByDefault()
-    {
-        string? envVar = Environment.GetEnvironmentVariable(OpenTelemetryConsts.GenAICaptureMessageContentEnvVar);
-        return string.Equals(envVar, "true", StringComparison.OrdinalIgnoreCase);
-    }
+    /// <summary>Gets a value the OpenTelemetry clients should use for their EnableSensitiveData property's default value.</summary>
+    /// <remarks>Defaults to false. May be overridden by setting the OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT environment variable to "true".</remarks>
+    public static bool EnableSensitiveDataDefault { get; } =
+        Environment.GetEnvironmentVariable(OpenTelemetryConsts.GenAICaptureMessageContentEnvVar) is string envVar &&
+        string.Equals(envVar, "true", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Serializes <paramref name="value"/> as JSON for logging purposes.</summary>
     public static string AsJson<T>(T value, JsonSerializerOptions? options)
