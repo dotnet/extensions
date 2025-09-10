@@ -85,18 +85,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
 
         // Set the default value of EnableSensitiveData based on the environment variable
-        EnableSensitiveData = ShouldEnableSensitiveDataByDefault();
-    }
-
-    /// <summary>
-    /// Checks the OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT environment variable 
-    /// to determine if sensitive data should be enabled by default.
-    /// </summary>
-    /// <returns>True if the environment variable is set to "true" (case-insensitive), otherwise false.</returns>
-    private static bool ShouldEnableSensitiveDataByDefault()
-    {
-        string? envVar = Environment.GetEnvironmentVariable(OpenTelemetryConsts.GenAICaptureMessageContentEnvVar);
-        return string.Equals(envVar, "true", StringComparison.OrdinalIgnoreCase);
+        EnableSensitiveData = TelemetryHelpers.ShouldEnableSensitiveDataByDefault();
     }
 
     /// <summary>Gets or sets JSON serialization options to use when formatting chat data into telemetry strings.</summary>
