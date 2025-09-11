@@ -60,15 +60,8 @@
           "ChatWithCustomData-CSharp.AppHost/**",
           "ChatWithCustomData-CSharp.ServiceDefaults/**",
           "ChatWithCustomData-CSharp.Web/Program.Aspire.cs",
-          "ChatWithCustomData-CSharp.Web/AspireOpenAIClientBuilderResponsesChatClientExtensions.cs",
           "README.Aspire.md",
           "*.sln"
-        ]
-      },
-      {
-        "condition": "(IsAspire && !IsOpenAI && !IsAzureOpenAI)",
-        "exclude": [
-          "ChatWithCustomData-CSharp.Web/AspireOpenAIClientBuilderResponsesChatClientExtensions.cs"
         ]
       },
       {

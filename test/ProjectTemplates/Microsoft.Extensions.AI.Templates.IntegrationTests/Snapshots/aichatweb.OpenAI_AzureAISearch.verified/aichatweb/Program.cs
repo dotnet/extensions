@@ -16,7 +16,9 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 //   dotnet user-secrets set OpenAI:Key YOUR-API-KEY
 var openAIClient = new OpenAIClient(
     new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key. See the README for details.")));
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 var chatClient = openAIClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
+#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
 
 // You will need to set the endpoint and key to your own values
