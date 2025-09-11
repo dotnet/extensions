@@ -68,7 +68,7 @@ public class HttpClientLatencyLogEnricherTest
         using HttpResponseMessage httpResponseMessage = new();
         string serverName = "serverNameVal";
         httpResponseMessage.Headers.Add(TelemetryConstants.ServerApplicationNameHeader, serverName);
-        
+
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mockMediator.Object);
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
 

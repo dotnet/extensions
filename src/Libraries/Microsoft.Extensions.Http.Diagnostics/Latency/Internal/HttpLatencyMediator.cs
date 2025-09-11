@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Http.Latency.Internal;
 /// <summary>
 /// Mediator for HTTP latency operations that coordinates recording HTTP metrics in a latency context.
 /// </summary>
-internal class HttpLatencyMediator
+internal sealed class HttpLatencyMediator
 {
 #if !NETFRAMEWORK
     private readonly MeasureToken _gcPauseTime;

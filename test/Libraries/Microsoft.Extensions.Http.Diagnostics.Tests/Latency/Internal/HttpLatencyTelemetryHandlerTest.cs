@@ -32,8 +32,9 @@ public class HttpLatencyTelemetryHandlerTest
         var lcti = HttpMockProvider.GetTokenIssuer();
         var lcti2 = HttpMockProvider.GetTokenIssuer();
 
+        var mockMediator = new Mock<HttpLatencyMediator>(lcti2.Object);
         using var listener = HttpMockProvider.GetListener(context, lcti.Object);
-        using var handler = new HttpLatencyTelemetryHandler(listener, lcti2.Object, lcp.Object, hop.Object, sop.Object);
+        using var handler = new HttpLatencyTelemetryHandler(listener, lcti2.Object, lcp.Object, hop.Object, sop.Object, mockMediator.Object);
 
         lcti2.Verify(a => a.GetCheckpointToken(It.Is<string>(s => !HttpCheckpoints.Checkpoints.Contains(s))), Times.Never);
         lcti2.Verify(a => a.GetCheckpointToken(It.Is<string>(s => HttpCheckpoints.Checkpoints.Contains(s))));
@@ -53,6 +54,7 @@ public class HttpLatencyTelemetryHandlerTest
         var lcti = HttpMockProvider.GetTokenIssuer();
         var lcti2 = HttpMockProvider.GetTokenIssuer();
 
+        var mockMediator = new Mock<HttpLatencyMediator>(lcti2.Object);
         using var listener = HttpMockProvider.GetListener(context, lcti.Object);
         using var req = new HttpRequestMessage
         {
@@ -71,7 +73,7 @@ public class HttpLatencyTelemetryHandlerTest
                 Assert.True(req.Headers.Contains(TelemetryConstants.ClientApplicationNameHeader));
             }).Returns(Task.FromResult(resp.Object));
 
-        using var handler = new HttpLatencyTelemetryHandler(listener, lcti2.Object, lcp.Object, hop.Object, sop.Object)
+        using var handler = new HttpLatencyTelemetryHandler(listener, lcti2.Object, lcp.Object, hop.Object, sop.Object, mockMediator.Object)
         {
             InnerHandler = mockHandler.Object
         };
@@ -93,8 +95,9 @@ public class HttpLatencyTelemetryHandlerTest
         hop.Setup(a => a.Value).Returns(new HttpClientLatencyTelemetryOptions { EnableDetailedLatencyBreakdown = false });
         var lcti = HttpMockProvider.GetTokenIssuer();
 
+        var mockMediator = new Mock<HttpLatencyMediator>(lcti.Object);
         using var listener = HttpMockProvider.GetListener(context, lcti.Object);
-        using var handler = new HttpLatencyTelemetryHandler(listener, lcti.Object, lcp.Object, hop.Object, sop.Object);
+        using var handler = new HttpLatencyTelemetryHandler(listener, lcti.Object, lcp.Object, hop.Object, sop.Object, mockMediator.Object);
         Assert.False(listener.Enabled);
     }
 }
