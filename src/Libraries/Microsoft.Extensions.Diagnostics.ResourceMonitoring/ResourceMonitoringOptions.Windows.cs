@@ -33,12 +33,4 @@ public partial class ResourceMonitoringOptions
     /// </remarks>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
     public bool UseZeroToOneRangeForMetrics { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether CPU and Memory utilization metrics will be calculated from Kubernetes container's limits and requests.
-    /// </summary>
-    /// <value>
-    /// The default value is <see langword="false"/>.
-    /// </value>
-    public bool UseKubernetesLimitsAndRequests { get; set; }
 }

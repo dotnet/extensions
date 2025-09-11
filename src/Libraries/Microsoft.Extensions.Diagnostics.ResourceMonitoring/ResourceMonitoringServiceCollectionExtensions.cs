@@ -115,6 +115,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         if (JobObjectInfo.SafeJobHandle.IsProcessInJob())
         {
             builder.Services.TryAddSingleton<ISnapshotProvider, WindowsContainerSnapshotProvider>();
+            builder.Services.TryAddSingleton<IResourceQuotasProvider, WindowsContainerResourceQuotasProvider>();
         }
         else
         {

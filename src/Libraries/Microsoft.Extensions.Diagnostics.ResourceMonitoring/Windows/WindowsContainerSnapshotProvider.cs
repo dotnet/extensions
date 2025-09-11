@@ -6,12 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Threading;
-using Microsoft.Extensions.ClusterMetadata.Kubernetes;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Instruments;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
@@ -51,6 +49,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
     public SystemResources Resources { get; }
 
+    private IResourceQuotasProvider _resourceQuotasProvider;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="WindowsContainerSnapshotProvider"/> class.
     /// </summary>
@@ -78,7 +78,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         Func<IJobHandle> createJobHandleObject,
         TimeProvider timeProvider,
         ResourceMonitoringOptions options,
-        KubernetesClusterMetadata clusterMetadata)
+        IResourceQuotasProvider resourceQuotasProvider)
     {
         _logger = logger ?? NullLogger<WindowsContainerSnapshotProvider>.Instance;
         _logger.RunningInsideJobObject();
@@ -95,21 +95,12 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         using IJobHandle jobHandle = _createJobHandleObject();
 
-        if (options.UseKubernetesLimitsAndRequests)
-        {
-            ExtractResourceQuotas(clusterMetadata);
-        }
-        else
-        {
-            ulong memoryLimitLong = GetMemoryLimit(jobHandle);
-            _memoryLimit = memoryLimitLong;
-            _cpuLimit = GetCpuLimit(jobHandle, systemInfo);
-
-            // CPU request (aka guaranteed CPU units) is not supported on Windows in non K8s, so we set it to the same value as CPU limit (aka maximum CPU units).
-            // Memory request (aka guaranteed memory) is not supported on Windows in non K8s, so we set it to the same value as memory limit (aka maximum memory).
-            _cpuRequest = _cpuLimit;
-            _memoryRequest = memoryLimitLong;
-        }
+        _resourceQuotasProvider = resourceQuotasProvider;
+        var quotas = _resourceQuotasProvider.GetResourceQuotas();
+        _memoryLimit = quotas.LimitsMemory;
+        _cpuLimit = quotas.LimitsCpu;
+        _cpuRequest = quotas.RequestsCpu;
+        _memoryRequest = quotas.RequestsMemory;
 
         ulong memoryLimitRounded = (ulong)Math.Round(_memoryLimit);
         Resources = new SystemResources(_cpuRequest, _cpuLimit, _memoryRequest, memoryLimitRounded);
@@ -135,8 +126,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetMemoryUsage()));
 
-        // Kubernetes enables metrics:
-        if (options.UseKubernetesLimitsAndRequests)
+        // Requests enabled metrics
+        if (options.EmitRequestsMetrics)
         {
             _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuPercentageForRequests()); // todo implement
             _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryRequestUtilization, observeValue: () => MemoryPercentaForRequests()); // todo implement
@@ -285,42 +276,5 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
             return _cpuPercentage;
         }
-    }
-
-    private void ExtractResourceQuotas(KubernetesClusterMetadata clusterMetadata)
-    {
-        _cpuRequest = ConvertMillicoreToUnit(clusterMetadata.RequestsCpu);
-        _cpuLimit = ConvertMillicoreToUnit(clusterMetadata.LimitsCpu);
-        _memoryRequest = clusterMetadata.RequestsMemory;
-        _memoryLimit = clusterMetadata.LimitsMemory;
-
-        if (_cpuRequest <= 0)
-        {
-            Throw.InvalidOperationException($"REQUESTS_CPU detected value is {_cpuRequest}, " +
-                $"environment variables may be misconfigured");
-        }
-
-        if (_cpuLimit <= 0)
-        {
-            Throw.InvalidOperationException($"LIMITS_CPU detected value is {_cpuLimit}, " +
-                $"environment variables may be misconfigured");
-        }
-
-        if (_memoryRequest <= 0)
-        {
-            Throw.InvalidOperationException($"REQUESTS_MEMORY detected value is {_memoryRequest}, " +
-                $"environment variables may be misconfigured");
-        }
-
-        if (_memoryLimit <= 0)
-        {
-            Throw.InvalidOperationException($"LIMITS_MEMORY detected value is {_memoryLimit}, " +
-                $"environment variables may be misconfigured");
-        }
-    }
-
-    private static double ConvertMillicoreToUnit(ulong millicores)
-    {
-        return millicores / 1000.0;
     }
 }
