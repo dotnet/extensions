@@ -67,15 +67,7 @@ public sealed class ToolReducingChatClient : DelegatingChatClient
             return options;
         }
 
-        IEnumerable<AITool> reduced;
-        try
-        {
-            reduced = await _strategy.SelectToolsForRequestAsync(messages, options, cancellationToken).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            return options;
-        }
+        var reduced = await _strategy.SelectToolsForRequestAsync(messages, options, cancellationToken).ConfigureAwait(false);
 
         // If strategy returned the same list instance (or reference equality), assume no change.
         if (ReferenceEquals(reduced, options.Tools))
