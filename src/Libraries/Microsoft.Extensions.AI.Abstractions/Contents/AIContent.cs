@@ -18,6 +18,17 @@ namespace Microsoft.Extensions.AI;
 [JsonDerivedType(typeof(TextReasoningContent), typeDiscriminator: "reasoning")]
 [JsonDerivedType(typeof(UriContent), typeDiscriminator: "uri")]
 [JsonDerivedType(typeof(UsageContent), typeDiscriminator: "usage")]
+
+// These should be added in once they're no longer [Experimental]. If they're included while still
+// experimental, any JsonSerializerContext that includes AIContent will incur errors about using
+// experimental types in its source generated files.
+// [JsonDerivedType(typeof(FunctionApprovalRequestContent), typeDiscriminator: "functionApprovalRequest")]
+// [JsonDerivedType(typeof(FunctionApprovalResponseContent), typeDiscriminator: "functionApprovalResponse")]
+// [JsonDerivedType(typeof(McpServerToolCallContent), typeDiscriminator: "mcpServerToolCall")]
+// [JsonDerivedType(typeof(McpServerToolResultContent), typeDiscriminator: "mcpServerToolResult")]
+// [JsonDerivedType(typeof(McpServerToolApprovalRequestContent), typeDiscriminator: "mcpServerToolApprovalRequest")]
+// [JsonDerivedType(typeof(McpServerToolApprovalResponseContent), typeDiscriminator: "mcpServerToolApprovalResponse")]
+
 public class AIContent
 {
     /// <summary>
