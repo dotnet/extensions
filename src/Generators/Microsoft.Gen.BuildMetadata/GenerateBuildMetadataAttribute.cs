@@ -20,7 +20,7 @@ public sealed class GenerateBuildMetadataAttribute : Attribute
 {
 #pragma warning disable IDE0060 // Remove unused parameter
 #pragma warning disable CA1019 // Define accessors for attribute arguments
-    public GenerateBuildMetadataAttribute(string buildId, string buildNumber, string sourceBranchName, string sourceVersion, int buildDateTime)
+    public GenerateBuildMetadataAttribute(string buildId, string buildNumber, string sourceBranchName, string sourceVersion)
     {
     }
 #pragma warning restore CA1019 // Define accessors for attribute arguments

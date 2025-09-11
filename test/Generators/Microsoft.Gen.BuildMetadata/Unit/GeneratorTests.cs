@@ -26,8 +26,6 @@ public class GeneratorTests
 
         _verifySettings.UseDirectory("Verified");
 
-        Model.BuildDateTime = DateTimeOffset.UtcNow;
-
         Model.AzureBuildId = "AZURE_BUILDID";
         Model.AzureBuildNumber = "AZURE_BUILDNUMBER";
         Model.AzureSourceBranchName = "AZURE_SOURCEBRANCHNAME";
@@ -43,11 +41,6 @@ public class GeneratorTests
             if (value.Contains(GeneratorUtilities.GeneratedCodeAttribute))
             {
                 return value.Replace(GeneratorUtilities.CurrentVersion, "VERSION");
-            }
-
-            if (value.Contains($"{Model.BuildDateTime:s}"))
-            {
-                return value.Replace($"{Model.BuildDateTime:s}", "DATETIMEOFFSET");
             }
 
             return value;
@@ -73,8 +66,7 @@ public class GeneratorTests
                 ""TEST_BUILDID"",
                 ""TEST_BUILDNUMBER"",
                 ""TEST_SOURCEBRANCHNAME"",
-                ""TEST_SOURCEVERSION"",
-                123456)]";
+                ""TEST_SOURCEVERSION"")]";
         }
 
         var (d, sources) = await RunGenerator(source, additionalRef: additionalRef);

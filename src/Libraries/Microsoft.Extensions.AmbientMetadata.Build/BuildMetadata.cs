@@ -36,10 +36,4 @@ public class BuildMetadata
     /// Gets or sets the latest version control change that is included in this build, also known as the commit SHA.
     /// </summary>
     public string? SourceVersion { get; set; }
-
-    /// <summary>
-    /// Gets or sets the build time in sortable date/time pattern.
-    /// This is the time the BuildMetadataGenerator was run.
-    /// </summary>
-    public string? BuildDateTime { get; set; }
 }

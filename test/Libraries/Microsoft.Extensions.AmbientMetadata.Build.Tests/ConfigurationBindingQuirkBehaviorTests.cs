@@ -40,8 +40,7 @@ public class ConfigurationBindingQuirkBehaviorTests
             BuildId = string.Empty,
             BuildNumber = string.Empty,
             SourceBranchName = string.Empty,
-            SourceVersion = string.Empty,
-            BuildDateTime = string.Empty
+            SourceVersion = string.Empty
         };
 
         using var host = CreateUsingHostApplicationBuilder(sectionName);
@@ -57,8 +56,7 @@ public class ConfigurationBindingQuirkBehaviorTests
             { $"{sectionName}:BuildId", string.Empty },
             { $"{sectionName}:BuildNumber", string.Empty },
             { $"{sectionName}:SourceBranchName", string.Empty },
-            { $"{sectionName}:SourceVersion", string.Empty },
-            { $"{sectionName}:BuildDateTime", string.Empty }
+            { $"{sectionName}:SourceVersion", string.Empty }
         });
     }
 

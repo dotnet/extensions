@@ -50,7 +50,6 @@ namespace Microsoft.Extensions.AmbientMetadata
                     { $"{SectionName}:buildnumber", "TEST_BUILDNUMBER" },
                     { $"{SectionName}:sourcebranchname", "TEST_SOURCEBRANCHNAME" },
                     { $"{SectionName}:sourceversion", "TEST_SOURCEVERSION" },
-                    { $"{SectionName}:builddatetime", "DATETIMEOFFSET" },
                 };
             }
         }

@@ -47,7 +47,6 @@ internal sealed class Emitter : EmitterBase
                     OutLn($$"""{ $"{SectionName}:buildnumber", "{{Model.BuildNumber}}" },""");
                     OutLn($$"""{ $"{SectionName}:sourcebranchname", "{{Model.SourceBranchName}}" },""");
                     OutLn($$"""{ $"{SectionName}:sourceversion", "{{Model.SourceVersion}}" },""");
-                    OutLn($$"""{ $"{SectionName}:builddatetime", "{{Model.BuildDateTime:s}}" },""");
                 OutCloseBraceWithExtra(";");
             OutCloseBrace();
         OutCloseBrace();

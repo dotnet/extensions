@@ -12,8 +12,6 @@ namespace Microsoft.Gen.BuildMetadata;
 [Generator]
 public class BuildMetadataGenerator : IIncrementalGenerator
 {
-    private static DateTimeOffset _initializeDateTime = DateTimeOffset.UtcNow;
-
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -22,8 +20,6 @@ public class BuildMetadataGenerator : IIncrementalGenerator
 
     private static void Execute(Compilation compilation, SourceProductionContext context)
     {
-        Model.BuildDateTime = _initializeDateTime;
-
         OverwriteModelValuesForTesting(compilation.Assembly.GetAttributes());
 
         var e = new Emitter();
@@ -33,7 +29,7 @@ public class BuildMetadataGenerator : IIncrementalGenerator
 
     private static void OverwriteModelValuesForTesting(ImmutableArray<AttributeData> attributes)
     {
-        const int TestAttributeConstructorArgumentsLength = 5;
+        const int TestAttributeConstructorArgumentsLength = 4;
 
         if (attributes.IsDefaultOrEmpty || attributes[0].ConstructorArguments.Length != TestAttributeConstructorArgumentsLength)
         {
@@ -41,7 +37,7 @@ public class BuildMetadataGenerator : IIncrementalGenerator
         }
 
         // internal attribute has five constructor args:
-        // buildId, buildNumber, sourceBranchName, sourceVersion, buildDateTime
+        // buildId, buildNumber, sourceBranchName, sourceVersion
         var attribute = attributes[0];
 
 #pragma warning disable S109 // Magic numbers should not be used
@@ -50,15 +46,13 @@ public class BuildMetadataGenerator : IIncrementalGenerator
             attribute.ConstructorArguments[0].Value is string buildId &&
             attribute.ConstructorArguments[1].Value is string buildNumber &&
             attribute.ConstructorArguments[2].Value is string sourceBranchName &&
-            attribute.ConstructorArguments[3].Value is string sourceVersion &&
-            attribute.ConstructorArguments[4].Value is int buildDateTime)
+            attribute.ConstructorArguments[3].Value is string sourceVersion)
         {
             Model.IsAzureDevOps = true;
             Model.AzureBuildId = buildId;
             Model.AzureBuildNumber = buildNumber;
             Model.AzureSourceBranchName = sourceBranchName;
             Model.AzureSourceVersion = sourceVersion;
-            Model.BuildDateTime = DateTimeOffset.FromUnixTimeSeconds(buildDateTime);
         }
 #pragma warning restore S1067 // Expressions should not be too complex
 #pragma warning restore S109 // Magic numbers should not be used

@@ -50,7 +50,6 @@ namespace Microsoft.Extensions.AmbientMetadata
                     { $"{SectionName}:buildnumber", "GITHUB_RUNNUMBER" },
                     { $"{SectionName}:sourcebranchname", "GITHUB_REFNAME" },
                     { $"{SectionName}:sourceversion", "GITHUB_SHA" },
-                    { $"{SectionName}:builddatetime", "DATETIMEOFFSET" },
                 };
             }
         }

@@ -28,5 +28,4 @@ internal static class Model
     public static string? BuildNumber => IsAzureDevOps ? AzureBuildNumber : GitHubRunNumber;
     public static string? SourceBranchName => IsAzureDevOps ? AzureSourceBranchName : GitHubRefName;
     public static string? SourceVersion => IsAzureDevOps ? AzureSourceVersion : GitHubSha;
-    public static DateTimeOffset? BuildDateTime { get; set; } = DateTimeOffset.UtcNow;
 }

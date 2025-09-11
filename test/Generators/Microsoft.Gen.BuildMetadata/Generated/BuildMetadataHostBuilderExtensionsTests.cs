@@ -27,7 +27,6 @@ public class BuildMetadataHostBuilderExtensionsTests
         buildMetadata.Value.BuildNumber.Should().Be(BuildMetadataValues.BuildNumber);
         buildMetadata.Value.SourceBranchName.Should().Be(BuildMetadataValues.SourceBranchName);
         buildMetadata.Value.SourceVersion.Should().Be(BuildMetadataValues.SourceVersion);
-        buildMetadata.Value.BuildDateTime.Should().Be(BuildMetadataValues.BuildDateTime);
     }
 
     [Fact]
@@ -44,6 +43,5 @@ public class BuildMetadataHostBuilderExtensionsTests
         buildMetadata.Value.BuildNumber.Should().Be(BuildMetadataValues.BuildNumber);
         buildMetadata.Value.SourceBranchName.Should().Be(BuildMetadataValues.SourceBranchName);
         buildMetadata.Value.SourceVersion.Should().Be(BuildMetadataValues.SourceVersion);
-        buildMetadata.Value.BuildDateTime.Should().Be(BuildMetadataValues.BuildDateTime);
     }
 }
