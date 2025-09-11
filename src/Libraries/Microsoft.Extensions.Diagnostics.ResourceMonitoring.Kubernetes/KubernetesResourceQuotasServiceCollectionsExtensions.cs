@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// 
