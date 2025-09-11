@@ -1,5 +1,5 @@
 {
-  "$schema": "https://modelcontextprotocol.io/schemas/draft/2025-07-09/server.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
   "description": "<your description here>",
   "name": "io.github.<your GitHub username here>/<your repo name>",
   "version": "0.1.0-beta",
