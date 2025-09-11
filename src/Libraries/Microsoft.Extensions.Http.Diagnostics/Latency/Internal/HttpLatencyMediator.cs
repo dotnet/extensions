@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Http.Latency.Internal;
 /// <summary>
 /// Mediator for HTTP latency operations that coordinates recording HTTP metrics in a latency context.
 /// </summary>
-internal sealed class HttpLatencyMediator
+internal sealed class HttpLatencyMediator : IHttpLatencyMediator
 {
 #if !NETFRAMEWORK
     private readonly MeasureToken _gcPauseTime;
@@ -26,7 +26,7 @@ internal sealed class HttpLatencyMediator
     }
 
 #pragma warning disable CA1822
-    public void RecordStart(ILatencyContext latencyContext, HttpRequestMessage? request = null, HttpResponseMessage? response = null)
+    public void RecordStart(ILatencyContext latencyContext, HttpRequestMessage? request = null)
     {
 #pragma warning restore CA1822
 #if NET

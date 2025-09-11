@@ -23,16 +23,16 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
 {
     private static readonly ObjectPool<StringBuilder> _builderPool = PoolFactory.SharedStringBuilderPool;
     private readonly HttpClientLatencyContext _latencyContext;
-    private readonly HttpLatencyMediator _latencyTelemetryMediator;
+    private readonly IHttpLatencyMediator _httpLatencyMediator;
     private readonly CheckpointToken _enricherInvoked;
 
     public HttpClientLatencyLogEnricher(
         HttpClientLatencyContext latencyContext,
         ILatencyContextTokenIssuer tokenIssuer,
-        HttpLatencyMediator latencyTelemetryMediator)
+        IHttpLatencyMediator httpLatencyMediator)
     {
         _latencyContext = latencyContext;
-        _latencyTelemetryMediator = latencyTelemetryMediator;
+        _httpLatencyMediator = httpLatencyMediator;
         _enricherInvoked = tokenIssuer.GetCheckpointToken(HttpCheckpoints.EnricherInvoked);
     }
 
@@ -50,7 +50,7 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
             lc.AddCheckpoint(_enricherInvoked);
 
             // Use the mediator to record all metrics
-            _latencyTelemetryMediator.RecordEnd(lc, request, response);
+            _httpLatencyMediator.RecordEnd(lc, request, response);
 
             StringBuilder stringBuilder = _builderPool.Get();
 
