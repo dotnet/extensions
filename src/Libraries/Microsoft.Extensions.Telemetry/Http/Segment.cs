@@ -2,15 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.Diagnostics;
 
 /// <summary>
 /// Struct to hold the metadata about a route's segment.
 /// </summary>
-#pragma warning disable CA1815 // Override equals and operator equals on value types
-internal readonly struct Segment
-#pragma warning restore CA1815 // Override equals and operator equals on value types
+[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Comparing instances is not an expected scenario.")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+public readonly struct Segment
 {
     private const string ControllerParameter = "controller";
     private const string ActionParameter = "action";
