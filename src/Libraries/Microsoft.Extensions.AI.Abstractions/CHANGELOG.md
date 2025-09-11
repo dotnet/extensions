@@ -2,9 +2,13 @@
 
 ## NOT YET RELEASED
 
+## 9.9.0
+
 - Added non-invocable `AIFunctionDeclaration` (base class for `AIFunction`), `AIFunctionFactory.CreateDeclaration`, and `AIFunction.AsDeclarationOnly`.
 - Added `[Experimental]` support for user approval of function invocations via `ApprovalRequiredAIFunction`, `FunctionApprovalRequestContent`, and friends.
 - Added `[Experimental]` support for MCP server-hosted tools via `HostedMcpServerTool`, `HostedMcpServerToolApprovalMode`, and friends.
+- Updated `AIContent` coalescing logic used by `ToChatResponse`/`ToChatResponseUpdate` to factor in `ChatMessage.Role`.
+- Moved `IChatReducer` into `Microsoft.Extensions.AI.Abstractions` from `Microsoft.Extensions.AI`.
 
 ## 9.8.0
 
