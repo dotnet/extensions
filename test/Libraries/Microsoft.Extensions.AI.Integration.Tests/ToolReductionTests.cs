@@ -356,7 +356,7 @@ public class ToolReductionTests
             GetStreamingResponseAsyncCallback = (messages, options, ct) =>
             {
                 observedTools = options?.Tools;
-                return AsyncEnumerable.Empty<ChatResponseUpdate>();
+                return EmptyAsyncEnumerable<ChatResponseUpdate>();
             }
         };
 
@@ -379,6 +379,13 @@ public class ToolReductionTests
 
     private static List<AITool> CreateTools(params string[] names) =>
         names.Select(n => (AITool)new SimpleTool(n, $"Description about {n}")).ToList();
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+    private static async IAsyncEnumerable<T> EmptyAsyncEnumerable<T>()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+    {
+        yield break;
+    }
 
     private sealed class SimpleTool : AITool
     {

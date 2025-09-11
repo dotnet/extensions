@@ -68,8 +68,10 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
 
     /// <summary>
     /// Gets or sets a delegate used to produce the text to embed for a tool.
-    /// Defaults to: <c>Name + "\n" + Description</c> (omitting empty parts).
     /// </summary>
+    /// <remarks>
+    /// Defaults to: <c>Name + "\n" + Description</c> (omitting empty parts).
+    /// </remarks>
     public Func<AITool, string> ToolEmbeddingTextFactory
     {
         get => _toolEmbeddingTextFactory;
@@ -87,8 +89,11 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
     }
 
     /// <summary>
-    /// Gets or sets a similarity function applied to (query, tool) embedding vectors. Defaults to cosine similarity.
+    /// Gets or sets a similarity function applied to (query, tool) embedding vectors.
     /// </summary>
+    /// <remarks>
+    /// Defaults to cosine similarity.
+    /// </remarks>
     public Func<ReadOnlyMemory<float>, ReadOnlyMemory<float>, float> Similarity
     {
         get => _similarity;
@@ -117,6 +122,9 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
 
         if (options?.Tools is not { Count: > 0 } tools)
         {
+            // Prefer the original tools list reference if possible.
+            // This allows ToolReducingChatClient to avoid unnecessarily copying ChatOptions.
+            // When no reduction is performed.
             return options?.Tools ?? [];
         }
 
@@ -156,7 +164,9 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
             ranked = ranked.OrderBy(t => t.Index);
         }
 
-        return ranked.Select(t => t.Tool);
+        return ranked
+            .Select(t => t.Tool)
+            .ToList();
     }
 
     private async Task<IReadOnlyList<Embedding<float>>> GetToolEmbeddingsAsync(IList<AITool> tools, CancellationToken cancellationToken)
@@ -164,7 +174,10 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
         if (!EnableEmbeddingCaching)
         {
             // Embed all tools in one batch; do not store in cache.
-            return await ComputeEmbeddingsAsync(tools.Select(t => ToolEmbeddingTextFactory(t)), expectedCount: tools.Count);
+            return await ComputeEmbeddingsAsync(
+                texts: tools.Select(t => ToolEmbeddingTextFactory(t)),
+                expectedCount: tools.Count,
+                cancellationToken);
         }
 
         var result = new Embedding<float>[tools.Count];
@@ -187,7 +200,10 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
             return result;
         }
 
-        var uncachedEmbeddings = await ComputeEmbeddingsAsync(cacheMisses.Select(t => ToolEmbeddingTextFactory(t.Tool)), expectedCount: cacheMisses.Count);
+        var uncachedEmbeddings = await ComputeEmbeddingsAsync(
+            texts: cacheMisses.Select(t => ToolEmbeddingTextFactory(t.Tool)),
+            expectedCount: cacheMisses.Count,
+            cancellationToken);
 
         for (var i = 0; i < cacheMisses.Count; i++)
         {
@@ -198,7 +214,7 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
 
         return result;
 
-        async ValueTask<GeneratedEmbeddings<Embedding<float>>> ComputeEmbeddingsAsync(IEnumerable<string> texts, int expectedCount)
+        async ValueTask<GeneratedEmbeddings<Embedding<float>>> ComputeEmbeddingsAsync(IEnumerable<string> texts, int expectedCount, CancellationToken cancellationToken)
         {
             var embeddings = await _embeddingGenerator.GenerateAsync(texts, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (embeddings.Count != expectedCount)
