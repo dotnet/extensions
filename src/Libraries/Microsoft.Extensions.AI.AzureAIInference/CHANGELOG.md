@@ -1,5 +1,13 @@
 # Release History
 
+## NOT YET RELEASED
+
+## 9.9.0-preview.1.25458.4
+
+- Updated tool mapping to recognize any `AIFunctionDeclaration`.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated `AsIChatClient` for `OpenAIResponseClient` to support reasoning content with `GetStreamingResponseAsync`.
+
 ## 9.8.0-preview.1.25412.6
 
 - Updated to depend on Azure.AI.Inference 1.0.0-beta.5.

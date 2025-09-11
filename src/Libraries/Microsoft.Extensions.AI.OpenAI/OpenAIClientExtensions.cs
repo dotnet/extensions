@@ -177,8 +177,8 @@ public static class OpenAIClientExtensions
         strictObj is bool strictValue ?
         strictValue : null;
 
-    /// <summary>Extracts from an <see cref="AIFunction"/> the parameters and strictness setting for use with OpenAI's APIs.</summary>
-    internal static BinaryData ToOpenAIFunctionParameters(AIFunction aiFunction, bool? strict)
+    /// <summary>Extracts from an <see cref="AIFunctionDeclaration"/> the parameters and strictness setting for use with OpenAI's APIs.</summary>
+    internal static BinaryData ToOpenAIFunctionParameters(AIFunctionDeclaration aiFunction, bool? strict)
     {
         // Perform any desirable transformations on the function's JSON schema, if it'll be used in a strict setting.
         JsonElement jsonSchema = strict is true ?

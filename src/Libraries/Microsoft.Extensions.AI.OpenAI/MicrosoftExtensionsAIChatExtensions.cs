@@ -19,11 +19,11 @@ namespace OpenAI.Chat;
 /// <summary>Provides extension methods for working with content associated with OpenAI.Chat.</summary>
 public static class MicrosoftExtensionsAIChatExtensions
 {
-    /// <summary>Creates an OpenAI <see cref="ChatTool"/> from an <see cref="AIFunction"/>.</summary>
+    /// <summary>Creates an OpenAI <see cref="ChatTool"/> from an <see cref="AIFunctionDeclaration"/>.</summary>
     /// <param name="function">The function to convert.</param>
     /// <returns>An OpenAI <see cref="ChatTool"/> representing <paramref name="function"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-    public static ChatTool AsOpenAIChatTool(this AIFunction function) =>
+    public static ChatTool AsOpenAIChatTool(this AIFunctionDeclaration function) =>
         OpenAIChatClient.ToOpenAIChatTool(Throw.IfNull(function));
 
     /// <summary>Creates a sequence of OpenAI <see cref="ChatMessage"/> instances from the specified input messages.</summary>

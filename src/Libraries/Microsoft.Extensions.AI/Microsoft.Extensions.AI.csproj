@@ -14,7 +14,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
-    <NoWarn>$(NoWarn);CA2227;CA1034;SA1316;S1067;S1121;S1994;S3253</NoWarn>
+    <NoWarn>$(NoWarn);CA2227;CA1034;SA1316;S1067;S1121;S1994;S3253;MEAI001</NoWarn>
 
     <!-- CA2007 requires use of ConfigureAwait. While in general we strive to use ConfigureAwait in all our libraries,
          the exemption is when user code that might care about SynchronizationContext is invoked as part of operation.
