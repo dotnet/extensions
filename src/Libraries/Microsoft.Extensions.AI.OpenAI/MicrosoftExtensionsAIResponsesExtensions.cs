@@ -21,6 +21,15 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     public static FunctionTool AsOpenAIResponseTool(this AIFunctionDeclaration function) =>
         OpenAIResponsesChatClient.ToResponseTool(Throw.IfNull(function));
 
+    /// <summary>
+    /// Creates an OpenAI <see cref="ResponseTextFormat"/> from a <see cref="ChatResponseFormat"/>.
+    /// </summary>
+    /// <param name="format">The format.</param>
+    /// <param name="options">The options to use when interpreting the format.</param>
+    /// <returns>The converted OpenAI <see cref="ResponseTextFormat"/>.</returns>
+    public static ResponseTextFormat? AsOpenAIResponseTextFormat(this ChatResponseFormat? format, ChatOptions? options = null) =>
+        OpenAIResponsesChatClient.ToOpenAIResponseTextFormat(format, options);
+
     /// <summary>Creates a sequence of OpenAI <see cref="ResponseItem"/> instances from the specified input messages.</summary>
     /// <param name="messages">The input messages to convert.</param>
     /// <param name="options">The options employed while processing <paramref name="messages"/>.</param>

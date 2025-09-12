@@ -2,6 +2,8 @@
 
 ## NOT YET RELEASED
 
+- Added M.E.AI to OpenAI conversions for response format types
+
 ## 9.9.0-preview.1.25458.4
 
 - Updated to depend on OpenAI 2.4.0
