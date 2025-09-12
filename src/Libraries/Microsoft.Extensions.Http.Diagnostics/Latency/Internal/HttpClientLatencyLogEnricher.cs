@@ -52,18 +52,17 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
         if (response != null)
         {
             var lc = _latencyContext.Get();
-            if (lc == null)
-            {
-                return;
-            }
 
-            // Add the checkpoint
-            lc.AddCheckpoint(_enricherInvoked);
+            if (lc != null)
+            {
+                // Add the checkpoint
+                lc.AddCheckpoint(_enricherInvoked);
 
 #if NET
-            // Use the mediator to record all metrics
-            _httpLatencyMediator.RecordEnd(lc, response);
-#endif            
+                // Use the mediator to record all metrics
+                _httpLatencyMediator.RecordEnd(lc, response);
+#endif
+            }
 
             StringBuilder stringBuilder = _builderPool.Get();
 

@@ -35,6 +35,8 @@ public static class HttpClientLatencyTelemetryExtensions
         _ = services.AddTransient<HttpLatencyTelemetryHandler>();
 #if NET
         _ = services.AddSingleton<HttpLatencyMediator>();
+        _ = services.RegisterMeasureNames(HttpMeasures.Measures);
+        _ = services.RegisterTagNames(HttpTags.Tags);
 #endif
         _ = services.AddHttpClientLogEnricher<HttpClientLatencyLogEnricher>();
 
