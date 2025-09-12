@@ -14,6 +14,6 @@ public class EmitterTests
     public void GivenCancellation_ShouldThrowException()
     {
         Assert.Throws<OperationCanceledException>(() =>
-            _ = new Emitter().Emit(new CancellationToken(true)));
+            _ = new Emitter("buildId", "buildNumber", "branch", "version").Emit(new CancellationToken(true)));
     }
 }

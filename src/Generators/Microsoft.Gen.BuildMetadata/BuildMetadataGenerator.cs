@@ -1,60 +1,76 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.Gen.BuildMetadata;
 
+/// <summary>
+/// Source generator that creates build metadata extensions from MSBuild properties.
+/// Supports both Azure DevOps and GitHub Actions build environments.
+/// </summary>
 [Generator]
 public class BuildMetadataGenerator : IIncrementalGenerator
 {
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterSourceOutput(context.CompilationProvider, (spc, compilation) => Execute(compilation, spc));
+        var buildPropertiesPipeline = context.AnalyzerConfigOptionsProvider.Select((provider, ct) =>
+        {
+            return CreateBuildMetadata(provider.GlobalOptions);
+        });
+
+        context.RegisterSourceOutput(buildPropertiesPipeline, Execute);
     }
 
-    private static void Execute(Compilation compilation, SourceProductionContext context)
+    private static BuildMetadata CreateBuildMetadata(AnalyzerConfigOptions globalOptions)
     {
-        OverwriteModelValuesForTesting(compilation.Assembly.GetAttributes());
+        // Azure DevOps properties
+        var azureBuildId = globalOptions.GetProperty("BuildMetadataAzureBuildId");
+        var azureBuildNumber = globalOptions.GetProperty("BuildMetadataAzureBuildNumber");
+        var azureSourceBranchName = globalOptions.GetProperty("BuildMetadataAzureSourceBranchName");
+        var azureSourceVersion = globalOptions.GetProperty("BuildMetadataAzureSourceVersion");
+        var isAzureDevOps = globalOptions.GetBooleanProperty("BuildMetadataIsAzureDevOps");
 
-        var e = new Emitter();
-        var result = e.EmitExtensions(context.CancellationToken);
+        // GitHub Actions properties
+        var gitHubRunId = globalOptions.GetProperty("BuildMetadataGitHubRunId");
+        var gitHubRunNumber = globalOptions.GetProperty("BuildMetadataGitHubRunNumber");
+        var gitHubRefName = globalOptions.GetProperty("BuildMetadataGitHubRefName");
+        var gitHubSha = globalOptions.GetProperty("BuildMetadataGitHubSha");
+
+        return new BuildMetadata(
+            isAzureDevOps ? azureBuildId : gitHubRunId,
+            isAzureDevOps ? azureBuildNumber : gitHubRunNumber,
+            isAzureDevOps ? azureSourceBranchName : gitHubRefName,
+            isAzureDevOps ? azureSourceVersion : gitHubSha);
+    }
+
+    private static void Execute(SourceProductionContext context, BuildMetadata buildMetadata)
+    {
+        var emitter = new Emitter(buildMetadata.BuildId, buildMetadata.BuildNumber, buildMetadata.SourceBranchName, buildMetadata.SourceVersion);
+        var result = emitter.Emit(context.CancellationToken);
         context.AddSource("BuildMetadataExtensions.g.cs", SourceText.From(result, Encoding.UTF8));
     }
 
-    private static void OverwriteModelValuesForTesting(ImmutableArray<AttributeData> attributes)
+    private readonly struct BuildMetadata
     {
-        const int TestAttributeConstructorArgumentsLength = 4;
+        public string? BuildId { get; }
 
-        if (attributes.IsDefaultOrEmpty || attributes[0].ConstructorArguments.Length != TestAttributeConstructorArgumentsLength)
+        public string? BuildNumber { get; }
+
+        public string? SourceBranchName { get; }
+
+        public string? SourceVersion { get; }
+
+        public BuildMetadata(string? buildId, string? buildNumber, string? sourceBranchName, string? sourceVersion)
         {
-            return;
+            BuildId = buildId;
+            BuildNumber = buildNumber;
+            SourceBranchName = sourceBranchName;
+            SourceVersion = sourceVersion;
         }
-
-        // internal attribute has five constructor args:
-        // buildId, buildNumber, sourceBranchName, sourceVersion
-        var attribute = attributes[0];
-
-#pragma warning disable S109 // Magic numbers should not be used
-#pragma warning disable S1067 // Expressions should not be too complex
-        if (
-            attribute.ConstructorArguments[0].Value is string buildId &&
-            attribute.ConstructorArguments[1].Value is string buildNumber &&
-            attribute.ConstructorArguments[2].Value is string sourceBranchName &&
-            attribute.ConstructorArguments[3].Value is string sourceVersion)
-        {
-            Model.IsAzureDevOps = true;
-            Model.AzureBuildId = buildId;
-            Model.AzureBuildNumber = buildNumber;
-            Model.AzureSourceBranchName = sourceBranchName;
-            Model.AzureSourceVersion = sourceVersion;
-        }
-#pragma warning restore S1067 // Expressions should not be too complex
-#pragma warning restore S109 // Magic numbers should not be used
     }
 }

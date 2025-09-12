@@ -26,4 +26,6 @@
   <ItemGroup>
     <Compile Remove="..\TestClasses\TestStartup.cs" />
   </ItemGroup>
+
+  <Import Project="Microsoft.Gen.BuildMetadata.Generated.Tests.props" />
 </Project>

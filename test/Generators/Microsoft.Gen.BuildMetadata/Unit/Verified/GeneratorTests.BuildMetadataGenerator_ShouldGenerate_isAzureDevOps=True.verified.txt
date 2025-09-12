@@ -46,10 +46,10 @@ namespace Microsoft.Extensions.AmbientMetadata
             {
                 return new MemoryConfigurationProvider(new MemoryConfigurationSource())
                 {
-                    { $"{SectionName}:buildid", "AZURE_BUILDID" },
-                    { $"{SectionName}:buildnumber", "AZURE_BUILDNUMBER" },
-                    { $"{SectionName}:sourcebranchname", "AZURE_SOURCEBRANCHNAME" },
-                    { $"{SectionName}:sourceversion", "AZURE_SOURCEVERSION" },
+                    { $"{SectionName}:buildid", "TEST_AZURE_BUILDID" },
+                    { $"{SectionName}:buildnumber", "TEST_AZURE_BUILDNUMBER" },
+                    { $"{SectionName}:sourcebranchname", "TEST_AZURE_SOURCEBRANCHNAME" },
+                    { $"{SectionName}:sourceversion", "TEST_AZURE_SOURCEVERSION" },
                 };
             }
         }

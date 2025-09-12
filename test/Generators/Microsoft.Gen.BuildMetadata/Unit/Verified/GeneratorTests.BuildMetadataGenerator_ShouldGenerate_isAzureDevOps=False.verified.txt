@@ -46,10 +46,10 @@ namespace Microsoft.Extensions.AmbientMetadata
             {
                 return new MemoryConfigurationProvider(new MemoryConfigurationSource())
                 {
-                    { $"{SectionName}:buildid", "GITHUB_RUNID" },
-                    { $"{SectionName}:buildnumber", "GITHUB_RUNNUMBER" },
-                    { $"{SectionName}:sourcebranchname", "GITHUB_REFNAME" },
-                    { $"{SectionName}:sourceversion", "GITHUB_SHA" },
+                    { $"{SectionName}:buildid", "TEST_GITHUB_RUNID" },
+                    { $"{SectionName}:buildnumber", "TEST_GITHUB_RUNNUMBER" },
+                    { $"{SectionName}:sourcebranchname", "TEST_GITHUB_REFNAME" },
+                    { $"{SectionName}:sourceversion", "TEST_GITHUB_SHA" },
                 };
             }
         }

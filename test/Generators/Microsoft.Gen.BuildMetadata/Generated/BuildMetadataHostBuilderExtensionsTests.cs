@@ -23,10 +23,10 @@ public class BuildMetadataHostBuilderExtensionsTests
         var buildMetadata = host.Services.GetRequiredService<IOptions<Extensions.AmbientMetadata.BuildMetadata>>();
 
         buildMetadata.Value.Should().NotBeNull();
-        buildMetadata.Value.BuildId.Should().Be(BuildMetadataValues.BuildId);
-        buildMetadata.Value.BuildNumber.Should().Be(BuildMetadataValues.BuildNumber);
-        buildMetadata.Value.SourceBranchName.Should().Be(BuildMetadataValues.SourceBranchName);
-        buildMetadata.Value.SourceVersion.Should().Be(BuildMetadataValues.SourceVersion);
+        buildMetadata.Value.BuildId.Should().Be("GeneratedTest_AzureBuildId");
+        buildMetadata.Value.BuildNumber.Should().Be("GeneratedTest_AzureBuildNumber");
+        buildMetadata.Value.SourceBranchName.Should().Be("GeneratedTest_AzureSourceBranchName");
+        buildMetadata.Value.SourceVersion.Should().Be("GeneratedTest_AzureSourceVersion");
     }
 
     [Fact]
@@ -39,9 +39,9 @@ public class BuildMetadataHostBuilderExtensionsTests
         var buildMetadata = host.Services.GetRequiredService<IOptions<Extensions.AmbientMetadata.BuildMetadata>>();
 
         buildMetadata.Value.Should().NotBeNull();
-        buildMetadata.Value.BuildId.Should().Be(BuildMetadataValues.BuildId);
-        buildMetadata.Value.BuildNumber.Should().Be(BuildMetadataValues.BuildNumber);
-        buildMetadata.Value.SourceBranchName.Should().Be(BuildMetadataValues.SourceBranchName);
-        buildMetadata.Value.SourceVersion.Should().Be(BuildMetadataValues.SourceVersion);
+        buildMetadata.Value.BuildId.Should().Be("GeneratedTest_AzureBuildId");
+        buildMetadata.Value.BuildNumber.Should().Be("GeneratedTest_AzureBuildNumber");
+        buildMetadata.Value.SourceBranchName.Should().Be("GeneratedTest_AzureSourceBranchName");
+        buildMetadata.Value.SourceVersion.Should().Be("GeneratedTest_AzureSourceVersion");
     }
 }

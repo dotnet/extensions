@@ -1,0 +1,28 @@
+﻿<Project>
+  <PropertyGroup>
+    <!-- Azure DevOps MSBuild properties - use Azure DevOps environment variables if available, otherwise use empty string -->
+    <BuildMetadataAzureBuildId Condition="'$(BuildMetadataAzureBuildId)' == ''">$(Build_BuildId)</BuildMetadataAzureBuildId>
+    <BuildMetadataAzureBuildNumber Condition="'$(BuildMetadataAzureBuildNumber)' == ''">$(Build_BuildNumber)</BuildMetadataAzureBuildNumber>
+    <BuildMetadataAzureSourceBranchName Condition="'$(BuildMetadataAzureSourceBranchName)' == ''">$(Build_SourceBranchName)</BuildMetadataAzureSourceBranchName>
+    <BuildMetadataAzureSourceVersion Condition="'$(BuildMetadataAzureSourceVersion)' == ''">$(Build_SourceVersion)</BuildMetadataAzureSourceVersion>
+    <BuildMetadataIsAzureDevOps Condition="'$(BuildMetadataIsAzureDevOps)' == ''">$(TF_BUILD)</BuildMetadataIsAzureDevOps>
+
+    <!-- GitHub Actions MSBuild properties - use GitHub Actions environment variables if available, otherwise use empty string -->
+    <BuildMetadataGitHubRunId Condition="'$(BuildMetadataGitHubRunId)' == ''">$(GITHUB_RUN_ID)</BuildMetadataGitHubRunId>
+    <BuildMetadataGitHubRunNumber Condition="'$(BuildMetadataGitHubRunNumber)' == ''">$(GITHUB_RUN_NUMBER)</BuildMetadataGitHubRunNumber>
+    <BuildMetadataGitHubRefName Condition="'$(BuildMetadataGitHubRefName)' == ''">$(GITHUB_REF_NAME)</BuildMetadataGitHubRefName>
+    <BuildMetadataGitHubSha Condition="'$(BuildMetadataGitHubSha)' == ''">$(GITHUB_SHA)</BuildMetadataGitHubSha>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="BuildMetadataAzureBuildId" />
+    <CompilerVisibleProperty Include="BuildMetadataAzureBuildNumber" />
+    <CompilerVisibleProperty Include="BuildMetadataAzureSourceBranchName" />
+    <CompilerVisibleProperty Include="BuildMetadataAzureSourceVersion" />
+    <CompilerVisibleProperty Include="BuildMetadataIsAzureDevOps" />
+    <CompilerVisibleProperty Include="BuildMetadataGitHubRunId" />
+    <CompilerVisibleProperty Include="BuildMetadataGitHubRunNumber" />
+    <CompilerVisibleProperty Include="BuildMetadataGitHubRefName" />
+    <CompilerVisibleProperty Include="BuildMetadataGitHubSha" />
+  </ItemGroup>
+</Project>

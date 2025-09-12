@@ -10,7 +10,7 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
-    <!-- CA1852 is for the internal shared type DiagDescriptiorsBase. It can't be sealed because there are child classes in other components-->
+    <!-- CA1852 is for the internal shared type DiagDescriptorsBase. It can't be sealed because there are child classes in other components-->
     <NoWarn>$(NoWarn);EA0002;CA1852</NoWarn>
   </PropertyGroup>
 
@@ -27,6 +27,7 @@
   <ItemGroup>
     <Compile Update="Parsing\Resources.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="Resources.resx" />
     <Compile Include="..\Shared\*.cs" LinkBase="Shared" />
+    <None Include="Microsoft.Gen.BuildMetadata.props" Pack="true" PackagePath="build" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>

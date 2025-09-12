@@ -9,13 +9,20 @@ namespace Microsoft.Gen.BuildMetadata;
 
 internal sealed class Emitter : EmitterBase
 {
-    public string Emit(CancellationToken cancellationToken)
+    private readonly string? _buildId;
+    private readonly string? _buildNumber;
+    private readonly string? _sourceBranchName;
+    private readonly string? _sourceVersion;
+
+    public Emitter(string? buildId, string? buildNumber, string? sourceBranchName, string? sourceVersion)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        return Capture();
+        _buildId = buildId;
+        _buildNumber = buildNumber;
+        _sourceBranchName = sourceBranchName;
+        _sourceVersion = sourceVersion;
     }
 
-    public string EmitExtensions(CancellationToken cancellationToken)
+    public string Emit(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         GenerateBuildMetadataExtensions();
@@ -43,10 +50,10 @@ internal sealed class Emitter : EmitterBase
             OutOpenBrace();
                 OutLn("return new MemoryConfigurationProvider(new MemoryConfigurationSource())");
                 OutOpenBrace();
-                    OutLn($$"""{ $"{SectionName}:buildid", "{{Model.BuildId}}" },""");
-                    OutLn($$"""{ $"{SectionName}:buildnumber", "{{Model.BuildNumber}}" },""");
-                    OutLn($$"""{ $"{SectionName}:sourcebranchname", "{{Model.SourceBranchName}}" },""");
-                    OutLn($$"""{ $"{SectionName}:sourceversion", "{{Model.SourceVersion}}" },""");
+                    OutLn($$"""{ $"{SectionName}:buildid", "{{_buildId}}" },""");
+                    OutLn($$"""{ $"{SectionName}:buildnumber", "{{_buildNumber}}" },""");
+                    OutLn($$"""{ $"{SectionName}:sourcebranchname", "{{_sourceBranchName}}" },""");
+                    OutLn($$"""{ $"{SectionName}:sourceversion", "{{_sourceVersion}}" },""");
                 OutCloseBraceWithExtra(";");
             OutCloseBrace();
         OutCloseBrace();
@@ -117,7 +124,7 @@ internal sealed class Emitter : EmitterBase
     [SuppressMessage("Format", "IDE0055", Justification = "For better visualization of how the generated code will look like.")]
     private void OutNullGuards(bool checkBuilder = true)
     {
-        OutPP("#if NETFRAMEWORK");
+        OutPP("#if !NET");
 
         if (checkBuilder)
         {
