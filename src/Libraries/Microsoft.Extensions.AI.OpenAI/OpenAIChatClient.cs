@@ -582,26 +582,27 @@ internal sealed class OpenAIChatClient : IChatClient
             }
         }
 
-        if (result.ResponseFormat is null)
-        {
-            if (options.ResponseFormat is ChatResponseFormatText)
-            {
-                result.ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat();
-            }
-            else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
-            {
-                result.ResponseFormat = OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
-                    OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
-                        jsonFormat.SchemaName ?? "json_schema",
-                        BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription,
-                        OpenAIClientExtensions.HasStrict(options.AdditionalProperties)) :
-                    OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
-            }
-        }
+        result.ResponseFormat ??= ToOpenAIChatResponseFormat(options.ResponseFormat, options);
 
         return result;
     }
+
+    internal static OpenAI.Chat.ChatResponseFormat? ToOpenAIChatResponseFormat(ChatResponseFormat? format, ChatOptions? options) =>
+        format switch
+        {
+            ChatResponseFormatText => OpenAI.Chat.ChatResponseFormat.CreateTextFormat(),
+
+            ChatResponseFormatJson jsonFormat when OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema =>
+                 OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
+                    jsonFormat.SchemaName ?? "json_schema",
+                    BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
+                    jsonFormat.SchemaDescription,
+                    OpenAIClientExtensions.HasStrict(options?.AdditionalProperties)),
+
+            ChatResponseFormatJson => OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat(),
+
+            _ => null
+        };
 
     private static UsageDetails FromOpenAIUsage(ChatTokenUsage tokenUsage)
     {
