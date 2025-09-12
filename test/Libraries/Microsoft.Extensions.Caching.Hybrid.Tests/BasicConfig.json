@@ -8,5 +8,11 @@
       "LocalCacheExpiration": "00:02:00",
       "Flags": "DisableCompression,DisableLocalCacheRead"
     }
+  },
+  "HybridOne": {
+    "DistributedCacheServiceKey": "DistributedOne"
+  },
+  "HybridTwo": {
+    "DistributedCacheServiceKey": "DistributedTwo"
   }
 }

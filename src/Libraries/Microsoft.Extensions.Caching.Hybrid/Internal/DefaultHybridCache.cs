@@ -64,14 +64,24 @@ internal sealed partial class DefaultHybridCache : HybridCache
 
     internal bool HasBackendCache => (_features & CacheFeatures.BackendCache) != 0;
 
-    public DefaultHybridCache(IOptions<HybridCacheOptions> options, IServiceProvider services, IMemoryCache? localCache = null, IDistributedCache? backendCache = null)
+    public DefaultHybridCache(IOptions<HybridCacheOptions> options, IServiceProvider services)
+        : this(Throw.IfNull(options).Value, services)
+    {
+    }
+
+    public DefaultHybridCache(HybridCacheOptions options, IServiceProvider services)
     {
         _services = Throw.IfNull(services);
-        _localCache = localCache ?? services.GetRequiredService<IMemoryCache>();
-        _options = options.Value;
+        _localCache = services.GetRequiredService<IMemoryCache>();
+        _options = options;
         _logger = services.GetService<ILoggerFactory>()?.CreateLogger(typeof(HybridCache)) ?? NullLogger.Instance;
         _clock = services.GetService<TimeProvider>() ?? TimeProvider.System;
-        _backendCache = backendCache ?? services.GetService<IDistributedCache>(); // note optional
+
+        // The backend cache service is optional; if not provided, we operate as a pure L1 cache.
+        // If a service key is provided, the service must be present.
+        _backendCache = _options.DistributedCacheServiceKey is null
+            ? services.GetService<IDistributedCache>()
+            : services.GetRequiredKeyedService<IDistributedCache>(_options.DistributedCacheServiceKey);
 
         // ignore L2 if it is really just the same L1, wrapped
         // (note not just an "is" test; if someone has a custom subclass, who knows what it does?)

@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -54,37 +53,154 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
     }
 
     [Fact]
-    public void CanCreateKeyedServicesWithManualOptions()
+    public void CanCreateServiceWithKeyedDistributedCache()
     {
-        var name = "testName";
         var services = new ServiceCollection();
+        services.TryAddKeyedSingleton<IDistributedCache, CustomMemoryDistributedCache1>(typeof(CustomMemoryDistributedCache1));
+        services.AddHybridCache(options => options.DistributedCacheServiceKey = typeof(CustomMemoryDistributedCache1));
 
-        // Mock registering keyed IDistributedCache from client side
-        services.TryAddKeyedSingleton<IDistributedCache, RedisCache>(name);
+        using ServiceProvider provider = services.BuildServiceProvider();
+        var hybrid = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+        var hybridOptions = hybrid.Options;
 
-#pragma warning disable CACHE001
-        services.AddHybridCache(name, options =>
-        {
-            options.MaximumKeyLength = 937;
-        });
-#pragma warning restore CACHE001
-        using var provider = services.BuildServiceProvider();
+        var backend = Assert.IsType<CustomMemoryDistributedCache1>(hybrid.BackendCache);
+        Assert.Same(typeof(CustomMemoryDistributedCache1), hybridOptions.DistributedCacheServiceKey);
+        Assert.Same(backend, provider.GetRequiredKeyedService<IDistributedCache>(typeof(CustomMemoryDistributedCache1)));
+    }
 
-        var hybridCacheOption = provider.GetRequiredService<IOptionsMonitor<HybridCacheOptions>>().Get(name);
-        Assert.NotNull(hybridCacheOption);
-        Assert.Equal(937, hybridCacheOption.MaximumKeyLength);
+    [Fact]
+    public void ThrowsWhenDistributedCacheKeyNotRegistered()
+    {
+        var services = new ServiceCollection();
+        services.AddHybridCache(options => options.DistributedCacheServiceKey = typeof(CustomMemoryDistributedCache1));
+        using ServiceProvider provider = services.BuildServiceProvider();
 
-        var memoryCache = provider.GetRequiredKeyedService<IMemoryCache>(name);
-        Assert.NotNull(memoryCache);
-        Assert.IsType<MemoryCache>(memoryCache);
+        Assert.Throws<InvalidOperationException>(provider.GetRequiredService<HybridCache>);
+    }
 
-        var hybridCache = provider.GetRequiredKeyedService<HybridCache>(name);
-        Assert.NotNull(hybridCache);
-        Assert.IsType<DefaultHybridCache>(hybridCache);
+    [Fact]
+    public void ThrowsWhenRegisteredDistributedCacheIsNotKeyed()
+    {
+        var services = new ServiceCollection();
+        services.AddDistributedMemoryCache();
+        services.AddHybridCache(options => options.DistributedCacheServiceKey = typeof(CustomMemoryDistributedCache1));
+        using ServiceProvider provider = services.BuildServiceProvider();
 
-        var backendCache = provider.GetRequiredKeyedService<IDistributedCache>(name);
-        Assert.NotNull(backendCache);
-        Assert.IsType<RedisCache>(backendCache);
+        Assert.Throws<InvalidOperationException>(provider.GetRequiredService<HybridCache>);
+    }
+
+    [Fact]
+    public void CanCreateKeyedHybridCacheServiceWithNullKey()
+    {
+        var services = new ServiceCollection();
+        services.AddKeyedHybridCache(null);
+        using ServiceProvider provider = services.BuildServiceProvider();
+
+        // Resolves using null key registration
+        Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(null));
+
+        // Resolves as the non-keyed registration
+        Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+    }
+
+    [Fact]
+    public void CanCreateKeyedServicesWithStringKeys()
+    {
+        var services = new ServiceCollection();
+        services.AddKeyedHybridCache("one");
+        services.AddKeyedHybridCache("two");
+        services.AddHybridCache();
+        using ServiceProvider provider = services.BuildServiceProvider();
+
+        Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>("one"));
+        Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>("two"));
+        Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(null));
+        Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+    }
+
+    [Fact]
+    public void CanCreateKeyedServicesWithStringKeysAndSetupActions()
+    {
+        var services = new ServiceCollection();
+        services.AddKeyedHybridCache("one", options => options.MaximumKeyLength = 1);
+        services.AddKeyedHybridCache("two", options => options.MaximumKeyLength = 2);
+        services.AddKeyedHybridCache(null, options => options.MaximumKeyLength = 3);
+        using ServiceProvider provider = services.BuildServiceProvider();
+
+        var one = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>("one"));
+        Assert.Equal(1, one.Options.MaximumKeyLength);
+
+        var two = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>("two"));
+        Assert.Equal(2, two.Options.MaximumKeyLength);
+
+        var threeKeyed = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(null));
+        Assert.Equal(3, threeKeyed.Options.MaximumKeyLength);
+
+        var threeUnkeyed = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+        Assert.Equal(3, threeUnkeyed.Options.MaximumKeyLength);
+    }
+
+    [Fact]
+    public void CanCreateKeyedServicesWithTypeKeys()
+    {
+        var services = new ServiceCollection();
+        services.AddKeyedHybridCache(typeof(string));
+        services.AddKeyedHybridCache(typeof(int));
+        services.AddHybridCache();
+        using ServiceProvider provider = services.BuildServiceProvider();
+
+        Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(typeof(string)));
+        Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(typeof(int)));
+        Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(null));
+        Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+    }
+
+    [Fact]
+    public void CanCreateKeyedServicesWithTypeKeysAndSetupActions()
+    {
+        var services = new ServiceCollection();
+        services.AddKeyedHybridCache(typeof(string), options => options.MaximumKeyLength = 1);
+        services.AddKeyedHybridCache(typeof(int), options => options.MaximumKeyLength = 2);
+        services.AddKeyedHybridCache(null, options => options.MaximumKeyLength = 3);
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        var one = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(typeof(string)));
+        Assert.Equal(1, one.Options.MaximumKeyLength);
+
+        var two = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(typeof(int)));
+        Assert.Equal(2, two.Options.MaximumKeyLength);
+
+        var threeKeyed = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(null));
+        Assert.Equal(3, threeKeyed.Options.MaximumKeyLength);
+
+        var threeUnkeyed = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+        Assert.Equal(3, threeUnkeyed.Options.MaximumKeyLength);
+    }
+
+    [Fact]
+    public void CanCreateKeyedServicesWithKeyedDistributedCaches()
+    {
+        var services = new ServiceCollection();
+        services.TryAddKeyedSingleton<IDistributedCache, CustomMemoryDistributedCache1>(typeof(CustomMemoryDistributedCache1));
+        services.TryAddKeyedSingleton<IDistributedCache, CustomMemoryDistributedCache2>(typeof(CustomMemoryDistributedCache2));
+
+        services.AddKeyedHybridCache("one", options => options.DistributedCacheServiceKey = typeof(CustomMemoryDistributedCache1));
+        services.AddKeyedHybridCache("two", options => options.DistributedCacheServiceKey = typeof(CustomMemoryDistributedCache2));
+        using ServiceProvider provider = services.BuildServiceProvider();
+
+        var cacheOne = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>("one"));
+        var cacheOneOptions = cacheOne.Options;
+        var cacheOneBackend = Assert.IsType<CustomMemoryDistributedCache1>(cacheOne.BackendCache);
+        Assert.Same(typeof(CustomMemoryDistributedCache1), cacheOneOptions.DistributedCacheServiceKey);
+        Assert.Same(cacheOneBackend, provider.GetRequiredKeyedService<IDistributedCache>(typeof(CustomMemoryDistributedCache1)));
+        Assert.IsType<CustomMemoryDistributedCache1>(cacheOne.BackendCache);
+
+        var cacheTwo = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>("two"));
+        var cacheTwoOptions = cacheTwo.Options;
+        var cacheTwoBackend = Assert.IsType<CustomMemoryDistributedCache2>(cacheTwo.BackendCache);
+        Assert.Same(typeof(CustomMemoryDistributedCache2), cacheTwoOptions.DistributedCacheServiceKey);
+        Assert.Same(cacheTwoBackend, provider.GetRequiredKeyedService<IDistributedCache>(typeof(CustomMemoryDistributedCache2)));
+        Assert.IsType<CustomMemoryDistributedCache2>(cacheTwo.BackendCache);
     }
 
 #if NET9_0_OR_GREATER // for Bind API
@@ -116,6 +232,107 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
         Assert.Equal(HybridCacheEntryFlags.DisableCompression | HybridCacheEntryFlags.DisableLocalCacheRead, defaults.Flags);
         Assert.Equal(TimeSpan.FromSeconds(120), defaults.LocalCacheExpiration);
         Assert.Null(defaults.Expiration); // wasn't specified
+    }
+
+    [Fact]
+    public void CanCreateKeyedServicesWithKeyedDistributedCaches_UsingNamedOptions()
+    {
+        var source = new JsonConfigurationSource { Path = "BasicConfig.json" };
+        var configBuilder = new ConfigurationBuilder { Sources = { source } };
+        var config = configBuilder.Build();
+
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton<IDistributedCache, CustomMemoryDistributedCache1>("DistributedOne");
+        services.AddKeyedSingleton<IDistributedCache, CustomMemoryDistributedCache2>("DistributedTwo");
+        services.AddOptions<HybridCacheOptions>("HybridOne").Configure(options => ConfigurationBinder.Bind(config, "HybridOne", options));
+        services.AddOptions<HybridCacheOptions>("HybridTwo").Configure(options => ConfigurationBinder.Bind(config, "HybridTwo", options));
+        services.AddKeyedHybridCache(typeof(CustomMemoryDistributedCache1), "HybridOne");
+        services.AddKeyedHybridCache(typeof(CustomMemoryDistributedCache2), "HybridTwo");
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        var hybridOne = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache1)));
+        var hybridOneOptions = hybridOne.Options;
+        var hybridOneBackend = Assert.IsType<CustomMemoryDistributedCache1>(hybridOne.BackendCache);
+        Assert.Equal("DistributedOne", hybridOneOptions.DistributedCacheServiceKey);
+
+        var hybridTwo = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache2)));
+        var hybridTwoOptions = hybridTwo.Options;
+        var hybridTwoBackend = Assert.IsType<CustomMemoryDistributedCache2>(hybridTwo.BackendCache);
+        Assert.Equal("DistributedTwo", hybridTwoOptions.DistributedCacheServiceKey);
+
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache1));
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache1));
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache1));
+
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache2));
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache2));
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache2));
+    }
+
+    [Fact]
+    public void CanCreateKeyedServicesWithKeyedDistributedCaches_UsingSetupActions()
+    {
+        var source = new JsonConfigurationSource { Path = "BasicConfig.json" };
+        var configBuilder = new ConfigurationBuilder { Sources = { source } };
+        var config = configBuilder.Build();
+
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton<IDistributedCache, CustomMemoryDistributedCache1>("DistributedOne");
+        services.AddKeyedSingleton<IDistributedCache, CustomMemoryDistributedCache2>("DistributedTwo");
+        services.AddKeyedHybridCache("HybridOne", options => ConfigurationBinder.Bind(config, "HybridOne", options));
+        services.AddKeyedHybridCache("HybridTwo", options => ConfigurationBinder.Bind(config, "HybridTwo", options));
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        var hybridOne = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>("HybridOne"));
+        var hybridOneOptions = hybridOne.Options;
+        var hybridOneBackend = Assert.IsType<CustomMemoryDistributedCache1>(hybridOne.BackendCache);
+        Assert.Equal("DistributedOne", hybridOneOptions.DistributedCacheServiceKey);
+
+        var hybridTwo = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>("HybridTwo"));
+        var hybridTwoOptions = hybridTwo.Options;
+        var hybridTwoBackend = Assert.IsType<CustomMemoryDistributedCache2>(hybridTwo.BackendCache);
+        Assert.Equal("DistributedTwo", hybridTwoOptions.DistributedCacheServiceKey);
+
+        provider.GetRequiredKeyedService<HybridCache>("HybridOne");
+        provider.GetRequiredKeyedService<HybridCache>("HybridOne");
+        provider.GetRequiredKeyedService<HybridCache>("HybridOne");
+
+        provider.GetRequiredKeyedService<HybridCache>("HybridTwo");
+        provider.GetRequiredKeyedService<HybridCache>("HybridTwo");
+        provider.GetRequiredKeyedService<HybridCache>("HybridTwo");
+    }
+
+    [Fact]
+    public void CanCreateKeyedServicesWithKeyedDistributedCaches_UsingNamedOptionsAndSetupActions()
+    {
+        var source = new JsonConfigurationSource { Path = "BasicConfig.json" };
+        var configBuilder = new ConfigurationBuilder { Sources = { source } };
+        var config = configBuilder.Build();
+
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton<IDistributedCache, CustomMemoryDistributedCache1>("DistributedOne");
+        services.AddKeyedSingleton<IDistributedCache, CustomMemoryDistributedCache2>("DistributedTwo");
+        services.AddKeyedHybridCache(typeof(CustomMemoryDistributedCache1), "HybridOne", options => ConfigurationBinder.Bind(config, "HybridOne", options));
+        services.AddKeyedHybridCache(typeof(CustomMemoryDistributedCache2), "HybridTwo", options => ConfigurationBinder.Bind(config, "HybridTwo", options));
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        var hybridOne = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache1)));
+        var hybridOneOptions = hybridOne.Options;
+        var hybridOneBackend = Assert.IsType<CustomMemoryDistributedCache1>(hybridOne.BackendCache);
+        Assert.Equal("DistributedOne", hybridOneOptions.DistributedCacheServiceKey);
+
+        var hybridTwo = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache2)));
+        var hybridTwoOptions = hybridTwo.Options;
+        var hybridTwoBackend = Assert.IsType<CustomMemoryDistributedCache2>(hybridTwo.BackendCache);
+        Assert.Equal("DistributedTwo", hybridTwoOptions.DistributedCacheServiceKey);
+
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache1));
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache1));
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache1));
+
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache2));
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache2));
+        provider.GetRequiredKeyedService<HybridCache>(typeof(CustomMemoryDistributedCache2));
     }
 #endif
 
@@ -209,7 +426,7 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
     public void SubclassMemoryDistributedCacheIsNotIgnored()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<IDistributedCache, CustomMemoryDistributedCache>();
+        services.AddSingleton<IDistributedCache, CustomMemoryDistributedCache1>();
         services.AddHybridCache();
         using ServiceProvider provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
@@ -329,14 +546,26 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
         }
     }
 
-    internal class CustomMemoryDistributedCache : MemoryDistributedCache
+    internal class CustomMemoryDistributedCache1 : MemoryDistributedCache
     {
-        public CustomMemoryDistributedCache(IOptions<MemoryDistributedCacheOptions> options)
+        public CustomMemoryDistributedCache1(IOptions<MemoryDistributedCacheOptions> options)
             : base(options)
         {
         }
 
-        public CustomMemoryDistributedCache(IOptions<MemoryDistributedCacheOptions> options, ILoggerFactory loggerFactory)
+        public CustomMemoryDistributedCache1(IOptions<MemoryDistributedCacheOptions> options, ILoggerFactory loggerFactory)
+            : base(options, loggerFactory)
+        {
+        }
+    }
+
+    internal class CustomMemoryDistributedCache2 : MemoryDistributedCache
+    {
+        public CustomMemoryDistributedCache2(IOptions<MemoryDistributedCacheOptions> options) : base(options)
+        {
+        }
+
+        public CustomMemoryDistributedCache2(IOptions<MemoryDistributedCacheOptions> options, ILoggerFactory loggerFactory)
             : base(options, loggerFactory)
         {
         }

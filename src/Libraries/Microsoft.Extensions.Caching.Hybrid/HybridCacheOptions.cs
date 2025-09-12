@@ -57,4 +57,9 @@ public class HybridCacheOptions
     /// should not be visible in metrics systems.
     /// </remarks>
     public bool ReportTagMetrics { get; set; }
+
+    /// <summary>
+    /// Gets or sets the key used to resolve the distributed cache service from the <see cref="System.IServiceProvider"/>.
+    /// </summary>
+    public object? DistributedCacheServiceKey { get; set; }
 }
