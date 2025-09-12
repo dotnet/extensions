@@ -2,6 +2,8 @@
 
 ## NOT YET RELEASED
 
+- Added new `ChatResponseFormat.ForJsonSchema` overloads that export a JSON schema from a .NET type.
+
 ## 9.9.0
 
 - Added non-invocable `AIFunctionDeclaration` (base class for `AIFunction`), `AIFunctionFactory.CreateDeclaration`, and `AIFunction.AsDeclarationOnly`.
