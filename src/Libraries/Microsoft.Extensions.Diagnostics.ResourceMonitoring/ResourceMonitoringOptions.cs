@@ -119,4 +119,6 @@ public partial class ResourceMonitoringOptions
     /// <remarks>Previously <c>EnableDiskIoMetrics</c>.</remarks>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
     public bool EnableSystemDiskIoMetrics { get; set; }
+
+    public bool EmitRequestsMetrics { get; set; }
 }
