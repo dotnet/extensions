@@ -58,9 +58,9 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         ILogger<WindowsContainerSnapshotProvider>? logger,
         IMeterFactory meterFactory,
         IOptions<ResourceMonitoringOptions> options,
-        IOptions<KubernetesClusterMetadata> clusterMetadata)
+        IResourceQuotasProvider resourceQuotasProvider)
         : this(new MemoryInfo(), new SystemInfo(), new ProcessInfo(), logger, meterFactory,
-              static () => new JobHandleWrapper(), TimeProvider.System, options.Value, clusterMetadata.Value)
+              static () => new JobHandleWrapper(), TimeProvider.System, options.Value, resourceQuotasProvider)
     {
     }
 
