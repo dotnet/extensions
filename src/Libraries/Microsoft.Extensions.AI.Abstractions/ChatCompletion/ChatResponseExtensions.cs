@@ -186,17 +186,17 @@ public static class ChatResponseExtensions
     /// <summary>Coalesces sequential <see cref="AIContent"/> content elements.</summary>
     internal static void CoalesceTextContent(IList<AIContent> contents)
     {
-        Coalesce<TextContent>(contents, mergeSingle: false, static (contents, start, end) =>
-            new(MergeText(contents, start, end))
-            {
-                AdditionalProperties = contents[start].AdditionalProperties?.Clone()
-            });
+        Coalesce<TextContent>(
+            contents,
+            mergeSingle: false,
+            canMerge: null,
+            static (contents, start, end) => new(MergeText(contents, start, end)) { AdditionalProperties = contents[start].AdditionalProperties?.Clone() });
 
-        Coalesce<TextReasoningContent>(contents, mergeSingle: false, static (contents, start, end) =>
-            new(MergeText(contents, start, end))
-            {
-                AdditionalProperties = contents[start].AdditionalProperties?.Clone()
-            });
+        Coalesce<TextReasoningContent>(
+            contents,
+            mergeSingle: false,
+            canMerge: static (r1, r2) => string.IsNullOrEmpty(r1.ProtectedData), // we allow merging if the first item has no ProtectedData, even if the second does
+            static (contents, start, end) => new(MergeText(contents, start, end)) { AdditionalProperties = contents[start].AdditionalProperties?.Clone() });
 
         static string MergeText(IList<AIContent> contents, int start, int end)
         {
@@ -209,7 +209,11 @@ public static class ChatResponseExtensions
             return sb.ToString();
         }
 
-        static void Coalesce<TContent>(IList<AIContent> contents, bool mergeSingle, Func<IList<AIContent>, int, int, TContent> merge)
+        static void Coalesce<TContent>(
+            IList<AIContent> contents,
+            bool mergeSingle,
+            Func<TContent, TContent, bool>? canMerge,
+            Func<IList<AIContent>, int, int, TContent> merge)
             where TContent : AIContent
         {
             // Iterate through all of the items in the list looking for contiguous items that can be coalesced.
@@ -224,9 +228,11 @@ public static class ChatResponseExtensions
 
                 // Iterate until we find a non-coalescable item.
                 int i = start + 1;
-                while (i < contents.Count && TryAsCoalescable(contents[i], out _))
+                TContent prev = firstContent;
+                while (i < contents.Count && TryAsCoalescable(contents[i], out TContent? next) && (canMerge is null || canMerge(prev, next)))
                 {
                     i++;
+                    prev = next;
                 }
 
                 // If there's only one item in the run, and we don't want to merge single items, skip it.
