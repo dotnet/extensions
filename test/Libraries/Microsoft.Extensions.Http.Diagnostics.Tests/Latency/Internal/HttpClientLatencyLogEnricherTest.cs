@@ -18,6 +18,7 @@ public class HttpClientLatencyLogEnricherTest
     public void HttpClientLatencyLogEnricher_NoOp_OnRequest()
     {
         var lcti = HttpMockProvider.GetTokenIssuer();
+        var mediator = new HttpLatencyMediator(lcti.Object);
         var checkpoints = new ArraySegment<Checkpoint>(new[] { new Checkpoint("a", default, default), new Checkpoint("b", default, default) });
         var ld = new LatencyData(default, checkpoints, default, default, default);
         var lc = HttpMockProvider.GetLatencyContext();
@@ -25,7 +26,11 @@ public class HttpClientLatencyLogEnricherTest
         var context = new HttpClientLatencyContext();
         context.Set(lc.Object);
 
+#if NET
+        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mediator);
+#else
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
+#endif
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
         enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, null, null);
         mockEnrichmentPropertyBag.Verify(m => m.Add(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
@@ -35,6 +40,7 @@ public class HttpClientLatencyLogEnricherTest
     public void HttpClientLatencyLogEnricher_Enriches_OnResponseWithoutHeader()
     {
         var lcti = HttpMockProvider.GetTokenIssuer();
+        var mediator = new HttpLatencyMediator(lcti.Object);
         var checkpoints = new ArraySegment<Checkpoint>(new[] { new Checkpoint("a", default, default), new Checkpoint("b", default, default) });
         var ld = new LatencyData(default, checkpoints, default, default, default);
         var lc = HttpMockProvider.GetLatencyContext();
@@ -44,7 +50,11 @@ public class HttpClientLatencyLogEnricherTest
 
         using HttpResponseMessage httpResponseMessage = new();
 
+#if NET
+        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mediator);
+#else
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
+#endif
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
 
         enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, httpResponseMessage, null);
@@ -55,6 +65,7 @@ public class HttpClientLatencyLogEnricherTest
     public void HttpClientLatencyLogEnricher_Enriches_OnResponseWithHeader()
     {
         var lcti = HttpMockProvider.GetTokenIssuer();
+        var mediator = new HttpLatencyMediator(lcti.Object);
         var checkpoints = new ArraySegment<Checkpoint>(new[] { new Checkpoint("a", default, default), new Checkpoint("b", default, default) });
         var ld = new LatencyData(default, checkpoints, default, default, default);
         var lc = HttpMockProvider.GetLatencyContext();
@@ -66,7 +77,11 @@ public class HttpClientLatencyLogEnricherTest
         string serverName = "serverNameVal";
         httpResponseMessage.Headers.Add(TelemetryConstants.ServerApplicationNameHeader, serverName);
 
+#if NET
+        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mediator);
+#else
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
+#endif
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
 
         enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, httpResponseMessage, null);
