@@ -25,13 +25,13 @@ internal sealed class HttpLatencyTelemetryHandler : DelegatingHandler
 #if NET
     private readonly HttpLatencyMediator _latencyMediator;
 #endif
-
-    public HttpLatencyTelemetryHandler(HttpRequestLatencyListener latencyListener, ILatencyContextTokenIssuer tokenIssuer, ILatencyContextProvider latencyContextProvider,
-        IOptions<HttpClientLatencyTelemetryOptions> options, IOptions<ApplicationMetadata> appMetadata
 #if NET
-        , HttpLatencyMediator latencyTelemetryMediator
+    public HttpLatencyTelemetryHandler(HttpRequestLatencyListener latencyListener, ILatencyContextTokenIssuer tokenIssuer, ILatencyContextProvider latencyContextProvider,
+        IOptions<HttpClientLatencyTelemetryOptions> options, IOptions<ApplicationMetadata> appMetadata, HttpLatencyMediator latencyTelemetryMediator)
+#else
+    public HttpLatencyTelemetryHandler(HttpRequestLatencyListener latencyListener, ILatencyContextTokenIssuer tokenIssuer, ILatencyContextProvider latencyContextProvider,
+            IOptions<HttpClientLatencyTelemetryOptions> options, IOptions<ApplicationMetadata> appMetadata)
 #endif
-        )
     {
         _latencyListener = latencyListener;
         _latencyContextProvider = latencyContextProvider;

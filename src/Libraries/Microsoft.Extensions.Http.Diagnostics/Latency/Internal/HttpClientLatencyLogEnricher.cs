@@ -29,13 +29,16 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
 #endif
     private readonly CheckpointToken _enricherInvoked;
 
+#if NET
     public HttpClientLatencyLogEnricher(
         HttpClientLatencyContext latencyContext,
-        ILatencyContextTokenIssuer tokenIssuer
-#if NET
-      , HttpLatencyMediator httpLatencyMediator
+        ILatencyContextTokenIssuer tokenIssuer,
+        HttpLatencyMediator httpLatencyMediator)
+#else
+    public HttpClientLatencyLogEnricher(
+        HttpClientLatencyContext latencyContext,
+        ILatencyContextTokenIssuer tokenIssuer)
 #endif
-        )
     {
         _latencyContext = latencyContext;
 #if NET
