@@ -2,9 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.Json;
 using Xunit;
+
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
@@ -84,9 +88,23 @@ public class ChatResponseFormatTests
     }
 
     [Fact]
-    public void ForJsonSchema_PrimitiveType_Succeeds()
+    public void ForJsonSchema_NullType_Throws()
     {
-        ChatResponseFormatJson format = ChatResponseFormat.ForJsonSchema<int>();
+        Assert.Throws<ArgumentNullException>("schemaType", () => ChatResponseFormat.ForJsonSchema(null!));
+        Assert.Throws<ArgumentNullException>("schemaType", () => ChatResponseFormat.ForJsonSchema(null!, TestJsonSerializerContext.Default.Options));
+        Assert.Throws<ArgumentNullException>("schemaType", () => ChatResponseFormat.ForJsonSchema(null!, TestJsonSerializerContext.Default.Options, "name"));
+        Assert.Throws<ArgumentNullException>("schemaType", () => ChatResponseFormat.ForJsonSchema(null!, TestJsonSerializerContext.Default.Options, "name", "description"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ForJsonSchema_PrimitiveType_Succeeds(bool generic)
+    {
+        ChatResponseFormatJson format = generic ?
+            ChatResponseFormat.ForJsonSchema<int>() :
+            ChatResponseFormat.ForJsonSchema(typeof(int));
+
         Assert.NotNull(format);
         Assert.NotNull(format.Schema);
         Assert.Equal("""{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"integer"}""", format.Schema.ToString());
@@ -94,10 +112,15 @@ public class ChatResponseFormatTests
         Assert.Null(format.SchemaDescription);
     }
 
-    [Fact]
-    public void ForJsonSchema_IncludedType_Succeeds()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ForJsonSchema_IncludedType_Succeeds(bool generic)
     {
-        ChatResponseFormatJson format = ChatResponseFormat.ForJsonSchema<DataContent>();
+        ChatResponseFormatJson format = generic ?
+            ChatResponseFormat.ForJsonSchema<DataContent>() :
+            ChatResponseFormat.ForJsonSchema(typeof(DataContent));
+
         Assert.NotNull(format);
         Assert.NotNull(format.Schema);
         Assert.Contains("\"uri\"", format.Schema.ToString());
@@ -105,14 +128,20 @@ public class ChatResponseFormatTests
         Assert.Null(format.SchemaDescription);
     }
 
+    public static IEnumerable<object?[]> ForJsonSchema_ComplexType_Succeeds_MemberData() =>
+        from generic in new[] { false, true }
+        from name in new string?[] { null, "CustomName" }
+        from description in new string?[] { null, "CustomDescription" }
+        select new object?[] { generic, name, description };
+
     [Theory]
-    [InlineData(null, null)]
-    [InlineData("AnotherName", null)]
-    [InlineData(null, "another description")]
-    [InlineData("AnotherName", "another description")]
-    public void ForJsonSchema_ComplexType_Succeeds(string? name, string? description)
+    [MemberData(nameof(ForJsonSchema_ComplexType_Succeeds_MemberData))]
+    public void ForJsonSchema_ComplexType_Succeeds(bool generic, string? name, string? description)
     {
-        ChatResponseFormatJson format = ChatResponseFormat.ForJsonSchema<SomeType>(TestJsonSerializerContext.Default.Options, name, description);
+        ChatResponseFormatJson format = generic ?
+            ChatResponseFormat.ForJsonSchema<SomeType>(TestJsonSerializerContext.Default.Options, name, description) :
+            ChatResponseFormat.ForJsonSchema(typeof(SomeType), TestJsonSerializerContext.Default.Options, name, description);
+
         Assert.NotNull(format);
         Assert.Equal(
             """
@@ -132,12 +161,7 @@ public class ChatResponseFormatTests
                     "null"
                   ]
                 }
-              },
-              "additionalProperties": false,
-              "required": [
-                "someInteger",
-                "someString"
-              ]
+              }
             }
             """,
             JsonSerializer.Serialize(format.Schema, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement))));
