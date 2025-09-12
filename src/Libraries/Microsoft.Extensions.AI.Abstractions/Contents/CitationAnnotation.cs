@@ -22,7 +22,7 @@ public class CitationAnnotation : AIAnnotation
     /// Gets or sets the title or name of the source.
     /// </summary>
     /// <remarks>
-    /// This could be the title of a document, a title from a web page, a name of a file, or similarly descriptive text.
+    /// This value could be the title of a document, the title from a web page, the name of a file, or similarly descriptive text.
     /// </remarks>
     public string? Title { get; set; }
 
@@ -34,7 +34,7 @@ public class CitationAnnotation : AIAnnotation
     /// <summary>Gets or sets a source identifier associated with the annotation.</summary>
     /// <remarks>
     /// This is a provider-specific identifier that can be used to reference the source material by
-    /// an ID. This may be a document ID, or a file ID, or some other identifier for the source material
+    /// an ID. This might be a document ID, a file ID, or some other identifier for the source material
     /// that can be used to uniquely identify it with the provider.
     /// </remarks>
     public string? FileId { get; set; }

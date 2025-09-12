@@ -16,7 +16,7 @@ public static class ImageGeneratorBuilderServiceCollectionExtensions
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the generator should be added.</param>
     /// <param name="innerGenerator">The inner <see cref="IImageGenerator"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the generator. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
-    /// <returns>A <see cref="ImageGeneratorBuilder"/> that can be used to build a pipeline around the inner generator.</returns>
+    /// <returns>An <see cref="ImageGeneratorBuilder"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> or <paramref name="innerGenerator"/> is <see langword="null"/>.</exception>
     /// <remarks>The generator is registered as a singleton service.</remarks>
     public static ImageGeneratorBuilder AddImageGenerator(
@@ -29,7 +29,7 @@ public static class ImageGeneratorBuilderServiceCollectionExtensions
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the generator should be added.</param>
     /// <param name="innerGeneratorFactory">A callback that produces the inner <see cref="IImageGenerator"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the generator. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
-    /// <returns>A <see cref="ImageGeneratorBuilder"/> that can be used to build a pipeline around the inner generator.</returns>
+    /// <returns>An <see cref="ImageGeneratorBuilder"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> or <paramref name="innerGeneratorFactory"/> is <see langword="null"/>.</exception>
     /// <remarks>The generator is registered as a singleton service.</remarks>
     public static ImageGeneratorBuilder AddImageGenerator(
@@ -50,7 +50,7 @@ public static class ImageGeneratorBuilderServiceCollectionExtensions
     /// <param name="serviceKey">The key with which to associate the generator.</param>
     /// <param name="innerGenerator">The inner <see cref="IImageGenerator"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the generator. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
-    /// <returns>A <see cref="ImageGeneratorBuilder"/> that can be used to build a pipeline around the inner generator.</returns>
+    /// <returns>An <see cref="ImageGeneratorBuilder"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/>, <paramref name="serviceKey"/>, or <paramref name="innerGenerator"/> is <see langword="null"/>.</exception>
     /// <remarks>The generator is registered as a scoped service.</remarks>
     public static ImageGeneratorBuilder AddKeyedImageGenerator(
@@ -65,7 +65,7 @@ public static class ImageGeneratorBuilderServiceCollectionExtensions
     /// <param name="serviceKey">The key with which to associate the generator.</param>
     /// <param name="innerGeneratorFactory">A callback that produces the inner <see cref="IImageGenerator"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the generator. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
-    /// <returns>A <see cref="ImageGeneratorBuilder"/> that can be used to build a pipeline around the inner generator.</returns>
+    /// <returns>An <see cref="ImageGeneratorBuilder"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/>, <paramref name="serviceKey"/>, or <paramref name="innerGeneratorFactory"/> is <see langword="null"/>.</exception>
     /// <remarks>The generator is registered as a scoped service.</remarks>
     public static ImageGeneratorBuilder AddKeyedImageGenerator(

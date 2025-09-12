@@ -11,9 +11,9 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents a function that can be described to an AI service.</summary>
 /// <remarks>
 /// <see cref="AIFunctionDeclaration"/> is the base class for <see cref="AIFunction"/>, which
-/// adds the ability to invoke the function. Components may type test <see cref="AITool"/> instances
+/// adds the ability to invoke the function. Components can type test <see cref="AITool"/> instances
 /// for <see cref="AIFunctionDeclaration"/> to determine whether they can be described as functions,
-/// and may type test for <see cref="AIFunction"/> to determine whether they can be invoked.
+/// and can type test for <see cref="AIFunction"/> to determine whether they can be invoked.
 /// </remarks>
 public abstract class AIFunctionDeclaration : AITool
 {
@@ -36,7 +36,7 @@ public abstract class AIFunctionDeclaration : AITool
     ///   "properties": {
     ///     "a" : { "type": "number" },
     ///     "b" : { "type": "number", "default": 1 }
-    ///   }, 
+    ///   },
     ///   "required" : ["a"]
     /// }
     /// </code>

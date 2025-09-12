@@ -40,8 +40,8 @@ public class HostedMcpServerToolApprovalMode
     /// <summary>
     /// Instantiates a <see cref="HostedMcpServerToolApprovalMode"/> that specifies approval behavior for individual tool names.
     /// </summary>
-    /// <param name="alwaysRequireApprovalToolNames">The list of tools names that always require approval.</param>
-    /// <param name="neverRequireApprovalToolNames">The list of tools names that never require approval.</param>
+    /// <param name="alwaysRequireApprovalToolNames">The list of tool names that always require approval.</param>
+    /// <param name="neverRequireApprovalToolNames">The list of tool names that never require approval.</param>
     /// <returns>An instance of <see cref="HostedMcpServerToolRequireSpecificApprovalMode"/> for the specified tool names.</returns>
     public static HostedMcpServerToolRequireSpecificApprovalMode RequireSpecific(IList<string>? alwaysRequireApprovalToolNames, IList<string>? neverRequireApprovalToolNames)
         => new(alwaysRequireApprovalToolNames, neverRequireApprovalToolNames);
