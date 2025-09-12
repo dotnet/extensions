@@ -16,14 +16,12 @@ internal interface IHttpLatencyMediator
     /// </summary>
     /// <param name="context">The latency context to update.</param>
     /// <param name="request">The HTTP request message.</param>
-    /// <param name="response">The HTTP response message.</param>
     void RecordStart(ILatencyContext context, HttpRequestMessage? request);
 
     /// <summary>
     /// Records the end of an HTTP request/response cycle in the latency context.
     /// </summary>
     /// <param name="context">The latency context to update.</param>
-    /// <param name="request">The HTTP request message (optional if already recorded in RecordStart).</param>
     /// <param name="response">The HTTP response message.</param>
-    void RecordEnd(ILatencyContext context, HttpRequestMessage? request = null, HttpResponseMessage? response = null);
+    void RecordEnd(ILatencyContext context, HttpResponseMessage? response = null);
 }

@@ -21,16 +21,25 @@ internal sealed class HttpLatencyTelemetryHandler : DelegatingHandler
     private readonly ILatencyContextProvider _latencyContextProvider;
     private readonly CheckpointToken _handlerStart;
     private readonly string _applicationName;
-    private readonly IHttpLatencyMediator _latencyMediator;
+
+#if NET
+    private readonly HttpLatencyMediator _latencyMediator;
+#endif
 
     public HttpLatencyTelemetryHandler(HttpRequestLatencyListener latencyListener, ILatencyContextTokenIssuer tokenIssuer, ILatencyContextProvider latencyContextProvider,
-        IOptions<HttpClientLatencyTelemetryOptions> options, IOptions<ApplicationMetadata> appMetadata, IHttpLatencyMediator latencyTelemetryMediator)
+        IOptions<HttpClientLatencyTelemetryOptions> options, IOptions<ApplicationMetadata> appMetadata
+#if NET
+        , HttpLatencyMediator latencyTelemetryMediator
+#endif
+        )
     {
         _latencyListener = latencyListener;
         _latencyContextProvider = latencyContextProvider;
         _handlerStart = tokenIssuer.GetCheckpointToken(HttpCheckpoints.HandlerRequestStart);
         _applicationName = appMetadata.Value.ApplicationName;
+#if NET
         _latencyMediator = latencyTelemetryMediator;
+#endif
 
         if (options.Value.EnableDetailedLatencyBreakdown)
         {
@@ -44,7 +53,9 @@ internal sealed class HttpLatencyTelemetryHandler : DelegatingHandler
         context.AddCheckpoint(_handlerStart);
         _latencyListener.LatencyContext.Set(context);
 
+#if NET
         _latencyMediator.RecordStart(context, request);
+#endif
 
         _ = request.Headers.TryAddWithoutValidation(TelemetryConstants.ClientApplicationNameHeader, _applicationName);
 

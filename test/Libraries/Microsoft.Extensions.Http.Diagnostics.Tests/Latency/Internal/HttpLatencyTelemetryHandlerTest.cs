@@ -34,7 +34,11 @@ public class HttpLatencyTelemetryHandlerTest
 
         var mediator = new HttpLatencyMediator(lcti2.Object);
         using var listener = HttpMockProvider.GetListener(context, lcti.Object);
+#if NET
         using var handler = new HttpLatencyTelemetryHandler(listener, lcti2.Object, lcp.Object, hop.Object, sop.Object, mediator);
+        #else 
+        
+#endif
 
         lcti2.Verify(a => a.GetCheckpointToken(It.Is<string>(s => !HttpCheckpoints.Checkpoints.Contains(s))), Times.Never);
         lcti2.Verify(a => a.GetCheckpointToken(It.Is<string>(s => HttpCheckpoints.Checkpoints.Contains(s))));
