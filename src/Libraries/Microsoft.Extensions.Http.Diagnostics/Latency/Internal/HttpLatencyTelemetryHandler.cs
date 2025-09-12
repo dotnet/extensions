@@ -54,7 +54,7 @@ internal sealed class HttpLatencyTelemetryHandler : DelegatingHandler
         _latencyListener.LatencyContext.Set(context);
 
 #if NET
-        _latencyMediator.RecordStart(context, request);
+        _latencyMediator.RecordStart(context);
 #endif
 
         _ = request.Headers.TryAddWithoutValidation(TelemetryConstants.ClientApplicationNameHeader, _applicationName);

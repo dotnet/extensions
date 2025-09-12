@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+#if NETFRAMEWORK
 
 using System.Net.Http;
 using Microsoft.Extensions.Diagnostics.Latency;
 
-#if NETFRAMEWORK
 namespace Microsoft.Extensions.Http.Latency.Internal;
 
 internal sealed class HttpLatencyMediator
