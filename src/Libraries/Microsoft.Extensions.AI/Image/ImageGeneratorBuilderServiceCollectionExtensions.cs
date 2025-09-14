@@ -55,7 +55,7 @@ public static class ImageGeneratorBuilderServiceCollectionExtensions
     /// <remarks>The generator is registered as a scoped service.</remarks>
     public static ImageGeneratorBuilder AddKeyedImageGenerator(
         this IServiceCollection serviceCollection,
-        object serviceKey,
+        object? serviceKey,
         IImageGenerator innerGenerator,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         => AddKeyedImageGenerator(serviceCollection, serviceKey, _ => innerGenerator, lifetime);
@@ -70,7 +70,7 @@ public static class ImageGeneratorBuilderServiceCollectionExtensions
     /// <remarks>The generator is registered as a scoped service.</remarks>
     public static ImageGeneratorBuilder AddKeyedImageGenerator(
         this IServiceCollection serviceCollection,
-        object serviceKey,
+        object? serviceKey,
         Func<IServiceProvider, IImageGenerator> innerGeneratorFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
