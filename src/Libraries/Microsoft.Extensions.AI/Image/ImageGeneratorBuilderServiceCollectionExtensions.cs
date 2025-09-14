@@ -75,7 +75,6 @@ public static class ImageGeneratorBuilderServiceCollectionExtensions
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         _ = Throw.IfNull(serviceCollection);
-        _ = Throw.IfNull(serviceKey);
         _ = Throw.IfNull(innerGeneratorFactory);
 
         var builder = new ImageGeneratorBuilder(innerGeneratorFactory);
