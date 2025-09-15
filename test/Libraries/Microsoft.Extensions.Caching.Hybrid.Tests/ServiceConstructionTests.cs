@@ -6,6 +6,8 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.SqlServer;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -201,6 +203,33 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
         Assert.Same(typeof(CustomMemoryDistributedCache2), cacheTwoOptions.DistributedCacheServiceKey);
         Assert.Same(cacheTwoBackend, provider.GetRequiredKeyedService<IDistributedCache>(typeof(CustomMemoryDistributedCache2)));
         Assert.IsType<CustomMemoryDistributedCache2>(cacheTwo.BackendCache);
+    }
+
+    [Fact]
+    public void CanCreateRedisAndSqlServerBackedHybridCaches()
+    {
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton<IDistributedCache, RedisCache>("Redis");
+
+        services.AddKeyedSingleton<IDistributedCache, SqlServerCache>("SqlServer",
+            (sp, key) => new SqlServerCache(new SqlServerCacheOptions
+            {
+                ConnectionString = "test",
+                SchemaName = "test",
+                TableName = "test"
+            }));
+
+        services.AddKeyedHybridCache("HybridWithRedis", options => options.DistributedCacheServiceKey = "Redis");
+        services.AddKeyedHybridCache("HybridWithSqlServer", options => options.DistributedCacheServiceKey = "SqlServer");
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        var hybridWithRedis = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>("HybridWithRedis"));
+        var hybridWithRedisBackend = Assert.IsType<RedisCache>(hybridWithRedis.BackendCache);
+        Assert.Same(hybridWithRedisBackend, provider.GetRequiredKeyedService<IDistributedCache>("Redis"));
+
+        var hybridWithSqlServer = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>("HybridWithSqlServer"));
+        var hybridWithSqlServerBackend = Assert.IsType<SqlServerCache>(hybridWithSqlServer.BackendCache);
+        Assert.Same(hybridWithSqlServerBackend, provider.GetRequiredKeyedService<IDistributedCache>("SqlServer"));
     }
 
 #if NET9_0_OR_GREATER // for Bind API
@@ -561,7 +590,8 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
 
     internal class CustomMemoryDistributedCache2 : MemoryDistributedCache
     {
-        public CustomMemoryDistributedCache2(IOptions<MemoryDistributedCacheOptions> options) : base(options)
+        public CustomMemoryDistributedCache2(IOptions<MemoryDistributedCacheOptions> options)
+            : base(options)
         {
         }
 
