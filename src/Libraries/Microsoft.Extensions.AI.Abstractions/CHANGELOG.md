@@ -3,6 +3,7 @@
 ## NOT YET RELEASED
 
 - Added new `ChatResponseFormat.ForJsonSchema` overloads that export a JSON schema from a .NET type.
+- Updated `TextReasoningContent` to include `ProtectedData` for representing encrypted/redacted content.
 
 ## 9.9.0
 

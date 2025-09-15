@@ -17,6 +17,7 @@ using OpenAI.Responses;
 #pragma warning disable S907 // "goto" statement should not be used
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable S3254 // Default parameter values should not be passed as arguments
 #pragma warning disable S3604 // Member initializer values should not be redundant
 #pragma warning disable SA1202 // Elements should be ordered by access
 #pragma warning disable SA1204 // Static elements should appear before instance elements
@@ -149,8 +150,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     ((List<AIContent>)message.Contents).AddRange(ToAIContents(messageItem.Content));
                     break;
 
-                case ReasoningResponseItem reasoningItem when reasoningItem.GetSummaryText() is string summary:
-                    message.Contents.Add(new TextReasoningContent(summary) { RawRepresentation = outputItem });
+                case ReasoningResponseItem reasoningItem:
+                    message.Contents.Add(new TextReasoningContent(reasoningItem.GetSummaryText())
+                    {
+                        ProtectedData = reasoningItem.EncryptedContent,
+                        RawRepresentation = outputItem,
+                    });
                     break;
 
                 case FunctionCallResponseItem functionCall:
@@ -626,7 +631,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case TextReasoningContent reasoningContent:
-                            yield return ResponseItem.CreateReasoningItem(reasoningContent.Text);
+                            yield return OpenAIResponsesModelFactory.ReasoningResponseItem(
+                                encryptedContent: reasoningContent.ProtectedData,
+                                summaryText: reasoningContent.Text);
                             break;
 
                         case FunctionCallContent callContent:
