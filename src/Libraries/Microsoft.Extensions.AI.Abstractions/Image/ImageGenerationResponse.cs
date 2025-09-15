@@ -51,4 +51,7 @@ public class ImageGenerationResponse
         get => _contents ??= [];
         set => _contents = value;
     }
+
+    /// <summary>Gets or sets usage details for the image generation response.</summary>
+    public UsageDetails? Usage { get; set; }
 }

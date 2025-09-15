@@ -229,7 +229,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeInput);
             AddMetricTags(ref tags, requestModelId, responseModelId);
 
-            _tokenUsageHistogram.Record(inputTokens.Value);
+            _tokenUsageHistogram.Record(inputTokens.Value, tags);
         }
 
         if (activity is not null)
