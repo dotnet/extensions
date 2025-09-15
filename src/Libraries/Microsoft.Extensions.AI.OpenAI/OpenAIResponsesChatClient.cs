@@ -520,32 +520,31 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             }
         }
 
-        if (result.TextOptions is null)
+        if (result.TextOptions?.TextFormat is null &&
+            ToOpenAIResponseTextFormat(options.ResponseFormat, options) is { } newFormat)
         {
-            if (options.ResponseFormat is ChatResponseFormatText)
-            {
-                result.TextOptions = new()
-                {
-                    TextFormat = ResponseTextFormat.CreateTextFormat()
-                };
-            }
-            else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
-            {
-                result.TextOptions = new()
-                {
-                    TextFormat = OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
-                        ResponseTextFormat.CreateJsonSchemaFormat(
-                            jsonFormat.SchemaName ?? "json_schema",
-                            BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                            jsonFormat.SchemaDescription,
-                            OpenAIClientExtensions.HasStrict(options.AdditionalProperties)) :
-                        ResponseTextFormat.CreateJsonObjectFormat(),
-                };
-            }
+            (result.TextOptions ??= new()).TextFormat = newFormat;
         }
 
         return result;
     }
+
+    internal static ResponseTextFormat? ToOpenAIResponseTextFormat(ChatResponseFormat? format, ChatOptions? options = null) =>
+        format switch
+        {
+            ChatResponseFormatText => ResponseTextFormat.CreateTextFormat(),
+
+            ChatResponseFormatJson jsonFormat when OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema =>
+                ResponseTextFormat.CreateJsonSchemaFormat(
+                    jsonFormat.SchemaName ?? "json_schema",
+                    BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
+                    jsonFormat.SchemaDescription,
+                    OpenAIClientExtensions.HasStrict(options?.AdditionalProperties)),
+
+            ChatResponseFormatJson => ResponseTextFormat.CreateJsonObjectFormat(),
+
+            _ => null,
+        };
 
     /// <summary>Convert a sequence of <see cref="ChatMessage"/>s to <see cref="ResponseItem"/>s.</summary>
     internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> inputs, ChatOptions? options)
