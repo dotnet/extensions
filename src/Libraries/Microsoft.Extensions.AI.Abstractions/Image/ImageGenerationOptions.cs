@@ -59,12 +59,16 @@ public class ImageGenerationOptions
     /// </summary>
     public ImageGenerationResponseFormat? ResponseFormat { get; set; }
 
+    /// <summary>Gets or sets any additional properties associated with the options.</summary>
+    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
+
     /// <summary>Produces a clone of the current <see cref="ImageGenerationOptions"/> instance.</summary>
     /// <returns>A clone of the current <see cref="ImageGenerationOptions"/> instance.</returns>
     public virtual ImageGenerationOptions Clone()
     {
         ImageGenerationOptions options = new()
         {
+            AdditionalProperties = AdditionalProperties?.Clone(),
             Count = Count,
             MediaType = MediaType,
             ImageSize = ImageSize,

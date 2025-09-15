@@ -163,9 +163,28 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
             }
         }
 
+        UsageDetails? ud = null;
+        if (generatedImages.Usage is { } usage)
+        {
+            ud = new()
+            {
+                InputTokenCount = usage.InputTokenCount,
+                OutputTokenCount = usage.OutputTokenCount,
+                TotalTokenCount = usage.TotalTokenCount,
+            };
+
+            if (usage.InputTokenDetails is { } inputDetails)
+            {
+                ud.AdditionalCounts ??= [];
+                ud.AdditionalCounts.Add($"{nameof(usage.InputTokenDetails)}.{nameof(inputDetails.ImageTokenCount)}", inputDetails.ImageTokenCount);
+                ud.AdditionalCounts.Add($"{nameof(usage.InputTokenDetails)}.{nameof(inputDetails.TextTokenCount)}", inputDetails.TextTokenCount);
+            }
+        }
+
         return new ImageGenerationResponse(contents)
         {
-            RawRepresentation = generatedImages
+            RawRepresentation = generatedImages,
+            Usage = ud,
         };
     }
 

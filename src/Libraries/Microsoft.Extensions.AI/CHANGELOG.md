@@ -3,6 +3,7 @@
 ## NOT YET RELEASED
 
 - Updated the EnableSensitiveData properties on OpenTelemetryChatClient/EmbeddingGenerator to respect a OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT environment variable.
+- Added OpenTelemetryImageGenerator to provide OpenTelemetry instrumentation for IImageGenerator implementations.
 
 ## 9.9.0
 
