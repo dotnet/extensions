@@ -154,6 +154,22 @@ public class ImageGeneratorDependencyInjectionPatterns
         Assert.Equal(expectedLifetime, sd.Lifetime);
     }
 
+    [Fact]
+    public void AddKeyedImageGenerator_WorksWithNullServiceKey()
+    {
+        ServiceCollection sc = new();
+        sc.AddKeyedImageGenerator(null, _ => new TestImageGenerator());
+
+        ServiceDescriptor sd = Assert.Single(sc);
+        Assert.Equal(typeof(IImageGenerator), sd.ServiceType);
+        Assert.False(sd.IsKeyedService);
+        Assert.Null(sd.ServiceKey);
+        Assert.Null(sd.ImplementationInstance);
+        Assert.NotNull(sd.ImplementationFactory);
+        Assert.IsType<TestImageGenerator>(sd.ImplementationFactory(null!));
+        Assert.Equal(ServiceLifetime.Singleton, sd.Lifetime);
+    }
+
     public class SingletonMiddleware(IImageGenerator inner, IServiceProvider services) : DelegatingImageGenerator(inner)
     {
         public new IImageGenerator InnerGenerator => base.InnerGenerator;
