@@ -34,7 +34,7 @@ public class ConfigurationBindingQuirkBehaviorTests
     [InlineData("customSection:ambientmetadata:build")]
     public void GivenMetadata_RegistersOptions_HostApplicationBuilder(string sectionName)
     {
-        // When configuration is not available, values are initilaized to the an empty string
+        // When configuration is not available, values are initialized to an empty string
         var metadataWithEmptyStrings = new BuildMetadata
         {
             BuildId = string.Empty,
