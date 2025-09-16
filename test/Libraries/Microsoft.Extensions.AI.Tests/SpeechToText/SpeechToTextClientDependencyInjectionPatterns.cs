@@ -154,6 +154,22 @@ public class SpeechToTextClientDependencyInjectionPatterns
         Assert.Equal(expectedLifetime, sd.Lifetime);
     }
 
+    [Fact]
+    public void AddKeyedSpeechToTextClient_WorksWithNullServiceKey()
+    {
+        ServiceCollection sc = new();
+        sc.AddKeyedSpeechToTextClient(null, _ => new TestSpeechToTextClient());
+
+        ServiceDescriptor sd = Assert.Single(sc);
+        Assert.Equal(typeof(ISpeechToTextClient), sd.ServiceType);
+        Assert.False(sd.IsKeyedService);
+        Assert.Null(sd.ServiceKey);
+        Assert.Null(sd.ImplementationInstance);
+        Assert.NotNull(sd.ImplementationFactory);
+        Assert.IsType<TestSpeechToTextClient>(sd.ImplementationFactory(null!));
+        Assert.Equal(ServiceLifetime.Singleton, sd.Lifetime);
+    }
+
     public class SingletonMiddleware(ISpeechToTextClient inner, IServiceProvider services) : DelegatingSpeechToTextClient(inner)
     {
         public new ISpeechToTextClient InnerClient => base.InnerClient;

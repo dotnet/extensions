@@ -41,6 +41,24 @@ public class McpServerSnapshotTests
         await TestTemplateCoreAsync(scenarioName: "Basic");
     }
 
+    [Fact]
+    public async Task SelfContainedFalse()
+    {
+        await TestTemplateCoreAsync(scenarioName: "SelfContainedFalse", templateArgs: ["--self-contained", bool.FalseString]);
+    }
+
+    [Fact]
+    public async Task AotTrue()
+    {
+        await TestTemplateCoreAsync(scenarioName: "AotTrue", templateArgs: ["--aot", bool.TrueString]);
+    }
+
+    [Fact]
+    public async Task Net10()
+    {
+        await TestTemplateCoreAsync(scenarioName: "net10", templateArgs: ["--framework", "net10.0"]);
+    }
+
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
     {
         string workingDir = TestUtils.CreateTemporaryFolder();

@@ -16,6 +16,7 @@ public class TextReasoningContentTests
         TextReasoningContent c = new(text);
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
+        Assert.Null(c.ProtectedData);
         Assert.Equal(text ?? string.Empty, c.Text);
     }
 
@@ -46,5 +47,11 @@ public class TextReasoningContentTests
         c.Text = string.Empty;
         Assert.Equal(string.Empty, c.Text);
         Assert.Equal(string.Empty, c.ToString());
+
+        Assert.Null(c.ProtectedData);
+        c.ProtectedData = "protected";
+        Assert.Equal("protected", c.ProtectedData);
+        c.ProtectedData = null;
+        Assert.Null(c.ProtectedData);
     }
 }

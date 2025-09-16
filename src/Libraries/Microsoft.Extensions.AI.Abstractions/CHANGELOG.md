@@ -2,6 +2,19 @@
 
 ## NOT YET RELEASED
 
+- Added new `ChatResponseFormat.ForJsonSchema` overloads that export a JSON schema from a .NET type.
+- Updated `TextReasoningContent` to include `ProtectedData` for representing encrypted/redacted content.
+
+## 9.9.0
+
+- Added non-invocable `AIFunctionDeclaration` (base class for `AIFunction`), `AIFunctionFactory.CreateDeclaration`, and `AIFunction.AsDeclarationOnly`.
+- Added `[Experimental]` support for user approval of function invocations via `ApprovalRequiredAIFunction`, `FunctionApprovalRequestContent`, and friends.
+- Added `[Experimental]` support for MCP server-hosted tools via `HostedMcpServerTool`, `HostedMcpServerToolApprovalMode`, and friends.
+- Updated `AIContent` coalescing logic used by `ToChatResponse`/`ToChatResponseUpdate` to factor in `ChatMessage.Role`.
+- Moved `IChatReducer` into `Microsoft.Extensions.AI.Abstractions` from `Microsoft.Extensions.AI`.
+
+## 9.8.0
+
 - Added `AIAnnotation` and related types to represent citations and other annotations in chat messages.
 - Added `ChatMessage.CreatedAt` so that chat messages can carry their timestamp.
 - Added a `[Description(...)]` attribute to `DataContent.Uri` to clarify its purpose when used in schemas.
@@ -10,12 +23,17 @@
 - Added `HostedVectorStoreContent` for representing vector stores hosted by the service.
 - Added `HostedFileSearchTool` to represent server-side file search tools.
 - Added `HostedCodeInterpreterTool.Inputs` to supply context about what state is available to the code interpreter tool.
+- Added [Experimental] `IImageGenerator` and supporting types.
 - Improved handling of function parameter data annotation attributes in `AIJsonUtilities.CreateJsonSchema`.
 - Fixed schema generation to include an items keyword for arrays of objects in `AIJsonUtilities.CreateJsonSchema`.
 
 ## 9.7.1
 
 - Fixed schema generation for nullable function parameters in `AIJsonUtilities.CreateJsonSchema`.
+- Added a flag for `AIFunctionFactory` to control whether return schemas are generated.
+- Added `DelegatingAIFunction` to simplify creating `AIFunction`s that call other `AIFunction`s.
+- Updated `AIFunctionFactory` to tolerate JSON string function parameters.
+- Fixed schema generation for nullable value type parameters.
 
 ## 9.7.0
 
@@ -70,7 +88,7 @@
 - Added `MessageId` to `ChatMessage` and `ChatResponseUpdate`.
 - Added `AIFunctionArguments`, changing `AIFunction.InvokeAsync` to accept one and to return a `ValueTask`.
 - Updated `AIJsonUtilities`'s schema generation to not use `default` when `RequireAllProperties` is set to `true`.
-- Added `ISpeechToTextClient` and supporting types.
+- Added [Experimental] `ISpeechToTextClient` and supporting types.
 - Fixed several issues related to Native AOT support.
 
 ## 9.3.0-preview.1.25161.3

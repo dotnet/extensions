@@ -23,6 +23,7 @@ public class DelegatingChatClient : IChatClient
     /// Initializes a new instance of the <see cref="DelegatingChatClient"/> class.
     /// </summary>
     /// <param name="innerClient">The wrapped client instance.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     protected DelegatingChatClient(IChatClient innerClient)
     {
         InnerClient = Throw.IfNull(innerClient);

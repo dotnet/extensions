@@ -2,6 +2,17 @@
 
 ## NOT YET RELEASED
 
+- Added M.E.AI to OpenAI conversions for response format types
+
+## 9.9.0-preview.1.25458.4
+
+- Updated to depend on OpenAI 2.4.0
+- Updated tool mappings to recognize any `AIFunctionDeclaration`.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Fixed handling of annotated but empty content in the `AsIChatClient` for `AssistantClient`.
+
+## 9.8.0-preview.1.25412.6
+
 - Updated to depend on OpenAI 2.3.0.
 - Added more conversion helpers for converting bidirectionally between Microsoft.Extensions.AI messages and OpenAI messages.
 - Fixed handling of multiple response messages in the Responses `IChatClient`.
@@ -10,6 +21,7 @@
 ## 9.7.1-preview.1.25365.4
 
 - Added some conversion helpers for converting Microsoft.Extensions.AI messages to OpenAI messages.
+- Enabled specifying "strict" via ChatOptions for OpenAI clients.
 
 ## 9.7.0-preview.1.25356.2
 

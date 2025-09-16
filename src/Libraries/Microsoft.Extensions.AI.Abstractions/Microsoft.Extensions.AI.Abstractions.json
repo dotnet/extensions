@@ -172,7 +172,7 @@
       ]
     },
     {
-      "Type": "abstract class Microsoft.Extensions.AI.AIFunction : Microsoft.Extensions.AI.AITool",
+      "Type": "abstract class Microsoft.Extensions.AI.AIFunction : Microsoft.Extensions.AI.AIFunctionDeclaration",
       "Stage": "Stable",
       "Methods": [
         {
@@ -186,23 +186,39 @@
         {
           "Member": "abstract System.Threading.Tasks.ValueTask<object?> Microsoft.Extensions.AI.AIFunction.InvokeCoreAsync(Microsoft.Extensions.AI.AIFunctionArguments arguments, System.Threading.CancellationToken cancellationToken);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunctionDeclaration Microsoft.Extensions.AI.AIFunction.AsDeclarationOnly();",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
-        {
-          "Member": "virtual System.Text.Json.JsonElement Microsoft.Extensions.AI.AIFunction.JsonSchema { get; }",
-          "Stage": "Stable"
-        },
         {
           "Member": "virtual System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.AIFunction.JsonSerializerOptions { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "virtual System.Text.Json.JsonElement? Microsoft.Extensions.AI.AIFunction.ReturnJsonSchema { get; }",
+          "Member": "virtual System.Reflection.MethodInfo? Microsoft.Extensions.AI.AIFunction.UnderlyingMethod { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.AI.AIFunctionDeclaration : Microsoft.Extensions.AI.AITool",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunctionDeclaration.AIFunctionDeclaration();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual System.Text.Json.JsonElement Microsoft.Extensions.AI.AIFunctionDeclaration.JsonSchema { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "virtual System.Reflection.MethodInfo? Microsoft.Extensions.AI.AIFunction.UnderlyingMethod { get; }",
+          "Member": "virtual System.Text.Json.JsonElement? Microsoft.Extensions.AI.AIFunctionDeclaration.ReturnJsonSchema { get; }",
           "Stage": "Stable"
         }
       ]
@@ -305,6 +321,10 @@
         },
         {
           "Member": "static Microsoft.Extensions.AI.AIFunction Microsoft.Extensions.AI.AIFunctionFactory.Create(System.Reflection.MethodInfo method, System.Func<Microsoft.Extensions.AI.AIFunctionArguments, object> createInstanceFunc, Microsoft.Extensions.AI.AIFunctionFactoryOptions? options = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.AIFunctionDeclaration Microsoft.Extensions.AI.AIFunctionFactory.CreateDeclaration(string name, string? description, System.Text.Json.JsonElement jsonSchema, System.Text.Json.JsonElement? returnJsonSchema = null);",
           "Stage": "Stable"
         }
       ]
@@ -511,6 +531,10 @@
         },
         {
           "Member": "System.Text.Json.JsonElement Microsoft.Extensions.AI.AIJsonSchemaTransformCache.GetOrCreateTransformedSchema(Microsoft.Extensions.AI.AIFunction function);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Text.Json.JsonElement Microsoft.Extensions.AI.AIJsonSchemaTransformCache.GetOrCreateTransformedSchema(Microsoft.Extensions.AI.AIFunctionDeclaration function);",
           "Stage": "Stable"
         },
         {
@@ -1131,6 +1155,14 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(System.Text.Json.JsonElement schema, string? schemaName = null, string? schemaDescription = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema<T>(System.Text.Json.JsonSerializerOptions? serializerOptions = null, string? schemaName = null, string? schemaDescription = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(System.Type schemaType, System.Text.Json.JsonSerializerOptions? serializerOptions = null, string? schemaName = null, string? schemaDescription = null);",
           "Stage": "Stable"
         }
       ],
@@ -2397,6 +2429,10 @@
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.AI.TextReasoningContent.Text { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextReasoningContent.ProtectedData { get; set; }",
           "Stage": "Stable"
         }
       ]

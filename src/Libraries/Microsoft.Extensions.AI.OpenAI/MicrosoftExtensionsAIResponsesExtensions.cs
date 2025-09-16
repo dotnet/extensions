@@ -14,12 +14,21 @@ namespace OpenAI.Responses;
 /// <summary>Provides extension methods for working with content associated with OpenAI.Responses.</summary>
 public static class MicrosoftExtensionsAIResponsesExtensions
 {
-    /// <summary>Creates an OpenAI <see cref="ResponseTool"/> from an <see cref="AIFunction"/>.</summary>
+    /// <summary>Creates an OpenAI <see cref="ResponseTool"/> from an <see cref="AIFunctionDeclaration"/>.</summary>
     /// <param name="function">The function to convert.</param>
     /// <returns>An OpenAI <see cref="ResponseTool"/> representing <paramref name="function"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-    public static ResponseTool AsOpenAIResponseTool(this AIFunction function) =>
+    public static FunctionTool AsOpenAIResponseTool(this AIFunctionDeclaration function) =>
         OpenAIResponsesChatClient.ToResponseTool(Throw.IfNull(function));
+
+    /// <summary>
+    /// Creates an OpenAI <see cref="ResponseTextFormat"/> from a <see cref="ChatResponseFormat"/>.
+    /// </summary>
+    /// <param name="format">The format.</param>
+    /// <param name="options">The options to use when interpreting the format.</param>
+    /// <returns>The converted OpenAI <see cref="ResponseTextFormat"/>.</returns>
+    public static ResponseTextFormat? AsOpenAIResponseTextFormat(this ChatResponseFormat? format, ChatOptions? options = null) =>
+        OpenAIResponsesChatClient.ToOpenAIResponseTextFormat(format, options);
 
     /// <summary>Creates a sequence of OpenAI <see cref="ResponseItem"/> instances from the specified input messages.</summary>
     /// <param name="messages">The input messages to convert.</param>
