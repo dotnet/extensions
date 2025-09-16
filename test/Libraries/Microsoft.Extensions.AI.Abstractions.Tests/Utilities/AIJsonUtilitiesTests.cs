@@ -670,22 +670,22 @@ public static partial class AIJsonUtilitiesTests
                             "string",
                             "null"
                         ],
-                        "minItems": 5
+                        "minLength": 5
                     },
                     "MaxLengthProp": {
                         "type": [
                             "string",
                             "null"
                         ],
-                        "maxItems": 50
+                        "maxLength": 50
                     },
                     "LengthProp": {
                         "type": [
                             "string",
                             "null"
                         ],
-                        "minItems": 3,
-                        "maxItems": 10
+                        "minLength": 3,
+                        "maxLength": 10
                     },
                     "MinLengthArrayProp": {
                         "type": [
@@ -848,14 +848,14 @@ public static partial class AIJsonUtilitiesTests
                             "string",
                             "null"
                         ],
-                        "minItems": 5
+                        "minLength": 5
                     },
                     "MaxLengthProp": {
                         "type": [
                             "string",
                             "null"
                         ],
-                        "maxItems": 50
+                        "maxLength": 50
                     },
                     "MinLengthArrayProp": {
                         "type": [
@@ -970,6 +970,33 @@ public static partial class AIJsonUtilitiesTests
         [Length(1, 4)]
         public int[]? LengthArrayProp { get; set; }
 #endif
+    }
+
+    [Fact]
+    public static void ClassWithNullableMaxLengthProperty_ReturnsExpectedSchema()
+    {
+        JsonElement expectedSchema = JsonDocument.Parse("""
+        {
+            "type": "object",
+            "properties": {
+                "Value": {
+                    "type": ["string", "null"],
+                    "maxLength": 24,
+                    "minLength": 10
+                }
+            }
+        }
+        """).RootElement;
+
+        JsonElement actualSchema = AIJsonUtilities.CreateJsonSchema(typeof(ClassWithNullableMaxLengthProperty), serializerOptions: JsonContext.Default.Options);
+        AssertDeepEquals(expectedSchema, actualSchema);
+    }
+
+    public class ClassWithNullableMaxLengthProperty
+    {
+        [MinLength(10)]
+        [MaxLength(24)]
+        public string? Value { get; set; }
     }
 
     [Fact]
@@ -1362,6 +1389,7 @@ public static partial class AIJsonUtilitiesTests
     [JsonSerializable(typeof(MyPoco))]
     [JsonSerializable(typeof(MyEnumValue?))]
     [JsonSerializable(typeof(object[]))]
+    [JsonSerializable(typeof(ClassWithNullableMaxLengthProperty))]
     private partial class JsonContext : JsonSerializerContext;
 
     private static bool DeepEquals(JsonElement element1, JsonElement element2)
