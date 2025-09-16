@@ -2,6 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AmbientMetadata.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.AmbientMetadata.Build.</Description>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
   
   <ItemGroup>

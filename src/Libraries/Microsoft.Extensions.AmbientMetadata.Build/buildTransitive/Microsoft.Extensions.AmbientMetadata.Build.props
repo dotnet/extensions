@@ -1,11 +1,11 @@
-﻿<Project>
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <!-- Azure DevOps MSBuild properties - use Azure DevOps environment variables if available, otherwise use empty string -->
     <BuildMetadataAzureBuildId Condition="'$(BuildMetadataAzureBuildId)' == ''">$(Build_BuildId)</BuildMetadataAzureBuildId>
     <BuildMetadataAzureBuildNumber Condition="'$(BuildMetadataAzureBuildNumber)' == ''">$(Build_BuildNumber)</BuildMetadataAzureBuildNumber>
     <BuildMetadataAzureSourceBranchName Condition="'$(BuildMetadataAzureSourceBranchName)' == ''">$(Build_SourceBranchName)</BuildMetadataAzureSourceBranchName>
     <BuildMetadataAzureSourceVersion Condition="'$(BuildMetadataAzureSourceVersion)' == ''">$(Build_SourceVersion)</BuildMetadataAzureSourceVersion>
-    <BuildMetadataIsAzureDevOps Condition="'$(BuildMetadataIsAzureDevOps)' == ''">$(TF_BUILD)</BuildMetadataIsAzureDevOps>
+    <BuildMetadataIsAzureDevOps Condition="'$(BuildMetadataIsAzureDevOps)' == ''">true</BuildMetadataIsAzureDevOps>
 
     <!-- GitHub Actions MSBuild properties - use GitHub Actions environment variables if available, otherwise use empty string -->
     <BuildMetadataGitHubRunId Condition="'$(BuildMetadataGitHubRunId)' == ''">$(GITHUB_RUN_ID)</BuildMetadataGitHubRunId>

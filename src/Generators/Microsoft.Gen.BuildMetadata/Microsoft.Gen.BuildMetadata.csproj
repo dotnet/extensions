@@ -27,9 +27,7 @@
   <ItemGroup>
     <Compile Update="Parsing\Resources.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="Resources.resx" />
     <Compile Include="..\Shared\*.cs" LinkBase="Shared" />
-    <None Include="Microsoft.Gen.BuildMetadata.props" Pack="true" PackagePath="build" Visible="false" />
   </ItemGroup>
-
   <ItemGroup>
     <InternalsVisibleToTest Include="Microsoft.Gen.BuildMetadata.Generated.Tests" />
     <InternalsVisibleToTest Include="Microsoft.Gen.BuildMetadata.Unit.Tests" />

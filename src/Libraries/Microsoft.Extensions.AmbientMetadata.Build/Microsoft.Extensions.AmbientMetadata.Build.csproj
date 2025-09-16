@@ -4,6 +4,7 @@
     <RootNamespace>Microsoft.Extensions.AmbientMetadata</RootNamespace>
     <Description>Runtime information provider for Build ambient metadata.</Description>
     <Workstream>Fundamentals</Workstream>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -30,7 +31,11 @@
   <ItemGroup>
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive" />
+  </ItemGroup>
+  
   <ItemGroup>
     <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.BuildMetadata\Microsoft.Gen.BuildMetadata.csproj" />
   </ItemGroup>
