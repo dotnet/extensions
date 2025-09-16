@@ -195,14 +195,12 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
         var cacheOneBackend = Assert.IsType<CustomMemoryDistributedCache1>(cacheOne.BackendCache);
         Assert.Same(typeof(CustomMemoryDistributedCache1), cacheOneOptions.DistributedCacheServiceKey);
         Assert.Same(cacheOneBackend, provider.GetRequiredKeyedService<IDistributedCache>(typeof(CustomMemoryDistributedCache1)));
-        Assert.IsType<CustomMemoryDistributedCache1>(cacheOne.BackendCache);
 
         var cacheTwo = Assert.IsType<DefaultHybridCache>(provider.GetRequiredKeyedService<HybridCache>("two"));
         var cacheTwoOptions = cacheTwo.Options;
         var cacheTwoBackend = Assert.IsType<CustomMemoryDistributedCache2>(cacheTwo.BackendCache);
         Assert.Same(typeof(CustomMemoryDistributedCache2), cacheTwoOptions.DistributedCacheServiceKey);
         Assert.Same(cacheTwoBackend, provider.GetRequiredKeyedService<IDistributedCache>(typeof(CustomMemoryDistributedCache2)));
-        Assert.IsType<CustomMemoryDistributedCache2>(cacheTwo.BackendCache);
     }
 
     [Fact]
