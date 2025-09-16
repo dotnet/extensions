@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET
 using System;
 using System.Net.Http;
 using System.Threading;
@@ -15,7 +16,6 @@ using Xunit;
 
 namespace Microsoft.Extensions.Http.Latency.Test.Internal;
 
-#if NET
 public class HttpLatencyMediatorTests
 {
     [Fact]
@@ -77,12 +77,14 @@ public class HttpLatencyMediatorTests
         using var handler = new HttpLatencyTelemetryHandler(
             listener, lcti.Object, lcp.Object, hop.Object, sop.Object, mediator);
         handler.InnerHandler = mockHandler.Object;
+
         // Act
         using var client = new HttpClient(handler);
         await client.SendAsync(req, It.IsAny<CancellationToken>());
 
         // Verify that the latency context was created and properly used
         lcp.Verify(p => p.CreateContext(), Times.Once);
+        resp.Dispose();
     }
 
     [Fact]
