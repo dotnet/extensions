@@ -2,7 +2,8 @@
 
 ## NOT YET RELEASED
 
-- Added M.E.AI to OpenAI conversions for response format types
+- Added M.E.AI to OpenAI conversions for response format types.
+- Added `ResponseTool` to `AITool` conversions.
 
 ## 9.9.0-preview.1.25458.4
 
