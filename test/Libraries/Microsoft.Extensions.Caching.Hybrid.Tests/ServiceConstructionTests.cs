@@ -206,6 +206,42 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
     }
 
     [Fact]
+    public async Task KeyedHybridCaches_ShareLocalMemoryCache()
+    {
+        var services = new ServiceCollection();
+        services.AddMemoryCache(options => options.SizeLimit = 2);
+        services.AddSingleton<IDistributedCache, CustomMemoryDistributedCache1>();
+        services.AddKeyedHybridCache("hybrid1");
+        services.AddKeyedHybridCache("hybrid2");
+        services.AddKeyedHybridCache("hybrid3");
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        var hybrid1 = provider.GetRequiredKeyedService<HybridCache>("hybrid1");
+        var hybrid2 = provider.GetRequiredKeyedService<HybridCache>("hybrid2");
+        var hybrid3 = provider.GetRequiredKeyedService<HybridCache>("hybrid3");
+
+        await hybrid1.SetAsync("entry1", 1);
+        await hybrid2.SetAsync("entry2", 2);
+        await hybrid3.SetAsync("entry3", 3);
+
+        var localCache = provider.GetRequiredService<IMemoryCache>();
+        Assert.True(localCache.TryGetValue("entry1", out object? _));
+        Assert.True(localCache.TryGetValue("entry2", out object? _));
+
+        // The third item fails to be cached locally because of the shared local cache size limit
+        Assert.False(localCache.TryGetValue("entry3", out object? _));
+
+        // But we can still get it from the hybrid cache (which gets it from the distributed cache)
+        var actual3 = await hybrid3.GetOrCreateAsync<int>("entry3", ct =>
+        {
+            Assert.Fail("Should not be called as the item should be found in the distributed cache");
+            return new ValueTask<int>(-1);
+        });
+
+        Assert.Equal(3, actual3);
+    }
+
+    [Fact]
     public void CanCreateRedisAndSqlServerBackedHybridCaches()
     {
         var services = new ServiceCollection();
