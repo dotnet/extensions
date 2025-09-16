@@ -19,7 +19,7 @@ public class ConfigurationBindingQuirkBehaviorTests
     [InlineData("customSection:ambientmetadata:build")]
     public void GivenMetadata_RegistersOptions_HostBuilder(string sectionName)
     {
-        // When configuration is not available, values are initilaized to the default value of string?, which is null
+        // When configuration is not available, values are initialized to the default value of string?, which is null
         var defaultMetadata = new BuildMetadata();
 
         using var host = CreateUsingHostBuilder(sectionName);
