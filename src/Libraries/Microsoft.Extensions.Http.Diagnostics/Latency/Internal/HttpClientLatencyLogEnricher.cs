@@ -26,7 +26,6 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
     private readonly HttpLatencyMediator _httpLatencyMediator;
     private readonly CheckpointToken _enricherInvoked;
 
-
     public HttpClientLatencyLogEnricher(
         HttpClientLatencyContext latencyContext,
         ILatencyContextTokenIssuer tokenIssuer,
