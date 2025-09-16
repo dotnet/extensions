@@ -23,27 +23,17 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
 {
     private static readonly ObjectPool<StringBuilder> _builderPool = PoolFactory.SharedStringBuilderPool;
     private readonly HttpClientLatencyContext _latencyContext;
-#if NET
-
     private readonly HttpLatencyMediator _httpLatencyMediator;
-#endif
     private readonly CheckpointToken _enricherInvoked;
 
-#if NET
+
     public HttpClientLatencyLogEnricher(
         HttpClientLatencyContext latencyContext,
         ILatencyContextTokenIssuer tokenIssuer,
         HttpLatencyMediator httpLatencyMediator)
-#else
-    public HttpClientLatencyLogEnricher(
-        HttpClientLatencyContext latencyContext,
-        ILatencyContextTokenIssuer tokenIssuer)
-#endif
     {
         _latencyContext = latencyContext;
-#if NET
         _httpLatencyMediator = httpLatencyMediator;
-#endif
         _enricherInvoked = tokenIssuer.GetCheckpointToken(HttpCheckpoints.EnricherInvoked);
     }
 
@@ -58,10 +48,8 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
                 // Add the checkpoint
                 lc.AddCheckpoint(_enricherInvoked);
 
-#if NET
                 // Use the mediator to record all metrics
                 _httpLatencyMediator.RecordEnd(lc, response);
-#endif
             }
 
             StringBuilder stringBuilder = _builderPool.Get();
@@ -82,13 +70,16 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
                 _ = stringBuilder.Append(',');
 
                 // Add tags, checkpoints, and measures
-                AppendTags(lc, stringBuilder);
-                _ = stringBuilder.Append(',');
+                if (lc != null)
+                {
+                    AppendTags(lc, stringBuilder);
+                    _ = stringBuilder.Append(',');
 
-                AppendCheckpoints(lc, stringBuilder);
-                _ = stringBuilder.Append(',');
+                    AppendCheckpoints(lc, stringBuilder);
+                    _ = stringBuilder.Append(',');
 
-                AppendMeasures(lc, stringBuilder);
+                    AppendMeasures(lc, stringBuilder);
+                }
 
                 collector.Add("LatencyInfo", stringBuilder.ToString());
             }

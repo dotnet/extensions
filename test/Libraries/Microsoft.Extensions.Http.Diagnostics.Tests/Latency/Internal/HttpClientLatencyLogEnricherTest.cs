@@ -25,12 +25,7 @@ public class HttpClientLatencyLogEnricherTest
         lc.Setup(lc => lc.LatencyData).Returns(ld);
         var context = new HttpClientLatencyContext();
         context.Set(lc.Object);
-
-#if NET
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mediator);
-#else
-        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
-#endif
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
         enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, null, null);
         mockEnrichmentPropertyBag.Verify(m => m.Add(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
@@ -49,12 +44,7 @@ public class HttpClientLatencyLogEnricherTest
         context.Set(lc.Object);
 
         using HttpResponseMessage httpResponseMessage = new();
-
-#if NET
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mediator);
-#else
-        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
-#endif
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
 
         enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, httpResponseMessage, null);
@@ -77,11 +67,7 @@ public class HttpClientLatencyLogEnricherTest
         string serverName = "serverNameVal";
         httpResponseMessage.Headers.Add(TelemetryConstants.ServerApplicationNameHeader, serverName);
 
-#if NET
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mediator);
-#else
-        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
-#endif
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
 
         enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, httpResponseMessage, null);
