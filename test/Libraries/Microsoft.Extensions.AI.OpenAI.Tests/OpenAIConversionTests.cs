@@ -316,7 +316,7 @@ public class OpenAIConversionTests
             updates.Add(update);
         }
 
-        ChatResponse response = updates.ToChatResponse();
+        var response = updates.ToChatResponse();
 
         Assert.Equal("id", response.ResponseId);
         Assert.Equal(ChatFinishReason.ToolCalls, response.FinishReason);
@@ -1174,6 +1174,31 @@ public class OpenAIConversionTests
         var openAIResponse = chatResponse.AsOpenAIResponse(options);
 
         Assert.Equal("response-model-id", openAIResponse.Model);
+    }
+
+    [Fact]
+    public void ListAddResponseTool_AddsToolCorrectly()
+    {
+        Assert.Throws<ArgumentNullException>("tools", () => ((IList<AITool>)null!).Add(ResponseTool.CreateWebSearchTool()));
+        Assert.Throws<ArgumentNullException>("tool", () => new List<AITool>().Add((ResponseTool)null!));
+
+        Assert.Throws<ArgumentNullException>("tool", () => ((ResponseTool)null!).AsAITool());
+
+        ChatOptions options;
+
+        options = new()
+        {
+            Tools = new List<AITool> { ResponseTool.CreateWebSearchTool() },
+        };
+        Assert.Single(options.Tools);
+        Assert.NotNull(options.Tools[0]);
+
+        options = new()
+        {
+            Tools = [ResponseTool.CreateWebSearchTool().AsAITool()],
+        };
+        Assert.Single(options.Tools);
+        Assert.NotNull(options.Tools[0]);
     }
 
     private static async IAsyncEnumerable<T> CreateAsyncEnumerable<T>(IEnumerable<T> source)

@@ -414,6 +414,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             {
                 switch (tool)
                 {
+                    case ResponseToolAITool rtat:
+                        result.Tools.Add(rtat.Tool);
+                        break;
+
                     case AIFunctionDeclaration aiFunction:
                         result.Tools.Add(ToResponseTool(aiFunction, options));
                         break;
@@ -876,5 +880,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             filter.ToolNames.Add(toolName);
         }
+    }
+
+    /// <summary>Provides an <see cref="AITool"/> wrapper for a <see cref="ResponseTool"/>.</summary>
+    internal sealed class ResponseToolAITool(ResponseTool tool) : AITool
+    {
+        public ResponseTool Tool => tool;
+        public override string Name => Tool.GetType().Name;
     }
 }

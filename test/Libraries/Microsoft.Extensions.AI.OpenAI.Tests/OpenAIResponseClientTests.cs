@@ -825,8 +825,10 @@ public class OpenAIResponseClientTests
         Assert.Equal(36, response.Usage.TotalTokenCount);
     }
 
-    [Fact]
-    public async Task McpToolCall_ApprovalNotRequired_NonStreaming()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task McpToolCall_ApprovalNotRequired_NonStreaming(bool rawTool)
     {
         const string Input = """
             {
@@ -1031,13 +1033,16 @@ public class OpenAIResponseClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
 
+        AITool mcpTool = rawTool ?
+            ResponseTool.CreateMcpTool("deepwiki", new("https://mcp.deepwiki.com/mcp"), toolCallApprovalPolicy: new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval)).AsAITool() :
+            new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+            {
+                ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+            };
+
         ChatOptions chatOptions = new()
         {
-            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
-                {
-                    ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
-                }
-            ],
+            Tools = [mcpTool],
         };
 
         var response = await client.GetResponseAsync("Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository", chatOptions);
