@@ -499,6 +499,12 @@
       "valueTransform": "vectorStoreIndexNameTransform",
       "replaces": "data-ChatWithCustomData-CSharp.Web-"
     },
+    "projectNameReplacer": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "projectNameTransform_Formatting",
+      "replaces": "ChatWithCustomData_CSharp_Web"
+    },
     "webProjectNamespaceAdjuster": {
       "type": "generated",
       "generator": "switch",
@@ -524,6 +530,26 @@
     }
   },
   "forms": {
+    "projectNameTransform_Normalize": {
+      "identifier": "replace",
+      "pattern": "[^a-zA-Z0-9_]",
+      "replacement": "_",
+      "description": "Replace non-word chars, start before digit, after period with underscore"
+    },
+    "projectNameTransform_AppendWeb": {
+      "identifier": "replace",
+      "pattern": "^(.*)$",
+      "replacement": "$1_Web",
+      "description": "Append _Web to the project name"
+    },
+    "projectNameTransform_Formatting": {
+      "identifier": "chain",
+      "steps": [
+        "projectNameTransform_Normalize",
+        "projectNameTransform_AppendWeb"
+      ],
+      "description": "Normalize and add _Web suffix"
+    },
     "vectorStoreIndexNameTransform": {
       "identifier": "chain",
       "steps": [

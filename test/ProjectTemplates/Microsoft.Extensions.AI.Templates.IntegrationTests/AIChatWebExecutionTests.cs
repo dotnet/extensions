@@ -71,6 +71,29 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
         await Fixture.BuildProjectAsync(project);
     }
 
+    /// <summary>
+    /// Tests build for a project name containing a dot ('.'), which triggers the class name normalization bug described in issue #6811.
+    /// This runs for all option combinations with --aspire true.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(GetAspireTemplateOptions))]
+    public async Task CreateRestoreAndBuild_ProjectNameWithDot(params string[] args)
+    {
+        // Use a project name with a dot to trigger the bug.
+        const string ProjectNameWithDot = "dot.name";
+        var project = await Fixture.CreateProjectAsync(
+            templateName: "aichatweb",
+            projectName: ProjectNameWithDot,
+            args);
+
+        project.StartupProjectRelativePath = $"{ProjectNameWithDot}.AppHost";
+
+        await Fixture.RestoreProjectAsync(project);
+
+        // Just attempt to build; if the bug is present, this will fail with CS0234.
+        await Fixture.BuildProjectAsync(project);
+    }
+
     private static readonly (string name, string[] values)[] _templateOptions = [
         ("--provider",          ["azureopenai", "githubmodels", "ollama", "openai"]),
         ("--vector-store",      ["azureaisearch", "local", "qdrant"]),
