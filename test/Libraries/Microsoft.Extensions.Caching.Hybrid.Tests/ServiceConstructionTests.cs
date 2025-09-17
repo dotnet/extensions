@@ -15,7 +15,6 @@ using Microsoft.Extensions.Options;
 
 #if NET9_0_OR_GREATER
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 #endif
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
