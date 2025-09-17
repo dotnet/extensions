@@ -270,8 +270,12 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
     [Fact]
     public void CanParseOptions_NoEntryOptions()
     {
-        var source = new JsonConfigurationSource { Path = "BasicConfig.json" };
-        var configBuilder = new ConfigurationBuilder { Sources = { source } };
+        var configBuilder = new ConfigurationBuilder();
+
+        configBuilder.AddInMemoryCollection([
+            new("no_entry_options:MaximumKeyLength", "937")
+        ]);
+
         var config = configBuilder.Build();
         var options = new HybridCacheOptions();
         ConfigurationBinder.Bind(config, "no_entry_options", options);
@@ -283,8 +287,14 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
     [Fact]
     public void CanParseOptions_WithEntryOptions() // in particular, check we can parse the timespan and [Flags] enums
     {
-        var source = new JsonConfigurationSource { Path = "BasicConfig.json" };
-        var configBuilder = new ConfigurationBuilder { Sources = { source } };
+        var configBuilder = new ConfigurationBuilder();
+
+        configBuilder.AddInMemoryCollection([
+            new("with_entry_options:MaximumKeyLength", "937"),
+            new("with_entry_options:DefaultEntryOptions:Flags", "DisableCompression, DisableLocalCacheRead"),
+            new("with_entry_options:DefaultEntryOptions:LocalCacheExpiration", "00:02:00")
+        ]);
+
         var config = configBuilder.Build();
         var options = new HybridCacheOptions();
         ConfigurationBinder.Bind(config, "with_entry_options", options);
@@ -300,8 +310,13 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
     [Fact]
     public void CanCreateKeyedServicesWithKeyedDistributedCaches_UsingNamedOptions()
     {
-        var source = new JsonConfigurationSource { Path = "BasicConfig.json" };
-        var configBuilder = new ConfigurationBuilder { Sources = { source } };
+        var configBuilder = new ConfigurationBuilder();
+
+        configBuilder.AddInMemoryCollection([
+            new("HybridOne:DistributedCacheServiceKey", "DistributedOne"),
+            new("HybridTwo:DistributedCacheServiceKey", "DistributedTwo")
+        ]);
+
         var config = configBuilder.Build();
 
         var services = new ServiceCollection();
@@ -335,8 +350,13 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
     [Fact]
     public void CanCreateKeyedServicesWithKeyedDistributedCaches_UsingSetupActions()
     {
-        var source = new JsonConfigurationSource { Path = "BasicConfig.json" };
-        var configBuilder = new ConfigurationBuilder { Sources = { source } };
+        var configBuilder = new ConfigurationBuilder();
+
+        configBuilder.AddInMemoryCollection([
+            new("HybridOne:DistributedCacheServiceKey", "DistributedOne"),
+            new("HybridTwo:DistributedCacheServiceKey", "DistributedTwo")
+        ]);
+
         var config = configBuilder.Build();
 
         var services = new ServiceCollection();
@@ -368,8 +388,13 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
     [Fact]
     public void CanCreateKeyedServicesWithKeyedDistributedCaches_UsingNamedOptionsAndSetupActions()
     {
-        var source = new JsonConfigurationSource { Path = "BasicConfig.json" };
-        var configBuilder = new ConfigurationBuilder { Sources = { source } };
+        var configBuilder = new ConfigurationBuilder();
+
+        configBuilder.AddInMemoryCollection([
+            new("HybridOne:DistributedCacheServiceKey", "DistributedOne"),
+            new("HybridTwo:DistributedCacheServiceKey", "DistributedTwo")
+        ]);
+
         var config = configBuilder.Build();
 
         var services = new ServiceCollection();
