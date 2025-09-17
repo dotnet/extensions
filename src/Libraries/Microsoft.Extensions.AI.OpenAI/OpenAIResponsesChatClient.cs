@@ -456,7 +456,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         }
                         else
                         {
-                            json = """{"type":"code_interpreter","container":"auto"}""";
+                            json = """{"type":"code_interpreter","container":{"type":"auto"}}""";
                         }
 
                         result.Tools.Add(ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString(json)));
