@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -31,6 +32,23 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
     private static readonly Type? _internalResponseReasoningSummaryTextDeltaEventType = Type.GetType("OpenAI.Responses.InternalResponseReasoningSummaryTextDeltaEvent, OpenAI");
     private static readonly PropertyInfo? _summaryTextDeltaProperty = _internalResponseReasoningSummaryTextDeltaEventType?.GetProperty("Delta");
+
+    // These delegate instances are used to call the internal overloads of CreateResponseAsync and CreateResponseStreamingAsync that accept
+    // a RequestOptions. These should be replaced once a better way to pass RequestOptions is available.
+    private static readonly Func<OpenAIResponseClient, IEnumerable<ResponseItem>, ResponseCreationOptions, RequestOptions, Task<ClientResult<OpenAIResponse>>>?
+        _createResponseAsync =
+        (Func<OpenAIResponseClient, IEnumerable<ResponseItem>, ResponseCreationOptions, RequestOptions, Task<ClientResult<OpenAIResponse>>>?)
+        typeof(OpenAIResponseClient).GetMethod(
+            nameof(OpenAIResponseClient.CreateResponseAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+            null, [typeof(IEnumerable<ResponseItem>), typeof(ResponseCreationOptions), typeof(RequestOptions)], null)
+        ?.CreateDelegate(typeof(Func<OpenAIResponseClient, IEnumerable<ResponseItem>, ResponseCreationOptions, RequestOptions, Task<ClientResult<OpenAIResponse>>>));
+    private static readonly Func<OpenAIResponseClient, IEnumerable<ResponseItem>, ResponseCreationOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>?
+        _createResponseStreamingAsync =
+        (Func<OpenAIResponseClient, IEnumerable<ResponseItem>, ResponseCreationOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>?)
+        typeof(OpenAIResponseClient).GetMethod(
+            nameof(OpenAIResponseClient.CreateResponseStreamingAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+            null, [typeof(IEnumerable<ResponseItem>), typeof(ResponseCreationOptions), typeof(RequestOptions)], null)
+        ?.CreateDelegate(typeof(Func<OpenAIResponseClient, IEnumerable<ResponseItem>, ResponseCreationOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>));
 
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
@@ -79,7 +97,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Make the call to the OpenAIResponseClient.
-        var openAIResponse = (await _responseClient.CreateResponseAsync(openAIResponseItems, openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
+        var task = _createResponseAsync is not null ?
+            _createResponseAsync(_responseClient, openAIResponseItems, openAIOptions, cancellationToken.ToRequestOptions(streaming: false)) :
+            _responseClient.CreateResponseAsync(openAIResponseItems, openAIOptions, cancellationToken);
+        var openAIResponse = (await task.ConfigureAwait(false)).Value;
 
         // Convert the response to a ChatResponse.
         return FromOpenAIResponse(openAIResponse, openAIOptions);
@@ -208,7 +229,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var openAIResponseItems = ToOpenAIResponseItems(messages, options);
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
-        var streamingUpdates = _responseClient.CreateResponseStreamingAsync(openAIResponseItems, openAIOptions, cancellationToken);
+        var streamingUpdates = _createResponseStreamingAsync is not null ?
+            _createResponseStreamingAsync(_responseClient, openAIResponseItems, openAIOptions, cancellationToken.ToRequestOptions(streaming: true)) :
+            _responseClient.CreateResponseStreamingAsync(openAIResponseItems, openAIOptions, cancellationToken);
 
         return FromOpenAIStreamingResponseUpdatesAsync(streamingUpdates, openAIOptions, cancellationToken);
     }
