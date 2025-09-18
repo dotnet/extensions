@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -30,7 +31,7 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
     private readonly int _toolLimit;
 
-    private Func<AITool, string> _toolEmbeddingTextFactory = static t =>
+    private Func<AITool, string> _toolEmbeddingTextSelector = static t =>
     {
         if (string.IsNullOrWhiteSpace(t.Name))
         {
@@ -42,22 +43,46 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
             return t.Name;
         }
 
-        return t.Name + "\n" + t.Description;
+        return t.Name + Environment.NewLine + t.Description;
     };
 
-    private Func<IEnumerable<ChatMessage>, string> _messagesEmbeddingTextFactory = static messages =>
+    private Func<IEnumerable<ChatMessage>, string> _messagesEmbeddingTextSelector = static messages =>
     {
-        var messageTexts = messages.Select(m => m.Text).Where(s => !string.IsNullOrEmpty(s));
-        return string.Join("\n", messageTexts);
+        var sb = new StringBuilder();
+        foreach (var message in messages)
+        {
+            var contents = message.Contents;
+            for (var i = 0; i < contents.Count; i++)
+            {
+                string text;
+                switch (contents[i])
+                {
+                    case TextContent content:
+                        text = content.Text;
+                        break;
+                    case TextReasoningContent content:
+                        text = content.Text;
+                        break;
+                    default:
+                        continue;
+                }
+
+                _ = sb.AppendLine(text);
+            }
+        }
+
+        return sb.ToString();
     };
 
     private Func<ReadOnlyMemory<float>, ReadOnlyMemory<float>, float> _similarity = static (a, b) => TensorPrimitives.CosineSimilarity(a.Span, b.Span);
+
+    private Func<AITool, bool> _isRequiredTool = static _ => false;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmbeddingToolReductionStrategy"/> class.
     /// </summary>
     /// <param name="embeddingGenerator">Embedding generator used to produce embeddings.</param>
-    /// <param name="toolLimit">Maximum number of tools to return. Must be greater than zero.</param>
+    /// <param name="toolLimit">Maximum number of tools to return, excluding required tools. Must be greater than zero.</param>
     public EmbeddingToolReductionStrategy(
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         int toolLimit)
@@ -67,25 +92,25 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
     }
 
     /// <summary>
-    /// Gets or sets a delegate used to produce the text to embed for a tool.
+    /// Gets or sets the selector used to generate a single text string from a tool.
     /// </summary>
     /// <remarks>
     /// Defaults to: <c>Name + "\n" + Description</c> (omitting empty parts).
     /// </remarks>
-    public Func<AITool, string> ToolEmbeddingTextFactory
+    public Func<AITool, string> ToolEmbeddingTextSelector
     {
-        get => _toolEmbeddingTextFactory;
-        set => _toolEmbeddingTextFactory = Throw.IfNull(value);
+        get => _toolEmbeddingTextSelector;
+        set => _toolEmbeddingTextSelector = Throw.IfNull(value);
     }
 
     /// <summary>
-    /// Gets or sets the factory function used to generate a single text string from a collection of chat messages for
+    /// Gets or sets the selector used to generate a single text string from a collection of chat messages for
     /// embedding purposes.
     /// </summary>
-    public Func<IEnumerable<ChatMessage>, string> MessagesEmbeddingTextFactory
+    public Func<IEnumerable<ChatMessage>, string> MessagesEmbeddingTextSelector
     {
-        get => _messagesEmbeddingTextFactory;
-        set => _messagesEmbeddingTextFactory = Throw.IfNull(value);
+        get => _messagesEmbeddingTextSelector;
+        set => _messagesEmbeddingTextSelector = Throw.IfNull(value);
     }
 
     /// <summary>
@@ -101,9 +126,19 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether tool embeddings are cached. Defaults to <see langword="true"/>.
+    /// Gets or sets a function that determines whether a tool is required (always included).
     /// </summary>
-    public bool EnableEmbeddingCaching { get; set; } = true;
+    /// <remarks>
+    /// If this returns <see langword="true"/>, the tool is included regardless of ranking and does not count against
+    /// the configured non-required tool limit. A tool explicitly named by <see cref="RequiredChatToolMode"/> (when
+    /// <see cref="RequiredChatToolMode.RequiredFunctionName"/> is non-null) is also treated as required, independent
+    /// of this delegate's result.
+    /// </remarks>
+    public Func<AITool, bool> IsRequiredTool
+    {
+        get => _isRequiredTool;
+        set => _isRequiredTool = Throw.IfNull(value);
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether to preserve original ordering of selected tools.
@@ -132,97 +167,164 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
 
         if (tools.Count <= _toolLimit)
         {
-            // No reduction necessary.
+            // Since the total number of tools doesn't exceed the configured tool limit,
+            // there's no need to determine which tools are optional, i.e., subject to reduction.
+            // We can return the original tools list early.
             return tools;
         }
 
-        // Build query text from recent messages.
-        var queryText = MessagesEmbeddingTextFactory(messages);
-        if (string.IsNullOrWhiteSpace(queryText))
+        var toolRankingInfoArray = ArrayPool<AIToolRankingInfo>.Shared.Rent(tools.Count);
+        try
         {
-            // We couldn't build a meaningful query, likely because the message list was empty.
-            // We'll just return a truncated list of tools.
-            return tools.Take(_toolLimit);
+            var toolRankingInfoMemory = toolRankingInfoArray.AsMemory(start: 0, length: tools.Count);
+
+            // We allocate tool rankings in a contiguous chunk of memory, but partition them such that
+            // required tools come first and are immediately followed by optional tools.
+            // This allows us to separately rank optional tools by similarity score, but then later re-order
+            // the top N tools (including required tools) to preserve their original relative order.
+            var (requiredTools, optionalTools) = PartitionToolRankings(toolRankingInfoMemory, tools, options.ToolMode);
+
+            if (optionalTools.Length <= _toolLimit)
+            {
+                // There aren't enough optional tools to require reduction, so we'll return the original
+                // tools list.
+                return tools;
+            }
+
+            // Build query text from recent messages.
+            var queryText = MessagesEmbeddingTextSelector(messages);
+            if (string.IsNullOrWhiteSpace(queryText))
+            {
+                // We couldn't build a meaningful query, likely because the message list was empty.
+                // We'll just return the original tools list.
+                return tools;
+            }
+
+            var queryEmbedding = await _embeddingGenerator.GenerateAsync(queryText, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            // Compute and populate similarity scores in the tool ranking info.
+            await ComputeSimilarityScoresAsync(optionalTools, queryEmbedding, cancellationToken);
+
+            var topTools = toolRankingInfoMemory.Slice(start: 0, length: requiredTools.Length + _toolLimit);
+#if NET
+            optionalTools.Span.Sort(AIToolRankingInfo.CompareByDescendingSimilarityScore);
+            if (PreserveOriginalOrdering)
+            {
+                topTools.Span.Sort(AIToolRankingInfo.CompareByOriginalIndex);
+            }
+#else
+            Array.Sort(toolRankingInfoArray, index: requiredTools.Length, length: optionalTools.Length, AIToolRankingInfo.CompareByDescendingSimilarityScore);
+            if (PreserveOriginalOrdering)
+            {
+                Array.Sort(toolRankingInfoArray, index: 0, length: topTools.Length, AIToolRankingInfo.CompareByOriginalIndex);
+            }
+#endif
+            return ToToolList(topTools.Span);
+
+            static List<AITool> ToToolList(ReadOnlySpan<AIToolRankingInfo> toolInfo)
+            {
+                var result = new List<AITool>(capacity: toolInfo.Length);
+                foreach (var info in toolInfo)
+                {
+                    result.Add(info.Tool);
+                }
+
+                return result;
+            }
         }
-
-        // Ensure embeddings for any uncached tools are generated in a batch.
-        var toolEmbeddings = await GetToolEmbeddingsAsync(tools, cancellationToken).ConfigureAwait(false);
-
-        // Generate the query embedding.
-        var queryEmbedding = await _embeddingGenerator.GenerateAsync(queryText, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var queryVector = queryEmbedding.Vector;
-
-        // Compute rankings.
-        var ranked = tools
-            .Zip(toolEmbeddings, static (tool, embedding) => (Tool: tool, Embedding: embedding))
-            .Select((t, i) => (t.Tool, Index: i, Score: Similarity(queryVector, t.Embedding.Vector)))
-            .OrderByDescending(t => t.Score)
-            .Take(_toolLimit);
-
-        if (PreserveOriginalOrdering)
+        finally
         {
-            ranked = ranked.OrderBy(t => t.Index);
+            ArrayPool<AIToolRankingInfo>.Shared.Return(toolRankingInfoArray);
         }
-
-        return ranked
-            .Select(t => t.Tool)
-            .ToList();
     }
 
-    private async Task<IReadOnlyList<Embedding<float>>> GetToolEmbeddingsAsync(IList<AITool> tools, CancellationToken cancellationToken)
+    private (Memory<AIToolRankingInfo> RequiredTools, Memory<AIToolRankingInfo> OptionalTools) PartitionToolRankings(
+        Memory<AIToolRankingInfo> toolRankingInfo, IList<AITool> tools, ChatToolMode? toolMode)
     {
-        if (!EnableEmbeddingCaching)
+        // Always include a tool if its name matches the required function name.
+        var requiredFunctionName = (toolMode as RequiredChatToolMode)?.RequiredFunctionName;
+        var nextRequiredToolIndex = 0;
+        var nextOptionalToolIndex = tools.Count - 1;
+        for (var i = 0; i < toolRankingInfo.Length; i++)
         {
-            // Embed all tools in one batch; do not store in cache.
-            return await ComputeEmbeddingsAsync(
-                texts: tools.Select(t => ToolEmbeddingTextFactory(t)),
-                expectedCount: tools.Count,
-                cancellationToken);
+            var tool = tools[i];
+            var isRequiredByToolMode = requiredFunctionName is not null && string.Equals(requiredFunctionName, tool.Name, StringComparison.Ordinal);
+            var toolIndex = isRequiredByToolMode || IsRequiredTool(tool)
+                ? nextRequiredToolIndex++
+                : nextOptionalToolIndex--;
+            toolRankingInfo.Span[toolIndex] = new AIToolRankingInfo(tool, originalIndex: i);
         }
 
-        var result = new Embedding<float>[tools.Count];
-        var cacheMisses = new List<(AITool Tool, int Index)>(tools.Count);
+        return (
+            RequiredTools: toolRankingInfo.Slice(0, nextRequiredToolIndex),
+            OptionalTools: toolRankingInfo.Slice(nextRequiredToolIndex));
+    }
 
-        for (var i = 0; i < tools.Count; i++)
+    private async Task ComputeSimilarityScoresAsync(Memory<AIToolRankingInfo> toolInfo, Embedding<float> queryEmbedding, CancellationToken cancellationToken)
+    {
+        var anyCacheMisses = false;
+        List<string> cacheMissToolEmbeddingTexts = null!;
+        List<int> cacheMissToolInfoIndexes = null!;
+        for (var i = 0; i < toolInfo.Length; i++)
         {
-            if (_toolEmbeddingsCache.TryGetValue(tools[i], out var embedding))
+            ref var info = ref toolInfo.Span[i];
+            if (_toolEmbeddingsCache.TryGetValue(info.Tool, out var toolEmbedding))
             {
-                result[i] = embedding;
+                info.SimilarityScore = Similarity(queryEmbedding.Vector, toolEmbedding.Vector);
             }
             else
             {
-                cacheMisses.Add((tools[i], i));
+                if (!anyCacheMisses)
+                {
+                    anyCacheMisses = true;
+                    cacheMissToolEmbeddingTexts = [];
+                    cacheMissToolInfoIndexes = [];
+                }
+
+                var text = ToolEmbeddingTextSelector(info.Tool);
+                cacheMissToolEmbeddingTexts.Add(text);
+                cacheMissToolInfoIndexes.Add(i);
             }
         }
 
-        if (cacheMisses.Count == 0)
+        if (!anyCacheMisses)
         {
-            return result;
+            // There were no cache misses; no more work to do.
+            return;
         }
 
-        var uncachedEmbeddings = await ComputeEmbeddingsAsync(
-            texts: cacheMisses.Select(t => ToolEmbeddingTextFactory(t.Tool)),
-            expectedCount: cacheMisses.Count,
-            cancellationToken);
-
-        for (var i = 0; i < cacheMisses.Count; i++)
+        var uncachedEmbeddings = await _embeddingGenerator.GenerateAsync(cacheMissToolEmbeddingTexts, cancellationToken: cancellationToken).ConfigureAwait(false);
+        if (uncachedEmbeddings.Count != cacheMissToolEmbeddingTexts.Count)
         {
-            var embedding = uncachedEmbeddings[i];
-            result[cacheMisses[i].Index] = embedding;
-            _toolEmbeddingsCache.Add(cacheMisses[i].Tool, embedding);
+            throw new InvalidOperationException($"Expected {cacheMissToolEmbeddingTexts.Count} embeddings, got {uncachedEmbeddings.Count}.");
         }
 
-        return result;
-
-        async ValueTask<GeneratedEmbeddings<Embedding<float>>> ComputeEmbeddingsAsync(IEnumerable<string> texts, int expectedCount, CancellationToken cancellationToken)
+        for (var i = 0; i < uncachedEmbeddings.Count; i++)
         {
-            var embeddings = await _embeddingGenerator.GenerateAsync(texts, cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (embeddings.Count != expectedCount)
+            var toolInfoIndex = cacheMissToolInfoIndexes[i];
+            var toolEmbedding = uncachedEmbeddings[i];
+            ref var info = ref toolInfo.Span[toolInfoIndex];
+            info.SimilarityScore = Similarity(queryEmbedding.Vector, toolEmbedding.Vector);
+            _toolEmbeddingsCache.Add(info.Tool, toolEmbedding);
+        }
+    }
+
+    private struct AIToolRankingInfo(AITool tool, int originalIndex)
+    {
+        public static readonly Comparer<AIToolRankingInfo> CompareByDescendingSimilarityScore
+            = Comparer<AIToolRankingInfo>.Create(static (a, b) =>
             {
-                Throw.InvalidOperationException($"Expected {expectedCount} embeddings, got {embeddings.Count}.");
-            }
+                var result = b.SimilarityScore.CompareTo(a.SimilarityScore);
+                return result != 0
+                    ? result
+                    : a.OriginalIndex.CompareTo(b.OriginalIndex); // Stabilize ties.
+            });
 
-            return embeddings;
-        }
+        public static readonly Comparer<AIToolRankingInfo> CompareByOriginalIndex
+            = Comparer<AIToolRankingInfo>.Create(static (a, b) => a.OriginalIndex.CompareTo(b.OriginalIndex));
+
+        public AITool Tool { get; } = tool;
+        public int OriginalIndex { get; } = originalIndex;
+        public float SimilarityScore { get; set; }
     }
 }

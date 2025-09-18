@@ -36,17 +36,30 @@ public class ToolReductionTests
     }
 
     [Fact]
+    public async Task EmbeddingToolReductionStrategy_NoReduction_WhenOptionalToolsBelowLimit()
+    {
+        // 1 required + 2 optional, limit = 2 (optional count == limit) => original list returned
+        using var gen = new DeterministicTestEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 2)
+        {
+            IsRequiredTool = t => t.Name == "Req"
+        };
+
+        var tools = CreateTools("Req", "Opt1", "Opt2");
+        var result = await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "anything") },
+            new ChatOptions { Tools = tools });
+
+        Assert.Same(tools, result);
+    }
+
+    [Fact]
     public async Task EmbeddingToolReductionStrategy_Reduces_ToLimit_BySimilarity()
     {
         using var gen = new DeterministicTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 2);
 
-        var tools = CreateTools(
-            "Weather",
-            "Translate",
-            "Math",
-            "Jokes");
-
+        var tools = CreateTools("Weather", "Translate", "Math", "Jokes");
         var options = new ChatOptions { Tools = tools };
 
         var messages = new[]
@@ -57,8 +70,6 @@ public class ToolReductionTests
         var reduced = (await strategy.SelectToolsForRequestAsync(messages, options)).ToList();
 
         Assert.Equal(2, reduced.Count);
-
-        // Only assert membership; ordering is an implementation detail when scores tie.
         Assert.Contains(reduced, t => t.Name == "Weather");
         Assert.Contains(reduced, t => t.Name == "Math");
     }
@@ -73,37 +84,13 @@ public class ToolReductionTests
         };
 
         var tools = CreateTools("Math", "Translate", "Weather");
-        var options = new ChatOptions { Tools = tools };
-
-        var messages = new[] { new ChatMessage(ChatRole.User, "Explain weather math please") };
-
-        var reduced = (await strategy.SelectToolsForRequestAsync(messages, options)).ToList();
+        var reduced = (await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "Explain weather math please") },
+            new ChatOptions { Tools = tools })).ToList();
 
         Assert.Equal(2, reduced.Count);
-        Assert.Contains(reduced, t => t.Name == "Math");
-        Assert.Contains(reduced, t => t.Name == "Weather");
-
-        // With PreserveOriginalOrdering the original relative order (Math before Weather) is maintained.
         Assert.Equal("Math", reduced[0].Name);
         Assert.Equal("Weather", reduced[1].Name);
-    }
-
-    [Fact]
-    public async Task EmbeddingToolReductionStrategy_EmptyQuery_FallsBackToFirstN()
-    {
-        using var gen = new DeterministicTestEmbeddingGenerator();
-        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 2);
-
-        var tools = CreateTools("A", "B", "C");
-        var options = new ChatOptions { Tools = tools };
-
-        var messages = new[] { new ChatMessage(ChatRole.User, "   ") };
-
-        var reduced = (await strategy.SelectToolsForRequestAsync(messages, options)).ToList();
-
-        Assert.Equal(2, reduced.Count);
-        Assert.Equal("A", reduced[0].Name);
-        Assert.Equal("B", reduced[1].Name);
     }
 
     [Fact]
@@ -113,40 +100,16 @@ public class ToolReductionTests
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1);
 
         var tools = CreateTools("Weather", "Math", "Jokes");
-        var options = new ChatOptions { Tools = tools };
         var messages = new[] { new ChatMessage(ChatRole.User, "weather") };
 
-        _ = await strategy.SelectToolsForRequestAsync(messages, options);
+        _ = await strategy.SelectToolsForRequestAsync(messages, new ChatOptions { Tools = tools });
         int afterFirst = gen.TotalValueInputs;
 
-        _ = await strategy.SelectToolsForRequestAsync(messages, options);
+        _ = await strategy.SelectToolsForRequestAsync(messages, new ChatOptions { Tools = tools });
         int afterSecond = gen.TotalValueInputs;
 
-        // The additional embedding generator call is for the message list.
+        // +1 for second query embedding only
         Assert.Equal(afterFirst + 1, afterSecond);
-    }
-
-    [Fact]
-    public async Task EmbeddingToolReductionStrategy_CachingDisabled_ReEmbedsToolsEachCall()
-    {
-        using var gen = new DeterministicTestEmbeddingGenerator();
-        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1)
-        {
-            EnableEmbeddingCaching = false
-        };
-
-        var tools = CreateTools("Weather", "Math");
-        var options = new ChatOptions { Tools = tools };
-        var messages = new[] { new ChatMessage(ChatRole.User, "weather") };
-
-        _ = await strategy.SelectToolsForRequestAsync(messages, options);
-        int afterFirst = gen.TotalValueInputs;
-
-        _ = await strategy.SelectToolsForRequestAsync(messages, options);
-        int afterSecond = gen.TotalValueInputs;
-
-        // The additional embedding generator call is for the message list.
-        Assert.Equal(afterFirst + tools.Count + 1, afterSecond);
     }
 
     [Fact]
@@ -155,13 +118,13 @@ public class ToolReductionTests
         using var gen = new DeterministicTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 2);
 
-        // Null options => empty result
-        var empty = await strategy.SelectToolsForRequestAsync(new[] { new ChatMessage(ChatRole.User, "anything") }, null);
+        var empty = await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "anything") }, null);
         Assert.Empty(empty);
 
-        // Empty tools list => returns that same list
         var options = new ChatOptions { Tools = [] };
-        var result = await strategy.SelectToolsForRequestAsync(new[] { new ChatMessage(ChatRole.User, "weather") }, options);
+        var result = await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "weather") }, options);
         Assert.Same(options.Tools, result);
     }
 
@@ -171,12 +134,11 @@ public class ToolReductionTests
         using var gen = new VectorBasedTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1)
         {
-            // Custom similarity chooses the *smallest* first component instead of largest cosine.
             Similarity = (q, t) => -t.Span[0]
         };
 
-        var highTool = new SimpleTool("HighScore", "alpha");   // vector[0] = 10
-        var lowTool = new SimpleTool("LowScore", "beta");      // vector[0] = 1
+        var highTool = new SimpleTool("HighScore", "alpha");
+        var lowTool = new SimpleTool("LowScore", "beta");
         gen.VectorSelector = text => text.Contains("alpha") ? 10f : 1f;
 
         var reduced = (await strategy.SelectToolsForRequestAsync(
@@ -184,35 +146,50 @@ public class ToolReductionTests
             new ChatOptions { Tools = [highTool, lowTool] })).ToList();
 
         Assert.Single(reduced);
-
-        // Because we negated similarity, lowest underlying value wins
         Assert.Equal("LowScore", reduced[0].Name);
     }
 
     [Fact]
-    public async Task EmbeddingToolReductionStrategy_DefaultEmbeddingTextFactory_EmptyDescription_UsesNameOnly()
+    public async Task EmbeddingToolReductionStrategy_TieDeterminism_PrefersLowerOriginalIndex()
+    {
+        // Generator returns identical vectors so similarity ties; we expect original order preserved
+        using var gen = new ConstantEmbeddingGenerator(3);
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 2);
+
+        var tools = CreateTools("T1", "T2", "T3", "T4");
+        var reduced = (await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "any") },
+            new ChatOptions { Tools = tools })).ToList();
+
+        Assert.Equal(2, reduced.Count);
+        Assert.Equal("T1", reduced[0].Name);
+        Assert.Equal("T2", reduced[1].Name);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_DefaultEmbeddingTextSelector_EmptyDescription_UsesNameOnly()
     {
         using var recorder = new RecordingEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(recorder, toolLimit: 1);
 
         var target = new SimpleTool("ComputeSum", description: "");
         var filler = new SimpleTool("Other", "Unrelated");
-        await strategy.SelectToolsForRequestAsync(
+        _ = await strategy.SelectToolsForRequestAsync(
             new[] { new ChatMessage(ChatRole.User, "math") },
-            new ChatOptions { Tools = new List<AITool> { target, filler } });
+            new ChatOptions { Tools = [target, filler] });
 
         Assert.Contains("ComputeSum", recorder.Inputs);
     }
 
     [Fact]
-    public async Task EmbeddingToolReductionStrategy_DefaultEmbeddingTextFactory_EmptyName_UsesDescriptionOnly()
+    public async Task EmbeddingToolReductionStrategy_DefaultEmbeddingTextSelector_EmptyName_UsesDescriptionOnly()
     {
         using var recorder = new RecordingEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(recorder, toolLimit: 1);
 
         var target = new SimpleTool("", description: "Translates between languages.");
         var filler = new SimpleTool("Other", "Unrelated");
-        await strategy.SelectToolsForRequestAsync(
+        _ = await strategy.SelectToolsForRequestAsync(
             new[] { new ChatMessage(ChatRole.User, "translate") },
             new ChatOptions { Tools = [target, filler] });
 
@@ -220,17 +197,17 @@ public class ToolReductionTests
     }
 
     [Fact]
-    public async Task EmbeddingToolReductionStrategy_CustomEmbeddingTextFactory_Applied()
+    public async Task EmbeddingToolReductionStrategy_CustomEmbeddingTextSelector_Applied()
     {
         using var recorder = new RecordingEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(recorder, toolLimit: 1)
         {
-            ToolEmbeddingTextFactory = t => $"NAME:{t.Name}|DESC:{t.Description}"
+            ToolEmbeddingTextSelector = t => $"NAME:{t.Name}|DESC:{t.Description}"
         };
 
         var target = new SimpleTool("WeatherTool", "Gets forecast.");
         var filler = new SimpleTool("Other", "Irrelevant");
-        await strategy.SelectToolsForRequestAsync(
+        _ = await strategy.SelectToolsForRequestAsync(
             new[] { new ChatMessage(ChatRole.User, "weather") },
             new ChatOptions { Tools = [target, filler] });
 
@@ -238,15 +215,13 @@ public class ToolReductionTests
     }
 
     [Fact]
-    public async Task EmbeddingToolReductionStrategy_MessagesEmbeddingTextFactory_CustomFiltersMessages()
+    public async Task EmbeddingToolReductionStrategy_MessagesEmbeddingTextSelector_CustomFiltersMessages()
     {
         using var gen = new DeterministicTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1);
 
-        // Tools we want to discriminate between
         var tools = CreateTools("Weather", "Math", "Translate");
 
-        // Earlier message mentions weather, last message mentions math
         var messages = new[]
         {
             new ChatMessage(ChatRole.User, "Please tell me the weather tomorrow."),
@@ -254,8 +229,7 @@ public class ToolReductionTests
             new ChatMessage(ChatRole.User, "Now instead solve a math problem.")
         };
 
-        // Only consider the last message (so "Math" should clearly win)
-        strategy.MessagesEmbeddingTextFactory = msgs => msgs.LastOrDefault()?.Text ?? string.Empty;
+        strategy.MessagesEmbeddingTextSelector = msgs => msgs.LastOrDefault()?.Text ?? string.Empty;
 
         var reduced = (await strategy.SelectToolsForRequestAsync(
             messages,
@@ -266,27 +240,7 @@ public class ToolReductionTests
     }
 
     [Fact]
-    public async Task EmbeddingToolReductionStrategy_MessagesEmbeddingTextFactory_EmptyResult_FallbacksToFirstN()
-    {
-        using var gen = new DeterministicTestEmbeddingGenerator();
-        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 2);
-
-        var tools = CreateTools("Alpha", "Beta", "Gamma");
-
-        // Return only whitespace so strategy should truncate deterministically
-        strategy.MessagesEmbeddingTextFactory = _ => "   ";
-
-        var reduced = (await strategy.SelectToolsForRequestAsync(
-            new[] { new ChatMessage(ChatRole.User, "Irrelevant content") },
-            new ChatOptions { Tools = tools })).ToList();
-
-        Assert.Equal(2, reduced.Count);
-        Assert.Equal("Alpha", reduced[0].Name);
-        Assert.Equal("Beta", reduced[1].Name);
-    }
-
-    [Fact]
-    public async Task EmbeddingToolReductionStrategy_MessagesEmbeddingTextFactory_InvokedOnce()
+    public async Task EmbeddingToolReductionStrategy_MessagesEmbeddingTextSelector_InvokedOnce()
     {
         using var gen = new DeterministicTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1);
@@ -294,11 +248,9 @@ public class ToolReductionTests
         var tools = CreateTools("Weather", "Math");
         int invocationCount = 0;
 
-        strategy.MessagesEmbeddingTextFactory = msgs =>
+        strategy.MessagesEmbeddingTextSelector = msgs =>
         {
             invocationCount++;
-
-            // Default-like behavior
             return string.Join("\n", msgs.Select(m => m.Text));
         };
 
@@ -307,6 +259,102 @@ public class ToolReductionTests
             new ChatOptions { Tools = tools });
 
         Assert.Equal(1, invocationCount);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_DefaultMessagesEmbeddingTextSelector_IncludesReasoningContent()
+    {
+        using var recorder = new RecordingEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(recorder, toolLimit: 1);
+        var tools = CreateTools("Weather", "Math");
+
+        var reasoningLine = "Thinking about the best way to get tomorrow's forecast...";
+        var answerLine = "Tomorrow will be sunny.";
+        var userLine = "What's the weather tomorrow?";
+
+        var messages = new[]
+        {
+            new ChatMessage(ChatRole.User, userLine),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new TextReasoningContent(reasoningLine),
+                new TextContent(answerLine)
+            ])
+        };
+
+        _ = await strategy.SelectToolsForRequestAsync(messages, new ChatOptions { Tools = tools });
+
+        string queryInput = recorder.Inputs[0];
+
+        Assert.Contains(userLine, queryInput);
+        Assert.Contains(reasoningLine, queryInput);
+        Assert.Contains(answerLine, queryInput);
+
+        var userIndex = queryInput.IndexOf(userLine, StringComparison.Ordinal);
+        var reasoningIndex = queryInput.IndexOf(reasoningLine, StringComparison.Ordinal);
+        var answerIndex = queryInput.IndexOf(answerLine, StringComparison.Ordinal);
+        Assert.True(userIndex >= 0 && reasoningIndex > userIndex && answerIndex > reasoningIndex);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_DefaultMessagesEmbeddingTextSelector_SkipsNonTextContent()
+    {
+        using var recorder = new RecordingEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(recorder, toolLimit: 1);
+        var tools = CreateTools("Alpha", "Beta");
+
+        var textOnly = "Provide translation.";
+        var messages = new[]
+        {
+            new ChatMessage(ChatRole.User,
+            [
+                new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream"),
+                new TextContent(textOnly)
+            ])
+        };
+
+        _ = await strategy.SelectToolsForRequestAsync(messages, new ChatOptions { Tools = tools });
+
+        var queryInput = recorder.Inputs[0];
+        Assert.Contains(textOnly, queryInput);
+        Assert.DoesNotContain("application/octet-stream", queryInput, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_RequiredToolAlwaysIncluded()
+    {
+        using var gen = new DeterministicTestEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1)
+        {
+            IsRequiredTool = t => t.Name == "Core"
+        };
+
+        var tools = CreateTools("Core", "Weather", "Math");
+        var reduced = (await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "math") },
+            new ChatOptions { Tools = tools })).ToList();
+
+        Assert.Equal(2, reduced.Count); // required + one optional (limit=1)
+        Assert.Contains(reduced, t => t.Name == "Core");
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_MultipleRequiredTools_ExceedLimit_AllRequiredIncluded()
+    {
+        // 3 required, limit=1 => expect 3 required + 1 ranked optional = 4 total
+        using var gen = new DeterministicTestEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1)
+        {
+            IsRequiredTool = t => t.Name.StartsWith("R", StringComparison.Ordinal)
+        };
+
+        var tools = CreateTools("R1", "R2", "R3", "Weather", "Math");
+        var reduced = (await strategy.SelectToolsForRequestAsync(
+            new[] { new ChatMessage(ChatRole.User, "weather math") },
+            new ChatOptions { Tools = tools })).ToList();
+
+        Assert.Equal(4, reduced.Count);
+        Assert.Equal(3, reduced.Count(t => t.Name.StartsWith("R")));
     }
 
     [Fact]
@@ -327,10 +375,7 @@ public class ToolReductionTests
             }
         };
 
-        using var client = inner
-            .AsBuilder()
-            .UseToolReduction(strategy)
-            .Build();
+        using var client = inner.AsBuilder().UseToolReduction(strategy).Build();
 
         await client.GetResponseAsync(
             new[] { new ChatMessage(ChatRole.User, "weather math please") },
@@ -360,10 +405,7 @@ public class ToolReductionTests
             }
         };
 
-        using var client = inner
-            .AsBuilder()
-            .UseToolReduction(strategy)
-            .Build();
+        using var client = inner.AsBuilder().UseToolReduction(strategy).Build();
 
         await foreach (var _ in client.GetStreamingResponseAsync(
             new[] { new ChatMessage(ChatRole.User, "math") },
@@ -377,15 +419,83 @@ public class ToolReductionTests
         Assert.Equal("Math", observedTools![0].Name);
     }
 
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_EmptyQuery_NoReduction()
+    {
+        // Arrange: more tools than limit so we'd normally reduce, but query is empty -> return full list unchanged.
+        using var gen = new DeterministicTestEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1);
+
+        var tools = CreateTools("ToolA", "ToolB", "ToolC");
+        var options = new ChatOptions { Tools = tools };
+
+        // Empty / whitespace message text produces empty query.
+        var messages = new[] { new ChatMessage(ChatRole.User, "   ") };
+
+        // Act
+        var result = await strategy.SelectToolsForRequestAsync(messages, options);
+
+        // Assert: same reference (no reduction), and generator not invoked at all.
+        Assert.Same(tools, result);
+        Assert.Equal(0, gen.TotalValueInputs);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_EmptyQuery_NoReduction_WithRequiredTool()
+    {
+        // Arrange: required tool + optional tools; still should return original set when query is empty.
+        using var gen = new DeterministicTestEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1)
+        {
+            IsRequiredTool = t => t.Name == "Req"
+        };
+
+        var tools = CreateTools("Req", "Optional1", "Optional2");
+        var options = new ChatOptions { Tools = tools };
+
+        var messages = new[] { new ChatMessage(ChatRole.User, "   ") };
+
+        // Act
+        var result = await strategy.SelectToolsForRequestAsync(messages, options);
+
+        // Assert
+        Assert.Same(tools, result);
+        Assert.Equal(0, gen.TotalValueInputs);
+    }
+
+    [Fact]
+    public async Task EmbeddingToolReductionStrategy_EmptyQuery_ViaCustomMessagesSelector_NoReduction()
+    {
+        // Arrange: force empty query through custom selector returning whitespace.
+        using var gen = new DeterministicTestEmbeddingGenerator();
+        var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1)
+        {
+            MessagesEmbeddingTextSelector = _ => "   "
+        };
+
+        var tools = CreateTools("One", "Two");
+        var messages = new[]
+        {
+            new ChatMessage(ChatRole.User, "This content will be ignored by custom selector.")
+        };
+
+        // Act
+        var result = await strategy.SelectToolsForRequestAsync(messages, new ChatOptions { Tools = tools });
+
+        // Assert: no reduction and no embeddings generated.
+        Assert.Same(tools, result);
+        Assert.Equal(0, gen.TotalValueInputs);
+    }
+
     private static List<AITool> CreateTools(params string[] names) =>
         names.Select(n => (AITool)new SimpleTool(n, $"Description about {n}")).ToList();
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning disable CS1998
     private static async IAsyncEnumerable<T> EmptyAsyncEnumerable<T>()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     {
         yield break;
     }
+#pragma warning restore CS1998
 
     private sealed class SimpleTool : AITool
     {
@@ -488,23 +598,61 @@ public class ToolReductionTests
 
     private sealed class VectorBasedTestEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
     {
-        // External control for choosing first component of embedding.
         public Func<string, float> VectorSelector { get; set; } = _ => 1f;
-
-        public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
-            IEnumerable<string> values,
-            EmbeddingGenerationOptions? options = null,
-            CancellationToken cancellationToken = default)
+        public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
         {
             var list = new List<Embedding<float>>();
             foreach (var v in values)
             {
-                float val = VectorSelector(v);
-                list.Add(new Embedding<float>(new float[] { val, 1f }));
+                list.Add(new Embedding<float>(new float[] { VectorSelector(v), 1f }));
             }
 
             return Task.FromResult(new GeneratedEmbeddings<Embedding<float>>(list));
         }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+        public void Dispose()
+        {
+            // No-op
+        }
+    }
+
+    private sealed class ConstantEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
+    {
+        private readonly float[] _vector;
+        public ConstantEmbeddingGenerator(int dims)
+        {
+            _vector = Enumerable.Repeat(1f, dims).ToArray();
+        }
+
+        public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Embedding<float>>();
+            foreach (var _ in values)
+            {
+                list.Add(new Embedding<float>(_vector));
+            }
+
+            return Task.FromResult(new GeneratedEmbeddings<Embedding<float>>(list));
+        }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+        public void Dispose()
+        {
+            // No-op
+        }
+    }
+
+    private sealed class TestChatClient : IChatClient
+    {
+        public Func<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken, Task<ChatResponse>>? GetResponseAsyncCallback { get; set; }
+        public Func<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? GetStreamingResponseAsyncCallback { get; set; }
+
+        public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default) =>
+            (GetResponseAsyncCallback ?? throw new InvalidOperationException())(messages, options, cancellationToken);
+
+        public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default) =>
+            (GetStreamingResponseAsyncCallback ?? throw new InvalidOperationException())(messages, options, cancellationToken);
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;
         public void Dispose()

@@ -62,7 +62,7 @@ public sealed class ToolReducingChatClient : DelegatingChatClient
         CancellationToken cancellationToken)
     {
         // If there are no options or no tools, skip.
-        if (options?.Tools is not { Count: > 1 })
+        if (options?.Tools is not { Count: > 0 })
         {
             return options;
         }

@@ -1405,79 +1405,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task ToolReduction_SingleRelevantToolSelected()
+    public virtual async Task ToolReduction_DynamicSelection_RespectsConversationHistory()
     {
         SkipIfNotEnabled();
         EnsureEmbeddingGenerator();
 
-        // Strategy: pick top 1 tool
-        var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 1);
-
-        // Define several tools with clearly distinct domains
-        var weatherTool = AIFunctionFactory.Create(
-            () => "Weather data",
-            new AIFunctionFactoryOptions
-            {
-                Name = "GetWeatherForecast",
-                Description = "Returns weather forecast and temperature for a given city."
-            });
-
-        var stockTool = AIFunctionFactory.Create(
-            () => "Stock data",
-            new AIFunctionFactoryOptions
-            {
-                Name = "GetStockQuote",
-                Description = "Retrieves live stock market price for a company ticker symbol."
-            });
-
-        var translateTool = AIFunctionFactory.Create(
-            () => "Translated text",
-            new AIFunctionFactoryOptions
-            {
-                Name = "TranslateText",
-                Description = "Translates text between human languages."
-            });
-
-        var mathTool = AIFunctionFactory.Create(
-            () => 42,
-            new AIFunctionFactoryOptions
-            {
-                Name = "SolveMath",
-                Description = "Solves arithmetic or algebraic math problems."
-            });
-
-        var allTools = new List<AITool> { weatherTool, stockTool, translateTool, mathTool };
-
-        IList<AITool>? capturedTools = null;
-
-        using var client = ChatClient!
-            .AsBuilder()
-            .UseToolReduction(strategy)
-            // Capture the tools after reduction, before invoking the underlying model.
-            .Use((messages, options, next, ct) =>
-            {
-                capturedTools = options?.Tools;
-                return next(messages, options, ct);
-            })
-            .Build();
-
-        var question = "What will the weather be in Paris tomorrow?";
-        _ = await client.GetResponseAsync([new(ChatRole.User, question)], new ChatOptions
-        {
-            Tools = allTools
-        });
-
-        Assert.NotNull(capturedTools);
-        Assert.Single(capturedTools!);
-        Assert.Equal("GetWeatherForecast", capturedTools![0].Name);
-    }
-
-    [ConditionalFact]
-    public virtual async Task ToolReduction_MultiConceptQuery_SelectsTwoRelevantTools()
-    {
-        SkipIfNotEnabled();
-        EnsureEmbeddingGenerator();
-
+        // Limit to 2 so that, once the conversation references both weather and translation,
+        // both tools can be included even if the latest user turn only mentions one of them.
         var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 2);
 
         var weatherTool = AIFunctionFactory.Create(
@@ -1496,50 +1430,220 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 Description = "Translates text between human languages."
             });
 
-        var stockTool = AIFunctionFactory.Create(
-            () => "Stock data",
-            new AIFunctionFactoryOptions
-            {
-                Name = "GetStockQuote",
-                Description = "Retrieves live stock market price for a company ticker symbol."
-            });
-
         var mathTool = AIFunctionFactory.Create(
             () => 42,
             new AIFunctionFactoryOptions
             {
                 Name = "SolveMath",
-                Description = "Solves arithmetic or algebraic math problems."
+                Description = "Solves basic math problems."
             });
 
-        var allTools = new List<AITool> { weatherTool, translateTool, stockTool, mathTool };
+        var allTools = new List<AITool> { weatherTool, translateTool, mathTool };
 
-        IList<AITool>? capturedTools = null;
+        IList<AITool>? firstTurnTools = null;
+        IList<AITool>? secondTurnTools = null;
 
         using var client = ChatClient!
             .AsBuilder()
             .UseToolReduction(strategy)
+            .Use(async (messages, options, next, ct) =>
+            {
+                // Capture the (possibly reduced) tool list for each turn.
+                if (firstTurnTools is null)
+                {
+                    firstTurnTools = options?.Tools;
+                }
+                else
+                {
+                    secondTurnTools ??= options?.Tools;
+                }
+
+                await next(messages, options, ct);
+            })
+            .UseFunctionInvocation()
+            .Build();
+
+        // Maintain chat history across turns.
+        List<ChatMessage> history = [];
+
+        // Turn 1: Ask a weather question.
+        history.Add(new ChatMessage(ChatRole.User, "What will the weather be in Seattle tomorrow?"));
+        var firstResponse = await client.GetResponseAsync(history, new ChatOptions { Tools = allTools });
+        history.AddMessages(firstResponse); // Append assistant reply.
+
+        Assert.NotNull(firstTurnTools);
+        Assert.Contains(firstTurnTools, t => t.Name == "GetWeatherForecast");
+
+        // Turn 2: Ask a translation question. Even though only translation is mentioned now,
+        // conversation history still contains a weather request. Expect BOTH weather + translation tools.
+        history.Add(new ChatMessage(ChatRole.User, "Please translate 'good evening' into French."));
+        var secondResponse = await client.GetResponseAsync(history, new ChatOptions { Tools = allTools });
+        history.AddMessages(secondResponse);
+
+        Assert.NotNull(secondTurnTools);
+        Assert.Equal(2, secondTurnTools.Count); // Should have filled both slots with the two relevant domains.
+        Assert.Contains(secondTurnTools, t => t.Name == "GetWeatherForecast");
+        Assert.Contains(secondTurnTools, t => t.Name == "TranslateText");
+
+        // Ensure unrelated tool was excluded.
+        Assert.DoesNotContain(secondTurnTools, t => t.Name == "SolveMath");
+    }
+
+    [ConditionalFact]
+    public virtual async Task ToolReduction_RequireSpecificToolPreservedAndOrdered()
+    {
+        SkipIfNotEnabled();
+        EnsureEmbeddingGenerator();
+
+        // Limit would normally reduce to 1, but required tool plus another should remain.
+        var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 1);
+
+        var translateTool = AIFunctionFactory.Create(
+            () => "Translated text",
+            new AIFunctionFactoryOptions
+            {
+                Name = "TranslateText",
+                Description = "Translates phrases between languages."
+            });
+
+        var weatherTool = AIFunctionFactory.Create(
+            () => "Weather data",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetWeatherForecast",
+                Description = "Returns forecast data for a city."
+            });
+
+        var tools = new List<AITool> { translateTool, weatherTool };
+
+        IList<AITool>? captured = null;
+
+        using var client = ChatClient!
+            .AsBuilder()
+            .UseToolReduction(strategy)
+            .UseFunctionInvocation()
             .Use((messages, options, next, ct) =>
             {
-                capturedTools = options?.Tools;
+                captured = options?.Tools;
                 return next(messages, options, ct);
             })
             .Build();
 
-        // Query intentionally references two distinct semantic domains: weather + translation.
-        var question = "Please translate 'good morning' into Spanish and also tell me the weather forecast for Barcelona.";
-        _ = await client.GetResponseAsync([new(ChatRole.User, question)], new ChatOptions
+        var history = new List<ChatMessage>
         {
-            Tools = allTools
+            new(ChatRole.User, "What will the weather be like in Redmond next week?.")
+        };
+
+        var response = await client.GetResponseAsync(history, new ChatOptions
+        {
+            Tools = tools,
+            ToolMode = ChatToolMode.RequireSpecific(translateTool.Name)
         });
+        history.AddMessages(response);
 
-        Assert.NotNull(capturedTools);
-        Assert.Equal(2, capturedTools!.Count);
+        Assert.NotNull(captured);
+        Assert.Equal(2, captured!.Count);
+        Assert.Equal("TranslateText", captured[0].Name); // Required should appear first.
+        Assert.Equal("GetWeatherForecast", captured[1].Name);
+    }
 
-        // Order is not guaranteed; assert membership.
-        var names = capturedTools.Select(t => t.Name).ToList();
-        Assert.Contains("GetWeatherForecast", names);
-        Assert.Contains("TranslateText", names);
+    [ConditionalFact]
+    public virtual async Task ToolReduction_ToolRemovedAfterFirstUse_NotInvokedAgain()
+    {
+        SkipIfNotEnabled();
+        EnsureEmbeddingGenerator();
+
+        int weatherInvocationCount = 0;
+
+        var weatherTool = AIFunctionFactory.Create(
+            () =>
+            {
+                weatherInvocationCount++;
+                return "Sunny and dry.";
+            },
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetWeather",
+                Description = "Gets the weather forecast for a given location."
+            });
+
+        // Strategy exposes tools only on the first request, then removes them.
+        var removalStrategy = new RemoveToolAfterFirstUseStrategy();
+
+        IList<AITool>? firstTurnTools = null;
+        IList<AITool>? secondTurnTools = null;
+
+        using var client = ChatClient!
+            .AsBuilder()
+            // Place capture immediately after reduction so it's invoked exactly once per user request.
+            .UseToolReduction(removalStrategy)
+            .Use((messages, options, next, ct) =>
+            {
+                if (firstTurnTools is null)
+                {
+                    firstTurnTools = options?.Tools;
+                }
+                else
+                {
+                    secondTurnTools ??= options?.Tools;
+                }
+
+                return next(messages, options, ct);
+            })
+            .UseFunctionInvocation()
+            .Build();
+
+        List<ChatMessage> history = [];
+
+        // Turn 1
+        history.Add(new ChatMessage(ChatRole.User, "What's the weather like tomorrow in Seattle?"));
+        var firstResponse = await client.GetResponseAsync(history, new ChatOptions
+        {
+            Tools = [weatherTool],
+            ToolMode = ChatToolMode.RequireAny
+        });
+        history.AddMessages(firstResponse);
+
+        Assert.Equal(1, weatherInvocationCount);
+        Assert.NotNull(firstTurnTools);
+        Assert.Contains(firstTurnTools!, t => t.Name == "GetWeather");
+
+        // Turn 2 (tool removed by strategy even though caller supplies it again)
+        history.Add(new ChatMessage(ChatRole.User, "And what about next week?"));
+        var secondResponse = await client.GetResponseAsync(history, new ChatOptions
+        {
+            Tools = [weatherTool]
+        });
+        history.AddMessages(secondResponse);
+
+        Assert.Equal(1, weatherInvocationCount); // Not invoked again.
+        Assert.NotNull(secondTurnTools);
+        Assert.Empty(secondTurnTools!);          // Strategy removed the tool set.
+
+        // Response text shouldn't just echo the tool's stub output.
+        Assert.DoesNotContain("Sunny and dry.", secondResponse.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Test-only custom strategy: include tools on first request, then remove them afterward.
+    private sealed class RemoveToolAfterFirstUseStrategy : IToolReductionStrategy
+    {
+        private bool _used;
+
+        public Task<IEnumerable<AITool>> SelectToolsForRequestAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options,
+            CancellationToken cancellationToken = default)
+        {
+            if (!_used && options?.Tools is { Count: > 0 })
+            {
+                _used = true;
+                // Returning the same instance signals no change.
+                return Task.FromResult<IEnumerable<AITool>>(options.Tools);
+            }
+
+            // After first use, remove all tools.
+            return Task.FromResult<IEnumerable<AITool>>(Array.Empty<AITool>());
+        }
     }
 
     [MemberNotNull(nameof(ChatClient))]
