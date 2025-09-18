@@ -22,6 +22,22 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     public override Task Caching_AfterFunctionInvocation_FunctionOutputUnchangedAsync() => Task.CompletedTask;
 
     [ConditionalFact]
+    public async Task UseCodeInterpreter_ProducesCodeExecutionResults()
+    {
+        SkipIfNotEnabled();
+
+        var response = await ChatClient.GetResponseAsync("Use the code interpreter to calculate the square root of 42. Return only the nearest integer value and no other text.", new()
+        {
+            Tools = [new HostedCodeInterpreterTool()],
+        });
+        Assert.NotNull(response);
+
+        ChatMessage message = Assert.Single(response.Messages);
+
+        Assert.Equal("6", message.Text);
+    }
+
+    [ConditionalFact]
     public async Task UseWebSearch_AnnotationsReflectResults()
     {
         SkipIfNotEnabled();
