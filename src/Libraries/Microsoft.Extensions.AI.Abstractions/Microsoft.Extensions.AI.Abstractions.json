@@ -686,6 +686,14 @@
           "Stage": "Stable"
         },
         {
+          "Member": "virtual object? Microsoft.Extensions.AI.AITool.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TService? Microsoft.Extensions.AI.AITool.GetService<TService>(object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "override string Microsoft.Extensions.AI.AITool.ToString();",
           "Stage": "Stable"
         }
@@ -1475,6 +1483,10 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.DelegatingAIFunction.DelegatingAIFunction(Microsoft.Extensions.AI.AIFunction innerFunction);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.AI.DelegatingAIFunction.GetService(System.Type serviceType, object? serviceKey = null);",
           "Stage": "Stable"
         },
         {

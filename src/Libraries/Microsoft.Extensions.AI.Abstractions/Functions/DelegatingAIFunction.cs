@@ -58,4 +58,14 @@ public class DelegatingAIFunction : AIFunction
     /// <inheritdoc />
     protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
         InnerFunction.InvokeAsync(arguments, cancellationToken);
+
+    /// <inheritdoc />
+    public override object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            InnerFunction.GetService(serviceType, serviceKey);
+    }
 }

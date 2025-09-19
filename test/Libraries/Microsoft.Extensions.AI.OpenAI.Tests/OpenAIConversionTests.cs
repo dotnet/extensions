@@ -1193,12 +1193,17 @@ public class OpenAIConversionTests
         Assert.Single(options.Tools);
         Assert.NotNull(options.Tools[0]);
 
+        var rawSearchTool = ResponseTool.CreateWebSearchTool();
         options = new()
         {
-            Tools = [ResponseTool.CreateWebSearchTool().AsAITool()],
+            Tools = [rawSearchTool.AsAITool()],
         };
         Assert.Single(options.Tools);
         Assert.NotNull(options.Tools[0]);
+
+        Assert.Same(rawSearchTool, options.Tools[0].GetService<ResponseTool>());
+        Assert.Same(rawSearchTool, options.Tools[0].GetService<WebSearchTool>());
+        Assert.Null(options.Tools[0].GetService<ResponseTool>("key"));
     }
 
     private static async IAsyncEnumerable<T> CreateAsyncEnumerable<T>(IEnumerable<T> source)
