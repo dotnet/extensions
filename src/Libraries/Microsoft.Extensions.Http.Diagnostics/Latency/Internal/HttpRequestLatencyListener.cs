@@ -49,7 +49,9 @@ internal sealed class HttpRequestLatencyListener : EventListener
     internal void OnEventWritten(string eventSourceName, string? eventName)
     {
         // If event of interest, add a checkpoint for it.
-        if (eventName != null && _eventToTokenMap[eventSourceName].TryGetValue(eventName, out var token))
+        if (eventName != null
+            && _eventToTokenMap.TryGetValue(eventSourceName, out var tokenMap)
+            && tokenMap.TryGetValue(eventName, out var token))
         {
             LatencyContext.Get()?.AddCheckpoint(token);
         }
