@@ -85,7 +85,7 @@ public class OpenTelemetryEmbeddingGeneratorTests
         Assert.Equal("testservice", activity.GetTagItem("gen_ai.provider.name"));
 
         Assert.Equal(expectedModelName, activity.GetTagItem("gen_ai.request.model"));
-        Assert.Equal(1234, activity.GetTagItem("gen_ai.request.embedding.dimensions"));
+        Assert.Equal(1234, activity.GetTagItem("gen_ai.embeddings.dimension.count"));
         Assert.Equal(enableSensitiveData ? "value1" : null, activity.GetTagItem("service_tier"));
         Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("SomethingElse"));
 

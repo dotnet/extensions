@@ -151,13 +151,13 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
             string? modelId = options?.ModelId ?? _defaultModelId;
 
             activity = _activitySource.StartActivity(
-                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.GenerateContent : $"{OpenTelemetryConsts.GenAI.GenerateContent} {modelId}",
+                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.GenerateContentName : $"{OpenTelemetryConsts.GenAI.GenerateContentName} {modelId}",
                 ActivityKind.Client);
 
             if (activity is { IsAllDataRequested: true })
             {
                 _ = activity
-                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContent)
+                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContentName)
                     .AddTag(OpenTelemetryConsts.GenAI.Output.Type, OpenTelemetryConsts.TypeImage)
                     .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
                     .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
@@ -294,7 +294,7 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
 
         void AddMetricTags(ref TagList tags, string? requestModelId)
         {
-            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContent);
+            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContentName);
 
             if (requestModelId is not null)
             {

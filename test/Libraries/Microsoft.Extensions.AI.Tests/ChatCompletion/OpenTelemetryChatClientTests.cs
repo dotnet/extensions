@@ -130,6 +130,12 @@ public class OpenTelemetryChatClientTests
                 ["SomethingElse"] = "value2",
             },
             Instructions = "You are helpful.",
+            Tools =
+            [
+                AIFunctionFactory.Create((string personName) => personName, "GetPersonAge", "Gets the age of a person by name."),
+                new HostedWebSearchTool(),
+                AIFunctionFactory.Create((string location) => "", "GetCurrentWeather", "Gets the current weather for a location.").AsDeclarationOnly(),
+            ],
         };
 
         if (streaming)
@@ -263,12 +269,50 @@ public class OpenTelemetryChatClientTests
                   }
                 ]
                 """), ReplaceWhitespace(tags["gen_ai.system_instructions"]));
+
+            Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "type": "function",
+                    "name": "GetPersonAge",
+                    "description": "Gets the age of a person by name.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "personName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "personName"
+                      ]
+                    }
+                  },
+                  {
+                    "type": "function",
+                    "name": "GetCurrentWeather",
+                    "description": "Gets the current weather for a location.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "location": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "location"
+                      ]
+                    }
+                  }
+                ]
+                """), ReplaceWhitespace(tags["gen_ai.tool.definitions"]));
         }
         else
         {
             Assert.False(tags.ContainsKey("gen_ai.input.messages"));
             Assert.False(tags.ContainsKey("gen_ai.output.messages"));
             Assert.False(tags.ContainsKey("gen_ai.system_instructions"));
+            Assert.False(tags.ContainsKey("gen_ai.tool.definitions"));
         }
 
         static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();

@@ -655,9 +655,10 @@ public class FunctionInvokingChatClientTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task FunctionInvocationTrackedWithActivity(bool enableTelemetry)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task FunctionInvocationTrackedWithActivity(bool enableTelemetry, bool enableSensitiveData)
     {
         string sourceName = Guid.NewGuid().ToString();
 
@@ -675,7 +676,7 @@ public class FunctionInvokingChatClientTests
         };
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
-            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName)));
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName) { EnableSensitiveData = enableSensitiveData }));
 
         await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure), streaming: false);
 
@@ -700,6 +701,23 @@ public class FunctionInvokingChatClientTests
                     activity => Assert.Equal("execute_tool Func1", activity.DisplayName),
                     activity => Assert.Equal("chat", activity.DisplayName),
                     activity => Assert.Equal(streaming ? "FunctionInvokingChatClient.GetStreamingResponseAsync" : "FunctionInvokingChatClient.GetResponseAsync", activity.DisplayName));
+
+                var executeTool = activities[1];
+                if (enableSensitiveData)
+                {
+                    var args = Assert.Single(executeTool.Tags, t => t.Key == "gen_ai.tool.call.arguments");
+                    Assert.Equal(
+                        JsonSerializer.Serialize(new Dictionary<string, object?> { ["arg1"] = "value1" }, AIJsonUtilities.DefaultOptions),
+                        args.Value);
+
+                    var result = Assert.Single(executeTool.Tags, t => t.Key == "gen_ai.tool.call.result");
+                    Assert.Equal("Result 1", JsonSerializer.Deserialize<string>(result.Value!, AIJsonUtilities.DefaultOptions));
+                }
+                else
+                {
+                    Assert.DoesNotContain(executeTool.Tags, t => t.Key == "gen_ai.tool.call.arguments");
+                    Assert.DoesNotContain(executeTool.Tags, t => t.Key == "gen_ai.tool.call.result");
+                }
 
                 for (int i = 0; i < activities.Count - 1; i++)
                 {
