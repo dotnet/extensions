@@ -499,11 +499,11 @@
       "valueTransform": "vectorStoreIndexNameTransform",
       "replaces": "data-ChatWithCustomData-CSharp.Web-"
     },
-    "projectNameReplacer": {
+    "aspireClassNameReplacer": {
       "type": "derived",
       "valueSource": "name",
-      "valueTransform": "projectNameTransform_Formatting",
-      "replaces": "ChatWithCustomData_CSharp_Web"
+      "valueTransform": "aspireClassName_Formatting",
+      "replaces": "ChatWithCustomData_CSharp_Web_AspireClassName"
     },
     "webProjectNamespaceAdjuster": {
       "type": "generated",
@@ -530,23 +530,30 @@
     }
   },
   "forms": {
-    "projectNameTransform_Normalize": {
+    "aspireClassName_ReplaceInvalidChars_DigitDots": {
       "identifier": "replace",
-      "pattern": "[^a-zA-Z0-9_]",
+      "pattern": "((?<=\\.)|^)(?=\\d)",
       "replacement": "_",
-      "description": "Replace non-word chars, start before digit, after period with underscore"
+      "description": "Insert underscore before digits at start or after a dot"
     },
-    "projectNameTransform_AppendWeb": {
+    "aspireClassName_ReplaceInvalidChars_NonWords": {
+      "identifier": "replace",
+      "pattern": "\\W",
+      "replacement": "_",
+      "description": "Replace non-word characters with underscore"
+    },
+    "aspireClassName_AppendWeb": {
       "identifier": "replace",
       "pattern": "^(.*)$",
       "replacement": "$1_Web",
       "description": "Append _Web to the project name"
     },
-    "projectNameTransform_Formatting": {
+    "aspireClassName_Formatting": {
       "identifier": "chain",
       "steps": [
-        "projectNameTransform_Normalize",
-        "projectNameTransform_AppendWeb"
+        "aspireClassName_ReplaceInvalidChars_DigitDots",
+        "aspireClassName_ReplaceInvalidChars_NonWords",
+        "aspireClassName_AppendWeb"
       ],
       "description": "Normalize and add _Web suffix"
     },
