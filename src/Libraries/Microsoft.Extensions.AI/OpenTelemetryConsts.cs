@@ -127,6 +127,8 @@ internal static class OpenTelemetryConsts
             public static class Call
             {
                 public const string Id = "gen_ai.tool.call.id";
+                public const string Arguments = "gen_ai.tool.call.arguments";
+                public const string Result = "gen_ai.tool.call.result";
             }
         }
 
