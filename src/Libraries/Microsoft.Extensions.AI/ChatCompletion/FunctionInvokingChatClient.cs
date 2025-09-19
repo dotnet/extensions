@@ -1113,11 +1113,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         _ = Throw.IfNull(context);
 
         using Activity? activity = _activitySource?.StartActivity(
-            $"{OpenTelemetryConsts.GenAI.ExecuteTool} {context.Function.Name}",
+            $"{OpenTelemetryConsts.GenAI.ExecuteToolName} {context.Function.Name}",
             ActivityKind.Internal,
             default(ActivityContext),
             [
-                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteTool),
+                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteToolName),
                 new(OpenTelemetryConsts.GenAI.Tool.Type, OpenTelemetryConsts.ToolTypeFunction),
                 new(OpenTelemetryConsts.GenAI.Tool.Call.Id, context.CallContent.CallId),
                 new(OpenTelemetryConsts.GenAI.Tool.Name, context.Function.Name),
