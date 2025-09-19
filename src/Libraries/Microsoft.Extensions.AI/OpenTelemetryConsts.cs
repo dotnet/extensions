@@ -123,6 +123,7 @@ internal static class OpenTelemetryConsts
             public const string Description = "gen_ai.tool.description";
             public const string Message = "gen_ai.tool.message";
             public const string Type = "gen_ai.tool.type";
+            public const string Definitions = "gen_ai.tool.definitions";
 
             public static class Call
             {
