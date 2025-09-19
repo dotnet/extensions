@@ -418,7 +418,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         // Handle strongly-typed properties.
         result.MaxOutputTokenCount ??= options.MaxOutputTokens;
-        result.ParallelToolCallsEnabled ??= options.AllowMultipleToolCalls;
         result.PreviousResponseId ??= options.ConversationId;
         result.Temperature ??= options.Temperature;
         result.TopP ??= options.TopP;
@@ -528,6 +527,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         result.Tools.Add(responsesMcpTool);
                         break;
                 }
+            }
+
+            if (result.Tools.Count > 0)
+            {
+                result.ParallelToolCallsEnabled ??= options.AllowMultipleToolCalls;
             }
 
             if (result.ToolChoice is null && result.Tools.Count > 0)
