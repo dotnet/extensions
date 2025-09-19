@@ -4,6 +4,9 @@
 
 - Added M.E.AI to OpenAI conversions for response format types.
 - Added `ResponseTool` to `AITool` conversions.
+- Fixed the handling of `HostedCodeInterpreterTool` with Responses when no file IDs were provided.
+- Fixed an issue where requests would fail when AllowMultipleToolCalls was set with no tools provided.
+- Fixed an issue where requests would fail when an AuthorName was provided containing invalid characters.
 
 ## 9.9.0-preview.1.25458.4
 

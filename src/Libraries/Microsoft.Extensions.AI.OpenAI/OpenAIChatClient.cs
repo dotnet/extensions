@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -19,14 +20,16 @@ using OpenAI.Chat;
 #pragma warning disable CA1308 // Normalize strings to uppercase
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
 #pragma warning disable S1067 // Expressions should not be too complex
+#pragma warning disable S2333 // Unnecessary partial
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1202 // Elements should be ordered by access
+#pragma warning disable SA1203 // Constants should appear before fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ChatClient"/>.</summary>
-internal sealed class OpenAIChatClient : IChatClient
+internal sealed partial class OpenAIChatClient : IChatClient
 {
     // These delegate instances are used to call the internal overloads of CompleteChatAsync and CompleteChatStreamingAsync that accept
     // a RequestOptions. These should be replaced once a better way to pass RequestOptions is available.
@@ -157,10 +160,11 @@ internal sealed class OpenAIChatClient : IChatClient
                 input.Role == OpenAIClientExtensions.ChatRoleDeveloper)
             {
                 var parts = ToOpenAIChatContent(input.Contents);
+                string? name = SanitizeAuthorName(input.AuthorName);
                 yield return
-                    input.Role == ChatRole.System ? new SystemChatMessage(parts) { ParticipantName = input.AuthorName } :
-                    input.Role == OpenAIClientExtensions.ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = input.AuthorName } :
-                    new UserChatMessage(parts) { ParticipantName = input.AuthorName };
+                    input.Role == ChatRole.System ? new SystemChatMessage(parts) { ParticipantName = name } :
+                    input.Role == OpenAIClientExtensions.ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = name } :
+                    new UserChatMessage(parts) { ParticipantName = name };
             }
             else if (input.Role == ChatRole.Tool)
             {
@@ -233,7 +237,7 @@ internal sealed class OpenAIChatClient : IChatClient
                         new(ChatMessageContentPart.CreateTextPart(string.Empty));
                 }
 
-                message.ParticipantName = input.AuthorName;
+                message.ParticipantName = SanitizeAuthorName(input.AuthorName);
                 message.Refusal = refusal;
 
                 yield return message;
@@ -568,7 +572,6 @@ internal sealed class OpenAIChatClient : IChatClient
         result.TopP ??= options.TopP;
         result.PresencePenalty ??= options.PresencePenalty;
         result.Temperature ??= options.Temperature;
-        result.AllowParallelToolCalls ??= options.AllowMultipleToolCalls;
         result.Seed ??= options.Seed;
 
         if (options.StopSequences is { Count: > 0 } stopSequences)
@@ -587,6 +590,11 @@ internal sealed class OpenAIChatClient : IChatClient
                 {
                     result.Tools.Add(ToOpenAIChatTool(af, options));
                 }
+            }
+
+            if (result.Tools.Count > 0)
+            {
+                result.AllowParallelToolCalls ??= options.AllowMultipleToolCalls;
             }
 
             if (result.ToolChoice is null && result.Tools.Count > 0)
@@ -749,6 +757,27 @@ internal sealed class OpenAIChatClient : IChatClient
             _ => new ChatFinishReason(s),
         };
 
+    /// <summary>Sanitizes the author name to be appropriate for including as an OpenAI participant name.</summary>
+    private static string? SanitizeAuthorName(string? name)
+    {
+        if (name is not null)
+        {
+            const int MaxLength = 64;
+
+            name = InvalidAuthorNameRegex().Replace(name, string.Empty);
+            if (name.Length == 0)
+            {
+                name = null;
+            }
+            else if (name.Length > MaxLength)
+            {
+                name = name.Substring(0, MaxLength);
+            }
+        }
+
+        return name;
+    }
+
     /// <summary>POCO representing function calling info. Used to concatenation information for a single function call from across multiple streaming updates.</summary>
     private sealed class FunctionCallInfo
     {
@@ -756,4 +785,13 @@ internal sealed class OpenAIChatClient : IChatClient
         public string? Name;
         public StringBuilder? Arguments;
     }
+
+    private const string InvalidAuthorNamePattern = @"[^a-zA-Z0-9_]+";
+#if NET
+    [GeneratedRegex(InvalidAuthorNamePattern)]
+    private static partial Regex InvalidAuthorNameRegex();
+#else
+    private static Regex InvalidAuthorNameRegex() => _invalidAuthorNameRegex;
+    private static readonly Regex _invalidAuthorNameRegex = new(InvalidAuthorNamePattern, RegexOptions.Compiled);
+#endif
 }
