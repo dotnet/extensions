@@ -2,6 +2,14 @@
 
 ## NOT YET RELEASED
 
+- Updated the EnableSensitiveData properties on OpenTelemetryChatClient/EmbeddingGenerator to respect a OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT environment variable.
+- Added OpenTelemetryImageGenerator to provide OpenTelemetry instrumentation for IImageGenerator implementations.
+
+## 9.9.0
+
+- Added `FunctionInvokingChatClient` support for non-invocable tools and `TerminateOnUnknownCalls` property.
+- Added support to `FunctionInvokingChatClient` for user approval of function invocations.
+- Updated the Open Telemetry instrumentation to conform to the latest 1.37.0 draft specification of the Semantic Conventions for Generative AI systems.
 - Fixed `GetResponseAsync<T>` to only look at the contents of the last message in the response.
 
 ## 9.8.0

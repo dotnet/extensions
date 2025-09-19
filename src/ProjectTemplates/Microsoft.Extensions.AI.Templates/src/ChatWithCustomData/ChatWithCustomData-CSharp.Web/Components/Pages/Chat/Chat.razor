@@ -40,6 +40,7 @@
         Don't refer to the presence of citations; just emit these tags right at the end, with no surrounding text.
         ";
 
+    private int statefulMessageCount;
     private readonly ChatOptions chatOptions = new();
     private readonly List<ChatMessage> messages = new();
     private CancellationTokenSource? currentResponseCancellation;
@@ -49,6 +50,7 @@
 
     protected override void OnInitialized()
     {
+        statefulMessageCount = 0;
         messages.Add(new(ChatRole.System, SystemPrompt));
         chatOptions.Tools = [AIFunctionFactory.Create(SearchAsync)];
     }
@@ -66,15 +68,17 @@
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
         currentResponseCancellation = new();
-        await foreach (var update in ChatClient.GetStreamingResponseAsync([.. messages], chatOptions, currentResponseCancellation.Token))
+        await foreach (var update in ChatClient.GetStreamingResponseAsync(messages.Skip(statefulMessageCount), chatOptions, currentResponseCancellation.Token))
         {
             messages.AddMessages(update, filter: c => c is not TextContent);
             responseText.Text += update.Text;
+            chatOptions.ConversationId = update.ConversationId;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
         }
 
         // Store the final response in the conversation, and begin getting suggestions
         messages.Add(currentResponseMessage!);
+        statefulMessageCount = chatOptions.ConversationId is not null ? messages.Count : 0;
         currentResponseMessage = null;
         chatSuggestions?.Update(messages);
     }
@@ -96,6 +100,8 @@
         CancelAnyCurrentResponse();
         messages.Clear();
         messages.Add(new(ChatRole.System, SystemPrompt));
+        chatOptions.ConversationId = null;
+        statefulMessageCount = 0;
         chatSuggestions?.Clear();
         await chatInput!.FocusAsync();
     }

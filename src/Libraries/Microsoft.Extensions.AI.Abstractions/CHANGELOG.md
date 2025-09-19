@@ -1,5 +1,19 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Added new `ChatResponseFormat.ForJsonSchema` overloads that export a JSON schema from a .NET type.
+- Updated `TextReasoningContent` to include `ProtectedData` for representing encrypted/redacted content.
+- Fixed `MinLength`/`MaxLength`/`Length` attribute mapping in nullable string properties during schema export.
+
+## 9.9.0
+
+- Added non-invocable `AIFunctionDeclaration` (base class for `AIFunction`), `AIFunctionFactory.CreateDeclaration`, and `AIFunction.AsDeclarationOnly`.
+- Added `[Experimental]` support for user approval of function invocations via `ApprovalRequiredAIFunction`, `FunctionApprovalRequestContent`, and friends.
+- Added `[Experimental]` support for MCP server-hosted tools via `HostedMcpServerTool`, `HostedMcpServerToolApprovalMode`, and friends.
+- Updated `AIContent` coalescing logic used by `ToChatResponse`/`ToChatResponseUpdate` to factor in `ChatMessage.Role`.
+- Moved `IChatReducer` into `Microsoft.Extensions.AI.Abstractions` from `Microsoft.Extensions.AI`.
+
 ## 9.8.0
 
 - Added `AIAnnotation` and related types to represent citations and other annotations in chat messages.

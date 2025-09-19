@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -26,6 +28,27 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ChatClient"/>.</summary>
 internal sealed class OpenAIChatClient : IChatClient
 {
+    // These delegate instances are used to call the internal overloads of CompleteChatAsync and CompleteChatStreamingAsync that accept
+    // a RequestOptions. These should be replaced once a better way to pass RequestOptions is available.
+    private static readonly Func<ChatClient, IEnumerable<OpenAI.Chat.ChatMessage>, ChatCompletionOptions, RequestOptions, Task<ClientResult<ChatCompletion>>>?
+        _completeChatAsync =
+        (Func<ChatClient, IEnumerable<OpenAI.Chat.ChatMessage>, ChatCompletionOptions, RequestOptions, Task<ClientResult<ChatCompletion>>>?)
+        typeof(ChatClient)
+        .GetMethod(
+            nameof(ChatClient.CompleteChatAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+            null, [typeof(IEnumerable<OpenAI.Chat.ChatMessage>), typeof(ChatCompletionOptions), typeof(RequestOptions)], null)
+        ?.CreateDelegate(
+            typeof(Func<ChatClient, IEnumerable<OpenAI.Chat.ChatMessage>, ChatCompletionOptions, RequestOptions, Task<ClientResult<ChatCompletion>>>));
+    private static readonly Func<ChatClient, IEnumerable<OpenAI.Chat.ChatMessage>, ChatCompletionOptions, RequestOptions, AsyncCollectionResult<StreamingChatCompletionUpdate>>?
+        _completeChatStreamingAsync =
+        (Func<ChatClient, IEnumerable<OpenAI.Chat.ChatMessage>, ChatCompletionOptions, RequestOptions, AsyncCollectionResult<StreamingChatCompletionUpdate>>?)
+        typeof(ChatClient)
+        .GetMethod(
+            nameof(ChatClient.CompleteChatStreamingAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+            null, [typeof(IEnumerable<OpenAI.Chat.ChatMessage>), typeof(ChatCompletionOptions), typeof(RequestOptions)], null)
+        ?.CreateDelegate(
+            typeof(Func<ChatClient, IEnumerable<OpenAI.Chat.ChatMessage>, ChatCompletionOptions, RequestOptions, AsyncCollectionResult<StreamingChatCompletionUpdate>>));
+
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -37,18 +60,9 @@ internal sealed class OpenAIChatClient : IChatClient
     /// <exception cref="ArgumentNullException"><paramref name="chatClient"/> is <see langword="null"/>.</exception>
     public OpenAIChatClient(ChatClient chatClient)
     {
-        _ = Throw.IfNull(chatClient);
+        _chatClient = Throw.IfNull(chatClient);
 
-        _chatClient = chatClient;
-
-        // https://github.com/openai/openai-dotnet/issues/215
-        // The endpoint and model aren't currently exposed, so use reflection to get at them, temporarily. Once packages
-        // implement the abstractions directly rather than providing adapters on top of the public APIs,
-        // the package can provide such implementations separate from what's exposed in the public API.
-        Uri providerUrl = typeof(ChatClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(chatClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
-
-        _metadata = new("openai", providerUrl, _chatClient.Model);
+        _metadata = new("openai", chatClient.Endpoint, _chatClient.Model);
     }
 
     /// <inheritdoc />
@@ -74,7 +88,10 @@ internal sealed class OpenAIChatClient : IChatClient
         var openAIOptions = ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
-        var response = await _chatClient.CompleteChatAsync(openAIChatMessages, openAIOptions, cancellationToken).ConfigureAwait(false);
+        var task = _completeChatAsync is not null ?
+            _completeChatAsync(_chatClient, openAIChatMessages, openAIOptions, cancellationToken.ToRequestOptions(streaming: false)) :
+            _chatClient.CompleteChatAsync(openAIChatMessages, openAIOptions, cancellationToken);
+        var response = await task.ConfigureAwait(false);
 
         return FromOpenAIChatCompletion(response.Value, openAIOptions);
     }
@@ -89,7 +106,9 @@ internal sealed class OpenAIChatClient : IChatClient
         var openAIOptions = ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
-        var chatCompletionUpdates = _chatClient.CompleteChatStreamingAsync(openAIChatMessages, openAIOptions, cancellationToken);
+        var chatCompletionUpdates = _completeChatStreamingAsync is not null ?
+            _completeChatStreamingAsync(_chatClient, openAIChatMessages, openAIOptions, cancellationToken.ToRequestOptions(streaming: true)) :
+            _chatClient.CompleteChatStreamingAsync(openAIChatMessages, openAIOptions, cancellationToken);
 
         return FromOpenAIStreamingChatCompletionAsync(chatCompletionUpdates, openAIOptions, cancellationToken);
     }
@@ -101,7 +120,7 @@ internal sealed class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
-    internal static ChatTool ToOpenAIChatTool(AIFunction aiFunction, ChatOptions? options = null)
+    internal static ChatTool ToOpenAIChatTool(AIFunctionDeclaration aiFunction, ChatOptions? options = null)
     {
         bool? strict =
             OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
@@ -564,7 +583,7 @@ internal sealed class OpenAIChatClient : IChatClient
         {
             foreach (AITool tool in tools)
             {
-                if (tool is AIFunction af)
+                if (tool is AIFunctionDeclaration af)
                 {
                     result.Tools.Add(ToOpenAIChatTool(af, options));
                 }
@@ -592,26 +611,27 @@ internal sealed class OpenAIChatClient : IChatClient
             }
         }
 
-        if (result.ResponseFormat is null)
-        {
-            if (options.ResponseFormat is ChatResponseFormatText)
-            {
-                result.ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat();
-            }
-            else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
-            {
-                result.ResponseFormat = OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
-                    OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
-                        jsonFormat.SchemaName ?? "json_schema",
-                        BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription,
-                        OpenAIClientExtensions.HasStrict(options.AdditionalProperties)) :
-                    OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
-            }
-        }
+        result.ResponseFormat ??= ToOpenAIChatResponseFormat(options.ResponseFormat, options);
 
         return result;
     }
+
+    internal static OpenAI.Chat.ChatResponseFormat? ToOpenAIChatResponseFormat(ChatResponseFormat? format, ChatOptions? options) =>
+        format switch
+        {
+            ChatResponseFormatText => OpenAI.Chat.ChatResponseFormat.CreateTextFormat(),
+
+            ChatResponseFormatJson jsonFormat when OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema =>
+                 OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
+                    jsonFormat.SchemaName ?? "json_schema",
+                    BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
+                    jsonFormat.SchemaDescription,
+                    OpenAIClientExtensions.HasStrict(options?.AdditionalProperties)),
+
+            ChatResponseFormatJson => OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat(),
+
+            _ => null
+        };
 
     private static UsageDetails FromOpenAIUsage(ChatTokenUsage tokenUsage)
     {

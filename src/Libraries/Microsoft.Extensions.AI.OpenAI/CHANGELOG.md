@@ -1,5 +1,17 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Added M.E.AI to OpenAI conversions for response format types.
+- Added `ResponseTool` to `AITool` conversions.
+
+## 9.9.0-preview.1.25458.4
+
+- Updated to depend on OpenAI 2.4.0
+- Updated tool mappings to recognize any `AIFunctionDeclaration`.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Fixed handling of annotated but empty content in the `AsIChatClient` for `AssistantClient`.
+
 ## 9.8.0-preview.1.25412.6
 
 - Updated to depend on OpenAI 2.3.0.

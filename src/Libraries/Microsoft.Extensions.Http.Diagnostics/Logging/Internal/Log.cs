@@ -99,15 +99,21 @@ internal static partial class Log
         var statusCodePropertyCount = record.StatusCode.HasValue ? 1 : 0;
         var requestHeadersCount = record.RequestHeaders?.Count ?? 0;
         var responseHeadersCount = record.ResponseHeaders?.Count ?? 0;
+        var urlQueryPropertyCount = string.IsNullOrEmpty(record.QueryString) ? 0 : 1;
 
         var spaceToReserve = MinimalPropertyCount + statusCodePropertyCount + requestHeadersCount + responseHeadersCount +
-            record.PathParametersCount + (record.RequestBody is null ? 0 : 1) + (record.ResponseBody is null ? 0 : 1);
+            record.PathParametersCount + (record.RequestBody is null ? 0 : 1) + (record.ResponseBody is null ? 0 : 1) + urlQueryPropertyCount;
 
         var index = loggerMessageState.ReserveTagSpace(spaceToReserve);
         loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Method, record.Method);
         loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Host, record.Host);
         loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Path, record.Path);
         loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Duration, record.Duration);
+
+        if (!string.IsNullOrEmpty(record.QueryString))
+        {
+            loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.UrlQuery, record.QueryString);
+        }
 
         if (record.StatusCode.HasValue)
         {
@@ -148,7 +154,6 @@ internal static partial class Log
             loggerMessageState,
             exception,
             _originalFormatValueFmtFunc);
-
         if (record.EnrichmentTags is null)
         {
             loggerMessageState.Clear();

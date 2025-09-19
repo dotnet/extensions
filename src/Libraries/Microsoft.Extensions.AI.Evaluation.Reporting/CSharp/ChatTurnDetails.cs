@@ -35,8 +35,8 @@ public sealed class ChatTurnDetails
     /// Gets or sets the name of the provider for the model identified by <see cref="Model"/>.
     /// </summary>
     /// <remarks>
-    /// Returns <see langword="null"/> if this information was not available via the
-    /// <see cref="ChatClientMetadata.ProviderName"/> property for the <see cref="IChatClient"/>.
+    /// Can be <see langword="null"/> if this information was not available via the <see cref="ChatClientMetadata"/>
+    /// for the <see cref="IChatClient"/>.
     /// </remarks>
     public string? ModelProvider { get; set; }
 
@@ -110,9 +110,9 @@ public sealed class ChatTurnDetails
     /// <see langword="null"/> if this information was not available via <see cref="ChatResponse.ModelId"/>.
     /// </param>
     /// <param name="modelProvider">
-    /// The name of the provider for the model identified by <paramref name="model"/>. Can be
-    /// <see langword="null"/> if this information was not available via the
-    /// <see cref="ChatClientMetadata.ProviderName"/> property for the <see cref="IChatClient"/>.
+    /// The name of the provider for the model identified by <paramref name="model"/>. Can be <see langword="null"/>
+    /// if this information was not available via the <see cref="ChatClientMetadata"/> for the
+    /// <see cref="IChatClient"/>.
     /// </param>
     /// <param name="usage">
     /// Usage details for the chat conversation turn (including input and output token counts). Can be
