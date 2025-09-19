@@ -55,7 +55,7 @@ public static partial class AIFunctionFactory
     ///     <description>
     ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
     ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
-    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters may not be overridden.
+    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters can't be overridden.
     ///     </description>
     ///   </item>
     ///   <item>
@@ -64,7 +64,7 @@ public static partial class AIFunctionFactory
     ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
     ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
     ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of <see cref="IServiceProvider"/> parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///       The handling of <see cref="IServiceProvider"/> parameters can be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
     ///   <item>
@@ -72,19 +72,19 @@ public static partial class AIFunctionFactory
     ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
     ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
     ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
-    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
-    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
+    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
+    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters can be overridden via
     ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
     /// </list>
     /// All other parameter types are, by default, bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
-    /// and are included in the generated JSON schema. This may be overridden by the <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> provided
+    /// and are included in the generated JSON schema. This can be overridden by the <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> provided
     /// via the <paramref name="options"/> parameter; for every parameter, the delegate is enabled to choose if the parameter should be included in the
     /// generated schema and how its value should be bound, including handling of optionality (by default, required parameters that are not included in the
-    /// <see cref="AIFunctionArguments"/> dictionary will result in an exception being thrown). Loosely-typed additional context information may be passed
+    /// <see cref="AIFunctionArguments"/> dictionary will result in an exception being thrown). Loosely-typed additional context information can be passed
     /// into <see cref="AIFunction.InvokeAsync"/> via the <see cref="AIFunctionArguments"/>'s <see cref="AIFunctionArguments.Context"/> dictionary; the default
-    /// binding ignores this collection, but a custom binding supplied via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> may choose to
+    /// binding ignores this collection, but a custom binding supplied via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> can choose to
     /// source arguments from this data.
     /// </para>
     /// <para>
@@ -97,13 +97,13 @@ public static partial class AIFunctionFactory
     /// <para>
     /// In general, the data supplied via an <see cref="AIFunctionArguments"/>'s dictionary is supplied from an AI service and should be considered
     /// unvalidated and untrusted. To provide validated and trusted data to the invocation of <paramref name="method"/>, consider having <paramref name="method"/>
-    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter may also be
+    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter can also be
     /// used to resolve services from a dependency injection container.
     /// </para>
     /// <para>
     /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
     /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
-    /// Handling of return values may be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
+    /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -153,7 +153,7 @@ public static partial class AIFunctionFactory
     ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
     ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
     ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
-    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
+    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
     ///       optional or not.
     ///     </description>
     ///   </item>
@@ -171,7 +171,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// In general, the data supplied via an <see cref="AIFunctionArguments"/>'s dictionary is supplied from an AI service and should be considered
     /// unvalidated and untrusted. To provide validated and trusted data to the invocation of <paramref name="method"/>, consider having <paramref name="method"/>
-    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter may also be
+    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter can also be
     /// used to resolve services from a dependency injection container.
     /// </para>
     /// <para>
@@ -218,7 +218,7 @@ public static partial class AIFunctionFactory
     ///     <description>
     ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
     ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
-    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters may not be overridden.
+    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters can't be overridden.
     ///     </description>
     ///   </item>
     ///   <item>
@@ -227,7 +227,7 @@ public static partial class AIFunctionFactory
     ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
     ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
     ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of <see cref="IServiceProvider"/> parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///       The handling of <see cref="IServiceProvider"/> parameters can be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
     ///   <item>
@@ -235,19 +235,19 @@ public static partial class AIFunctionFactory
     ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
     ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
     ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
-    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
-    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
+    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
+    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters can be overridden via
     ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
     /// </list>
     /// All other parameter types are, by default, bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
-    /// and are included in the generated JSON schema. This may be overridden by the <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> provided
+    /// and are included in the generated JSON schema. This can be overridden by the <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> provided
     /// via the <paramref name="options"/> parameter; for every parameter, the delegate is enabled to choose if the parameter should be included in the
     /// generated schema and how its value should be bound, including handling of optionality (by default, required parameters that are not included in the
-    /// <see cref="AIFunctionArguments"/> dictionary will result in an exception being thrown). Loosely-typed additional context information may be passed
+    /// <see cref="AIFunctionArguments"/> dictionary will result in an exception being thrown). Loosely typed additional context information can be passed
     /// into <see cref="AIFunction.InvokeAsync"/> via the <see cref="AIFunctionArguments"/>'s <see cref="AIFunctionArguments.Context"/> dictionary; the default
-    /// binding ignores this collection, but a custom binding supplied via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> may choose to
+    /// binding ignores this collection, but a custom binding supplied via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> can choose to
     /// source arguments from this data.
     /// </para>
     /// <para>
@@ -260,13 +260,13 @@ public static partial class AIFunctionFactory
     /// <para>
     /// In general, the data supplied via an <see cref="AIFunctionArguments"/>'s dictionary is supplied from an AI service and should be considered
     /// unvalidated and untrusted. To provide validated and trusted data to the invocation of <paramref name="method"/>, consider having <paramref name="method"/>
-    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter may also be
+    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter can also be
     /// used to resolve services from a dependency injection container.
     /// </para>
     /// <para>
     /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
     /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
-    /// Handling of return values may be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
+    /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -326,7 +326,7 @@ public static partial class AIFunctionFactory
     ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
     ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
     ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
-    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
+    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
     ///       optional or not.
     ///     </description>
     ///   </item>
@@ -344,7 +344,7 @@ public static partial class AIFunctionFactory
     /// <para>
     /// In general, the data supplied via an <see cref="AIFunctionArguments"/>'s dictionary is supplied from an AI service and should be considered
     /// unvalidated and untrusted. To provide validated and trusted data to the invocation of <paramref name="method"/>, consider having <paramref name="method"/>
-    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter may also be
+    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter can also be
     /// used to resolve services from a dependency injection container.
     /// </para>
     /// <para>
@@ -404,7 +404,7 @@ public static partial class AIFunctionFactory
     ///     <description>
     ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
     ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
-    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters may not be overridden.
+    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters can't be overridden.
     ///     </description>
     ///   </item>
     ///   <item>
@@ -413,7 +413,7 @@ public static partial class AIFunctionFactory
     ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
     ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
     ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of <see cref="IServiceProvider"/> parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///       The handling of <see cref="IServiceProvider"/> parameters can be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
     ///   <item>
@@ -421,19 +421,19 @@ public static partial class AIFunctionFactory
     ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
     ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
     ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
-    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
-    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
+    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
+    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters can be overridden via
     ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
     /// </list>
     /// All other parameter types are, by default, bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
-    /// and are included in the generated JSON schema. This may be overridden by the <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> provided
+    /// and are included in the generated JSON schema. This can be overridden by the <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> provided
     /// via the <paramref name="options"/> parameter; for every parameter, the delegate is enabled to choose if the parameter should be included in the
     /// generated schema and how its value should be bound, including handling of optionality (by default, required parameters that are not included in the
-    /// <see cref="AIFunctionArguments"/> dictionary will result in an exception being thrown). Loosely-typed additional context information may be passed
+    /// <see cref="AIFunctionArguments"/> dictionary will result in an exception being thrown). Loosely-typed additional context information can be passed
     /// into <see cref="AIFunction.InvokeAsync"/> via the <see cref="AIFunctionArguments"/>'s <see cref="AIFunctionArguments.Context"/> dictionary; the default
-    /// binding ignores this collection, but a custom binding supplied via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> may choose to
+    /// binding ignores this collection, but a custom binding supplied via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> can choose to
     /// source arguments from this data.
     /// </para>
     /// <para>
@@ -446,13 +446,13 @@ public static partial class AIFunctionFactory
     /// <para>
     /// In general, the data supplied via an <see cref="AIFunctionArguments"/>'s dictionary is supplied from an AI service and should be considered
     /// unvalidated and untrusted. To provide validated and trusted data to the invocation of <paramref name="method"/>, the instance constructed
-    /// for each invocation may contain that data in it, such that it's then available to <paramref name="method"/> as instance data.
-    /// An <see cref="IServiceProvider"/> parameter may also be used to resolve services from a dependency injection container.
+    /// for each invocation can contain that data in it, such that it's then available to <paramref name="method"/> as instance data.
+    /// An <see cref="IServiceProvider"/> parameter can also be used to resolve services from a dependency injection container.
     /// </para>
     /// <para>
     /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
     /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
-    /// Handling of return values may be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
+    /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -477,7 +477,7 @@ public static partial class AIFunctionFactory
     /// <remarks>
     /// <see cref="CreateDeclaration"/> creates an <see cref="AIFunctionDeclaration"/> that can be used to describe a function
     /// but not invoke it. To create an invocable <see cref="AIFunction"/>, use Create. A non-invocable <see cref="AIFunctionDeclaration"/>
-    /// may also be created from an invocable <see cref="AIFunction"/> using that function's <see cref="AIFunction.AsDeclarationOnly"/> method.
+    /// can also be created from an invocable <see cref="AIFunction"/> using that function's <see cref="AIFunction.AsDeclarationOnly"/> method.
     /// </remarks>
     public static AIFunctionDeclaration CreateDeclaration(
         string name,

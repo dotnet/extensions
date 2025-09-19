@@ -14,10 +14,14 @@ internal static class OpenTelemetryConsts
     public const string SecondsUnit = "s";
     public const string TokensUnit = "token";
 
+    /// <summary>Environment variable name for controlling whether sensitive content should be captured in telemetry by default.</summary>
+    public const string GenAICaptureMessageContentEnvVar = "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT";
+
     public const string ToolTypeFunction = "function";
 
     public const string TypeText = "text";
     public const string TypeJson = "json";
+    public const string TypeImage = "image";
 
     public const string TokenTypeInput = "input";
     public const string TokenTypeOutput = "output";
@@ -32,6 +36,7 @@ internal static class OpenTelemetryConsts
         public const string Chat = "chat";
         public const string Embeddings = "embeddings";
         public const string ExecuteTool = "execute_tool";
+        public const string GenerateContent = "generate_content";
 
         public const string SystemInstructions = "gen_ai.system_instructions";
 
@@ -80,6 +85,7 @@ internal static class OpenTelemetryConsts
 
         public static class Request
         {
+            public const string ChoiceCount = "gen_ai.request.choice.count";
             public const string EmbeddingDimensions = "gen_ai.request.embedding.dimensions";
             public const string FrequencyPenalty = "gen_ai.request.frequency_penalty";
             public const string Model = "gen_ai.request.model";

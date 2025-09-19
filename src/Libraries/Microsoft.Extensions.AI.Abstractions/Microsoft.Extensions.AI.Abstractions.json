@@ -1156,6 +1156,14 @@
         {
           "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(System.Text.Json.JsonElement schema, string? schemaName = null, string? schemaDescription = null);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema<T>(System.Text.Json.JsonSerializerOptions? serializerOptions = null, string? schemaName = null, string? schemaDescription = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(System.Type schemaType, System.Text.Json.JsonSerializerOptions? serializerOptions = null, string? schemaName = null, string? schemaDescription = null);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
@@ -2421,6 +2429,10 @@
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.AI.TextReasoningContent.Text { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextReasoningContent.ProtectedData { get; set; }",
           "Stage": "Stable"
         }
       ]

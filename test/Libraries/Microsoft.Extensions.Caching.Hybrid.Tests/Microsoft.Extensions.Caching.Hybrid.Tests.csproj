@@ -23,10 +23,4 @@
     <PackageReference Include="Xunit.SkippableFact" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="BasicConfig.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

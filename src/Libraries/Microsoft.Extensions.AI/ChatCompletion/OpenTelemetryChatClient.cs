@@ -110,13 +110,16 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// <value>
     /// <see langword="true"/> if potentially sensitive information should be included in telemetry;
     /// <see langword="false"/> if telemetry shouldn't include raw inputs and outputs.
-    /// The default value is <see langword="false"/>.
+    /// The default value is <see langword="false"/>, unless the <c>OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT</c>
+    /// environment variable is set to "true" (case-insensitive).
     /// </value>
     /// <remarks>
     /// By default, telemetry includes metadata, such as token counts, but not raw inputs
     /// and outputs, such as message content, function call arguments, and function call results.
+    /// The default value can be overridden by setting the <c>OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT</c>
+    /// environment variable to "true". Explicitly setting this property will override the environment variable.
     /// </remarks>
-    public bool EnableSensitiveData { get; set; }
+    public bool EnableSensitiveData { get; set; } = TelemetryHelpers.EnableSensitiveDataDefault;
 
     /// <inheritdoc/>
     public override object? GetService(Type serviceType, object? serviceKey = null) =>
@@ -214,7 +217,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
     }
 
-    private static string SerializeChatMessages(IEnumerable<ChatMessage> messages, ChatFinishReason? chatFinishReason = null)
+    internal static string SerializeChatMessages(IEnumerable<ChatMessage> messages, ChatFinishReason? chatFinishReason = null)
     {
         List<object> output = [];
 
@@ -241,6 +244,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             {
                 switch (content)
                 {
+                    // These are all specified in the convention:
+
+                    case TextContent tc when !string.IsNullOrWhiteSpace(tc.Text):
+                        m.Parts.Add(new OtelGenericPart { Content = tc.Text });
+                        break;
+
                     case FunctionCallContent fcc:
                         m.Parts.Add(new OtelToolCallRequestPart
                         {
@@ -258,8 +267,30 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         });
                         break;
 
-                    case TextContent tc:
-                        m.Parts.Add(new OtelGenericPart { Content = tc.Text });
+                    // These are non-standard and are using the "generic" non-text part that provides an extensibility mechanism:
+
+                    case TextReasoningContent trc when !string.IsNullOrWhiteSpace(trc.Text):
+                        m.Parts.Add(new OtelGenericPart { Type = "reasoning", Content = trc.Text });
+                        break;
+
+                    case UriContent uc:
+                        m.Parts.Add(new OtelGenericPart { Type = "image", Content = uc.Uri.ToString() });
+                        break;
+
+                    case DataContent dc:
+                        m.Parts.Add(new OtelGenericPart { Type = "image", Content = dc.Uri });
+                        break;
+
+                    case HostedFileContent fc:
+                        m.Parts.Add(new OtelGenericPart { Type = "file", Content = fc.FileId });
+                        break;
+
+                    case HostedVectorStoreContent vsc:
+                        m.Parts.Add(new OtelGenericPart { Type = "vector_store", Content = vsc.VectorStoreId });
+                        break;
+
+                    case ErrorContent ec:
+                        m.Parts.Add(new OtelGenericPart { Type = "error", Content = ec.Message });
                         break;
 
                     default:
@@ -290,7 +321,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.Chat : $"{OpenTelemetryConsts.GenAI.Chat} {modelId}",
                 ActivityKind.Client);
 
-            if (activity is not null)
+            if (activity is { IsAllDataRequested: true })
             {
                 _ = activity
                     .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Chat)
@@ -408,7 +439,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeInput);
                 AddMetricTags(ref tags, requestModelId, response);
-                _tokenUsageHistogram.Record((int)inputTokens);
+                _tokenUsageHistogram.Record((int)inputTokens, tags);
             }
 
             if (usage.OutputTokenCount is long outputTokens)
@@ -416,7 +447,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeOutput);
                 AddMetricTags(ref tags, requestModelId, response);
-                _tokenUsageHistogram.Record((int)outputTokens);
+                _tokenUsageHistogram.Record((int)outputTokens, tags);
             }
         }
 
