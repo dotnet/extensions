@@ -430,7 +430,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage> originalMessages = [.. messages];
         messages = originalMessages;
 
-        ApprovalRequiredAIFunction[]? approvalRequiredFunctions = null; // available tools that require approval
+        AITool[]? approvalRequiredFunctions = null; // available tools that require approval
         List<ChatMessage>? augmentedHistory = null; // the actual history of messages sent on turns other than the first
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
@@ -539,7 +539,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     approvalRequiredFunctions =
                         (options?.Tools ?? Enumerable.Empty<AITool>())
                         .Concat(AdditionalTools ?? Enumerable.Empty<AITool>())
-                        .OfType<ApprovalRequiredAIFunction>()
+                        .Where(t => t.GetService<ApprovalRequiredAIFunction>() is not null)
                         .ToArray();
                 }
 
@@ -741,7 +741,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 for (int i = 0; i < count; i++)
                 {
                     AITool tool = toolList[i];
-                    anyRequireApproval |= tool is ApprovalRequiredAIFunction;
+                    anyRequireApproval |= tool.GetService<ApprovalRequiredAIFunction>() is not null;
                     map[tool.Name] = tool;
                 }
             }
@@ -1455,7 +1455,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     private static (bool hasApprovalRequiringFcc, int lastApprovalCheckedFCCIndex) CheckForApprovalRequiringFCC(
         List<FunctionCallContent>? functionCallContents,
-        ApprovalRequiredAIFunction[] approvalRequiredFunctions,
+        AITool[] approvalRequiredFunctions,
         bool hasApprovalRequiringFcc,
         int lastApprovalCheckedFCCIndex)
     {
@@ -1536,7 +1536,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     {
                         foreach (var t in toolMap)
                         {
-                            if (t.Value is ApprovalRequiredAIFunction araf && araf.Name == functionCall.Name)
+                            if (t.Value.GetService<ApprovalRequiredAIFunction>() is { } araf && araf.Name == functionCall.Name)
                             {
                                 anyApprovalRequired = true;
                                 break;
