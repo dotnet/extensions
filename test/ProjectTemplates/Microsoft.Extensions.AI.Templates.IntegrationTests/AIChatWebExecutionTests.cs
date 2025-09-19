@@ -71,6 +71,44 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
         await Fixture.BuildProjectAsync(project);
     }
 
+    /// <summary>
+    /// Tests build for various project name formats, including dots and other
+    /// separators, to trigger the class name normalization bug described
+    /// in https://github.com/dotnet/extensions/issues/6811
+    /// This runs for all provider combinations with --aspire true and different
+    /// project names to ensure the bug is caught in all scenarios.
+    /// </summary>
+    [Theory]
+    [InlineData("Ollama")]
+    [InlineData("OpenAI")]
+    [InlineData("AzureOpenAI")]
+    [InlineData("GitHubModels")]
+    public async Task CreateRestoreAndBuild_ProjectNameVariants(string provider)
+    {
+        string[] projectNames = new[]
+        {
+            "dot.name",
+            "space name",
+            "mix.ed-dash_name 123",
+            ".1My.Projec-",
+            "1Project123",
+            "project.123"
+        };
+
+        foreach (var projectName in projectNames)
+        {
+            var project = await Fixture.CreateProjectAsync(
+                templateName: "aichatweb",
+                projectName: projectName,
+                args: new[] { "--aspire", $"--provider={provider}" });
+
+            project.StartupProjectRelativePath = $"{projectName}.AppHost";
+
+            await Fixture.RestoreProjectAsync(project);
+            await Fixture.BuildProjectAsync(project);
+        }
+    }
+
     private static readonly (string name, string[] values)[] _templateOptions = [
         ("--provider",          ["azureopenai", "githubmodels", "ollama", "openai"]),
         ("--vector-store",      ["azureaisearch", "local", "qdrant"]),
