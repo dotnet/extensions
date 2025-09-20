@@ -13,6 +13,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Tools;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Images;
 using OpenAI.Responses;
@@ -518,7 +519,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             aiFunction.Description);
     }
 
-    internal static ResponseTool ToImageResponseTool(ImageGenerationTool imageGenerationTool, ChatOptions? options = null)
+    internal static ResponseTool ToImageResponseTool(HostedImageGenerationTool imageGenerationTool, ChatOptions? options = null)
     {
         ImageGenerationOptions? imageGenerationOptions = null;
         if (imageGenerationTool.AdditionalProperties.TryGetValue(nameof(ImageGenerationOptions), out object? optionsObj))
@@ -629,7 +630,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         result.Tools.Add(ToResponseTool(aiFunction, options));
                         break;
 
-                    case ImageGenerationTool imageGenerationTool:
+                    case HostedImageGenerationTool imageGenerationTool:
                         result.Tools.Add(ToImageResponseTool(imageGenerationTool, options));
                         break;
 
