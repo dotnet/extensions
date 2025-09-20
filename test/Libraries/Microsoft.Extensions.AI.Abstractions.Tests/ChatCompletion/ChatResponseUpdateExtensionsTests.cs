@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Xunit;
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable EXTAI0001 // Suppress experimental warnings for testing
+#pragma warning disable MEAI0001 // Suppress experimental warnings for testing
 
 namespace Microsoft.Extensions.AI;
 
@@ -33,7 +33,7 @@ public class ChatResponseUpdateExtensionsTests
     }
 
     [Fact]
-    public void ApplyUpdate_WithDefaultOptions_UpdatesResponse()
+    public void ApplyUpdate_UpdatesResponse()
     {
         // Arrange
         var response = new ChatResponse();
@@ -83,35 +83,14 @@ public class ChatResponseUpdateExtensionsTests
             Contents = [newDataContent]
         };
 
-        var options = new ChatResponseUpdateCoalescingOptions
-        {
-            ReplaceDataContentWithSameName = true
-        };
-
         // Act
-        response.ApplyUpdate(update, options);
+        response.ApplyUpdate(update);
 
         // Assert
         var message = Assert.Single(response.Messages);
         var dataContent = Assert.Single(message.Contents.OfType<DataContent>());
         Assert.Equal("data:text/plain;base64,d29ybGQ=", dataContent.Uri);
         Assert.Equal("test-data", dataContent.Name);
-    }
-
-    [Fact]
-    public void ApplyUpdate_WithNullOptions_WorksCorrectly()
-    {
-        // Arrange
-        var response = new ChatResponse();
-        var update = new ChatResponseUpdate(ChatRole.User, "Test message");
-
-        // Act - explicitly pass null options
-        response.ApplyUpdate(update, null);
-
-        // Assert
-        var message = Assert.Single(response.Messages);
-        Assert.Equal("Test message", message.Text);
-        Assert.Equal(ChatRole.User, message.Role);
     }
 
     [Fact]
@@ -125,7 +104,7 @@ public class ChatResponseUpdateExtensionsTests
     }
 
     [Fact]
-    public void ApplyUpdates_WithDefaultOptions_UpdatesResponse()
+    public void ApplyUpdates_UpdatesResponse()
     {
         // Arrange
         var response = new ChatResponse();
@@ -153,50 +132,6 @@ public class ChatResponseUpdateExtensionsTests
     }
 
     [Fact]
-    public void ApplyUpdates_WithOptions_UsesCoalescingOptions()
-    {
-        // Arrange
-        var response = new ChatResponse();
-        var existingDataContent = new DataContent("data:text/plain;base64,aGVsbG8=")
-        {
-            Name = "shared-name"
-        };
-        response.Messages.Add(new ChatMessage(ChatRole.Assistant, [existingDataContent]));
-
-        var sharedNameDataContent = new DataContent("data:text/plain;base64,dXBkYXRl")
-        {
-            Name = "shared-name"  // Same name
-        };
-        var otherNameDataContent = new DataContent("data:text/plain;base64,b3RoZXI=")
-        {
-            Name = "other-name"  // Different name
-        };
-        var updates = new List<ChatResponseUpdate>
-        {
-            new() { Contents = [sharedNameDataContent] },
-            new() { Contents = [otherNameDataContent] }
-        };
-
-        var options = new ChatResponseUpdateCoalescingOptions
-        {
-            ReplaceDataContentWithSameName = true
-        };
-
-        // Act
-        response.ApplyUpdates(updates, options);
-
-        // Assert
-        var message = Assert.Single(response.Messages);
-        Assert.Equal(2, message.Contents.Count);
-
-        var sharedNameContent = message.Contents.OfType<DataContent>().First(c => c.Name == "shared-name");
-        Assert.Equal("data:text/plain;base64,dXBkYXRl", sharedNameContent.Uri); // Should be replaced
-
-        var otherNameContent = message.Contents.OfType<DataContent>().First(c => c.Name == "other-name");
-        Assert.Equal("data:text/plain;base64,b3RoZXI=", otherNameContent.Uri); // Should be added
-    }
-
-    [Fact]
     public void ApplyUpdates_WithEmptyCollection_DoesNothing()
     {
         // Arrange
@@ -211,29 +146,6 @@ public class ChatResponseUpdateExtensionsTests
     }
 
     [Fact]
-    public void ApplyUpdates_WithNullOptions_WorksCorrectly()
-    {
-        // Arrange
-        var response = new ChatResponse();
-        var sharedNameDataContent = new DataContent("data:text/plain;base64,dXBkYXRl")
-        {
-            Name = "shared-name"  // Same name
-        };
-        var updates = new List<ChatResponseUpdate>
-        {
-            new(ChatRole.System, [sharedNameDataContent]),
-            new(ChatRole.System, [sharedNameDataContent])
-        };
-
-        // Act - explicitly pass null options
-        response.ApplyUpdates(updates, null);
-
-        // Assert
-        Assert.Single(response.Messages);
-        Assert.All(response.Messages[0].Contents, c => Assert.IsType<DataContent>(c));
-    }
-
-    [Fact]
     public async Task ApplyUpdatesAsync_InvalidArgs_Throws()
     {
         var response = new ChatResponse();
@@ -244,7 +156,7 @@ public class ChatResponseUpdateExtensionsTests
     }
 
     [Fact]
-    public async Task ApplyUpdatesAsync_WithDefaultOptions_UpdatesResponse()
+    public async Task ApplyUpdatesAsync_UpdatesResponse()
     {
         // Arrange
         var response = new ChatResponse();
@@ -269,59 +181,6 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("msg1", message.MessageId);
         Assert.Equal("Hello async world!", message.Text);
         Assert.Equal(new DateTimeOffset(2024, 1, 1, 11, 0, 0, TimeSpan.Zero), message.CreatedAt);
-    }
-
-    [Fact]
-    public async Task ApplyUpdatesAsync_WithOptions_UsesCoalescingOptions()
-    {
-        // Arrange
-        var response = new ChatResponse();
-        var existingDataContent = new DataContent("data:text/plain;base64,b3JpZ2luYWw=")
-        {
-            Name = "data-key"
-        };
-        response.Messages.Add(new ChatMessage(ChatRole.Assistant, [existingDataContent]));
-
-        var newDataContent = new DataContent("data:text/plain;base64,bmV3VmFsdWU=")
-        {
-            Name = "data-key"  // Same name
-        };
-        var updates = new List<ChatResponseUpdate>
-        {
-            new() { Contents = [newDataContent] },
-        };
-
-        var options = new ChatResponseUpdateCoalescingOptions
-        {
-            ReplaceDataContentWithSameName = true
-        };
-
-        // Act
-        await response.ApplyUpdatesAsync(YieldAsync(updates), options);
-
-        // Assert
-        var message = Assert.Single(response.Messages);
-        var dataContent = Assert.Single(message.Contents.OfType<DataContent>());
-        Assert.Equal("data:text/plain;base64,bmV3VmFsdWU=", dataContent.Uri); // Should be replaced
-        Assert.Equal("data-key", dataContent.Name);
-    }
-
-    [Fact]
-    public async Task ApplyUpdatesAsync_WithNullOptions_WorksCorrectly()
-    {
-        // Arrange
-        var response = new ChatResponse();
-        var updates = new List<ChatResponseUpdate>
-        {
-            new(ChatRole.Assistant, "Async message with null options")
-        };
-
-        // Act - explicitly pass null options
-        await response.ApplyUpdatesAsync(YieldAsync(updates), null);
-
-        // Assert
-        var message = Assert.Single(response.Messages);
-        Assert.Equal("Async message with null options", message.Text);
     }
 
     [Fact]
