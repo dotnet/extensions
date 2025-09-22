@@ -27,56 +27,56 @@
   -->
   <PropertyGroup Label="Automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
-    <MicrosoftBclTimeProviderVersion>10.0.0-rc.2.25462.117</MicrosoftBclTimeProviderVersion>
-    <MicrosoftExtensionsCachingAbstractionsVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsCachingAbstractionsVersion>
-    <MicrosoftExtensionsCachingMemoryVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsCachingMemoryVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsConfigurationAbstractionsVersion>
-    <MicrosoftExtensionsConfigurationBinderVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsConfigurationBinderVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsConfigurationJsonVersion>
-    <MicrosoftExtensionsConfigurationVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsDiagnosticsVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsDiagnosticsVersion>
-    <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsHostingAbstractionsVersion>
-    <MicrosoftExtensionsHostingVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsHostingVersion>
-    <MicrosoftExtensionsHttpVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsHttpVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingConfigurationVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsLoggingConfigurationVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
-    <MicrosoftExtensionsOptionsVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsOptionsVersion>
-    <MicrosoftNETCoreAppRefVersion>10.0.0-rc.2.25462.117</MicrosoftNETCoreAppRefVersion>
-    <MicrosoftNETCoreAppRuntimewinx64Version>10.0.0-rc.2.25462.117</MicrosoftNETCoreAppRuntimewinx64Version>
-    <SystemCollectionsImmutableVersion>10.0.0-rc.2.25462.117</SystemCollectionsImmutableVersion>
-    <SystemConfigurationConfigurationManagerVersion>10.0.0-rc.2.25462.117</SystemConfigurationConfigurationManagerVersion>
-    <SystemDiagnosticsDiagnosticSourceVersion>10.0.0-rc.2.25462.117</SystemDiagnosticsDiagnosticSourceVersion>
-    <SystemDiagnosticsPerformanceCounterVersion>10.0.0-rc.2.25462.117</SystemDiagnosticsPerformanceCounterVersion>
-    <SystemIOHashingVersion>10.0.0-rc.2.25462.117</SystemIOHashingVersion>
-    <SystemIOPipelinesVersion>10.0.0-rc.2.25462.117</SystemIOPipelinesVersion>
-    <SystemMemoryDataVersion>10.0.0-rc.2.25462.117</SystemMemoryDataVersion>
-    <SystemNetHttpJsonVersion>10.0.0-rc.2.25462.117</SystemNetHttpJsonVersion>
-    <SystemNumericsTensorsVersion>10.0.0-rc.2.25462.117</SystemNumericsTensorsVersion>
-    <SystemRuntimeCachingVersion>10.0.0-rc.2.25462.117</SystemRuntimeCachingVersion>
-    <SystemSecurityCryptographyPkcsVersion>10.0.0-rc.2.25462.117</SystemSecurityCryptographyPkcsVersion>
-    <SystemSecurityCryptographyXmlVersion>10.0.0-rc.2.25462.117</SystemSecurityCryptographyXmlVersion>
-    <SystemTextEncodingsWebVersion>10.0.0-rc.2.25462.117</SystemTextEncodingsWebVersion>
-    <SystemTextJsonVersion>10.0.0-rc.2.25462.117</SystemTextJsonVersion>
-    <SystemThreadingChannelsVersion>10.0.0-rc.2.25462.117</SystemThreadingChannelsVersion>
+    <MicrosoftBclTimeProviderVersion>10.0.0-rc.2.25468.104</MicrosoftBclTimeProviderVersion>
+    <MicrosoftExtensionsCachingAbstractionsVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsCachingAbstractionsVersion>
+    <MicrosoftExtensionsCachingMemoryVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationBinderVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsConfigurationBinderVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDiagnosticsVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsDiagnosticsVersion>
+    <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsHostingAbstractionsVersion>
+    <MicrosoftExtensionsHostingVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsHostingVersion>
+    <MicrosoftExtensionsHttpVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsHttpVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingConfigurationVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsLoggingConfigurationVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
+    <MicrosoftExtensionsOptionsVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsOptionsVersion>
+    <MicrosoftNETCoreAppRefVersion>10.0.0-rc.2.25468.104</MicrosoftNETCoreAppRefVersion>
+    <MicrosoftNETCoreAppRuntimewinx64Version>10.0.0-rc.2.25468.104</MicrosoftNETCoreAppRuntimewinx64Version>
+    <SystemCollectionsImmutableVersion>10.0.0-rc.2.25468.104</SystemCollectionsImmutableVersion>
+    <SystemConfigurationConfigurationManagerVersion>10.0.0-rc.2.25468.104</SystemConfigurationConfigurationManagerVersion>
+    <SystemDiagnosticsDiagnosticSourceVersion>10.0.0-rc.2.25468.104</SystemDiagnosticsDiagnosticSourceVersion>
+    <SystemDiagnosticsPerformanceCounterVersion>10.0.0-rc.2.25468.104</SystemDiagnosticsPerformanceCounterVersion>
+    <SystemIOHashingVersion>10.0.0-rc.2.25468.104</SystemIOHashingVersion>
+    <SystemIOPipelinesVersion>10.0.0-rc.2.25468.104</SystemIOPipelinesVersion>
+    <SystemMemoryDataVersion>10.0.0-rc.2.25468.104</SystemMemoryDataVersion>
+    <SystemNetHttpJsonVersion>10.0.0-rc.2.25468.104</SystemNetHttpJsonVersion>
+    <SystemNumericsTensorsVersion>10.0.0-rc.2.25468.104</SystemNumericsTensorsVersion>
+    <SystemRuntimeCachingVersion>10.0.0-rc.2.25468.104</SystemRuntimeCachingVersion>
+    <SystemSecurityCryptographyPkcsVersion>10.0.0-rc.2.25468.104</SystemSecurityCryptographyPkcsVersion>
+    <SystemSecurityCryptographyXmlVersion>10.0.0-rc.2.25468.104</SystemSecurityCryptographyXmlVersion>
+    <SystemTextEncodingsWebVersion>10.0.0-rc.2.25468.104</SystemTextEncodingsWebVersion>
+    <SystemTextJsonVersion>10.0.0-rc.2.25468.104</SystemTextJsonVersion>
+    <SystemThreadingChannelsVersion>10.0.0-rc.2.25468.104</SystemThreadingChannelsVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefVersion>10.0.0-rc.2.25462.117</MicrosoftAspNetCoreAppRefVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64Version>10.0.0-rc.2.25462.117</MicrosoftAspNetCoreAppRuntimewinx64Version>
-    <MicrosoftAspNetCoreMvcTestingVersion>10.0.0-rc.2.25462.117</MicrosoftAspNetCoreMvcTestingVersion>
-    <MicrosoftAspNetCoreTestHostVersion>10.0.0-rc.2.25462.117</MicrosoftAspNetCoreTestHostVersion>
-    <MicrosoftExtensionsCachingSqlServerVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsCachingSqlServerVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsCachingStackExchangeRedisVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
-    <MicrosoftExtensionsHttpPollyVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsHttpPollyVersion>
-    <MicrosoftExtensionsObjectPoolVersion>10.0.0-rc.2.25462.117</MicrosoftExtensionsObjectPoolVersion>
+    <MicrosoftAspNetCoreAppRefVersion>10.0.0-rc.2.25468.104</MicrosoftAspNetCoreAppRefVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>10.0.0-rc.2.25468.104</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftAspNetCoreMvcTestingVersion>10.0.0-rc.2.25468.104</MicrosoftAspNetCoreMvcTestingVersion>
+    <MicrosoftAspNetCoreTestHostVersion>10.0.0-rc.2.25468.104</MicrosoftAspNetCoreTestHostVersion>
+    <MicrosoftExtensionsCachingSqlServerVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsCachingSqlServerVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsCachingStackExchangeRedisVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
+    <MicrosoftExtensionsHttpPollyVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsHttpPollyVersion>
+    <MicrosoftExtensionsObjectPoolVersion>10.0.0-rc.2.25468.104</MicrosoftExtensionsObjectPoolVersion>
     <!-- Dependencies from https://github.com/dotnet/efcore -->
-    <MicrosoftEntityFrameworkCoreSqliteVersion>10.0.0-rc.2.25462.117</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>10.0.0-rc.2.25468.104</MicrosoftEntityFrameworkCoreSqliteVersion>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.25462.117</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.25468.104</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <PropertyGroup Label="No longer automated Maestro dependency updates 9.0">
     <!-- Packages from dotnet/runtime -->
