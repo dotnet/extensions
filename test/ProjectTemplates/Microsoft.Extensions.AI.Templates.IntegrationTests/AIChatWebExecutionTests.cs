@@ -188,12 +188,14 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
             foreach (string projectName in new[]
             {
             "dot.name",
+            "project.123",
             "space name",
             "mix.ed-dash_name 123",
             ".1My.Projec-",
             "1Project123",
-            "project.123",
-            "only#"
+            "11double",
+            "1",
+            "nomatch"
         })
             {
                 yield return new object[] { provider, projectName };
