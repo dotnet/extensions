@@ -79,34 +79,18 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     /// project names to ensure the bug is caught in all scenarios.
     /// </summary>
     [Theory]
-    [InlineData("Ollama")]
-    [InlineData("OpenAI")]
-    [InlineData("AzureOpenAI")]
-    [InlineData("GitHubModels")]
-    public async Task CreateRestoreAndBuild_ProjectNameVariants(string provider)
+    [MemberData(nameof(GetProjectNameVariants))]
+    public async Task CreateRestoreAndBuild_ProjectNameVariants(string provider, string projectName)
     {
-        string[] projectNames = new[]
-        {
-            "dot.name",
-            "space name",
-            "mix.ed-dash_name 123",
-            ".1My.Projec-",
-            "1Project123",
-            "project.123"
-        };
+        var project = await Fixture.CreateProjectAsync(
+            templateName: "aichatweb",
+            projectName: projectName,
+            args: new[] { "--aspire", $"--provider={provider}" });
 
-        foreach (var projectName in projectNames)
-        {
-            var project = await Fixture.CreateProjectAsync(
-                templateName: "aichatweb",
-                projectName: projectName,
-                args: new[] { "--aspire", $"--provider={provider}" });
+        project.StartupProjectRelativePath = $"{projectName}.AppHost";
 
-            project.StartupProjectRelativePath = $"{projectName}.AppHost";
-
-            await Fixture.RestoreProjectAsync(project);
-            await Fixture.BuildProjectAsync(project);
-        }
+        await Fixture.RestoreProjectAsync(project);
+        await Fixture.BuildProjectAsync(project);
     }
 
     private static readonly (string name, string[] values)[] _templateOptions = [
@@ -193,6 +177,26 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
             foreach (var value in first.values)
             {
                 yield return [first.name, value, .. restSelection];
+            }
+        }
+    }
+
+    public static IEnumerable<object[]> GetProjectNameVariants()
+    {
+        foreach (string provider in new[] { "ollama", "openai", "azureopenai", "githubmodels" })
+        {
+            foreach (string projectName in new[]
+            {
+            "dot.name",
+            "space name",
+            "mix.ed-dash_name 123",
+            ".1My.Projec-",
+            "1Project123",
+            "project.123",
+            "only#"
+        })
+            {
+                yield return new object[] { provider, projectName };
             }
         }
     }
