@@ -30,12 +30,10 @@ public abstract class AIFunctionDeclaration : AITool
     /// </para>
     /// <code>
     /// {
-    ///   "title" : "addNumbers",
-    ///   "description": "A simple function that adds two numbers together.",
     ///   "type": "object",
     ///   "properties": {
     ///     "a" : { "type": "number" },
-    ///     "b" : { "type": "number", "default": 1 }
+    ///     "b" : { "type": ["number","null"], "default": 1 }
     ///   },
     ///   "required" : ["a"]
     /// }

@@ -1113,29 +1113,41 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         _ = Throw.IfNull(context);
 
         using Activity? activity = _activitySource?.StartActivity(
-            $"{OpenTelemetryConsts.GenAI.ExecuteTool} {context.Function.Name}",
+            $"{OpenTelemetryConsts.GenAI.ExecuteToolName} {context.Function.Name}",
             ActivityKind.Internal,
             default(ActivityContext),
             [
-                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteTool),
+                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteToolName),
                 new(OpenTelemetryConsts.GenAI.Tool.Type, OpenTelemetryConsts.ToolTypeFunction),
                 new(OpenTelemetryConsts.GenAI.Tool.Call.Id, context.CallContent.CallId),
                 new(OpenTelemetryConsts.GenAI.Tool.Name, context.Function.Name),
                 new(OpenTelemetryConsts.GenAI.Tool.Description, context.Function.Description),
             ]);
 
-        long startingTimestamp = 0;
-        if (_logger.IsEnabled(LogLevel.Debug))
+        long startingTimestamp = Stopwatch.GetTimestamp();
+
+        bool enableSensitiveData = activity is { IsAllDataRequested: true } && InnerClient.GetService<OpenTelemetryChatClient>()?.EnableSensitiveData is true;
+        bool traceLoggingEnabled = _logger.IsEnabled(LogLevel.Trace);
+        bool loggedInvoke = false;
+        if (enableSensitiveData || traceLoggingEnabled)
         {
-            startingTimestamp = Stopwatch.GetTimestamp();
-            if (_logger.IsEnabled(LogLevel.Trace))
+            string functionArguments = TelemetryHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions);
+
+            if (enableSensitiveData)
             {
-                LogInvokingSensitive(context.Function.Name, TelemetryHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions));
+                _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Arguments, functionArguments);
             }
-            else
+
+            if (traceLoggingEnabled)
             {
-                LogInvoking(context.Function.Name);
+                LogInvokingSensitive(context.Function.Name, functionArguments);
+                loggedInvoke = true;
             }
+        }
+
+        if (!loggedInvoke && _logger.IsEnabled(LogLevel.Debug))
+        {
+            LogInvoking(context.Function.Name);
         }
 
         object? result = null;
@@ -1165,18 +1177,26 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
         finally
         {
-            if (_logger.IsEnabled(LogLevel.Debug))
+            bool loggedResult = false;
+            if (enableSensitiveData || traceLoggingEnabled)
             {
-                TimeSpan elapsed = GetElapsedTime(startingTimestamp);
+                string functionResult = TelemetryHelpers.AsJson(result, context.Function.JsonSerializerOptions);
 
-                if (result is not null && _logger.IsEnabled(LogLevel.Trace))
+                if (enableSensitiveData)
                 {
-                    LogInvocationCompletedSensitive(context.Function.Name, elapsed, TelemetryHelpers.AsJson(result, context.Function.JsonSerializerOptions));
+                    _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Result, functionResult);
                 }
-                else
+
+                if (traceLoggingEnabled)
                 {
-                    LogInvocationCompleted(context.Function.Name, elapsed);
+                    LogInvocationCompletedSensitive(context.Function.Name, GetElapsedTime(startingTimestamp), functionResult);
+                    loggedResult = true;
                 }
+            }
+
+            if (!loggedResult && _logger.IsEnabled(LogLevel.Debug))
+            {
+                LogInvocationCompleted(context.Function.Name, GetElapsedTime(startingTimestamp));
             }
         }
 
