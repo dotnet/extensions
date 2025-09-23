@@ -10,9 +10,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S1144 // Unused private types or members should be removed
 #pragma warning disable S2365 // Properties should not make collection or array copies
-#pragma warning disable S3604 // Member initializer values should not be redundant
 #pragma warning disable S4039 // Interface methods should be callable by derived types
 #pragma warning disable CA1033 // Interface methods should be callable by derived types
 

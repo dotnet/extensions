@@ -12,7 +12,6 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 #pragma warning disable CA1052 // Static holder types should be Static or NotInheritable
-#pragma warning disable S2333 // gratuitous partial
 
 /// <summary>Represents the response format that is desired by the caller.</summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]

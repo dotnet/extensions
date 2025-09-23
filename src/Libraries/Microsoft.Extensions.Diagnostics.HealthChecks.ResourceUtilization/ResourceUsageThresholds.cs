@@ -9,7 +9,6 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 /// <summary>
 /// Threshold settings for <see cref="ResourceUtilizationHealthCheckOptions"/>.
 /// </summary>
-[SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "In place numbers make the ranges cleaner")]
 public class ResourceUsageThresholds
 {
     /// <summary>

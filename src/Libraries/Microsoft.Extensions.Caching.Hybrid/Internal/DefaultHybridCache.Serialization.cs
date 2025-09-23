@@ -52,7 +52,6 @@ internal partial class DefaultHybridCache
         }
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentional for logged failure mode")]
     private bool TrySerialize<T>(T value, out BufferChunk buffer, out IHybridCacheSerializer<T>? serializer)
     {
         // note: also returns the serializer we resolved, because most-any time we want to serialize, we'll also want

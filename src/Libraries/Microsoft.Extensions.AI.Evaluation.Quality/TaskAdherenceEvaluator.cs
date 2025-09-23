@@ -166,7 +166,6 @@ public sealed class TaskAdherenceEvaluator : IEvaluator
         string renderedModelResponse = modelResponse.RenderAsJson();
         string? renderedToolDefinitions = context?.ToolDefinitions.RenderAsJson();
 
-#pragma warning disable S103 // Lines should not be too long
         string systemPrompt =
             $$"""
             # Instruction
@@ -261,7 +260,6 @@ public sealed class TaskAdherenceEvaluator : IEvaluator
             ## Please provide your answers between the tags: <S0>your chain of thoughts</S0>, <S1>your explanation</S1>, <S2>your score</S2>.
             # Output
             """;
-#pragma warning restore S103
 
         List<ChatMessage> evaluationInstructions = [new ChatMessage(ChatRole.System, systemPrompt)];
         return evaluationInstructions;

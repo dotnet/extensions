@@ -46,7 +46,6 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
     {
     }
 
-    [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Dependencies for testing")]
     internal WindowsSnapshotProvider(
         ILogger<WindowsSnapshotProvider>? logger,
         IMeterFactory meterFactory,

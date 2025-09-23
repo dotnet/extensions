@@ -103,7 +103,6 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
     }
 
     /// <inheritdoc />
-#pragma warning disable S1067 // Expressions should not be too complex
     public object? GetService(Type serviceType, object? serviceKey = null) =>
         serviceType is null ? throw new ArgumentNullException(nameof(serviceType)) :
         serviceKey is not null ? null :
@@ -111,7 +110,6 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
         serviceType == typeof(ImageClient) ? _imageClient :
         serviceType.IsInstanceOfType(this) ? this :
         null;
-#pragma warning restore S1067 // Expressions should not be too complex
 
     /// <inheritdoc />
     void IDisposable.Dispose()

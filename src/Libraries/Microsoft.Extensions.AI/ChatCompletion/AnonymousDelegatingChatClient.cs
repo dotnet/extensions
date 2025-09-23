@@ -12,8 +12,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that wraps an inner client with implementations provided by delegates.</summary>

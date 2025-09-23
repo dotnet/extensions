@@ -13,7 +13,6 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting.JsonSerialization;
 
 internal static partial class JsonUtilities
 {
-    [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Default matches the generated source naming convention.")]
     internal static class Default
     {
         private static JsonSerializerOptions? _options;

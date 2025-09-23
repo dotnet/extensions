@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CA1031 // Do not catch general exception types
 #pragma warning disable S108 // Nested blocks of code should not be left empty
 #pragma warning disable S2486 // Generic exceptions should not be ignored
 #pragma warning disable SA1623 // Property summary documentation should match accessors

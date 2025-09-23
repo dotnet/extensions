@@ -400,8 +400,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         return (ulong)memoryUsageTotal;
     }
 
-    [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used",
-        Justification = "Shifting bits left by number n is multiplying the value by 2 to the power of n.")]
     public ulong GetHostAvailableMemory()
     {
         // The value we are interested in starts with this. We just want to make sure it is true.
@@ -564,8 +562,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// <remarks>
     /// The input must contain only number. If there is something more than whitespace before the number, it will return failure (-1).
     /// </remarks>
-    [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used",
-        Justification = "We are adding another digit, so we need to multiply by ten.")]
     private static int GetNextNumber(ReadOnlySpan<char> buffer, out long number)
     {
         int numberStart = 0;
@@ -788,9 +784,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         // where y is the CPU pod weight (e.g. cpuPodWeight) and x is the CPU share of cgroup v1 (e.g. cpuUnits).
         // https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2
         // We invert the formula to calculate CPU share from CPU pod weight:
-#pragma warning disable S109 // Magic numbers should not be used - using the formula, forgive.
         cpuUnits = ((cpuPodWeight - 1) * 262142 / 9999) + 2;
-#pragma warning restore S109 // Magic numbers should not be used
 
         return true;
     }

@@ -42,19 +42,12 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// contextual information that is modeled by the <see cref="EvaluationContext"/>.
 /// </para>
 /// </remarks>
-#pragma warning disable S1694 // An abstract class should have both abstract and concrete methods
 public abstract class EvaluationContext
-#pragma warning restore S1694
 {
     /// <summary>
     /// Gets or sets the name for this <see cref="EvaluationContext"/>.
     /// </summary>
     public string Name { get; set; }
-
-#pragma warning disable CA2227
-    // CA2227: Collection properties should be read only.
-    // We disable this warning because we want this property to be fully mutable for serialization purposes and for
-    // general convenience.
 
     /// <summary>
     /// Gets or sets a list of <see cref="AIContent"/> objects that include all the information present in this
@@ -97,7 +90,6 @@ public abstract class EvaluationContext
     /// <see cref="EvaluationContext"/>.
     /// </returns>
     public IList<AIContent> Contents { get; set; }
-#pragma warning restore CA2227
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EvaluationContext"/> class.

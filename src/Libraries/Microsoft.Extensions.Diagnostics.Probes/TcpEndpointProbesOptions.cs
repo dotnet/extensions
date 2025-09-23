@@ -12,7 +12,6 @@ namespace Microsoft.Extensions.Diagnostics.Probes;
 /// <summary>
 /// Options to control TCP-based health check probes.
 /// </summary>
-[SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "In place numbers make the ranges cleaner")]
 public class TcpEndpointProbesOptions
 {
     private const int DefaultMaxPendingConnections = 10;

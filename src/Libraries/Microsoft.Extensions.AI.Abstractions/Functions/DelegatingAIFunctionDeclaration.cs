@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable SA1202 // Elements should be ordered by access
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>

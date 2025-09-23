@@ -12,13 +12,9 @@ using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Assistants;
 
-#pragma warning disable CA1031 // Do not catch general exception types
 #pragma warning disable SA1005 // Single line comments should begin with single space
 #pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable S125 // Sections of code should not be commented out
-#pragma warning disable S907 // "goto" statement should not be used
-#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S1751 // Loops with at most one iteration should be refactored
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable S4456 // Parameter validation in yielding methods should be wrapped

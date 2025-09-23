@@ -132,7 +132,6 @@ public sealed class ReportingConfiguration
     /// A optional set of text tags applicable to all <see cref="ScenarioRun"/>s created using this
     /// <see cref="ReportingConfiguration"/>.
     /// </param>
-#pragma warning disable S107 // Methods should not have too many parameters
     public ReportingConfiguration(
         IEnumerable<IEvaluator> evaluators,
         IEvaluationResultStore resultStore,
@@ -142,7 +141,6 @@ public sealed class ReportingConfiguration
         string executionName = Defaults.DefaultExecutionName,
         Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,
         IEnumerable<string>? tags = null)
-#pragma warning restore S107
     {
         Evaluators = [.. evaluators];
         ResultStore = resultStore;

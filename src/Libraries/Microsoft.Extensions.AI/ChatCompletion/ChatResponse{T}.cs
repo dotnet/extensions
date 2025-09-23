@@ -82,13 +82,11 @@ public class ChatResponse<T> : ChatResponse
             result = GetResultCore(out var failureReason);
             return failureReason is null;
         }
-#pragma warning disable CA1031 // Do not catch general exception types
         catch
         {
             result = default;
             return false;
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     private static T? DeserializeFirstTopLevelObject(string json, JsonTypeInfo<T> typeInfo)

@@ -11,7 +11,6 @@
 #pragma warning disable IDE0090 // Use 'new(...)'
 #pragma warning disable IDE0058 // Expression value is never used
 #pragma warning disable SA1505 // Opening braces should not be followed by blank line
-#pragma warning disable SA1202 // Elements should be ordered by access
 #pragma warning disable CA1512 // Use ArgumentOutOfRangeException throw helper
 #pragma warning disable CA2002 // Do not lock on objects with weak identity
 #pragma warning disable S2551 // Lock on a dedicated object instance instead

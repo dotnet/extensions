@@ -4,7 +4,6 @@
 // This source file was lovingly 'borrowed' from dotnet/runtime/src/libraries/Microsoft.Extensions.Logging
 #pragma warning disable S1128 // Unused "using" should be removed
 #pragma warning disable SA1649 // File name should match first type name
-#pragma warning disable SA1202 // Elements should be ordered by access
 #pragma warning disable SA1128 // Put constructor initializers on their own line
 #pragma warning disable SA1127 // Generic type constraints should be on their own line
 #pragma warning disable CS8602 // Dereference of a possibly null reference.

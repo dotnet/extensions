@@ -9,8 +9,6 @@ using System.Diagnostics;
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 #pragma warning disable SA1112 // Closing parenthesis should be on line of opening parenthesis
 #pragma warning disable SA1114 // Parameter list should follow declaration
-#pragma warning disable S3358 // Extract this nested ternary operation into an independent statement.
-#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S4039 // Make 'AIFunctionArguments' sealed
 #pragma warning disable CA1033 // Make 'AIFunctionArguments' sealed
 #pragma warning disable CA1710 // Identifiers should have correct suffix

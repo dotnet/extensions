@@ -18,10 +18,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S107 // Methods should not have too many parameters
-#pragma warning disable S109 // Magic numbers should not be used
 #pragma warning disable S1075 // URIs should not be hardcoded
-#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 #pragma warning disable S1199 // Nested block
 #pragma warning disable SA1118 // Parameter should not span multiple lines
 

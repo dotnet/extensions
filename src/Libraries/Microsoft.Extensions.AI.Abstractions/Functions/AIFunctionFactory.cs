@@ -22,10 +22,7 @@ using System.Threading.Tasks;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable CA1031 // Do not catch general exception types
-#pragma warning disable S2333 // Redundant modifiers should not be used
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning disable SA1202 // Public members should come before private members
 #pragma warning disable SA1203 // Constants should appear before fields
 
 namespace Microsoft.Extensions.AI;
