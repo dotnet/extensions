@@ -33,6 +33,8 @@ public class AIToolTests
         Assert.Same(tool, tool.GetService<AITool>());
         Assert.Same(tool, tool.GetService<DerivedAITool>());
 
+        Assert.Null(tool.GetService(typeof(string)));
+        Assert.Null(tool.GetService<string>());
         Assert.Null(tool.GetService<object>("key"));
         Assert.Null(tool.GetService<AITool>("key"));
         Assert.Null(tool.GetService<DerivedAITool>("key"));
