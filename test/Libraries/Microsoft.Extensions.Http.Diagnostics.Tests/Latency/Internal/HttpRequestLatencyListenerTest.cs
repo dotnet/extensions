@@ -191,4 +191,19 @@ public class HttpRequestLatencyListenerTest
         lc.Verify(a => a.AddCheckpoint(It.IsAny<CheckpointToken>()),
             Times.Exactly(numHttpEvents + numSocketEvents + numDnsEvents));
     }
+
+    [Fact]
+    public void HttpRequestLatencyListener_OnEventWritten_DoesNotAddCheckpoints_UnknownEventSource()
+    {
+        var lcti = HttpMockProvider.GetTokenIssuer();
+        var lc = HttpMockProvider.GetLatencyContext();
+        var context = new HttpClientLatencyContext();
+        context.Set(lc.Object);
+
+        using var listener = HttpMockProvider.GetListener(context, lcti.Object);
+
+        listener.OnEventWritten("System.Runtime", "EventCounters");
+
+        lc.Verify(a => a.AddCheckpoint(It.IsAny<CheckpointToken>()), Times.Never);
+    }
 }
