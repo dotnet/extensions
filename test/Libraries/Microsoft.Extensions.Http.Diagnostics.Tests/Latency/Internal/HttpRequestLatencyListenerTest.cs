@@ -193,7 +193,7 @@ public class HttpRequestLatencyListenerTest
     }
 
     [Fact]
-    public void HttpRequestLatencyListener_OnEventWritten_DoesNotAddCheckpoints_UnknownEvent()
+    public void HttpRequestLatencyListener_OnEventWritten_DoesNotAddCheckpoints_UnknownEventSource()
     {
         var lcti = HttpMockProvider.GetTokenIssuer();
         var lc = HttpMockProvider.GetLatencyContext();
