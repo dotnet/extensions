@@ -10,12 +10,12 @@ namespace Microsoft.TestUtilities;
 /// Skips a test based on the value of an environment variable.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true)]
-public class EnvironmentVariableSkipConditionAttribute : Attribute, ITestCondition
+public class EnvironmentVariableConditionAttribute : Attribute, ITestCondition
 {
     private string? _currentValue;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="EnvironmentVariableSkipConditionAttribute"/> class.
+    /// Initializes a new instance of the <see cref="EnvironmentVariableConditionAttribute"/> class.
     /// </summary>
     /// <param name="variableName">Name of the environment variable.</param>
     /// <param name="values">Value(s) of the environment variable to match for the condition.</param>
@@ -23,7 +23,7 @@ public class EnvironmentVariableSkipConditionAttribute : Attribute, ITestConditi
     /// By default, the test will be run if the value of the variable matches any of the supplied values.
     /// Set <see cref="RunOnMatch"/> to <c>False</c> to run the test only if the value does not match.
     /// </remarks>
-    public EnvironmentVariableSkipConditionAttribute(string variableName, params string[] values)
+    public EnvironmentVariableConditionAttribute(string variableName, params string[] values)
     {
         if (string.IsNullOrEmpty(variableName))
         {

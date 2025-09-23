@@ -51,7 +51,7 @@ var vectorDB = builder.AddQdrant("vectordb")
 #else // UseLocalVectorStore
 #endif
 
-var webApp = builder.AddProject<Projects.ChatWithCustomData_CSharp_Web_AspireClassName>("aichatweb-app");
+var webApp = builder.AddProject<Projects.ChatWithCustomData_CSharp_Web_AspireClassName_Web>("aichatweb-app");
 #if (IsOllama) // AI SERVICE PROVIDER REFERENCES
 webApp
     .WithReference(chat)

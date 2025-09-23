@@ -95,7 +95,7 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     /// to enable it.
     /// </remarks>
     [ConditionalTheory]
-    [EnvironmentVariableSkipCondition("AI_TEMPLATES_TEST_PROJECT_NAMES", "true", "1")]
+    [EnvironmentVariableCondition("AI_TEMPLATES_TEST_PROJECT_NAMES", "true", "1")]
     [MemberData(nameof(GetAspireProjectNameVariants))]
     public async Task CreateRestoreAndBuild_AspireProjectName_Variants(string provider, string projectName)
     {

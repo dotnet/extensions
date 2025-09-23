@@ -502,7 +502,7 @@
     "aspireClassNameReplacer": {
       "type": "derived",
       "valueSource": "name",
-      "valueTransform": "aspireClassName_Formatting",
+      "valueTransform": "aspireClassName_ReplaceInvalidChars",
       "replaces": "ChatWithCustomData_CSharp_Web_AspireClassName"
     },
     "webProjectNamespaceAdjuster": {
@@ -530,32 +530,11 @@
     }
   },
   "forms": {
-    "aspireClassName_ReplaceInvalidChars_DigitDots": {
+    "aspireClassName_ReplaceInvalidChars": {
       "identifier": "replace",
-      "pattern": "((?<=\\.)|^)(?=\\d)",
+      "pattern": "(((?<=\\.)|^)(?=\\d)|\\W)",
       "replacement": "_",
-      "description": "Insert underscore before digits at start or after a dot"
-    },
-    "aspireClassName_ReplaceInvalidChars_NonWords": {
-      "identifier": "replace",
-      "pattern": "\\W",
-      "replacement": "_",
-      "description": "Replace non-word characters with underscore"
-    },
-    "aspireClassName_AppendWeb": {
-      "identifier": "replace",
-      "pattern": "^(.*)$",
-      "replacement": "$1_Web",
-      "description": "Append _Web to the project name"
-    },
-    "aspireClassName_Formatting": {
-      "identifier": "chain",
-      "steps": [
-        "aspireClassName_ReplaceInvalidChars_DigitDots",
-        "aspireClassName_ReplaceInvalidChars_NonWords",
-        "aspireClassName_AppendWeb"
-      ],
-      "description": "Normalize and add _Web suffix"
+      "description": "Insert underscore before digits at start, or after a dot, or to replace non-word characters"
     },
     "vectorStoreIndexNameTransform": {
       "identifier": "chain",
