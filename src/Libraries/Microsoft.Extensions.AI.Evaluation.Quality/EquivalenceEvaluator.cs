@@ -52,7 +52,7 @@ public sealed class EquivalenceEvaluator : IEvaluator
         new ChatOptions
         {
             Temperature = 0.0f,
-            MaxOutputTokens = 1,
+            MaxOutputTokens = 5, // See https://github.com/dotnet/extensions/issues/6814.
             TopP = 1.0f,
             PresencePenalty = 0.0f,
             FrequencyPenalty = 0.0f,

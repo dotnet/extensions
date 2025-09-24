@@ -318,13 +318,13 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             string? modelId = options?.ModelId ?? _defaultModelId;
 
             activity = _activitySource.StartActivity(
-                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.Chat : $"{OpenTelemetryConsts.GenAI.Chat} {modelId}",
+                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.ChatName : $"{OpenTelemetryConsts.GenAI.ChatName} {modelId}",
                 ActivityKind.Client);
 
             if (activity is { IsAllDataRequested: true })
             {
                 _ = activity
-                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Chat)
+                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName)
                     .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
                     .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
 
@@ -395,13 +395,28 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         }
                     }
 
-                    // Log all additional request options as raw values on the span.
-                    // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
-                    if (EnableSensitiveData && options.AdditionalProperties is { } props)
+                    if (EnableSensitiveData)
                     {
-                        foreach (KeyValuePair<string, object?> prop in props)
+                        if (options.Tools?.Any(t => t is AIFunctionDeclaration) is true)
                         {
-                            _ = activity.AddTag(prop.Key, prop.Value);
+                            _ = activity.AddTag(
+                                    OpenTelemetryConsts.GenAI.Tool.Definitions,
+                                    JsonSerializer.Serialize(options.Tools.OfType<AIFunctionDeclaration>().Select(t => new OtelFunction
+                                    {
+                                        Name = t.Name,
+                                        Description = t.Description,
+                                        Parameters = t.JsonSchema,
+                                    }), OtelContext.Default.IEnumerableOtelFunction));
+                        }
+
+                        // Log all additional request options as raw values on the span.
+                        // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
+                        if (options.AdditionalProperties is { } props)
+                        {
+                            foreach (KeyValuePair<string, object?> prop in props)
+                            {
+                                _ = activity.AddTag(prop.Key, prop.Value);
+                            }
                         }
                     }
                 }
@@ -505,7 +520,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         void AddMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
         {
-            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Chat);
+            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName);
 
             if (requestModelId is not null)
             {
@@ -582,6 +597,14 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         public object? Response { get; set; }
     }
 
+    private sealed class OtelFunction
+    {
+        public string Type { get; set; } = "function";
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public JsonElement Parameters { get; set; }
+    }
+
     private static readonly JsonSerializerOptions _defaultOptions = CreateDefaultOptions();
 
     private static JsonSerializerOptions CreateDefaultOptions()
@@ -606,5 +629,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     [JsonSerializable(typeof(OtelGenericPart))]
     [JsonSerializable(typeof(OtelToolCallRequestPart))]
     [JsonSerializable(typeof(OtelToolCallResponsePart))]
+    [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
     private sealed partial class OtelContext : JsonSerializerContext;
 }

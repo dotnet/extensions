@@ -499,6 +499,12 @@
       "valueTransform": "vectorStoreIndexNameTransform",
       "replaces": "data-ChatWithCustomData-CSharp.Web-"
     },
+    "aspireClassNameReplacer": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "aspireClassName_ReplaceInvalidChars",
+      "replaces": "ChatWithCustomData_CSharp_Web_AspireClassName"
+    },
     "webProjectNamespaceAdjuster": {
       "type": "generated",
       "generator": "switch",
@@ -524,6 +530,12 @@
     }
   },
   "forms": {
+    "aspireClassName_ReplaceInvalidChars": {
+      "identifier": "replace",
+      "pattern": "(((?<=\\.)|^)(?=\\d)|\\W)",
+      "replacement": "_",
+      "description": "Insert underscore before digits at start, or after a dot, or to replace non-word characters"
+    },
     "vectorStoreIndexNameTransform": {
       "identifier": "chain",
       "steps": [

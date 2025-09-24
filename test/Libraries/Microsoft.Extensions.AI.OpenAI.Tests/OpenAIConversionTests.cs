@@ -159,7 +159,7 @@ public class OpenAIConversionTests
         List<ChatMessage> messages =
         [
             new(ChatRole.System, "You are a helpful assistant."),
-            new(ChatRole.User, "Hello"),
+            new(ChatRole.User, "Hello") { AuthorName = "Jane" },
             new(ChatRole.Assistant,
             [
                 new TextContent("Hi there!"),
@@ -168,9 +168,9 @@ public class OpenAIConversionTests
                     ["param1"] = "value1",
                     ["param2"] = 42
                 }),
-            ]),
+            ]) { AuthorName = "!@#$%John Smith^*)" },
             new(ChatRole.Tool, [new FunctionResultContent("callid123", "theresult")]),
-            new(ChatRole.Assistant, "The answer is 42."),
+            new(ChatRole.Assistant, "The answer is 42.") { AuthorName = "@#$#$@$" },
         ];
 
         ChatOptions? options = withOptions ? new ChatOptions { Instructions = "You talk like a parrot." } : null;
@@ -196,6 +196,7 @@ public class OpenAIConversionTests
 
         UserChatMessage m1 = Assert.IsType<UserChatMessage>(convertedMessages[index + 1], exactMatch: false);
         Assert.Equal("Hello", Assert.Single(m1.Content).Text);
+        Assert.Equal("Jane", m1.ParticipantName);
 
         AssistantChatMessage m2 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 2], exactMatch: false);
         Assert.Single(m2.Content);
@@ -208,6 +209,7 @@ public class OpenAIConversionTests
             ["param1"] = "value1",
             ["param2"] = 42
         }), JsonSerializer.Deserialize<JsonElement>(tc.FunctionArguments.ToMemory().Span)));
+        Assert.Equal("JohnSmith", m2.ParticipantName);
 
         ToolChatMessage m3 = Assert.IsType<ToolChatMessage>(convertedMessages[index + 3], exactMatch: false);
         Assert.Equal("callid123", m3.ToolCallId);
@@ -215,6 +217,7 @@ public class OpenAIConversionTests
 
         AssistantChatMessage m4 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 4], exactMatch: false);
         Assert.Equal("The answer is 42.", Assert.Single(m4.Content).Text);
+        Assert.Null(m4.ParticipantName);
     }
 
     [Fact]
@@ -1193,12 +1196,17 @@ public class OpenAIConversionTests
         Assert.Single(options.Tools);
         Assert.NotNull(options.Tools[0]);
 
+        var rawSearchTool = ResponseTool.CreateWebSearchTool();
         options = new()
         {
-            Tools = [ResponseTool.CreateWebSearchTool().AsAITool()],
+            Tools = [rawSearchTool.AsAITool()],
         };
         Assert.Single(options.Tools);
         Assert.NotNull(options.Tools[0]);
+
+        Assert.Same(rawSearchTool, options.Tools[0].GetService<ResponseTool>());
+        Assert.Same(rawSearchTool, options.Tools[0].GetService<WebSearchTool>());
+        Assert.Null(options.Tools[0].GetService<ResponseTool>("key"));
     }
 
     private static async IAsyncEnumerable<T> CreateAsyncEnumerable<T>(IEnumerable<T> source)
