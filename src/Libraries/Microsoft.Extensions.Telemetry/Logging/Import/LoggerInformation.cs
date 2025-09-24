@@ -9,8 +9,6 @@
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
 using System;
-using System.Diagnostics;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Logging
 {

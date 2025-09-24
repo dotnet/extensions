@@ -5,7 +5,6 @@ using System;
 using System.ClientModel;
 using Azure.AI.OpenAI;
 using Azure.Identity;
-using Microsoft.Extensions.Configuration;
 using OpenAI;
 
 namespace Microsoft.Extensions.AI;
