@@ -897,5 +897,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         public ResponseTool Tool => tool;
         public override string Name => Tool.GetType().Name;
+
+        /// <inheritdoc />
+        public override object? GetService(Type serviceType, object? serviceKey = null)
+        {
+            _ = Throw.IfNull(serviceType);
+
+            return
+                serviceKey is null && serviceType.IsInstanceOfType(Tool) ? Tool :
+                base.GetService(serviceType, serviceKey);
+        }
     }
 }
