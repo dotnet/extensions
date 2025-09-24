@@ -2,6 +2,8 @@
 
 ## NOT YET RELEASED
 
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.9.0-preview.1.25458.4
 
 - Updated tool mapping to recognize any `AIFunctionDeclaration`.

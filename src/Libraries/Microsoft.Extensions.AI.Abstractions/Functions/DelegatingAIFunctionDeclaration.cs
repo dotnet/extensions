@@ -45,4 +45,14 @@ internal class DelegatingAIFunctionDeclaration : AIFunctionDeclaration // could 
 
     /// <inheritdoc />
     public override string ToString() => InnerFunction.ToString();
+
+    /// <inheritdoc />
+    public override object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            InnerFunction.GetService(serviceType, serviceKey);
+    }
 }
