@@ -4,16 +4,22 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
-using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Diagnostics;
 
-internal sealed class HttpRouteParser : IHttpRouteParser
+/// <summary>
+/// HTTP request route parser.
+/// </summary>
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+[SuppressMessage("Minor Code Smell", "S1694:An abstract class should have both abstract and concrete methods", Justification = "Abstract for extensibility; no abstract members required now.")]
+public abstract class HttpRouteParser
 {
-#if NETCOREAPP3_1_OR_GREATER
+#if NET
     private const char ForwardSlash = '/';
 #else
 #pragma warning disable IDE1006 // Naming Styles
@@ -24,12 +30,25 @@ internal sealed class HttpRouteParser : IHttpRouteParser
     private readonly IRedactorProvider _redactorProvider;
     private readonly ConcurrentDictionary<string, ParsedRouteSegments> _routeTemplateSegmentsCache = new();
 
-    public HttpRouteParser(IRedactorProvider redactorProvider)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpRouteParser"/> class.
+    /// </summary>
+    /// <param name="redactorProvider">Redactor provider to use for getting redactors for privacy data.</param>
+    protected HttpRouteParser(IRedactorProvider redactorProvider)
     {
         _redactorProvider = redactorProvider;
     }
 
-    public bool TryExtractParameters(
+    /// <summary>
+    /// Extract parameters values from the http request path.
+    /// </summary>
+    /// <param name="httpPath">Http request's absolute path.</param>
+    /// <param name="routeSegments">Route segments containing text and parameter segments of the route.</param>
+    /// <param name="redactionMode">Strategy to decide how parameters are redacted.</param>
+    /// <param name="parametersToRedact">Dictionary of parameters with their data classification that needs to be redacted.</param>
+    /// <param name="httpRouteParameters">Output array where parameters will be stored. Caller must provide the array with enough capacity to hold all parameters in route segment.</param>
+    /// <returns><see langword="true" /> if parameters were extracted successfully, <see langword="false" /> otherwise.</returns>
+    public virtual bool TryExtractParameters(
         string httpPath,
         in ParsedRouteSegments routeSegments,
         HttpRouteParameterRedactionMode redactionMode,
@@ -38,61 +57,70 @@ internal sealed class HttpRouteParser : IHttpRouteParser
     {
         int paramCount = routeSegments.ParameterCount;
 
-        if (httpRouteParameters == null || httpRouteParameters.Length < paramCount)
+        if (httpRouteParameters is null || httpRouteParameters.Length < paramCount)
         {
             return false;
         }
 
-        var httpPathAsSpan = httpPath.AsSpan();
+        ReadOnlySpan<char> httpPathAsSpan = httpPath.AsSpan();
         httpPathAsSpan = httpPathAsSpan.TrimStart(ForwardSlash);
 
-        if (paramCount > 0)
+        if (paramCount <= 0)
         {
-            int offset = 0;
-            int index = 0;
+            return true;
+        }
 
-            foreach (Segment segment in routeSegments.Segments)
+        int offset = 0;
+        int index = 0;
+
+        foreach (Segment segment in routeSegments.Segments)
+        {
+            if (!segment.IsParam)
             {
-                if (segment.IsParam)
-                {
-                    var startIndex = segment.Start + offset;
-
-                    // If we exceed a length of the http path it means that the appropriate http route
-                    // has optional parameters or parameters with default values, and these parameters
-                    // are omitted in the http path. In this case we return a default value of the
-                    // omitted parameter.
-                    string parameterValue = segment.DefaultValue;
-
-                    bool isRedacted = false;
-
-                    if (startIndex < httpPathAsSpan.Length)
-                    {
-                        var parameterContent = segment.Content;
-                        var parameterTemplateLength = parameterContent.Length + 2;
-
-                        var length = httpPathAsSpan.Slice(startIndex).IndexOf(ForwardSlash);
-
-                        if (segment.IsCatchAll || length == -1)
-                        {
-                            length = httpPathAsSpan.Slice(startIndex).Length;
-                        }
-
-                        offset += length - parameterTemplateLength;
-
-                        parameterValue = GetRedactedParameterValue(httpPathAsSpan, segment, startIndex, length, redactionMode, parametersToRedact, ref isRedacted);
-                    }
-
-                    httpRouteParameters[index++] = new HttpRouteParameter(segment.ParamName, parameterValue, isRedacted);
-                }
+                continue;
             }
+
+            int startIndex = segment.Start + offset;
+
+            // If we exceed a length of the http path it means that the appropriate http route
+            // has optional parameters or parameters with default values, and these parameters
+            // are omitted in the http path. In this case we return a default value of the
+            // omitted parameter.
+            string parameterValue = segment.DefaultValue;
+
+            bool isRedacted = false;
+
+            if (startIndex < httpPathAsSpan.Length)
+            {
+                string parameterContent = segment.Content;
+                int parameterTemplateLength = parameterContent.Length + 2;
+
+                int length = httpPathAsSpan.Slice(startIndex).IndexOf(ForwardSlash);
+
+                if (segment.IsCatchAll || length == -1)
+                {
+                    length = httpPathAsSpan.Slice(startIndex).Length;
+                }
+
+                offset += length - parameterTemplateLength;
+
+                parameterValue = GetRedactedParameterValue(httpPathAsSpan, segment, startIndex, length, redactionMode, parametersToRedact, ref isRedacted);
+            }
+
+            httpRouteParameters[index++] = new HttpRouteParameter(segment.ParamName, parameterValue, isRedacted);
         }
 
         return true;
     }
 
-    public ParsedRouteSegments ParseRoute(string httpRoute)
+    /// <summary>
+    /// Parses http route and breaks it into text and parameter segments.
+    /// </summary>
+    /// <param name="httpRoute">Http request's route template.</param>
+    /// <returns>Returns text and parameter segments of route.</returns>
+    public virtual ParsedRouteSegments ParseRoute(string httpRoute)
     {
-        return _routeTemplateSegmentsCache.GetOrAdd(httpRoute, httpRoute =>
+        return _routeTemplateSegmentsCache.GetOrAdd(httpRoute, _ =>
         {
             httpRoute = httpRoute.TrimStart(ForwardSlash);
 
@@ -163,44 +191,56 @@ internal sealed class HttpRouteParser : IHttpRouteParser
 
         while ((ch = httpRoute[pos]) != '}')
         {
-            // The segment has a default value '='. The character indicates
-            // that we've met the end of the segment's parameter name and
-            // the start of the default value.
-            if (ch == '=')
+            switch (ch)
             {
-                if (paramNameEnd == PositionNotFound)
+                // The segment has a default value '='. The character indicates
+                // that we've met the end of the segment's parameter name and
+                // the start of the default value.
+                case '=':
                 {
-                    paramNameEnd = pos;
+                    if (paramNameEnd == PositionNotFound)
+                    {
+                        paramNameEnd = pos;
+                    }
+
+                    defaultValueStart = pos + 1;
+                    break;
                 }
 
-                defaultValueStart = pos + 1;
-            }
-
-            // The segment is optional '?' or has a constraint ':'.
-            // When we meet one of the above characters it indicates
-            // that we've met the end of the segment's parameter name.
-            else if (ch == '?' || ch == ':')
-            {
-                if (paramNameEnd == PositionNotFound)
+                // The segment is optional '?' or has a constraint ':'.
+                // When we meet one of the above characters it indicates
+                // that we've met the end of the segment's parameter name.
+                case '?':
+                case ':':
                 {
-                    paramNameEnd = pos;
-                }
-            }
+                    if (paramNameEnd == PositionNotFound)
+                    {
+                        paramNameEnd = pos;
+                    }
 
-            // The segment has '*' catch all parameter.
-            // When we meet the character it indicates param start position needs to be adjusted, so that we capture 'param' instead of '*param'
-            // *param can only appear after opening curly brace and position needs to be adjusted only once
-            else if (!catchAllParamFound && ch == '*' && pos > 0 && httpRoute[pos - 1] == '{')
-            {
-                paramNameStart++;
-
-                // Catch all parameters can start with one or two '*' characters.
-                if (httpRoute[paramNameStart] == '*')
-                {
-                    paramNameStart++;
+                    break;
                 }
 
-                catchAllParamFound = true;
+                // The segment has '*' catch all parameter.
+                // When we meet the character it indicates param start position needs to be adjusted, so that we capture 'param' instead of '*param'
+                // *param can only appear after opening curly brace and position needs to be adjusted only once
+                default:
+                {
+                    if (!catchAllParamFound && ch == '*' && pos > 0 && httpRoute[pos - 1] == '{')
+                    {
+                        paramNameStart++;
+
+                        // Catch all parameters can start with one or two '*' characters.
+                        if (httpRoute[paramNameStart] == '*')
+                        {
+                            paramNameStart++;
+                        }
+
+                        catchAllParamFound = true;
+                    }
+
+                    break;
+                }
             }
 
             pos++;
@@ -271,15 +311,16 @@ internal sealed class HttpRouteParser : IHttpRouteParser
     {
         if (parametersToRedact.TryGetValue(segment.ParamName, out DataClassification classification))
         {
-            if (classification != DataClassification.None)
+            if (classification == DataClassification.None)
             {
-                var redactor = _redactorProvider.GetRedactor(classification);
-                isRedacted = true;
-
-                return redactor.Redact(httpPathAsSpan.Slice(startIndex, length));
+                return httpPathAsSpan.Slice(startIndex, length).ToString();
             }
 
-            return httpPathAsSpan.Slice(startIndex, length).ToString();
+            Redactor redactor = _redactorProvider.GetRedactor(classification);
+            isRedacted = true;
+
+            return redactor.Redact(httpPathAsSpan.Slice(startIndex, length));
+
         }
 
         if (Segment.IsKnownUnredactableParameter(segment.ParamName))
@@ -300,15 +341,17 @@ internal sealed class HttpRouteParser : IHttpRouteParser
         IReadOnlyDictionary<string, DataClassification> parametersToRedact,
         ref bool isRedacted)
     {
-        if (parametersToRedact.TryGetValue(segment.ParamName, out DataClassification classification)
-            && classification != DataClassification.None)
+        if (!parametersToRedact.TryGetValue(segment.ParamName, out DataClassification classification)
+            || classification == DataClassification.None)
         {
-            var redactor = _redactorProvider.GetRedactor(classification);
-            isRedacted = true;
-
-            return redactor.Redact(httpPathAsSpan.Slice(startIndex, length));
+            return httpPathAsSpan.Slice(startIndex, length).ToString();
         }
 
-        return httpPathAsSpan.Slice(startIndex, length).ToString();
+        Redactor redactor = _redactorProvider.GetRedactor(classification);
+        isRedacted = true;
+
+        return redactor.Redact(httpPathAsSpan.Slice(startIndex, length));
+
     }
 }
+
