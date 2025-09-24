@@ -5648,7 +5648,7 @@ dotnet_diagnostic.SA1202.severity = suggestion
 # Title    : Constants should appear before fields
 # Category : StyleCop.CSharp.OrderingRules
 # Help Link: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1203.md
-dotnet_diagnostic.SA1203.severity = warning
+dotnet_diagnostic.SA1203.severity = suggestion
 
 # Title    : Static elements should appear before instance elements
 # Category : StyleCop.CSharp.OrderingRules

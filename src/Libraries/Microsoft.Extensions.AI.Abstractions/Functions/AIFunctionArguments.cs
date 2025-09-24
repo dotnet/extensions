@@ -77,14 +77,10 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// </remarks>
     public AIFunctionArguments(IDictionary<string, object?>? arguments, IEqualityComparer<string>? comparer)
     {
-#pragma warning disable S1698 // Consider using 'Equals' if value comparison is intended.
         _arguments =
-            arguments is null
-                ? new Dictionary<string, object?>(comparer)
-                : (arguments is Dictionary<string, object?> dc) && (comparer is null || dc.Comparer == comparer)
-                    ? dc
-                    : new Dictionary<string, object?>(arguments, comparer);
-#pragma warning restore S1698 // Consider using 'Equals' if value comparison is intended.
+            arguments is null ? new(comparer) :
+            arguments is Dictionary<string, object?> dc && (comparer is null || ReferenceEquals(dc.Comparer, comparer)) ? dc :
+            new(arguments, comparer);
     }
 
     /// <summary>Gets or sets services optionally associated with these arguments.</summary>

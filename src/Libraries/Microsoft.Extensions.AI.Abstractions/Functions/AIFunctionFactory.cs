@@ -23,7 +23,6 @@ using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning disable SA1203 // Constants should appear before fields
 
 namespace Microsoft.Extensions.AI;
 

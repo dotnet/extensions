@@ -13,7 +13,6 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI.Embeddings;
 
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
 
 namespace Microsoft.Extensions.AI;
 

@@ -17,8 +17,6 @@ using OpenAI.Assistants;
 #pragma warning disable S125 // Sections of code should not be commented out
 #pragma warning disable S1751 // Loops with at most one iteration should be refactored
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning disable S4456 // Parameter validation in yielding methods should be wrapped
-#pragma warning disable S4457 // Parameter validation in "async"/"await" methods should be wrapped
 
 namespace Microsoft.Extensions.AI;
 
