@@ -6399,5 +6399,5 @@ dotnet_diagnostic.VSTHRD200.severity = warning
 
 # Title    : Async method lacks 'await' operators and will run synchronously
 # Category : Reliability
-# Help Link: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD200.md
+# Help Link: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/cs1998
 dotnet_diagnostic.CS1998.severity = suggestion
