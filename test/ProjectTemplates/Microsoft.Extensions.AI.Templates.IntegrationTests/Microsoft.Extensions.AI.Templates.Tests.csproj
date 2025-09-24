@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Snapshots\**\*.*" />
     <None Include="Snapshots\**\*.*" />
 
