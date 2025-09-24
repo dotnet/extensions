@@ -1034,7 +1034,7 @@ public class OpenAIResponseClientTests
         using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
 
         AITool mcpTool = rawTool ?
-            ResponseTool.CreateMcpTool("deepwiki", new("https://mcp.deepwiki.com/mcp"), toolCallApprovalPolicy: new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval)).AsAITool() :
+            ResponseTool.CreateMcpTool("deepwiki", serverUri: new("https://mcp.deepwiki.com/mcp"), toolCallApprovalPolicy: new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval)).AsAITool() :
             new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
             {
                 ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
@@ -1504,6 +1504,19 @@ public class OpenAIResponseClientTests
         Assert.Equal(1420, response.Usage.InputTokenCount);
         Assert.Equal(149, response.Usage.OutputTokenCount);
         Assert.Equal(1569, response.Usage.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task RequestHeaders_UserAgent_ContainsMEAI()
+    {
+        using var handler = new ThrowUserAgentExceptionHandler();
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        InvalidOperationException e = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetResponseAsync("hello"));
+
+        Assert.StartsWith("User-Agent header: OpenAI", e.Message);
+        Assert.Contains("MEAI", e.Message);
     }
 
     private static IChatClient CreateResponseClient(HttpClient httpClient, string modelId) =>
