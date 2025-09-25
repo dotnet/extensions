@@ -18,8 +18,17 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <param name="function">The function to convert.</param>
     /// <returns>An OpenAI <see cref="ResponseTool"/> representing <paramref name="function"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-    public static ResponseTool AsOpenAIResponseTool(this AIFunctionDeclaration function) =>
+    public static FunctionTool AsOpenAIResponseTool(this AIFunctionDeclaration function) =>
         OpenAIResponsesChatClient.ToResponseTool(Throw.IfNull(function));
+
+    /// <summary>
+    /// Creates an OpenAI <see cref="ResponseTextFormat"/> from a <see cref="ChatResponseFormat"/>.
+    /// </summary>
+    /// <param name="format">The format.</param>
+    /// <param name="options">The options to use when interpreting the format.</param>
+    /// <returns>The converted OpenAI <see cref="ResponseTextFormat"/>.</returns>
+    public static ResponseTextFormat? AsOpenAIResponseTextFormat(this ChatResponseFormat? format, ChatOptions? options = null) =>
+        OpenAIResponsesChatClient.ToOpenAIResponseTextFormat(format, options);
 
     /// <summary>Creates a sequence of OpenAI <see cref="ResponseItem"/> instances from the specified input messages.</summary>
     /// <param name="messages">The input messages to convert.</param>
@@ -83,5 +92,47 @@ public static class MicrosoftExtensionsAIResponsesExtensions
             topP: options?.TopP,
             previousResponseId: options?.ConversationId,
             instructions: options?.Instructions);
+    }
+
+    /// <summary>Adds the <see cref="ResponseTool"/> to the list of <see cref="AITool"/>s.</summary>
+    /// <param name="tools">The list of <see cref="AITool"/>s to which the provided tool should be added.</param>
+    /// <param name="tool">The <see cref="ResponseTool"/> to add.</param>
+    /// <remarks>
+    /// <see cref="ResponseTool"/> does not derive from <see cref="AITool"/>, so it cannot be added directly to a list of <see cref="AITool"/>s.
+    /// Instead, this method wraps the provided <see cref="ResponseTool"/> in an <see cref="AITool"/> and adds that to the list.
+    /// The <see cref="IChatClient"/> returned by <see cref="OpenAIClientExtensions.AsIChatClient(OpenAIResponseClient)"/> will
+    /// be able to unwrap the <see cref="ResponseTool"/> when it processes the list of tools and use the provided <paramref name="tool"/> as-is.
+    /// </remarks>
+    public static void Add(this IList<AITool> tools, ResponseTool tool)
+    {
+        _ = Throw.IfNull(tools);
+
+        tools.Add(AsAITool(tool));
+    }
+
+    /// <summary>Creates an <see cref="AITool"/> to represent a raw <see cref="ResponseTool"/>.</summary>
+    /// <param name="tool">The tool to wrap as an <see cref="AITool"/>.</param>
+    /// <returns>The <paramref name="tool"/> wrapped as an <see cref="AITool"/>.</returns>
+    /// <remarks>
+    /// <para>
+    /// The returned tool is only suitable for use with the <see cref="IChatClient"/> returned by
+    /// <see cref="OpenAIClientExtensions.AsIChatClient(OpenAIResponseClient)"/> (or <see cref="IChatClient"/>s that delegate
+    /// to such an instance). It is likely to be ignored by any other <see cref="IChatClient"/> implementation.
+    /// </para>
+    /// <para>
+    /// When a tool has a corresponding <see cref="AITool"/>-derived type already defined in Microsoft.Extensions.AI,
+    /// such as <see cref="AIFunction"/>, <see cref="HostedWebSearchTool"/>, <see cref="HostedMcpServerTool"/>, or
+    /// <see cref="HostedFileSearchTool"/>, those types should be preferred instead of this method, as they are more portable,
+    /// capable of being respected by any <see cref="IChatClient"/> implementation. This method does not attempt to
+    /// map the supplied <see cref="ResponseTool"/> to any of those types, it simply wraps it as-is:
+    /// the <see cref="IChatClient"/> returned by <see cref="OpenAIClientExtensions.AsIChatClient(OpenAIResponseClient)"/> will
+    /// be able to unwrap the <see cref="ResponseTool"/> when it processes the list of tools.
+    /// </para>
+    /// </remarks>
+    public static AITool AsAITool(this ResponseTool tool)
+    {
+        _ = Throw.IfNull(tool);
+
+        return new OpenAIResponsesChatClient.ResponseToolAITool(tool);
     }
 }

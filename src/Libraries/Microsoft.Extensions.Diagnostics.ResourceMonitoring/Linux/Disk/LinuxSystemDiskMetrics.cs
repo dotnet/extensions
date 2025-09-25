@@ -179,9 +179,7 @@ internal sealed class LinuxSystemDiskMetrics
             _lastDiskStatsFailure = _timeProvider.GetUtcNow();
             _diskStatsUnavailable = true;
         }
-#pragma warning disable CA1031
         catch (Exception ex)
-#pragma warning restore CA1031
         {
             _logger.HandleDiskStatsException(ex.Message);
         }

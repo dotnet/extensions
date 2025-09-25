@@ -4,16 +4,14 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 
-#pragma warning disable S1694 // An abstract class should have both abstract and concrete methods
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a function that can be described to an AI service.</summary>
 /// <remarks>
 /// <see cref="AIFunctionDeclaration"/> is the base class for <see cref="AIFunction"/>, which
-/// adds the ability to invoke the function. Components may type test <see cref="AITool"/> instances
+/// adds the ability to invoke the function. Components can type test <see cref="AITool"/> instances
 /// for <see cref="AIFunctionDeclaration"/> to determine whether they can be described as functions,
-/// and may type test for <see cref="AIFunction"/> to determine whether they can be invoked.
+/// and can type test for <see cref="AIFunction"/> to determine whether they can be invoked.
 /// </remarks>
 public abstract class AIFunctionDeclaration : AITool
 {
@@ -30,13 +28,11 @@ public abstract class AIFunctionDeclaration : AITool
     /// </para>
     /// <code>
     /// {
-    ///   "title" : "addNumbers",
-    ///   "description": "A simple function that adds two numbers together.",
     ///   "type": "object",
     ///   "properties": {
     ///     "a" : { "type": "number" },
-    ///     "b" : { "type": "number", "default": 1 }
-    ///   }, 
+    ///     "b" : { "type": ["number","null"], "default": 1 }
+    ///   },
     ///   "required" : ["a"]
     /// }
     /// </code>

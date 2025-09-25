@@ -9,8 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable SA1202 // Elements should be ordered by access
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -58,4 +56,14 @@ public class DelegatingAIFunction : AIFunction
     /// <inheritdoc />
     protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
         InnerFunction.InvokeAsync(arguments, cancellationToken);
+
+    /// <inheritdoc />
+    public override object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            InnerFunction.GetService(serviceType, serviceKey);
+    }
 }

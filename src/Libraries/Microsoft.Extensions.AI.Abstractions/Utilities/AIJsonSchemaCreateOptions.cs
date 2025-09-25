@@ -6,8 +6,6 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Threading;
 
-#pragma warning disable S1067 // Expressions should not be too complex
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>

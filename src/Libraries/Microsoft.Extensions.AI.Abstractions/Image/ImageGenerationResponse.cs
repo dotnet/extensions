@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-#pragma warning disable EA0011 // Consider removing unnecessary conditional access operators
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an image generation request.</summary>
@@ -39,14 +37,19 @@ public class ImageGenerationResponse
     public object? RawRepresentation { get; set; }
 
     /// <summary>
-    /// Gets or sets the generated content items.  Content will typically be DataContent for
-    /// images streamed from the generator or UriContent for remotely hosted images, but may also
-    /// be provider specific content types that represent the generated images.
+    /// Gets or sets the generated content items.
     /// </summary>
+    /// <remarks>
+    /// Content is typically <see cref="DataContent"/> for images streamed from the generator, or <see cref="UriContent"/> for remotely hosted images, but
+    /// can also be provider-specific content types that represent the generated images.
+    /// </remarks>
     [AllowNull]
     public IList<AIContent> Contents
     {
         get => _contents ??= [];
         set => _contents = value;
     }
+
+    /// <summary>Gets or sets usage details for the image generation response.</summary>
+    public UsageDetails? Usage { get; set; }
 }

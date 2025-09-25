@@ -951,7 +951,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var activity = Assert.Single(activities);
         Assert.StartsWith("chat", activity.DisplayName);
-        Assert.StartsWith("http", (string)activity.GetTagItem("server.address")!);
+        Assert.Contains(".", (string)activity.GetTagItem("server.address")!);
         Assert.Equal(chatClient.GetService<ChatClientMetadata>()?.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
@@ -1285,7 +1285,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             new(ChatRole.Assistant, "That sounds impactful! AI in education has so much potential."),
             new(ChatRole.User, "Yes, we focus on personalized learning experiences."),
             new(ChatRole.Assistant, "Personalized learning is the future of education!"),
-            new(ChatRole.User, "What's my name and profession?")
+            new(ChatRole.User, "Was anyone named in the conversation? Provide their name and job.")
         ];
 
         StringBuilder sb = new();
@@ -1305,7 +1305,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 Assert.Contains("Bob", m.Text);
             },
             m => Assert.StartsWith("Personalized learning", m.Text, StringComparison.Ordinal),
-            m => Assert.Equal("What's my name and profession?", m.Text));
+            m => Assert.Equal("Was anyone named in the conversation? Provide their name and job.", m.Text));
 
         string responseText = sb.ToString();
         Assert.Contains("Bob", responseText);

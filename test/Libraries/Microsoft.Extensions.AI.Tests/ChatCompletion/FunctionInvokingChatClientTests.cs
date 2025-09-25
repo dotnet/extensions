@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -656,9 +655,10 @@ public class FunctionInvokingChatClientTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task FunctionInvocationTrackedWithActivity(bool enableTelemetry)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task FunctionInvocationTrackedWithActivity(bool enableTelemetry, bool enableSensitiveData)
     {
         string sourceName = Guid.NewGuid().ToString();
 
@@ -676,7 +676,7 @@ public class FunctionInvokingChatClientTests
         };
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
-            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName)));
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName) { EnableSensitiveData = enableSensitiveData }));
 
         await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure), streaming: false);
 
@@ -701,6 +701,23 @@ public class FunctionInvokingChatClientTests
                     activity => Assert.Equal("execute_tool Func1", activity.DisplayName),
                     activity => Assert.Equal("chat", activity.DisplayName),
                     activity => Assert.Equal(streaming ? "FunctionInvokingChatClient.GetStreamingResponseAsync" : "FunctionInvokingChatClient.GetResponseAsync", activity.DisplayName));
+
+                var executeTool = activities[1];
+                if (enableSensitiveData)
+                {
+                    var args = Assert.Single(executeTool.Tags, t => t.Key == "gen_ai.tool.call.arguments");
+                    Assert.Equal(
+                        JsonSerializer.Serialize(new Dictionary<string, object?> { ["arg1"] = "value1" }, AIJsonUtilities.DefaultOptions),
+                        args.Value);
+
+                    var result = Assert.Single(executeTool.Tags, t => t.Key == "gen_ai.tool.call.result");
+                    Assert.Equal("Result 1", JsonSerializer.Deserialize<string>(result.Value!, AIJsonUtilities.DefaultOptions));
+                }
+                else
+                {
+                    Assert.DoesNotContain(executeTool.Tags, t => t.Key == "gen_ai.tool.call.arguments");
+                    Assert.DoesNotContain(executeTool.Tags, t => t.Key == "gen_ai.tool.call.result");
+                }
 
                 for (int i = 0; i < activities.Count - 1; i++)
                 {
@@ -1231,37 +1248,7 @@ public class FunctionInvokingChatClientTests
         chat.AddRange(result.Messages);
 
         expected ??= plan;
-        Assert.Equal(expected.Count, chat.Count);
-        for (int i = 0; i < expected.Count; i++)
-        {
-            var expectedMessage = expected[i];
-            var chatMessage = chat[i];
-
-            Assert.Equal(expectedMessage.Role, chatMessage.Role);
-            Assert.Equal(expectedMessage.Text, chatMessage.Text);
-            Assert.Equal(expectedMessage.GetType(), chatMessage.GetType());
-
-            Assert.Equal(expectedMessage.Contents.Count, chatMessage.Contents.Count);
-            for (int j = 0; j < expectedMessage.Contents.Count; j++)
-            {
-                var expectedItem = expectedMessage.Contents[j];
-                var chatItem = chatMessage.Contents[j];
-
-                Assert.Equal(expectedItem.GetType(), chatItem.GetType());
-                Assert.Equal(expectedItem.ToString(), chatItem.ToString());
-                if (expectedItem is FunctionCallContent expectedFunctionCall)
-                {
-                    var chatFunctionCall = (FunctionCallContent)chatItem;
-                    Assert.Equal(expectedFunctionCall.Name, chatFunctionCall.Name);
-                    AssertExtensions.EqualFunctionCallParameters(expectedFunctionCall.Arguments, chatFunctionCall.Arguments);
-                }
-                else if (expectedItem is FunctionResultContent expectedFunctionResult)
-                {
-                    var chatFunctionResult = (FunctionResultContent)chatItem;
-                    AssertExtensions.EqualFunctionCallResults(expectedFunctionResult.Result, chatFunctionResult.Result);
-                }
-            }
-        }
+        AssertExtensions.EqualMessageLists(expected, chat);
 
         // Usage should be aggregated over all responses, including AdditionalUsage
         var actualUsage = result.Usage!;
@@ -1325,38 +1312,8 @@ public class FunctionInvokingChatClientTests
         chat.AddRange(result.Messages);
 
         expected ??= plan;
-        Assert.Equal(expected.Count, chat.Count);
-        for (int i = 0; i < expected.Count; i++)
-        {
-            var expectedMessage = expected[i];
-            var chatMessage = chat[i];
 
-            Assert.Equal(expectedMessage.Role, chatMessage.Role);
-            Assert.Equal(expectedMessage.Text, chatMessage.Text);
-            Assert.Equal(expectedMessage.GetType(), chatMessage.GetType());
-
-            Assert.Equal(expectedMessage.Contents.Count, chatMessage.Contents.Count);
-            for (int j = 0; j < expectedMessage.Contents.Count; j++)
-            {
-                var expectedItem = expectedMessage.Contents[j];
-                var chatItem = chatMessage.Contents[j];
-
-                Assert.Equal(expectedItem.GetType(), chatItem.GetType());
-                Assert.Equal(expectedItem.ToString(), chatItem.ToString());
-                if (expectedItem is FunctionCallContent expectedFunctionCall)
-                {
-                    var chatFunctionCall = (FunctionCallContent)chatItem;
-                    Assert.Equal(expectedFunctionCall.Name, chatFunctionCall.Name);
-                    AssertExtensions.EqualFunctionCallParameters(expectedFunctionCall.Arguments, chatFunctionCall.Arguments);
-                }
-                else if (expectedItem is FunctionResultContent expectedFunctionResult)
-                {
-                    var chatFunctionResult = (FunctionResultContent)chatItem;
-                    AssertExtensions.EqualFunctionCallResults(expectedFunctionResult.Result, chatFunctionResult.Result);
-                }
-            }
-        }
-
+        AssertExtensions.EqualMessageLists(expected, chat);
         return chat;
     }
 
@@ -1367,25 +1324,5 @@ public class FunctionInvokingChatClientTests
         {
             yield return item;
         }
-    }
-
-    private sealed class EnumeratedOnceEnumerable<T>(IEnumerable<T> items) : IEnumerable<T>
-    {
-        private int _iterated;
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            if (Interlocked.Exchange(ref _iterated, 1) != 0)
-            {
-                throw new InvalidOperationException("This enumerable can only be enumerated once.");
-            }
-
-            foreach (var item in items)
-            {
-                yield return item;
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

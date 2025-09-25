@@ -160,7 +160,6 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         {
             foreach (var enricher in _enrichers)
             {
-#pragma warning disable CA1031 // Do not catch general exception types
                 try
                 {
                     enricher.Enrich(loggerMessageState, context);
@@ -169,7 +168,6 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
                 {
                     _logger.EnricherFailed(ex, enricher.GetType().Name);
                 }
-#pragma warning restore CA1031 // Do not catch general exception types
             }
 
             foreach (var pair in loggerMessageState)

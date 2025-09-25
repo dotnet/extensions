@@ -17,9 +17,6 @@ using System.Threading.Tasks;
 #endif
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S109 // Magic numbers should not be used
-#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
-
 namespace Microsoft.Extensions.AI;
 
 public static partial class AIJsonUtilities

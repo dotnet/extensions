@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -85,13 +84,13 @@ public class OpenTelemetryEmbeddingGeneratorTests
         Assert.Equal("testservice", activity.GetTagItem("gen_ai.provider.name"));
 
         Assert.Equal(expectedModelName, activity.GetTagItem("gen_ai.request.model"));
-        Assert.Equal(1234, activity.GetTagItem("gen_ai.request.embedding.dimensions"));
-        Assert.Equal(enableSensitiveData ? "value1" : null, activity.GetTagItem("testservice.request.service_tier"));
-        Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("testservice.request.something_else"));
+        Assert.Equal(1234, activity.GetTagItem("gen_ai.embeddings.dimension.count"));
+        Assert.Equal(enableSensitiveData ? "value1" : null, activity.GetTagItem("service_tier"));
+        Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("SomethingElse"));
 
         Assert.Equal(10, activity.GetTagItem("gen_ai.usage.input_tokens"));
-        Assert.Equal(enableSensitiveData ? "abcdefgh" : null, activity.GetTagItem("testservice.response.system_fingerprint"));
-        Assert.Equal(enableSensitiveData ? "value3" : null, activity.GetTagItem("testservice.response.and_something_else"));
+        Assert.Equal(enableSensitiveData ? "abcdefgh" : null, activity.GetTagItem("system_fingerprint"));
+        Assert.Equal(enableSensitiveData ? "value3" : null, activity.GetTagItem("AndSomethingElse"));
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
     }

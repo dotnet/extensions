@@ -58,7 +58,6 @@ public class PerRequestLogBufferingOptions
     [Range(MinimumPerRequestBufferSizeInBytes, MaximumPerRequestBufferSizeInBytes)]
     public int MaxPerRequestBufferSizeInBytes { get; set; } = DefaultPerRequestBufferSizeInBytes;
 
-#pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern
     /// <summary>
     /// Gets or sets the collection of <see cref="LogBufferingFilterRule"/> used for filtering log messages for the purpose of further buffering.
     /// </summary>
@@ -71,6 +70,5 @@ public class PerRequestLogBufferingOptions
     /// If a log entry size is greater than <see cref="MaxLogRecordSizeInBytes"/>, it will not be buffered and will be emitted normally.
     /// </remarks>
     public IList<LogBufferingFilterRule> Rules { get; set; } = [];
-#pragma warning restore CA2227
 }
 #endif

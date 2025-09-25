@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -29,7 +28,7 @@ public class ChatResponseUpdateExtensionsTests
         ChatResponseUpdate[] updates =
         [
             new(ChatRole.Assistant, "Hello") { ResponseId = "someResponse", MessageId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
-            new(new("human"), ", ") { AuthorName = "Someone", AdditionalProperties = new() { ["a"] = "b" } },
+            new(ChatRole.Assistant, ", ") { AuthorName = "Someone", AdditionalProperties = new() { ["a"] = "b" } },
             new(null, "world!") { CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), ConversationId = "123", AdditionalProperties = new() { ["c"] = "d" } },
 
             new() { Contents = [new UsageContent(new() { InputTokenCount = 1, OutputTokenCount = 2 })] },
@@ -53,7 +52,7 @@ public class ChatResponseUpdateExtensionsTests
 
         ChatMessage message = response.Messages.Single();
         Assert.Equal("12345", message.MessageId);
-        Assert.Equal(new ChatRole("human"), message.Role);
+        Assert.Equal(ChatRole.Assistant, message.Role);
         Assert.Equal("Someone", message.AuthorName);
         Assert.Null(message.AdditionalProperties);
 
@@ -63,6 +62,62 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("d", response.AdditionalProperties["c"]);
 
         Assert.Equal("Hello, world!", response.Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_RoleOrIdChangeDictatesMessageChange(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        [
+            new(null, "!") { MessageId = "1" },
+            new(ChatRole.Assistant, "a") { MessageId = "1" },
+            new(ChatRole.Assistant, "b") { MessageId = "2" },
+            new(ChatRole.User, "c") { MessageId = "2" },
+            new(ChatRole.User, "d") { MessageId = "2" },
+            new(ChatRole.Assistant, "e") { MessageId = "3" },
+            new(ChatRole.Tool, "f") { MessageId = "4" },
+            new(ChatRole.Tool, "g") { MessageId = "4" },
+            new(ChatRole.Tool, "h") { MessageId = "5" },
+            new(new("human"), "i") { MessageId = "6" },
+            new(new("human"), "j") { MessageId = "7" },
+            new(new("human"), "k") { MessageId = "7" },
+            new(null, "l") { MessageId = "7" },
+            new(null, "m") { MessageId = "8" },
+        ];
+
+        ChatResponse response = useAsync ?
+            updates.ToChatResponse() :
+            await YieldAsync(updates).ToChatResponseAsync();
+        Assert.Equal(9, response.Messages.Count);
+
+        Assert.Equal("!a", response.Messages[0].Text);
+        Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
+
+        Assert.Equal("b", response.Messages[1].Text);
+        Assert.Equal(ChatRole.Assistant, response.Messages[1].Role);
+
+        Assert.Equal("cd", response.Messages[2].Text);
+        Assert.Equal(ChatRole.User, response.Messages[2].Role);
+
+        Assert.Equal("e", response.Messages[3].Text);
+        Assert.Equal(ChatRole.Assistant, response.Messages[3].Role);
+
+        Assert.Equal("fg", response.Messages[4].Text);
+        Assert.Equal(ChatRole.Tool, response.Messages[4].Role);
+
+        Assert.Equal("h", response.Messages[5].Text);
+        Assert.Equal(ChatRole.Tool, response.Messages[5].Role);
+
+        Assert.Equal("i", response.Messages[6].Text);
+        Assert.Equal(new ChatRole("human"), response.Messages[6].Role);
+
+        Assert.Equal("jkl", response.Messages[7].Text);
+        Assert.Equal(new ChatRole("human"), response.Messages[7].Role);
+
+        Assert.Equal("m", response.Messages[8].Text);
+        Assert.Equal(ChatRole.Assistant, response.Messages[8].Role);
     }
 
     [Theory]

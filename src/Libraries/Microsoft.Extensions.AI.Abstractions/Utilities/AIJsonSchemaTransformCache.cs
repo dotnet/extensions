@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -19,7 +18,7 @@ namespace Microsoft.Extensions.AI;
 /// implementations that enforce vendor-specific restrictions on what constitutes a valid JSON schema for a given function or response format.
 /// </para>
 /// <para>
-/// It is recommended <see cref="IChatClient"/> implementations with schema transformation requirements should create a single static instance of this cache.
+/// It is recommended <see cref="IChatClient"/> implementations with schema transformation requirements create a single static instance of this cache.
 /// </para>
 /// </remarks>
 public sealed class AIJsonSchemaTransformCache
@@ -56,7 +55,7 @@ public sealed class AIJsonSchemaTransformCache
     /// <summary>
     /// Gets or creates a transformed JSON schema for the specified <see cref="AIFunction"/> instance.
     /// </summary>
-    /// <param name="function">The function whose JSON schema we want to transform.</param>
+    /// <param name="function">The function whose JSON schema is to be transformed.</param>
     /// <returns>The transformed JSON schema corresponding to <see cref="TransformOptions"/>.</returns>
     [EditorBrowsable(EditorBrowsableState.Never)] // maintained for binary compat; functionality for AIFunction is satisfied by AIFunctionDeclaration overload
     public JsonElement GetOrCreateTransformedSchema(AIFunction function) =>
@@ -65,7 +64,7 @@ public sealed class AIJsonSchemaTransformCache
     /// <summary>
     /// Gets or creates a transformed JSON schema for the specified <see cref="AIFunctionDeclaration"/> instance.
     /// </summary>
-    /// <param name="function">The function whose JSON schema we want to transform.</param>
+    /// <param name="function">The function whose JSON schema is to be transformed.</param>
     /// <returns>The transformed JSON schema corresponding to <see cref="TransformOptions"/>.</returns>
     public JsonElement GetOrCreateTransformedSchema(AIFunctionDeclaration function)
     {
@@ -76,7 +75,7 @@ public sealed class AIJsonSchemaTransformCache
     /// <summary>
     /// Gets or creates a transformed JSON schema for the specified <see cref="ChatResponseFormatJson"/> instance.
     /// </summary>
-    /// <param name="responseFormat">The response format whose JSON schema we want to transform.</param>
+    /// <param name="responseFormat">The response format whose JSON schema is to be transformed.</param>
     /// <returns>The transformed JSON schema corresponding to <see cref="TransformOptions"/>.</returns>
     public JsonElement? GetOrCreateTransformedSchema(ChatResponseFormatJson responseFormat)
     {

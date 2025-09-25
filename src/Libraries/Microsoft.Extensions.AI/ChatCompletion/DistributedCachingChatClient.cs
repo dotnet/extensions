@@ -11,8 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S109 // Magic numbers should not be used
-#pragma warning disable SA1202 // Elements should be ordered by access
 #pragma warning disable SA1502 // Element should not be on a single line
 
 namespace Microsoft.Extensions.AI;
