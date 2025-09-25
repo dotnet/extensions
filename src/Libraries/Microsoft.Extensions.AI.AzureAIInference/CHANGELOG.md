@@ -1,6 +1,6 @@
 # Release History
 
-## NOT YET RELEASED
+## 9.10.0-preview.1.25473.1
 
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
