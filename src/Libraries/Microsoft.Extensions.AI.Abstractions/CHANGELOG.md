@@ -1,6 +1,6 @@
 # Release History
 
-## NOT YET RELEASED
+## 9.9.1
 
 - Added new `ChatResponseFormat.ForJsonSchema` overloads that export a JSON schema from a .NET type.
 - Added new `AITool.GetService` virtual method.
