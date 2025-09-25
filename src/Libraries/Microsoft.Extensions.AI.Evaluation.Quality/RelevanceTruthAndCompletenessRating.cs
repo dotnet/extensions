@@ -53,20 +53,16 @@ internal sealed class RelevanceTruthAndCompletenessRating
     private const int MinValue = 1;
     private const int MaxValue = 5;
 
-#pragma warning disable S1067 // Expressions should not be too complex.
     public bool IsInconclusive =>
         Relevance < MinValue || Relevance > MaxValue ||
         Truth < MinValue || Truth > MaxValue ||
         Completeness < MinValue || Completeness > MaxValue;
-#pragma warning restore S1067
 
     [JsonConstructor]
-#pragma warning disable S107 // Methods should not have too many parameters.
     public RelevanceTruthAndCompletenessRating(
         int relevance, string relevanceReasoning, string[] relevanceReasons,
         int truth, string truthReasoning, string[] truthReasons,
         int completeness, string completenessReasoning, string[] completenessReasons)
-#pragma warning restore S107
     {
         (Relevance, RelevanceReasoning, RelevanceReasons,
         Truth, TruthReasoning, TruthReasons,

@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S109 // Magic numbers should not be used
-
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
 /// <summary>

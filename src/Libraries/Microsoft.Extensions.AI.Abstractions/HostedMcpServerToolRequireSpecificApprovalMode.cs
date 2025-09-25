@@ -6,9 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-#pragma warning disable S109 // Magic numbers should not be used
-#pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>

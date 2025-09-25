@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -66,6 +67,44 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
             args);
 
         project.StartupProjectRelativePath = $"{ProjectName}.AppHost";
+
+        await Fixture.RestoreProjectAsync(project);
+        await Fixture.BuildProjectAsync(project);
+    }
+
+    /// <summary>
+    /// Runs a single test with --aspire true and a project name that will trigger the class
+    /// name normalization bug reported in https://github.com/dotnet/extensions/issues/6811.
+    /// </summary>
+    [Fact]
+    public async Task CreateRestoreAndBuild_AspireProjectName()
+    {
+        await CreateRestoreAndBuild_AspireProjectName_Variants("azureopenai", "mix.ed-dash_name 123");
+    }
+
+    /// <summary>
+    /// Tests build for various project name formats, including dots and other
+    /// separators, to trigger the class name normalization bug described
+    /// in https://github.com/dotnet/extensions/issues/6811
+    /// This runs for all provider combinations with --aspire true and different
+    /// project names to ensure the bug is caught in all scenarios.
+    /// </summary>
+    /// <remarks>
+    /// Because this test takes a long time to run, it is skipped by default. Set the
+    /// environment variable <c>AI_TEMPLATES_TEST_PROJECT_NAMES</c> to "true" or "1"
+    /// to enable it.
+    /// </remarks>
+    [ConditionalTheory]
+    [EnvironmentVariableCondition("AI_TEMPLATES_TEST_PROJECT_NAMES", "true", "1")]
+    [MemberData(nameof(GetAspireProjectNameVariants))]
+    public async Task CreateRestoreAndBuild_AspireProjectName_Variants(string provider, string projectName)
+    {
+        var project = await Fixture.CreateProjectAsync(
+            templateName: "aichatweb",
+            projectName: projectName,
+            args: new[] { "--aspire", $"--provider={provider}" });
+
+        project.StartupProjectRelativePath = $"{projectName}.AppHost";
 
         await Fixture.RestoreProjectAsync(project);
         await Fixture.BuildProjectAsync(project);
@@ -155,6 +194,28 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
             foreach (var value in first.values)
             {
                 yield return [first.name, value, .. restSelection];
+            }
+        }
+    }
+
+    public static IEnumerable<object[]> GetAspireProjectNameVariants()
+    {
+        foreach (string provider in new[] { "ollama", "openai", "azureopenai", "githubmodels" })
+        {
+            foreach (string projectName in new[]
+            {
+                "mix.ed-dash_name 123",
+                "dot.name",
+                "project.123",
+                "space name",
+                ".1My.Projec-",
+                "1Project123",
+                "11double",
+                "1",
+                "nomatch"
+            })
+            {
+                yield return new object[] { provider, projectName };
             }
         }
     }

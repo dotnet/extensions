@@ -7,8 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable EA0011 // Consider removing unnecessary conditional access operators
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>

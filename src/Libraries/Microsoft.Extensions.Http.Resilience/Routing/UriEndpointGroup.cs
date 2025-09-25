@@ -19,7 +19,6 @@ public class UriEndpointGroup
     /// The client must define the endpoint for each endpoint group.
     /// At least one endpoint must be defined on each endpoint group in order to performed hedged requests.
     /// </remarks>
-#pragma warning disable CA2227 // Collection properties should be read only
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 #if NET8_0_OR_GREATER
     [System.ComponentModel.DataAnnotations.Length(1, int.MaxValue)]
@@ -29,5 +28,4 @@ public class UriEndpointGroup
     [ValidateEnumeratedItems]
     public IList<WeightedUriEndpoint> Endpoints { get; set; } = new List<WeightedUriEndpoint>();
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-#pragma warning restore CA2227 // Collection properties should be read only
 }

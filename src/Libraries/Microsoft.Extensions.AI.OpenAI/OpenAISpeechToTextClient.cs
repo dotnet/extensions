@@ -12,7 +12,6 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Audio;
 
-#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 

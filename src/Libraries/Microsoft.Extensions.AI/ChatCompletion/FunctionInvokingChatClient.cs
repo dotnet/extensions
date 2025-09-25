@@ -14,13 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable CA1508 // Avoid dead conditional code
 #pragma warning disable CA2213 // Disposable fields should be disposed
-#pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
-#pragma warning disable SA1202 // 'protected' members should come before 'private' members
-#pragma warning disable S107 // Methods should not have too many parameters
-#pragma warning disable S907 // "goto" statement should not be used
-#pragma warning disable S1659 // Multiple variables should not be declared on the same line
 #pragma warning disable S3353 // Unchanged local variables should be "const"
 #pragma warning disable IDE0031 // Use null propagation, suppressed until repo updates to C# 14
 #pragma warning disable IDE0032 // Use auto property, suppressed until repo updates to C# 14
@@ -430,7 +424,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage> originalMessages = [.. messages];
         messages = originalMessages;
 
-        ApprovalRequiredAIFunction[]? approvalRequiredFunctions = null; // available tools that require approval
+        AITool[]? approvalRequiredFunctions = null; // available tools that require approval
         List<ChatMessage>? augmentedHistory = null; // the actual history of messages sent on turns other than the first
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
@@ -539,7 +533,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     approvalRequiredFunctions =
                         (options?.Tools ?? Enumerable.Empty<AITool>())
                         .Concat(AdditionalTools ?? Enumerable.Empty<AITool>())
-                        .OfType<ApprovalRequiredAIFunction>()
+                        .Where(t => t.GetService<ApprovalRequiredAIFunction>() is not null)
                         .ToArray();
                 }
 
@@ -741,7 +735,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 for (int i = 0; i < count; i++)
                 {
                     AITool tool = toolList[i];
-                    anyRequireApproval |= tool is ApprovalRequiredAIFunction;
+                    anyRequireApproval |= tool.GetService<ApprovalRequiredAIFunction>() is not null;
                     map[tool.Name] = tool;
                 }
             }
@@ -1113,29 +1107,41 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         _ = Throw.IfNull(context);
 
         using Activity? activity = _activitySource?.StartActivity(
-            $"{OpenTelemetryConsts.GenAI.ExecuteTool} {context.Function.Name}",
+            $"{OpenTelemetryConsts.GenAI.ExecuteToolName} {context.Function.Name}",
             ActivityKind.Internal,
             default(ActivityContext),
             [
-                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteTool),
+                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteToolName),
                 new(OpenTelemetryConsts.GenAI.Tool.Type, OpenTelemetryConsts.ToolTypeFunction),
                 new(OpenTelemetryConsts.GenAI.Tool.Call.Id, context.CallContent.CallId),
                 new(OpenTelemetryConsts.GenAI.Tool.Name, context.Function.Name),
                 new(OpenTelemetryConsts.GenAI.Tool.Description, context.Function.Description),
             ]);
 
-        long startingTimestamp = 0;
-        if (_logger.IsEnabled(LogLevel.Debug))
+        long startingTimestamp = Stopwatch.GetTimestamp();
+
+        bool enableSensitiveData = activity is { IsAllDataRequested: true } && InnerClient.GetService<OpenTelemetryChatClient>()?.EnableSensitiveData is true;
+        bool traceLoggingEnabled = _logger.IsEnabled(LogLevel.Trace);
+        bool loggedInvoke = false;
+        if (enableSensitiveData || traceLoggingEnabled)
         {
-            startingTimestamp = Stopwatch.GetTimestamp();
-            if (_logger.IsEnabled(LogLevel.Trace))
+            string functionArguments = TelemetryHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions);
+
+            if (enableSensitiveData)
             {
-                LogInvokingSensitive(context.Function.Name, TelemetryHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions));
+                _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Arguments, functionArguments);
             }
-            else
+
+            if (traceLoggingEnabled)
             {
-                LogInvoking(context.Function.Name);
+                LogInvokingSensitive(context.Function.Name, functionArguments);
+                loggedInvoke = true;
             }
+        }
+
+        if (!loggedInvoke && _logger.IsEnabled(LogLevel.Debug))
+        {
+            LogInvoking(context.Function.Name);
         }
 
         object? result = null;
@@ -1165,18 +1171,26 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
         finally
         {
-            if (_logger.IsEnabled(LogLevel.Debug))
+            bool loggedResult = false;
+            if (enableSensitiveData || traceLoggingEnabled)
             {
-                TimeSpan elapsed = GetElapsedTime(startingTimestamp);
+                string functionResult = TelemetryHelpers.AsJson(result, context.Function.JsonSerializerOptions);
 
-                if (result is not null && _logger.IsEnabled(LogLevel.Trace))
+                if (enableSensitiveData)
                 {
-                    LogInvocationCompletedSensitive(context.Function.Name, elapsed, TelemetryHelpers.AsJson(result, context.Function.JsonSerializerOptions));
+                    _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Result, functionResult);
                 }
-                else
+
+                if (traceLoggingEnabled)
                 {
-                    LogInvocationCompleted(context.Function.Name, elapsed);
+                    LogInvocationCompletedSensitive(context.Function.Name, GetElapsedTime(startingTimestamp), functionResult);
+                    loggedResult = true;
                 }
+            }
+
+            if (!loggedResult && _logger.IsEnabled(LogLevel.Debug))
+            {
+                LogInvocationCompleted(context.Function.Name, GetElapsedTime(startingTimestamp));
             }
         }
 
@@ -1455,7 +1469,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     private static (bool hasApprovalRequiringFcc, int lastApprovalCheckedFCCIndex) CheckForApprovalRequiringFCC(
         List<FunctionCallContent>? functionCallContents,
-        ApprovalRequiredAIFunction[] approvalRequiredFunctions,
+        AITool[] approvalRequiredFunctions,
         bool hasApprovalRequiringFcc,
         int lastApprovalCheckedFCCIndex)
     {
@@ -1536,7 +1550,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     {
                         foreach (var t in toolMap)
                         {
-                            if (t.Value is ApprovalRequiredAIFunction araf && araf.Name == functionCall.Name)
+                            if (t.Value.GetService<ApprovalRequiredAIFunction>() is { } araf && araf.Name == functionCall.Name)
                             {
                                 anyApprovalRequired = true;
                                 break;

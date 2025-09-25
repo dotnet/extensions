@@ -3,7 +3,6 @@
 
 // This source file was lovingly 'borrowed' from dotnet/runtime/src/libraries/Microsoft.Extensions.Logging
 #pragma warning disable CA1307 // Specify StringComparison for clarity
-#pragma warning disable S1659 // Multiple variables should not be declared on the same line
 #pragma warning disable S2302 // "nameof" should be used
 
 using System;

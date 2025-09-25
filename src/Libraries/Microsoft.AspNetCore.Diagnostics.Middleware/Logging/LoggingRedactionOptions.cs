@@ -55,9 +55,7 @@ public class LoggingRedactionOptions
     /// If you don't want a parameter to be redacted, mark it as <see cref="DataClassification.None"/>.
     /// </remarks>
     [Required]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IDictionary<string, DataClassification> RouteParameterDataClasses { get; set; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Gets or sets a map between request headers to be logged and their data classification.
@@ -66,9 +64,7 @@ public class LoggingRedactionOptions
     /// The default value is an empty dictionary, which means that no request header is logged by default.
     /// </value>
     [Required]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IDictionary<string, DataClassification> RequestHeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Gets or sets a map between response headers to be logged and their data classification.
@@ -77,9 +73,7 @@ public class LoggingRedactionOptions
     /// The default value is an empty dictionary, which means that no response header is logged by default.
     /// </value>
     [Required]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IDictionary<string, DataClassification> ResponseHeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Gets or sets the set of HTTP paths that should be excluded from logging.
@@ -97,9 +91,7 @@ public class LoggingRedactionOptions
     /// - "/probe/ready".
     /// </example>
     [Required]
-#pragma warning disable CA2227 // Collection properties should be read only
     public ISet<string> ExcludePathStartsWith { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Gets or sets a value indicating whether to report unmatched routes.
