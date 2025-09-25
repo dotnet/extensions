@@ -14,13 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable CA1508 // Avoid dead conditional code
 #pragma warning disable CA2213 // Disposable fields should be disposed
-#pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
-#pragma warning disable SA1202 // 'protected' members should come before 'private' members
-#pragma warning disable S107 // Methods should not have too many parameters
-#pragma warning disable S907 // "goto" statement should not be used
-#pragma warning disable S1659 // Multiple variables should not be declared on the same line
 #pragma warning disable S3353 // Unchanged local variables should be "const"
 #pragma warning disable IDE0031 // Use null propagation, suppressed until repo updates to C# 14
 #pragma warning disable IDE0032 // Use auto property, suppressed until repo updates to C# 14

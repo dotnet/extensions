@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-#pragma warning disable EA0011 // Consider removing unnecessary conditional access operators
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an image generation request.</summary>

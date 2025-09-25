@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using Microsoft.Extensions.AmbientMetadata;
-using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 

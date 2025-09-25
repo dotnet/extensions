@@ -9,8 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable SA1202 // Elements should be ordered by access
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>

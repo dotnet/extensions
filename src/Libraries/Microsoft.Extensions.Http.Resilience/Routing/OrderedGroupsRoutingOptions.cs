@@ -18,7 +18,6 @@ public class OrderedGroupsRoutingOptions
     /// <summary>
     /// Gets or sets the collection of ordered endpoints groups.
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
     [Required]
 #if NET8_0_OR_GREATER
@@ -29,5 +28,4 @@ public class OrderedGroupsRoutingOptions
     [ValidateEnumeratedItems]
     public IList<UriEndpointGroup> Groups { get; set; } = new List<UriEndpointGroup>();
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-#pragma warning restore CA2227 // Collection properties should be read only
 }
