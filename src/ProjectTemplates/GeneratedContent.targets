@@ -25,10 +25,14 @@
                  be referenced using explicit package versions instead (see the "ComputeGeneratedContentProperties"
                  target below).
     -->
+    <!--
+    Commented out. Reference the existing 9.9.1 versions for MEAI and MEAI.OpenAI
+
     <ItemGroup>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj"></PackageVersionVariableReference>
     </ItemGroup>
+    -->
   </Target>
 
   <Target Name="ComputeGeneratedContentProperties">
@@ -36,6 +40,10 @@
       Specifies external packages that get referenced in generated template content.
     -->
     <PropertyGroup>
+      <!-- Reference the existing 9.9.1 versions for MEAI and MEAI.OpenAI -->
+      <TemplatePackageVersion_MicrosoftExtensionsAI>9.9.1</TemplatePackageVersion_MicrosoftExtensionsAI>
+      <TemplatePackageVersion_MicrosoftExtensionsAIOpenAI>9.9.1-preview.1.25474.6</TemplatePackageVersion_MicrosoftExtensionsAIOpenAI>
+
       <TemplatePackageVersion_Aspire>9.4.0</TemplatePackageVersion_Aspire>
       <TemplatePackageVersion_Aspire_Preview>9.4.0-preview.1.25378.8</TemplatePackageVersion_Aspire_Preview>
       <TemplatePackageVersion_AzureAIOpenAI>2.3.0-beta.1</TemplatePackageVersion_AzureAIOpenAI>
@@ -59,6 +67,10 @@
       <!-- Specify package version variables used in template content. -->
       <GeneratedContentProperties>
         $(GeneratedContentProperties);
+
+        <!-- Reference the existing 9.9.1 versions for MEAI and MEAI.OpenAI -->
+        TemplatePackageVersion_MicrosoftExtensionsAI=$(TemplatePackageVersion_MicrosoftExtensionsAI);
+        TemplatePackageVersion_MicrosoftExtensionsAIOpenAI=$(TemplatePackageVersion_MicrosoftExtensionsAIOpenAI);
 
         <!-- Repo properties -->
         ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir);
