@@ -85,11 +85,27 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(messages);
+        var inputMessages = Throw.IfNull(messages) as IReadOnlyCollection<ChatMessage> ?? [.. messages];
+
+        var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIResponseItems = ToOpenAIResponseItems(messages, options);
-        var openAIOptions = ToOpenAIResponseCreationOptions(options);
+        var openAIResponseItems = ToOpenAIResponseItems(inputMessages, options);
+
+        // Provided continuation token signals that an existing background response should be fetched.
+        if (options?.ContinuationToken is { } token)
+        {
+            if (inputMessages.Count > 0)
+            {
+                throw new InvalidOperationException("Messages are not allowed when continuing a background response using a continuation token.");
+            }
+
+            var continuationToken = OpenAIResponsesContinuationToken.FromToken(token);
+
+            var response = await _responseClient.GetResponseAsync(continuationToken.ResponseId, cancellationToken).ConfigureAwait(false);
+
+            return FromOpenAIResponse(response, openAIOptions);
+        }
 
         // Make the call to the OpenAIResponseClient.
         var task = _createResponseAsync is not null ?
@@ -108,6 +124,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             ConversationId = openAIOptions?.StoredOutputEnabled is false ? null : openAIResponse.Id,
             CreatedAt = openAIResponse.CreatedAt,
+            ContinuationToken = GetContinuationToken(openAIResponse),
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
             ModelId = openAIResponse.Model,
             RawRepresentation = openAIResponse,
@@ -219,28 +236,48 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(messages);
+        var inputMessages = Throw.IfNull(messages) as IReadOnlyCollection<ChatMessage> ?? [.. messages];
 
-        var openAIResponseItems = ToOpenAIResponseItems(messages, options);
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
+
+        // Provided continuation token signals that an existing background response should be fetched.
+        if (options?.ContinuationToken is { } token)
+        {
+            if (inputMessages.Count > 0)
+            {
+                throw new InvalidOperationException("Messages are not allowed when resuming steamed background response using a continuation token.");
+            }
+
+            var continuationToken = OpenAIResponsesContinuationToken.FromToken(token);
+
+            IAsyncEnumerable<StreamingResponseUpdate> updates = _responseClient.GetResponseStreamingAsync(continuationToken.ResponseId, continuationToken.SequenceNumber, cancellationToken);
+
+            return FromOpenAIStreamingResponseUpdatesAsync(updates, openAIOptions, continuationToken.ResponseId, cancellationToken);
+        }
+
+        var openAIResponseItems = ToOpenAIResponseItems(inputMessages, options);
 
         var streamingUpdates = _createResponseStreamingAsync is not null ?
             _createResponseStreamingAsync(_responseClient, openAIResponseItems, openAIOptions, cancellationToken.ToRequestOptions(streaming: true)) :
             _responseClient.CreateResponseStreamingAsync(openAIResponseItems, openAIOptions, cancellationToken);
 
-        return FromOpenAIStreamingResponseUpdatesAsync(streamingUpdates, openAIOptions, cancellationToken);
+        return FromOpenAIStreamingResponseUpdatesAsync(streamingUpdates, openAIOptions, cancellationToken: cancellationToken);
     }
 
     internal static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingResponseUpdatesAsync(
-        IAsyncEnumerable<StreamingResponseUpdate> streamingResponseUpdates, ResponseCreationOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IAsyncEnumerable<StreamingResponseUpdate> streamingResponseUpdates,
+        ResponseCreationOptions? options,
+        string? resumeResponseId = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         DateTimeOffset? createdAt = null;
-        string? responseId = null;
-        string? conversationId = null;
+        string? responseId = resumeResponseId;
+        string? conversationId = options?.StoredOutputEnabled is false ? null : resumeResponseId;
         string? modelId = null;
         string? lastMessageId = null;
         ChatRole? lastRole = null;
         bool anyFunctions = false;
+        ResponseStatus? latestResponseStatus = null;
 
         await foreach (var streamingUpdate in streamingResponseUpdates.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
@@ -254,6 +291,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     ModelId = modelId,
                     RawRepresentation = streamingUpdate,
                     ResponseId = responseId,
+                    ContinuationToken = GetContinuationToken(
+                        responseId!,
+                        latestResponseStatus,
+                        options?.BackgroundModeEnabled,
+                        streamingUpdate.SequenceNumber)
                 };
 
             switch (streamingUpdate)
@@ -263,10 +305,48 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     responseId = createdUpdate.Response.Id;
                     conversationId = options?.StoredOutputEnabled is false ? null : responseId;
                     modelId = createdUpdate.Response.Model;
+                    latestResponseStatus = createdUpdate.Response.Status;
+                    goto default;
+
+                case StreamingResponseQueuedUpdate queuedUpdate:
+                    createdAt = queuedUpdate.Response.CreatedAt;
+                    responseId = queuedUpdate.Response.Id;
+                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
+                    modelId = queuedUpdate.Response.Model;
+                    latestResponseStatus = queuedUpdate.Response.Status;
+                    goto default;
+
+                case StreamingResponseInProgressUpdate inProgressUpdate:
+                    createdAt = inProgressUpdate.Response.CreatedAt;
+                    responseId = inProgressUpdate.Response.Id;
+                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
+                    modelId = inProgressUpdate.Response.Model;
+                    latestResponseStatus = inProgressUpdate.Response.Status;
+                    goto default;
+
+                case StreamingResponseIncompleteUpdate incompleteUpdate:
+                    createdAt = incompleteUpdate.Response.CreatedAt;
+                    responseId = incompleteUpdate.Response.Id;
+                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
+                    modelId = incompleteUpdate.Response.Model;
+                    latestResponseStatus = incompleteUpdate.Response.Status;
+                    goto default;
+
+                case StreamingResponseFailedUpdate failedUpdate:
+                    createdAt = failedUpdate.Response.CreatedAt;
+                    responseId = failedUpdate.Response.Id;
+                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
+                    modelId = failedUpdate.Response.Model;
+                    latestResponseStatus = failedUpdate.Response.Status;
                     goto default;
 
                 case StreamingResponseCompletedUpdate completedUpdate:
                 {
+                    createdAt = completedUpdate.Response.CreatedAt;
+                    responseId = completedUpdate.Response.Id;
+                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
+                    modelId = completedUpdate.Response.Model;
+                    latestResponseStatus = completedUpdate.Response?.Status;
                     var update = CreateUpdate(ToUsageDetails(completedUpdate.Response) is { } usage ? new UsageContent(usage) : null);
                     update.FinishReason =
                         ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
@@ -416,6 +496,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         result.PreviousResponseId ??= options.ConversationId;
         result.Temperature ??= options.Temperature;
         result.TopP ??= options.TopP;
+        result.BackgroundModeEnabled ??= options.BackgroundResponsesOptions?.Allow;
 
         if (options.Instructions is { } instructions)
         {
@@ -894,6 +975,51 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             filter.ToolNames.Add(toolName);
         }
+    }
+
+    private static OpenAIResponsesContinuationToken? GetContinuationToken(OpenAIResponse openAIResponse)
+    {
+        return GetContinuationToken(
+            responseId: openAIResponse.Id,
+            responseStatus: openAIResponse.Status,
+            isBackgroundModeEnabled: openAIResponse.BackgroundModeEnabled);
+    }
+
+    private static OpenAIResponsesContinuationToken? GetContinuationToken(
+        string responseId,
+        ResponseStatus? responseStatus,
+        bool? isBackgroundModeEnabled,
+        int? updateSequenceNumber = null)
+    {
+        if (isBackgroundModeEnabled is not true)
+        {
+            return null;
+        }
+
+        // Return a continuation token for in-progress or queued responses because they are not yet complete.
+        if (responseStatus is (ResponseStatus.InProgress or ResponseStatus.Queued))
+        {
+            return new OpenAIResponsesContinuationToken(responseId)
+            {
+                SequenceNumber = updateSequenceNumber,
+            };
+        }
+        else if (responseStatus is null && updateSequenceNumber is not null)
+        {
+            // In some cases, streaming needs to be resumed from an event (e.g., a text delta event) that does not have a response status,
+            // response Id, and potentially other properties. In these cases, we know that the response is not yet complete
+            // because we are receiving updates for it, so we create a continuation token from the response Id obtained from the continuation token
+            // supplied to resume the streaming and the sequence number available on the event.
+            return new OpenAIResponsesContinuationToken(responseId)
+            {
+                SequenceNumber = updateSequenceNumber,
+            };
+        }
+
+        // For all other statuses: completed, failed, canceled, incomplete
+        // return null to indicate the operation is finished allowing the caller
+        // to stop and access the final result, failure details, reason for incompletion, etc.
+        return null;
     }
 
     /// <summary>Provides an <see cref="AITool"/> wrapper for a <see cref="ResponseTool"/>.</summary>

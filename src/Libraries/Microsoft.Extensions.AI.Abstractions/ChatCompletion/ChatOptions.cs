@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Extensions.AI;
@@ -115,6 +116,24 @@ public class ChatOptions
     [JsonIgnore]
     public IList<AITool>? Tools { get; set; }
 
+    /// <summary>Gets or sets the options for configuring background responses.</summary>
+    [Experimental("MEAI001")]
+    public BackgroundResponsesOptions? BackgroundResponsesOptions { get; set; }
+
+    /// <summary>Gets or sets the continuation token for resuming and getting result of the chat response identified by this token.</summary>
+    /// <remarks>
+    /// This property is used for background responses that can be activated via the <see cref="BackgroundResponsesOptions.Allow"/>
+    /// property if the <see cref="IChatClient"/> implementation supports them.
+    /// Streamed background responses, such as those returned by default by <see cref="IChatClient.GetStreamingResponseAsync"/>,
+    /// can be resumed if interrupted. This means that a continuation token obtained from the <see cref="ChatResponseUpdate.ContinuationToken"/> 
+    /// of an update just before the interruption occurred can be passed to this property to resume the stream from the point of interruption.
+    /// Non-streamed background responses, such as those returned by <see cref="IChatClient.GetResponseAsync"/>,
+    /// can be polled for completion by obtaining the token from the <see cref="ChatResponse.ContinuationToken"/> property 
+    /// and passing it to this property on subsequent calls to <see cref="IChatClient.GetResponseAsync"/>.
+    /// </remarks>
+    [Experimental("MEAI001")]
+    public ResumptionToken? ContinuationToken { get; set; }
+
     /// <summary>
     /// Gets or sets a callback responsible for creating the raw representation of the chat options from an underlying implementation.
     /// </summary>
@@ -152,6 +171,7 @@ public class ChatOptions
             AdditionalProperties = AdditionalProperties?.Clone(),
             AllowMultipleToolCalls = AllowMultipleToolCalls,
             ConversationId = ConversationId,
+            ContinuationToken = ContinuationToken,
             FrequencyPenalty = FrequencyPenalty,
             Instructions = Instructions,
             MaxOutputTokens = MaxOutputTokens,
@@ -165,6 +185,11 @@ public class ChatOptions
             TopK = TopK,
             TopP = TopP,
         };
+
+        if (BackgroundResponsesOptions is { } bros)
+        {
+            options.BackgroundResponsesOptions = new BackgroundResponsesOptions(bros);
+        }
 
         if (StopSequences is not null)
         {

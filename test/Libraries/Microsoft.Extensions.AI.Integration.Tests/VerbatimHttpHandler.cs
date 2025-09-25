@@ -21,36 +21,69 @@ namespace Microsoft.Extensions.AI;
 /// An <see cref="HttpMessageHandler"/> that checks the request body against an expected one
 /// and sends back an expected response.
 /// </summary>
-public sealed class VerbatimHttpHandler(string expectedInput, string expectedOutput, bool validateExpectedResponse = false) :
-    DelegatingHandler(new HttpClientHandler())
+public sealed class VerbatimHttpHandler : DelegatingHandler
 {
+    private readonly string _expectedOutput;
+    private readonly bool _validateExpectedResponse;
+    private readonly HttpHandlerExpectedInput _expectedInput;
+
+    public VerbatimHttpHandler(string expectedInput, string expectedOutput, bool validateExpectedResponse = false)
+        : this(new HttpHandlerExpectedInput { Body = expectedInput }, expectedOutput, validateExpectedResponse)
+    {
+    }
+
+    public VerbatimHttpHandler(HttpHandlerExpectedInput expectedInput, string expectedOutput, bool validateExpectedResponse = false)
+        : base(new HttpClientHandler())
+    {
+        _expectedOutput = expectedOutput;
+        _validateExpectedResponse = validateExpectedResponse;
+        _expectedInput = expectedInput;
+    }
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        Assert.NotNull(request.Content);
-
-        string? actualInput = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-        Assert.NotNull(actualInput);
-        AssertEqualNormalized(expectedInput, actualInput);
-
-        if (validateExpectedResponse)
+        if (_expectedInput.Body is not null)
         {
-            ByteArrayContent newContent = new(Encoding.UTF8.GetBytes(actualInput));
-            foreach (var header in request.Content.Headers)
+            Assert.NotNull(request.Content);
+
+            string? actualInput = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            Assert.NotNull(actualInput);
+            AssertEqualNormalized(_expectedInput.Body, actualInput);
+
+            // Is it needed?
+            if (_validateExpectedResponse)
             {
-                newContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                ByteArrayContent newContent = new(Encoding.UTF8.GetBytes(actualInput));
+                foreach (var header in request.Content.Headers)
+                {
+                    newContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+
+                request.Content = newContent;
             }
+        }
 
-            request.Content = newContent;
+        if (_expectedInput.Uri is not null)
+        {
+            Assert.Equal(_expectedInput.Uri, request.RequestUri);
+        }
 
+        if (_expectedInput.Method is not null)
+        {
+            Assert.Equal(_expectedInput.Method, request.Method);
+        }
+
+        if (_validateExpectedResponse)
+        {
             using var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             string? actualOutput = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             Assert.NotNull(actualOutput);
-            AssertEqualNormalized(expectedOutput, actualOutput);
+            AssertEqualNormalized(_expectedOutput, actualOutput);
         }
 
-        return new() { Content = new StringContent(expectedOutput) };
+        return new() { Content = new StringContent(_expectedOutput) };
     }
 
     public static string? RemoveWhiteSpace(string? text) =>

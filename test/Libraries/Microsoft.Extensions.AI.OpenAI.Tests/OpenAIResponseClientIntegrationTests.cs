@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -188,5 +189,143 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             Assert.Equal(2, approvalsCount);
             Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
         }
+    }
+
+    [ConditionalFact]
+    public async Task GetResponseAsync_BackgroundResponses()
+    {
+        SkipIfNotEnabled();
+
+        var chatOptions = new ChatOptions
+        {
+            BackgroundResponsesOptions = new() { Allow = true }
+        };
+
+        // Get initial response with continuation token
+        var response = await ChatClient.GetResponseAsync("What's the biggest animal?", chatOptions);
+        Assert.NotNull(response.ContinuationToken);
+        Assert.Empty(response.Messages);
+
+        int attempts = 0;
+
+        // Continue to poll until we get the final response
+        while (response.ContinuationToken is not null && ++attempts < 10)
+        {
+            response = await ChatClient.GetResponseAsync(response.ContinuationToken, chatOptions);
+            await Task.Delay(500);
+        }
+
+        Assert.Contains("whale", response.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task GetResponseAsync_BackgroundResponses_WithFunction()
+    {
+        SkipIfNotEnabled();
+
+        using var chatClient = new FunctionInvokingChatClient(ChatClient);
+
+        var chatOptions = new ChatOptions
+        {
+            BackgroundResponsesOptions = new() { Allow = true },
+            Tools = [AIFunctionFactory.Create(() => "5:43", new AIFunctionFactoryOptions { Name = "GetCurrentTime" })]
+        };
+
+        // Get initial response with continuation token
+        var response = await chatClient.GetResponseAsync("What time is it?", chatOptions);
+        Assert.NotNull(response.ContinuationToken);
+        Assert.Empty(response.Messages);
+
+        int attempts = 0;
+
+        // Poll until the result is received
+        while (response.ContinuationToken is not null && ++attempts < 10)
+        {
+            response = await chatClient.GetResponseAsync(response.ContinuationToken, chatOptions);
+            await Task.Delay(1000);
+        }
+
+        Assert.Contains("5:43", response.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task GetStreamingResponseAsync_BackgroundResponses()
+    {
+        SkipIfNotEnabled();
+
+        ChatOptions chatOptions = new()
+        {
+            BackgroundResponsesOptions = new BackgroundResponsesOptions { Allow = true },
+        };
+
+        string responseText = "";
+
+        await foreach (var update in ChatClient.GetStreamingResponseAsync("What is the capital of France?", chatOptions))
+        {
+            responseText += update;
+        }
+
+        // Assert
+        Assert.Contains("Paris", responseText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task GetStreamingResponseAsync_BackgroundResponses_StreamResumption()
+    {
+        SkipIfNotEnabled();
+
+        ChatOptions chatOptions = new()
+        {
+            BackgroundResponsesOptions = new BackgroundResponsesOptions { Allow = true },
+        };
+
+        int updateNumber = 0;
+        string responseText = "";
+        ResumptionToken? continuationToken = null;
+
+        await foreach (var update in ChatClient.GetStreamingResponseAsync("What is the capital of France?", chatOptions))
+        {
+            responseText += update;
+
+            // Simulate an interruption after receiving 8 updates.
+            if (updateNumber++ == 8)
+            {
+                continuationToken = update.ContinuationToken;
+                break;
+            }
+        }
+
+        Assert.DoesNotContain("Paris", responseText);
+
+        // Resume streaming from the point of interruption captured by the continuation token.
+        await foreach (var update in ChatClient.GetStreamingResponseAsync(continuationToken!, chatOptions))
+        {
+            responseText += update;
+        }
+
+        Assert.Contains("Paris", responseText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task GetStreamingResponseAsync_BackgroundResponses_WithFunction()
+    {
+        SkipIfNotEnabled();
+
+        using var chatClient = new FunctionInvokingChatClient(ChatClient);
+
+        var chatOptions = new ChatOptions
+        {
+            BackgroundResponsesOptions = new() { Allow = true },
+            Tools = [AIFunctionFactory.Create(() => "5:43", new AIFunctionFactoryOptions { Name = "GetCurrentTime" })]
+        };
+
+        string responseText = "";
+
+        await foreach (var update in chatClient.GetStreamingResponseAsync("What time is it?", chatOptions))
+        {
+            responseText += update;
+        }
+
+        Assert.Contains("5:43", responseText);
     }
 }

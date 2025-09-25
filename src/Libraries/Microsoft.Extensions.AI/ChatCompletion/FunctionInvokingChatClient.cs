@@ -812,6 +812,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             options = options.Clone();
             options.ConversationId = conversationId;
         }
+        else if (options.ContinuationToken is not null)
+        {
+            // Clone options before resetting the continuation token below.
+            options = options.Clone();
+        }
+
+        // Reset the continuation token of a background response operation
+        // to signal the inner client to handle function call result rather
+        // than getting the result of the operation.
+        if (options?.ContinuationToken is not null)
+        {
+            options.ContinuationToken = null;
+        }
     }
 
     /// <summary>Gets whether the function calling loop should exit based on the function call requests.</summary>
