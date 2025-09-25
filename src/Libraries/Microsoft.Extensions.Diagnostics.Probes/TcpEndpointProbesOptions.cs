@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Shared.Data.Validation;
 

@@ -11,7 +11,6 @@ using Microsoft.Shared.Text;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 #else
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 #endif
 

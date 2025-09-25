@@ -5,7 +5,6 @@ using System;
 #if !NET9_0_OR_GREATER
 using System.Diagnostics;
 #endif
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
