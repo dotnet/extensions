@@ -50,6 +50,38 @@ builder.Services.AddSqliteCollection<string, IngestedDocument>("data-ChatWithCus
 #endif
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
+#if (IsOllama)
+// Get the IHttpClientBuilder for chat_httpClient
+var chatClientBuilder = builder.Services.AddHttpClient("chat_httpClient");
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is experimental
+chatClientBuilder.RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
+// Override resilience for this client
+chatClientBuilder.AddStandardResilienceHandler(config =>
+{
+    // Extend the HTTP Client timeout for Ollama
+    config.AttemptTimeout.Timeout = TimeSpan.FromMinutes(3);
+    // Must be at least double the AttemptTimeout to pass options validation
+    config.CircuitBreaker.SamplingDuration = TimeSpan.FromMinutes(10);
+    config.TotalRequestTimeout.Timeout = TimeSpan.FromMinutes(10);
+});
+chatClientBuilder.AddServiceDiscovery();
+// Get the IHttpClientBuilder for embeddings_httpClient
+var embeddingsClientBuilder = builder.Services.AddHttpClient("embeddings_httpClient");
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is experimental
+embeddingsClientBuilder.RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
+// Override resilience for this client
+embeddingsClientBuilder.AddStandardResilienceHandler(config =>
+{
+    // Extend the HTTP Client timeout for Ollama
+    config.AttemptTimeout.Timeout = TimeSpan.FromMinutes(3);
+    // Must be at least double the AttemptTimeout to pass options validation
+    config.CircuitBreaker.SamplingDuration = TimeSpan.FromMinutes(10);
+    config.TotalRequestTimeout.Timeout = TimeSpan.FromMinutes(10);
+});
+embeddingsClientBuilder.AddServiceDiscovery();
+#endif
 
 var app = builder.Build();
 
