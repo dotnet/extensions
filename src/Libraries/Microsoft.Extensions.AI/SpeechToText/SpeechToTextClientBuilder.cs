@@ -58,7 +58,7 @@ public sealed class SpeechToTextClientBuilder
         return audioClient;
     }
 
-    /// <summary>Adds a factory for an intermediate audio transcription client to the audio transcription client pipeline.</summary>
+    /// <summary>Adds a factory for an intermediate speech-to-text client to the speech-to-text client pipeline.</summary>
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="SpeechToTextClientBuilder"/> instance.</returns>
     public SpeechToTextClientBuilder Use(Func<ISpeechToTextClient, ISpeechToTextClient> clientFactory)
@@ -68,7 +68,7 @@ public sealed class SpeechToTextClientBuilder
         return Use((innerClient, _) => clientFactory(innerClient));
     }
 
-    /// <summary>Adds a factory for an intermediate audio transcription client to the audio transcription client pipeline.</summary>
+    /// <summary>Adds a factory for an intermediate speech-to-text client to the speech-to-text client pipeline.</summary>
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="SpeechToTextClientBuilder"/> instance.</returns>
     public SpeechToTextClientBuilder Use(Func<ISpeechToTextClient, IServiceProvider, ISpeechToTextClient> clientFactory)

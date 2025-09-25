@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public static class LoggingSpeechToTextClientBuilderExtensions
 {
-    /// <summary>Adds logging to the audio transcription client pipeline.</summary>
+    /// <summary>Adds logging to the speech-to-text client pipeline.</summary>
     /// <param name="builder">The <see cref="SpeechToTextClientBuilder"/>.</param>
     /// <param name="loggerFactory">
     /// An optional <see cref="ILoggerFactory"/> used to create a logger with which logging should be performed.
