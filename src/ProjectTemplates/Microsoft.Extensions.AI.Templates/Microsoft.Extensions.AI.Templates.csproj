@@ -32,15 +32,6 @@
       Include="..\GenerateTemplateContent\GenerateTemplateContent.csproj"
       ReferenceOutputAssembly="false"
       PrivateAssets="all" />
-
-    <!--
-      Internal packages referenced by the templates that aren't in the AI workstream.
-      We include these references here so that local NuGet packages get generated for use by the templates.
-    -->
-    <ProjectReference
-      Include="..\..\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj"
-      ReferenceOutputAssembly="false"
-      PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
