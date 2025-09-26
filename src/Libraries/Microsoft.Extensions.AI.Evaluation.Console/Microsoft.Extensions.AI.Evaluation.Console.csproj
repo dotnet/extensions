@@ -28,8 +28,12 @@
     <BuildInParallel>false</BuildInParallel>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\BuiltInEvaluatorUtilities.cs" Link="Utilities\BuiltInEvaluatorUtilities.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\BuiltInMetricUtilities.cs" Link="Utilities\BuiltInMetricUtilities.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\ModelInfo.cs" Link="Utilities\ModelInfo.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\TimingHelper.cs" Link="Utilities\TimingHelper.cs" />
   </ItemGroup>
@@ -37,8 +41,9 @@
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Azure.Storage.Files.DataLake" />
-    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Microsoft.ApplicationInsights" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
   <ItemGroup>
