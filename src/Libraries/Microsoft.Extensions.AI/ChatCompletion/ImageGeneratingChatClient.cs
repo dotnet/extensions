@@ -29,9 +29,11 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
 {
     private readonly IImageGenerator _imageGenerator;
     private readonly AITool[] _aiTools;
+    private readonly HashSet<string> _functionNames;
 
-    /// <summary>Stores generated image content from function calls to be included in responses.</summary>
-    private List<AIContent>? _generatedImageContent;
+    /// <summary>Stores mapping of function call IDs to generated image content.</summary>
+    private readonly Dictionary<string, List<AIContent>> _imageContentByCallId = [];
+    private ImageGenerationOptions? _imageGenerationOptions;
 
     /// <summary>Initializes a new instance of the <see cref="ImageGeneratingChatClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>.</param>
@@ -46,6 +48,8 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             AIFunctionFactory.Create(GenerateImageAsync),
             AIFunctionFactory.Create(EditImageAsync)
         ];
+
+        _functionNames = new(_aiTools.Select(t => t.Name), StringComparer.Ordinal);
     }
 
     /// <inheritdoc/>
@@ -53,7 +57,7 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         // Clear any existing generated content for this request
-        _generatedImageContent = null;
+        _imageContentByCallId.Clear();
 
         // Process the chat options to replace HostedImageGenerationTool with functions
         var processedOptions = ProcessChatOptions(options);
@@ -61,21 +65,11 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
         // Get response from base implementation
         var response = await base.GetResponseAsync(messages, processedOptions, cancellationToken);
 
-        // If we have generated image content, add it to the response
-        if (_generatedImageContent is { Count: > 0 })
+        // Replace FunctionResultContent instances with generated image content
+        foreach (var message in response.Messages)
         {
-            var lastMessage = response.Messages.LastOrDefault();
-            if (lastMessage is not null)
-            {
-                // Add generated images to the last message
-                foreach (var content in _generatedImageContent)
-                {
-                    lastMessage.Contents.Add(content);
-                }
-            }
-
-            // Clear the content after using it
-            _generatedImageContent = null;
+            var newContents = ReplaceImageGenerationFunctionResults(message.Contents);
+            message.Contents = newContents;
         }
 
         return response;
@@ -86,27 +80,35 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Clear any existing generated content for this request
-        _generatedImageContent = null;
+        _imageContentByCallId.Clear();
 
         // Process the chat options to replace HostedImageGenerationTool with functions
         var processedOptions = ProcessChatOptions(options);
 
         await foreach (var update in base.GetStreamingResponseAsync(messages, processedOptions, cancellationToken))
         {
-            // Check if we have generated images since the last update and inject them into this update
-            if (_generatedImageContent is { Count: > 0 })
+            // Replace any FunctionResultContent instances with generated image content
+            var newContents = ReplaceImageGenerationFunctionResults(update.Contents);
+
+            if (newContents != update.Contents)
             {
-                // Add generated images to the current update's contents
-                foreach (var content in _generatedImageContent)
+                // Create a new update instance with modified contents
+                var modifiedUpdate = new ChatResponseUpdate(update.Role, newContents)
                 {
-                    update.Contents.Add(content);
-                }
+                    AuthorName = update.AuthorName,
+                    RawRepresentation = update.RawRepresentation,
+                    AdditionalProperties = update.AdditionalProperties,
+                    ResponseId = update.ResponseId,
+                    MessageId = update.MessageId,
+                    ConversationId = update.ConversationId
+                };
 
-                // Clear the stored content after using it
-                _generatedImageContent.Clear();
+                yield return modifiedUpdate;
             }
-
-            yield return update;
+            else
+            {
+                yield return update;
+            }
         }
     }
 
@@ -129,58 +131,166 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             return options;
         }
 
-        if (!options.Tools.Any(tool => tool is HostedImageGenerationTool))
+        var tools = options.Tools;
+        ChatOptions? modifiedOptions = null;
+
+        for (int i = 0; i < tools.Count; i++)
         {
-            return options;
+            var tool = options.Tools[i];
+
+            // remove all instances of HostedImageGenerationTool and store the options from the last one
+            if (tool is HostedImageGenerationTool imageGenerationTool)
+            {
+                _imageGenerationOptions = imageGenerationTool.Options;
+
+#pragma warning disable S127
+                // for the first image generation tool, clone the options and insert our function tools
+                // remove any subsequent image generation tools
+                if (modifiedOptions is null)
+                {
+                    modifiedOptions = options.Clone();
+                    tools = modifiedOptions.Tools!;
+
+                    tools.RemoveAt(i--);
+
+                    foreach (var functionTool in _aiTools)
+                    {
+                        tools.Insert(++i, functionTool);
+                    }
+                }
+                else
+                {
+                    tools.RemoveAt(i--);
+                }
+#pragma warning restore S127 
+            }
         }
 
-        var modifiedOptions = options.Clone();
-
-        // Remove any existing HostedImageGenerationTool instances and add the function tools.
-        var tools = new List<AITool>(options.Tools.Count - 1 + _aiTools.Length);
-        tools.AddRange(options.Tools.Where(tool => tool is not HostedImageGenerationTool));
-        tools.AddRange(_aiTools);
-
-        modifiedOptions.Tools = tools;
-        return modifiedOptions;
+        return modifiedOptions ?? options;
     }
 
-    [Description("Generates an image based on a text prompt")]
-    private async Task<string> GenerateImageAsync(string prompt, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
+    /// <summary>Replaces FunctionResultContent instances for image generation functions with actual generated image content.</summary>
+    /// <param name="contents">The list of AI content to process.</param>
+    private IList<AIContent> ReplaceImageGenerationFunctionResults(IList<AIContent> contents)
     {
+        IList<AIContent>? newContents = null;
+
+#pragma warning disable S127
+#pragma warning disable S125
+        // Replace FunctionResultContent instances with generated image content
+        for (int i = contents.Count - 1; i >= 0; i--)
+        {
+            var content = contents[i];
+
+            if (content is FunctionCallContent functionCall &&
+                _functionNames.Contains(functionCall.Name))
+            {
+                EnsureNewContents();
+                contents.RemoveAt(i--);
+            }
+
+            if (content is FunctionResultContent functionResult &&
+                _imageContentByCallId.TryGetValue(functionResult.CallId, out var imageContents))
+            {
+                // Remove the function result
+                EnsureNewContents();
+                contents.RemoveAt(i);
+
+                // Insert generated image content in its place
+                for (int j = imageContents.Count - 1; j >= 0; j--)
+                {
+                    contents.Insert(i, imageContents[j]);
+                }
+
+                _ = _imageContentByCallId.Remove(functionResult.CallId);
+            }
+        }
+
+        return contents;
+
+        void EnsureNewContents()
+        {
+            if (newContents is null)
+            {
+                newContents = [.. contents];
+                contents = newContents;
+            }
+        }
+    }
+#pragma warning disable EA0014
+    [Description("Generates images based on a text description")]
+    private async Task<string> GenerateImageAsync(
+         [Description("A detailed description of the image to generate")] string prompt)
+    {
+        // Get the call ID from the current function invocation context
+        var callId = FunctionInvokingChatClient.CurrentContext?.CallContent.CallId;
+        if (callId == null)
+        {
+            return "No call ID available for image generation.";
+        }
+
         var request = new ImageGenerationRequest(prompt);
-        var response = await _imageGenerator.GenerateAsync(request, options, cancellationToken);
+        var options = _imageGenerationOptions ?? new ImageGenerationOptions();
+        options.Count ??= 1;
+
+        var response = await _imageGenerator.GenerateAsync(request, options);
 
         if (response.Contents.Count == 0)
         {
             return "No image was generated.";
         }
 
-        // Store the generated image content to be included in the response
-        (_generatedImageContent ??= []).AddRange(response.Contents);
+        // Store the generated image content mapped to this call ID
+        _imageContentByCallId[callId] = [.. response.Contents];
 
-        var imageCount = response.Contents.Count;
-        return $"Generated {imageCount} image(s) based on the prompt: '{prompt}'";
+        int imageCount = 0;
+        List<string> imageIds = [];
+
+        foreach (var content in response.Contents)
+        {
+            if (content is DataContent imageContent)
+            {
+                imageCount++;
+
+                // if there is no name, generate one based on the call ID and index
+                imageContent.Name ??= $"{callId}_image_{imageCount}";
+                imageIds.Add(imageContent.Name);
+
+                imageContent.AdditionalProperties ??= new();
+                imageContent.AdditionalProperties["prompt"] = prompt;
+            }
+        }
+
+        return $"Generated {imageCount} image(s) with IDs: {string.Join(",", imageIds)} based on the prompt: '{prompt}'";
     }
 
-    [Description("Edits an existing image based on a text prompt and original image data")]
-    private async Task<string> EditImageAsync(string prompt, string imageData, ImageGenerationOptions? options = null, CancellationToken cancellationToken = default)
+    [Description("Edits an existing image based on a text description")]
+    private async Task<string> EditImageAsync(
+        [Description("A detailed description of the image to generate")] string prompt,
+        [Description("The original image content to edit")] string imageData)
     {
+        // Get the call ID from the current function invocation context
+        var callId = FunctionInvokingChatClient.CurrentContext?.CallContent.CallId;
+        if (callId == null)
+        {
+            return "No call ID available for image editing.";
+        }
+
         try
         {
             var imageBytes = Convert.FromBase64String(imageData);
             var originalImage = new DataContent(imageBytes, "image/png");
 
             var request = new ImageGenerationRequest(prompt, [originalImage]);
-            var response = await _imageGenerator.GenerateAsync(request, options, cancellationToken);
+            var response = await _imageGenerator.GenerateAsync(request, _imageGenerationOptions);
 
             if (response.Contents.Count == 0)
             {
                 return "No edited image was generated.";
             }
 
-            // Store the generated image content to be included in the response
-            (_generatedImageContent ??= []).AddRange(response.Contents);
+            // Store the generated image content mapped to this call ID
+            _imageContentByCallId[callId] = [.. response.Contents];
 
             var imageCount = response.Contents.Count;
             return $"Edited {imageCount} image(s) based on the prompt: '{prompt}'";
@@ -190,4 +300,5 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             return "Invalid image data format. Please provide a valid base64-encoded image.";
         }
     }
+#pragma warning restore EA0014
 }
