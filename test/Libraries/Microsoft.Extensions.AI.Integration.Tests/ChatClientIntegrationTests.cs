@@ -1355,6 +1355,116 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Contains("5", response.Text);
     }
 
+    [ConditionalFact]
+    public virtual async Task ToolGrouping_LlmExpandsGroupAndInvokesTool_NonStreaming()
+    {
+        SkipIfNotEnabled();
+
+        const string TravelToken = "TRAVEL-PLAN-TOKEN-4826";
+
+        var generateItinerary = AIFunctionFactory.Create(
+            (string city) => $"{TravelToken}::{city.ToUpperInvariant()}::DAY-PLAN",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GenerateItinerary",
+                Description = "Produces a detailed itinerary token. Always repeat the returned token verbatim in your summary."
+            });
+
+        var summarizePacking = AIFunctionFactory.Create(
+            () => "Pack light layers and comfortable shoes.",
+            new AIFunctionFactoryOptions
+            {
+                Name = "PackingSummary",
+                Description = "Provides a short packing reminder."
+            });
+
+        using var client = ChatClient!
+            .AsBuilder()
+            .UseToolGrouping(options =>
+            {
+                options.Groups.Add(new AIToolGroup(
+                    name: "TravelUtilities",
+                    description: "Travel planning helpers that generate itinerary tokens.",
+                    tools: new[] { generateItinerary, summarizePacking }));
+            })
+            .UseFunctionInvocation()
+            .Build();
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.System, "You are a helpful assistant."),
+            new(ChatRole.User, "Plan a two-day cultural trip to Rome and tell me the itinerary token."),
+        ];
+
+        var response = await client.GetResponseAsync(messages, new ChatOptions
+        {
+            Tools = [generateItinerary, summarizePacking]
+        });
+
+        Assert.Contains(response.Messages, message =>
+            message.Role == ChatRole.Tool &&
+            message.Contents.OfType<FunctionResultContent>().Any(content =>
+                content.Result?.ToString()?.IndexOf("Successfully expanded group 'TravelUtilities'", StringComparison.OrdinalIgnoreCase) >= 0));
+
+        Assert.Contains(response.Messages, message =>
+            message.Contents.OfType<FunctionCallContent>().Any(content =>
+                string.Equals(content.Name, "GenerateItinerary", StringComparison.Ordinal)));
+
+        var nonStreamingText = response.Text ?? string.Empty;
+        Assert.Contains(TravelToken.ToUpperInvariant(), nonStreamingText.ToUpperInvariant());
+    }
+
+    [ConditionalFact]
+    public virtual async Task ToolGrouping_LlmExpandsGroupAndInvokesTool_Streaming()
+    {
+        SkipIfNotEnabled();
+
+        const string LodgingToken = "LODGING-TOKEN-3895";
+
+        var suggestLodging = AIFunctionFactory.Create(
+            (string city, string budget) => $"{LodgingToken}::{city.ToUpperInvariant()}::{budget}",
+            new AIFunctionFactoryOptions
+            {
+                Name = "SuggestLodging",
+                Description = "Returns hotel recommendations along with a lodging token. Repeat the token verbatim in your narrative."
+            });
+
+        using var client = ChatClient!
+            .AsBuilder()
+            .UseToolGrouping(options =>
+            {
+                options.Groups.Add(new AIToolGroup(
+                    name: "TravelUtilities",
+                    description: "Travel helpers used for lodging recommendations.",
+                    tools: new[] { suggestLodging }));
+            })
+            .UseFunctionInvocation()
+            .Build();
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.System, "You are a helpful assistant."),
+            new(ChatRole.User, "We're visiting Paris with a nightly budget of 150 USD. Stream the suggestions as they arrive and repeat the lodging token."),
+        ];
+
+        var response = await client.GetStreamingResponseAsync(messages, new ChatOptions
+        {
+            Tools = [suggestLodging]
+        }).ToChatResponseAsync();
+
+        Assert.Contains(response.Messages, message =>
+            message.Role == ChatRole.Tool &&
+            message.Contents.OfType<FunctionResultContent>().Any(content =>
+                content.Result?.ToString()?.IndexOf("Successfully expanded group 'TravelUtilities'", StringComparison.OrdinalIgnoreCase) >= 0));
+
+        Assert.Contains(response.Messages, message =>
+            message.Contents.OfType<FunctionCallContent>().Any(content =>
+                string.Equals(content.Name, "SuggestLodging", StringComparison.Ordinal)));
+
+        var streamingText = response.Text ?? string.Empty;
+        Assert.Contains(LodgingToken.ToUpperInvariant(), streamingText.ToUpperInvariant());
+    }
+
     private sealed class TestSummarizingChatClient : IChatClient
     {
         private IChatClient _summarizerChatClient;
