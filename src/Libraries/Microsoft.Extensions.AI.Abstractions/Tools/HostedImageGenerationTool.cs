@@ -3,7 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Extensions.AI.Tools;
+namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a hosted tool that can be specified to an AI service to enable it to perform image generation.</summary>
 /// <remarks>

@@ -23,7 +23,7 @@ public static class ImageGeneratingChatClientBuilderExtensions
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// <para>
-    /// This method enables the chat client to handle <see cref="Tools.HostedImageGenerationTool"/> instances by converting them
+    /// This method enables the chat client to handle <see cref="HostedImageGenerationTool"/> instances by converting them
     /// into function tools that can be invoked by the underlying chat model to perform image generation and editing operations.
     /// </para>
     /// </remarks>
