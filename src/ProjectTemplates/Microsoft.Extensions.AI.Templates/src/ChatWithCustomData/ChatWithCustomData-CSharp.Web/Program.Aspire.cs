@@ -3,8 +3,9 @@ using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
 using ChatWithCustomData_CSharp.Web.Services.Ingestion;
 #if (IsOllama)
-#else // IsAzureOpenAI || IsOpenAI || IsGHModels
+#elif (IsOpenAI || IsGHModels)
 using OpenAI;
+#else // IsAzureOpenAI
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,7 +35,7 @@ openai.AddEmbeddingGenerator("text-embedding-3-small");
 #endif
 
 #if (UseAzureAISearch)
-builder.AddAzureSearchClient("azureAISearch");
+builder.AddAzureSearchClient("search");
 builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks");
 builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents");
 #elif (UseQdrant)

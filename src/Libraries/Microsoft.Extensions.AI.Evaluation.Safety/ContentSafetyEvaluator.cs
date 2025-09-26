@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable S3604
-// S3604: Member initializer values should not be redundant.
-// We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
-// constructor syntax.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,11 +25,9 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// AI Foundry Evaluation service, to the <see cref="EvaluationMetric.Name"/>s of the <see cref="EvaluationMetric"/>s
 /// returned by this <see cref="IEvaluator"/>.
 /// </param>
-#pragma warning disable S1694 // An abstract class should have both abstract and concrete methods
 public abstract class ContentSafetyEvaluator(
     string contentSafetyServiceAnnotationTask,
     IDictionary<string, string> metricNames) : IEvaluator
-#pragma warning restore S1694
 {
     /// <inheritdoc/>
     public IReadOnlyCollection<string> EvaluationMetricNames { get; } = [.. metricNames.Values];
@@ -115,13 +108,11 @@ public abstract class ContentSafetyEvaluator(
         {
             IReadOnlyList<EvaluationContext>? relevantContext = FilterAdditionalContext(additionalContext);
 
-#pragma warning disable S1067 // Expressions should not be too complex
             if (relevantContext is not null && relevantContext.Any() &&
                 relevantContext.SelectMany(c => c.Contents) is IEnumerable<AIContent> contents && contents.Any() &&
                 contents.OfType<TextContent>() is IEnumerable<TextContent> textContents && textContents.Any() &&
                 string.Join(Environment.NewLine, textContents.Select(c => c.Text)) is string contextString &&
                 !string.IsNullOrWhiteSpace(contextString))
-#pragma warning restore S1067
             {
                 // Currently we only support supplying a context for the last conversation turn (which is the main one
                 // that is being evaluated).
@@ -166,6 +157,7 @@ public abstract class ContentSafetyEvaluator(
                     metric.Name = metricName;
                 }
 
+                metric.MarkAsBuiltIn();
                 metric.AddOrUpdateChatMetadata(annotationResponse, annotationDuration);
 
                 metric.Interpretation =

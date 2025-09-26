@@ -77,12 +77,10 @@ public class ResilienceHandler : DelegatingHandler
 
                         return Outcome.FromResult(response);
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
                     {
                         return Outcome.FromException<HttpResponseMessage>(e);
                     }
-#pragma warning restore CA1031 // Do not catch general exception types
                 },
                 context,
                 (instance: this, request))

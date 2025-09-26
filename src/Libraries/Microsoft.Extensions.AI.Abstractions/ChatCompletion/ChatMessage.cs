@@ -53,6 +53,7 @@ public class ChatMessage
             AdditionalProperties = AdditionalProperties,
             _authorName = _authorName,
             _contents = _contents,
+            CreatedAt = CreatedAt,
             RawRepresentation = RawRepresentation,
             Role = Role,
             MessageId = MessageId,
@@ -64,6 +65,9 @@ public class ChatMessage
         get => _authorName;
         set => _authorName = string.IsNullOrWhiteSpace(value) ? null : value;
     }
+
+    /// <summary>Gets or sets a timestamp for the chat message.</summary>
+    public DateTimeOffset? CreatedAt { get; set; }
 
     /// <summary>Gets or sets the role of the author of the message.</summary>
     public ChatRole Role { get; set; } = ChatRole.User;
@@ -103,7 +107,17 @@ public class ChatMessage
 
     /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private AIContent? ContentForDebuggerDisplay => _contents is { Count: > 0 } ? _contents[0] : null;
+    private AIContent? ContentForDebuggerDisplay
+    {
+        get
+        {
+            string text = Text;
+            return
+                !string.IsNullOrWhiteSpace(text) ? new TextContent(text) :
+                _contents is { Count: > 0 } ? _contents[0] :
+                null;
+        }
+    }
 
     /// <summary>Gets an indication for the debugger display of whether there's more content.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

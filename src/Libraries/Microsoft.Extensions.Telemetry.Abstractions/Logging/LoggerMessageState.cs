@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;

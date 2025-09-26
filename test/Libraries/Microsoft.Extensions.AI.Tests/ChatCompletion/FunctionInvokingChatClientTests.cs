@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -39,6 +38,7 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(40, client.MaximumIterationsPerRequest);
         Assert.Equal(3, client.MaximumConsecutiveErrorsPerRequest);
         Assert.Null(client.FunctionInvoker);
+        Assert.Null(client.AdditionalTools);
     }
 
     [Fact]
@@ -67,6 +67,11 @@ public class FunctionInvokingChatClientTests
         Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>> invoker = (ctx, ct) => new ValueTask<object?>("test");
         client.FunctionInvoker = invoker;
         Assert.Same(invoker, client.FunctionInvoker);
+
+        Assert.Null(client.AdditionalTools);
+        IList<AITool> additionalTools = [AIFunctionFactory.Create(() => "Additional Tool")];
+        client.AdditionalTools = additionalTools;
+        Assert.Same(additionalTools, client.AdditionalTools);
     }
 
     [Fact]
@@ -97,6 +102,73 @@ public class FunctionInvokingChatClientTests
         await InvokeAndAssertAsync(options, plan);
 
         await InvokeAndAssertStreamingAsync(options, plan);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SupportsToolsProvidedByAdditionalTools(bool provideOptions)
+    {
+        ChatOptions? options = provideOptions ?
+            new() { Tools = [AIFunctionFactory.Create(() => "Shouldn't be invoked", "ChatOptionsFunc")] } :
+            null;
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = builder =>
+            builder.UseFunctionInvocation(configure: c => c.AdditionalTools =
+            [
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+                AIFunctionFactory.Create((int i) => { }, "VoidReturn"),
+            ]);
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+
+        await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
+    }
+
+    [Fact]
+    public async Task PrefersToolsProvidedByChatOptions()
+    {
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = builder =>
+            builder.UseFunctionInvocation(configure: c => c.AdditionalTools =
+            [
+                AIFunctionFactory.Create(() => "Should never be invoked", "Func1"),
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+                AIFunctionFactory.Create((int i) => { }, "VoidReturn"),
+            ]);
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+
+        await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
     [Theory]
@@ -583,9 +655,10 @@ public class FunctionInvokingChatClientTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task FunctionInvocationTrackedWithActivity(bool enableTelemetry)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task FunctionInvocationTrackedWithActivity(bool enableTelemetry, bool enableSensitiveData)
     {
         string sourceName = Guid.NewGuid().ToString();
 
@@ -603,7 +676,7 @@ public class FunctionInvokingChatClientTests
         };
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
-            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName)));
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName) { EnableSensitiveData = enableSensitiveData }));
 
         await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure), streaming: false);
 
@@ -628,6 +701,23 @@ public class FunctionInvokingChatClientTests
                     activity => Assert.Equal("execute_tool Func1", activity.DisplayName),
                     activity => Assert.Equal("chat", activity.DisplayName),
                     activity => Assert.Equal(streaming ? "FunctionInvokingChatClient.GetStreamingResponseAsync" : "FunctionInvokingChatClient.GetResponseAsync", activity.DisplayName));
+
+                var executeTool = activities[1];
+                if (enableSensitiveData)
+                {
+                    var args = Assert.Single(executeTool.Tags, t => t.Key == "gen_ai.tool.call.arguments");
+                    Assert.Equal(
+                        JsonSerializer.Serialize(new Dictionary<string, object?> { ["arg1"] = "value1" }, AIJsonUtilities.DefaultOptions),
+                        args.Value);
+
+                    var result = Assert.Single(executeTool.Tags, t => t.Key == "gen_ai.tool.call.result");
+                    Assert.Equal("Result 1", JsonSerializer.Deserialize<string>(result.Value!, AIJsonUtilities.DefaultOptions));
+                }
+                else
+                {
+                    Assert.DoesNotContain(executeTool.Tags, t => t.Key == "gen_ai.tool.call.arguments");
+                    Assert.DoesNotContain(executeTool.Tags, t => t.Key == "gen_ai.tool.call.result");
+                }
 
                 for (int i = 0; i < activities.Count - 1; i++)
                 {
@@ -989,6 +1079,121 @@ public class FunctionInvokingChatClientTests
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configurePipeline);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TerminateOnUnknownCalls_ControlsBehaviorForUnknownFunctions(bool terminateOnUnknown)
+    {
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create((int i) => $"Known: {i}", "KnownFunc")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
+            s => new FunctionInvokingChatClient(s) { TerminateOnUnknownCalls = terminateOnUnknown });
+
+        if (!terminateOnUnknown)
+        {
+            List<ChatMessage> planForContinue =
+            [
+                new(ChatRole.User, "hello"),
+                new(ChatRole.Assistant, [
+                    new FunctionCallContent("callId1", "UnknownFunc", new Dictionary<string, object?> { ["i"] = 1 }),
+                    new FunctionCallContent("callId2", "KnownFunc", new Dictionary<string, object?> { ["i"] = 2 })
+                ]),
+                new(ChatRole.Tool, [
+                    new FunctionResultContent("callId1", result: "Error: Requested function \"UnknownFunc\" not found."),
+                    new FunctionResultContent("callId2", result: "Known: 2")
+                ]),
+                new(ChatRole.Assistant, "done"),
+            ];
+
+            await InvokeAndAssertAsync(options, planForContinue, configurePipeline: configure);
+            await InvokeAndAssertStreamingAsync(options, planForContinue, configurePipeline: configure);
+        }
+        else
+        {
+            List<ChatMessage> fullPlanWithUnknown =
+            [
+                new(ChatRole.User, "hello"),
+                new(ChatRole.Assistant, [
+                    new FunctionCallContent("callId1", "UnknownFunc", new Dictionary<string, object?> { ["i"] = 1 }),
+                    new FunctionCallContent("callId2", "KnownFunc", new Dictionary<string, object?> { ["i"] = 2 })
+                ]),
+                new(ChatRole.Tool, [
+                    new FunctionResultContent("callId1", result: "Error: Requested function \"UnknownFunc\" not found."),
+                    new FunctionResultContent("callId2", result: "Known: 2")
+                ]),
+                new(ChatRole.Assistant, "done"),
+            ];
+
+            var expected = fullPlanWithUnknown.Take(2).ToList();
+            await InvokeAndAssertAsync(options, fullPlanWithUnknown, expected, configure);
+            await InvokeAndAssertStreamingAsync(options, fullPlanWithUnknown, expected, configure);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RequestsWithOnlyFunctionDeclarations_TerminatesRegardlessOfTerminateOnUnknownCalls(bool terminateOnUnknown)
+    {
+        var declarationOnly = AIFunctionFactory.Create(() => "unused", "DefOnly").AsDeclarationOnly();
+
+        ChatOptions options = new() { Tools = [declarationOnly] };
+
+        List<ChatMessage> fullPlan =
+        [
+            new(ChatRole.User, "hello"),
+            new(ChatRole.Assistant, [new FunctionCallContent("callId1", "DefOnly")]),
+            new(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Should not be produced")]),
+            new(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> expected = fullPlan.Take(2).ToList();
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
+            s => new FunctionInvokingChatClient(s) { TerminateOnUnknownCalls = terminateOnUnknown });
+
+        await InvokeAndAssertAsync(options, fullPlan, expected, configure);
+        await InvokeAndAssertStreamingAsync(options, fullPlan, expected, configure);
+    }
+
+    [Fact]
+    public async Task MixedKnownFunctionAndDeclaration_TerminatesWithoutInvokingKnown()
+    {
+        int invoked = 0;
+        var known = AIFunctionFactory.Create(() => { invoked++; return "OK"; }, "Known");
+        var defOnly = AIFunctionFactory.Create(() => "unused", "DefOnly").AsDeclarationOnly();
+
+        var options = new ChatOptions
+        {
+            Tools = [known, defOnly]
+        };
+
+        List<ChatMessage> fullPlan =
+        [
+            new(ChatRole.User, "hi"),
+            new(ChatRole.Assistant, [
+                new FunctionCallContent("callId1", "Known"),
+                new FunctionCallContent("callId2", "DefOnly")
+            ]),
+            new(ChatRole.Tool, [new FunctionResultContent("callId1", result: "OK"), new FunctionResultContent("callId2", result: "nope")]),
+            new(ChatRole.Assistant, "done"),
+        ];
+
+        List<ChatMessage> expected = fullPlan.Take(2).ToList();
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(s => new FunctionInvokingChatClient(s) { TerminateOnUnknownCalls = false });
+        await InvokeAndAssertAsync(options, fullPlan, expected, configure);
+        Assert.Equal(0, invoked);
+
+        invoked = 0;
+        configure = b => b.Use(s => new FunctionInvokingChatClient(s) { TerminateOnUnknownCalls = true });
+        await InvokeAndAssertStreamingAsync(options, fullPlan, expected, configure);
+        Assert.Equal(0, invoked);
+    }
+
     private sealed class CustomSynchronizationContext : SynchronizationContext
     {
         public override void Post(SendOrPostCallback d, object? state)
@@ -1002,7 +1207,7 @@ public class FunctionInvokingChatClientTests
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(
-        ChatOptions options,
+        ChatOptions? options,
         List<ChatMessage> plan,
         List<ChatMessage>? expected = null,
         Func<ChatClientBuilder, ChatClientBuilder>? configurePipeline = null,
@@ -1043,37 +1248,7 @@ public class FunctionInvokingChatClientTests
         chat.AddRange(result.Messages);
 
         expected ??= plan;
-        Assert.Equal(expected.Count, chat.Count);
-        for (int i = 0; i < expected.Count; i++)
-        {
-            var expectedMessage = expected[i];
-            var chatMessage = chat[i];
-
-            Assert.Equal(expectedMessage.Role, chatMessage.Role);
-            Assert.Equal(expectedMessage.Text, chatMessage.Text);
-            Assert.Equal(expectedMessage.GetType(), chatMessage.GetType());
-
-            Assert.Equal(expectedMessage.Contents.Count, chatMessage.Contents.Count);
-            for (int j = 0; j < expectedMessage.Contents.Count; j++)
-            {
-                var expectedItem = expectedMessage.Contents[j];
-                var chatItem = chatMessage.Contents[j];
-
-                Assert.Equal(expectedItem.GetType(), chatItem.GetType());
-                Assert.Equal(expectedItem.ToString(), chatItem.ToString());
-                if (expectedItem is FunctionCallContent expectedFunctionCall)
-                {
-                    var chatFunctionCall = (FunctionCallContent)chatItem;
-                    Assert.Equal(expectedFunctionCall.Name, chatFunctionCall.Name);
-                    AssertExtensions.EqualFunctionCallParameters(expectedFunctionCall.Arguments, chatFunctionCall.Arguments);
-                }
-                else if (expectedItem is FunctionResultContent expectedFunctionResult)
-                {
-                    var chatFunctionResult = (FunctionResultContent)chatItem;
-                    AssertExtensions.EqualFunctionCallResults(expectedFunctionResult.Result, chatFunctionResult.Result);
-                }
-            }
-        }
+        AssertExtensions.EqualMessageLists(expected, chat);
 
         // Usage should be aggregated over all responses, including AdditionalUsage
         var actualUsage = result.Usage!;
@@ -1102,7 +1277,7 @@ public class FunctionInvokingChatClientTests
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertStreamingAsync(
-        ChatOptions options,
+        ChatOptions? options,
         List<ChatMessage> plan,
         List<ChatMessage>? expected = null,
         Func<ChatClientBuilder, ChatClientBuilder>? configurePipeline = null,
@@ -1137,38 +1312,8 @@ public class FunctionInvokingChatClientTests
         chat.AddRange(result.Messages);
 
         expected ??= plan;
-        Assert.Equal(expected.Count, chat.Count);
-        for (int i = 0; i < expected.Count; i++)
-        {
-            var expectedMessage = expected[i];
-            var chatMessage = chat[i];
 
-            Assert.Equal(expectedMessage.Role, chatMessage.Role);
-            Assert.Equal(expectedMessage.Text, chatMessage.Text);
-            Assert.Equal(expectedMessage.GetType(), chatMessage.GetType());
-
-            Assert.Equal(expectedMessage.Contents.Count, chatMessage.Contents.Count);
-            for (int j = 0; j < expectedMessage.Contents.Count; j++)
-            {
-                var expectedItem = expectedMessage.Contents[j];
-                var chatItem = chatMessage.Contents[j];
-
-                Assert.Equal(expectedItem.GetType(), chatItem.GetType());
-                Assert.Equal(expectedItem.ToString(), chatItem.ToString());
-                if (expectedItem is FunctionCallContent expectedFunctionCall)
-                {
-                    var chatFunctionCall = (FunctionCallContent)chatItem;
-                    Assert.Equal(expectedFunctionCall.Name, chatFunctionCall.Name);
-                    AssertExtensions.EqualFunctionCallParameters(expectedFunctionCall.Arguments, chatFunctionCall.Arguments);
-                }
-                else if (expectedItem is FunctionResultContent expectedFunctionResult)
-                {
-                    var chatFunctionResult = (FunctionResultContent)chatItem;
-                    AssertExtensions.EqualFunctionCallResults(expectedFunctionResult.Result, chatFunctionResult.Result);
-                }
-            }
-        }
-
+        AssertExtensions.EqualMessageLists(expected, chat);
         return chat;
     }
 
@@ -1179,25 +1324,5 @@ public class FunctionInvokingChatClientTests
         {
             yield return item;
         }
-    }
-
-    private sealed class EnumeratedOnceEnumerable<T>(IEnumerable<T> items) : IEnumerable<T>
-    {
-        private int _iterated;
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            if (Interlocked.Exchange(ref _iterated, 1) != 0)
-            {
-                throw new InvalidOperationException("This enumerable can only be enumerated once.");
-            }
-
-            foreach (var item in items)
-            {
-                yield return item;
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

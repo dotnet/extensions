@@ -6,17 +6,20 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Evaluation.Utilities;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 
 internal sealed class SimpleChatClient : DelegatingChatClient
 {
     private readonly ChatDetails _chatDetails;
+    private readonly ChatClientMetadata? _metadata;
 
     internal SimpleChatClient(IChatClient originalChatClient, ChatDetails chatDetails)
         : base(originalChatClient)
     {
         _chatDetails = chatDetails;
+        _metadata = this.GetService<ChatClientMetadata>();
     }
 
     public async override Task<ChatResponse> GetResponseAsync(
@@ -37,10 +40,14 @@ internal sealed class SimpleChatClient : DelegatingChatClient
 
             if (response is not null)
             {
+                string? model = response.ModelId;
+                string? modelProvider = ModelInfo.GetModelProvider(model, _metadata);
+
                 _chatDetails.AddTurnDetails(
                     new ChatTurnDetails(
                         latency: stopwatch.Elapsed,
-                        model: response.ModelId,
+                        model,
+                        modelProvider,
                         usage: response.Usage));
             }
         }
@@ -74,10 +81,14 @@ internal sealed class SimpleChatClient : DelegatingChatClient
             if (updates is not null)
             {
                 ChatResponse response = updates.ToChatResponse();
+                string? model = response.ModelId;
+                string? modelProvider = ModelInfo.GetModelProvider(model, _metadata);
+
                 _chatDetails.AddTurnDetails(
                     new ChatTurnDetails(
                         latency: stopwatch.Elapsed,
-                        model: response.ModelId,
+                        model,
+                        modelProvider,
                         usage: response.Usage));
             }
         }

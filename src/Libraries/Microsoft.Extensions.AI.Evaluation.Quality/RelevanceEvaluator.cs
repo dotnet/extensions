@@ -74,6 +74,7 @@ public sealed class RelevanceEvaluator : IEvaluator
 
         var metric = new NumericMetric(RelevanceMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (!messages.TryGetUserRequest(out ChatMessage? userRequest) || string.IsNullOrWhiteSpace(userRequest.Text))
         {
@@ -108,7 +109,6 @@ public sealed class RelevanceEvaluator : IEvaluator
 
     private static List<ChatMessage> GetEvaluationInstructions(ChatMessage userRequest, ChatResponse modelResponse)
     {
-#pragma warning disable S103 // Lines should not be too long
         const string SystemPrompt =
             """
             # Instruction
@@ -118,14 +118,12 @@ public sealed class RelevanceEvaluator : IEvaluator
             - **Data**: Your input data include QUERY and RESPONSE.
             - **Tasks**: To complete your evaluation you will be asked to evaluate the Data in different ways.
             """;
-#pragma warning restore S103
 
         List<ChatMessage> evaluationInstructions = [new ChatMessage(ChatRole.System, SystemPrompt)];
 
         string renderedUserRequest = userRequest.RenderText();
         string renderedModelResponse = modelResponse.RenderText();
 
-#pragma warning disable S103 // Lines should not be too long
         string evaluationPrompt =
             $$"""
             # Definition
@@ -199,7 +197,6 @@ public sealed class RelevanceEvaluator : IEvaluator
             ## Please provide your answers between the tags: <S0>your chain of thoughts</S0>, <S1>your explanation</S1>, <S2>your Score</S2>.
             # Output
             """;
-#pragma warning restore S103
 
         evaluationInstructions.Add(new ChatMessage(ChatRole.User, evaluationPrompt));
 

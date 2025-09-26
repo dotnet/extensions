@@ -4,13 +4,8 @@
   It will not get included in the built project template.
 -->
 <Project>
-  <PropertyGroup>
-    <_UsingJustBuiltPackages>${UsingJustBuiltPackages}</_UsingJustBuiltPackages>
-  </PropertyGroup>
-
   <Target
     Name="_EnsurePackagesBuiltLocally"
-    Condition="'$(_UsingJustBuiltPackages)' == 'true'"
     BeforeTargets="Restore">
 
     <Error

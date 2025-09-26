@@ -15,7 +15,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
-    <NoWarn>$(NoWarn);CA1063;CA1508;CA2227;SA1316;S1121;S3358;EA0002</NoWarn>
+    <NoWarn>$(NoWarn);CA1063</NoWarn>
     <NoWarn>$(NoWarn);OPENAI001;OPENAI002;MEAI001</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
@@ -33,6 +33,9 @@
 
   <ItemGroup>
     <PackageReference Include="OpenAI" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>

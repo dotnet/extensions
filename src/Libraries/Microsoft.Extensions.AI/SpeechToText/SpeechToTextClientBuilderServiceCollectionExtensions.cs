@@ -52,7 +52,7 @@ public static class SpeechToTextClientBuilderServiceCollectionExtensions
     /// <remarks>The client is registered as a scoped service.</remarks>
     public static SpeechToTextClientBuilder AddKeyedSpeechToTextClient(
         this IServiceCollection serviceCollection,
-        object serviceKey,
+        object? serviceKey,
         ISpeechToTextClient innerClient,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         => AddKeyedSpeechToTextClient(serviceCollection, serviceKey, _ => innerClient, lifetime);
@@ -66,12 +66,11 @@ public static class SpeechToTextClientBuilderServiceCollectionExtensions
     /// <remarks>The client is registered as a scoped service.</remarks>
     public static SpeechToTextClientBuilder AddKeyedSpeechToTextClient(
         this IServiceCollection serviceCollection,
-        object serviceKey,
+        object? serviceKey,
         Func<IServiceProvider, ISpeechToTextClient> innerClientFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         _ = Throw.IfNull(serviceCollection);
-        _ = Throw.IfNull(serviceKey);
         _ = Throw.IfNull(innerClientFactory);
 
         var builder = new SpeechToTextClientBuilder(innerClientFactory);
