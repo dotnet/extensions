@@ -90,6 +90,10 @@ public sealed class RelevanceTruthAndCompletenessEvaluator : IEvaluator
         var completeness = new NumericMetric(CompletenessMetricName);
         var result = new EvaluationResult(relevance, truth, completeness);
 
+        relevance.MarkAsBuiltIn();
+        truth.MarkAsBuiltIn();
+        completeness.MarkAsBuiltIn();
+
         if (!messages.TryGetUserRequest(
                 out ChatMessage? userRequest,
                 out IReadOnlyList<ChatMessage> conversationHistory) ||
@@ -139,7 +143,6 @@ public sealed class RelevanceTruthAndCompletenessEvaluator : IEvaluator
         string renderedModelResponse = modelResponse.RenderText();
         string renderedConversationHistory = conversationHistory.RenderText();
 
-#pragma warning disable S103 // Lines should not be too long
         string evaluationPrompt =
             $$"""
             Read the History, User Query, and Model Response below and produce your response as a single JSON object.
@@ -259,7 +262,6 @@ public sealed class RelevanceTruthAndCompletenessEvaluator : IEvaluator
 
             -----
             """;
-#pragma warning restore S103
 
         return [new ChatMessage(ChatRole.User, evaluationPrompt)];
     }

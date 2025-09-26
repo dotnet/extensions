@@ -70,6 +70,7 @@ public sealed class FluencyEvaluator : IEvaluator
 
         var metric = new NumericMetric(FluencyMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {
@@ -95,7 +96,6 @@ public sealed class FluencyEvaluator : IEvaluator
 
     private static List<ChatMessage> GetEvaluationInstructions(ChatResponse modelResponse)
     {
-#pragma warning disable S103 // Lines should not be too long
         const string SystemPrompt =
             """
             # Instruction
@@ -105,13 +105,11 @@ public sealed class FluencyEvaluator : IEvaluator
             - **Data**: Your input data include a RESPONSE.
             - **Tasks**: To complete your evaluation you will be asked to evaluate the Data in different ways.
             """;
-#pragma warning restore S103
 
         List<ChatMessage> evaluationInstructions = [new ChatMessage(ChatRole.System, SystemPrompt)];
 
         string renderedModelResponse = modelResponse.RenderText();
 
-#pragma warning disable S103 // Lines should not be too long
         string evaluationPrompt =
             $$"""
             # Definition
@@ -173,7 +171,6 @@ public sealed class FluencyEvaluator : IEvaluator
             ## Please provide your answers between the tags: <S0>your chain of thoughts</S0>, <S1>your explanation</S1>, <S2>your Score</S2>.
             # Output
             """;
-#pragma warning restore S103
 
         evaluationInstructions.Add(new ChatMessage(ChatRole.User, evaluationPrompt));
 

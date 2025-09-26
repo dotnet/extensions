@@ -114,7 +114,6 @@ public sealed partial class HeaderParsingFeature
         NotFound = ParsingResult.NotFound,
     }
 
-    [SuppressMessage("Minor Code Smell", "S1694:An abstract class should have both abstract and concrete methods", Justification = "Analyzer issue")]
     private abstract class Box
     {
         public abstract void Reset();

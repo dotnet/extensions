@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #pragma warning disable CA1307 // Specify StringComparison for clarity
-#pragma warning disable S1659 // Multiple variables should not be declared on the same line
 #pragma warning disable S2302 // "nameof" should be used
 
 using System;

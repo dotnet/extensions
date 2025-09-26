@@ -169,6 +169,186 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task BasicReasoningResponse_Streaming()
+    {
+        const string Input = """
+            {
+              "input":[{
+                "type":"message",
+                "role":"user",
+                "content":[{
+                  "type":"input_text",
+                  "text":"Calculate the sum of the first 5 positive integers."
+                }]
+              }],
+              "reasoning": {
+                "summary": "detailed",
+                "effort": "low"
+              },
+              "model": "o4-mini",
+              "stream": true
+            }
+            """;
+
+        // Compressed down for testing purposes; real-world output would be larger.
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_68b5ebab461881969ed94149372c2a530698ecbf1b9f2704","object":"response","created_at":1756752811,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"o4-mini-2025-04-16","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_68b5ebab461881969ed94149372c2a530698ecbf1b9f2704","object":"response","created_at":1756752811,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"o4-mini-2025-04-16","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","type":"reasoning","summary":[]}}
+
+            event: response.reasoning_summary_part.added
+            data: {"type":"response.reasoning_summary_part.added","sequence_number":3,"item_id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","output_index":0,"summary_index":0,"part":{"type":"summary_text","text":""}}
+
+            event: response.reasoning_summary_text.delta
+            data: {"type":"response.reasoning_summary_text.delta","sequence_number":4,"item_id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","output_index":0,"summary_index":0,"delta":"**Calcul","obfuscation":"sLkbFySM"}
+
+            event: response.reasoning_summary_text.delta
+            data: {"type":"response.reasoning_summary_text.delta","sequence_number":5,"item_id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","output_index":0,"summary_index":0,"delta":"ating","obfuscation":"dkm1f6DKqUj"}
+
+            event: response.reasoning_summary_text.delta
+            data: {"type":"response.reasoning_summary_text.delta","sequence_number":6,"item_id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","output_index":0,"summary_index":0,"delta":" a","obfuscation":"X8ahc2lfCf9eA1"}
+
+            event: response.reasoning_summary_text.delta
+            data: {"type":"response.reasoning_summary_text.delta","sequence_number":7,"item_id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","output_index":0,"summary_index":0,"delta":" simple","obfuscation":"1rLVyIaNl"}
+
+            event: response.reasoning_summary_text.delta
+            data: {"type":"response.reasoning_summary_text.delta","sequence_number":8,"item_id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","output_index":0,"summary_index":0,"delta":" sum","obfuscation":"jCK7mgNR80Re"}
+
+            event: response.reasoning_summary_text.done
+            data: {"type":"response.reasoning_summary_text.done","sequence_number":9,"item_id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","output_index":0,"summary_index":0,"text":"**Calculating a simple sum**"}
+
+            event: response.reasoning_summary_part.done
+            data: {"type":"response.reasoning_summary_part.done","sequence_number":10,"item_id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","output_index":0,"summary_index":0,"part":{"type":"summary_text","text":"**Calculating a simple sum**"}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":11,"output_index":0,"item":{"id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","type":"reasoning","summary":[{"type":"summary_text","text":"**Calculating a simple sum**"}]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":12,"output_index":1,"item":{"id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","type":"message","status":"in_progress","content":[],"role":"assistant"}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","sequence_number":13,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":""}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":14,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":"The","logprobs":[],"obfuscation":"japg2KaCkjNsp"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":15,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":" sum","logprobs":[],"obfuscation":"1BEqjKQ0KU41"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":16,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":" of","logprobs":[],"obfuscation":"GUqom1rsdZsnT"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":17,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":" the","logprobs":[],"obfuscation":"UmCms91yrTlg"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":18,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":" first","logprobs":[],"obfuscation":"AyNbZpfTXo"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":19,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":" ","logprobs":[],"obfuscation":"tuyz4HkKODFQRtk"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":20,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":"5","logprobs":[],"obfuscation":"QAwyISolmjXfTlc"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":21,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":" positive","logprobs":[],"obfuscation":"2Euge1H"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":22,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":" integers","logprobs":[],"obfuscation":"ih0Znt8"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":23,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":" is","logprobs":[],"obfuscation":"oQihR5Pw8jRz5"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":24,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":" 15","logprobs":[],"obfuscation":"7TdJ1FWlZF8lTd"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":25,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"delta":".","logprobs":[],"obfuscation":"x2VAJKlWI8qjgYq"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","sequence_number":26,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"text":"The sum of the first 5 positive integers is 15.","logprobs":[]}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","sequence_number":27,"item_id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":"The sum of the first 5 positive integers is 15."}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":28,"output_index":1,"item":{"id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"The sum of the first 5 positive integers is 15."}],"role":"assistant"}}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":29,"response":{"id":"resp_68b5ebab461881969ed94149372c2a530698ecbf1b9f2704","object":"response","created_at":1756752811,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"o4-mini-2025-04-16","output":[{"id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","type":"reasoning","summary":[{"type":"summary_text","text":"**Calculating a simple sum**"}]},{"id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"The sum of the first 5 positive integers is 15."}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":17,"input_tokens_details":{"cached_tokens":0},"output_tokens":122,"output_tokens_details":{"reasoning_tokens":64},"total_tokens":139},"user":null,"metadata":{}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "o4-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("Calculate the sum of the first 5 positive integers.", new()
+        {
+            RawRepresentationFactory = options => new ResponseCreationOptions
+            {
+                ReasoningOptions = new()
+                {
+                    ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
+                    ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Detailed
+                }
+            }
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("The sum of the first 5 positive integers is 15.", string.Concat(updates.Select(u => u.Text)));
+
+        var createdAt = DateTimeOffset.FromUnixTimeSeconds(1_756_752_811);
+        Assert.Equal(30, updates.Count);
+
+        for (int i = 0; i < updates.Count; i++)
+        {
+            Assert.Equal("resp_68b5ebab461881969ed94149372c2a530698ecbf1b9f2704", updates[i].ResponseId);
+            Assert.Equal("resp_68b5ebab461881969ed94149372c2a530698ecbf1b9f2704", updates[i].ConversationId);
+            Assert.Equal(createdAt, updates[i].CreatedAt);
+            Assert.Equal("o4-mini-2025-04-16", updates[i].ModelId);
+            Assert.Null(updates[i].AdditionalProperties);
+
+            if (i is (>= 4 and <= 8))
+            {
+                // Reasoning updates
+                Assert.Single(updates[i].Contents);
+                Assert.Null(updates[i].Role);
+
+                var reasoning = Assert.IsType<TextReasoningContent>(updates[i].Contents.Single());
+                Assert.NotNull(reasoning);
+                Assert.NotNull(reasoning.Text);
+            }
+            else if (i is (>= 14 and <= 25) or 29)
+            {
+                // Response Complete and Assistant message updates
+                Assert.Single(updates[i].Contents);
+            }
+            else
+            {
+                // Other updates
+                Assert.Empty(updates[i].Contents);
+            }
+
+            Assert.Equal(i < updates.Count - 1 ? null : ChatFinishReason.Stop, updates[i].FinishReason);
+        }
+
+        UsageContent usage = updates.SelectMany(u => u.Contents).OfType<UsageContent>().Single();
+        Assert.Equal(17, usage.Details.InputTokenCount);
+        Assert.Equal(122, usage.Details.OutputTokenCount);
+        Assert.Equal(139, usage.Details.TotalTokenCount);
+    }
+
+    [Fact]
     public async Task BasicRequestResponse_Streaming()
     {
         const string Input = """
@@ -363,20 +543,70 @@ public class OpenAIResponseClientTests
     {
         const string Input = """
             {
-              "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"hello"}]}],
-              "model":"gpt-4o-mini",
-              "max_output_tokens":10,
-              "previous_response_id":"resp_42",
-              "top_p":0.5,
-              "temperature":0.5,
-              "parallel_tool_calls":true,
-              "text": {"format": {"type": "text"}
-            },
-              "tool_choice":"auto",
-              "tools":[
-                {"description":"Gets the age of the specified person.","name":"GetPersonAge","parameters":{"additionalProperties":false,"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}},"required":["personName"],"type":"object"},"strict":false,"type":"function"},
-                {"description":"Gets the age of the specified person.","name":"GetPersonAge","parameters":{"additionalProperties":false,"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}},"required":["personName"],"type":"object"},"strict":false,"type":"function"}
-              ]
+                "temperature": 0.5,
+                "top_p": 0.5,
+                "previous_response_id": "resp_42",
+                "model": "gpt-4o-mini",
+                "max_output_tokens": 10,
+                "text": {
+                    "format": {
+                        "type": "text"
+                    }
+                },
+                "tools": [
+                    {
+                        "type": "function",
+                        "name": "GetPersonAge",
+                        "description": "Gets the age of the specified person.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [
+                                "personName"
+                            ],
+                            "properties": {
+                                "personName": {
+                                    "description": "The person whose age is being requested",
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "strict": null
+                    },
+                    {
+                        "type": "function",
+                        "name": "GetPersonAge",
+                        "description": "Gets the age of the specified person.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [
+                                "personName"
+                            ],
+                            "properties": {
+                                "personName": {
+                                    "description": "The person whose age is being requested",
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "strict": null
+                    }
+                ],
+                "tool_choice": "auto",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ],
+                "parallel_tool_calls": true
             }
             """;
 
@@ -460,7 +690,7 @@ public class OpenAIResponseClientTests
                         TextFormat = ResponseTextFormat.CreateTextFormat()
                     },
                 };
-                openAIOptions.Tools.Add(ToOpenAIResponseChatTool(tool));
+                openAIOptions.Tools.Add(tool.AsOpenAIResponseTool());
                 return openAIOptions;
             },
             ModelId = null,
@@ -479,12 +709,814 @@ public class OpenAIResponseClientTests
         Assert.Equal("Hello! How can I assist you today?", response.Text);
     }
 
-    /// <summary>Converts an Extensions function to an OpenAI response chat tool.</summary>
-    private static ResponseTool ToOpenAIResponseChatTool(AIFunction aiFunction)
+    [Fact]
+    public async Task MultipleOutputItems_NonStreaming()
     {
-        var tool = JsonSerializer.Deserialize<OpenAIChatClientTests.ChatToolJson>(aiFunction.JsonSchema)!;
-        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool));
-        return ResponseTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters);
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "input": [{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"hello"}]
+                }],
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": 20,
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello!",
+                      "annotations": []
+                    }
+                  ]
+                },
+                {
+                  "type": "message",
+                  "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a182e",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": " How can I assist you today?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "reasoning": {
+                "effort": null,
+                "generate_summary": null
+              },
+              "store": true,
+              "temperature": 0.5,
+              "text": {
+                "format": {
+                  "type": "text"
+                }
+              },
+              "tool_choice": "auto",
+              "tools": [],
+              "top_p": 1.0,
+              "usage": {
+                "input_tokens": 26,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 10,
+                "output_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "total_tokens": 36
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+        });
+        Assert.NotNull(response);
+
+        Assert.Equal("resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d", response.ResponseId);
+        Assert.Equal("resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d", response.ConversationId);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_741_891_428), response.CreatedAt);
+        Assert.Null(response.FinishReason);
+
+        Assert.Equal(2, response.Messages.Count);
+        Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
+        Assert.Equal("Hello!", response.Messages[0].Text);
+        Assert.Equal(ChatRole.Assistant, response.Messages[1].Role);
+        Assert.Equal(" How can I assist you today?", response.Messages[1].Text);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(26, response.Usage.InputTokenCount);
+        Assert.Equal(10, response.Usage.OutputTokenCount);
+        Assert.Equal(36, response.Usage.TotalTokenCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task McpToolCall_ApprovalNotRequired_NonStreaming(bool rawTool)
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "server_label": "deepwiki",
+                        "server_url": "https://mcp.deepwiki.com/mcp",
+                        "require_approval": "never"
+                    }
+                ],
+                "tool_choice": "auto",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+                "id": "resp_68be416397ec81918c48ef286530b8140384f747588fc3f5",
+                "object": "response",
+                "created_at": 1757299043,
+                "status": "completed",
+                "background": false,
+                "error": null,
+                "incomplete_details": null,
+                "instructions": null,
+                "max_output_tokens": null,
+                "max_tool_calls": null,
+                "model": "gpt-4o-mini-2024-07-18",
+                "output": [
+                    {
+                        "id": "mcpl_68be4163aa80819185e792abdcde71670384f747588fc3f5",
+                        "type": "mcp_list_tools",
+                        "server_label": "deepwiki",
+                        "tools": [
+                            {
+                                "annotations": {
+                                    "read_only": false
+                                },
+                                "description": "Get a list of documentation topics for a GitHub repository",
+                                "input_schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "repoName": {
+                                            "type": "string",
+                                            "description": "GitHub repository: owner/repo (e.g. \"facebook/react\")"
+                                        }
+                                    },
+                                    "required": [
+                                        "repoName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "$schema": "http://json-schema.org/draft-07/schema#"
+                                },
+                                "name": "read_wiki_structure"
+                            },
+                            {
+                                "annotations": {
+                                    "read_only": false
+                                },
+                                "description": "View documentation about a GitHub repository",
+                                "input_schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "repoName": {
+                                            "type": "string",
+                                            "description": "GitHub repository: owner/repo (e.g. \"facebook/react\")"
+                                        }
+                                    },
+                                    "required": [
+                                        "repoName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "$schema": "http://json-schema.org/draft-07/schema#"
+                                },
+                                "name": "read_wiki_contents"
+                            },
+                            {
+                                "annotations": {
+                                    "read_only": false
+                                },
+                                "description": "Ask any question about a GitHub repository",
+                                "input_schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "repoName": {
+                                            "type": "string",
+                                            "description": "GitHub repository: owner/repo (e.g. \"facebook/react\")"
+                                        },
+                                        "question": {
+                                            "type": "string",
+                                            "description": "The question to ask about the repository"
+                                        }
+                                    },
+                                    "required": [
+                                        "repoName",
+                                        "question"
+                                    ],
+                                    "additionalProperties": false,
+                                    "$schema": "http://json-schema.org/draft-07/schema#"
+                                },
+                                "name": "ask_question"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5",
+                        "type": "mcp_call",
+                        "approval_request_id": null,
+                        "arguments": "{\"repoName\":\"dotnet/extensions\"}",
+                        "error": null,
+                        "name": "read_wiki_structure",
+                        "output": "Available pages for dotnet/extensions:\n\n- 1 Overview\n- 2 Build System and CI/CD\n- 3 AI Extensions Framework\n  - 3.1 Core Abstractions\n  - 3.2 AI Function System\n  - 3.3 Chat Completion\n  - 3.4 Caching System\n  - 3.5 Evaluation and Reporting\n- 4 HTTP Resilience and Diagnostics\n  - 4.1 Standard Resilience\n  - 4.2 Hedging Strategies\n- 5 Telemetry and Compliance\n- 6 Testing Infrastructure\n  - 6.1 AI Service Integration Testing\n  - 6.2 Time Provider Testing",
+                        "server_label": "deepwiki"
+                    },
+                    {
+                        "id": "mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5",
+                        "type": "mcp_call",
+                        "approval_request_id": null,
+                        "arguments": "{\"repoName\":\"dotnet/extensions\",\"question\":\"What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?\"}",
+                        "error": null,
+                        "name": "ask_question",
+                        "output": "The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at `src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md` within the `dotnet/extensions` repository.  This file provides an overview of the `Microsoft.Extensions.AI.Abstractions` package, including installation instructions and usage examples for its core interfaces like `IChatClient` and `IEmbeddingGenerator`. \n\n## Path to README.md\n\nThe specific path to the `README.md` file for the `Microsoft.Extensions.AI.Abstractions` project is `src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md`.  This path is also referenced in the `AI Extensions Framework` wiki page as a relevant source file. \n\n## Notes\n\nThe `Packaging.targets` file in the `eng/MSBuild` directory indicates that `README.md` files are included in packages when `IsPackable` and `IsShipping` properties are true.  This suggests that the `README.md` file located at `src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md` is intended to be part of the distributed NuGet package for `Microsoft.Extensions.AI.Abstractions`. \n\nWiki pages you might want to explore:\n- [AI Extensions Framework (dotnet/extensions)](/wiki/dotnet/extensions#3)\n- [Chat Completion (dotnet/extensions)](/wiki/dotnet/extensions#3.3)\n\nView this search on DeepWiki: https://deepwiki.com/search/what-is-the-path-to-the-readme_315595bd-9b39-4f04-9fa3-42dc778fa9f3\n",
+                        "server_label": "deepwiki"
+                    },
+                    {
+                        "id": "msg_68be416fb43c819194a1d4ace2643a7e0384f747588fc3f5",
+                        "type": "message",
+                        "status": "completed",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "annotations": [],
+                                "logprobs": [],
+                                "text": "The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at:\n\n```\nsrc/Libraries/Microsoft.Extensions.AI.Abstractions/README.md\n```\n\nThis file includes an overview, installation instructions, and usage examples related to the package."
+                            }
+                        ],
+                        "role": "assistant"
+                    }
+                ],
+                "parallel_tool_calls": true,
+                "previous_response_id": null,
+                "prompt_cache_key": null,
+                "reasoning": {
+                    "effort": null,
+                    "summary": null
+                },
+                "safety_identifier": null,
+                "service_tier": "default",
+                "store": true,
+                "temperature": 1,
+                "text": {
+                    "format": {
+                        "type": "text"
+                    },
+                    "verbosity": "medium"
+                },
+                "tool_choice": "auto",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "allowed_tools": null,
+                        "headers": null,
+                        "require_approval": "never",
+                        "server_description": null,
+                        "server_label": "deepwiki",
+                        "server_url": "https://mcp.deepwiki.com/<redacted>"
+                    }
+                ],
+                "top_logprobs": 0,
+                "top_p": 1,
+                "truncation": "disabled",
+                "usage": {
+                    "input_tokens": 1329,
+                    "input_tokens_details": {
+                        "cached_tokens": 0
+                    },
+                    "output_tokens": 123,
+                    "output_tokens_details": {
+                        "reasoning_tokens": 0
+                    },
+                    "total_tokens": 1452
+                },
+                "user": null,
+                "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        AITool mcpTool = rawTool ?
+            ResponseTool.CreateMcpTool("deepwiki", serverUri: new("https://mcp.deepwiki.com/mcp"), toolCallApprovalPolicy: new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval)).AsAITool() :
+            new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+            {
+                ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+            };
+
+        ChatOptions chatOptions = new()
+        {
+            Tools = [mcpTool],
+        };
+
+        var response = await client.GetResponseAsync("Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository", chatOptions);
+        Assert.NotNull(response);
+
+        Assert.Equal("resp_68be416397ec81918c48ef286530b8140384f747588fc3f5", response.ResponseId);
+        Assert.Equal("resp_68be416397ec81918c48ef286530b8140384f747588fc3f5", response.ConversationId);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_757_299_043), response.CreatedAt);
+        Assert.Null(response.FinishReason);
+
+        var message = Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
+        Assert.Equal("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at:\n\n```\nsrc/Libraries/Microsoft.Extensions.AI.Abstractions/README.md\n```\n\nThis file includes an overview, installation instructions, and usage examples related to the package.", response.Messages[0].Text);
+
+        Assert.Equal(6, message.Contents.Count);
+
+        var firstCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
+        Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstCall.CallId);
+        Assert.Equal("deepwiki", firstCall.ServerName);
+        Assert.Equal("read_wiki_structure", firstCall.ToolName);
+        Assert.NotNull(firstCall.Arguments);
+        Assert.Single(firstCall.Arguments);
+        Assert.Equal("dotnet/extensions", ((JsonElement)firstCall.Arguments["repoName"]!).GetString());
+
+        var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
+        Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstResult.CallId);
+        Assert.NotNull(firstResult.Output);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Output)).Text);
+
+        var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
+        Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondCall.CallId);
+        Assert.Equal("deepwiki", secondCall.ServerName);
+        Assert.Equal("ask_question", secondCall.ToolName);
+        Assert.NotNull(secondCall.Arguments);
+        Assert.Equal("dotnet/extensions", ((JsonElement)secondCall.Arguments["repoName"]!).GetString());
+        Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)secondCall.Arguments["question"]!).GetString());
+
+        var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
+        Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondResult.CallId);
+        Assert.NotNull(secondResult.Output);
+        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(secondResult.Output)).Text);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(1329, response.Usage.InputTokenCount);
+        Assert.Equal(123, response.Usage.OutputTokenCount);
+        Assert.Equal(1452, response.Usage.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task McpToolCall_ApprovalNotRequired_Streaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "server_label": "deepwiki",
+                        "server_url": "https://mcp.deepwiki.com/mcp",
+                        "require_approval": "never"
+                    }
+                ],
+                "tool_choice": "auto",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository"
+                            }
+                        ]
+                    }
+                ],
+                "stream": true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_68be44fd7298819e82fd82c8516e970d03a2537be0e84a54","object":"response","created_at":1757299965,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"mcp","allowed_tools":null,"headers":null,"require_approval":"never","server_description":null,"server_label":"deepwiki","server_url":"https://mcp.deepwiki.com/<redacted>"}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_68be44fd7298819e82fd82c8516e970d03a2537be0e84a54","object":"response","created_at":1757299965,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"mcp","allowed_tools":null,"headers":null,"require_approval":"never","server_description":null,"server_label":"deepwiki","server_url":"https://mcp.deepwiki.com/<redacted>"}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"mcpl_68be44fd8f68819eba7a74a2f6d27a5a03a2537be0e84a54","type":"mcp_list_tools","server_label":"deepwiki","tools":[]}}
+
+            event: response.mcp_list_tools.in_progress
+            data: {"type":"response.mcp_list_tools.in_progress","sequence_number":3,"output_index":0,"item_id":"mcpl_68be44fd8f68819eba7a74a2f6d27a5a03a2537be0e84a54"}
+
+            event: response.mcp_list_tools.completed
+            data: {"type":"response.mcp_list_tools.completed","sequence_number":4,"output_index":0,"item_id":"mcpl_68be44fd8f68819eba7a74a2f6d27a5a03a2537be0e84a54"}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":5,"output_index":0,"item":{"id":"mcpl_68be44fd8f68819eba7a74a2f6d27a5a03a2537be0e84a54","type":"mcp_list_tools","server_label":"deepwiki","tools":[{"annotations":{"read_only":false},"description":"Get a list of documentation topics for a GitHub repository","input_schema":{"type":"object","properties":{"repoName":{"type":"string","description":"GitHub repository: owner/repo (e.g. \"facebook/react\")"}},"required":["repoName"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"},"name":"read_wiki_structure"},{"annotations":{"read_only":false},"description":"View documentation about a GitHub repository","input_schema":{"type":"object","properties":{"repoName":{"type":"string","description":"GitHub repository: owner/repo (e.g. \"facebook/react\")"}},"required":["repoName"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"},"name":"read_wiki_contents"},{"annotations":{"read_only":false},"description":"Ask any question about a GitHub repository","input_schema":{"type":"object","properties":{"repoName":{"type":"string","description":"GitHub repository: owner/repo (e.g. \"facebook/react\")"},"question":{"type":"string","description":"The question to ask about the repository"}},"required":["repoName","question"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"},"name":"ask_question"}]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":6,"output_index":1,"item":{"id":"mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54","type":"mcp_call","approval_request_id":null,"arguments":"","error":null,"name":"read_wiki_structure","output":null,"server_label":"deepwiki"}}
+
+            event: response.mcp_call.in_progress
+            data: {"type":"response.mcp_call.in_progress","sequence_number":7,"output_index":1,"item_id":"mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54"}
+
+            event: response.mcp_call_arguments.delta
+            data: {"type":"response.mcp_call_arguments.delta","sequence_number":8,"output_index":1,"item_id":"mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54","delta":"{\"repoName\":\"dotnet/extensions\"}","obfuscation":""}
+
+            event: response.mcp_call_arguments.done
+            data: {"type":"response.mcp_call_arguments.done","sequence_number":9,"output_index":1,"item_id":"mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54","arguments":"{\"repoName\":\"dotnet/extensions\"}"}
+
+            event: response.mcp_call.completed
+            data: {"type":"response.mcp_call.completed","sequence_number":10,"output_index":1,"item_id":"mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54"}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":11,"output_index":1,"item":{"id":"mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54","type":"mcp_call","approval_request_id":null,"arguments":"{\"repoName\":\"dotnet/extensions\"}","error":null,"name":"read_wiki_structure","output":"Available pages for dotnet/extensions:\n\n- 1 Overview\n- 2 Build System and CI/CD\n- 3 AI Extensions Framework\n  - 3.1 Core Abstractions\n  - 3.2 AI Function System\n  - 3.3 Chat Completion\n  - 3.4 Caching System\n  - 3.5 Evaluation and Reporting\n- 4 HTTP Resilience and Diagnostics\n  - 4.1 Standard Resilience\n  - 4.2 Hedging Strategies\n- 5 Telemetry and Compliance\n- 6 Testing Infrastructure\n  - 6.1 AI Service Integration Testing\n  - 6.2 Time Provider Testing","server_label":"deepwiki"}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":12,"output_index":2,"item":{"id":"mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54","type":"mcp_call","approval_request_id":null,"arguments":"","error":null,"name":"ask_question","output":null,"server_label":"deepwiki"}}
+
+            event: response.mcp_call.in_progress
+            data: {"type":"response.mcp_call.in_progress","sequence_number":13,"output_index":2,"item_id":"mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54"}
+
+            event: response.mcp_call_arguments.delta
+            data: {"type":"response.mcp_call_arguments.delta","sequence_number":14,"output_index":2,"item_id":"mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54","delta":"{\"repoName\":\"dotnet/extensions\",\"question\":\"What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?\"}","obfuscation":"IT"}
+
+            event: response.mcp_call_arguments.done
+            data: {"type":"response.mcp_call_arguments.done","sequence_number":15,"output_index":2,"item_id":"mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54","arguments":"{\"repoName\":\"dotnet/extensions\",\"question\":\"What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?\"}"}
+
+            event: response.mcp_call.completed
+            data: {"type":"response.mcp_call.completed","sequence_number":16,"output_index":2,"item_id":"mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54"}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":17,"output_index":2,"item":{"id":"mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54","type":"mcp_call","approval_request_id":null,"arguments":"{\"repoName\":\"dotnet/extensions\",\"question\":\"What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?\"}","error":null,"name":"ask_question","output":"The path to the `README.md` file for `Microsoft.Extensions.AI.Abstractions` is `src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md` . This file provides an overview of the `Microsoft.Extensions.AI.Abstractions` library, including installation instructions and usage examples for its core components like `IChatClient` and `IEmbeddingGenerator`   .\n\n## README.md Content Overview\nThe `README.md` file for `Microsoft.Extensions.AI.Abstractions` details the purpose of the library, which is to provide abstractions for generative AI components . It includes instructions on how to install the NuGet package `Microsoft.Extensions.AI.Abstractions` .\n\nThe document also provides usage examples for the `IChatClient` interface, which defines methods for interacting with AI services that offer \"chat\" capabilities . This includes examples for requesting both complete and streaming chat responses  .\n\nFurthermore, the `README.md` explains the `IEmbeddingGenerator` interface, which is used for generating vector embeddings from input values . It demonstrates how to use `GenerateAsync` to create embeddings . The file also discusses how both `IChatClient` and `IEmbeddingGenerator` implementations can be layered to create pipelines of functionality, incorporating features like caching and telemetry  .\n\nNotes:\nThe user's query specifically asked for the path to the `README.md` file for `Microsoft.Extensions.AI.Abstractions`. The provided codebase context, particularly the wiki page for \"AI Extensions Framework\", directly lists this file as a relevant source file . The content of the `README.md` file itself further confirms its relevance to the `Microsoft.Extensions.AI.Abstractions` library.\n\nWiki pages you might want to explore:\n- [AI Extensions Framework (dotnet/extensions)](/wiki/dotnet/extensions#3)\n- [Chat Completion (dotnet/extensions)](/wiki/dotnet/extensions#3.3)\n\nView this search on DeepWiki: https://deepwiki.com/search/what-is-the-path-to-the-readme_bb6bee43-3136-4b21-bc5d-02ca1611d857\n","server_label":"deepwiki"}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":18,"output_index":3,"item":{"id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","type":"message","status":"in_progress","content":[],"role":"assistant"}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","sequence_number":19,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":""}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":20,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"The","logprobs":[],"obfuscation":"a5sNdjeWpJXIK"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":21,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" path","logprobs":[],"obfuscation":"2oWbALsHrtv"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":22,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" to","logprobs":[],"obfuscation":"K8lRBCaiusvjP"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":23,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" the","logprobs":[],"obfuscation":"LP7Xp4jDWA5w"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":24,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" `","logprobs":[],"obfuscation":"2rUNEj0h3wLlee"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":25,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"README","logprobs":[],"obfuscation":"PSbOrCj8y6"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":26,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":".md","logprobs":[],"obfuscation":"Do0BCY4kJ6wQW"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":27,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"`","logprobs":[],"obfuscation":"3fTPkjHu1Oq83DT"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":28,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" file","logprobs":[],"obfuscation":"CI9PXx3sH06"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":29,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" for","logprobs":[],"obfuscation":"fJuaoSPsMge8"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":30,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" `","logprobs":[],"obfuscation":"O1h4Q0T72OM4e7"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":31,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"Microsoft","logprobs":[],"obfuscation":"E2YPgfE"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":32,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":".Extensions","logprobs":[],"obfuscation":"vfVX8"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":33,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":".A","logprobs":[],"obfuscation":"EwDmSMHqymBRl1"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":34,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"I","logprobs":[],"obfuscation":"QQfjze1z7QhvcJE"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":35,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":".A","logprobs":[],"obfuscation":"7fLbFXKbxOMkBi"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":36,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"bst","logprobs":[],"obfuscation":"3p1svK7Jd1N7C"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":37,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"ractions","logprobs":[],"obfuscation":"Cl2xCwTC"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":38,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"`","logprobs":[],"obfuscation":"ObDOKE72QOlXSx9"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":39,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" in","logprobs":[],"obfuscation":"FJwPbDYgh4XjL"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":40,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" the","logprobs":[],"obfuscation":"e8cV5qt7hEsz"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":41,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" `","logprobs":[],"obfuscation":"Hf8ZQDFLfImh3e"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":42,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"dot","logprobs":[],"obfuscation":"0lh2vLiYye2JI"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":43,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"net","logprobs":[],"obfuscation":"g5fzb2qtk4Piz"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":44,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"/extensions","logprobs":[],"obfuscation":"egpos"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":45,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"`","logprobs":[],"obfuscation":"gXw3bKveEVIKXux"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":46,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" repository","logprobs":[],"obfuscation":"rqhlC"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":47,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" is","logprobs":[],"obfuscation":"YZq9zsRja0g2M"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":48,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":":\n\n","logprobs":[],"obfuscation":"mhDAmaHJUvLGl"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":49,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"``","logprobs":[],"obfuscation":"3XmO5YTsWjzHHf"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":50,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"`\n","logprobs":[],"obfuscation":"4fmXZmdkPxNn8K"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":51,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"src","logprobs":[],"obfuscation":"ifGf4yLEg5pMZ"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":52,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"/L","logprobs":[],"obfuscation":"C1k1toBElpgxyW"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":53,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"ibraries","logprobs":[],"obfuscation":"fdOTYTyp"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":54,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"/M","logprobs":[],"obfuscation":"DyscJIQYaPJugC"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":55,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"icrosoft","logprobs":[],"obfuscation":"PQxU7muP"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":56,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":".Extensions","logprobs":[],"obfuscation":"RCJB8"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":57,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":".A","logprobs":[],"obfuscation":"i92CWxnAkwS4C9"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":58,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"I","logprobs":[],"obfuscation":"qfH8wVJN74vCfBM"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":59,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":".A","logprobs":[],"obfuscation":"LcuBP89lZVCCH9"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":60,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"bst","logprobs":[],"obfuscation":"I8rKDbKN0zylv"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":61,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"ractions","logprobs":[],"obfuscation":"tOgiCPs5"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":62,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"/","logprobs":[],"obfuscation":"jgJjLruTbFJGDhU"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":63,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"README","logprobs":[],"obfuscation":"D5VSEFNde7"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":64,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":".md","logprobs":[],"obfuscation":"7ZGJO5sZOTPBs"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":65,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"\n","logprobs":[],"obfuscation":"7Sv80haKTTwfEWj"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":66,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"``","logprobs":[],"obfuscation":"m1JSvZ8rrpJnH5"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":67,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"`\n\n","logprobs":[],"obfuscation":"U93PMKtCB5Pb5"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":68,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"This","logprobs":[],"obfuscation":"f5veTGedo9nM"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":69,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" file","logprobs":[],"obfuscation":"oEBwvP5FnPK"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":70,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" provides","logprobs":[],"obfuscation":"IVNCYwr"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":71,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" an","logprobs":[],"obfuscation":"3x6WquURIJ3ld"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":72,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" overview","logprobs":[],"obfuscation":"VR9yeiD"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":73,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" of","logprobs":[],"obfuscation":"z46dC1o2FC8Rs"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":74,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" the","logprobs":[],"obfuscation":"YfZGabvmgyoI"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":75,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" library","logprobs":[],"obfuscation":"TamElgEp"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":76,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":",","logprobs":[],"obfuscation":"VfVfqbnHAfsJyJn"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":77,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" installation","logprobs":[],"obfuscation":"CGR"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":78,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" instructions","logprobs":[],"obfuscation":"xst"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":79,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":",","logprobs":[],"obfuscation":"3u5wqRA2RXh2QP8"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":80,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" and","logprobs":[],"obfuscation":"tD4WZmOhepzQ"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":81,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" usage","logprobs":[],"obfuscation":"SadOK826mZ"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":82,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" examples","logprobs":[],"obfuscation":"5VpLKav"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":83,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" for","logprobs":[],"obfuscation":"xPvtjDSUic9E"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":84,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" its","logprobs":[],"obfuscation":"6duK61DX14vx"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":85,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" core","logprobs":[],"obfuscation":"Cz8trPLsCWu"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":86,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" components","logprobs":[],"obfuscation":"Gexuy"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":87,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":".","logprobs":[],"obfuscation":"HVeWkHoX1cc6hVh"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":88,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" If","logprobs":[],"obfuscation":"G1TOxxwvSEq4L"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":89,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" you","logprobs":[],"obfuscation":"xQlKeOixd1hv"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":90,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" have","logprobs":[],"obfuscation":"bX6P0qgFPnR"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":91,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" any","logprobs":[],"obfuscation":"KxH8EiMzXa1N"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":92,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" more","logprobs":[],"obfuscation":"kA0kxRPPqru"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":93,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" questions","logprobs":[],"obfuscation":"9HRCyD"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":94,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" about","logprobs":[],"obfuscation":"yYFZhtsSfc"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":95,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" it","logprobs":[],"obfuscation":"zpyEAwPWl8Ozh"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":96,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":",","logprobs":[],"obfuscation":"ivjn00lbmzDHiFU"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":97,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" feel","logprobs":[],"obfuscation":"O2edXDmkBqt"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":98,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" free","logprobs":[],"obfuscation":"MlpWh7p0P1F"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":99,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" to","logprobs":[],"obfuscation":"uMNfozGkKe6xW"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":100,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":" ask","logprobs":[],"obfuscation":"6rMOxwXhR8RY"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":101,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"delta":"!","logprobs":[],"obfuscation":"QPZMdhS0e5vYuRl"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","sequence_number":102,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"text":"The path to the `README.md` file for `Microsoft.Extensions.AI.Abstractions` in the `dotnet/extensions` repository is:\n\n```\nsrc/Libraries/Microsoft.Extensions.AI.Abstractions/README.md\n```\n\nThis file provides an overview of the library, installation instructions, and usage examples for its core components. If you have any more questions about it, feel free to ask!","logprobs":[]}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","sequence_number":103,"item_id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","output_index":3,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":"The path to the `README.md` file for `Microsoft.Extensions.AI.Abstractions` in the `dotnet/extensions` repository is:\n\n```\nsrc/Libraries/Microsoft.Extensions.AI.Abstractions/README.md\n```\n\nThis file provides an overview of the library, installation instructions, and usage examples for its core components. If you have any more questions about it, feel free to ask!"}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":104,"output_index":3,"item":{"id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"The path to the `README.md` file for `Microsoft.Extensions.AI.Abstractions` in the `dotnet/extensions` repository is:\n\n```\nsrc/Libraries/Microsoft.Extensions.AI.Abstractions/README.md\n```\n\nThis file provides an overview of the library, installation instructions, and usage examples for its core components. If you have any more questions about it, feel free to ask!"}],"role":"assistant"}}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":105,"response":{"id":"resp_68be44fd7298819e82fd82c8516e970d03a2537be0e84a54","object":"response","created_at":1757299965,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-mini-2024-07-18","output":[{"id":"mcpl_68be44fd8f68819eba7a74a2f6d27a5a03a2537be0e84a54","type":"mcp_list_tools","server_label":"deepwiki","tools":[{"annotations":{"read_only":false},"description":"Get a list of documentation topics for a GitHub repository","input_schema":{"type":"object","properties":{"repoName":{"type":"string","description":"GitHub repository: owner/repo (e.g. \"facebook/react\")"}},"required":["repoName"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"},"name":"read_wiki_structure"},{"annotations":{"read_only":false},"description":"View documentation about a GitHub repository","input_schema":{"type":"object","properties":{"repoName":{"type":"string","description":"GitHub repository: owner/repo (e.g. \"facebook/react\")"}},"required":["repoName"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"},"name":"read_wiki_contents"},{"annotations":{"read_only":false},"description":"Ask any question about a GitHub repository","input_schema":{"type":"object","properties":{"repoName":{"type":"string","description":"GitHub repository: owner/repo (e.g. \"facebook/react\")"},"question":{"type":"string","description":"The question to ask about the repository"}},"required":["repoName","question"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"},"name":"ask_question"}]},{"id":"mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54","type":"mcp_call","approval_request_id":null,"arguments":"{\"repoName\":\"dotnet/extensions\"}","error":null,"name":"read_wiki_structure","output":"Available pages for dotnet/extensions:\n\n- 1 Overview\n- 2 Build System and CI/CD\n- 3 AI Extensions Framework\n  - 3.1 Core Abstractions\n  - 3.2 AI Function System\n  - 3.3 Chat Completion\n  - 3.4 Caching System\n  - 3.5 Evaluation and Reporting\n- 4 HTTP Resilience and Diagnostics\n  - 4.1 Standard Resilience\n  - 4.2 Hedging Strategies\n- 5 Telemetry and Compliance\n- 6 Testing Infrastructure\n  - 6.1 AI Service Integration Testing\n  - 6.2 Time Provider Testing","server_label":"deepwiki"},{"id":"mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54","type":"mcp_call","approval_request_id":null,"arguments":"{\"repoName\":\"dotnet/extensions\",\"question\":\"What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?\"}","error":null,"name":"ask_question","output":"The path to the `README.md` file for `Microsoft.Extensions.AI.Abstractions` is `src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md` . This file provides an overview of the `Microsoft.Extensions.AI.Abstractions` library, including installation instructions and usage examples for its core components like `IChatClient` and `IEmbeddingGenerator`   .\n\n## README.md Content Overview\nThe `README.md` file for `Microsoft.Extensions.AI.Abstractions` details the purpose of the library, which is to provide abstractions for generative AI components . It includes instructions on how to install the NuGet package `Microsoft.Extensions.AI.Abstractions` .\n\nThe document also provides usage examples for the `IChatClient` interface, which defines methods for interacting with AI services that offer \"chat\" capabilities . This includes examples for requesting both complete and streaming chat responses  .\n\nFurthermore, the `README.md` explains the `IEmbeddingGenerator` interface, which is used for generating vector embeddings from input values . It demonstrates how to use `GenerateAsync` to create embeddings . The file also discusses how both `IChatClient` and `IEmbeddingGenerator` implementations can be layered to create pipelines of functionality, incorporating features like caching and telemetry  .\n\nNotes:\nThe user's query specifically asked for the path to the `README.md` file for `Microsoft.Extensions.AI.Abstractions`. The provided codebase context, particularly the wiki page for \"AI Extensions Framework\", directly lists this file as a relevant source file . The content of the `README.md` file itself further confirms its relevance to the `Microsoft.Extensions.AI.Abstractions` library.\n\nWiki pages you might want to explore:\n- [AI Extensions Framework (dotnet/extensions)](/wiki/dotnet/extensions#3)\n- [Chat Completion (dotnet/extensions)](/wiki/dotnet/extensions#3.3)\n\nView this search on DeepWiki: https://deepwiki.com/search/what-is-the-path-to-the-readme_bb6bee43-3136-4b21-bc5d-02ca1611d857\n","server_label":"deepwiki"},{"id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"The path to the `README.md` file for `Microsoft.Extensions.AI.Abstractions` in the `dotnet/extensions` repository is:\n\n```\nsrc/Libraries/Microsoft.Extensions.AI.Abstractions/README.md\n```\n\nThis file provides an overview of the library, installation instructions, and usage examples for its core components. If you have any more questions about it, feel free to ask!"}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"mcp","allowed_tools":null,"headers":null,"require_approval":"never","server_description":null,"server_label":"deepwiki","server_url":"https://mcp.deepwiki.com/<redacted>"}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":1420,"input_tokens_details":{"cached_tokens":0},"output_tokens":149,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":1569},"user":null,"metadata":{}}}
+            
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        ChatOptions chatOptions = new()
+        {
+            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+                {
+                    ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+                }
+            ],
+        };
+
+        var response = await client.GetStreamingResponseAsync("Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository", chatOptions)
+            .ToChatResponseAsync();
+        Assert.NotNull(response);
+
+        Assert.Equal("resp_68be44fd7298819e82fd82c8516e970d03a2537be0e84a54", response.ResponseId);
+        Assert.Equal("resp_68be44fd7298819e82fd82c8516e970d03a2537be0e84a54", response.ConversationId);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_757_299_965), response.CreatedAt);
+        Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
+
+        var message = Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
+        Assert.StartsWith("The path to the `README.md` file", response.Messages[0].Text);
+
+        Assert.Equal(6, message.Contents.Count);
+
+        var firstCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
+        Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstCall.CallId);
+        Assert.Equal("deepwiki", firstCall.ServerName);
+        Assert.Equal("read_wiki_structure", firstCall.ToolName);
+        Assert.NotNull(firstCall.Arguments);
+        Assert.Single(firstCall.Arguments);
+        Assert.Equal("dotnet/extensions", ((JsonElement)firstCall.Arguments["repoName"]!).GetString());
+
+        var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
+        Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstResult.CallId);
+        Assert.NotNull(firstResult.Output);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Output)).Text);
+
+        var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
+        Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondCall.CallId);
+        Assert.Equal("deepwiki", secondCall.ServerName);
+        Assert.Equal("ask_question", secondCall.ToolName);
+        Assert.NotNull(secondCall.Arguments);
+        Assert.Equal("dotnet/extensions", ((JsonElement)secondCall.Arguments["repoName"]!).GetString());
+        Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)secondCall.Arguments["question"]!).GetString());
+
+        var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
+        Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondResult.CallId);
+        Assert.NotNull(secondResult.Output);
+        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(Assert.Single(secondResult.Output)).Text);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(1420, response.Usage.InputTokenCount);
+        Assert.Equal(149, response.Usage.OutputTokenCount);
+        Assert.Equal(1569, response.Usage.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task RequestHeaders_UserAgent_ContainsMEAI()
+    {
+        using var handler = new ThrowUserAgentExceptionHandler();
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        InvalidOperationException e = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetResponseAsync("hello"));
+
+        Assert.StartsWith("User-Agent header: OpenAI", e.Message);
+        Assert.Contains("MEAI", e.Message);
     }
 
     private static IChatClient CreateResponseClient(HttpClient httpClient, string modelId) =>

@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using OpenTelemetry.Trace;
 using Xunit;
 
@@ -29,9 +29,6 @@ public class OpenTelemetryChatClientTests
             .AddSource(sourceName)
             .AddInMemoryExporter(activities)
             .Build();
-
-        var collector = new FakeLogCollector();
-        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
 
         using var innerClient = new TestChatClient
         {
@@ -98,7 +95,7 @@ public class OpenTelemetryChatClientTests
 
         using var chatClient = innerClient
             .AsBuilder()
-            .UseOpenTelemetry(loggerFactory, sourceName, configure: instance =>
+            .UseOpenTelemetry(null, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = enableSensitiveData;
                 instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
@@ -132,6 +129,13 @@ public class OpenTelemetryChatClientTests
                 ["service_tier"] = "value1",
                 ["SomethingElse"] = "value2",
             },
+            Instructions = "You are helpful.",
+            Tools =
+            [
+                AIFunctionFactory.Create((string personName) => personName, "GetPersonAge", "Gets the age of a person by name."),
+                new HostedWebSearchTool(),
+                AIFunctionFactory.Create((string location) => "", "GetCurrentWeather", "Gets the current weather for a location.").AsDeclarationOnly(),
+            ],
         };
 
         if (streaming)
@@ -151,11 +155,11 @@ public class OpenTelemetryChatClientTests
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
 
-        Assert.Equal("http://localhost:12345/something", activity.GetTagItem("server.address"));
+        Assert.Equal("localhost", activity.GetTagItem("server.address"));
         Assert.Equal(12345, (int)activity.GetTagItem("server.port")!);
 
         Assert.Equal("chat replacementmodel", activity.DisplayName);
-        Assert.Equal("testservice", activity.GetTagItem("gen_ai.system"));
+        Assert.Equal("testservice", activity.GetTagItem("gen_ai.provider.name"));
 
         Assert.Equal("replacementmodel", activity.GetTagItem("gen_ai.request.model"));
         Assert.Equal(3.0f, activity.GetTagItem("gen_ai.request.frequency_penalty"));
@@ -165,55 +169,152 @@ public class OpenTelemetryChatClientTests
         Assert.Equal(7, activity.GetTagItem("gen_ai.request.top_k"));
         Assert.Equal(123, activity.GetTagItem("gen_ai.request.max_tokens"));
         Assert.Equal("""["hello", "world"]""", activity.GetTagItem("gen_ai.request.stop_sequences"));
-        Assert.Equal(enableSensitiveData ? "value1" : null, activity.GetTagItem("gen_ai.testservice.request.service_tier"));
-        Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("gen_ai.testservice.request.something_else"));
+        Assert.Equal(enableSensitiveData ? "value1" : null, activity.GetTagItem("service_tier"));
+        Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("SomethingElse"));
         Assert.Equal(42L, activity.GetTagItem("gen_ai.request.seed"));
 
         Assert.Equal("id123", activity.GetTagItem("gen_ai.response.id"));
         Assert.Equal("""["stop"]""", activity.GetTagItem("gen_ai.response.finish_reasons"));
         Assert.Equal(10, activity.GetTagItem("gen_ai.usage.input_tokens"));
         Assert.Equal(20, activity.GetTagItem("gen_ai.usage.output_tokens"));
-        Assert.Equal(enableSensitiveData ? "abcdefgh" : null, activity.GetTagItem("gen_ai.testservice.response.system_fingerprint"));
-        Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("gen_ai.testservice.response.and_something_else"));
+        Assert.Equal(enableSensitiveData ? "abcdefgh" : null, activity.GetTagItem("system_fingerprint"));
+        Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("AndSomethingElse"));
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
 
-        var logs = collector.GetSnapshot();
+        var tags = activity.Tags.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         if (enableSensitiveData)
         {
-            Assert.Collection(logs,
-                log => Assert.Equal("""{"content":"You are a close friend."}""", log.Message),
-                log => Assert.Equal("""{"content":"Hey!"}""", log.Message),
-                log => Assert.Equal("""{"tool_calls":[{"id":"12345","type":"function","function":{"name":"GetPersonName"}}]}""", log.Message),
-                log => Assert.Equal("""{"id":"12345","content":"John"}""", log.Message),
-                log => Assert.Equal("""{"content":"Hey John, what\u0027s up?"}""", log.Message),
-                log => Assert.Equal("""{"content":"What\u0027s the biggest animal?"}""", log.Message),
-                log => Assert.Equal("""{"finish_reason":"stop","index":0,"message":{"content":"The blue whale, I think."}}""", log.Message));
+            Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "role": "system",
+                    "parts": [
+                      {
+                        "type": "text",
+                        "content": "You are a close friend."
+                      }
+                    ]
+                  },
+                  {
+                    "role": "user",
+                    "parts": [
+                      {
+                        "type": "text",
+                        "content": "Hey!"
+                      }
+                    ]
+                  },
+                  {
+                    "role": "assistant",
+                    "parts": [
+                      {
+                        "type": "tool_call",
+                        "id": "12345",
+                        "name": "GetPersonName"
+                      }
+                    ]
+                  },
+                  {
+                    "role": "tool",
+                    "parts": [
+                      {
+                        "type": "tool_call_response",
+                        "id": "12345",
+                        "response": "John"
+                      }
+                    ]
+                  },
+                  {
+                    "role": "assistant",
+                    "parts": [
+                      {
+                        "type": "text",
+                        "content": "Hey John, what's up?"
+                      }
+                    ]
+                  },
+                  {
+                    "role": "user",
+                    "parts": [
+                      {
+                        "type": "text",
+                        "content": "What's the biggest animal?"
+                      }
+                    ]
+                  }
+                ]
+                """), ReplaceWhitespace(tags["gen_ai.input.messages"]));
+
+            Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "role": "assistant",
+                    "parts": [
+                      {
+                        "type": "text",
+                        "content": "The blue whale, I think."
+                      }
+                    ],
+                    "finish_reason": "stop"
+                  }
+                ]
+                """), ReplaceWhitespace(tags["gen_ai.output.messages"]));
+
+            Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                      "type": "text",
+                      "content": "You are helpful."
+                  }
+                ]
+                """), ReplaceWhitespace(tags["gen_ai.system_instructions"]));
+
+            Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "type": "function",
+                    "name": "GetPersonAge",
+                    "description": "Gets the age of a person by name.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "personName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "personName"
+                      ]
+                    }
+                  },
+                  {
+                    "type": "function",
+                    "name": "GetCurrentWeather",
+                    "description": "Gets the current weather for a location.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "location": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "location"
+                      ]
+                    }
+                  }
+                ]
+                """), ReplaceWhitespace(tags["gen_ai.tool.definitions"]));
         }
         else
         {
-            Assert.Collection(logs,
-                log => Assert.Equal("""{}""", log.Message),
-                log => Assert.Equal("""{}""", log.Message),
-                log => Assert.Equal("""{"tool_calls":[{"id":"12345","type":"function","function":{"name":"GetPersonName"}}]}""", log.Message),
-                log => Assert.Equal("""{"id":"12345"}""", log.Message),
-                log => Assert.Equal("""{}""", log.Message),
-                log => Assert.Equal("""{}""", log.Message),
-                log => Assert.Equal("""{"finish_reason":"stop","index":0,"message":{}}""", log.Message));
+            Assert.False(tags.ContainsKey("gen_ai.input.messages"));
+            Assert.False(tags.ContainsKey("gen_ai.output.messages"));
+            Assert.False(tags.ContainsKey("gen_ai.system_instructions"));
+            Assert.False(tags.ContainsKey("gen_ai.tool.definitions"));
         }
 
-        Assert.Collection(logs,
-            log => Assert.Equal(new KeyValuePair<string, string?>("event.name", "gen_ai.system.message"), ((IList<KeyValuePair<string, string?>>)log.State!)[0]),
-            log => Assert.Equal(new KeyValuePair<string, string?>("event.name", "gen_ai.user.message"), ((IList<KeyValuePair<string, string?>>)log.State!)[0]),
-            log => Assert.Equal(new KeyValuePair<string, string?>("event.name", "gen_ai.assistant.message"), ((IList<KeyValuePair<string, string?>>)log.State!)[0]),
-            log => Assert.Equal(new KeyValuePair<string, string?>("event.name", "gen_ai.tool.message"), ((IList<KeyValuePair<string, string?>>)log.State!)[0]),
-            log => Assert.Equal(new KeyValuePair<string, string?>("event.name", "gen_ai.assistant.message"), ((IList<KeyValuePair<string, string?>>)log.State!)[0]),
-            log => Assert.Equal(new KeyValuePair<string, string?>("event.name", "gen_ai.user.message"), ((IList<KeyValuePair<string, string?>>)log.State!)[0]),
-            log => Assert.Equal(new KeyValuePair<string, string?>("event.name", "gen_ai.choice"), ((IList<KeyValuePair<string, string?>>)log.State!)[0]));
-
-        Assert.All(logs, log =>
-        {
-            Assert.Equal(new KeyValuePair<string, string?>("gen_ai.system", "testservice"), ((IList<KeyValuePair<string, string?>>)log.State!)[1]);
-        });
+        static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
     }
 }

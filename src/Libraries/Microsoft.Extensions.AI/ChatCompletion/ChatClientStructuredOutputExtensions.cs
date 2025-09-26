@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -23,17 +21,6 @@ namespace Microsoft.Extensions.AI;
 /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/structured-output">Request a response with structured output.</related>
 public static partial class ChatClientStructuredOutputExtensions
 {
-    private static readonly AIJsonSchemaCreateOptions _inferenceOptions = new()
-    {
-        IncludeSchemaKeyword = true,
-        TransformOptions = new AIJsonSchemaTransformOptions
-        {
-            DisallowAdditionalProperties = true,
-            RequireAllProperties = true,
-            MoveDefaultKeywordToDescription = true,
-        },
-    };
-
     /// <summary>Sends chat messages, requesting a response matching the type <typeparamref name="T"/>.</summary>
     /// <param name="chatClient">The <see cref="IChatClient"/>.</param>
     /// <param name="messages">The chat content to send.</param>
@@ -161,20 +148,12 @@ public static partial class ChatClientStructuredOutputExtensions
 
         serializerOptions.MakeReadOnly();
 
-        var schemaElement = AIJsonUtilities.CreateJsonSchema(
-            type: typeof(T),
-            serializerOptions: serializerOptions,
-            inferenceOptions: _inferenceOptions);
+        var responseFormat = ChatResponseFormat.ForJsonSchema<T>(serializerOptions);
 
-        bool isWrappedInObject;
-        JsonElement schema;
-        if (SchemaRepresentsObject(schemaElement))
-        {
-            // For object-representing schemas, we can use them as-is
-            isWrappedInObject = false;
-            schema = schemaElement;
-        }
-        else
+        Debug.Assert(responseFormat.Schema is not null, "ForJsonSchema should always populate Schema");
+        var schema = responseFormat.Schema!.Value;
+        bool isWrappedInObject = false;
+        if (!SchemaRepresentsObject(schema))
         {
             // For non-object-representing schemas, we wrap them in an object schema, because all
             // the real LLM providers today require an object schema as the root. This is currently
@@ -184,10 +163,11 @@ public static partial class ChatClientStructuredOutputExtensions
             {
                 { "$schema", "https://json-schema.org/draft/2020-12/schema" },
                 { "type", "object" },
-                { "properties", new JsonObject { { "data", JsonElementToJsonNode(schemaElement) } } },
+                { "properties", new JsonObject { { "data", JsonElementToJsonNode(schema) } } },
                 { "additionalProperties", false },
                 { "required", new JsonArray("data") },
             }, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonObject)));
+            responseFormat = ChatResponseFormat.ForJsonSchema(schema, responseFormat.SchemaName, responseFormat.SchemaDescription);
         }
 
         ChatMessage? promptAugmentation = null;
@@ -200,10 +180,7 @@ public static partial class ChatClientStructuredOutputExtensions
         {
             // When using native structured output, we don't add any additional prompt, because
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
-            options.ResponseFormat = ChatResponseFormat.ForJsonSchema(
-                schema,
-                schemaName: SanitizeMemberName(typeof(T).Name),
-                schemaDescription: typeof(T).GetCustomAttribute<DescriptionAttribute>()?.Description);
+            options.ResponseFormat = responseFormat;
         }
         else
         {
@@ -213,7 +190,7 @@ public static partial class ChatClientStructuredOutputExtensions
             promptAugmentation = new ChatMessage(ChatRole.User, $$"""
                 Respond with a JSON value conforming to the following schema:
                 ```
-                {{schema}}
+                {{responseFormat.Schema}}
                 ```
                 """);
 
@@ -222,53 +199,31 @@ public static partial class ChatClientStructuredOutputExtensions
 
         var result = await chatClient.GetResponseAsync(messages, options, cancellationToken);
         return new ChatResponse<T>(result, serializerOptions) { IsWrappedInObject = isWrappedInObject };
-    }
 
-    private static bool SchemaRepresentsObject(JsonElement schemaElement)
-    {
-        if (schemaElement.ValueKind is JsonValueKind.Object)
+        static bool SchemaRepresentsObject(JsonElement schemaElement)
         {
-            foreach (var property in schemaElement.EnumerateObject())
+            if (schemaElement.ValueKind is JsonValueKind.Object)
             {
-                if (property.NameEquals("type"u8))
+                foreach (var property in schemaElement.EnumerateObject())
                 {
-                    return property.Value.ValueKind == JsonValueKind.String
-                        && property.Value.ValueEquals("object"u8);
+                    if (property.NameEquals("type"u8))
+                    {
+                        return property.Value.ValueKind == JsonValueKind.String
+                            && property.Value.ValueEquals("object"u8);
+                    }
                 }
             }
+
+            return false;
         }
 
-        return false;
+        static JsonNode? JsonElementToJsonNode(JsonElement element) =>
+            element.ValueKind switch
+            {
+                JsonValueKind.Null => null,
+                JsonValueKind.Array => JsonArray.Create(element),
+                JsonValueKind.Object => JsonObject.Create(element),
+                _ => JsonValue.Create(element)
+            };
     }
-
-    private static JsonNode? JsonElementToJsonNode(JsonElement element)
-    {
-        return element.ValueKind switch
-        {
-            JsonValueKind.Null => null,
-            JsonValueKind.Array => JsonArray.Create(element),
-            JsonValueKind.Object => JsonObject.Create(element),
-            _ => JsonValue.Create(element)
-        };
-    }
-
-    /// <summary>
-    /// Removes characters from a .NET member name that shouldn't be used in an AI function name.
-    /// </summary>
-    /// <param name="memberName">The .NET member name that should be sanitized.</param>
-    /// <returns>
-    /// Replaces non-alphanumeric characters in the identifier with the underscore character.
-    /// Primarily intended to remove characters produced by compiler-generated method name mangling.
-    /// </returns>
-    private static string SanitizeMemberName(string memberName) =>
-        InvalidNameCharsRegex().Replace(memberName, "_");
-
-    /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
-#if NET
-    [GeneratedRegex("[^0-9A-Za-z_]")]
-    private static partial Regex InvalidNameCharsRegex();
-#else
-    private static Regex InvalidNameCharsRegex() => _invalidNameCharsRegex;
-    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
-#endif
 }

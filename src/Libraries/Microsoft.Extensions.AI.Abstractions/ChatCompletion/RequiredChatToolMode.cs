@@ -15,17 +15,17 @@ namespace Microsoft.Extensions.AI;
 public sealed class RequiredChatToolMode : ChatToolMode
 {
     /// <summary>
-    /// Gets the name of a specific <see cref="AIFunction"/> that must be called.
+    /// Gets the name of a specific tool that must be called.
     /// </summary>
     /// <remarks>
-    /// If the value is <see langword="null"/>, any available function can be selected (but at least one must be).
+    /// If the value is <see langword="null"/>, any available tool can be selected (but at least one must be).
     /// </remarks>
     public string? RequiredFunctionName { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RequiredChatToolMode"/> class that requires a specific function to be called.
+    /// Initializes a new instance of the <see cref="RequiredChatToolMode"/> class that requires a specific tool to be called.
     /// </summary>
-    /// <param name="requiredFunctionName">The name of the function that must be called.</param>
+    /// <param name="requiredFunctionName">The name of the tool that must be called.</param>
     /// <exception cref="ArgumentException"><paramref name="requiredFunctionName"/> is empty or composed entirely of whitespace.</exception>
     /// <remarks>
     /// <paramref name="requiredFunctionName"/> can be <see langword="null"/>. However, it's preferable to use
@@ -40,12 +40,6 @@ public sealed class RequiredChatToolMode : ChatToolMode
 
         RequiredFunctionName = requiredFunctionName;
     }
-
-    // The reason for not overriding Equals/GetHashCode (e.g., so two instances are equal if they
-    // have the same RequiredFunctionName) is to leave open the option to unseal the type in the
-    // future. If we did define equality based on RequiredFunctionName but a subclass added further
-    // fields, this would lead to wrong behavior unless the subclass author remembers to re-override
-    // Equals/GetHashCode as well, which they likely won't.
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

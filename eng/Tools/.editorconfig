@@ -479,11 +479,6 @@ dotnet_diagnostic.CA1507.severity = warning
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508
 dotnet_diagnostic.CA1508.severity = warning
 
-# Title    : Avoid dead conditional code
-# Category : Maintainability
-# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508
-dotnet_diagnostic.CA1508.severity = warning
-
 # Title    : Invalid entry in code metrics rule specification file
 # Category : Maintainability
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1509

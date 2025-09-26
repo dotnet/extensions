@@ -15,7 +15,8 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails; 
 
     const hasCacheKey = chatDetails.turnDetails.some(turn => turn.cacheKey !== undefined);
     const hasCacheStatus = chatDetails.turnDetails.some(turn => turn.cacheHit !== undefined);
-    const hasModelInfo = chatDetails.turnDetails.some(turn => turn.model !== undefined);
+    const hasModel = chatDetails.turnDetails.some(turn => turn.model !== undefined);
+    const hasModelProvider = chatDetails.turnDetails.some(turn => turn.modelProvider !== undefined);
     const hasInputTokens = chatDetails.turnDetails.some(turn => turn.usage?.inputTokenCount !== undefined);
     const hasOutputTokens = chatDetails.turnDetails.some(turn => turn.usage?.outputTokenCount !== undefined);
     const hasTotalTokens = chatDetails.turnDetails.some(turn => turn.usage?.totalTokenCount !== undefined);
@@ -42,13 +43,14 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails; 
             {isExpanded && (
                 <div className={classes.sectionContainer}>
                     <div className={classes.tableContainer}>
-                        <Table>
+                        <Table className={classes.autoWidthTable}>
                             <TableHeader>
                                 <TableRow>
                                     {hasCacheKey && <TableHeaderCell className={classes.tableHeaderCell}>Cache Key</TableHeaderCell>}
                                     {hasCacheStatus && <TableHeaderCell className={classes.tableHeaderCell}>Cache Status</TableHeaderCell>}
                                     <TableHeaderCell className={classes.tableHeaderCell}>Latency (s)</TableHeaderCell>
-                                    {hasModelInfo && <TableHeaderCell className={classes.tableHeaderCell}>Model Used</TableHeaderCell>}
+                                    {hasModel && <TableHeaderCell className={classes.tableHeaderCell}>Model</TableHeaderCell>}
+                                    {hasModelProvider && <TableHeaderCell className={classes.tableHeaderCell}>Model Provider</TableHeaderCell>}
                                     {hasInputTokens && <TableHeaderCell className={classes.tableHeaderCell}>Input Tokens</TableHeaderCell>}
                                     {hasOutputTokens && <TableHeaderCell className={classes.tableHeaderCell}>Output Tokens</TableHeaderCell>}
                                     {hasTotalTokens && <TableHeaderCell className={classes.tableHeaderCell}>Total Tokens</TableHeaderCell>}
@@ -92,7 +94,8 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails; 
                                             </TableCell>
                                         )}
                                         <TableCell>{turn.latency.toFixed(2)}</TableCell>
-                                        {hasModelInfo && <TableCell>{turn.model || '-'}</TableCell>}
+                                        {hasModel && <TableCell>{turn.model || '-'}</TableCell>}
+                                        {hasModelProvider && <TableCell>{turn.modelProvider || '-'}</TableCell>}
                                         {hasInputTokens && <TableCell>{turn.usage?.inputTokenCount || '-'}</TableCell>}
                                         {hasOutputTokens && <TableCell>{turn.usage?.outputTokenCount || '-'}</TableCell>}
                                         {hasTotalTokens && <TableCell>{turn.usage?.totalTokenCount || '-'}</TableCell>}

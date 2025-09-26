@@ -14,19 +14,20 @@
 <!--#if (IsOllama)
     <PackageReference Include="OllamaSharp" Version="${TemplatePackageVersion_OllamaSharp}" />
 #elif ((IsGHModels || IsOpenAI) && !IsAspire)
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI_Preview}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAIOpenAI}" />
 #elif (IsAzureAiFoundry)
     <PackageReference Include="Azure.AI.OpenAI" Version="${TemplatePackageVersion_AzureAIOpenAI}" />
     <PackageReference Include="Azure.AI.Projects" Version="${TemplatePackageVersion_AzureAIProjects}" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI_Preview}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAIOpenAI}" />
 #endif -->
 <!--#if ((IsAzureOpenAI || IsOpenAI || IsGHModels) && IsAspire) -->
+    <PackageReference Include="Azure.AI.OpenAI" Version="${TemplatePackageVersion_AzureAIOpenAI}" />
     <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="${TemplatePackageVersion_Aspire_Preview}" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI_Preview}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAIOpenAI}" />
 <!--#endif -->
 <!--#if (IsAzureOpenAI && !IsAspire) -->
     <PackageReference Include="Azure.AI.OpenAI" Version="${TemplatePackageVersion_AzureAIOpenAI}" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI_Preview}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAIOpenAI}" />
 <!--#endif -->
 <!--#if (UseManagedIdentity) -->
     <PackageReference Include="Azure.Identity" Version="${TemplatePackageVersion_AzureIdentity}" />

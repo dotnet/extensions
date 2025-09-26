@@ -11,7 +11,6 @@ using Microsoft.Shared.Text;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 #else
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 #endif
 
@@ -123,7 +122,6 @@ public sealed class HmacRedactor : Redactor
         '8', '9', '+', '/', '=',
     };
 
-    [SuppressMessage("Code smell", "S109", Justification = "Bit operation.")]
     private static int ConvertBytesToBase64(byte[] hashToConvert, Span<char> destination, int remainingBytesToPad, int startOffset)
     {
         var iterations = BytesOfHashWeUse - remainingBytesToPad;

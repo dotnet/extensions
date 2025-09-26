@@ -141,7 +141,17 @@ public class ChatResponseUpdate
 
     /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private AIContent? ContentForDebuggerDisplay => _contents is { Count: > 0 } ? _contents[0] : null;
+    private AIContent? ContentForDebuggerDisplay
+    {
+        get
+        {
+            string text = Text;
+            return
+                !string.IsNullOrWhiteSpace(text) ? new TextContent(text) :
+                _contents is { Count: > 0 } ? _contents[0] :
+                null;
+        }
+    }
 
     /// <summary>Gets an indication for the debugger display of whether there's more content.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

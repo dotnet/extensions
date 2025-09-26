@@ -101,7 +101,6 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
         return Calculator.CalculateUtilization(t.first, t.last, _provider.Resources);
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally Consume All. Allow no escapes.")]
     internal async Task PublishUtilizationAsync(CancellationToken cancellationToken)
     {
         var u = GetUtilization(_publishingWindow);
@@ -120,7 +119,6 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
         }
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally Consume All. Allow no escapes.")]
     [SuppressMessage("Blocker Bug", "S2190:Loops and recursions should not be infinite", Justification = "Terminate when Delay throws an exception on cancellation")]
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {

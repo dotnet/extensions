@@ -66,7 +66,6 @@ public static class AzureStorageReportingConfiguration
     /// (persisted to the cache using older versions of the library) will no longer be used - instead new responses
     /// will be fetched from the LLM and added to the cache for use in subsequent executions.
     /// </remarks>
-#pragma warning disable S107 // Methods should not have too many parameters
     public static ReportingConfiguration Create(
         DataLakeDirectoryClient client,
         IEnumerable<IEvaluator> evaluators,
@@ -77,7 +76,6 @@ public static class AzureStorageReportingConfiguration
         string executionName = Defaults.DefaultExecutionName,
         Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,
         IEnumerable<string>? tags = null)
-#pragma warning restore S107
     {
         IEvaluationResponseCacheProvider? responseCacheProvider =
             chatConfiguration is not null && enableResponseCaching

@@ -79,7 +79,6 @@ internal partial class DefaultHybridCache
 
         public override void SetCanceled() => _result?.TrySetCanceled(SharedToken);
 
-        [SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Custom task management")]
         public ValueTask<T> JoinAsync(ILogger log, CancellationToken token)
         {
             // If the underlying has already completed, and/or our local token can't cancel: we
@@ -120,7 +119,6 @@ internal partial class DefaultHybridCache
             }
         }
 
-        [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "Reliability")]
         public Task<CacheItem<T>> Task
         {
             get
@@ -135,8 +133,6 @@ internal partial class DefaultHybridCache
 
         [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "No cancellable operation")]
         [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "Checked manual unwrap")]
-        [SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Checked manual unwrap")]
-        [SuppressMessage("Major Code Smell", "S1121:Assignments should not be made from within sub-expressions", Justification = "Unusual, but legit here")]
         internal ValueTask<T> UnwrapReservedAsync(ILogger log)
         {
             Task<CacheItem<T>> task = Task;
@@ -162,8 +158,6 @@ internal partial class DefaultHybridCache
         private static CacheItem<T> ThrowUnexpectedCacheItem() => throw new InvalidOperationException("Unexpected cache item");
 
         [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "In this case the cancellation token is provided internally via SharedToken")]
-        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is passed through to faulted task result")]
-        [SuppressMessage("Reliability", "EA0002:Use 'System.TimeProvider' to make the code easier to test", Justification = "Does not apply")]
         private async Task BackgroundFetchAsync()
         {
             bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
@@ -544,7 +538,6 @@ internal partial class DefaultHybridCache
         }
     }
 
-    [SuppressMessage("Major Code Smell", "S1121:Assignments should not be made from within sub-expressions", Justification = "Reasonable in this case, due to stack alloc scope.")]
     private static bool ValidateUnicodeCorrectness(ILogger logger, string key, TagSet tags)
     {
         int maxChars = Math.Max(key.Length, tags.MaxLength());

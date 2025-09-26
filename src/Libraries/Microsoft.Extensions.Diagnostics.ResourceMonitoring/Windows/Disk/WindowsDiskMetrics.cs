@@ -73,7 +73,6 @@ internal sealed class WindowsDiskMetrics
             description: "Time disk spent activated");
     }
 
-#pragma warning disable CA1031 // Do not catch general exception types
     private void InitializeDiskCounters(IPerformanceCounterFactory performanceCounterFactory, TimeProvider timeProvider)
     {
         const string DiskCategoryName = "LogicalDisk";
@@ -129,7 +128,6 @@ internal sealed class WindowsDiskMetrics
             }
         }
     }
-#pragma warning restore CA1031 // Do not catch general exception types
 
     private IEnumerable<Measurement<long>> GetDiskIoMeasurements()
     {

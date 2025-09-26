@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
-using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Diagnostics;

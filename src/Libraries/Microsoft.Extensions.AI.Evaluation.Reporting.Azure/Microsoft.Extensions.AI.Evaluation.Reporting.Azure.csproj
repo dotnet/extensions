@@ -4,8 +4,6 @@
     <Description>A library that supports the Microsoft.Extensions.AI.Evaluation.Reporting library with an implementation for caching LLM responses and storing the evaluation results in an Azure Storage container.</Description>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation.Reporting</RootNamespace>
-    <!-- EA0002: Use System.TimeProvider to make the code easier to test. -->
-    <NoWarn>$(NoWarn);EA0002</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

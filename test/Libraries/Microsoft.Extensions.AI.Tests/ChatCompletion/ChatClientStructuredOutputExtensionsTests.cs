@@ -37,34 +37,28 @@ public partial class ChatClientStructuredOutputExtensionsTests
                 Assert.NotNull(responseFormat.Schema);
                 AssertDeepEquals(JsonDocument.Parse("""
                     {
-                      "$schema": "https://json-schema.org/draft/2020-12/schema",
-                      "description": "Some test description",
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "fullName": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
-                        "species": {
-                          "type": "string",
-                          "enum": [
-                            "Bear",
-                            "Tiger",
-                            "Walrus"
-                          ]
+                        "$schema": "https://json-schema.org/draft/2020-12/schema",
+                        "description": "Some test description",
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "fullName": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "species": {
+                                "type": "string",
+                                "enum": [
+                                    "Bear",
+                                    "Tiger",
+                                    "Walrus"
+                                ]
+                            }
                         }
-                      },
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "fullName",
-                        "species"
-                      ]
                     }
                     """).RootElement, responseFormat.Schema.Value);
                 Assert.Equal(nameof(Animal), responseFormat.SchemaName);
@@ -165,6 +159,50 @@ public partial class ChatClientStructuredOutputExtensionsTests
     {
         var expectedResult = new Envelope<int> { data = 123 };
         var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, JsonContext2.Default.Options)));
+
+        using var client = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
+                Assert.Equal("""
+                    {
+                      "$schema": "https://json-schema.org/draft/2020-12/schema",
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$schema": "https://json-schema.org/draft/2020-12/schema",
+                          "type": "integer"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": [
+                        "data"
+                      ]
+                    }
+                    """, responseFormat.Schema.ToString());
+                return Task.FromResult(expectedResponse);
+            },
+        };
+
+        var response = await client.GetResponseAsync<int>("Hello");
+        Assert.Equal(123, response.Result);
+    }
+
+    [Fact]
+    public async Task OnlyUsesLastMessage()
+    {
+        var expectedResult = new Envelope<int> { data = 123 };
+        var expectedResponse = new ChatResponse(
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new TextContent("I'm going to invoke a function to get the data."),
+                new FunctionCallContent("callid123", "get_data"),
+            ]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callid123", "result")]),
+            new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, JsonContext2.Default.Options))
+        ]);
 
         using var client = new TestChatClient
         {
@@ -336,29 +374,23 @@ public partial class ChatClientStructuredOutputExtensionsTests
                 Assert.NotNull(responseFormat.Schema);
                 AssertDeepEquals(JsonDocument.Parse("""
                     {
-                      "$schema": "https://json-schema.org/draft/2020-12/schema",
-                      "description": "Some test description",
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "full_name": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
-                        "species": {
-                          "type": "integer"
+                        "$schema": "https://json-schema.org/draft/2020-12/schema",
+                        "description": "Some test description",
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "full_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "species": {
+                                "type": "integer"
+                            }
                         }
-                      },
-                      "additionalProperties": false,
-                      "required": [
-                        "id",
-                        "full_name",
-                        "species"
-                      ]
                     }
                     """).RootElement, responseFormat.Schema.Value);
 
