@@ -1,6 +1,6 @@
 var builder = DistributedApplication.CreateBuilder(args);
 #if (IsOllama) // ASPIRE PARAMETERS
-#elif (IsOpenAI || IsGHModels)
+#elif (IsOpenAI || IsGHModels || IsAzureOpenAI)
 
 // You will need to set the connection string to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
