@@ -10,24 +10,9 @@ var builder = DistributedApplication.CreateBuilder(args);
 #elif (IsGHModels)
 //   dotnet user-secrets set ConnectionStrings:openai "Endpoint=https://models.inference.ai.azure.com;Key=YOUR-API-KEY"
 #else // IsAzureOpenAI
-//   dotnet user-secrets set ConnectionStrings:openai "Endpoint=https://YOUR-DEPLOYMENT-NAME.openai.azure.com;Key=YOUR-API-KEY"
+//   dotnet user-secrets set ConnectionStrings:openai "Endpoint=https://YOUR-DEPLOYMENT-NAME.openai.azure.com/openai/v1;Key=YOUR-API-KEY"
 #endif
 var openai = builder.AddConnectionString("openai");
-#else // IsAzureOpenAI
-
-// See https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration
-// for instructions providing configuration values
-var openai = builder.AddAzureOpenAI("openai");
-
-openai.AddDeployment(
-    name: "gpt-4o-mini",
-    modelName: "gpt-4o-mini",
-    modelVersion: "2024-07-18");
-
-openai.AddDeployment(
-    name: "text-embedding-3-small",
-    modelName: "text-embedding-3-small",
-    modelVersion: "1");
 #endif
 #if (UseAzureAISearch)
 
@@ -58,12 +43,8 @@ webApp
     .WithReference(embeddings)
     .WaitFor(chat)
     .WaitFor(embeddings);
-#elif (IsOpenAI || IsGHModels)
+#elif (IsOpenAI || IsGHModels || IsAzureOpenAI)
 webApp.WithReference(openai);
-#else // IsAzureOpenAI
-webApp
-    .WithReference(openai)
-    .WaitFor(openai);
 #endif
 #if (UseAzureAISearch) // VECTOR DATABASE REFERENCES
 webApp

@@ -6,15 +6,13 @@ using ChatWithCustomData_CSharp.Web.Services.Ingestion;
 using Azure;
 #if (UseManagedIdentity)
 using Azure.Identity;
+using System.ClientModel.Primitives;
 #endif
 #endif
 #if (IsOllama)
 using OllamaSharp;
-#elif (IsOpenAI || IsGHModels)
-using OpenAI;
-using System.ClientModel;
 #else
-using Azure.AI.OpenAI;
+using OpenAI;
 using System.ClientModel;
 #endif
 
@@ -61,17 +59,18 @@ var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small
 #if (!UseManagedIdentity)
 //   dotnet user-secrets set AzureOpenAI:Key YOUR-API-KEY
 #endif
-var azureOpenAi = new AzureOpenAIClient(
-    new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Endpoint. See the README for details.")),
+var azureEndpoint = builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Endpoint. See the README for details.");
+var azureOpenAiClient = new OpenAIClient(
 #if (UseManagedIdentity)
-    new DefaultAzureCredential());
+    new BearerTokenPolicy(new DefaultAzureCredential(), ["https://cognitiveservices.azure.com/.default"]),
 #else
-    new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Key. See the README for details.")));
+    new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Key. See the README for details.")),
 #endif
+    new OpenAIClientOptions() { Endpoint = new Uri(azureEndpoint.TrimEnd('/') + "/openai/v1") });
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-var chatClient = azureOpenAi.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
+var chatClient = azureOpenAiClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-var embeddingGenerator = azureOpenAi.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
+var embeddingGenerator = azureOpenAiClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
 #endif
 
 #if (UseAzureAISearch)

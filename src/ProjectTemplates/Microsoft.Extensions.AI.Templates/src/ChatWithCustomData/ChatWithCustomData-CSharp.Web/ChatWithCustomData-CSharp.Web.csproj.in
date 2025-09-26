@@ -21,12 +21,10 @@
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAIOpenAI}" />
 #endif -->
 <!--#if ((IsAzureOpenAI || IsOpenAI || IsGHModels) && IsAspire) -->
-    <PackageReference Include="Azure.AI.OpenAI" Version="${TemplatePackageVersion_AzureAIOpenAI}" />
-    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="${TemplatePackageVersion_Aspire_Preview}" />
+    <PackageReference Include="Aspire.OpenAI" Version="${TemplatePackageVersion_Aspire_Preview}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAIOpenAI}" />
 <!--#endif -->
 <!--#if (IsAzureOpenAI && !IsAspire) -->
-    <PackageReference Include="Azure.AI.OpenAI" Version="${TemplatePackageVersion_AzureAIOpenAI}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAIOpenAI}" />
 <!--#endif -->
 <!--#if (UseManagedIdentity) -->
