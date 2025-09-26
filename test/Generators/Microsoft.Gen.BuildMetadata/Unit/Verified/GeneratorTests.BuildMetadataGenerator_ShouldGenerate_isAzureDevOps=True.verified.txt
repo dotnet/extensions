@@ -4,47 +4,39 @@
 #pragma warning disable CS1591 // Compensate for https://github.com/dotnet/roslyn/issues/54103
 namespace Microsoft.Extensions.AmbientMetadata
 {
-    using System;
-    using System.ComponentModel;
-    using System.Diagnostics.CodeAnalysis;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.Configuration.Memory;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Hosting;
-
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Gen.BuildMetadata", "VERSION")]
     internal static class BuildMetadataGeneratedExtensions
     {
         private const string DefaultSectionName = "ambientmetadata:build";
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Gen.BuildMetadata", "VERSION")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        private sealed class BuildMetadataSource : IConfigurationSource
+        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+        private sealed class BuildMetadataSource : global::Microsoft.Extensions.Configuration.IConfigurationSource
         {
             public string SectionName { get; }
 
             public BuildMetadataSource(string sectionName)
             {
 #if !NET
-                if (string.IsNullOrWhiteSpace(sectionName))
+                if (global::System.string.IsNullOrWhiteSpace(sectionName))
                 {
                     if (sectionName is null)
                     {
-                        throw new ArgumentNullException(nameof(sectionName));
+                        throw new global::System.ArgumentNullException(nameof(sectionName));
                     }
 
-                    throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", nameof(sectionName));
+                    throw new global::System.ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", nameof(sectionName));
                 }
 #else
-                ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
+                global::System.ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
 #endif
 
                 SectionName = sectionName;
             }
 
-            public IConfigurationProvider Build(IConfigurationBuilder builder)
+            public global::Microsoft.Extensions.Configuration.IConfigurationProvider Build(global::Microsoft.Extensions.Configuration.IConfigurationBuilder builder)
             {
-                return new MemoryConfigurationProvider(new MemoryConfigurationSource())
+                return new global::Microsoft.Extensions.Configuration.Memory.MemoryConfigurationProvider(new global::Microsoft.Extensions.Configuration.Memory.MemoryConfigurationSource())
                 {
                     { $"{SectionName}:buildid", "TEST_AZURE_BUILDID" },
                     { $"{SectionName}:buildnumber", "TEST_AZURE_BUILDNUMBER" },
@@ -54,84 +46,84 @@ namespace Microsoft.Extensions.AmbientMetadata
             }
         }
 
-        public static IHostBuilder UseBuildMetadata(this IHostBuilder builder, string sectionName = DefaultSectionName)
+        public static global::Microsoft.Extensions.Hosting.IHostBuilder UseBuildMetadata(this global::Microsoft.Extensions.Hosting.IHostBuilder builder, string sectionName = DefaultSectionName)
         {
 #if !NET
             if (builder is null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new global::System.ArgumentNullException(nameof(builder));
             }
 
-            if (string.IsNullOrWhiteSpace(sectionName))
+            if (global::System.string.IsNullOrWhiteSpace(sectionName))
             {
                 if (sectionName is null)
                 {
-                    throw new ArgumentNullException(nameof(sectionName));
+                    throw new global::System.ArgumentNullException(nameof(sectionName));
                 }
 
-                throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", nameof(sectionName));
+                throw new global::System.ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", nameof(sectionName));
             }
 #else
-            ArgumentNullException.ThrowIfNull(builder);
-            ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
+            global::System.ArgumentNullException.ThrowIfNull(builder);
+            global::System.ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
 #endif
 
             _ = builder.ConfigureHostConfiguration(configBuilder => configBuilder.AddBuildMetadata(sectionName))
                 .ConfigureServices((hostBuilderContext, serviceCollection) =>
-                    serviceCollection.AddBuildMetadata(hostBuilderContext.Configuration.GetSection(sectionName)));
+                    global::Microsoft.Extensions.DependencyInjection.BuildMetadataServiceCollectionExtensions.AddBuildMetadata(serviceCollection, hostBuilderContext.Configuration.GetSection(sectionName)));
 
             return builder;
         }
 
         public static TBuilder UseBuildMetadata<TBuilder>(this TBuilder builder, string sectionName = DefaultSectionName)
-            where TBuilder : IHostApplicationBuilder
+            where TBuilder : global::Microsoft.Extensions.Hosting.IHostApplicationBuilder
         {
 #if !NET
             if (builder is null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new global::System.ArgumentNullException(nameof(builder));
             }
 
-            if (string.IsNullOrWhiteSpace(sectionName))
+            if (global::System.string.IsNullOrWhiteSpace(sectionName))
             {
                 if (sectionName is null)
                 {
-                    throw new ArgumentNullException(nameof(sectionName));
+                    throw new global::System.ArgumentNullException(nameof(sectionName));
                 }
 
-                throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", nameof(sectionName));
+                throw new global::System.ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", nameof(sectionName));
             }
 #else
-            ArgumentNullException.ThrowIfNull(builder);
-            ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
+            global::System.ArgumentNullException.ThrowIfNull(builder);
+            global::System.ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
 #endif
 
             _ = builder.Configuration.AddBuildMetadata(sectionName);
-            _ = builder.Services.AddBuildMetadata(builder.Configuration.GetSection(sectionName));
+            global::Microsoft.Extensions.DependencyInjection.BuildMetadataServiceCollectionExtensions.AddBuildMetadata(builder.Services, builder.Configuration.GetSection(sectionName));
 
             return builder;
         }
 
-        public static IConfigurationBuilder AddBuildMetadata(this IConfigurationBuilder builder, string sectionName = DefaultSectionName)
+        public static global::Microsoft.Extensions.Configuration.IConfigurationBuilder AddBuildMetadata(this global::Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string sectionName = DefaultSectionName)
         {
 #if !NET
             if (builder is null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new global::System.ArgumentNullException(nameof(builder));
             }
 
-            if (string.IsNullOrWhiteSpace(sectionName))
+            if (global::System.string.IsNullOrWhiteSpace(sectionName))
             {
                 if (sectionName is null)
                 {
-                    throw new ArgumentNullException(nameof(sectionName));
+                    throw new global::System.ArgumentNullException(nameof(sectionName));
                 }
 
-                throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", nameof(sectionName));
+                throw new global::System.ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", nameof(sectionName));
             }
 #else
-            ArgumentNullException.ThrowIfNull(builder);
-            ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
+            global::System.ArgumentNullException.ThrowIfNull(builder);
+            global::System.ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
 #endif
 
             return builder.Add(new BuildMetadataSource(sectionName));
