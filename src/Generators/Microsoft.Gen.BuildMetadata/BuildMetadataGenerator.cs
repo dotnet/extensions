@@ -55,22 +55,5 @@ public class BuildMetadataGenerator : IIncrementalGenerator
         context.AddSource("BuildMetadataExtensions.g.cs", SourceText.From(result, Encoding.UTF8));
     }
 
-    private readonly struct BuildMetadata
-    {
-        public string? BuildId { get; }
-
-        public string? BuildNumber { get; }
-
-        public string? SourceBranchName { get; }
-
-        public string? SourceVersion { get; }
-
-        public BuildMetadata(string? buildId, string? buildNumber, string? sourceBranchName, string? sourceVersion)
-        {
-            BuildId = buildId;
-            BuildNumber = buildNumber;
-            SourceBranchName = sourceBranchName;
-            SourceVersion = sourceVersion;
-        }
-    }
+    private readonly record struct BuildMetadata(string? BuildId, string? BuildNumber, string? SourceBranchName, string? SourceVersion);
 }
