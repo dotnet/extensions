@@ -37,7 +37,6 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private LoggerFilterOptions _filterOptions;
     private IExternalScopeProvider? _scopeProvider;
 
-#pragma warning disable S107 // Methods should not have too many parameters
     public ExtendedLoggerFactory(
         IEnumerable<ILoggerProvider> providers,
         IEnumerable<ILogEnricher> enrichers,
@@ -54,7 +53,6 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
 #else
         IRedactorProvider? redactorProvider = null)
 #endif
-#pragma warning restore S107 // Methods should not have too many parameters
     {
         _scopeProvider = scopeProvider;
 #if NET9_0_OR_GREATER
@@ -130,9 +128,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
                         registration.Provider.Dispose();
                     }
                 }
-#pragma warning disable CA1031
                 catch
-#pragma warning restore CA1031
                 {
                     // Swallow exceptions on dispose
                 }

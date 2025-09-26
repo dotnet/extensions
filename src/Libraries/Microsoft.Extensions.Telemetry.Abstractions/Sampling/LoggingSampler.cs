@@ -8,9 +8,7 @@ namespace Microsoft.Extensions.Logging;
 /// <summary>
 /// Controls the number of samples of log records collected and sent to the backend.
 /// </summary>
-#pragma warning disable S1694 // An abstract class should have both abstract and concrete methods
 public abstract class LoggingSampler
-#pragma warning restore S1694 // An abstract class should have both abstract and concrete methods
 {
     /// <summary>
     /// Makes a sampling decision for the provided <paramref name="logEntry"/>.

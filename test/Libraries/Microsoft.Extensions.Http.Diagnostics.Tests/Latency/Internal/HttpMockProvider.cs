@@ -40,7 +40,7 @@ internal static class HttpMockProvider
         return lc;
     }
 
-    public class MockEventSource : EventSource
+    public class MockEventSource() : EventSource(throwOnEventWriteErrors: true)
     {
         public int OnEventInvoked;
 

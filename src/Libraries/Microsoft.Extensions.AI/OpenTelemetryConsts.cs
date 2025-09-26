@@ -3,7 +3,6 @@
 
 namespace Microsoft.Extensions.AI;
 
-#pragma warning disable CA1716 // Identifiers should not match keywords
 #pragma warning disable S4041 // Type names should not match namespaces
 
 /// <summary>Provides constants used by various telemetry services.</summary>

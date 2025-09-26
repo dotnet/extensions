@@ -128,7 +128,6 @@ public sealed class RetrievalEvaluator : IEvaluator
         ChatMessage userRequest,
         RetrievalEvaluatorContext context)
     {
-#pragma warning disable S103 // Lines should not be too long
         const string SystemPrompt =
             """
             # Instruction
@@ -138,7 +137,6 @@ public sealed class RetrievalEvaluator : IEvaluator
             - **Data**: Your input data include QUERY and CONTEXT.
             - **Tasks**: To complete your evaluation you will be asked to evaluate the Data in different ways.
             """;
-#pragma warning restore S103
 
         List<ChatMessage> evaluationInstructions = [new ChatMessage(ChatRole.System, SystemPrompt)];
 
@@ -158,7 +156,6 @@ public sealed class RetrievalEvaluator : IEvaluator
         _ = builder.Append(']');
         string renderedContext = builder.ToString();
 
-#pragma warning disable S103 // Lines should not be too long
         string evaluationPrompt =
             $$"""
             # Definition
@@ -225,7 +222,6 @@ public sealed class RetrievalEvaluator : IEvaluator
             ## Please provide your answers between the tags: <S0>your chain of thoughts</S0>, <S1>your explanation</S1>, <S2>your Score</S2>.
             # Output
             """;
-#pragma warning restore S103
 
         evaluationInstructions.Add(new ChatMessage(ChatRole.User, evaluationPrompt));
 

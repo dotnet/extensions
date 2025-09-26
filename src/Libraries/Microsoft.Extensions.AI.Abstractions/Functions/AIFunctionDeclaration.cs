@@ -4,8 +4,6 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 
-#pragma warning disable S1694 // An abstract class should have both abstract and concrete methods
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a function that can be described to an AI service.</summary>

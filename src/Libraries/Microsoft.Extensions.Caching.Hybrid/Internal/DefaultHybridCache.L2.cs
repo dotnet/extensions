@@ -21,8 +21,6 @@ internal partial class DefaultHybridCache
     private static readonly DistributedCacheEntryOptions _tagInvalidationEntryOptions = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(MaxCacheDays) };
 
     [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "Manual sync check")]
-    [SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Manual sync check")]
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Explicit async exception handling")]
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Deliberate recycle only on success")]
     internal ValueTask<BufferChunk> GetFromL2DirectAsync(string key, CancellationToken token)
     {
@@ -134,7 +132,6 @@ internal partial class DefaultHybridCache
     }
 
     [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Cancellation handled internally")]
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All failure is critical")]
     internal async Task<long> SafeReadTagInvalidationAsync(string tag)
     {
         Debug.Assert(HasBackendCache, "shouldn't be here without L2");
@@ -258,9 +255,6 @@ internal partial class DefaultHybridCache
         throw new InvalidOperationException($"Maximum cache length ({MaximumPayloadBytes} bytes) exceeded");
     }
 
-#if NET8_0_OR_GREATER
-    [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "False positive from unsafe accessor")]
-#endif
     private DistributedCacheEntryOptions GetL2DistributedCacheOptions(HybridCacheEntryOptions? options)
     {
         DistributedCacheEntryOptions? result = null;

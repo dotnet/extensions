@@ -10,8 +10,6 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-#pragma warning disable S1694 // An abstract class should have both abstract and concrete methods
-
 /// <summary>Represents a tool that can be specified to an AI service.</summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public abstract class AITool

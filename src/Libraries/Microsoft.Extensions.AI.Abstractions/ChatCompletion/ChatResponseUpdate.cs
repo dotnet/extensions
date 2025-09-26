@@ -7,8 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-#pragma warning disable S3358 // Ternary operators should not be nested
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
