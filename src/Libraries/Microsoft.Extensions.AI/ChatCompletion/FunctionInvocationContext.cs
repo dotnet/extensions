@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable IDE0032 // Use auto property, suppressed until repo updates to C# 14
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides context for an in-flight function invocation.</summary>
