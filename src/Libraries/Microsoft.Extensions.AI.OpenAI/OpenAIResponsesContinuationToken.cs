@@ -45,7 +45,6 @@ internal sealed class OpenAIResponsesContinuationToken : ResumptionToken
         writer.WriteEndObject();
 
         writer.Flush();
-        stream.Position = 0;
 
         return stream.ToArray();
     }
