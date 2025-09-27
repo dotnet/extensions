@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -100,7 +101,7 @@ internal sealed class OpenAIResponsesContinuationToken : ResumptionToken
 
         if (responseId is null)
         {
-            throw new ArgumentException("Failed to create MessagesPageToken from provided pageToken.", nameof(token));
+            Throw.ArgumentException(nameof(token), "Failed to create MessagesPageToken from provided pageToken because it does not contain a responseId.");
         }
 
         return new(responseId)
