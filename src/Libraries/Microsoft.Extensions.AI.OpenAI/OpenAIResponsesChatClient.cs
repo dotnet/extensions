@@ -241,7 +241,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             if (inputMessages.Count > 0)
             {
-                throw new InvalidOperationException("Messages are not allowed when resuming steamed background response using a continuation token.");
+                throw new InvalidOperationException("Messages are not allowed when resuming streamed background response using a continuation token.");
             }
 
             var continuationToken = OpenAIResponsesContinuationToken.FromToken(token);
