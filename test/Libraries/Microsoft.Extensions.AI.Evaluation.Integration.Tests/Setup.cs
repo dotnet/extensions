@@ -3,9 +3,8 @@
 
 using System;
 using System.ClientModel;
-using System.ClientModel.Primitives;
+using Azure.AI.OpenAI;
 using Azure.Identity;
-using OpenAI;
 
 namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
 
@@ -16,25 +15,22 @@ internal static class Setup
 
     internal static ChatConfiguration CreateChatConfiguration()
     {
-        OpenAIClient openAIClient = GetOpenAIClient();
-        IChatClient chatClient = openAIClient.GetChatClient(Settings.Current.DeploymentName).AsIChatClient();
+        AzureOpenAIClient azureOpenAIClient = GetAzureOpenAIClient();
+        IChatClient chatClient = azureOpenAIClient.GetChatClient(Settings.Current.DeploymentName).AsIChatClient();
         return new ChatConfiguration(chatClient);
     }
 
-    private static OpenAIClient GetOpenAIClient()
+    private static AzureOpenAIClient GetAzureOpenAIClient()
     {
-        var endpoint = Settings.Current.Endpoint;
+        var endpoint = new Uri(Settings.Current.Endpoint);
+        AzureOpenAIClientOptions options = new();
         var credential = new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential());
 
-        OpenAIClient openAIClient =
+        AzureOpenAIClient azureOpenAIClient =
             OfflineOnly
-                ? new OpenAIClient(
-                    new ApiKeyCredential("Bogus"), 
-                    new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") })
-                : new OpenAIClient(
-                    new BearerTokenPolicy(credential, "https://cognitiveservices.azure.com/.default"), 
-                    new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") });
+                ? new AzureOpenAIClient(endpoint, new ApiKeyCredential("Bogus"), options)
+                : new AzureOpenAIClient(endpoint, credential, options);
 
-        return openAIClient;
+        return azureOpenAIClient;
     }
 }
