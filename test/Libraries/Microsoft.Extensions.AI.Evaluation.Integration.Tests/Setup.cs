@@ -28,8 +28,12 @@ internal static class Setup
 
         OpenAIClient openAIClient =
             OfflineOnly
-                ? new OpenAIClient(new ApiKeyCredential("Bogus"), new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") })
-                : new OpenAIClient(new BearerTokenPolicy(credential, ["https://cognitiveservices.azure.com/.default"]), new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") });
+                ? new OpenAIClient(
+                    new ApiKeyCredential("Bogus"), 
+                    new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") })
+                : new OpenAIClient(
+                    new BearerTokenPolicy(credential, "https://cognitiveservices.azure.com/.default"), 
+                    new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") });
 
         return openAIClient;
     }

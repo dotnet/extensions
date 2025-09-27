@@ -27,11 +27,15 @@ internal static class IntegrationTestHelpers
 
             if (apiKey is not null)
             {
-                return new OpenAIClient(new ApiKeyCredential(apiKey), new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") });
+                return new OpenAIClient(
+                    new ApiKeyCredential(apiKey), 
+                    new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") });
             }
             else
             {
-                return new OpenAIClient(new BearerTokenPolicy(new DefaultAzureCredential(), ["https://cognitiveservices.azure.com/.default"]), new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") });
+                return new OpenAIClient(
+                    new BearerTokenPolicy(new DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"), 
+                    new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") });
             }
         }
         else if (apiKey is not null)
