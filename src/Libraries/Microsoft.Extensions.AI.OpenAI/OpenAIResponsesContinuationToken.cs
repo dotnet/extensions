@@ -69,7 +69,7 @@ internal sealed class OpenAIResponsesContinuationToken : ResumptionToken
 
         Utf8JsonReader reader = new(data.Span);
 
-        string responseId = null!;
+        string? responseId = null;
         int? startAfter = null;
 
         _ = reader.Read();
@@ -87,7 +87,7 @@ internal sealed class OpenAIResponsesContinuationToken : ResumptionToken
             {
                 case "responseId":
                     _ = reader.Read();
-                    responseId = reader.GetString()!;
+                    responseId = reader.GetString();
                     break;
                 case "sequenceNumber":
                     _ = reader.Read();
@@ -96,6 +96,11 @@ internal sealed class OpenAIResponsesContinuationToken : ResumptionToken
                 default:
                     throw new JsonException($"Unrecognized property '{propertyName}'.");
             }
+        }
+
+        if (responseId is null)
+        {
+            throw new ArgumentException("Failed to create MessagesPageToken from provided pageToken.", nameof(token));
         }
 
         return new(responseId)
