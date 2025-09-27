@@ -27,7 +27,7 @@ internal sealed class OpenAIResponsesContinuationToken : ResumptionToken
     internal int? SequenceNumber { get; set; }
 
     /// <inheritdoc/>
-    public override byte[] ToBytes()
+    public override ReadOnlyMemory<byte> ToBytes()
     {
         using MemoryStream stream = new();
         using Utf8JsonWriter writer = new(stream);
@@ -60,14 +60,14 @@ internal sealed class OpenAIResponsesContinuationToken : ResumptionToken
             return longRunResumptionToken;
         }
 
-        byte[] data = token.ToBytes();
+        ReadOnlyMemory<byte> data = token.ToBytes();
 
         if (data.Length == 0)
         {
             throw new InvalidOperationException("Failed to create OpenAIResponsesResumptionToken from provided token because it does not contain any data.");
         }
 
-        Utf8JsonReader reader = new(data);
+        Utf8JsonReader reader = new(data.Span);
 
         string responseId = null!;
         int? startAfter = null;

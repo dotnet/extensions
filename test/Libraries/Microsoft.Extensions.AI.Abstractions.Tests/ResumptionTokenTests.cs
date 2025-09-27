@@ -22,7 +22,7 @@ public class ResumptionTokenTests
     [Fact]
     public void JsonSerialization_Roundtrips()
     {
-        ResumptionToken originalToken = ResumptionToken.FromBytes([1, 2, 3, 4, 5]);
+        ResumptionToken originalToken = ResumptionToken.FromBytes(new byte[] { 1, 2, 3, 4, 5 });
 
         // Act
         string json = JsonSerializer.Serialize(originalToken, TestJsonSerializerContext.Default.ResumptionToken);

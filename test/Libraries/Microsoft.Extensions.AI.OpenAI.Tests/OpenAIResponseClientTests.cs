@@ -2027,9 +2027,9 @@ public class OpenAIResponseClientTests
                 return longRunResumptionToken;
             }
 
-            byte[] data = token.ToBytes();
+            ReadOnlyMemory<byte> data = token.ToBytes();
 
-            Utf8JsonReader reader = new(data);
+            Utf8JsonReader reader = new(data.Span);
 
             string responseId = null!;
             int? startAfter = null;
@@ -2066,7 +2066,7 @@ public class OpenAIResponseClientTests
             };
         }
 
-        public override byte[] ToBytes()
+        public override ReadOnlyMemory<byte> ToBytes()
         {
             using MemoryStream stream = new();
             using Utf8JsonWriter writer = new(stream);

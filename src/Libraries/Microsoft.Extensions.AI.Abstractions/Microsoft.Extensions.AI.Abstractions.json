@@ -830,7 +830,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.ChatClientExtensions.GetResponseAsync(this Microsoft.Extensions.AI.IChatClient client, Microsoft.Extensions.AI.ResumptionToken continuationToken, Microsoft.Extensions.AI.BackgroundResponsesOptions options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.ChatClientExtensions.GetResponseAsync(this Microsoft.Extensions.AI.IChatClient client, Microsoft.Extensions.AI.ResumptionToken continuationToken, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
@@ -846,7 +846,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.ChatClientExtensions.GetStreamingResponseAsync(this Microsoft.Extensions.AI.IChatClient client, Microsoft.Extensions.AI.ResumptionToken continuationToken, Microsoft.Extensions.AI.BackgroundResponsesOptions options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.ChatClientExtensions.GetStreamingResponseAsync(this Microsoft.Extensions.AI.IChatClient client, Microsoft.Extensions.AI.ResumptionToken continuationToken, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ]
@@ -2659,15 +2659,15 @@
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.AI.ResumptionToken.ResumptionToken(byte[] bytes);",
+          "Member": "Microsoft.Extensions.AI.ResumptionToken.ResumptionToken(System.ReadOnlyMemory<byte> bytes);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.AI.ResumptionToken Microsoft.Extensions.AI.ResumptionToken.FromBytes(byte[] bytes);",
+          "Member": "static Microsoft.Extensions.AI.ResumptionToken Microsoft.Extensions.AI.ResumptionToken.FromBytes(System.ReadOnlyMemory<byte> bytes);",
           "Stage": "Stable"
         },
         {
-          "Member": "virtual byte[] Microsoft.Extensions.AI.ResumptionToken.ToBytes();",
+          "Member": "virtual System.ReadOnlyMemory<byte> Microsoft.Extensions.AI.ResumptionToken.ToBytes();",
           "Stage": "Stable"
         }
       ]
