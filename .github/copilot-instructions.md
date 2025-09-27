@@ -7,7 +7,7 @@ The .NET Extensions repository contains a suite of libraries providing facilitie
 ## Working Effectively
 
 ### Prerequisites and Bootstrap
-- **CRITICAL**: Ensure you have access to Microsoft internal Azure DevOps feeds. If build fails with "Name or service not known" for `pkgs.dev.azure.com`, this indicates network/authentication issues with required internal feeds.
+- **CRITICAL**: Ensure you have access to the appropriate Azure DevOps feeds. If build fails with "Name or service not known" for `pkgs.dev.azure.com`, this indicates network/authentication issues with required internal feeds.
 - Install .NET SDK 9.0.109 (as specified in global.json):
   ```bash
   curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 9.0.109 --install-dir ~/.dotnet
