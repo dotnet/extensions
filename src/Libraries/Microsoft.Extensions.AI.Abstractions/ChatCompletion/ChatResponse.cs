@@ -88,6 +88,20 @@ public class ChatResponse
     /// <summary>Gets or sets usage details for the chat response.</summary>
     public UsageDetails? Usage { get; set; }
 
+    /// <summary>Gets or sets the continuation token for getting result of the background chat response.</summary>
+    /// <remarks>
+    /// <see cref="IChatClient"/> implementations that support background responses will return
+    /// a continuation token if background responses are enabled in <see cref="ChatOptions.BackgroundResponsesOptions"/>
+    /// and the result of the response has not been obtained yet. Otherwise, the token will be <see langword="null"/>.
+    /// <para>
+    /// This property should be used in conjunction with <see cref="ChatOptions.ContinuationToken"/> to 
+    /// continue or polling for the completion the response. Pass this token to
+    /// <see cref="ChatOptions.ContinuationToken"/> on subsequent calls to <see cref="IChatClient.GetResponseAsync"/>
+    /// to poll for completion.
+    /// </para>
+    /// </remarks>
+    public ResumptionToken? ContinuationToken { get; set; }
+
     /// <summary>Gets or sets the raw representation of the chat response from an underlying implementation.</summary>
     /// <remarks>
     /// If a <see cref="ChatResponse"/> is created to represent some underlying object from another object
@@ -143,6 +157,7 @@ public class ChatResponse
                 ResponseId = ResponseId,
 
                 CreatedAt = message.CreatedAt ?? CreatedAt,
+                ContinuationToken = ContinuationToken,
             };
         }
 

@@ -2936,7 +2936,7 @@ dotnet_diagnostic.S103.severity = suggestion
 # Title    : Files should not have too many lines of code
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-104
-dotnet_diagnostic.S104.severity = warning
+dotnet_diagnostic.S104.severity = none
 
 # Title    : Finalizers should not throw exceptions
 # Category : Blocker Bug
