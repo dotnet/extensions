@@ -3,9 +3,8 @@ using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
 using ChatWithCustomData_CSharp.Web.Services.Ingestion;
 #if (IsOllama)
-#elif (IsOpenAI || IsGHModels)
+#else
 using OpenAI;
-#else // IsAzureOpenAI
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,11 +21,7 @@ builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
 #elif (IsAzureAiFoundry)
 #else // (IsOpenAI || IsAzureOpenAI || IsGHModels)
-#if (IsOpenAI)
 var openai = builder.AddOpenAIClient("openai");
-#else
-var openai = builder.AddAzureOpenAIClient("openai");
-#endif
 openai.AddChatClient("gpt-4o-mini")
     .UseFunctionInvocation()
     .UseOpenTelemetry(configure: c =>

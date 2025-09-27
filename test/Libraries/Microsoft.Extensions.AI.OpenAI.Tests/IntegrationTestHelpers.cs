@@ -3,7 +3,6 @@
 
 using System;
 using System.ClientModel;
-using Azure.AI.OpenAI;
 using Azure.Identity;
 using OpenAI;
 
@@ -27,11 +26,15 @@ internal static class IntegrationTestHelpers
 
             if (apiKey is not null)
             {
-                return new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey));
+                return new OpenAIClient(
+                    new ApiKeyCredential(apiKey), 
+                    new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") });
             }
             else
             {
-                return new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential());
+                return new OpenAIClient(
+                    new DefaultAzureCredential(), 
+                    new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") });
             }
         }
         else if (apiKey is not null)

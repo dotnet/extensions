@@ -130,7 +130,7 @@ Configure your Azure OpenAI endpoint for this project, using .NET User Secrets:
       ```
 #### ---#endif
 
-Make sure to replace `YOUR-AZURE-OPENAI-ENDPOINT` with your actual Azure OpenAI endpoint, formatted like https://YOUR-DEPLOYMENT-NAME.openai.azure.com/ (do not include any path after .openai.azure.com/).
+Make sure to replace `YOUR-AZURE-OPENAI-ENDPOINT` with your actual Azure OpenAI endpoint, formatted like https://YOUR-DEPLOYMENT-NAME.openai.azure.com (do not include any path after .openai.azure.com/, the /openai/v1 path will be appended automatically).
 #### ---#else
 ### 3. Configure API Key and Endpoint
 Configure your Azure OpenAI API key and endpoint for this project, using .NET User Secrets:
@@ -156,7 +156,7 @@ Configure your Azure OpenAI API key and endpoint for this project, using .NET Us
       ```
 #### ---#endif
 
-Make sure to replace `YOUR-AZURE-OPENAI-KEY` and `YOUR-AZURE-OPENAI-ENDPOINT` with your actual Azure OpenAI key and endpoint. Make sure your endpoint URL is formatted like https://YOUR-DEPLOYMENT-NAME.openai.azure.com/ (do not include any path after .openai.azure.com/).
+Make sure to replace `YOUR-AZURE-OPENAI-KEY` and `YOUR-AZURE-OPENAI-ENDPOINT` with your actual Azure OpenAI key and endpoint. Make sure your endpoint URL is formatted like https://YOUR-DEPLOYMENT-NAME.openai.azure.com (do not include any path after .openai.azure.com/, the /openai/v1 path will be appended automatically).
 
 #### ---#endif
 #### ---#endif
