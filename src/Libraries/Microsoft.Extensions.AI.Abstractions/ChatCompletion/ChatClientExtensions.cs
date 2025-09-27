@@ -139,7 +139,7 @@ public static class ChatClientExtensions
         _ = Throw.IfNull(client);
         _ = Throw.IfNull(continuationToken);
 
-        ChatOptions chatOptions = options ?? new();
+        ChatOptions chatOptions = options?.Clone() ?? new();
         chatOptions.ContinuationToken = continuationToken;
 
         return client.GetResponseAsync([], chatOptions, cancellationToken);
@@ -203,7 +203,7 @@ public static class ChatClientExtensions
         _ = Throw.IfNull(client);
         _ = Throw.IfNull(continuationToken);
 
-        ChatOptions chatOptions = options ?? new();
+        ChatOptions chatOptions = options?.Clone() ?? new();
         chatOptions.ContinuationToken = continuationToken;
 
         return client.GetStreamingResponseAsync([], chatOptions, cancellationToken);

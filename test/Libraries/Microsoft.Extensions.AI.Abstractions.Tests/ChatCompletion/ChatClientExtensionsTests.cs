@@ -159,7 +159,7 @@ public class ChatClientExtensionsTests
     }
 
     [Fact]
-    public async Task GetResponseAsync_UsesProvidedContinuationTokenAndChatOptions()
+    public async Task GetResponseAsync_UsesProvidedContinuationTokenAndCloneChatOptions()
     {
         var expectedResponse = new ChatResponse();
         var expectedContinuationToken = ResumptionToken.FromBytes(new byte[] { 1, 2, 3, 4 });
@@ -167,6 +167,10 @@ public class ChatClientExtensionsTests
         var expectedChatOptions = new ChatOptions
         {
             BackgroundResponsesOptions = expectedBackgroundResponsesOptions,
+            AdditionalProperties = new AdditionalPropertiesDictionary // Setting this to ensure cloning is happening
+            {
+                { "key", "value" },
+            },
         };
 
         using var cts = new CancellationTokenSource();
@@ -178,9 +182,11 @@ public class ChatClientExtensionsTests
                 Assert.Empty(messages);
                 Assert.NotNull(options);
 
-                Assert.Same(expectedChatOptions, options);
+                Assert.True(options.AdditionalProperties!.ContainsKey("key")); // Assert that chat options were cloned
+
+                Assert.NotSame(expectedChatOptions, options);
                 Assert.Same(expectedContinuationToken, options.ContinuationToken);
-                Assert.Same(expectedBackgroundResponsesOptions, options.BackgroundResponsesOptions);
+                Assert.NotSame(expectedBackgroundResponsesOptions, options.BackgroundResponsesOptions);
 
                 Assert.Equal(cts.Token, cancellationToken);
 
@@ -222,7 +228,7 @@ public class ChatClientExtensionsTests
     }
 
     [Fact]
-    public async Task GetStreamingResponseAsync_UsesProvidedContinuationTokenAndChatOptions()
+    public async Task GetStreamingResponseAsync_UsesProvidedContinuationTokenAndCloneChatOptions()
     {
         var expectedOptions = new ChatOptions();
         var expectedContinuationToken = ResumptionToken.FromBytes(new byte[] { 1, 2, 3, 4 });
@@ -230,6 +236,10 @@ public class ChatClientExtensionsTests
         var expectedChatOptions = new ChatOptions
         {
             BackgroundResponsesOptions = expectedBackgroundResponsesOptions,
+            AdditionalProperties = new AdditionalPropertiesDictionary // Setting this to ensure cloning is happening
+            {
+                { "key", "value" },
+            },
         };
         using var cts = new CancellationTokenSource();
 
@@ -240,9 +250,11 @@ public class ChatClientExtensionsTests
                 Assert.Empty(messages);
                 Assert.NotNull(options);
 
-                Assert.Same(expectedChatOptions, options);
+                Assert.True(options.AdditionalProperties!.ContainsKey("key")); // Assert that chat options were cloned
+
+                Assert.NotSame(expectedChatOptions, options);
                 Assert.Same(expectedContinuationToken, options.ContinuationToken);
-                Assert.Same(expectedBackgroundResponsesOptions, options.BackgroundResponsesOptions);
+                Assert.NotSame(expectedBackgroundResponsesOptions, options.BackgroundResponsesOptions);
 
                 Assert.Equal(cts.Token, cancellationToken);
 
