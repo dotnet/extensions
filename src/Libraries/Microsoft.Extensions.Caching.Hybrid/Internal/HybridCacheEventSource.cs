@@ -445,7 +445,7 @@ internal sealed class HybridCacheEventSource : EventSource
     [NonEvent]
     private static TagList CreateTagList(TagSet tags)
     {
-        var tagList = new TagList();
+        var tagList = default(TagList);
         switch (tags.Count)
         {
             case 0:
@@ -456,7 +456,10 @@ internal sealed class HybridCacheEventSource : EventSource
             default:
                 var span = tags.GetSpanPrechecked();
                 for (int i = 0; i < span.Length; i++)
+                {
                     tagList.Add($"tag_{i}", span[i]);
+                }
+
                 break;
         }
 
