@@ -244,15 +244,21 @@ internal sealed class HybridCacheEventSource : EventSource
     public void LocalCacheMissWithTags(TagSet tags, bool reportTagMetrics)
     {
         if (IsEnabled())
-            LocalCacheMiss(); // Emit EventSource event
+        {
+            LocalCacheMiss();// Emit EventSource event
+        }
 
         // Also emit metrics when requested
         if (reportTagMetrics)
         {
             if (tags.Count > 0)
+            {
                 EmitLocalCacheMissMetric(tags);
+            }
             else
+            {
                 _sLocalCacheMisses.Add(1);
+            }
         }
     }
 
@@ -265,15 +271,21 @@ internal sealed class HybridCacheEventSource : EventSource
     public void DistributedCacheHitWithTags(TagSet tags, bool reportTagMetrics)
     {
         if (IsEnabled())
-            DistributedCacheHit(); // Emit EventSource event
+        {
+            DistributedCacheHit();// Emit EventSource event
+        }
 
         // Also emit metrics when requested
         if (reportTagMetrics)
         {
             if (tags.Count > 0)
+            {
                 EmitDistributedCacheHitMetric(tags);
+            }
             else
+            {
                 _sDistributedCacheHits.Add(1);
+            }
         }
     }
 
@@ -286,15 +298,21 @@ internal sealed class HybridCacheEventSource : EventSource
     public void DistributedCacheMissWithTags(TagSet tags, bool reportTagMetrics)
     {
         if (IsEnabled())
-            DistributedCacheMiss(); // Emit EventSource event
+        {
+            DistributedCacheMiss();// Emit EventSource event
+        }
 
         // Also emit metrics when requested
         if (reportTagMetrics)
         {
             if (tags.Count > 0)
+            {
                 EmitDistributedCacheMissMetric(tags);
+            }
             else
+            {
                 _sDistributedCacheMisses.Add(1);
+            }
         }
     }
 
@@ -307,15 +325,21 @@ internal sealed class HybridCacheEventSource : EventSource
     public void LocalCacheWriteWithTags(TagSet tags, bool reportTagMetrics)
     {
         if (IsEnabled())
-            LocalCacheWrite(); // Emit EventSource event
+        {
+            LocalCacheWrite();// Emit EventSource event
+        }
 
         // Also emit metrics when requested
         if (reportTagMetrics)
         {
             if (tags.Count > 0)
+            {
                 EmitLocalCacheWriteMetric(tags);
+            }
             else
+            {
                 _sLocalCacheWrites.Add(1);
+            }
         }
     }
 
@@ -328,15 +352,21 @@ internal sealed class HybridCacheEventSource : EventSource
     public void DistributedCacheWriteWithTags(TagSet tags, bool reportTagMetrics)
     {
         if (IsEnabled())
-            DistributedCacheWrite(); // Emit EventSource event
+        {
+            DistributedCacheWrite();// Emit EventSource event
+        }
 
         // Also emit metrics when requested
         if (reportTagMetrics)
         {
             if (tags.Count > 0)
+            {
                 EmitDistributedCacheWriteMetric(tags);
+            }
             else
+            {
                 _sDistributedCacheWrites.Add(1);
+            }
         }
     }
 
@@ -349,7 +379,9 @@ internal sealed class HybridCacheEventSource : EventSource
     public void TagInvalidatedWithTags(string tag, bool reportTagMetrics)
     {
         if (IsEnabled())
-            TagInvalidated(); // Emit EventSource event
+        {
+            TagInvalidated();// Emit EventSource event
+        }
 
         // Also emit metrics when requested
         if (reportTagMetrics)
@@ -465,9 +497,13 @@ internal sealed class HybridCacheEventSource : EventSource
     public static void EmitLocalCacheHitMetrics(TagSet tags)
     {
         if (tags.Count > 0)
+        {
             EmitLocalCacheHitMetric(tags);
+        }
         else
+        {
             _sLocalCacheHits.Add(1);
+        }
     }
 
     /// <summary>
@@ -478,9 +514,13 @@ internal sealed class HybridCacheEventSource : EventSource
     public static void EmitLocalCacheMissMetrics(TagSet tags)
     {
         if (tags.Count > 0)
+        {
             EmitLocalCacheMissMetric(tags);
+        }
         else
+        {
             _sLocalCacheMisses.Add(1);
+        }
     }
 
     /// <summary>
@@ -491,9 +531,13 @@ internal sealed class HybridCacheEventSource : EventSource
     public static void EmitDistributedCacheHitMetrics(TagSet tags)
     {
         if (tags.Count > 0)
+        {
             EmitDistributedCacheHitMetric(tags);
+        }
         else
+        {
             _sDistributedCacheHits.Add(1);
+        }
     }
 
     /// <summary>
@@ -504,9 +548,13 @@ internal sealed class HybridCacheEventSource : EventSource
     public static void EmitDistributedCacheMissMetrics(TagSet tags)
     {
         if (tags.Count > 0)
+        {
             EmitDistributedCacheMissMetric(tags);
+        }
         else
+        {
             _sDistributedCacheMisses.Add(1);
+        }
     }
 
     /// <summary>
@@ -517,9 +565,13 @@ internal sealed class HybridCacheEventSource : EventSource
     public static void EmitLocalCacheWriteMetrics(TagSet tags)
     {
         if (tags.Count > 0)
+        {
             EmitLocalCacheWriteMetric(tags);
+        }
         else
+        {
             _sLocalCacheWrites.Add(1);
+        }
     }
 
     /// <summary>
@@ -530,9 +582,13 @@ internal sealed class HybridCacheEventSource : EventSource
     public static void EmitDistributedCacheWriteMetrics(TagSet tags)
     {
         if (tags.Count > 0)
+        {
             EmitDistributedCacheWriteMetric(tags);
+        }
         else
+        {
             _sDistributedCacheWrites.Add(1);
+        }
     }
 
     /// <summary>
