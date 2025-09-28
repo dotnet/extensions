@@ -6,8 +6,9 @@ using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class ReportTagMetricsIntegrationTests
+public class ReportTagMetricsIntegrationTests : IDisposable
 {
+    private readonly ServiceProvider _serviceProvider;
     private readonly HybridCache _cache;
 
     public ReportTagMetricsIntegrationTests()
@@ -18,8 +19,8 @@ public class ReportTagMetricsIntegrationTests
             options.ReportTagMetrics = true;
         });
 
-        ServiceProvider serviceProvider = services.BuildServiceProvider();
-        _cache = serviceProvider.GetRequiredService<HybridCache>();
+        _serviceProvider = services.BuildServiceProvider();
+        _cache = _serviceProvider.GetRequiredService<HybridCache>();
     }
 
     [Fact]
@@ -134,5 +135,10 @@ public class ReportTagMetricsIntegrationTests
         var latestMeasurement = measurements.Last();
         Assert.Equal(1, latestMeasurement.Value);
         Assert.Equal(tags.Length, latestMeasurement.Tags.Count); // Should have one dimension per tag
+    }
+
+    public void Dispose()
+    {
+        _serviceProvider?.Dispose();
     }
 }
