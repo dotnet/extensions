@@ -79,10 +79,10 @@ public class HybridCacheOptions
     /// </description></item>
     /// </list>
     /// <para>
-    /// Example of appropriate tags: ["region:us-west", "service:api", "environment:prod"]
+    /// Example of appropriate tags: ["region:us-west", "service:api", "environment:prod"].
     /// </para>
     /// <para>
-    /// Example of inappropriate tags: ["user:john.doe@company.com", "session:abc123", "customer-data:sensitive"]
+    /// Example of inappropriate tags: ["user:john.doe@company.com", "session:abc123", "customer-data:sensitive"].
     /// </para>
     /// </remarks>
     public bool ReportTagMetrics { get; set; }

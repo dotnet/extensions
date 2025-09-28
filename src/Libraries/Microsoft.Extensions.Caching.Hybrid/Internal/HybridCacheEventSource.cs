@@ -217,15 +217,21 @@ internal sealed class HybridCacheEventSource : EventSource
     public void LocalCacheHitWithTags(TagSet tags, bool reportTagMetrics)
     {
         if (IsEnabled())
-            LocalCacheHit(); // Emit EventSource event
+        {
+            LocalCacheHit();// Emit EventSource event
+        }
 
         // Also emit metrics when requested
         if (reportTagMetrics)
         {
             if (tags.Count > 0)
+            {
                 EmitLocalCacheHitMetric(tags);
+            }
             else
+            {
                 _sLocalCacheHits.Add(1);
+            }
         }
     }
 
@@ -421,6 +427,7 @@ internal sealed class HybridCacheEventSource : EventSource
                     tagList.Add($"tag_{i}", span[i]);
                 break;
         }
+
         return tagList;
     }
 
