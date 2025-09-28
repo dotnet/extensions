@@ -174,7 +174,7 @@ public class ReportTagMetricsTests
             Assert.True(measurements.Count > 0, "Expected metrics to be emitted when reportTagMetrics is true, even with empty tags");
             var measurement = measurements.Last();
             Assert.Equal(1, measurement.Value);
-            Assert.Equal(0, measurement.Tags.Count); // No tag dimensions for empty tags
+            Assert.Empty(measurement.Tags); // No tag dimensions for empty tags
         }
         else
         {

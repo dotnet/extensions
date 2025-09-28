@@ -6,10 +6,11 @@ using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class ReportTagMetricsIntegrationTests : IDisposable
+public sealed class ReportTagMetricsIntegrationTests : IDisposable
 {
     private readonly ServiceProvider _serviceProvider;
     private readonly HybridCache _cache;
+    private bool _disposed;
 
     public ReportTagMetricsIntegrationTests()
     {
@@ -109,7 +110,7 @@ public class ReportTagMetricsIntegrationTests : IDisposable
 
         var latestMeasurement = measurements.Last();
         Assert.Equal(1, latestMeasurement.Value);
-        Assert.Empty(latestMeasurement.Tags); // No dimensions when no tags
+        Assert.Empty(latestMeasurement.Tags);// No dimensions when no tags
     }
 
     [Theory]
@@ -139,6 +140,12 @@ public class ReportTagMetricsIntegrationTests : IDisposable
 
     public void Dispose()
     {
-        _serviceProvider?.Dispose();
+        if (_disposed)
+        {
+            return;
+        }
+
+        _serviceProvider.Dispose();
+        _disposed = true;
     }
 }
