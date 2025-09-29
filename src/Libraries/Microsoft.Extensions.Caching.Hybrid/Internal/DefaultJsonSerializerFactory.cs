@@ -126,7 +126,7 @@ internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFacto
         static FieldOnlyResult SetState(Type type, Dictionary<Type, FieldOnlyResult>? state, bool result)
         {
             var value = result ? FieldOnlyResult.FieldOnly : FieldOnlyResult.NotFieldOnly;
-#pragma warning disable IDE0058 // https://github.com/dotnet/roslyn/issues/80499
+#pragma warning disable IDE0058 // Temporary workaround for Roslyn analyzer issue (see https://github.com/dotnet/roslyn/issues/80499).
             state?[type] = value;
 #pragma warning restore IDE0058
 

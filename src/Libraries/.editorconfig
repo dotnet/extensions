@@ -2012,7 +2012,7 @@ dotnet_style_null_propagation = true
 # Title    : Use auto property
 # Category : Style
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0032
-dotnet_diagnostic.IDE0032.severity = silent
+dotnet_diagnostic.IDE0032.severity = silent # https://github.com/dotnet/extensions/issues/6864 tracks re-enabling this
 dotnet_style_prefer_auto_properties = true
 
 # Title    : Use explicitly provided tuple name
