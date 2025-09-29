@@ -60,8 +60,15 @@
           "ChatWithCustomData-CSharp.AppHost/**",
           "ChatWithCustomData-CSharp.ServiceDefaults/**",
           "ChatWithCustomData-CSharp.Web/Program.Aspire.cs",
+          "ChatWithCustomData-CSharp.Web/AspireOllamaResilienceHandlerExtensions.cs",
           "README.Aspire.md",
           "*.sln"
+        ]
+      },
+      {
+        "condition": "(IsAspire && !IsOllama)",
+        "exclude": [
+          "ChatWithCustomData-CSharp.Web/AspireOllamaResilienceHandlerExtensions.cs"
         ]
       },
       {

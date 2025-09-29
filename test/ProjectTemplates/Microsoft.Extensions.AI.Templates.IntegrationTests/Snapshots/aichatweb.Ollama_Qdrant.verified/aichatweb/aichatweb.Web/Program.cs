@@ -20,6 +20,11 @@ builder.Services.AddQdrantCollection<Guid, IngestedChunk>("data-aichatweb-chunks
 builder.Services.AddQdrantCollection<Guid, IngestedDocument>("data-aichatweb-documents");
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
+// Applies robust HTTP resilience settings for all HttpClients in the Web project,
+// not across the entire solution. It's aimed at supporting Ollama scenarios due
+// to its self-hosted nature and potentially slow responses.
+// Remove this if you want to use the global or a different HTTP resilience policy instead.
+builder.Services.AddOllamaHttpClientResilience();
 
 var app = builder.Build();
 
