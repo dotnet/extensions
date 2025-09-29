@@ -51,7 +51,6 @@ public sealed class VerbatimHttpHandler : DelegatingHandler
             Assert.NotNull(actualInput);
             AssertEqualNormalized(_expectedInput.Body, actualInput);
 
-            // Is it needed?
             if (_validateExpectedResponse)
             {
                 ByteArrayContent newContent = new(Encoding.UTF8.GetBytes(actualInput));
