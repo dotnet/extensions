@@ -2024,7 +2024,7 @@ csharp_style_prefer_local_over_anonymous_function = false
 # Title    : Add accessibility modifiers
 # Category : Style
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0040
-dotnet_diagnostic.IDE0040.severity = silent
+dotnet_diagnostic.IDE0040.severity = warning
 dotnet_style_require_accessibility_modifiers = for_non_interface_members
 
 # Title    : Use 'is null' check
