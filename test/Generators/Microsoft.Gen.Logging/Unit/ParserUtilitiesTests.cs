@@ -48,7 +48,7 @@ public class ParserUtilitiesTests
         var symbolMock = new Mock<ISymbol>();
         symbolMock
             .SetupGet(x => x.DeclaringSyntaxReferences)
-            .Returns(ImmutableArray.ToImmutableArray(new[] { syntaxReferenceMock.Object, anotherSyntaxReferenceMock.Object }));
+            .Returns(new[] { syntaxReferenceMock.Object, anotherSyntaxReferenceMock.Object }.ToImmutableArray());
 
         var result = ParserUtilities.PropertyHasModifier(symbolMock.Object, SyntaxKind.ProtectedKeyword, CancellationToken.None);
         Assert.True(result);
@@ -69,7 +69,7 @@ public class ParserUtilitiesTests
         var symbolMock = new Mock<ISymbol>();
         symbolMock
             .SetupGet(x => x.DeclaringSyntaxReferences)
-            .Returns(ImmutableArray.ToImmutableArray(new[] { syntaxReferenceMock.Object }));
+            .Returns(new[] { syntaxReferenceMock.Object }.ToImmutableArray());
 
         var result = ParserUtilities.PropertyHasModifier(symbolMock.Object, SyntaxKind.ProtectedKeyword, CancellationToken.None);
         Assert.False(result);
@@ -105,7 +105,7 @@ public class ParserUtilitiesTests
         var symbolMock = new Mock<ISymbol>();
         var locationMock = Mock.Of<Location>();
         symbolMock.SetupGet(x => x.Locations)
-            .Returns(ImmutableArray.ToImmutableArray(new[] { locationMock, Mock.Of<Location>() }));
+            .Returns(new[] { locationMock, Mock.Of<Location>() }.ToImmutableArray());
 
         var result = ParserUtilities.GetLocation(symbolMock.Object);
         Assert.Same(locationMock, result);
