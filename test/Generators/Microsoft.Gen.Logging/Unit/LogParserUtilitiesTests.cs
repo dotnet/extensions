@@ -88,7 +88,7 @@ public class LogParserUtilitiesTests
 
         symbolMock
             .Setup(x => x.GetAttributes())
-            .Returns(Array.Empty<AttributeData>().ToImmutableArray());
+            .Returns(ImmutableArray.ToImmutableArray(Array.Empty<AttributeData>()));
 
         symbolMock
             .SetupGet(x => x.BaseType)

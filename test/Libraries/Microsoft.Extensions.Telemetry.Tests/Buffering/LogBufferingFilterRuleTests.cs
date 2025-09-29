@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering.Test;
+
 public class LogBufferingFilterRuleTests
 {
     private readonly LogBufferingFilterRuleSelector _selector = new();
