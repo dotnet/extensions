@@ -6,7 +6,7 @@
 - Added new `AITool.GetService` virtual method.
 - Updated `TextReasoningContent` to include `ProtectedData` for representing encrypted/redacted content.
 - Fixed `MinLength`/`MaxLength`/`Length` attribute mapping in nullable string properties during schema export.
-- Added `[Experimental]` `ResumptionToken` to represent a base class for continuation tokens.
+- Added `ResumptionToken` to represent a base class for continuation tokens.
 - Added `[Experimental]` `BackgroundResponsesOptions` to represent options for background responses.
 - Added `[Experimental]` `ChatOptions.BackgroundResponsesOptions` and `ChatOptions.ContinuationToken` properties specify continuation token and options for background responses.
 - Added `[Experimental]` `ChatResponse.ContinuationToken` and `ChatResponseUpdate.ContinuationToken` to return continuation token for background responses.

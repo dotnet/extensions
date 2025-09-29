@@ -1137,7 +1137,7 @@
         },
         {
           "Member": "Microsoft.Extensions.AI.ResumptionToken? Microsoft.Extensions.AI.ChatResponse.ContinuationToken { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ChatResponse.ConversationId { get; set; }",
@@ -1313,7 +1313,7 @@
         },
         {
           "Member": "Microsoft.Extensions.AI.ResumptionToken? Microsoft.Extensions.AI.ChatResponseUpdate.ContinuationToken { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ChatResponseUpdate.ConversationId { get; set; }",

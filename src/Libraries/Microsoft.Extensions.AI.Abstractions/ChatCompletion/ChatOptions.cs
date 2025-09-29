@@ -118,6 +118,7 @@ public class ChatOptions
 
     /// <summary>Gets or sets the options for configuring background responses.</summary>
     [Experimental("MEAI001")]
+    [JsonIgnore]
     public BackgroundResponsesOptions? BackgroundResponsesOptions { get; set; }
 
     /// <summary>Gets or sets the continuation token for resuming and getting result of the chat response identified by this token.</summary>
@@ -132,6 +133,7 @@ public class ChatOptions
     /// and passing it to this property on subsequent calls to <see cref="IChatClient.GetResponseAsync"/>.
     /// </remarks>
     [Experimental("MEAI001")]
+    [JsonIgnore]
     public ResumptionToken? ContinuationToken { get; set; }
 
     /// <summary>
