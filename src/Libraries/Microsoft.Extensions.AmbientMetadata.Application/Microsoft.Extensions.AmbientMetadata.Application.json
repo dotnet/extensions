@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AmbientMetadata.Application, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AmbientMetadata.Application, Version=9.10.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "class Microsoft.Extensions.AmbientMetadata.ApplicationMetadata",
@@ -45,6 +45,10 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.ApplicationMetadataHostBuilderExtensions.UseApplicationMetadata(this Microsoft.Extensions.Hosting.IHostBuilder builder, string sectionName = \"ambientmetadata:application\");",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static TBuilder Microsoft.Extensions.Hosting.ApplicationMetadataHostBuilderExtensions.UseApplicationMetadata<TBuilder>(this TBuilder builder, string sectionName = \"ambientmetadata:application\");",
           "Stage": "Stable"
         }
       ]

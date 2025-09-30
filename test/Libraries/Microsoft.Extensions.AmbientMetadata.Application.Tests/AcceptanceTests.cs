@@ -39,6 +39,22 @@ public class AcceptanceTests
             },
             sectionName);
 
+    [Theory]
+    [InlineData("ambientmetadata:application")]
+    [InlineData(null)]
+    public async Task UseApplicationMetadata_HostApplicationBuilder_CreatesPopulatesAndRegistersOptions(string? sectionName) =>
+        await RunAsync_HostBuilder(
+            (options, hostEnvironment) =>
+            {
+                options.BuildVersion.Should().Be(_metadata.BuildVersion);
+                options.DeploymentRing.Should().Be(_metadata.DeploymentRing);
+                options.ApplicationName.Should().Be(_metadata.ApplicationName);
+                options.EnvironmentName.Should().Be(hostEnvironment.EnvironmentName);
+
+                return Task.CompletedTask;
+            },
+            sectionName);
+
     private static async Task RunAsync(Func<ApplicationMetadata, IHostEnvironment, Task> func, string? sectionName)
     {
         using var host = await FakeHost.CreateBuilder()
@@ -55,6 +71,33 @@ public class AcceptanceTests
                 metadata.DeploymentRing = _metadata.DeploymentRing;
             }))
             .StartAsync();
+
+        await func(host.Services.GetRequiredService<IOptions<ApplicationMetadata>>().Value,
+                   host.Services.GetRequiredService<IHostEnvironment>());
+        await host.StopAsync();
+    }
+
+    private static async Task RunAsync_HostBuilder(Func<ApplicationMetadata, IHostEnvironment, Task> func, string? sectionName)
+    {
+        var builder = Host.CreateEmptyApplicationBuilder(new()
+        {
+            ApplicationName = _metadata.ApplicationName
+        });
+
+        // need to set applicationName manually, because
+        // netfx console test runner cannot get assebly name
+        // to be able to set it automatically
+        // see https://source.dot.net/#Microsoft.Extensions.Hosting/HostBuilder.cs,240
+        builder
+            .UseApplicationMetadata(sectionName ?? "ambientmetadata:application")
+            .Services.AddApplicationMetadata(metadata =>
+            {
+                metadata.BuildVersion = _metadata.BuildVersion;
+                metadata.DeploymentRing = _metadata.DeploymentRing;
+            });
+
+        using var host = builder.Build();
+        await host.StartAsync();
 
         await func(host.Services.GetRequiredService<IOptions<ApplicationMetadata>>().Value,
                    host.Services.GetRequiredService<IHostEnvironment>());
