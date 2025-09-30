@@ -1222,7 +1222,7 @@ public class FunctionInvokingChatClientTests
         var originalChatOptions = new ChatOptions
         {
             Tools = [AIFunctionFactory.Create(() => { }, "Func1")],
-            ContinuationToken = ResumptionToken.FromBytes(new byte[] { 1, 2, 3, 4 }),
+            ContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 }),
         };
 
         await chatClient.GetResponseAsync("hi", originalChatOptions);

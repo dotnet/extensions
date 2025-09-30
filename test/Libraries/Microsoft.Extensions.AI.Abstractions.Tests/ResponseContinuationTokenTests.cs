@@ -6,14 +6,14 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class ResumptionTokenTests
+public class ResponseContinuationTokenTests
 {
     [Fact]
     public void Bytes_Roundtrip()
     {
         byte[] testBytes = [1, 2, 3, 4, 5];
 
-        ResumptionToken token = ResumptionToken.FromBytes(testBytes);
+        ResponseContinuationToken token = ResponseContinuationToken.FromBytes(testBytes);
 
         Assert.NotNull(token);
         Assert.Equal(testBytes, token.ToBytes());
@@ -22,12 +22,12 @@ public class ResumptionTokenTests
     [Fact]
     public void JsonSerialization_Roundtrips()
     {
-        ResumptionToken originalToken = ResumptionToken.FromBytes(new byte[] { 1, 2, 3, 4, 5 });
+        ResponseContinuationToken originalToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4, 5 });
 
         // Act
-        string json = JsonSerializer.Serialize(originalToken, TestJsonSerializerContext.Default.ResumptionToken);
+        string json = JsonSerializer.Serialize(originalToken, TestJsonSerializerContext.Default.ResponseContinuationToken);
 
-        ResumptionToken? deserializedToken = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ResumptionToken);
+        ResponseContinuationToken? deserializedToken = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ResponseContinuationToken);
 
         // Assert
         Assert.NotNull(deserializedToken);

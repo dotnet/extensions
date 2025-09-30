@@ -132,7 +132,7 @@ public static class ChatClientExtensions
     [Experimental("MEAI001")]
     public static Task<ChatResponse> GetResponseAsync(
         this IChatClient client,
-        ResumptionToken continuationToken,
+        ResponseContinuationToken continuationToken,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -196,7 +196,7 @@ public static class ChatClientExtensions
     [Experimental("MEAI001")]
     public static IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         this IChatClient client,
-        ResumptionToken continuationToken,
+        ResponseContinuationToken continuationToken,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {

@@ -78,7 +78,7 @@ public class ChatOptionsTests
 
         Func<IChatClient, object?> rawRepresentationFactory = (c) => null;
 
-        ResumptionToken continuationToken = ResumptionToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+        ResponseContinuationToken continuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
 
         BackgroundResponsesOptions backgroundResponsesOptions = new()
         {
@@ -163,7 +163,7 @@ public class ChatOptionsTests
             ["key"] = "value",
         };
 
-        ResumptionToken continuationToken = ResumptionToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+        ResponseContinuationToken continuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
 
         BackgroundResponsesOptions backgroundResponsesOptions = new()
         {

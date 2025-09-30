@@ -134,7 +134,7 @@ public class ChatOptions
     /// </remarks>
     [Experimental("MEAI001")]
     [JsonIgnore]
-    public ResumptionToken? ContinuationToken { get; set; }
+    public ResponseContinuationToken? ContinuationToken { get; set; }
 
     /// <summary>
     /// Gets or sets a callback responsible for creating the raw representation of the chat options from an underlying implementation.

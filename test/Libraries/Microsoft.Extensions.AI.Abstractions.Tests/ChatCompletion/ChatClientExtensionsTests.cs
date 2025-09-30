@@ -162,7 +162,7 @@ public class ChatClientExtensionsTests
     public async Task GetResponseAsync_UsesProvidedContinuationTokenAndCloneChatOptions()
     {
         var expectedResponse = new ChatResponse();
-        var expectedContinuationToken = ResumptionToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+        var expectedContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
         var expectedBackgroundResponsesOptions = new BackgroundResponsesOptions();
         var expectedChatOptions = new ChatOptions
         {
@@ -203,7 +203,7 @@ public class ChatClientExtensionsTests
     public async Task GetResponseAsync_UsesProvidedContinuationTokenAndCreatesChatOptions()
     {
         var expectedResponse = new ChatResponse();
-        var expectedContinuationToken = ResumptionToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+        var expectedContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
 
         using var cts = new CancellationTokenSource();
 
@@ -231,7 +231,7 @@ public class ChatClientExtensionsTests
     public async Task GetStreamingResponseAsync_UsesProvidedContinuationTokenAndCloneChatOptions()
     {
         var expectedOptions = new ChatOptions();
-        var expectedContinuationToken = ResumptionToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+        var expectedContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
         var expectedBackgroundResponsesOptions = new BackgroundResponsesOptions();
         var expectedChatOptions = new ChatOptions
         {
@@ -276,7 +276,7 @@ public class ChatClientExtensionsTests
     public async Task GetStreamingResponseAsync_UsesProvidedContinuationTokenAndCreatesChatOptions()
     {
         var expectedOptions = new ChatOptions();
-        var expectedContinuationToken = ResumptionToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+        var expectedContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
 
         using var cts = new CancellationTokenSource();
 

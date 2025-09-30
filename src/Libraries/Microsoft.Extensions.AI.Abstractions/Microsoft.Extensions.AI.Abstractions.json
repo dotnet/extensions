@@ -758,10 +758,6 @@
         {
           "Member": "Microsoft.Extensions.AI.BackgroundResponsesOptions.BackgroundResponsesOptions();",
           "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.BackgroundResponsesOptions.BackgroundResponsesOptions(Microsoft.Extensions.AI.BackgroundResponsesOptions options);",
-          "Stage": "Experimental"
         }
       ],
       "Properties": [
@@ -830,7 +826,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.ChatClientExtensions.GetResponseAsync(this Microsoft.Extensions.AI.IChatClient client, Microsoft.Extensions.AI.ResumptionToken continuationToken, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.ChatClientExtensions.GetResponseAsync(this Microsoft.Extensions.AI.IChatClient client, Microsoft.Extensions.AI.ResponseContinuationToken continuationToken, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
@@ -846,7 +842,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.ChatClientExtensions.GetStreamingResponseAsync(this Microsoft.Extensions.AI.IChatClient client, Microsoft.Extensions.AI.ResumptionToken continuationToken, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.ChatClientExtensions.GetStreamingResponseAsync(this Microsoft.Extensions.AI.IChatClient client, Microsoft.Extensions.AI.ResponseContinuationToken continuationToken, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ]
@@ -1040,7 +1036,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.AI.ResumptionToken? Microsoft.Extensions.AI.ChatOptions.ContinuationToken { get; set; }",
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatOptions.ContinuationToken { get; set; }",
           "Stage": "Experimental"
         },
         {
@@ -1136,7 +1132,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.AI.ResumptionToken? Microsoft.Extensions.AI.ChatResponse.ContinuationToken { get; set; }",
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatResponse.ContinuationToken { get; set; }",
           "Stage": "Experimental"
         },
         {
@@ -1312,7 +1308,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.AI.ResumptionToken? Microsoft.Extensions.AI.ChatResponseUpdate.ContinuationToken { get; set; }",
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatResponseUpdate.ContinuationToken { get; set; }",
           "Stage": "Experimental"
         },
         {
@@ -2651,41 +2647,41 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.ResumptionToken",
+      "Type": "class Microsoft.Extensions.AI.ResponseContinuationToken",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.ResumptionToken.ResumptionToken();",
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.ResponseContinuationToken();",
           "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.AI.ResumptionToken.ResumptionToken(System.ReadOnlyMemory<byte> bytes);",
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.ResponseContinuationToken(System.ReadOnlyMemory<byte> bytes);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.AI.ResumptionToken Microsoft.Extensions.AI.ResumptionToken.FromBytes(System.ReadOnlyMemory<byte> bytes);",
+          "Member": "static Microsoft.Extensions.AI.ResponseContinuationToken Microsoft.Extensions.AI.ResponseContinuationToken.FromBytes(System.ReadOnlyMemory<byte> bytes);",
           "Stage": "Experimental"
         },
         {
-          "Member": "virtual System.ReadOnlyMemory<byte> Microsoft.Extensions.AI.ResumptionToken.ToBytes();",
+          "Member": "virtual System.ReadOnlyMemory<byte> Microsoft.Extensions.AI.ResponseContinuationToken.ToBytes();",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.ResumptionToken.Converter",
+      "Type": "sealed class Microsoft.Extensions.AI.ResponseContinuationToken.Converter",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.ResumptionToken.Converter.Converter();",
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Converter();",
           "Stage": "Experimental"
         },
         {
-          "Member": "override Microsoft.Extensions.AI.ResumptionToken Microsoft.Extensions.AI.ResumptionToken.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
+          "Member": "override Microsoft.Extensions.AI.ResponseContinuationToken Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
           "Stage": "Experimental"
         },
         {
-          "Member": "override void Microsoft.Extensions.AI.ResumptionToken.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.ResumptionToken value, System.Text.Json.JsonSerializerOptions options);",
+          "Member": "override void Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.ResponseContinuationToken value, System.Text.Json.JsonSerializerOptions options);",
           "Stage": "Experimental"
         }
       ]

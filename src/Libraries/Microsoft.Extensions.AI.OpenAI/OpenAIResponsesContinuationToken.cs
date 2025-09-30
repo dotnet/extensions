@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// The token is used for resuming streamed background responses and continuing
 /// non-streamed background responses until completion.
 /// </remarks>
-internal sealed class OpenAIResponsesContinuationToken : ResumptionToken
+internal sealed class OpenAIResponsesContinuationToken : ResponseContinuationToken
 {
     /// <summary>Initializes a new instance of the <see cref="OpenAIResponsesContinuationToken"/> class.</summary>
     internal OpenAIResponsesContinuationToken(string responseId)
@@ -53,7 +53,7 @@ internal sealed class OpenAIResponsesContinuationToken : ResumptionToken
     /// </summary>
     /// <param name="token">The token to create the <see cref="OpenAIResponsesContinuationToken"/> from.</param>
     /// <returns>A <see cref="OpenAIResponsesContinuationToken"/> equivalent of the provided <paramref name="token"/>.</returns>
-    internal static OpenAIResponsesContinuationToken FromToken(ResumptionToken token)
+    internal static OpenAIResponsesContinuationToken FromToken(ResponseContinuationToken token)
     {
         if (token is OpenAIResponsesContinuationToken longRunResumptionToken)
         {

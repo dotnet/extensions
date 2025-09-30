@@ -2007,7 +2007,7 @@ public class OpenAIResponseClientTests
         return status.ToString().ToLowerInvariant();
     }
 
-    private sealed class TestOpenAIResponsesContinuationToken : ResumptionToken
+    private sealed class TestOpenAIResponsesContinuationToken : ResponseContinuationToken
     {
         internal TestOpenAIResponsesContinuationToken(string responseId)
         {
@@ -2020,7 +2020,7 @@ public class OpenAIResponseClientTests
         /// <summary>Gets or sets the sequence number of a streamed update.</summary>
         internal int? SequenceNumber { get; set; }
 
-        internal static TestOpenAIResponsesContinuationToken FromToken(ResumptionToken token)
+        internal static TestOpenAIResponsesContinuationToken FromToken(ResponseContinuationToken token)
         {
             if (token is TestOpenAIResponsesContinuationToken longRunResumptionToken)
             {
