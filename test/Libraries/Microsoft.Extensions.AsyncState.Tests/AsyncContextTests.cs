@@ -7,6 +7,7 @@ using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.AsyncState.Test;
+
 public class AsyncContextTests
 {
     [Fact]

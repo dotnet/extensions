@@ -8,30 +8,31 @@ namespace Microsoft.Extensions.AI.Templates.Tests;
 
 public sealed class Project(string rootPath, string name)
 {
-    private string? _startupProjectRelativePath;
-    private string? _startupProjectFullPath;
-
     public string RootPath => rootPath;
 
     public string Name => name;
 
     public string? StartupProjectRelativePath
     {
-        get => _startupProjectRelativePath;
+        get;
         set
         {
             if (value is null)
             {
-                _startupProjectRelativePath = null;
-                _startupProjectFullPath = null;
+                field = null;
+                StartupProjectFullPath = null!;
             }
-            else if (!string.Equals(value, _startupProjectRelativePath, StringComparison.Ordinal))
+            else if (!string.Equals(value, field, StringComparison.Ordinal))
             {
-                _startupProjectRelativePath = value;
-                _startupProjectFullPath = Path.Combine(rootPath, _startupProjectRelativePath);
+                field = value;
+                StartupProjectFullPath = Path.Combine(rootPath, field);
             }
         }
     }
 
-    public string StartupProjectFullPath => _startupProjectFullPath ?? rootPath;
+    public string StartupProjectFullPath
+    {
+        get => field ?? rootPath;
+        private set;
+    }
 }
