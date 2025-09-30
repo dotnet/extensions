@@ -22,10 +22,6 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly object _memoryLocker = new();
     private readonly ILogger<LinuxUtilizationProvider> _logger;
     private readonly ILinuxUtilizationParser _parser;
-    private double _memoryLimit;
-    private double _cpuLimit;
-    private ulong _memoryRequest;
-    private double _cpuRequest;
     private readonly long _cpuPeriodsInterval;
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
@@ -35,6 +31,13 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly TimeSpan _retryInterval = TimeSpan.FromMinutes(5);
     private DateTimeOffset _lastFailure = DateTimeOffset.MinValue;
     private int _measurementsUnavailable;
+
+    private double _memoryLimit;
+    private double _cpuLimit;
+#pragma warning disable S1450 // Private fields only used as local variables in methods should become local variables. This will be used once we bring relevant meters.
+    private ulong _memoryRequest;
+#pragma warning restore S1450 // Private fields only used as local variables in methods should become local variables
+    private double _cpuRequest;
 
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
@@ -46,13 +49,11 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private long _previousCgroupCpuPeriodCounter;
     public SystemResources Resources { get; }
 
-    private IResourceQuotasProvider _resourceQuotasProvider;
-
     public LinuxUtilizationProvider(
         IOptions<ResourceMonitoringOptions> options,
         ILinuxUtilizationParser parser,
         IMeterFactory meterFactory,
-        IResourceQuotasProvider resourceQuotasProvider,
+        IResourceQuotaProvider resourceQuotaProvider,
         ILogger<LinuxUtilizationProvider>? logger = null,
         TimeProvider? timeProvider = null)
     {
@@ -67,12 +68,11 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _previousHostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
         _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
 
-        _resourceQuotasProvider = resourceQuotasProvider;
-        var quotas = _resourceQuotasProvider.GetResourceQuotas();
-        _memoryLimit = quotas.LimitsMemory;
-        _cpuLimit = quotas.LimitsCpu;
-        _cpuRequest = quotas.RequestsCpu;
-        _memoryRequest = quotas.RequestsMemory;
+        var quota = resourceQuotaProvider.GetResourceQuota();
+        _memoryLimit = quota.LimitsMemory;
+        _cpuLimit = quota.LimitsCpu;
+        _cpuRequest = quota.RequestsCpu;
+        _memoryRequest = quota.RequestsMemory;
 
         float hostCpus = _parser.GetHostCpuCount();
         double scaleRelativeToCpuLimit = hostCpus / _cpuLimit;
@@ -88,12 +88,6 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         if (options.Value.UseLinuxCalculationV2)
         {
-            if (!options.Value.EmitRequestsMetrics)
-            {
-                _cpuLimit = _parser.GetCgroupLimitV2();
-                _cpuRequest = _parser.GetCgroupRequestCpuV2();
-            }
-
             // Get Cpu periods interval from cgroup
             _cpuPeriodsInterval = _parser.GetCgroupPeriodsIntervalInMicroSecondsV2();
             (_previousCgroupCpuTime, _previousCgroupCpuPeriodCounter) = _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
@@ -135,14 +129,6 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization,
             observeValues: () => GetMeasurementWithRetry(MemoryPercentage),
             unit: "1");
-
-        if (options.Value.EmitRequestsMetrics)
-        {
-            _ = meter.CreateObservableGauge(
-                name: ResourceUtilizationInstruments.ContainerMemoryRequestUtilization,
-                observeValue: () => GetMeasurementWithRetry(MemoryPercantageForRequest), // todo implement
-                unit: "1");
-        }
 
         _ = meter.CreateObservableUpDownCounter(
             name: ResourceUtilizationInstruments.ContainerMemoryUsage,
@@ -293,7 +279,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private double MemoryPercentage()
     {
         ulong memoryUsage = MemoryUsage();
-        double memoryPercentage = Math.Min(One, (double)memoryUsage / _memoryLimit);
+        double memoryPercentage = Math.Min(One, memoryUsage / _memoryLimit);
 
         _logger.MemoryPercentageData(memoryUsage, _memoryLimit, memoryPercentage);
         return memoryPercentage;

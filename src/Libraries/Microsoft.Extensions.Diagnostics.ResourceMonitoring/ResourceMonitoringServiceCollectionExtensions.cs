@@ -115,7 +115,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         if (JobObjectInfo.SafeJobHandle.IsProcessInJob())
         {
             builder.Services.TryAddSingleton<ISnapshotProvider, WindowsContainerSnapshotProvider>();
-            builder.Services.TryAddSingleton<IResourceQuotasProvider, WindowsContainerResourceQuotasProvider>();
+            builder.Services.TryAddSingleton<IResourceQuotaProvider, WindowsContainerResourceQuotaProvider>();
         }
         else
         {
@@ -129,7 +129,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         _ = Throw.IfNull(builder);
 
         builder.Services.TryAddActivatedSingleton<ISnapshotProvider, LinuxUtilizationProvider>();
-        builder.Services.TryAddSingleton<IResourceQuotasProvider, LinuxResourceQuotasProvider>();
+        builder.Services.TryAddSingleton<IResourceQuotaProvider, LinuxResourceQuotaProvider>();
 
         builder.Services.TryAddSingleton(TimeProvider.System);
         builder.Services.TryAddSingleton<IFileSystem, OSFileSystem>();

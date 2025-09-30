@@ -3,7 +3,11 @@
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
-public class ResourceQuotas
+/// <summary>
+/// Represents resource quota information for a container, including CPU and memory limits and requests.
+/// Limits define the maximum resources a container can use, while requests specify the minimum guaranteed resources.
+/// </summary>
+public class ResourceQuota
 {
     /// <summary>
     /// Gets or sets the resource memory limit the container is allowed to use.
@@ -13,7 +17,7 @@ public class ResourceQuotas
     /// <summary>
     /// Gets or sets the resource CPU limit the container is allowed to use.
     /// </summary>
-    public ulong LimitsCpu { get; set; }
+    public double LimitsCpu { get; set; }
 
     /// <summary>
     /// Gets or sets the resource memory request the container is allowed to use.
@@ -23,5 +27,5 @@ public class ResourceQuotas
     /// <summary>
     /// Gets or sets the resource CPU request the container is allowed to use.
     /// </summary>
-    public ulong RequestsCpu { get; set; }
+    public double RequestsCpu { get; set; }
 }

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
-using System.Threading;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -20,8 +19,6 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private const double Hundred = 100.0d;
     private const double TicksPerSecondDouble = TimeSpan.TicksPerSecond;
 
-    private readonly Lazy<MEMORYSTATUSEX> _memoryStatus;
-
     /// <summary>
     /// This represents a factory method for creating the JobHandle.
     /// </summary>
@@ -29,27 +26,31 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
+    private readonly object _processMemoryLocker = new();
     private readonly TimeProvider _timeProvider;
     private readonly IProcessInfo _processInfo;
     private readonly ILogger<WindowsContainerSnapshotProvider> _logger;
-    private double _memoryLimit;
-    private double _cpuLimit;
-    private ulong _memoryRequest;
-    private double _cpuRequest;
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
     private readonly double _metricValueMultiplier;
+
+    private double _memoryLimit;
+    private double _cpuLimit;
+#pragma warning disable S1450 // Private fields only used as local variables in methods should become local variables. Those will be used once we bring relevant meters.
+    private ulong _memoryRequest;
+    private double _cpuRequest;
+#pragma warning restore S1450 // Private fields only used as local variables in methods should become local variables
 
     private long _oldCpuUsageTicks;
     private long _oldCpuTimeTicks;
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
+    private DateTimeOffset _refreshAfterProcessMemory;
     private double _cpuPercentage = double.NaN;
-    private double _memoryPercentage;
+    private double _processMemoryPercentage;
+    private ulong _memoryUsage;
 
     public SystemResources Resources { get; }
-
-    private IResourceQuotasProvider _resourceQuotasProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WindowsContainerSnapshotProvider"/> class.
@@ -58,9 +59,9 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         ILogger<WindowsContainerSnapshotProvider>? logger,
         IMeterFactory meterFactory,
         IOptions<ResourceMonitoringOptions> options,
-        IResourceQuotasProvider resourceQuotasProvider)
-        : this(new MemoryInfo(), new SystemInfo(), new ProcessInfo(), logger, meterFactory,
-              static () => new JobHandleWrapper(), TimeProvider.System, options.Value, resourceQuotasProvider)
+        IResourceQuotaProvider resourceQuotaProvider)
+        : this(new ProcessInfo(), logger, meterFactory,
+              static () => new JobHandleWrapper(), TimeProvider.System, options.Value, resourceQuotaProvider)
     {
     }
 
@@ -70,24 +71,19 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     /// <remarks>This constructor enables the mocking of <see cref="WindowsContainerSnapshotProvider"/> dependencies for the purpose of Unit Testing only.</remarks>
     [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Dependencies for testing")]
     internal WindowsContainerSnapshotProvider(
-        IMemoryInfo memoryInfo,
-        ISystemInfo systemInfo,
         IProcessInfo processInfo,
         ILogger<WindowsContainerSnapshotProvider>? logger,
         IMeterFactory meterFactory,
         Func<IJobHandle> createJobHandleObject,
         TimeProvider timeProvider,
         ResourceMonitoringOptions options,
-        IResourceQuotasProvider resourceQuotasProvider)
+        IResourceQuotaProvider resourceQuotaProvider)
     {
         _logger = logger ?? NullLogger<WindowsContainerSnapshotProvider>.Instance;
         _logger.RunningInsideJobObject();
 
         _metricValueMultiplier = options.UseZeroToOneRangeForMetrics ? One : Hundred;
 
-        _memoryStatus = new Lazy<MEMORYSTATUSEX>(
-            memoryInfo.GetMemoryStatus,
-            LazyThreadSafetyMode.ExecutionAndPublication);
         _createJobHandleObject = createJobHandleObject;
         _processInfo = processInfo;
 
@@ -95,12 +91,11 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         using IJobHandle jobHandle = _createJobHandleObject();
 
-        _resourceQuotasProvider = resourceQuotasProvider;
-        var quotas = _resourceQuotasProvider.GetResourceQuotas();
-        _memoryLimit = quotas.LimitsMemory;
-        _cpuLimit = quotas.LimitsCpu;
-        _cpuRequest = quotas.RequestsCpu;
-        _memoryRequest = quotas.RequestsMemory;
+        var quota = resourceQuotaProvider.GetResourceQuota();
+        _cpuLimit = quota.LimitsCpu;
+        _memoryLimit = quota.LimitsMemory;
+        _cpuRequest = quota.RequestsCpu;
+        _memoryRequest = quota.RequestsMemory;
 
         ulong memoryLimitRounded = (ulong)Math.Round(_memoryLimit);
         Resources = new SystemResources(_cpuRequest, _cpuLimit, _memoryRequest, memoryLimitRounded);
@@ -113,6 +108,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         _memoryRefreshInterval = options.MemoryConsumptionRefreshInterval;
         _refreshAfterCpu = _timeProvider.GetUtcNow();
         _refreshAfterMemory = _timeProvider.GetUtcNow();
+        _refreshAfterProcessMemory = _timeProvider.GetUtcNow();
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // We don't dispose the meter because IMeterFactory handles that
@@ -121,21 +117,34 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         Meter meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        // Container based metrics:
-        _ = meter.CreateObservableCounter(name: ResourceUtilizationInstruments.ContainerCpuTime, observeValues: GetCpuTime, unit: "s", description: "CPU time used by the container.");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetMemoryUsage()));
+        _ = meter.CreateObservableCounter(
+            name: ResourceUtilizationInstruments.ContainerCpuTime,
+            observeValues: GetCpuTime,
+            unit: "s",
+            description: "CPU time used by the container.");
 
-        // Requests enabled metrics
-        if (options.EmitRequestsMetrics)
-        {
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuPercentageForRequests()); // todo implement
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryRequestUtilization, observeValue: () => MemoryPercentaForRequests()); // todo implement
-        }
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization,
+            observeValue: CpuPercentage);
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization,
+            observeValue: () => Math.Min(_metricValueMultiplier, MemoryUsage() / _memoryLimit * _metricValueMultiplier));
+
+        _ = meter.CreateObservableUpDownCounter(
+            name: ResourceUtilizationInstruments.ContainerMemoryUsage,
+            observeValue: () => (long)MemoryUsage(),
+            unit: "By",
+            description: "Memory usage of the container.");
 
         // Process based metrics:
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetCurrentProcessMemoryUsage()));
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ProcessCpuUtilization,
+            observeValue: CpuPercentage);
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ProcessMemoryUtilization,
+            observeValue: ProcessMemoryPercentage);
     }
 
     public Snapshot GetSnapshot()
@@ -152,53 +161,35 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             _processInfo.GetCurrentProcessMemoryUsage());
     }
 
-    private static double GetCpuLimit(IJobHandle jobHandle, ISystemInfo systemInfo)
+    private double ProcessMemoryPercentage()
     {
-        // Note: This function convert the CpuRate from CPU cycles to CPU units, also it scales
-        // the CPU units with the number of processors (cores) available in the system.
-        const double CpuCycles = 10_000U;
+        DateTimeOffset now = _timeProvider.GetUtcNow();
 
-        var cpuLimit = jobHandle.GetJobCpuLimitInfo();
-        double cpuRatio = 1.0;
-        if ((cpuLimit.ControlFlags & (uint)JobObjectInfo.JobCpuRateControlLimit.CpuRateControlEnable) != 0 &&
-            (cpuLimit.ControlFlags & (uint)JobObjectInfo.JobCpuRateControlLimit.CpuRateControlHardCap) != 0)
+        lock (_processMemoryLocker)
         {
-            // The CpuRate is represented as number of cycles during scheduling interval, where
-            // a full cpu cycles number would equal 10_000, so for example if the CpuRate is 2_000,
-            // that means that the application (or container) is assigned 20% of the total CPU available.
-            // So, here we divide the CpuRate by 10_000 to convert it to a ratio (ex: 0.2 for 20% CPU).
-            // For more info: https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_cpu_rate_control_information?redirectedfrom=MSDN
-            cpuRatio = cpuLimit.CpuRate / CpuCycles;
+            if (now < _refreshAfterProcessMemory)
+            {
+                return _processMemoryPercentage;
+            }
         }
 
-        SYSTEM_INFO systemInfoValue = systemInfo.GetSystemInfo();
+        ulong processMemoryUsage = _processInfo.GetCurrentProcessMemoryUsage();
 
-        // Multiply the cpu ratio by the number of processors to get you the portion
-        // of processors used from the system.
-        return cpuRatio * systemInfoValue.NumberOfProcessors;
-    }
-
-    /// <summary>
-    /// Gets memory limit of the system.
-    /// </summary>
-    /// <returns>Memory limit allocated to the system in bytes.</returns>
-    private ulong GetMemoryLimit(IJobHandle jobHandle)
-    {
-        var memoryLimitInBytes = jobHandle.GetExtendedLimitInfo().JobMemoryLimit.ToUInt64();
-
-        if (memoryLimitInBytes <= 0)
+        lock (_processMemoryLocker)
         {
-            MEMORYSTATUSEX memoryStatus = _memoryStatus.Value;
+            if (now >= _refreshAfterProcessMemory)
+            {
+                _processMemoryPercentage = Math.Min(_metricValueMultiplier, processMemoryUsage / _memoryLimit * _metricValueMultiplier);
+                _refreshAfterProcessMemory = now.Add(_memoryRefreshInterval);
 
-            // Technically, the unconstrained limit is memoryStatus.TotalPageFile.
-            // Leaving this at physical as it is more understandable to consumers.
-            memoryLimitInBytes = memoryStatus.TotalPhys;
+                _logger.ProcessMemoryPercentageData(processMemoryUsage, _memoryLimit, _processMemoryPercentage);
+            }
+
+            return _processMemoryPercentage;
         }
-
-        return memoryLimitInBytes;
     }
 
-    private double MemoryPercentage(Func<ulong> getMemoryUsage)
+    private ulong MemoryUsage()
     {
         DateTimeOffset now = _timeProvider.GetUtcNow();
 
@@ -206,24 +197,22 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         {
             if (now < _refreshAfterMemory)
             {
-                return _memoryPercentage;
+                return _memoryUsage;
             }
         }
 
-        ulong memoryUsage = getMemoryUsage();
+        ulong memoryUsage = _processInfo.GetMemoryUsage();
 
         lock (_memoryLocker)
         {
             if (now >= _refreshAfterMemory)
             {
-                // Don't change calculation order, otherwise we loose some precision:
-                _memoryPercentage = Math.Min(_metricValueMultiplier, memoryUsage / _memoryLimit * _metricValueMultiplier);
+                _memoryUsage = memoryUsage;
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
+                _logger.ContainerMemoryUsageData(_memoryUsage, _memoryLimit);
             }
 
-            _logger.MemoryUsageData(memoryUsage, _memoryLimit, _memoryPercentage);
-
-            return _memoryPercentage;
+            return _memoryUsage;
         }
     }
 

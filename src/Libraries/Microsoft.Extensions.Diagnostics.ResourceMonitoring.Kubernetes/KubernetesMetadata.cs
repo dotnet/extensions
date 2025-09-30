@@ -6,25 +6,25 @@ using System.Globalization;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes;
 
-public class KubernetesMetadata
+internal class KubernetesMetadata
 {
     /// <summary>
-    /// Gets or sets the resource memory limit the container is allowed to use.
+    /// Gets or sets the resource memory limit the container is allowed to use in bytes.
     /// </summary>
     public ulong LimitsMemory { get; set; }
 
     /// <summary>
-    /// Gets or sets the resource CPU limit the container is allowed to use.
+    /// Gets or sets the resource CPU limit the container is allowed to use in milicores.
     /// </summary>
     public ulong LimitsCpu { get; set; }
 
     /// <summary>
-    /// Gets or sets the resource memory request the container is allowed to use.
+    /// Gets or sets the resource memory request the container is allowed to use in bytes.
     /// </summary>
     public ulong RequestsMemory { get; set; }
 
     /// <summary>
-    /// Gets or sets the resource CPU request the container is allowed to use.
+    /// Gets or sets the resource CPU request the container is allowed to use in milicores.
     /// </summary>
     public ulong RequestsCpu { get; set; }
 
@@ -35,11 +35,31 @@ public class KubernetesMetadata
         _environmentVariablePrefix = environmentVariablePrefix;
     }
 
+    /// <summary>
+    /// Fills the object with data loaded from environment variables.
+    /// </summary>
     public void Build()
     {
-        LimitsMemory = Convert.ToUInt64(Environment.GetEnvironmentVariable($"{_environmentVariablePrefix}LIMITS_MEMORY"), CultureInfo.InvariantCulture);
-        LimitsCpu = Convert.ToUInt64(Environment.GetEnvironmentVariable($"{_environmentVariablePrefix}LIMITS_CPU"), CultureInfo.InvariantCulture);
-        RequestsMemory = Convert.ToUInt64(Environment.GetEnvironmentVariable($"{_environmentVariablePrefix}REQUESTS_MEMORY"), CultureInfo.InvariantCulture);
-        RequestsCpu = Convert.ToUInt64(Environment.GetEnvironmentVariable($"{_environmentVariablePrefix}REQUESTS_CPU"), CultureInfo.InvariantCulture);
+        LimitsMemory = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}LIMITS_MEMORY");
+        LimitsCpu = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}LIMITS_CPU");
+        RequestsMemory = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}REQUESTS_MEMORY");
+        RequestsCpu = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}REQUESTS_CPU");
+    }
+
+    private static ulong GetEnvironmentVariableAsUInt64(string variableName)
+    {
+        var value = Environment.GetEnvironmentVariable(variableName);
+
+        if (string.IsNullOrEmpty(value))
+        {
+            throw new InvalidOperationException($"Environment variable '{variableName}' is not set or is empty.");
+        }
+
+        if (!ulong.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out ulong result))
+        {
+            throw new InvalidOperationException($"Environment variable '{variableName}' contains invalid value '{value}'. Expected a non-negative integer.");
+        }
+
+        return result;
     }
 }

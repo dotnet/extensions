@@ -7,17 +7,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
-    <UseLoggingGenerator>true</UseLoggingGenerator>
-    <InjectSharedDataValidation>true</InjectSharedDataValidation>
-    <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
-    <InjectObsoleteAttributeOnLegacy>true</InjectObsoleteAttributeOnLegacy>
-    <InjectPlatformAttributesOnLegacy>true</InjectPlatformAttributesOnLegacy>
-    <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
-    <InjectStringSplitExtensions>true</InjectStringSplitExtensions>
     <InjectSharedInstruments>true</InjectSharedInstruments>
   </PropertyGroup>
 
@@ -32,10 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.ClusterMetadata.Kubernetes\Microsoft.Extensions.ClusterMetadata.Kubernetes.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ResourceMonitoring\Microsoft.Extensions.Diagnostics.ResourceMonitoring.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Abstractions\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
