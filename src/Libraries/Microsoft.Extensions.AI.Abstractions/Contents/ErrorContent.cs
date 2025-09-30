@@ -14,22 +14,19 @@ namespace Microsoft.Extensions.AI;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class ErrorContent : AIContent
 {
-    /// <summary>The error message.</summary>
-    private string? _message;
-
     /// <summary>Initializes a new instance of the <see cref="ErrorContent"/> class with the specified error message.</summary>
     /// <param name="message">The error message to store in this content.</param>
     public ErrorContent(string? message)
     {
-        _message = message;
+        Message = message;
     }
 
     /// <summary>Gets or sets the error message.</summary>
     [AllowNull]
     public string Message
     {
-        get => _message ?? string.Empty;
-        set => _message = value;
+        get => field ?? string.Empty;
+        set;
     }
 
     /// <summary>Gets or sets an error code associated with the error.</summary>

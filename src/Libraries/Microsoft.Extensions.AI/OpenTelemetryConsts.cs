@@ -3,7 +3,6 @@
 
 namespace Microsoft.Extensions.AI;
 
-#pragma warning disable CA1716 // Identifiers should not match keywords
 #pragma warning disable S4041 // Type names should not match namespaces
 
 /// <summary>Provides constants used by various telemetry services.</summary>
@@ -21,6 +20,7 @@ internal static class OpenTelemetryConsts
 
     public const string TypeText = "text";
     public const string TypeJson = "json";
+    public const string TypeImage = "image";
 
     public const string TokenTypeInput = "input";
     public const string TokenTypeOutput = "output";
@@ -32,9 +32,10 @@ internal static class OpenTelemetryConsts
 
     public static class GenAI
     {
-        public const string Chat = "chat";
-        public const string Embeddings = "embeddings";
-        public const string ExecuteTool = "execute_tool";
+        public const string ChatName = "chat";
+        public const string EmbeddingsName = "embeddings";
+        public const string ExecuteToolName = "execute_tool";
+        public const string GenerateContentName = "generate_content";
 
         public const string SystemInstructions = "gen_ai.system_instructions";
 
@@ -60,6 +61,14 @@ internal static class OpenTelemetryConsts
             public const string Id = "gen_ai.conversation.id";
         }
 
+        public static class Embeddings
+        {
+            public static class Dimension
+            {
+                public const string Count = "gen_ai.embeddings.dimension.count";
+            }
+        }
+
         public static class Input
         {
             public const string Messages = "gen_ai.input.messages";
@@ -83,7 +92,7 @@ internal static class OpenTelemetryConsts
 
         public static class Request
         {
-            public const string EmbeddingDimensions = "gen_ai.request.embedding.dimensions";
+            public const string ChoiceCount = "gen_ai.request.choice.count";
             public const string FrequencyPenalty = "gen_ai.request.frequency_penalty";
             public const string Model = "gen_ai.request.model";
             public const string MaxTokens = "gen_ai.request.max_tokens";
@@ -113,10 +122,13 @@ internal static class OpenTelemetryConsts
             public const string Description = "gen_ai.tool.description";
             public const string Message = "gen_ai.tool.message";
             public const string Type = "gen_ai.tool.type";
+            public const string Definitions = "gen_ai.tool.definitions";
 
             public static class Call
             {
                 public const string Id = "gen_ai.tool.call.id";
+                public const string Arguments = "gen_ai.tool.call.arguments";
+                public const string Result = "gen_ai.tool.call.result";
             }
         }
 

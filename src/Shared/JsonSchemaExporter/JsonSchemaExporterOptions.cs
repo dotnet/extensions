@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if !NET9_0_OR_GREATER
-using System;
 using System.Text.Json.Nodes;
 
 namespace System.Text.Json.Schema;

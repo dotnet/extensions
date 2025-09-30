@@ -29,7 +29,6 @@ internal partial class DefaultHybridCache
     private readonly object _syncLock6 = new();
     private readonly object _syncLock7 = new();
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Trivial low 3 bits")]
     internal object GetPartitionedSyncLock(in StampedeKey key) => (key.HashCode & 0b111) switch // generate 8 partitions using the low 3 bits
     {
         0 => _syncLock0,

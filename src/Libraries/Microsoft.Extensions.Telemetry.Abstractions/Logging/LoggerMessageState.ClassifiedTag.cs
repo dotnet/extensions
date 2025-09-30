@@ -12,7 +12,6 @@ public partial class LoggerMessageState
     /// <summary>
     /// Represents a captured tag that needs redaction.
     /// </summary>
-    [SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "Not for customer use and hidden from docs")]
     [SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Not needed")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public readonly struct ClassifiedTag

@@ -125,10 +125,7 @@ public class OpenAIEmbeddingGeneratorTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using IEmbeddingGenerator<string, Embedding<float>> generator = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions
-        {
-            Transport = new HttpClientPipelineTransport(httpClient),
-        }).GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
+        using IEmbeddingGenerator<string, Embedding<float>> generator = CreateEmbeddingGenerator(httpClient, "text-embedding-3-small");
 
         var response = await generator.GenerateAsync([
             "hello, world!",
@@ -188,10 +185,7 @@ public class OpenAIEmbeddingGeneratorTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using IEmbeddingGenerator<string, Embedding<float>> generator = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions
-        {
-            Transport = new HttpClientPipelineTransport(httpClient),
-        }).GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
+        using IEmbeddingGenerator<string, Embedding<float>> generator = CreateEmbeddingGenerator(httpClient, "text-embedding-3-small");
 
         var response = await generator.GenerateAsync([
             "hello, world!",
@@ -221,4 +215,24 @@ public class OpenAIEmbeddingGeneratorTests
             Assert.Contains(e.Vector.ToArray(), f => !f.Equals(0));
         }
     }
+
+    [Fact]
+    public async Task RequestHeaders_UserAgent_ContainsMEAI()
+    {
+        using var handler = new ThrowUserAgentExceptionHandler();
+        using HttpClient httpClient = new(handler);
+        using IEmbeddingGenerator<string, Embedding<float>> generator = CreateEmbeddingGenerator(httpClient, "text-embedding-3-small");
+
+        InvalidOperationException e = await Assert.ThrowsAsync<InvalidOperationException>(() => generator.GenerateAsync("hello"));
+
+        Assert.StartsWith("User-Agent header: OpenAI", e.Message);
+        Assert.Contains("MEAI", e.Message);
+    }
+
+    private static IEmbeddingGenerator<string, Embedding<float>> CreateEmbeddingGenerator(HttpClient httpClient, string modelId) =>
+        new OpenAIClient(
+            new ApiKeyCredential("apikey"),
+            new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
+        .GetEmbeddingClient(modelId)
+        .AsIEmbeddingGenerator();
 }

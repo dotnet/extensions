@@ -14,9 +14,6 @@ namespace Microsoft.Extensions.AI;
 [JsonConverter(typeof(Converter))]
 public readonly struct ChatFinishReason : IEquatable<ChatFinishReason>
 {
-    /// <summary>The finish reason value. If <see langword="null"/> because `default(ChatFinishReason)` was used, the instance will behave like <see cref="Stop"/>.</summary>
-    private readonly string? _value;
-
     /// <summary>Initializes a new instance of the <see cref="ChatFinishReason"/> struct with a string that describes the reason.</summary>
     /// <param name="value">The reason value.</param>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
@@ -24,11 +21,11 @@ public readonly struct ChatFinishReason : IEquatable<ChatFinishReason>
     [JsonConstructor]
     public ChatFinishReason(string value)
     {
-        _value = Throw.IfNullOrWhitespace(value);
+        Value = Throw.IfNullOrWhitespace(value);
     }
 
     /// <summary>Gets the finish reason value.</summary>
-    public string Value => _value ?? Stop.Value;
+    public string Value => field ?? Stop.Value;
 
     /// <inheritdoc />
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is ChatFinishReason other && Equals(other);

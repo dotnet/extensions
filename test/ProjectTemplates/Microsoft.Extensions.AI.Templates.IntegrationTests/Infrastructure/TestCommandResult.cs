@@ -7,12 +7,9 @@ namespace Microsoft.Extensions.AI.Templates.Tests;
 
 public sealed class TestCommandResult(StringBuilder standardOutputBuilder, StringBuilder standardErrorBuilder, int exitCode)
 {
-    private string? _standardOutput;
-    private string? _standardError;
+    public string StandardOutput => field ??= standardOutputBuilder.ToString();
 
-    public string StandardOutput => _standardOutput ??= standardOutputBuilder.ToString();
-
-    public string StandardError => _standardError ??= standardErrorBuilder.ToString();
+    public string StandardError => field ??= standardErrorBuilder.ToString();
 
     public int ExitCode => exitCode;
 }

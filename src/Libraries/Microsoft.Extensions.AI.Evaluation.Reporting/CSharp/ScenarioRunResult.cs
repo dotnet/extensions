@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable S3604
-// S3604: Member initializer values should not be redundant.
-// We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
-// constructor syntax.
-
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -126,17 +121,11 @@ public sealed class ScenarioRunResult(
     /// </summary>
     public DateTime CreationTime { get; set; } = creationTime;
 
-#pragma warning disable CA2227
-    // CA2227: Collection properties should be read only.
-    // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
-    // convenience.
-
     /// <summary>
     /// Gets or sets the conversation history including the request that produced the <see cref="ModelResponse"/> being
     /// evaluated in this <see cref="ScenarioRunResult"/>.
     /// </summary>
     public IList<ChatMessage> Messages { get; set; } = messages;
-#pragma warning restore CA2227
 
     /// <summary>
     /// Gets or sets the response being evaluated in this <see cref="ScenarioRunResult"/>.
@@ -165,16 +154,10 @@ public sealed class ScenarioRunResult(
     /// </remarks>
     public ChatDetails? ChatDetails { get; set; } = chatDetails;
 
-#pragma warning disable CA2227
-    // CA2227: Collection properties should be read only.
-    // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
-    // convenience.
-
     /// <summary>
     /// Gets or sets a set of text tags applicable to this <see cref="ScenarioRunResult"/>.
     /// </summary>
     public IList<string>? Tags { get; set; } = tags;
-#pragma warning restore CA2227
 
     /// <summary>
     /// Gets or sets the version of the format used to persist the current <see cref="ScenarioRunResult"/>.

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Threading;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
@@ -68,7 +67,6 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     /// Initializes a new instance of the <see cref="WindowsContainerSnapshotProvider"/> class.
     /// </summary>
     /// <remarks>This constructor enables the mocking of <see cref="WindowsContainerSnapshotProvider"/> dependencies for the purpose of Unit Testing only.</remarks>
-    [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Dependencies for testing")]
     internal WindowsContainerSnapshotProvider(
         IMemoryInfo memoryInfo,
         ISystemInfo systemInfo,
