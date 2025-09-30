@@ -17,19 +17,8 @@ This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See
 
 ## Using Azure Provisioning
 
-The project is set up to automatically provision Azure resources, but local configuration is configured. For detailed instructions, see the [Local Provisioning documentation](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration).
+The project is set up to automatically provision Azure resources. When running the app for the first time, you will be prompted to provide Azure configuration values. For detailed instructions, see the [Local Provisioning documentation](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration).
 
-From the command line, configure local provisioning for this project using .NET User Secrets by running the following commands:
-
-```sh
-cd aichatweb.AppHost
-dotnet user-secrets set Azure:SubscriptionId "<Your subscription id>"
-dotnet user-secrets set Azure:AllowResourceGroupCreation "true"
-dotnet user-secrets set Azure:ResourceGroup "<Valid resource group name>"
-dotnet user-secrets set Azure:Location "<Valid Azure location>"
-```
-
-Make sure to replace placeholder values with real configuration values.
 
 # Running the application
 
