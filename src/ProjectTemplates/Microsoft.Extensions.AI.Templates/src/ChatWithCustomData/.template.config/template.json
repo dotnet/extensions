@@ -65,6 +65,12 @@
         ]
       },
       {
+        "condition": "(!IsAspire || !IsOllama)",
+        "exclude": [
+          "ChatWithCustomData-CSharp.Web/OllamaResilienceHandlerExtensions.cs"
+        ]
+      },
+      {
         "condition": "(IsAspire)",
         "exclude": [
           "ChatWithCustomData-CSharp.Web/Program.cs",
