@@ -47,7 +47,7 @@ public class ResponseContinuationToken
 
     /// <summary>Gets the bytes representing this <see cref="ResponseContinuationToken"/>.</summary>
     /// <returns>Bytes representing the <see cref="ResponseContinuationToken"/>.</returns>"/>
-    public virtual ReadOnlyMemory<byte> ToBytes() => _bytes?.ToArray() ?? throw new InvalidOperationException("Unable to obtain this token's bytes.");
+    public virtual ReadOnlyMemory<byte> ToBytes() => _bytes ?? throw new InvalidOperationException("Unable to obtain this token's bytes.");
 
     /// <summary>Provides a <see cref="JsonConverter{ResponseContinuationToken}"/> for serializing <see cref="ResponseContinuationToken"/> instances.</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]

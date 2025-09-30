@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Text.Json;
 using Xunit;
 
@@ -16,7 +17,7 @@ public class ResponseContinuationTokenTests
         ResponseContinuationToken token = ResponseContinuationToken.FromBytes(testBytes);
 
         Assert.NotNull(token);
-        Assert.Equal(testBytes, token.ToBytes());
+        Assert.Equal(testBytes, token.ToBytes().ToArray());
     }
 
     [Fact]
@@ -31,7 +32,7 @@ public class ResponseContinuationTokenTests
 
         // Assert
         Assert.NotNull(deserializedToken);
-        Assert.Equal(originalToken.ToBytes(), deserializedToken.ToBytes());
+        Assert.Equal(originalToken.ToBytes().ToArray(), deserializedToken.ToBytes().ToArray());
         Assert.NotSame(originalToken, deserializedToken);
     }
 }
