@@ -13,16 +13,14 @@ internal static partial class AzureStorageJsonUtilities
 {
     internal static class Default
     {
-        private static JsonSerializerOptions? _options;
-        internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: true);
+        internal static JsonSerializerOptions Options => field ??= CreateJsonSerializerOptions(writeIndented: true);
         internal static JsonTypeInfo<CacheEntry> CacheEntryTypeInfo => Options.GetTypeInfo<CacheEntry>();
         internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
     }
 
     internal static class Compact
     {
-        private static JsonSerializerOptions? _options;
-        internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: false);
+        internal static JsonSerializerOptions Options => field ??= CreateJsonSerializerOptions(writeIndented: false);
         internal static JsonTypeInfo<CacheEntry> CacheEntryTypeInfo => Options.GetTypeInfo<CacheEntry>();
         internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
     }

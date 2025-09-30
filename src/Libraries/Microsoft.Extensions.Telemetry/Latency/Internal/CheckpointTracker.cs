@@ -16,12 +16,13 @@ internal sealed class CheckpointTracker : IResettable
     private readonly Registry _checkpointNames;
     private readonly int[] _checkpointAdded;
     private readonly Checkpoint[] _checkpoints;
-
-    private long _timestamp;
-
     private int _numCheckpoints;
 
-    public long Elapsed => TimeProvider.GetTimestamp() - _timestamp;
+    public long Elapsed
+    {
+        get => TimeProvider.GetTimestamp() - field;
+        private set;
+    }
 
     public long Frequency => TimeProvider.TimestampFrequency;
 
@@ -36,7 +37,7 @@ internal sealed class CheckpointTracker : IResettable
         _checkpointAdded = new int[keyCount];
         _checkpoints = new Checkpoint[keyCount];
         TimeProvider = TimeProvider.System;
-        _timestamp = TimeProvider.GetTimestamp();
+        Elapsed = TimeProvider.GetTimestamp();
     }
 
     /// <summary>
@@ -44,7 +45,7 @@ internal sealed class CheckpointTracker : IResettable
     /// </summary>
     public bool TryReset()
     {
-        _timestamp = TimeProvider.GetTimestamp();
+        Elapsed = TimeProvider.GetTimestamp();
         _numCheckpoints = 0;
         Array.Clear(_checkpointAdded, 0, _checkpointAdded.Length);
         return true;
