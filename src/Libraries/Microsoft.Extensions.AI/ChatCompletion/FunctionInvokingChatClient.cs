@@ -16,8 +16,6 @@ using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
 #pragma warning disable S3353 // Unchanged local variables should be "const"
-#pragma warning disable IDE0031 // Use null propagation, suppressed until repo updates to C# 14
-#pragma warning disable IDE0032 // Use auto property, suppressed until repo updates to C# 14
 
 namespace Microsoft.Extensions.AI;
 
@@ -78,12 +76,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>The <see cref="ActivitySource"/> to use for telemetry.</summary>
     /// <remarks>This component does not own the instance and should not dispose it.</remarks>
     private readonly ActivitySource? _activitySource;
-
-    /// <summary>Maximum number of roundtrips allowed to the inner client.</summary>
-    private int _maximumIterationsPerRequest = 40; // arbitrary default to prevent runaway execution
-
-    /// <summary>Maximum number of consecutive iterations that are allowed contain at least one exception result. If the limit is exceeded, we rethrow the exception instead of continuing.</summary>
-    private int _maximumConsecutiveErrorsPerRequest = 3;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
@@ -178,7 +170,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </remarks>
     public int MaximumIterationsPerRequest
     {
-        get => _maximumIterationsPerRequest;
+        get;
         set
         {
             if (value < 1)
@@ -186,9 +178,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 Throw.ArgumentOutOfRangeException(nameof(value));
             }
 
-            _maximumIterationsPerRequest = value;
+            field = value;
         }
-    }
+    } = 40;
 
     /// <summary>
     /// Gets or sets the maximum number of consecutive iterations that are allowed to fail with an error.
@@ -220,9 +212,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </remarks>
     public int MaximumConsecutiveErrorsPerRequest
     {
-        get => _maximumConsecutiveErrorsPerRequest;
-        set => _maximumConsecutiveErrorsPerRequest = Throw.IfLessThan(value, 0);
-    }
+        get;
+        set => field = Throw.IfLessThan(value, 0);
+    } = 3;
 
     /// <summary>Gets or sets a collection of additional tools the client is able to invoke.</summary>
     /// <remarks>
@@ -1430,10 +1422,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     currentMessage.Contents.Add(resultWithRequestMessage.Response.FunctionCall);
                 }
 
-                if (messagesById is not null)
-                {
-                    messagesById[currentMessage.MessageId ?? string.Empty] = currentMessage;
-                }
+#pragma warning disable IDE0058 // Temporary workaround for Roslyn analyzer issue (see https://github.com/dotnet/roslyn/issues/80499)
+                messagesById?[currentMessage.MessageId ?? string.Empty] = currentMessage;
+#pragma warning restore IDE0058
             }
 
             if (messagesById?.Values is ICollection<ChatMessage> cm)

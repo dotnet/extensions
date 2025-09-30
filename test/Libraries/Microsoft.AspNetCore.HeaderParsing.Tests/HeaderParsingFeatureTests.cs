@@ -23,13 +23,10 @@ public sealed class HeaderParsingFeatureTests
     private readonly IOptions<HeaderParsingOptions> _options;
     private readonly IServiceCollection _services;
     private readonly FakeLogger<HeaderParsingFeature> _logger = new();
-    private IHeaderRegistry? _registry;
-    private HttpContext? _context;
 
-    private IHeaderRegistry Registry => _registry ??= new HeaderRegistry(_services.BuildServiceProvider(), _options);
+    private IHeaderRegistry Registry => field ??= new HeaderRegistry(_services.BuildServiceProvider(), _options);
 
-    private HttpContext Context
-        => _context ??= new DefaultHttpContext { RequestServices = _services.BuildServiceProvider() };
+    private HttpContext Context => field ??= new DefaultHttpContext { RequestServices = _services.BuildServiceProvider() };
 
     public HeaderParsingFeatureTests()
     {

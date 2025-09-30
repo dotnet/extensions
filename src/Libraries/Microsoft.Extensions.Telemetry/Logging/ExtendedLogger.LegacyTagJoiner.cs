@@ -21,7 +21,6 @@ internal sealed partial class ExtendedLogger
         private const int TagCapacity = 4;
         private readonly List<KeyValuePair<string, object?>> _extraTags = new(TagCapacity);
         private IReadOnlyList<KeyValuePair<string, object?>>? _incomingTags;
-        private int _incomingTagCount;
 
         public LegacyTagJoiner()
         {
@@ -34,7 +33,7 @@ internal sealed partial class ExtendedLogger
         {
             _extraTags.Clear();
             _incomingTags = null;
-            _incomingTagCount = 0;
+            Count = 0;
             State = null;
             Formatter = null;
         }
@@ -43,7 +42,7 @@ internal sealed partial class ExtendedLogger
         public void SetIncomingTags(IReadOnlyList<KeyValuePair<string, object?>> value)
         {
             _incomingTags = value;
-            _incomingTagCount = _incomingTags.Count;
+            Count = _incomingTags.Count;
         }
 
         public KeyValuePair<string, object?> this[int index]
@@ -77,7 +76,11 @@ internal sealed partial class ExtendedLogger
             }
         }
 
-        public int Count => _incomingTagCount + _extraTags.Count + StaticTags!.Length;
+        public int Count
+        {
+            get => field + _extraTags.Count + StaticTags!.Length;
+            private set;
+        }
 
         public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {

@@ -14,8 +14,7 @@ internal static partial class JsonUtilities
 {
     internal static class Default
     {
-        private static JsonSerializerOptions? _options;
-        internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: true);
+        internal static JsonSerializerOptions Options => field ??= CreateJsonSerializerOptions(writeIndented: true);
         internal static JsonTypeInfo<Dataset> DatasetTypeInfo => Options.GetTypeInfo<Dataset>();
         internal static JsonTypeInfo<CacheEntry> CacheEntryTypeInfo => Options.GetTypeInfo<CacheEntry>();
         internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
@@ -23,8 +22,7 @@ internal static partial class JsonUtilities
 
     internal static class Compact
     {
-        private static JsonSerializerOptions? _options;
-        internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: false);
+        internal static JsonSerializerOptions Options => field ??= CreateJsonSerializerOptions(writeIndented: false);
         internal static JsonTypeInfo<Dataset> DatasetTypeInfo => Options.GetTypeInfo<Dataset>();
         internal static JsonTypeInfo<CacheEntry> CacheEntryTypeInfo => Options.GetTypeInfo<CacheEntry>();
         internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
