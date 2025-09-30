@@ -2656,15 +2656,15 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ResumptionToken.ResumptionToken();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "Microsoft.Extensions.AI.ResumptionToken.ResumptionToken(System.ReadOnlyMemory<byte> bytes);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "static Microsoft.Extensions.AI.ResumptionToken Microsoft.Extensions.AI.ResumptionToken.FromBytes(System.ReadOnlyMemory<byte> bytes);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "virtual System.ReadOnlyMemory<byte> Microsoft.Extensions.AI.ResumptionToken.ToBytes();",
@@ -2674,19 +2674,19 @@
     },
     {
       "Type": "sealed class Microsoft.Extensions.AI.ResumptionToken.Converter",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ResumptionToken.Converter.Converter();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override Microsoft.Extensions.AI.ResumptionToken Microsoft.Extensions.AI.ResumptionToken.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override void Microsoft.Extensions.AI.ResumptionToken.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.ResumptionToken value, System.Text.Json.JsonSerializerOptions options);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },

@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
@@ -21,12 +22,14 @@ public class ResumptionToken
     private readonly ReadOnlyMemory<byte>? _bytes;
 
     /// <summary>Initializes a new instance of the <see cref="ResumptionToken"/> class.</summary>
+    [Experimental("MEAI001")]
     protected ResumptionToken()
     {
     }
 
     /// <summary>Initializes a new instance of the <see cref="ResumptionToken"/> class.</summary>
     /// <param name="bytes">Bytes to create the token from.</param>
+    [Experimental("MEAI001")]
     protected ResumptionToken(ReadOnlyMemory<byte> bytes)
     {
         _ = Throw.IfNull(bytes);
@@ -39,6 +42,7 @@ public class ResumptionToken
     /// <param name="bytes">Bytes representing the <see cref="ResumptionToken"/>.</param>
     /// <returns>A <see cref="ResumptionToken"/> equivalent to the one from which
     /// the original<see cref="ResumptionToken"/> bytes were obtained.</returns>
+    [Experimental("MEAI001")]
     public static ResumptionToken FromBytes(ReadOnlyMemory<byte> bytes) => new(bytes);
 
     /// <summary>Gets the bytes representing this <see cref="ResumptionToken"/>.</summary>
@@ -47,6 +51,7 @@ public class ResumptionToken
 
     /// <summary>Provides a <see cref="JsonConverter{ResumptionToken}"/> for serializing <see cref="ResumptionToken"/> instances.</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
+    [Experimental("MEAI001")]
     public sealed class Converter : JsonConverter<ResumptionToken>
     {
         /// <inheritdoc/>

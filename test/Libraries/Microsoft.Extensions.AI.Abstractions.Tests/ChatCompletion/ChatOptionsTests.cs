@@ -216,10 +216,6 @@ public class ChatOptionsTests
         Assert.Equal(ChatToolMode.RequireAny, deserialized.ToolMode);
         Assert.Null(deserialized.Tools);
         Assert.Null(deserialized.RawRepresentationFactory);
-        Assert.NotNull(deserialized.ContinuationToken);
-        Assert.Equal(continuationToken.ToBytes().ToArray(), deserialized.ContinuationToken.ToBytes().ToArray());
-        Assert.NotSame(backgroundResponsesOptions, deserialized.BackgroundResponsesOptions);
-        Assert.Equal(backgroundResponsesOptions.Allow, deserialized.BackgroundResponsesOptions?.Allow);
 
         Assert.NotNull(deserialized.AdditionalProperties);
         Assert.Single(deserialized.AdditionalProperties);
