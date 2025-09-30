@@ -6,7 +6,7 @@
     <Description>Provides abstractions for service discovery. Interfaces defined in this package are implemented in Microsoft.Extensions.ServiceDiscovery and other service discovery packages.</Description>
     <PackageIconFullPath>$(DefaultDotnetIconFullPath)</PackageIconFullPath>
     <RootNamespace>Microsoft.Extensions.ServiceDiscovery</RootNamespace>
-    <!-- TODO: log an issue to track enabling these -->
+    <!-- https://github.com/dotnet/extensions/issues/6871 tracks enabling these -->
     <NoWarn>$(NoWarn);S1144;CA1002;S2365;SA1642;IDE0040;CA1307;EA0009;LA0003</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

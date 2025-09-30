@@ -95,7 +95,7 @@ internal sealed partial class DnsSrvServiceEndpointProviderFactory(
         var lines = File.ReadAllLines(s_resolveConfPath);
         foreach (var line in lines)
         {
-            if (!line.StartsWith("search "))
+            if (!line.StartsWith("search ", StringComparison.Ordinal))
             {
                 continue;
             }

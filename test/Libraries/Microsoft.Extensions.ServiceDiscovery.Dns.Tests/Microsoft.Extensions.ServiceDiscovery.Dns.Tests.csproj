@@ -4,6 +4,7 @@
     <TargetFrameworks>$(TestNetCoreTargetFrameworks)</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- https://github.com/dotnet/extensions/issues/6871 tracks enabling these -->
     <NoWarn>$(NoWarn);IDE0004;IDE0017;IDE0040;IDE0055;IDE1006;CA1012;CA1031;CA1063;CA1816;CA2000;S103;S107;S1067;S1121;S1128;S1135;S1144;S1186;S2148;S3442;S3459;S4136;SA1106;SA1127;SA1204;SA1208;SA1210;SA1128;SA1316;SA1400;SA1402;SA1407;SA1414;SA1500;SA1513;SA1515;VSTHRD003</NoWarn>
   </PropertyGroup>
 

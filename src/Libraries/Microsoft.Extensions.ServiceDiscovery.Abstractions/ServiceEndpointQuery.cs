@@ -38,7 +38,7 @@ public sealed class ServiceEndpointQuery
         ArgumentException.ThrowIfNullOrEmpty(input);
 
         bool hasScheme;
-        if (!input.Contains("://", StringComparison.InvariantCulture)
+        if (!input.Contains("://", StringComparison.Ordinal)
             && Uri.TryCreate($"fakescheme://{input}", default, out var uri))
         {
             hasScheme = false;
