@@ -22,8 +22,6 @@ internal sealed class LatencyContext : ILatencyContext, IResettable
 
     private readonly MeasureTracker _measureTracker;
 
-    private long _duration;
-
     public LatencyContext(LatencyContextPool latencyContextPool)
     {
         var latencyInstrumentProvider = latencyContextPool.LatencyInstrumentProvider;
@@ -36,7 +34,11 @@ internal sealed class LatencyContext : ILatencyContext, IResettable
 
     public LatencyData LatencyData => IsDisposed ? default : new(_tagCollection.Tags, _checkpointTracker.Checkpoints, _measureTracker.Measures, Duration, _checkpointTracker.Frequency);
 
-    private long Duration => IsRunning ? _checkpointTracker.Elapsed : _duration;
+    private long Duration
+    {
+        get => IsRunning ? _checkpointTracker.Elapsed : field;
+        set;
+    }
 
     #region Checkpoints
     public void AddCheckpoint(CheckpointToken token)
@@ -82,7 +84,7 @@ internal sealed class LatencyContext : ILatencyContext, IResettable
         if (IsRunning)
         {
             IsRunning = false;
-            _duration = _checkpointTracker.Elapsed;
+            Duration = _checkpointTracker.Elapsed;
         }
     }
 

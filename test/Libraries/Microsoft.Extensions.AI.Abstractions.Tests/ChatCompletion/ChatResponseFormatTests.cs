@@ -2,8 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Text.Json;
 using Xunit;
+
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
@@ -80,5 +85,97 @@ public class ChatResponseFormatTests
         Assert.Equal("[1,2,3]", JsonSerializer.Serialize(actual.Schema, TestJsonSerializerContext.Default.JsonElement));
         Assert.Equal("name", actual.SchemaName);
         Assert.Equal("description", actual.SchemaDescription);
+    }
+
+    [Fact]
+    public void ForJsonSchema_NullType_Throws()
+    {
+        Assert.Throws<ArgumentNullException>("schemaType", () => ChatResponseFormat.ForJsonSchema(null!));
+        Assert.Throws<ArgumentNullException>("schemaType", () => ChatResponseFormat.ForJsonSchema(null!, TestJsonSerializerContext.Default.Options));
+        Assert.Throws<ArgumentNullException>("schemaType", () => ChatResponseFormat.ForJsonSchema(null!, TestJsonSerializerContext.Default.Options, "name"));
+        Assert.Throws<ArgumentNullException>("schemaType", () => ChatResponseFormat.ForJsonSchema(null!, TestJsonSerializerContext.Default.Options, "name", "description"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ForJsonSchema_PrimitiveType_Succeeds(bool generic)
+    {
+        ChatResponseFormatJson format = generic ?
+            ChatResponseFormat.ForJsonSchema<int>() :
+            ChatResponseFormat.ForJsonSchema(typeof(int));
+
+        Assert.NotNull(format);
+        Assert.NotNull(format.Schema);
+        Assert.Equal("""{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"integer"}""", format.Schema.ToString());
+        Assert.Equal("Int32", format.SchemaName);
+        Assert.Null(format.SchemaDescription);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ForJsonSchema_IncludedType_Succeeds(bool generic)
+    {
+        ChatResponseFormatJson format = generic ?
+            ChatResponseFormat.ForJsonSchema<DataContent>() :
+            ChatResponseFormat.ForJsonSchema(typeof(DataContent));
+
+        Assert.NotNull(format);
+        Assert.NotNull(format.Schema);
+        Assert.Contains("\"uri\"", format.Schema.ToString());
+        Assert.Equal("DataContent", format.SchemaName);
+        Assert.Null(format.SchemaDescription);
+    }
+
+    public static IEnumerable<object?[]> ForJsonSchema_ComplexType_Succeeds_MemberData() =>
+        from generic in new[] { false, true }
+        from name in new string?[] { null, "CustomName" }
+        from description in new string?[] { null, "CustomDescription" }
+        select new object?[] { generic, name, description };
+
+    [Theory]
+    [MemberData(nameof(ForJsonSchema_ComplexType_Succeeds_MemberData))]
+    public void ForJsonSchema_ComplexType_Succeeds(bool generic, string? name, string? description)
+    {
+        ChatResponseFormatJson format = generic ?
+            ChatResponseFormat.ForJsonSchema<SomeType>(TestJsonSerializerContext.Default.Options, name, description) :
+            ChatResponseFormat.ForJsonSchema(typeof(SomeType), TestJsonSerializerContext.Default.Options, name, description);
+
+        Assert.NotNull(format);
+        Assert.Equal(
+            """
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "description": "abcd",
+              "type": "object",
+              "properties": {
+                "someInteger": {
+                  "description": "efg",
+                  "type": "integer"
+                },
+                "someString": {
+                  "description": "hijk",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+            """,
+            JsonSerializer.Serialize(format.Schema, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement))));
+        Assert.Equal(name ?? "SomeType", format.SchemaName);
+        Assert.Equal(description ?? "abcd", format.SchemaDescription);
+    }
+
+    [Description("abcd")]
+    public class SomeType
+    {
+        [Description("efg")]
+        public int SomeInteger { get; set; }
+
+        [Description("hijk")]
+        public string? SomeString { get; set; }
     }
 }

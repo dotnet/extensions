@@ -157,7 +157,6 @@ public sealed class ToolCallAccuracyEvaluator : IEvaluator
         ChatResponse modelResponse,
         ToolCallAccuracyEvaluatorContext context)
     {
-#pragma warning disable S103 // Lines should not be too long
         const string SystemPrompt =
             """
             # Instruction
@@ -167,7 +166,6 @@ public sealed class ToolCallAccuracyEvaluator : IEvaluator
             - **Data**: Your input data include CONVERSATION , TOOL CALL and TOOL DEFINITION.
             - **Tasks**: To complete your evaluation you will be asked to evaluate the Data in different ways.
             """;
-#pragma warning restore S103
 
         List<ChatMessage> evaluationInstructions = [new ChatMessage(ChatRole.System, SystemPrompt)];
 
@@ -175,7 +173,6 @@ public sealed class ToolCallAccuracyEvaluator : IEvaluator
         string renderedToolCallsAndResults = modelResponse.RenderToolCallsAndResultsAsJson();
         string renderedToolDefinitions = context.ToolDefinitions.RenderAsJson();
 
-#pragma warning disable S103 // Lines should not be too long
         string evaluationPrompt =
             $$"""
             # Definition
@@ -218,7 +215,6 @@ public sealed class ToolCallAccuracyEvaluator : IEvaluator
             ## Please provide your answers between the tags: <S0>your chain of thoughts</S0>, <S1>your explanation</S1>, <S2>your Score</S2>.
             # Output
             """;
-#pragma warning restore S103 
 
         evaluationInstructions.Add(new ChatMessage(ChatRole.User, evaluationPrompt));
 

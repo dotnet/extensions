@@ -177,11 +177,9 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
     }
 
     /// <inheritdoc/>
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously.
     public async IAsyncEnumerable<string> GetLatestExecutionNamesAsync(
         int? count = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-#pragma warning restore CS1998
     {
         if (count.HasValue && count <= 0)
         {
@@ -204,11 +202,9 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
     }
 
     /// <inheritdoc/>
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously.
     public async IAsyncEnumerable<string> GetScenarioNamesAsync(
         string executionName,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-#pragma warning restore CS1998
     {
         IEnumerable<DirectoryInfo> executionDirs = EnumerateExecutionDirs(executionName, cancellationToken);
 
@@ -224,12 +220,10 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
     }
 
     /// <inheritdoc/>
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously.
     public async IAsyncEnumerable<string> GetIterationNamesAsync(
         string executionName,
         string scenarioName,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-#pragma warning restore CS1998
     {
         IEnumerable<FileInfo> resultFiles =
             EnumerateResultFiles(executionName, scenarioName, cancellationToken: cancellationToken);

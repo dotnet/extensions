@@ -8,9 +8,7 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 /// <summary>
 /// Buffers logs into circular buffers and drops them after some time if not flushed.
 /// </summary>
-#pragma warning disable S1694 // An abstract class should have both abstract and concrete methods
 public abstract class LogBuffer
-#pragma warning restore S1694 // An abstract class should have both abstract and concrete methods
 {
     /// <summary>
     /// Flushes the buffer and emits all buffered logs.

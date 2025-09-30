@@ -48,7 +48,6 @@ internal sealed class ContextualOptionsFactory<[DynamicallyAccessedMembers(Dynam
 
     /// <inheritdoc/>
     [SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "The ValueTasks are awaited only once.")]
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We need to catch it all so we can rethrow it all.")]
     public ValueTask<TOptions> CreateAsync<TContext>(string name, in TContext context, CancellationToken cancellationToken)
         where TContext : notnull, IOptionsContext
     {

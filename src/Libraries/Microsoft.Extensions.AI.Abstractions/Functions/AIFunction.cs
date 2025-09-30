@@ -6,8 +6,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-#pragma warning disable SA1202 // Elements should be ordered by access
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a function that can be described to an AI service and invoked.</summary>

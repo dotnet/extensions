@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -46,16 +45,14 @@ public sealed class SummarizingChatReducer : IChatReducer
     private readonly int _targetCount;
     private readonly int _thresholdCount;
 
-    private string _summarizationPrompt = DefaultSummarizationPrompt;
-
     /// <summary>
     /// Gets or sets the prompt text used for summarization.
     /// </summary>
     public string SummarizationPrompt
     {
-        get => _summarizationPrompt;
-        set => _summarizationPrompt = Throw.IfNull(value);
-    }
+        get;
+        set => field = Throw.IfNull(value);
+    } = DefaultSummarizationPrompt;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SummarizingChatReducer"/> class with the specified chat client,
@@ -80,7 +77,7 @@ public sealed class SummarizingChatReducer : IChatReducer
         if (summarizedConversion.ShouldResummarize(_targetCount, _thresholdCount))
         {
             summarizedConversion = await summarizedConversion.ResummarizeAsync(
-                _chatClient, _targetCount, _summarizationPrompt, cancellationToken);
+                _chatClient, _targetCount, SummarizationPrompt, cancellationToken);
         }
 
         return summarizedConversion.ToChatMessages();

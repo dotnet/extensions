@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 #pragma warning disable SA1113 // Comma should be on the same line as previous parameter
 
@@ -217,7 +216,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
     }
 
-    private static string SerializeChatMessages(IEnumerable<ChatMessage> messages, ChatFinishReason? chatFinishReason = null)
+    internal static string SerializeChatMessages(IEnumerable<ChatMessage> messages, ChatFinishReason? chatFinishReason = null)
     {
         List<object> output = [];
 
@@ -244,6 +243,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             {
                 switch (content)
                 {
+                    // These are all specified in the convention:
+
+                    case TextContent tc when !string.IsNullOrWhiteSpace(tc.Text):
+                        m.Parts.Add(new OtelGenericPart { Content = tc.Text });
+                        break;
+
                     case FunctionCallContent fcc:
                         m.Parts.Add(new OtelToolCallRequestPart
                         {
@@ -261,8 +266,30 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         });
                         break;
 
-                    case TextContent tc:
-                        m.Parts.Add(new OtelGenericPart { Content = tc.Text });
+                    // These are non-standard and are using the "generic" non-text part that provides an extensibility mechanism:
+
+                    case TextReasoningContent trc when !string.IsNullOrWhiteSpace(trc.Text):
+                        m.Parts.Add(new OtelGenericPart { Type = "reasoning", Content = trc.Text });
+                        break;
+
+                    case UriContent uc:
+                        m.Parts.Add(new OtelGenericPart { Type = "image", Content = uc.Uri.ToString() });
+                        break;
+
+                    case DataContent dc:
+                        m.Parts.Add(new OtelGenericPart { Type = "image", Content = dc.Uri });
+                        break;
+
+                    case HostedFileContent fc:
+                        m.Parts.Add(new OtelGenericPart { Type = "file", Content = fc.FileId });
+                        break;
+
+                    case HostedVectorStoreContent vsc:
+                        m.Parts.Add(new OtelGenericPart { Type = "vector_store", Content = vsc.VectorStoreId });
+                        break;
+
+                    case ErrorContent ec:
+                        m.Parts.Add(new OtelGenericPart { Type = "error", Content = ec.Message });
                         break;
 
                     default:
@@ -290,13 +317,13 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             string? modelId = options?.ModelId ?? _defaultModelId;
 
             activity = _activitySource.StartActivity(
-                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.Chat : $"{OpenTelemetryConsts.GenAI.Chat} {modelId}",
+                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.ChatName : $"{OpenTelemetryConsts.GenAI.ChatName} {modelId}",
                 ActivityKind.Client);
 
-            if (activity is not null)
+            if (activity is { IsAllDataRequested: true })
             {
                 _ = activity
-                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Chat)
+                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName)
                     .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
                     .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
 
@@ -367,13 +394,28 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         }
                     }
 
-                    // Log all additional request options as raw values on the span.
-                    // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
-                    if (EnableSensitiveData && options.AdditionalProperties is { } props)
+                    if (EnableSensitiveData)
                     {
-                        foreach (KeyValuePair<string, object?> prop in props)
+                        if (options.Tools?.Any(t => t is AIFunctionDeclaration) is true)
                         {
-                            _ = activity.AddTag(prop.Key, prop.Value);
+                            _ = activity.AddTag(
+                                    OpenTelemetryConsts.GenAI.Tool.Definitions,
+                                    JsonSerializer.Serialize(options.Tools.OfType<AIFunctionDeclaration>().Select(t => new OtelFunction
+                                    {
+                                        Name = t.Name,
+                                        Description = t.Description,
+                                        Parameters = t.JsonSchema,
+                                    }), OtelContext.Default.IEnumerableOtelFunction));
+                        }
+
+                        // Log all additional request options as raw values on the span.
+                        // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
+                        if (options.AdditionalProperties is { } props)
+                        {
+                            foreach (KeyValuePair<string, object?> prop in props)
+                            {
+                                _ = activity.AddTag(prop.Key, prop.Value);
+                            }
                         }
                     }
                 }
@@ -411,7 +453,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeInput);
                 AddMetricTags(ref tags, requestModelId, response);
-                _tokenUsageHistogram.Record((int)inputTokens);
+                _tokenUsageHistogram.Record((int)inputTokens, tags);
             }
 
             if (usage.OutputTokenCount is long outputTokens)
@@ -419,7 +461,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeOutput);
                 AddMetricTags(ref tags, requestModelId, response);
-                _tokenUsageHistogram.Record((int)outputTokens);
+                _tokenUsageHistogram.Record((int)outputTokens, tags);
             }
         }
 
@@ -477,7 +519,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         void AddMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
         {
-            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Chat);
+            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName);
 
             if (requestModelId is not null)
             {
@@ -554,6 +596,14 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         public object? Response { get; set; }
     }
 
+    private sealed class OtelFunction
+    {
+        public string Type { get; set; } = "function";
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public JsonElement Parameters { get; set; }
+    }
+
     private static readonly JsonSerializerOptions _defaultOptions = CreateDefaultOptions();
 
     private static JsonSerializerOptions CreateDefaultOptions()
@@ -578,5 +628,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     [JsonSerializable(typeof(OtelGenericPart))]
     [JsonSerializable(typeof(OtelToolCallRequestPart))]
     [JsonSerializable(typeof(OtelToolCallResponsePart))]
+    [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
     private sealed partial class OtelContext : JsonSerializerContext;
 }

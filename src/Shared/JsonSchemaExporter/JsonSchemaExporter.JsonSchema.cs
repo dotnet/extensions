@@ -35,243 +35,203 @@ internal static partial class JsonSchemaExporter
 
         public string? Schema
         {
-            get => _schema;
+            get;
             set
             {
                 VerifyMutable();
-                _schema = value;
+                field = value;
             }
         }
-
-        private string? _schema;
 
         public string? Title
         {
-            get => _title;
+            get;
             set
             {
                 VerifyMutable();
-                _title = value;
+                field = value;
             }
         }
-
-        private string? _title;
 
         public string? Description
         {
-            get => _description;
+            get;
             set
             {
                 VerifyMutable();
-                _description = value;
+                field = value;
             }
         }
-
-        private string? _description;
 
         public string? Ref
         {
-            get => _ref;
+            get;
             set
             {
                 VerifyMutable();
-                _ref = value;
+                field = value;
             }
         }
-
-        private string? _ref;
 
         public string? Comment
         {
-            get => _comment;
+            get;
             set
             {
                 VerifyMutable();
-                _comment = value;
+                field = value;
             }
         }
-
-        private string? _comment;
 
         public JsonSchemaType Type
         {
-            get => _type;
+            get;
             set
             {
                 VerifyMutable();
-                _type = value;
+                field = value;
             }
-        }
-
-        private JsonSchemaType _type = JsonSchemaType.Any;
+        } = JsonSchemaType.Any;
 
         public string? Format
         {
-            get => _format;
+            get;
             set
             {
                 VerifyMutable();
-                _format = value;
+                field = value;
             }
         }
-
-        private string? _format;
 
         public string? Pattern
         {
-            get => _pattern;
+            get;
             set
             {
                 VerifyMutable();
-                _pattern = value;
+                field = value;
             }
         }
-
-        private string? _pattern;
 
         public JsonNode? Constant
         {
-            get => _constant;
+            get;
             set
             {
                 VerifyMutable();
-                _constant = value;
+                field = value;
             }
         }
-
-        private JsonNode? _constant;
 
         public List<KeyValuePair<string, JsonSchema>>? Properties
         {
-            get => _properties;
+            get;
             set
             {
                 VerifyMutable();
-                _properties = value;
+                field = value;
             }
         }
-
-        private List<KeyValuePair<string, JsonSchema>>? _properties;
 
         public List<string>? Required
         {
-            get => _required;
+            get;
             set
             {
                 VerifyMutable();
-                _required = value;
+                field = value;
             }
         }
-
-        private List<string>? _required;
 
         public JsonSchema? Items
         {
-            get => _items;
+            get;
             set
             {
                 VerifyMutable();
-                _items = value;
+                field = value;
             }
         }
-
-        private JsonSchema? _items;
 
         public JsonSchema? AdditionalProperties
         {
-            get => _additionalProperties;
+            get;
             set
             {
                 VerifyMutable();
-                _additionalProperties = value;
+                field = value;
             }
         }
-
-        private JsonSchema? _additionalProperties;
 
         public JsonArray? Enum
         {
-            get => _enum;
+            get;
             set
             {
                 VerifyMutable();
-                _enum = value;
+                field = value;
             }
         }
-
-        private JsonArray? _enum;
 
         public JsonSchema? Not
         {
-            get => _not;
+            get;
             set
             {
                 VerifyMutable();
-                _not = value;
+                field = value;
             }
         }
-
-        private JsonSchema? _not;
 
         public List<JsonSchema>? AnyOf
         {
-            get => _anyOf;
+            get;
             set
             {
                 VerifyMutable();
-                _anyOf = value;
+                field = value;
             }
         }
-
-        private List<JsonSchema>? _anyOf;
 
         public bool HasDefaultValue
         {
-            get => _hasDefaultValue;
+            get;
             set
             {
                 VerifyMutable();
-                _hasDefaultValue = value;
+                field = value;
             }
         }
-
-        private bool _hasDefaultValue;
 
         public JsonNode? DefaultValue
         {
-            get => _defaultValue;
+            get;
             set
             {
                 VerifyMutable();
-                _defaultValue = value;
+                field = value;
             }
         }
-
-        private JsonNode? _defaultValue;
 
         public int? MinLength
         {
-            get => _minLength;
+            get;
             set
             {
                 VerifyMutable();
-                _minLength = value;
+                field = value;
             }
         }
-
-        private int? _minLength;
 
         public int? MaxLength
         {
-            get => _maxLength;
+            get;
             set
             {
                 VerifyMutable();
-                _maxLength = value;
+                field = value;
             }
         }
-
-        private int? _maxLength;
 
         public JsonSchemaExporterContext? GenerationContext { get; set; }
 

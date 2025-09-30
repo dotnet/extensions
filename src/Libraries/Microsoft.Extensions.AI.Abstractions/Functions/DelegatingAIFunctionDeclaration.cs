@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable SA1202 // Elements should be ordered by access
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -45,4 +43,14 @@ internal class DelegatingAIFunctionDeclaration : AIFunctionDeclaration // could 
 
     /// <inheritdoc />
     public override string ToString() => InnerFunction.ToString();
+
+    /// <inheritdoc />
+    public override object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            InnerFunction.GetService(serviceType, serviceKey);
+    }
 }

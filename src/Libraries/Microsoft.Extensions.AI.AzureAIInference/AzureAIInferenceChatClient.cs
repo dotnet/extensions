@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using Azure.AI.Inference;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S1135 // Track uses of "TODO" tags
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
@@ -183,13 +182,6 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
             // Transfer over tool call updates.
             if (chatCompletionUpdate.ToolCallUpdate is { } toolCallUpdate)
             {
-                // TODO https://github.com/Azure/azure-sdk-for-net/issues/46830: Azure.AI.Inference
-                // has removed the Index property from ToolCallUpdate. It's now impossible via the
-                // exposed APIs to correctly handle multiple parallel tool calls, as the CallId is
-                // often null for anything other than the first update for a given call, and Index
-                // isn't available to correlate which updates are for which call. This is a temporary
-                // workaround to at least make a single tool call work and also make work multiple
-                // tool calls when their updates aren't interleaved.
                 if (toolCallUpdate.Id is not null)
                 {
                     lastCallId = toolCallUpdate.Id;
@@ -485,8 +477,6 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
             }
             else if (input.Role == ChatRole.Assistant)
             {
-                // TODO: ChatRequestAssistantMessage only enables text content currently.
-                // Update it with other content types when it supports that.
                 ChatRequestAssistantMessage message = new(string.Concat(input.Contents.Where(c => c is TextContent)));
 
                 foreach (var content in input.Contents)

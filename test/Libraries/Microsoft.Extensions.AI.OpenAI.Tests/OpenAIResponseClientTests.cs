@@ -825,8 +825,10 @@ public class OpenAIResponseClientTests
         Assert.Equal(36, response.Usage.TotalTokenCount);
     }
 
-    [Fact]
-    public async Task McpToolCall_ApprovalNotRequired_NonStreaming()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task McpToolCall_ApprovalNotRequired_NonStreaming(bool rawTool)
     {
         const string Input = """
             {
@@ -1031,13 +1033,16 @@ public class OpenAIResponseClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
 
+        AITool mcpTool = rawTool ?
+            ResponseTool.CreateMcpTool("deepwiki", serverUri: new("https://mcp.deepwiki.com/mcp"), toolCallApprovalPolicy: new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval)).AsAITool() :
+            new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+            {
+                ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+            };
+
         ChatOptions chatOptions = new()
         {
-            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
-                {
-                    ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
-                }
-            ],
+            Tools = [mcpTool],
         };
 
         var response = await client.GetResponseAsync("Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository", chatOptions);
@@ -1499,6 +1504,19 @@ public class OpenAIResponseClientTests
         Assert.Equal(1420, response.Usage.InputTokenCount);
         Assert.Equal(149, response.Usage.OutputTokenCount);
         Assert.Equal(1569, response.Usage.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task RequestHeaders_UserAgent_ContainsMEAI()
+    {
+        using var handler = new ThrowUserAgentExceptionHandler();
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        InvalidOperationException e = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetResponseAsync("hello"));
+
+        Assert.StartsWith("User-Agent header: OpenAI", e.Message);
+        Assert.Contains("MEAI", e.Message);
     }
 
     private static IChatClient CreateResponseClient(HttpClient httpClient, string modelId) =>

@@ -18,10 +18,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S107 // Methods should not have too many parameters
-#pragma warning disable S109 // Magic numbers should not be used
 #pragma warning disable S1075 // URIs should not be hardcoded
-#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 #pragma warning disable S1199 // Nested block
 #pragma warning disable SA1118 // Parameter should not span multiple lines
 
@@ -427,7 +424,7 @@ public static partial class AIJsonUtilities
                 if (ResolveAttribute<MinLengthAttribute>() is { } minLengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
-                    if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
+                    if (TryGetSchemaType(obj, out string? schemaType, out _) && schemaType is "string")
                     {
                         obj[MinLengthStringPropertyName] ??= minLengthAttribute.Length;
                     }
@@ -440,7 +437,7 @@ public static partial class AIJsonUtilities
                 if (ResolveAttribute<MaxLengthAttribute>() is { } maxLengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
-                    if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
+                    if (TryGetSchemaType(obj, out string? schemaType, out _) && schemaType is "string")
                     {
                         obj[MaxLengthStringPropertyName] ??= maxLengthAttribute.Length;
                     }
@@ -530,7 +527,7 @@ public static partial class AIJsonUtilities
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
 
-                    if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
+                    if (TryGetSchemaType(obj, out string? schemaType, out _) && schemaType is "string")
                     {
                         if (lengthAttribute.MinimumLength > 0)
                         {
@@ -629,6 +626,58 @@ public static partial class AIJsonUtilities
                     }
                 }
 #endif
+#if NET || NETFRAMEWORK
+                static bool TryGetSchemaType(JsonObject schema, [NotNullWhen(true)] out string? schemaType, out bool isNullable)
+                {
+                    schemaType = null;
+                    isNullable = false;
+
+                    if (!schema.TryGetPropertyValue(TypePropertyName, out JsonNode? typeNode))
+                    {
+                        return false;
+                    }
+
+                    switch (typeNode?.GetValueKind())
+                    {
+                        case JsonValueKind.String:
+                            schemaType = typeNode.GetValue<string>();
+                            return true;
+
+                        case JsonValueKind.Array:
+                            string? foundSchemaType = null;
+                            foreach (JsonNode? entry in (JsonArray)typeNode)
+                            {
+                                if (entry?.GetValueKind() is not JsonValueKind.String)
+                                {
+                                    return false;
+                                }
+
+                                string entryValue = entry.GetValue<string>();
+                                if (entryValue is "null")
+                                {
+                                    isNullable = true;
+                                    continue;
+                                }
+
+                                if (foundSchemaType is null)
+                                {
+                                    foundSchemaType = entryValue;
+                                }
+                                else if (foundSchemaType != entryValue)
+                                {
+                                    return false;
+                                }
+                            }
+
+                            schemaType = foundSchemaType;
+                            return schemaType is not null;
+
+                        default:
+                            return false;
+                    }
+                }
+#endif
+
                 TAttribute? ResolveAttribute<TAttribute>()
                     where TAttribute : Attribute
                 {

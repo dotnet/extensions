@@ -2,14 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Embeddings;
 
-#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 
 namespace Microsoft.Extensions.AI;
@@ -17,6 +19,18 @@ namespace Microsoft.Extensions.AI;
 /// <summary>An <see cref="IEmbeddingGenerator{String, Embedding}"/> for an OpenAI <see cref="EmbeddingClient"/>.</summary>
 internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
+    // This delegate instance is used to call the internal overload of GenerateEmbeddingsAsync that accepts
+    // a RequestOptions. This should be replaced once a better way to pass RequestOptions is available.
+    private static readonly Func<EmbeddingClient, IEnumerable<string>, OpenAI.Embeddings.EmbeddingGenerationOptions, RequestOptions, Task<ClientResult<OpenAIEmbeddingCollection>>>?
+        _generateEmbeddingsAsync =
+        (Func<EmbeddingClient, IEnumerable<string>, OpenAI.Embeddings.EmbeddingGenerationOptions, RequestOptions, Task<ClientResult<OpenAIEmbeddingCollection>>>?)
+        typeof(EmbeddingClient)
+        .GetMethod(
+            nameof(EmbeddingClient.GenerateEmbeddingsAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+            null, [typeof(IEnumerable<string>), typeof(OpenAI.Embeddings.EmbeddingGenerationOptions), typeof(RequestOptions)], null)
+        ?.CreateDelegate(
+            typeof(Func<EmbeddingClient, IEnumerable<string>, OpenAI.Embeddings.EmbeddingGenerationOptions, RequestOptions, Task<ClientResult<OpenAIEmbeddingCollection>>>));
+
     /// <summary>Metadata about the embedding generator.</summary>
     private readonly EmbeddingGeneratorMetadata _metadata;
 
@@ -49,7 +63,10 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     {
         OpenAI.Embeddings.EmbeddingGenerationOptions? openAIOptions = ToOpenAIOptions(options);
 
-        var embeddings = (await _embeddingClient.GenerateEmbeddingsAsync(values, openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
+        var t = _generateEmbeddingsAsync is not null ?
+            _generateEmbeddingsAsync(_embeddingClient, values, openAIOptions, cancellationToken.ToRequestOptions(streaming: false)) :
+            _embeddingClient.GenerateEmbeddingsAsync(values, openAIOptions, cancellationToken);
+        var embeddings = (await t.ConfigureAwait(false)).Value;
 
         return new(embeddings.Select(e =>
                 new Embedding<float>(e.ToFloats())

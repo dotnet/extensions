@@ -15,9 +15,7 @@ public class RandomProbabilisticSamplerOptions
     /// <summary>
     /// Gets or sets the collection of <see cref="RandomProbabilisticSamplerFilterRule"/> used for filtering log messages.
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern
     [Required]
     [ValidateEnumeratedItems]
     public IList<RandomProbabilisticSamplerFilterRule> Rules { get; set; } = [];
-#pragma warning restore CA2227 // Collection properties should be read only
 }

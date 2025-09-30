@@ -4,6 +4,7 @@
 using Xunit;
 
 namespace Microsoft.Extensions.AsyncState.Test;
+
 public class AsyncStateTokenTests
 {
     [Fact]

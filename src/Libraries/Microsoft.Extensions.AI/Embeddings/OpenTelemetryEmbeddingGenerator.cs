@@ -154,11 +154,11 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             string? modelId = options?.ModelId ?? _defaultModelId;
 
             activity = _activitySource.StartActivity(
-                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.Embeddings : $"{OpenTelemetryConsts.GenAI.Embeddings} {modelId}",
+                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.EmbeddingsName : $"{OpenTelemetryConsts.GenAI.EmbeddingsName} {modelId}",
                 ActivityKind.Client,
                 default(ActivityContext),
                 [
-                    new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Embeddings),
+                    new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.EmbeddingsName),
                     new(OpenTelemetryConsts.GenAI.Request.Model, modelId),
                     new(OpenTelemetryConsts.GenAI.Provider.Name, _providerName),
                 ]);
@@ -174,7 +174,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 
                 if ((options?.Dimensions ?? _defaultModelDimensions) is int dimensionsValue)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.EmbeddingDimensions, dimensionsValue);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Embeddings.Dimension.Count, dimensionsValue);
                 }
 
                 // Log all additional request options as raw values on the span.
@@ -229,7 +229,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeInput);
             AddMetricTags(ref tags, requestModelId, responseModelId);
 
-            _tokenUsageHistogram.Record(inputTokens.Value);
+            _tokenUsageHistogram.Record(inputTokens.Value, tags);
         }
 
         if (activity is not null)
@@ -265,7 +265,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 
     private void AddMetricTags(ref TagList tags, string? requestModelId, string? responseModelId)
     {
-        tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Embeddings);
+        tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.EmbeddingsName);
 
         if (requestModelId is not null)
         {

@@ -40,7 +40,6 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
 
     public RequestMetadata? GetRequestMetadata(HttpRequestMessage requestMessage)
     {
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             if (requestMessage.RequestUri == null)
@@ -56,12 +55,10 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
             // Catch exceptions here to avoid impacting services if a bug ever gets introduced in this path.
             return null;
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     public RequestMetadata? GetRequestMetadata(HttpWebRequest requestMessage)
     {
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             var hostMetadata = GetHostMetadata(requestMessage.RequestUri.Host);
@@ -72,7 +69,6 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
             // Catch exceptions here to avoid impacting services if a bug ever gets introduced in this path.
             return null;
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     private static char[] MakeToUpperArray()

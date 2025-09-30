@@ -7,7 +7,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -103,7 +102,6 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
     }
 
     /// <inheritdoc />
-#pragma warning disable S1067 // Expressions should not be too complex
     public object? GetService(Type serviceType, object? serviceKey = null) =>
         serviceType is null ? throw new ArgumentNullException(nameof(serviceType)) :
         serviceKey is not null ? null :
@@ -111,7 +109,6 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
         serviceType == typeof(ImageClient) ? _imageClient :
         serviceType.IsInstanceOfType(this) ? this :
         null;
-#pragma warning restore S1067 // Expressions should not be too complex
 
     /// <inheritdoc />
     void IDisposable.Dispose()
@@ -163,9 +160,28 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
             }
         }
 
+        UsageDetails? ud = null;
+        if (generatedImages.Usage is { } usage)
+        {
+            ud = new()
+            {
+                InputTokenCount = usage.InputTokenCount,
+                OutputTokenCount = usage.OutputTokenCount,
+                TotalTokenCount = usage.TotalTokenCount,
+            };
+
+            if (usage.InputTokenDetails is { } inputDetails)
+            {
+                ud.AdditionalCounts ??= [];
+                ud.AdditionalCounts.Add($"{nameof(usage.InputTokenDetails)}.{nameof(inputDetails.ImageTokenCount)}", inputDetails.ImageTokenCount);
+                ud.AdditionalCounts.Add($"{nameof(usage.InputTokenDetails)}.{nameof(inputDetails.TextTokenCount)}", inputDetails.TextTokenCount);
+            }
+        }
+
         return new ImageGenerationResponse(contents)
         {
-            RawRepresentation = generatedImages
+            RawRepresentation = generatedImages,
+            Usage = ud,
         };
     }
 

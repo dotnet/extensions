@@ -13,17 +13,11 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// </summary>
 public sealed class ChatDetails
 {
-#pragma warning disable CA2227
-    // CA2227: Collection properties should be read only.
-    // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
-    // convenience.
-
     /// <summary>
     /// Gets or sets the <see cref="ChatTurnDetails"/> for the LLM chat conversation turns recorded in this
     /// <see cref="ChatDetails"/> object.
     /// </summary>
     public IList<ChatTurnDetails> TurnDetails { get; set; }
-#pragma warning restore CA2227
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatDetails"/> class.

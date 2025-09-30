@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using OpenAI.Assistants;
 using OpenAI.Chat;
@@ -21,6 +23,75 @@ public class OpenAIConversionTests
         ([Description("The name parameter")] string name) => name,
         "test_function",
         "A test function for conversion");
+
+    [Fact]
+    public void AsOpenAIChatResponseFormat_HandlesVariousFormats()
+    {
+        Assert.Null(MicrosoftExtensionsAIChatExtensions.AsOpenAIChatResponseFormat(null));
+
+        var text = MicrosoftExtensionsAIChatExtensions.AsOpenAIChatResponseFormat(ChatResponseFormat.Text);
+        Assert.NotNull(text);
+        Assert.Equal("""{"type":"text"}""", ((IJsonModel<OpenAI.Chat.ChatResponseFormat>)text).Write(ModelReaderWriterOptions.Json).ToString());
+
+        var json = MicrosoftExtensionsAIChatExtensions.AsOpenAIChatResponseFormat(ChatResponseFormat.Json);
+        Assert.NotNull(json);
+        Assert.Equal("""{"type":"json_object"}""", ((IJsonModel<OpenAI.Chat.ChatResponseFormat>)json).Write(ModelReaderWriterOptions.Json).ToString());
+
+        var jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIChatResponseFormat();
+        Assert.NotNull(jsonSchema);
+        Assert.Equal(RemoveWhitespace("""
+            {"type":"json_schema","json_schema":{"description":"A test schema","name":"my_schema","schema":{
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "integer"
+            }}}
+            """), RemoveWhitespace(((IJsonModel<OpenAI.Chat.ChatResponseFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
+
+        jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIChatResponseFormat(
+            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strictJsonSchema"] = true } });
+        Assert.NotNull(jsonSchema);
+        Assert.Equal(RemoveWhitespace("""
+            {
+            "type":"json_schema","json_schema":{"description":"A test schema","name":"my_schema","schema":{
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "integer"
+            },"strict":true}}
+            """), RemoveWhitespace(((IJsonModel<OpenAI.Chat.ChatResponseFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTextFormat_HandlesVariousFormats()
+    {
+        Assert.Null(MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTextFormat(null));
+
+        var text = MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTextFormat(ChatResponseFormat.Text);
+        Assert.NotNull(text);
+        Assert.Equal(ResponseTextFormatKind.Text, text.Kind);
+
+        var json = MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTextFormat(ChatResponseFormat.Json);
+        Assert.NotNull(json);
+        Assert.Equal(ResponseTextFormatKind.JsonObject, json.Kind);
+
+        var jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIResponseTextFormat();
+        Assert.NotNull(jsonSchema);
+        Assert.Equal(ResponseTextFormatKind.JsonSchema, jsonSchema.Kind);
+        Assert.Equal(RemoveWhitespace("""
+            {"type":"json_schema","description":"A test schema","name":"my_schema","schema":{
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "integer"
+            }}
+            """), RemoveWhitespace(((IJsonModel<ResponseTextFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
+
+        jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIResponseTextFormat(
+            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strictJsonSchema"] = true } });
+        Assert.NotNull(jsonSchema);
+        Assert.Equal(ResponseTextFormatKind.JsonSchema, jsonSchema.Kind);
+        Assert.Equal(RemoveWhitespace("""
+            {"type":"json_schema","description":"A test schema","name":"my_schema","schema":{
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "integer"
+            },"strict":true}
+            """), RemoveWhitespace(((IJsonModel<ResponseTextFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
+    }
 
     [Fact]
     public void AsOpenAIChatTool_ProducesValidInstance()
@@ -88,7 +159,7 @@ public class OpenAIConversionTests
         List<ChatMessage> messages =
         [
             new(ChatRole.System, "You are a helpful assistant."),
-            new(ChatRole.User, "Hello"),
+            new(ChatRole.User, "Hello") { AuthorName = "Jane" },
             new(ChatRole.Assistant,
             [
                 new TextContent("Hi there!"),
@@ -97,9 +168,9 @@ public class OpenAIConversionTests
                     ["param1"] = "value1",
                     ["param2"] = 42
                 }),
-            ]),
+            ]) { AuthorName = "!@#$%John Smith^*)" },
             new(ChatRole.Tool, [new FunctionResultContent("callid123", "theresult")]),
-            new(ChatRole.Assistant, "The answer is 42."),
+            new(ChatRole.Assistant, "The answer is 42.") { AuthorName = "@#$#$@$" },
         ];
 
         ChatOptions? options = withOptions ? new ChatOptions { Instructions = "You talk like a parrot." } : null;
@@ -125,6 +196,7 @@ public class OpenAIConversionTests
 
         UserChatMessage m1 = Assert.IsType<UserChatMessage>(convertedMessages[index + 1], exactMatch: false);
         Assert.Equal("Hello", Assert.Single(m1.Content).Text);
+        Assert.Equal("Jane", m1.ParticipantName);
 
         AssistantChatMessage m2 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 2], exactMatch: false);
         Assert.Single(m2.Content);
@@ -137,6 +209,7 @@ public class OpenAIConversionTests
             ["param1"] = "value1",
             ["param2"] = 42
         }), JsonSerializer.Deserialize<JsonElement>(tc.FunctionArguments.ToMemory().Span)));
+        Assert.Equal("JohnSmith", m2.ParticipantName);
 
         ToolChatMessage m3 = Assert.IsType<ToolChatMessage>(convertedMessages[index + 3], exactMatch: false);
         Assert.Equal("callid123", m3.ToolCallId);
@@ -144,6 +217,7 @@ public class OpenAIConversionTests
 
         AssistantChatMessage m4 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 4], exactMatch: false);
         Assert.Equal("The answer is 42.", Assert.Single(m4.Content).Text);
+        Assert.Null(m4.ParticipantName);
     }
 
     [Fact]
@@ -245,7 +319,7 @@ public class OpenAIConversionTests
             updates.Add(update);
         }
 
-        ChatResponse response = updates.ToChatResponse();
+        var response = updates.ToChatResponse();
 
         Assert.Equal("id", response.ResponseId);
         Assert.Equal(ChatFinishReason.ToolCalls, response.FinishReason);
@@ -1105,6 +1179,36 @@ public class OpenAIConversionTests
         Assert.Equal("response-model-id", openAIResponse.Model);
     }
 
+    [Fact]
+    public void ListAddResponseTool_AddsToolCorrectly()
+    {
+        Assert.Throws<ArgumentNullException>("tools", () => ((IList<AITool>)null!).Add(ResponseTool.CreateWebSearchTool()));
+        Assert.Throws<ArgumentNullException>("tool", () => new List<AITool>().Add((ResponseTool)null!));
+
+        Assert.Throws<ArgumentNullException>("tool", () => ((ResponseTool)null!).AsAITool());
+
+        ChatOptions options;
+
+        options = new()
+        {
+            Tools = new List<AITool> { ResponseTool.CreateWebSearchTool() },
+        };
+        Assert.Single(options.Tools);
+        Assert.NotNull(options.Tools[0]);
+
+        var rawSearchTool = ResponseTool.CreateWebSearchTool();
+        options = new()
+        {
+            Tools = [rawSearchTool.AsAITool()],
+        };
+        Assert.Single(options.Tools);
+        Assert.NotNull(options.Tools[0]);
+
+        Assert.Same(rawSearchTool, options.Tools[0].GetService<ResponseTool>());
+        Assert.Same(rawSearchTool, options.Tools[0].GetService<WebSearchTool>());
+        Assert.Null(options.Tools[0].GetService<ResponseTool>("key"));
+    }
+
     private static async IAsyncEnumerable<T> CreateAsyncEnumerable<T>(IEnumerable<T> source)
     {
         foreach (var item in source)
@@ -1113,4 +1217,6 @@ public class OpenAIConversionTests
             yield return item;
         }
     }
+
+    private static string RemoveWhitespace(string input) => Regex.Replace(input, @"\s+", "");
 }

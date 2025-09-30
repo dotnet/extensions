@@ -152,6 +152,7 @@ public class OpenAIChatClientTests
 
         var response = await client.GetResponseAsync("hello", new()
         {
+            AllowMultipleToolCalls = false,
             MaxOutputTokens = 10,
             Temperature = 0.5f,
         });
@@ -658,15 +659,46 @@ public class OpenAIChatClientTests
     {
         const string Input = """
             {
-                "messages":[{"role":"user","content":"hello"}],
-                "model":"gpt-4o-mini",
-                "logprobs":true,
-                "top_logprobs":42,
-                "logit_bias":{"12":34},
-                "parallel_tool_calls":false,
-                "user":"12345",
-                "metadata":{"something":"else"},
-                "store":true
+                "metadata": {
+                    "something": "else"
+                },
+                "user": "12345",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "hello"
+                    }
+                ],
+                "model": "gpt-4o-mini",
+                "top_logprobs": 42,
+                "store": true,
+                "logit_bias": {
+                    "12": 34
+                },
+                "logprobs": true,
+                "tools": [
+                    {
+                        "type": "function",
+                        "function": {
+                            "description": "",
+                            "name": "GetPersonAge",
+                            "parameters": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                ],
+                "tool_choice": "auto",
+                "parallel_tool_calls": false
             }
             """;
 
@@ -694,6 +726,7 @@ public class OpenAIChatClientTests
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             AllowMultipleToolCalls = false,
+            Tools = [AIFunctionFactory.Create((string name) => 42, "GetPersonAge")],
             RawRepresentationFactory = (c) =>
             {
                 var openAIOptions = new ChatCompletionOptions
@@ -1584,6 +1617,19 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
+    }
+
+    [Fact]
+    public async Task RequestHeaders_UserAgent_ContainsMEAI()
+    {
+        using var handler = new ThrowUserAgentExceptionHandler();
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        InvalidOperationException e = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetResponseAsync("hello"));
+
+        Assert.StartsWith("User-Agent header: OpenAI", e.Message);
+        Assert.Contains("MEAI", e.Message);
     }
 
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>

@@ -10,12 +10,10 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents the options for an embedding generation request.</summary>
 public class EmbeddingGenerationOptions
 {
-    private int? _dimensions;
-
     /// <summary>Gets or sets the number of dimensions requested in the embedding.</summary>
     public int? Dimensions
     {
-        get => _dimensions;
+        get;
         set
         {
             if (value is not null)
@@ -23,7 +21,7 @@ public class EmbeddingGenerationOptions
                 _ = Throw.IfLessThan(value.Value, 1, nameof(value));
             }
 
-            _dimensions = value;
+            field = value;
         }
     }
 

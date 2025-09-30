@@ -12,8 +12,6 @@ using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;
 
-#pragma warning disable CA1031
-
 // NOTE: This implementation uses thread local storage. As a result, it will fail if formatter code, enricher code, or
 //       redactor code calls recursively back into the logger. Don't do that.
 //
@@ -90,9 +88,7 @@ internal sealed partial class ExtendedLogger : ILogger
             }
             catch (Exception ex)
             {
-#pragma warning disable CA1508 // Avoid dead conditional code
                 exceptions ??= [];
-#pragma warning restore CA1508 // Avoid dead conditional code
                 exceptions.Add(ex);
             }
         }
@@ -122,9 +118,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 }
                 catch (Exception ex)
                 {
-#pragma warning disable CA1508 // Avoid dead conditional code
                     exceptions ??= [];
-#pragma warning restore CA1508 // Avoid dead conditional code
                     exceptions.Add(ex);
                 }
             }
