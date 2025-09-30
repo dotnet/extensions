@@ -1,6 +1,8 @@
 <Project>
   <PropertyGroup>
     <SharedFxPolyfillsDir>$(MSBuildThisFileDirectory)</SharedFxPolyfillsDir>
+    <!-- TODO: log an issue to track enabling these -->
+    <NoWarn>$(NoWarn);CS8763;CS8777;CS8603;CA1031;IDE0058;S108;S2166;S2302;S2333;S2486;S3400;SA1402;SA1509;SA1515;SA1649;EA0014;LA0001;VSTHRD003</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
