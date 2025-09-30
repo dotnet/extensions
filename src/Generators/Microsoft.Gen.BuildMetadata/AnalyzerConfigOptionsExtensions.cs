@@ -22,8 +22,7 @@ internal static class AnalyzerConfigOptionsExtensions
     public static bool GetBooleanProperty(this AnalyzerConfigOptions options, string propertyName)
     {
         var value = GetProperty(options, propertyName);
-        return !string.IsNullOrEmpty(value) &&
-               string.Equals(value, "true", System.StringComparison.OrdinalIgnoreCase);
+        return string.Equals(value, "true", System.StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

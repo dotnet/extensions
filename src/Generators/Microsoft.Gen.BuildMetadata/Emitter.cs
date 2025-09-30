@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.BuildMetadata;
@@ -18,17 +17,16 @@ internal sealed class Emitter : EmitterBase
     private readonly string? _sourceBranchName;
     private readonly string? _sourceVersion;
 
-    public Emitter(string? buildId, string? buildNumber, string? sourceBranchName, string? sourceVersion)
+    public Emitter(BuildMetadata buildMetadata)
     {
-        _buildId = buildId;
-        _buildNumber = buildNumber;
-        _sourceBranchName = sourceBranchName;
-        _sourceVersion = sourceVersion;
+        _buildId = buildMetadata.BuildId;
+        _buildNumber = buildMetadata.BuildNumber;
+        _sourceBranchName = buildMetadata.SourceBranchName;
+        _sourceVersion = buildMetadata.SourceVersion;
     }
 
-    public string Emit(CancellationToken cancellationToken)
+    public string Emit()
     {
-        cancellationToken.ThrowIfCancellationRequested();
         GenerateBuildMetadataExtensions();
         return Capture();
     }
@@ -155,7 +153,7 @@ internal sealed class Emitter : EmitterBase
             OutLn();
         }
 
-        OutLn("if (global::System.string.IsNullOrWhiteSpace(sectionName))");
+        OutLn("if (string.IsNullOrWhiteSpace(sectionName))");
         OutOpenBrace();
         {
             OutLn("if (sectionName is null)");

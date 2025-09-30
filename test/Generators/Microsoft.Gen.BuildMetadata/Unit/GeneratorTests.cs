@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Gen.Shared;
 using VerifyTests;
@@ -89,12 +90,13 @@ public class GeneratorTests
         // Create the generator driver with the options provider
         var driver = Microsoft.CodeAnalysis.CSharp.CSharpGeneratorDriver.Create(
             generators: new[] { new BuildMetadataGenerator().AsSourceGenerator() },
+            parseOptions: CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview),
             optionsProvider: optionsProvider);
 
-        var result = driver.RunGenerators(comp!);
+        var result = driver.RunGeneratorsAndUpdateCompilation(comp!, out var outputCompilation, out var diagnostics);
         var runResult = result.GetRunResult();
 
-        return (runResult.Results[0].Diagnostics, runResult.Results[0].GeneratedSources);
+        return (diagnostics, runResult.Results[0].GeneratedSources);
     }
 
     private sealed class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider

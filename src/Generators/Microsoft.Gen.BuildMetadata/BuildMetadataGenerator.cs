@@ -13,7 +13,7 @@ namespace Microsoft.Gen.BuildMetadata;
 /// Supports both Azure DevOps and GitHub Actions build environments.
 /// </summary>
 [Generator]
-public class BuildMetadataGenerator : IIncrementalGenerator
+public sealed class BuildMetadataGenerator : IIncrementalGenerator
 {
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -50,10 +50,8 @@ public class BuildMetadataGenerator : IIncrementalGenerator
 
     private static void Execute(SourceProductionContext context, BuildMetadata buildMetadata)
     {
-        var emitter = new Emitter(buildMetadata.BuildId, buildMetadata.BuildNumber, buildMetadata.SourceBranchName, buildMetadata.SourceVersion);
-        var result = emitter.Emit(context.CancellationToken);
+        var emitter = new Emitter(buildMetadata);
+        var result = emitter.Emit();
         context.AddSource("BuildMetadataExtensions.g.cs", SourceText.From(result, Encoding.UTF8));
     }
-
-    private readonly record struct BuildMetadata(string? BuildId, string? BuildNumber, string? SourceBranchName, string? SourceVersion);
 }

@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.AmbientMetadata
             public BuildMetadataSource(string sectionName)
             {
 #if !NET
-                if (global::System.string.IsNullOrWhiteSpace(sectionName))
+                if (string.IsNullOrWhiteSpace(sectionName))
                 {
                     if (sectionName is null)
                     {
@@ -54,7 +54,7 @@ namespace Microsoft.Extensions.AmbientMetadata
                 throw new global::System.ArgumentNullException(nameof(builder));
             }
 
-            if (global::System.string.IsNullOrWhiteSpace(sectionName))
+            if (string.IsNullOrWhiteSpace(sectionName))
             {
                 if (sectionName is null)
                 {
@@ -84,7 +84,7 @@ namespace Microsoft.Extensions.AmbientMetadata
                 throw new global::System.ArgumentNullException(nameof(builder));
             }
 
-            if (global::System.string.IsNullOrWhiteSpace(sectionName))
+            if (string.IsNullOrWhiteSpace(sectionName))
             {
                 if (sectionName is null)
                 {
@@ -112,7 +112,7 @@ namespace Microsoft.Extensions.AmbientMetadata
                 throw new global::System.ArgumentNullException(nameof(builder));
             }
 
-            if (global::System.string.IsNullOrWhiteSpace(sectionName))
+            if (string.IsNullOrWhiteSpace(sectionName))
             {
                 if (sectionName is null)
                 {
