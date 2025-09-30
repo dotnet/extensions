@@ -190,7 +190,10 @@ public class ChatOptions
 
         if (BackgroundResponsesOptions is { } bros)
         {
-            options.BackgroundResponsesOptions = new BackgroundResponsesOptions(bros);
+            options.BackgroundResponsesOptions = new BackgroundResponsesOptions
+            {
+                Allow = bros.Allow
+            };
         }
 
         if (StopSequences is not null)
