@@ -7,8 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-#pragma warning disable S3358 // Ternary operators should not be nested
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -37,9 +35,6 @@ public class ChatResponseUpdate
     /// <summary>The response update content items.</summary>
     private IList<AIContent>? _contents;
 
-    /// <summary>The name of the author of the update.</summary>
-    private string? _authorName;
-
     /// <summary>Initializes a new instance of the <see cref="ChatResponseUpdate"/> class.</summary>
     [JsonConstructor]
     public ChatResponseUpdate()
@@ -66,8 +61,8 @@ public class ChatResponseUpdate
     /// <summary>Gets or sets the name of the author of the response update.</summary>
     public string? AuthorName
     {
-        get => _authorName;
-        set => _authorName = string.IsNullOrWhiteSpace(value) ? null : value;
+        get;
+        set => field = string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     /// <summary>Gets or sets the role of the author of the response update.</summary>

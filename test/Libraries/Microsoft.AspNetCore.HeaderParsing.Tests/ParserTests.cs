@@ -146,8 +146,8 @@ public class ParserTests
     {
         var sv = new StringValues("attachment; filename=\"cool.html\"");
         Assert.True(ContentDispositionHeaderValueParser.Instance.TryParse(sv, out var result, out var error));
-        Assert.Equal("cool.html", result.FileName);
-        Assert.Equal("attachment", result.DispositionType);
+        Assert.Equal("cool.html", result.FileName.ToString());
+        Assert.Equal("attachment", result.DispositionType.ToString());
         Assert.Null(error);
     }
 
@@ -174,8 +174,8 @@ public class ParserTests
     {
         var sv = new StringValues("text/html; charset=UTF-8");
         Assert.True(MediaTypeHeaderValueParser.Instance.TryParse(sv, out var result, out var error));
-        Assert.Equal("text/html", result.MediaType);
-        Assert.Equal("UTF-8", result.Charset);
+        Assert.Equal("text/html", result.MediaType.ToString());
+        Assert.Equal("UTF-8", result.Charset.ToString());
         Assert.Null(error);
     }
 
@@ -203,8 +203,8 @@ public class ParserTests
         var sv = new StringValues("text/html; charset=UTF-8");
         Assert.True(MediaTypeHeaderValueListParser.Instance.TryParse(sv, out var result, out var error));
         Assert.Single(result);
-        Assert.Equal("text/html", result[0].MediaType);
-        Assert.Equal("UTF-8", result[0].Charset);
+        Assert.Equal("text/html", result[0].MediaType.ToString());
+        Assert.Equal("UTF-8", result[0].Charset.ToString());
         Assert.Null(error);
     }
 
@@ -223,7 +223,7 @@ public class ParserTests
         var sv = new StringValues("\"HelloWorld\"");
         Assert.True(EntityTagHeaderValueListParser.Instance.TryParse(sv, out var result, out var error));
         Assert.Single(result!);
-        Assert.Equal("\"HelloWorld\"", result[0].Tag);
+        Assert.Equal("\"HelloWorld\"", result[0].Tag.ToString());
         Assert.Null(error);
     }
 
@@ -242,7 +242,7 @@ public class ParserTests
         var sv = new StringValues("en-US");
         Assert.True(StringWithQualityHeaderValueListParser.Instance.TryParse(sv, out var result, out var error));
         Assert.Single(result!);
-        Assert.Equal("en-US", result[0].Value);
+        Assert.Equal("en-US", result[0].Value.ToString());
         Assert.Null(error);
     }
 
@@ -252,8 +252,8 @@ public class ParserTests
         var sv = new StringValues("en-US,en;q=0.5");
         Assert.True(StringWithQualityHeaderValueListParser.Instance.TryParse(sv, out var result, out var error));
         Assert.Equal(2, result.Count);
-        Assert.Equal("en-US", result[0].Value);
-        Assert.Equal("en", result[1].Value);
+        Assert.Equal("en-US", result[0].Value.ToString());
+        Assert.Equal("en", result[1].Value.ToString());
         Assert.Equal(0.5, result[1].Quality);
         Assert.Null(error);
     }
@@ -300,7 +300,7 @@ public class ParserTests
     {
         var sv = new StringValues("bytes=200-1000");
         Assert.True(RangeHeaderValueParser.Instance.TryParse(sv, out var result, out var error));
-        Assert.Equal("bytes", result!.Unit);
+        Assert.Equal("bytes", result!.Unit.ToString());
         Assert.Single(result.Ranges);
         Assert.Equal(200, result.Ranges.Single().From);
         Assert.Equal(1000, result.Ranges.Single().To);
@@ -341,7 +341,7 @@ public class ParserTests
 
         sv = new StringValues("\"67ab43\"");
         Assert.True(RangeConditionHeaderValueParser.Instance.TryParse(sv, out result, out error));
-        Assert.Equal("\"67ab43\"", result!.EntityTag!.Tag);
+        Assert.Equal("\"67ab43\"", result!.EntityTag!.Tag.ToString());
         Assert.Null(error);
     }
 

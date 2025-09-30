@@ -114,7 +114,6 @@ public sealed class GroundednessEvaluator : IEvaluator
         ChatResponse modelResponse,
         GroundednessEvaluatorContext context)
     {
-#pragma warning disable S103 // Lines should not be too long
         const string SystemPrompt =
             """
             # Instruction
@@ -124,14 +123,12 @@ public sealed class GroundednessEvaluator : IEvaluator
             - **Data**: Your input data include CONTEXT, RESPONSE and an optional QUERY.
             - **Tasks**: To complete your evaluation you will be asked to evaluate the Data in different ways.
             """;
-#pragma warning restore S103
 
         List<ChatMessage> evaluationInstructions = [new ChatMessage(ChatRole.System, SystemPrompt)];
 
         string renderedModelResponse = modelResponse.RenderText();
         string groundingContext = context.GroundingContext;
 
-#pragma warning disable S103 // Lines should not be too long
         string evaluationPrompt;
         if (userRequest is null)
         {
@@ -296,7 +293,6 @@ public sealed class GroundednessEvaluator : IEvaluator
                 # Output
                 """;
         }
-#pragma warning restore S103 
 
         evaluationInstructions.Add(new ChatMessage(ChatRole.User, evaluationPrompt));
 

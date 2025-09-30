@@ -4,6 +4,7 @@
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
+
 public class TagSetTests
 {
     [Fact]

@@ -83,7 +83,7 @@
     <!-- Dependencies from https://github.com/dotnet/efcore -->
     <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.9</MicrosoftEntityFrameworkCoreSqliteVersion>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksTemplatingVersion>9.0.0-beta.25428.3</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.25476.2</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <PropertyGroup Label="No longer automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
@@ -159,5 +159,9 @@
       https://github.com/dotnet/arcade/blob/f5a7c5d5c56197b09715dece7541ca06beb94eb0/src/Microsoft.DotNet.Arcade.Sdk/tools/XUnit/XUnit.targets#L9
      -->
     <XUnitVersion>2.9.3</XUnitVersion>
+    <!--
+      Starting with 3.0.0, xunit.runner.visualstudio only supports net472, but we target net462
+     -->
+    <XUnitRunnerVisualStudioVersion>2.8.2</XUnitRunnerVisualStudioVersion>
   </PropertyGroup>
 </Project>

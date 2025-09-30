@@ -17,12 +17,8 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI.Images;
 using OpenAI.Responses;
 
-#pragma warning disable S907 // "goto" statement should not be used
-#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable S3254 // Default parameter values should not be passed as arguments
-#pragma warning disable S3604 // Member initializer values should not be redundant
-#pragma warning disable SA1202 // Elements should be ordered by access
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
@@ -67,12 +63,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         _responseClient = responseClient;
 
-        // https://github.com/openai/openai-dotnet/issues/662
-        // Update to avoid reflection once OpenAIResponseClient.Model is exposed publicly.
-        string? model = typeof(OpenAIResponseClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(responseClient) as string;
-
-        _metadata = new("openai", responseClient.Endpoint, model);
+        _metadata = new("openai", responseClient.Endpoint, responseClient.Model);
     }
 
     /// <inheritdoc />
@@ -602,7 +593,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         // Handle strongly-typed properties.
         result.MaxOutputTokenCount ??= options.MaxOutputTokens;
-        result.ParallelToolCallsEnabled ??= options.AllowMultipleToolCalls;
         result.PreviousResponseId ??= options.ConversationId;
         result.Temperature ??= options.Temperature;
         result.TopP ??= options.TopP;
@@ -657,27 +647,19 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         break;
 
                     case HostedCodeInterpreterTool codeTool:
-                        string json;
-                        if (codeTool.Inputs is { Count: > 0 } inputs)
-                        {
-                            string jsonArray = JsonSerializer.Serialize(
-                                inputs.OfType<HostedFileContent>().Select(c => c.FileId),
-                                OpenAIJsonContext.Default.IEnumerableString);
-                            json = $$"""{"type":"code_interpreter","container":{"type":"auto",files:{{jsonArray}}} }""";
-                        }
-                        else
-                        {
-                            json = """{"type":"code_interpreter","container":{"type":"auto"}}""";
-                        }
-
-                        result.Tools.Add(ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString(json)));
+                        result.Tools.Add(
+                            ResponseTool.CreateCodeInterpreterTool(
+                                new CodeInterpreterToolContainer(codeTool.Inputs?.OfType<HostedFileContent>().Select(f => f.FileId).ToList() is { Count: > 0 } ids ?
+                                    CodeInterpreterToolContainerConfiguration.CreateAutomaticContainerConfiguration(ids) :
+                                    new())));
                         break;
 
                     case HostedMcpServerTool mcpTool:
                         McpTool responsesMcpTool = ResponseTool.CreateMcpTool(
                             mcpTool.ServerName,
                             mcpTool.Url,
-                            mcpTool.Headers);
+                            serverDescription: mcpTool.ServerDescription,
+                            headers: mcpTool.Headers);
 
                         if (mcpTool.AllowedTools is not null)
                         {
@@ -716,6 +698,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         result.Tools.Add(responsesMcpTool);
                         break;
                 }
+            }
+
+            if (result.Tools.Count > 0)
+            {
+                result.ParallelToolCallsEnabled ??= options.AllowMultipleToolCalls;
             }
 
             if (result.ToolChoice is null && result.Tools.Count > 0)
@@ -861,8 +848,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case McpServerToolApprovalRequestContent mcpApprovalRequestContent:
-                            // BUG https://github.com/openai/openai-dotnet/issues/664: Needs to be able to set an approvalRequestId
                             yield return ResponseItem.CreateMcpApprovalRequestItem(
+                                mcpApprovalRequestContent.Id,
                                 mcpApprovalRequestContent.ToolCall.ServerName,
                                 mcpApprovalRequestContent.ToolCall.ToolName,
                                 BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(mcpApprovalRequestContent.ToolCall.Arguments!, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)));
@@ -1098,5 +1085,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         public ResponseTool Tool => tool;
         public override string Name => Tool.GetType().Name;
+
+        /// <inheritdoc />
+        public override object? GetService(Type serviceType, object? serviceKey = null)
+        {
+            _ = Throw.IfNull(serviceType);
+
+            return
+                serviceKey is null && serviceType.IsInstanceOfType(Tool) ? Tool :
+                base.GetService(serviceType, serviceKey);
+        }
     }
 }

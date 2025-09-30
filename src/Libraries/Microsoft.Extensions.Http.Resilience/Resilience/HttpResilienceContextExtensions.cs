@@ -7,7 +7,6 @@ using System.Net.Http;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
-using Polly;
 
 namespace Polly;
 

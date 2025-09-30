@@ -4,8 +4,6 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 
-#pragma warning disable S1694 // An abstract class should have both abstract and concrete methods
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a function that can be described to an AI service.</summary>
@@ -30,12 +28,10 @@ public abstract class AIFunctionDeclaration : AITool
     /// </para>
     /// <code>
     /// {
-    ///   "title" : "addNumbers",
-    ///   "description": "A simple function that adds two numbers together.",
     ///   "type": "object",
     ///   "properties": {
     ///     "a" : { "type": "number" },
-    ///     "b" : { "type": "number", "default": 1 }
+    ///     "b" : { "type": ["number","null"], "default": 1 }
     ///   },
     ///   "required" : ["a"]
     /// }

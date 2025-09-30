@@ -9,8 +9,6 @@ using System.Diagnostics;
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 #pragma warning disable SA1112 // Closing parenthesis should be on line of opening parenthesis
 #pragma warning disable SA1114 // Parameter list should follow declaration
-#pragma warning disable S3358 // Extract this nested ternary operation into an independent statement.
-#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S4039 // Make 'AIFunctionArguments' sealed
 #pragma warning disable CA1033 // Make 'AIFunctionArguments' sealed
 #pragma warning disable CA1710 // Identifiers should have correct suffix
@@ -79,14 +77,10 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// </remarks>
     public AIFunctionArguments(IDictionary<string, object?>? arguments, IEqualityComparer<string>? comparer)
     {
-#pragma warning disable S1698 // Consider using 'Equals' if value comparison is intended.
         _arguments =
-            arguments is null
-                ? new Dictionary<string, object?>(comparer)
-                : (arguments is Dictionary<string, object?> dc) && (comparer is null || dc.Comparer == comparer)
-                    ? dc
-                    : new Dictionary<string, object?>(arguments, comparer);
-#pragma warning restore S1698 // Consider using 'Equals' if value comparison is intended.
+            arguments is null ? new(comparer) :
+            arguments is Dictionary<string, object?> dc && (comparer is null || ReferenceEquals(dc.Comparer, comparer)) ? dc :
+            new(arguments, comparer);
     }
 
     /// <summary>Gets or sets services optionally associated with these arguments.</summary>

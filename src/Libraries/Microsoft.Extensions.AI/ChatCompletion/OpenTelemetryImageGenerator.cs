@@ -7,13 +7,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Drawing;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 #pragma warning disable SA1113 // Comma should be on the same line as previous parameter
 
@@ -151,13 +149,13 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
             string? modelId = options?.ModelId ?? _defaultModelId;
 
             activity = _activitySource.StartActivity(
-                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.GenerateContent : $"{OpenTelemetryConsts.GenAI.GenerateContent} {modelId}",
+                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.GenerateContentName : $"{OpenTelemetryConsts.GenAI.GenerateContentName} {modelId}",
                 ActivityKind.Client);
 
             if (activity is { IsAllDataRequested: true })
             {
                 _ = activity
-                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContent)
+                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContentName)
                     .AddTag(OpenTelemetryConsts.GenAI.Output.Type, OpenTelemetryConsts.TypeImage)
                     .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
                     .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
@@ -294,7 +292,7 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
 
         void AddMetricTags(ref TagList tags, string? requestModelId)
         {
-            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContent);
+            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContentName);
 
             if (requestModelId is not null)
             {

@@ -55,7 +55,6 @@ internal sealed class IntentResolutionRating
     public bool IsInconclusive => ResolutionScore < MinValue || ResolutionScore > MaxValue;
 
     [JsonConstructor]
-#pragma warning disable S107 // Methods should not have too many parameters
     public IntentResolutionRating(
         int resolutionScore,
         string explanation,
@@ -64,7 +63,6 @@ internal sealed class IntentResolutionRating
         bool conversationHasIntent,
         bool correctIntentDetected,
         bool intentResolved)
-#pragma warning restore S107
     {
         ResolutionScore = resolutionScore;
         Explanation = explanation;

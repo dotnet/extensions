@@ -17,18 +17,6 @@ public class FunctionInvocationContext
     /// </summary>
     private static readonly AIFunction _nopFunction = AIFunctionFactory.Create(() => { }, nameof(FunctionInvocationContext));
 
-    /// <summary>The chat contents associated with the operation that initiated this function call request.</summary>
-    private IList<ChatMessage> _messages = Array.Empty<ChatMessage>();
-
-    /// <summary>The AI function to be invoked.</summary>
-    private AIFunction _function = _nopFunction;
-
-    /// <summary>The function call content information associated with this invocation.</summary>
-    private FunctionCallContent? _callContent;
-
-    /// <summary>The arguments used with the function.</summary>
-    private AIFunctionArguments? _arguments;
-
     /// <summary>Initializes a new instance of the <see cref="FunctionInvocationContext"/> class.</summary>
     public FunctionInvocationContext()
     {
@@ -37,30 +25,30 @@ public class FunctionInvocationContext
     /// <summary>Gets or sets the AI function to be invoked.</summary>
     public AIFunction Function
     {
-        get => _function;
-        set => _function = Throw.IfNull(value);
-    }
+        get;
+        set => field = Throw.IfNull(value);
+    } = _nopFunction;
 
     /// <summary>Gets or sets the arguments associated with this invocation.</summary>
     public AIFunctionArguments Arguments
     {
-        get => _arguments ??= [];
-        set => _arguments = Throw.IfNull(value);
+        get => field ??= [];
+        set => field = Throw.IfNull(value);
     }
 
     /// <summary>Gets or sets the function call content information associated with this invocation.</summary>
     public FunctionCallContent CallContent
     {
-        get => _callContent ??= new(string.Empty, _nopFunction.Name, EmptyReadOnlyDictionary<string, object?>.Instance);
-        set => _callContent = Throw.IfNull(value);
+        get => field ??= new(string.Empty, _nopFunction.Name, EmptyReadOnlyDictionary<string, object?>.Instance);
+        set => field = Throw.IfNull(value);
     }
 
     /// <summary>Gets or sets the chat contents associated with the operation that initiated this function call request.</summary>
     public IList<ChatMessage> Messages
     {
-        get => _messages;
-        set => _messages = Throw.IfNull(value);
-    }
+        get;
+        set => field = Throw.IfNull(value);
+    } = Array.Empty<ChatMessage>();
 
     /// <summary>Gets or sets the chat options associated with the operation that initiated this function call request.</summary>
     public ChatOptions? Options { get; set; }

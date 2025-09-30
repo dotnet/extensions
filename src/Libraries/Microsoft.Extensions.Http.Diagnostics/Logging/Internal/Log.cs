@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 #if NET
 using System.Globalization;
 #endif
@@ -14,7 +13,6 @@ namespace Microsoft.Extensions.Http.Logging.Internal;
 /// <summary>
 /// Logs <see cref="HttpRequestMessage"/>, <see cref="HttpResponseMessage"/> and the exceptions due to errors of request/response.
 /// </summary>
-[SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Event ID's.")]
 internal static partial class Log
 {
     private const int MinimalPropertyCount = 5;
