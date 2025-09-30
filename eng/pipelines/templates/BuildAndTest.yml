@@ -169,6 +169,7 @@ steps:
       displayName: Build Azure DevOps plugin
 
     - script: ${{ parameters.buildScript }}
+              -restore
               -sign $(_SignArgs)
               -publish $(_PublishArgs)
               -configuration ${{ parameters.buildConfig }}
