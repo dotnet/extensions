@@ -55,9 +55,9 @@ internal sealed class OpenAIResponsesContinuationToken : ResponseContinuationTok
     /// <returns>A <see cref="OpenAIResponsesContinuationToken"/> equivalent of the provided <paramref name="token"/>.</returns>
     internal static OpenAIResponsesContinuationToken FromToken(ResponseContinuationToken token)
     {
-        if (token is OpenAIResponsesContinuationToken longRunResumptionToken)
+        if (token is OpenAIResponsesContinuationToken openAIResponsesContinuationToken)
         {
-            return longRunResumptionToken;
+            return openAIResponsesContinuationToken;
         }
 
         ReadOnlyMemory<byte> data = token.ToBytes();

@@ -2022,9 +2022,9 @@ public class OpenAIResponseClientTests
 
         internal static TestOpenAIResponsesContinuationToken FromToken(ResponseContinuationToken token)
         {
-            if (token is TestOpenAIResponsesContinuationToken longRunResumptionToken)
+            if (token is TestOpenAIResponsesContinuationToken testOpenAIResponsesContinuationToken)
             {
-                return longRunResumptionToken;
+                return testOpenAIResponsesContinuationToken;
             }
 
             ReadOnlyMemory<byte> data = token.ToBytes();
