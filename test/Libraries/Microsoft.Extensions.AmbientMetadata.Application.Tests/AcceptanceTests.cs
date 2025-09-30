@@ -60,7 +60,7 @@ public class AcceptanceTests
         using var host = await FakeHost.CreateBuilder()
 
             // need to set applicationName manually, because
-            // netfx console test runner cannot get assebly name
+            // netfx console test runner cannot get assembly name
             // to be able to set it automatically
             // see https://source.dot.net/#Microsoft.Extensions.Hosting/HostBuilder.cs,240
             .ConfigureHostConfiguration("applicationname", _metadata.ApplicationName)
@@ -85,7 +85,7 @@ public class AcceptanceTests
         });
 
         // need to set applicationName manually, because
-        // netfx console test runner cannot get assebly name
+        // netfx console test runner cannot get assembly name
         // to be able to set it automatically
         // see https://source.dot.net/#Microsoft.Extensions.Hosting/HostBuilder.cs,240
         builder
