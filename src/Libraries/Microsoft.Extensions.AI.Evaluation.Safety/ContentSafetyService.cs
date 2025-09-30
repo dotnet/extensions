@@ -445,9 +445,8 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
         httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
 
-        if (httpRequestMessage.Content is not null)
-        {
-            httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        }
+#pragma warning disable IDE0058 // Temporary workaround for Roslyn analyzer issue (see https://github.com/dotnet/roslyn/issues/80499).
+        httpRequestMessage.Content?.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+#pragma warning restore IDE0058
     }
 }

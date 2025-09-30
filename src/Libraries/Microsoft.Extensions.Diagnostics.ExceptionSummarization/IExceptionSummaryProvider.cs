@@ -26,15 +26,15 @@ public interface IExceptionSummaryProvider
     /// This method should only get invoked with an exception which is type compatible with a type
     /// described by <see cref="SupportedExceptionTypes"/>.
     /// </remarks>
-    public int Describe(Exception exception, out string? additionalDetails);
+    int Describe(Exception exception, out string? additionalDetails);
 
     /// <summary>
     /// Gets the set of supported exception types that can be handled by this provider.
     /// </summary>
-    public IEnumerable<Type> SupportedExceptionTypes { get; }
+    IEnumerable<Type> SupportedExceptionTypes { get; }
 
     /// <summary>
     /// Gets the set of description strings exposed by this provider.
     /// </summary>
-    public IReadOnlyList<string> Descriptions { get; }
+    IReadOnlyList<string> Descriptions { get; }
 }
