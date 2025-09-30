@@ -27,88 +27,156 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public sealed class ImageGeneratingChatClient : DelegatingChatClient
 {
+    /// <summary>
+    /// Specifies how image and other data content is handled when passing data to an inner client.
+    /// </summary>
+    /// <remarks>
+    /// Use this enumeration to control whether images in the data content are passed as-is, replaced
+    /// with unique identifiers, or only generated images are replaced. This setting affects how downstream clients
+    /// receive and process image data.
+    /// Reducing what's passed downstream can help manage the context window.
+    /// </remarks>
+    public enum DataContentHandling
+    {
+        /// <summary>Pass all DataContent to inner client.</summary>
+        None,
+
+        /// <summary>Replace all images with unique identifers when passing to inner client.</summary>
+        AllImages,
+
+        /// <summary>Replace only images that were produced by past of image generation requests with unique identifiers when passing to inner client.</summary>
+        GeneratedImages
+    }
+
+    private const string ImageKey = "meai_image";
+
     private readonly IImageGenerator _imageGenerator;
     private readonly AITool[] _aiTools;
     private readonly HashSet<string> _functionNames;
+    private readonly DataContentHandling _dataContentHandling;
 
-    /// <summary>Stores mapping of function call IDs to generated image content.</summary>
+    // the following fields all have scope per-request. They are cleared at the start of each request.
     private readonly Dictionary<string, List<AIContent>> _imageContentByCallId = [];
+    private readonly Dictionary<string, AIContent> _imageContentById = new(StringComparer.OrdinalIgnoreCase);
     private ImageGenerationOptions? _imageGenerationOptions;
+
+    private static List<T> CopyList<T>(IList<T> original, int toOffsetExclusive, int additionalCapacity = 0)
+    {
+        var newList = new List<T>(original.Count + additionalCapacity);
+
+        // Copy all items up to and excluding the current index
+        for (int j = 0; j < toOffsetExclusive; j++)
+        {
+            newList.Add(original[j]);
+        }
+
+        return newList;
+    }
 
     /// <summary>Initializes a new instance of the <see cref="ImageGeneratingChatClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>.</param>
     /// <param name="imageGenerator">An <see cref="IImageGenerator"/> instance that will be used for image generation operations.</param>
+    /// <param name="dataContentHandling">Specifies how to handle <see cref="DataContent"/> instances when passing messages to the inner client.
+    /// The default is <see cref="DataContentHandling.AllImages"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> or <paramref name="imageGenerator"/> is <see langword="null"/>.</exception>
-    public ImageGeneratingChatClient(IChatClient innerClient, IImageGenerator imageGenerator)
+    public ImageGeneratingChatClient(IChatClient innerClient, IImageGenerator imageGenerator, DataContentHandling dataContentHandling = DataContentHandling.AllImages)
         : base(innerClient)
     {
         _imageGenerator = Throw.IfNull(imageGenerator);
         _aiTools =
         [
             AIFunctionFactory.Create(GenerateImageAsync),
-            AIFunctionFactory.Create(EditImageAsync)
+            AIFunctionFactory.Create(EditImageAsync),
+            AIFunctionFactory.Create(GetImagesForEdit)
         ];
 
         _functionNames = new(_aiTools.Select(t => t.Name), StringComparer.Ordinal);
+        _dataContentHandling = dataContentHandling;
     }
 
     /// <inheritdoc/>
     public override async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(messages);
+
         // Clear any existing generated content for this request
         _imageContentByCallId.Clear();
+        _imageContentById.Clear();
 
-        // Process the chat options to replace HostedImageGenerationTool with functions
-        var processedOptions = ProcessChatOptions(options);
-
-        // Get response from base implementation
-        var response = await base.GetResponseAsync(messages, processedOptions, cancellationToken);
-
-        // Replace FunctionResultContent instances with generated image content
-        foreach (var message in response.Messages)
+        try
         {
-            var newContents = ReplaceImageGenerationFunctionResults(message.Contents);
-            message.Contents = newContents;
-        }
+            // Process the chat options to replace HostedImageGenerationTool with functions
+            var processedOptions = ProcessChatOptions(options);
+            var processedMessages = ProcessChatMessages(messages);
 
-        return response;
+            // Get response from base implementation
+            var response = await base.GetResponseAsync(processedMessages, processedOptions, cancellationToken);
+
+            // Replace FunctionResultContent instances with generated image content
+            foreach (var message in response.Messages)
+            {
+                var newContents = ReplaceImageGenerationFunctionResults(message.Contents);
+                message.Contents = newContents;
+            }
+
+            return response;
+        }
+        finally
+        {
+            // Clear any existing generated content for this request
+            _imageContentByCallId.Clear();
+            _imageContentById.Clear();
+        }
     }
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(messages);
+
         // Clear any existing generated content for this request
         _imageContentByCallId.Clear();
+        _imageContentById.Clear();
 
-        // Process the chat options to replace HostedImageGenerationTool with functions
-        var processedOptions = ProcessChatOptions(options);
-
-        await foreach (var update in base.GetStreamingResponseAsync(messages, processedOptions, cancellationToken))
+        try
         {
-            // Replace any FunctionResultContent instances with generated image content
-            var newContents = ReplaceImageGenerationFunctionResults(update.Contents);
+            // Process the chat options to replace HostedImageGenerationTool with functions
+            var processedOptions = ProcessChatOptions(options);
+            var processedMessages = ProcessChatMessages(messages);
 
-            if (newContents != update.Contents)
+            await foreach (var update in base.GetStreamingResponseAsync(processedMessages, processedOptions, cancellationToken))
             {
-                // Create a new update instance with modified contents
-                var modifiedUpdate = new ChatResponseUpdate(update.Role, newContents)
+                // Replace any FunctionResultContent instances with generated image content
+                var newContents = ReplaceImageGenerationFunctionResults(update.Contents);
+
+                if (newContents != update.Contents)
                 {
-                    AuthorName = update.AuthorName,
-                    RawRepresentation = update.RawRepresentation,
-                    AdditionalProperties = update.AdditionalProperties,
-                    ResponseId = update.ResponseId,
-                    MessageId = update.MessageId,
-                    ConversationId = update.ConversationId
-                };
+                    // Create a new update instance with modified contents
+                    var modifiedUpdate = new ChatResponseUpdate(update.Role, newContents)
+                    {
+                        AuthorName = update.AuthorName,
+                        RawRepresentation = update.RawRepresentation,
+                        AdditionalProperties = update.AdditionalProperties,
+                        ResponseId = update.ResponseId,
+                        MessageId = update.MessageId,
+                        ConversationId = update.ConversationId
+                    };
 
-                yield return modifiedUpdate;
+                    yield return modifiedUpdate;
+                }
+                else
+                {
+                    yield return update;
+                }
             }
-            else
-            {
-                yield return update;
-            }
+        }
+        finally
+        {
+            // Clear any existing generated content for this request
+            _imageContentByCallId.Clear();
+            _imageContentById.Clear();
         }
     }
 
@@ -124,6 +192,71 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
         base.Dispose(disposing);
     }
 
+    private IEnumerable<ChatMessage> ProcessChatMessages(IEnumerable<ChatMessage> messages)
+    {
+        // If no special handling is needed, return the original messages
+        if (_dataContentHandling == DataContentHandling.None)
+        {
+            return messages;
+        }
+
+        List<ChatMessage>? newMessages = null;
+        int messageIndex = 0;
+        foreach (var message in messages)
+        {
+            List<AIContent>? newContents = null;
+            for (int contentIndex = 0; contentIndex < message.Contents.Count; contentIndex++)
+            {
+                var content = message.Contents[contentIndex];
+                if (content is DataContent dataContent && dataContent.MediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                {
+                    bool isGeneratedImage = dataContent.AdditionalProperties?.ContainsKey(ImageKey) == true;
+                    if (_dataContentHandling == DataContentHandling.AllImages ||
+                        (_dataContentHandling == DataContentHandling.GeneratedImages && isGeneratedImage))
+                    {
+                        // Replace image with a placeholder text content
+                        var imageId = StoreImage(dataContent);
+
+                        newContents ??= CopyList(message.Contents, contentIndex);
+                        newContents.Add(new TextContent($"[{ImageKey}:{imageId}] available for edit.")
+                        {
+                            Annotations = dataContent.Annotations,
+                            AdditionalProperties = dataContent.AdditionalProperties
+                        });
+                        continue; // Skip adding the original content
+                    }
+                }
+
+                // Add the original content if no replacement was made
+                newContents?.Add(content);
+            }
+
+            if (newContents != null)
+            {
+                newMessages ??= new List<ChatMessage>(messages.Take(messageIndex));
+
+                var newMessage = message.Clone();
+                if (newMessage.Role == ChatRole.Tool)
+                {
+                    // workaround: the chat client will ignore tool messages, so change the role to assistant
+                    newMessage.Role = ChatRole.Assistant;
+                }
+
+                newMessage.Contents = newContents;
+                newMessages.Add(newMessage);
+            }
+            else
+            {
+                newMessages?.Add(message);
+
+            }
+
+            messageIndex++;
+        }
+
+        return newMessages ?? messages;
+    }
+
     private ChatOptions? ProcessChatOptions(ChatOptions? options)
     {
         if (options?.Tools is null || options.Tools.Count == 0)
@@ -131,52 +264,78 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             return options;
         }
 
+        List<AITool>? newTools = null;
         var tools = options.Tools;
-        ChatOptions? modifiedOptions = null;
-
         for (int i = 0; i < tools.Count; i++)
         {
-            var tool = options.Tools[i];
+            var tool = tools[i];
 
             // remove all instances of HostedImageGenerationTool and store the options from the last one
             if (tool is HostedImageGenerationTool imageGenerationTool)
             {
                 _imageGenerationOptions = imageGenerationTool.Options;
 
-#pragma warning disable S127
                 // for the first image generation tool, clone the options and insert our function tools
                 // remove any subsequent image generation tools
-                if (modifiedOptions is null)
+                if (newTools is null)
                 {
-                    modifiedOptions = options.Clone();
-                    tools = modifiedOptions.Tools!;
-
-                    tools.RemoveAt(i--);
-
-                    foreach (var functionTool in _aiTools)
-                    {
-                        tools.Insert(++i, functionTool);
-                    }
+                    newTools = CopyList(tools, i);
+                    newTools.AddRange(_aiTools);
                 }
-                else
-                {
-                    tools.RemoveAt(i--);
-                }
-#pragma warning restore S127 
+            }
+            else
+            {
+                newTools?.Add(tool);
             }
         }
 
-        return modifiedOptions ?? options;
+        if (newTools is not null)
+        {
+            var newOptions = options.Clone();
+            newOptions.Tools = newTools;
+            return newOptions;
+        }
+
+        return options;
+    }
+
+    private DataContent? RetrieveImageContent(string imageId)
+    {
+        if (_imageContentById.TryGetValue(imageId, out var imageContent))
+        {
+            return imageContent as DataContent;
+        }
+
+        return null;
+    }
+
+    private string StoreImage(DataContent imageContent, bool isGenerated = false)
+    {
+        // Generate a unique ID for the image if it doesn't have one
+        string? imageId = null;
+        if (imageContent.AdditionalProperties?.TryGetValue(ImageKey, out imageId) is false || imageId is null)
+        {
+            imageId = imageContent.Name ?? Guid.NewGuid().ToString();
+        }
+
+        if (isGenerated)
+        {
+            imageContent.AdditionalProperties ??= new();
+            imageContent.AdditionalProperties[ImageKey] = imageId;
+        }
+
+        // Store the image content for later retrieval
+        _imageContentById[imageId] = imageContent;
+
+        return imageId;
     }
 
     /// <summary>Replaces FunctionResultContent instances for image generation functions with actual generated image content.</summary>
     /// <param name="contents">The list of AI content to process.</param>
     private IList<AIContent> ReplaceImageGenerationFunctionResults(IList<AIContent> contents)
     {
-        IList<AIContent>? newContents = null;
+        List<AIContent>? newContents = null;
 
-#pragma warning disable S127
-#pragma warning disable S125
         // Replace FunctionResultContent instances with generated image content
         for (int i = contents.Count - 1; i >= 0; i--)
         {
@@ -185,42 +344,37 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             if (content is FunctionCallContent functionCall &&
                 _functionNames.Contains(functionCall.Name))
             {
-                EnsureNewContents();
-                contents.RemoveAt(i--);
+                // create a new list and skip this
+                newContents ??= CopyList(contents, i);
             }
-
-            if (content is FunctionResultContent functionResult &&
+            else if (content is FunctionResultContent functionResult &&
                 _imageContentByCallId.TryGetValue(functionResult.CallId, out var imageContents))
             {
-                // Remove the function result
-                EnsureNewContents();
-                contents.RemoveAt(i);
+                newContents ??= CopyList(contents, i, imageContents.Count - 1);
 
                 // Insert generated image content in its place
-                for (int j = imageContents.Count - 1; j >= 0; j--)
+                foreach (var imageContent in imageContents)
                 {
-                    contents.Insert(i, imageContents[j]);
+                    newContents.Add(imageContent);
                 }
 
+                // Remove the mapping as it's no longer needed
                 _ = _imageContentByCallId.Remove(functionResult.CallId);
             }
-        }
-
-        return contents;
-
-        void EnsureNewContents()
-        {
-            if (newContents is null)
+            else
             {
-                newContents = [.. contents];
-                contents = newContents;
+                // keep the existing content if we have a new list
+                newContents?.Add(content);
             }
         }
+
+        return newContents ?? contents;
     }
-#pragma warning disable EA0014
-    [Description("Generates images based on a text description")]
+
+    [Description("Generates images based on a text description.")]
     private async Task<string> GenerateImageAsync(
-         [Description("A detailed description of the image to generate")] string prompt)
+         [Description("A detailed description of the image to generate")] string prompt,
+         CancellationToken cancellationToken = default)
     {
         // Get the call ID from the current function invocation context
         var callId = FunctionInvokingChatClient.CurrentContext?.CallContent.CallId;
@@ -233,41 +387,38 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
         var options = _imageGenerationOptions ?? new ImageGenerationOptions();
         options.Count ??= 1;
 
-        var response = await _imageGenerator.GenerateAsync(request, options);
+        var response = await _imageGenerator.GenerateAsync(request, options, cancellationToken);
 
         if (response.Contents.Count == 0)
         {
             return "No image was generated.";
         }
 
-        // Store the generated image content mapped to this call ID
-        _imageContentByCallId[callId] = [.. response.Contents];
-
-        int imageCount = 0;
         List<string> imageIds = [];
-
+        List<AIContent> imageContents = _imageContentByCallId[callId] = [];
         foreach (var content in response.Contents)
         {
-            if (content is DataContent imageContent)
+            if (content is DataContent imageContent && imageContent.MediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
             {
-                imageCount++;
-
-                // if there is no name, generate one based on the call ID and index
-                imageContent.Name ??= $"{callId}_image_{imageCount}";
-                imageIds.Add(imageContent.Name);
-
-                imageContent.AdditionalProperties ??= new();
-                imageContent.AdditionalProperties["prompt"] = prompt;
+                imageContents.Add(imageContent);
+                imageIds.Add(StoreImage(imageContent, true));
             }
         }
 
-        return $"Generated {imageCount} image(s) with IDs: {string.Join(",", imageIds)} based on the prompt: '{prompt}'";
+        return "Generated image successfully.";
     }
 
-    [Description("Edits an existing image based on a text description")]
+    [Description("Lists the identifiers of all images available for edit.")]
+    private string[] GetImagesForEdit()
+    {
+        return _imageContentById.Keys.ToArray();
+    }
+
+    [Description("Edits an existing image based on a text description.")]
     private async Task<string> EditImageAsync(
         [Description("A detailed description of the image to generate")] string prompt,
-        [Description("The original image content to edit")] string imageData)
+        [Description($"The image to edit from one of the available image identifiers returned by {nameof(GetImagesForEdit)}")] string imageId,
+        CancellationToken cancellationToken = default)
     {
         // Get the call ID from the current function invocation context
         var callId = FunctionInvokingChatClient.CurrentContext?.CallContent.CallId;
@@ -276,29 +427,43 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             return "No call ID available for image editing.";
         }
 
+        if (string.IsNullOrEmpty(imageId))
+        {
+            return "No imageId provided";
+        }
+
         try
         {
-            var imageBytes = Convert.FromBase64String(imageData);
-            var originalImage = new DataContent(imageBytes, "image/png");
+            var originalImage = RetrieveImageContent(imageId);
+            if (originalImage == null)
+            {
+                return $"No image found with: {imageId}";
+            }
 
             var request = new ImageGenerationRequest(prompt, [originalImage]);
-            var response = await _imageGenerator.GenerateAsync(request, _imageGenerationOptions);
+            var response = await _imageGenerator.GenerateAsync(request, _imageGenerationOptions, cancellationToken);
 
             if (response.Contents.Count == 0)
             {
                 return "No edited image was generated.";
             }
 
-            // Store the generated image content mapped to this call ID
-            _imageContentByCallId[callId] = [.. response.Contents];
+            List<string> imageIds = [];
+            List<AIContent> imageContents = _imageContentByCallId[callId] = [];
+            foreach (var content in response.Contents)
+            {
+                if (content is DataContent imageContent && imageContent.MediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                {
+                    imageContents.Add(imageContent);
+                    imageIds.Add(StoreImage(imageContent, true));
+                }
+            }
 
-            var imageCount = response.Contents.Count;
-            return $"Edited {imageCount} image(s) based on the prompt: '{prompt}'";
+            return "Edited image successfully.";
         }
         catch (FormatException)
         {
             return "Invalid image data format. Please provide a valid base64-encoded image.";
         }
     }
-#pragma warning restore EA0014
 }
