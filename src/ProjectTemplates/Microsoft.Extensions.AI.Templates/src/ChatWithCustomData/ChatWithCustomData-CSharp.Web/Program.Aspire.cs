@@ -55,7 +55,7 @@ builder.Services.AddSingleton<SemanticSearch>();
 // not across the entire solution. It's aimed at supporting Ollama scenarios due
 // to its self-hosted nature and potentially slow responses.
 // Remove this if you want to use the global or a different HTTP resilience policy instead.
-builder.Services.AddOllamaHttpClientResilience();
+builder.Services.AddOllamaResilienceHandler();
 #endif
 
 var app = builder.Build();

@@ -1,11 +1,11 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace aichatweb.Web.Services;
+namespace ChatWithCustomData_CSharp.Web.Services;
 
-public static class AspireOllamaResilienceHandlerExtensions
+public static class OllamaResilienceHandlerExtensions
 {
-    public static IServiceCollection AddOllamaHttpClientResilience(this IServiceCollection services)
+    public static IServiceCollection AddOllamaResilienceHandler(this IServiceCollection services)
     {
         services.ConfigureHttpClientDefaults(http =>
         {
