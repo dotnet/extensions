@@ -34,6 +34,7 @@
   <PropertyGroup Label="Automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftBclAsyncInterfacesVersion>9.0.9</MicrosoftBclAsyncInterfacesVersion>
+    <MicrosoftBclMemoryVersion>9.0.9</MicrosoftBclMemoryVersion>
     <MicrosoftBclTimeProviderVersion>9.0.9</MicrosoftBclTimeProviderVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>9.0.9</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>9.0.9</MicrosoftExtensionsCachingMemoryVersion>
@@ -53,6 +54,7 @@
     <MicrosoftExtensionsLoggingVersion>9.0.9</MicrosoftExtensionsLoggingVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>9.0.9</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
     <MicrosoftExtensionsOptionsVersion>9.0.9</MicrosoftExtensionsOptionsVersion>
+    <MicrosoftExtensionsPrimitivesVersion>9.0.9</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftNETCoreAppRefVersion>9.0.9</MicrosoftNETCoreAppRefVersion>
     <MicrosoftNETCoreAppRuntimewinx64Version>9.0.9</MicrosoftNETCoreAppRuntimewinx64Version>
     <SystemCollectionsImmutableVersion>9.0.9</SystemCollectionsImmutableVersion>
@@ -78,6 +80,7 @@
     <MicrosoftExtensionsCachingSqlServerVersion>9.0.9</MicrosoftExtensionsCachingSqlServerVersion>
     <MicrosoftExtensionsCachingStackExchangeRedisVersion>9.0.9</MicrosoftExtensionsCachingStackExchangeRedisVersion>
     <MicrosoftExtensionsDiagnosticsHealthChecksVersion>9.0.9</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
+    <MicrosoftExtensionsFeaturesVersion>9.0.9</MicrosoftExtensionsFeaturesVersion>
     <MicrosoftExtensionsHttpPollyVersion>9.0.9</MicrosoftExtensionsHttpPollyVersion>
     <MicrosoftExtensionsObjectPoolVersion>9.0.9</MicrosoftExtensionsObjectPoolVersion>
     <!-- Dependencies from https://github.com/dotnet/efcore -->
@@ -107,6 +110,7 @@
     <MicrosoftExtensionsLoggingLTSVersion>8.0.1</MicrosoftExtensionsLoggingLTSVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsLTSVersion>8.0.0</MicrosoftExtensionsOptionsConfigurationExtensionsLTSVersion>
     <MicrosoftExtensionsOptionsLTSVersion>8.0.2</MicrosoftExtensionsOptionsLTSVersion>
+    <MicrosoftExtensionsPrimitivesLTSVersion>8.0.0</MicrosoftExtensionsPrimitivesLTSVersion>
     <MicrosoftNETCoreAppRefLTSVersion>8.0.20</MicrosoftNETCoreAppRefLTSVersion>
     <MicrosoftNETCoreAppRuntimewinx64LTSVersion>8.0.20</MicrosoftNETCoreAppRuntimewinx64LTSVersion>
     <SystemCollectionsImmutableLTSVersion>8.0.0</SystemCollectionsImmutableLTSVersion>
@@ -132,6 +136,7 @@
     <MicrosoftExtensionsCachingSqlServerLTSVersion>8.0.20</MicrosoftExtensionsCachingSqlServerLTSVersion>
     <MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>8.0.20</MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>
     <MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>8.0.20</MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>
+    <MicrosoftExtensionsFeaturesLTSVersion>8.0.20</MicrosoftExtensionsFeaturesLTSVersion>
     <MicrosoftExtensionsHttpPollyLTSVersion>8.0.20</MicrosoftExtensionsHttpPollyLTSVersion>
     <MicrosoftExtensionsObjectPoolLTSVersion>8.0.20</MicrosoftExtensionsObjectPoolLTSVersion>
     <!-- Dependencies from https://github.com/dotnet/efcore -->

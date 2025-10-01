@@ -4,6 +4,10 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Bcl.Memory" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Bcl.TimeProvider" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
@@ -77,6 +81,10 @@
       <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Options" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
@@ -177,6 +185,10 @@
       <Sha>ff66c263be7ed395794bdaf616322977b8ec897c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.9">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
+      <Sha>ff66c263be7ed395794bdaf616322977b8ec897c</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.Features" Version="9.0.9">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>ff66c263be7ed395794bdaf616322977b8ec897c</Sha>
     </Dependency>
