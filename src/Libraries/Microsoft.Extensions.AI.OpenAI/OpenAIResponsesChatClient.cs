@@ -14,7 +14,6 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
-using OpenAI.Images;
 using OpenAI.Responses;
 
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
@@ -201,16 +200,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     message.Contents.Add(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
                     break;
 
-                default:
-                    if (outputItem.GetType().Name == "InternalImageGenToolCallItemResource")
-                    {
-                        message.Contents.Add(GetContentFromImageGen(outputItem));
-                    }
-                    else
-                    {
-                        message.Contents.Add(new() { RawRepresentation = outputItem });
-                    }
+                case ImageGenerationCallResponseItem imageGenItem:
+                    message.Contents.Add(GetContentFromImageGen(imageGenItem));
+                    break;
 
+                default:
+                    message.Contents.Add(new() { RawRepresentation = outputItem });
                     break;
             }
         }
@@ -222,45 +217,18 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ResponseItem))]
-    private static DataContent GetContentFromImageGen(ResponseItem outputItem)
+    private static DataContent GetContentFromImageGen(ImageGenerationCallResponseItem outputItem)
     {
         const BindingFlags InternalBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-        var imageGenResultType = Type.GetType("OpenAI.Responses.InternalImageGenToolCallItemResource, OpenAI");
-        if (imageGenResultType == null)
-        {
-            throw new InvalidOperationException("Unable to determine the type of the image generation result.");
-        }
-
-        var imageGenStatus = imageGenResultType.GetProperty("Status", InternalBindingFlags)?.GetValue(outputItem)?.ToString();
-        var imageGenResult = imageGenResultType.GetProperty("Result", InternalBindingFlags)?.GetValue(outputItem) as string;
-
-        IDictionary<string, BinaryData>? additionalRawData = imageGenResultType
+        IDictionary<string, BinaryData>? additionalRawData = typeof(ResponseItem)
             .GetProperty("SerializedAdditionalRawData", InternalBindingFlags)
             ?.GetValue(outputItem) as IDictionary<string, BinaryData>;
 
-        // Properties
-        //   background
-        //   output_format
-        //   quality
-        //   revised_prompt
-        //   size
-
         string outputFormat = getStringProperty("output_format") ?? "png";
 
-        var resultBytes = Convert.FromBase64String(imageGenResult ?? string.Empty);
-
-        return new DataContent(resultBytes, $"image/{outputFormat}")
+        return new DataContent(outputItem.GeneratedImageBytes, $"image/{outputFormat}")
         {
-            RawRepresentation = outputItem,
-            AdditionalProperties = new()
-            {
-                ["background"] = getStringProperty("background"),
-                ["output_format"] = outputFormat,
-                ["quality"] = getStringProperty("quality"),
-                ["revised_prompt"] = getStringProperty("revised_prompt"),
-                ["size"] = getStringProperty("size"),
-                ["status"] = imageGenStatus,
-            }
+            RawRepresentation = outputItem
         };
 
         string? getStringProperty(string name)
@@ -276,21 +244,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ResponseItem))]
-    private static DataContent GetContentFromImageGenPartialImageEvent(StreamingResponseUpdate update)
+    private static DataContent GetContentFromImageGenPartialImageEvent(StreamingResponseImageGenerationCallPartialImageUpdate update)
     {
         const BindingFlags InternalBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-        var partialImageEventType = Type.GetType("OpenAI.Responses.InternalResponseImageGenCallPartialImageEvent, OpenAI");
-        if (partialImageEventType == null)
-        {
-            throw new InvalidOperationException("Unable to determine the type of the image generation result.");
-        }
 
-        var imageGenResult = partialImageEventType.GetProperty("PartialImageB64", InternalBindingFlags)?.GetValue(update) as string;
-        var imageGenItemId = partialImageEventType.GetProperty("ItemId", InternalBindingFlags)?.GetValue(update) as string;
-        var imageGenOutputIndex = partialImageEventType.GetProperty("OutputIndex", InternalBindingFlags)?.GetValue(update) as int?;
-        var imageGenPartialImageIndex = partialImageEventType.GetProperty("PartialImageIndex", InternalBindingFlags)?.GetValue(update) as int?;
-
-        IDictionary<string, BinaryData>? additionalRawData = partialImageEventType
+        IDictionary<string, BinaryData>? additionalRawData = typeof(ResponseItem)
             .GetProperty("SerializedAdditionalRawData", InternalBindingFlags)
             ?.GetValue(update) as IDictionary<string, BinaryData>;
 
@@ -303,21 +261,14 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         string outputFormat = getStringProperty("output_format") ?? "png";
 
-        var resultBytes = Convert.FromBase64String(imageGenResult ?? string.Empty);
-
-        return new DataContent(resultBytes, $"image/{outputFormat}")
+        return new DataContent(update.PartialImageBytes, $"image/{outputFormat}")
         {
             RawRepresentation = update,
             AdditionalProperties = new()
             {
-                ["ItemId"] = imageGenItemId,
-                ["OutputIndex"] = imageGenOutputIndex,
-                ["PartialImageIndex"] = imageGenPartialImageIndex,
-                ["background"] = getStringProperty("background"),
-                ["output_format"] = outputFormat,
-                ["quality"] = getStringProperty("quality"),
-                ["revised_prompt"] = getStringProperty("revised_prompt"),
-                ["size"] = getStringProperty("size"),
+                ["ItemId"] = update.ItemId,
+                ["OutputIndex"] = update.OutputIndex,
+                ["PartialImageIndex"] = update.PartialImageIndex
             }
         };
 
@@ -474,17 +425,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     yield return CreateUpdate(new TextReasoningContent(delta));
                     break;
 
+                case StreamingResponseImageGenerationCallPartialImageUpdate streamingImageGenUpdate:
+                    yield return CreateUpdate(GetContentFromImageGenPartialImageEvent(streamingImageGenUpdate));
+                    break;
+
                 default:
-
-                    if (streamingUpdate.GetType().Name == "InternalResponseImageGenCallPartialImageEvent")
-                    {
-                        yield return CreateUpdate(GetContentFromImageGenPartialImageEvent(streamingUpdate));
-                    }
-                    else
-                    {
-                        yield return CreateUpdate();
-                    }
-
+                    yield return CreateUpdate();
                     break;
             }
         }
@@ -509,57 +455,42 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             aiFunction.Description);
     }
 
-    internal static ResponseTool ToImageResponseTool(HostedImageGenerationTool imageGenerationTool, ChatOptions? options = null)
+    internal ResponseTool ToImageResponseTool(HostedImageGenerationTool imageGenerationTool)
     {
-        ImageGenerationOptions? imageGenerationOptions = null;
-        if (imageGenerationTool.AdditionalProperties.TryGetValue(nameof(ImageGenerationOptions), out object? optionsObj))
-        {
-            imageGenerationOptions = optionsObj as ImageGenerationOptions;
-        }
-        else if (options?.AdditionalProperties?.TryGetValue(nameof(ImageGenerationOptions), out object? optionsObj2) ?? false)
-        {
-            imageGenerationOptions = optionsObj2 as ImageGenerationOptions;
-        }
+        ImageGenerationOptions? imageGenerationOptions = imageGenerationTool.Options;
 
-        var toolOptions = imageGenerationOptions?.RawRepresentationFactory?.Invoke(null!) as Dictionary<string, object> ?? new();
-        toolOptions["type"] = "image_generation";
+        // A bit unusual to get an ImageGenerationTool from the ImageGenerationOptions factory, we could
+        var result = imageGenerationTool.RawRepresentationFactory?.Invoke(this) as ImageGenerationTool ?? new();
+
+        // Model: Image generation model
+        if (imageGenerationOptions?.ModelId is not null && result.Model is null)
+        {
+            result.Model = imageGenerationOptions.ModelId;
+        }
 
         // Size: Image dimensions (e.g., 1024x1024, 1024x1536)
-        if (imageGenerationOptions?.ImageSize is not null && !toolOptions.ContainsKey("size"))
+        if (imageGenerationOptions?.ImageSize is not null && result.Size is null)
         {
             // Use a custom type to ensure the size is formatted correctly.
             // This is a workaround for OpenAI's specific size format requirements.
-            toolOptions["size"] = new GeneratedImageSize(
+            result.Size = new ImageGenerationToolSize(
                 imageGenerationOptions.ImageSize.Value.Width,
-                imageGenerationOptions.ImageSize.Value.Height).ToString();
+                imageGenerationOptions.ImageSize.Value.Height);
         }
 
         // Format: File output format
-        if (imageGenerationOptions?.MediaType is not null && !toolOptions.ContainsKey("format"))
+        if (imageGenerationOptions?.MediaType is not null && result.OutputFileFormat is null)
         {
-            toolOptions["output_format"] = imageGenerationOptions.MediaType switch
+            result.OutputFileFormat = imageGenerationOptions.MediaType switch
             {
-                "image/png" => GeneratedImageFileFormat.Png.ToString(),
-                "image/jpeg" => GeneratedImageFileFormat.Jpeg.ToString(),
-                "image/webp" => GeneratedImageFileFormat.Webp.ToString(),
-                _ => string.Empty,
+                "image/png" => ImageGenerationToolOutputFileFormat.Png,
+                "image/jpeg" => ImageGenerationToolOutputFileFormat.Jpeg,
+                "image/webp" => ImageGenerationToolOutputFileFormat.Webp,
+                _ => null,
             };
         }
 
-        // unexposed properties, string unless noted
-        // background: transparent, opaque, auto
-        // input_fidelity: effort model exerts to match input (high, low)
-        // input_image_mask: optional image mask for inpainting.  Object with property file_id string or image_url data string.
-        // model: Model ID to use for image generation
-        // moderation: Moderation level (auto, low)
-        // output_compression: (int) Compression level (0-100%) for JPEG and WebP formats
-        // partial_images: (int) Number of partial images to return (0-3)
-        // quality: Rendering quality (e.g. low, medium, high)
-
-        // Can't create the tool, but we can deserialize it from Json
-        BinaryData? toolOptionsData = BinaryData.FromBytes(
-            JsonSerializer.SerializeToUtf8Bytes(toolOptions, OpenAIJsonContext.Default.IDictionaryStringObject));
-        return ModelReaderWriter.Read<ResponseTool>(toolOptionsData, ModelReaderWriterOptions.Json)!;
+        return result;
     }
 
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
@@ -620,7 +551,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         break;
 
                     case HostedImageGenerationTool imageGenerationTool:
-                        result.Tools.Add(ToImageResponseTool(imageGenerationTool, options));
+                        result.Tools.Add(ToImageResponseTool(imageGenerationTool));
                         break;
 
                     case HostedWebSearchTool webSearchTool:

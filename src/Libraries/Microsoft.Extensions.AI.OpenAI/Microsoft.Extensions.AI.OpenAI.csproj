@@ -27,7 +27,6 @@
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
-    <InjectSharedServerSentEvents>true</InjectSharedServerSentEvents>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
   </PropertyGroup>
 
