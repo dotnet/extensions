@@ -1,23 +1,21 @@
-using Microsoft.Extensions.AI;
-using ChatWithCustomData_CSharp.Web.Components;
-using ChatWithCustomData_CSharp.Web.Services;
-using ChatWithCustomData_CSharp.Web.Services.Ingestion;
-#if(IsAzureOpenAI || UseAzureAISearch)
+#if (!IsOllama)
+using System.ClientModel;
+#endif
+#if (IsAzureAISearch && !IsManagedIdentity)
 using Azure;
-#if (UseManagedIdentity)
+#elif (IsManagedIdentity)
+using Azure.Core;
 using Azure.Identity;
 #endif
-#endif
+using Microsoft.Extensions.AI;
 #if (IsOllama)
 using OllamaSharp;
 #else
 using OpenAI;
-using System.ClientModel;
-#if (UseManagedIdentity && IsAzureOpenAI)
-using Azure.Core;
-using Azure.Identity;
 #endif
-#endif
+using ChatWithCustomData_CSharp.Web.Components;
+using ChatWithCustomData_CSharp.Web.Services;
+using ChatWithCustomData_CSharp.Web.Services.Ingestion;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -52,18 +50,18 @@ var openAIClient = new OpenAIClient(
 var chatClient = openAIClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
-#elif (IsAzureAiFoundry)
+#elif (IsAzureAIFoundry)
 
 #else // IsAzureOpenAI
 // You will need to set the endpoint and key to your own values
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
 //   dotnet user-secrets set AzureOpenAI:Endpoint https://YOUR-DEPLOYMENT-NAME.openai.azure.com
-#if (!UseManagedIdentity)
+#if (!IsManagedIdentity)
 //   dotnet user-secrets set AzureOpenAI:Key YOUR-API-KEY
 #endif
 var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Endpoint. See the README for details.")), "/openai/v1");
-#if (UseManagedIdentity)
+#if (IsManagedIdentity)
 var tokenCredential = new DefaultAzureCredential();
 var token = tokenCredential.GetToken(new TokenRequestContext(["https://cognitiveservices.azure.com/.default"]), default);
 var openAIOptions = new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint };
@@ -78,17 +76,17 @@ var chatClient = azureOpenAi.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClien
 var embeddingGenerator = azureOpenAi.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
 #endif
 
-#if (UseAzureAISearch)
+#if (IsAzureAISearch)
 // You will need to set the endpoint and key to your own values
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
 //   dotnet user-secrets set AzureAISearch:Endpoint https://YOUR-DEPLOYMENT-NAME.search.windows.net
-#if (!UseManagedIdentity)
+#if (!IsManagedIdentity)
 //   dotnet user-secrets set AzureAISearch:Key YOUR-API-KEY
 #endif
 var azureAISearchEndpoint = new Uri(builder.Configuration["AzureAISearch:Endpoint"]
     ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details."));
-#if (UseManagedIdentity)
+#if (IsManagedIdentity)
 var azureAISearchCredential = new DefaultAzureCredential();
 #else
 var azureAISearchCredential = new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"]
@@ -96,7 +94,7 @@ var azureAISearchCredential = new AzureKeyCredential(builder.Configuration["Azur
 #endif
 builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks", azureAISearchEndpoint, azureAISearchCredential);
 builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents", azureAISearchEndpoint, azureAISearchCredential);
-#else // UseLocalVectorStore
+#else // IsLocalVectorStore
 var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
 var vectorStoreConnectionString = $"Data Source={vectorStorePath}";
 builder.Services.AddSqliteCollection<string, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks", vectorStoreConnectionString);

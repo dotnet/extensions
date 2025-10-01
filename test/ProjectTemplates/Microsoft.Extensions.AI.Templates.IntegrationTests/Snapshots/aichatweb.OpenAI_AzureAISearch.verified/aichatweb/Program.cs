@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.AI;
+﻿using System.ClientModel;
+using Azure.Core;
+using Azure.Identity;
+using Microsoft.Extensions.AI;
+using OpenAI;
 using aichatweb.Components;
 using aichatweb.Services;
 using aichatweb.Services.Ingestion;
-using Azure;
-using Azure.Identity;
-using OpenAI;
-using System.ClientModel;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
