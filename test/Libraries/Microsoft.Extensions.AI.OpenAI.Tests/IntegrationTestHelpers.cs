@@ -3,6 +3,7 @@
 
 using System;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using Azure.Identity;
 using OpenAI;
 
@@ -27,14 +28,24 @@ internal static class IntegrationTestHelpers
             if (apiKey is not null)
             {
                 return new OpenAIClient(
-                    new ApiKeyCredential(apiKey), 
-                    new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") });
+                    new ApiKeyCredential(apiKey),
+                    new OpenAIClientOptions
+                    {
+                        Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1")
+                    });
             }
             else
             {
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
                 return new OpenAIClient(
-                    new DefaultAzureCredential(), 
-                    new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") });
+                    new BearerTokenPolicy(
+                        new DefaultAzureCredential(),
+                        "https://cognitiveservices.azure.com/.default"),
+                    new OpenAIClientOptions
+                    {
+                        Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1")
+                    });
+#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             }
         }
         else if (apiKey is not null)

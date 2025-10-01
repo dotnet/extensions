@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <PackageVersion Include="Azure.Core" Version="1.45.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.13.2" />
+    <PackageVersion Include="Azure.Identity" Version="1.16.0" />
     <PackageVersion Include="Azure.Storage.Files.DataLake" Version="12.21.0" />
     <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.5" />
     <PackageVersion Include="ICSharpCode.Decompiler" Version="9.1.0.7988" />

@@ -3,6 +3,7 @@
 
 using System;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using Azure.Identity;
 using OpenAI;
 
@@ -24,12 +25,26 @@ internal static class Setup
     {
         var endpoint = Settings.Current.Endpoint;
         var credential = new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential());
-        var openAIOptions = new OpenAIClientOptions { Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1") };
 
         OpenAIClient openAIClient =
             OfflineOnly
-                ? new OpenAIClient(new ApiKeyCredential("Bogus"), openAIOptions)
-                : new OpenAIClient(new ApiKeyCredential(credential.GetToken(new Azure.Core.TokenRequestContext(["https://cognitiveservices.azure.com/.default"])).Token), openAIOptions);
+                ? new OpenAIClient(
+                    new ApiKeyCredential("Bogus"),
+                    new OpenAIClientOptions
+                    {
+                        Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1")
+                    })
+                :
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                  new OpenAIClient(
+                    new BearerTokenPolicy(
+                        credential,
+                        "https://cognitiveservices.azure.com/.default"),
+                    new OpenAIClientOptions
+                    {
+                        Endpoint = new Uri(endpoint.TrimEnd('/') + "/openai/v1")
+                    });
+#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         return openAIClient;
     }
