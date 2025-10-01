@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <Description>Provides extensions for service discovery for the YARP reverse proxy.</Description>
+    <PackageIconFullPath>$(DefaultDotnetIconFullPath)</PackageIconFullPath>
+    <!-- https://github.com/dotnet/extensions/issues/6871 tracks enabling these -->
+    <NoWarn>$(NoWarn);IDE0018;IDE0025;IDE0032;IDE0040;IDE0058;IDE0250;IDE0251;IDE1006;CA1304;CA1307;CA1309;CA1310;CA1849;CA2000;CA2213;CA2217;S125;S1135;S1226;S2344;S2692;S3626;S4022;SA1108;SA1120;SA1128;SA1129;SA1204;SA1205;SA1214;SA1400;SA1405;SA1408;SA1414;SA1515;SA1600;SA1615;SA1629;SA1642;SA1649;EA0001;EA0009;EA0014;LA0001;LA0003;LA0008;VSTHRD200</NoWarn>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Yarp.ReverseProxy" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.ServiceDiscovery.Abstractions\Microsoft.Extensions.ServiceDiscovery.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.ServiceDiscovery\Microsoft.Extensions.ServiceDiscovery.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.ServiceDiscovery.Yarp.Tests" />
+  </ItemGroup>
+
+</Project>
