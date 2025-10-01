@@ -10,12 +10,13 @@ using Azure.Identity;
 #endif
 #if (IsOllama)
 using OllamaSharp;
-#elif (IsOpenAI || IsGHModels)
+#else
 using OpenAI;
 using System.ClientModel;
-#else
-using Azure.AI.OpenAI;
-using System.ClientModel;
+#if (UseManagedIdentity && IsAzureOpenAI)
+using Azure.Core;
+using Azure.Identity;
+#endif
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,12 +62,15 @@ var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small
 #if (!UseManagedIdentity)
 //   dotnet user-secrets set AzureOpenAI:Key YOUR-API-KEY
 #endif
-var azureOpenAi = new AzureOpenAIClient(
-    new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Endpoint. See the README for details.")),
+var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Endpoint. See the README for details.")), "/openai/v1");
 #if (UseManagedIdentity)
-    new DefaultAzureCredential());
+var tokenCredential = new DefaultAzureCredential();
+var token = tokenCredential.GetToken(new TokenRequestContext(["https://cognitiveservices.azure.com/.default"]), default);
+var openAIOptions = new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint };
+var azureOpenAi = new OpenAIClient(new ApiKeyCredential(token.Token), openAIOptions);
 #else
-    new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Key. See the README for details.")));
+var openAIOptions = new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint };
+var azureOpenAi = new OpenAIClient(new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Key. See the README for details.")), openAIOptions);
 #endif
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 var chatClient = azureOpenAi.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
