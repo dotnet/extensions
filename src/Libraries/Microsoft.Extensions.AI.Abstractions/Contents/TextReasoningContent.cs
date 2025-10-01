@@ -17,15 +17,13 @@ namespace Microsoft.Extensions.AI;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class TextReasoningContent : AIContent
 {
-    private string? _text;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="TextReasoningContent"/> class.
     /// </summary>
     /// <param name="text">The text reasoning content.</param>
     public TextReasoningContent(string? text)
     {
-        _text = text;
+        Text = text;
     }
 
     /// <summary>
@@ -34,8 +32,8 @@ public sealed class TextReasoningContent : AIContent
     [AllowNull]
     public string Text
     {
-        get => _text ?? string.Empty;
-        set => _text = value;
+        get => field ?? string.Empty;
+        set;
     }
 
     /// <summary>Gets or sets an optional opaque blob of data associated with this reasoning content.</summary>

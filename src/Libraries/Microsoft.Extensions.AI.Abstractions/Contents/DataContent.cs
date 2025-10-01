@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable IDE0032 // Use auto property
 #pragma warning disable CA1307 // Specify StringComparison for clarity
 
 namespace Microsoft.Extensions.AI;

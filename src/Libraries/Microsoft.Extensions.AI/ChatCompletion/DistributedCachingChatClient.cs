@@ -44,9 +44,6 @@ public class DistributedCachingChatClient : CachingChatClient
     /// <summary>Additional values used to inform the cache key employed for storing state.</summary>
     private object[]? _cacheKeyAdditionalValues;
 
-    /// <summary>The <see cref="JsonSerializerOptions"/> to use when serializing cache data.</summary>
-    private JsonSerializerOptions _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
-
     /// <summary>Initializes a new instance of the <see cref="DistributedCachingChatClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>.</param>
     /// <param name="storage">An <see cref="IDistributedCache"/> instance that will be used as the backing store for the cache.</param>
@@ -59,9 +56,9 @@ public class DistributedCachingChatClient : CachingChatClient
     /// <summary>Gets or sets JSON serialization options to use when serializing cache data.</summary>
     public JsonSerializerOptions JsonSerializerOptions
     {
-        get => _jsonSerializerOptions;
-        set => _jsonSerializerOptions = Throw.IfNull(value);
-    }
+        get;
+        set => field = Throw.IfNull(value);
+    } = AIJsonUtilities.DefaultOptions;
 
     /// <summary>Gets or sets additional values used to inform the cache key employed for storing state.</summary>
     /// <remarks>Any values set in this list will augment the other values used to inform the cache key.</remarks>
@@ -75,11 +72,11 @@ public class DistributedCachingChatClient : CachingChatClient
     protected override async Task<ChatResponse?> ReadCacheAsync(string key, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(key);
-        _jsonSerializerOptions.MakeReadOnly();
+        JsonSerializerOptions.MakeReadOnly();
 
         if (await _storage.GetAsync(key, cancellationToken) is byte[] existingJson)
         {
-            return (ChatResponse?)JsonSerializer.Deserialize(existingJson, _jsonSerializerOptions.GetTypeInfo(typeof(ChatResponse)));
+            return (ChatResponse?)JsonSerializer.Deserialize(existingJson, JsonSerializerOptions.GetTypeInfo(typeof(ChatResponse)));
         }
 
         return null;
@@ -89,11 +86,11 @@ public class DistributedCachingChatClient : CachingChatClient
     protected override async Task<IReadOnlyList<ChatResponseUpdate>?> ReadCacheStreamingAsync(string key, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(key);
-        _jsonSerializerOptions.MakeReadOnly();
+        JsonSerializerOptions.MakeReadOnly();
 
         if (await _storage.GetAsync(key, cancellationToken) is byte[] existingJson)
         {
-            return (IReadOnlyList<ChatResponseUpdate>?)JsonSerializer.Deserialize(existingJson, _jsonSerializerOptions.GetTypeInfo(typeof(IReadOnlyList<ChatResponseUpdate>)));
+            return (IReadOnlyList<ChatResponseUpdate>?)JsonSerializer.Deserialize(existingJson, JsonSerializerOptions.GetTypeInfo(typeof(IReadOnlyList<ChatResponseUpdate>)));
         }
 
         return null;
@@ -104,9 +101,9 @@ public class DistributedCachingChatClient : CachingChatClient
     {
         _ = Throw.IfNull(key);
         _ = Throw.IfNull(value);
-        _jsonSerializerOptions.MakeReadOnly();
+        JsonSerializerOptions.MakeReadOnly();
 
-        var newJson = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions.GetTypeInfo(typeof(ChatResponse)));
+        var newJson = JsonSerializer.SerializeToUtf8Bytes(value, JsonSerializerOptions.GetTypeInfo(typeof(ChatResponse)));
         await _storage.SetAsync(key, newJson, cancellationToken);
     }
 
@@ -115,9 +112,9 @@ public class DistributedCachingChatClient : CachingChatClient
     {
         _ = Throw.IfNull(key);
         _ = Throw.IfNull(value);
-        _jsonSerializerOptions.MakeReadOnly();
+        JsonSerializerOptions.MakeReadOnly();
 
-        var newJson = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions.GetTypeInfo(typeof(IReadOnlyList<ChatResponseUpdate>)));
+        var newJson = JsonSerializer.SerializeToUtf8Bytes(value, JsonSerializerOptions.GetTypeInfo(typeof(IReadOnlyList<ChatResponseUpdate>)));
         await _storage.SetAsync(key, newJson, cancellationToken);
     }
 
@@ -151,7 +148,7 @@ public class DistributedCachingChatClient : CachingChatClient
             additionalValues.CopyTo(arr.AsSpan(FixedValuesCount));
             clientValues.CopyTo(arr, FixedValuesCount + additionalValues.Length);
 
-            return AIJsonUtilities.HashDataToString(arr.AsSpan(0, length), _jsonSerializerOptions);
+            return AIJsonUtilities.HashDataToString(arr.AsSpan(0, length), JsonSerializerOptions);
         }
         finally
         {

@@ -45,6 +45,13 @@ builder.Services.AddSqliteCollection<string, IngestedDocument>("data-ChatWithCus
 #endif
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
+#if (IsOllama)
+// Applies robust HTTP resilience settings for all HttpClients in the Web project,
+// not across the entire solution. It's aimed at supporting Ollama scenarios due
+// to its self-hosted nature and potentially slow responses.
+// Remove this if you want to use the global or a different HTTP resilience policy instead.
+builder.Services.AddOllamaResilienceHandler();
+#endif
 
 var app = builder.Build();
 

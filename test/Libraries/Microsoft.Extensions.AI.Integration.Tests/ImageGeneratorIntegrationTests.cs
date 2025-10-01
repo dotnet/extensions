@@ -43,13 +43,23 @@ public abstract class ImageGeneratorIntegrationTests : IDisposable
 
         Assert.NotNull(response);
         Assert.NotEmpty(response.Contents);
-        Assert.Single(response.Contents);
 
-        var content = response.Contents[0];
-        Assert.IsType<DataContent>(content);
-        var dataContent = (DataContent)content;
-        Assert.False(dataContent.Data.IsEmpty);
-        Assert.StartsWith("image/", dataContent.MediaType, StringComparison.Ordinal);
+        var content = Assert.Single(response.Contents);
+        switch (content)
+        {
+            case UriContent uc:
+                Assert.StartsWith("http", uc.Uri.Scheme, StringComparison.Ordinal);
+                break;
+
+            case DataContent dc:
+                Assert.False(dc.Data.IsEmpty);
+                Assert.StartsWith("image/", dc.MediaType, StringComparison.Ordinal);
+                break;
+
+            default:
+                Assert.Fail($"Unexpected content type: {content.GetType()}");
+                break;
+        }
     }
 
     [ConditionalFact]
