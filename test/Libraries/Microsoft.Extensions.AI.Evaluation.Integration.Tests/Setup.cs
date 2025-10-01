@@ -3,6 +3,7 @@
 
 using System;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using Azure.Core;
 using Azure.Identity;
 using OpenAI;
@@ -24,24 +25,18 @@ internal static class Setup
     private static OpenAI.Chat.ChatClient GetOpenAIClient()
     {
         // Use Azure endpoint with /openai/v1 suffix
-        var endpoint = new Uri(new Uri(Settings.Current.Endpoint), "/openai/v1");
-        var credential = new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential());
+        var options = new OpenAIClientOptions
+        {
+            Endpoint = new Uri(new Uri(Settings.Current.Endpoint), "/openai/v1")
+        };
 
-        OpenAIClient client;
-        if (OfflineOnly)
-        {
-            var options = new OpenAIClientOptions { Endpoint = endpoint };
-            client = new OpenAIClient(new ApiKeyCredential("Bogus"), options);
-        }
-        else
-        {
-            // Get Azure token and use as API key
-            var token = credential.GetToken(
-                new TokenRequestContext(["https://cognitiveservices.azure.com/.default"]),
-                default);
-            var options = new OpenAIClientOptions { Endpoint = endpoint };
-            client = new OpenAIClient(new ApiKeyCredential(token.Token), options);
-        }
+        OpenAIClient client = OfflineOnly ?
+            new OpenAIClient(new ApiKeyCredential("Bogus"), options) :
+            new OpenAIClient(
+                new BearerTokenPolicy(
+                    new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential()),
+                    "https://cognitiveservices.azure.com/.default"),
+                options);
 
         return client.GetChatClient(Settings.Current.DeploymentName);
     }

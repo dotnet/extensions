@@ -3,7 +3,7 @@
 
 using System;
 using System.ClientModel;
-using Azure.Core;
+using System.ClientModel.Primitives;
 using Azure.Identity;
 using OpenAI;
 
@@ -26,23 +26,12 @@ internal static class IntegrationTestHelpers
                 ?? throw new InvalidOperationException("To use AzureOpenAI, set a value for OpenAI:Endpoint");
 
             // Use Azure endpoint with /openai/v1 suffix
-            var azureEndpointUri = new Uri(new Uri(endpoint), "/openai/v1");
-
-            if (apiKey is not null)
-            {
-                var options = new OpenAIClientOptions { Endpoint = azureEndpointUri };
-                return new OpenAIClient(new ApiKeyCredential(apiKey), options);
-            }
-            else
-            {
-                // Use Azure Identity authentication - get token and use as API key
-                var tokenCredential = new DefaultAzureCredential();
-                var token = tokenCredential.GetToken(
-                    new TokenRequestContext(["https://cognitiveservices.azure.com/.default"]),
-                    default);
-                var options = new OpenAIClientOptions { Endpoint = azureEndpointUri };
-                return new OpenAIClient(new ApiKeyCredential(token.Token), options);
-            }
+            var options = new OpenAIClientOptions { Endpoint = new Uri(new Uri(endpoint), "/openai/v1") };
+            return apiKey is not null ?
+                new OpenAIClient(new ApiKeyCredential(apiKey), options) :
+                new OpenAIClient(
+                    new BearerTokenPolicy(new DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"),
+                    options);
         }
         else if (apiKey is not null)
         {

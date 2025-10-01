@@ -4,6 +4,7 @@
     <TargetFrameworks>$(LatestTargetFramework)</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Integration tests for Microsoft.Extensions.AI.Evaluation.</Description>
+    <NoWarn>$(NoWarn);OPENAI001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
