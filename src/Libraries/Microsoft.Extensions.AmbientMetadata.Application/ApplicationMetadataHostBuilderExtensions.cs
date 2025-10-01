@@ -32,4 +32,25 @@ public static class ApplicationMetadataHostBuilderExtensions
             .ConfigureAppConfiguration((hostBuilderContext, configurationBuilder) => configurationBuilder.AddApplicationMetadata(hostBuilderContext.HostingEnvironment, sectionName))
             .ConfigureServices((hostBuilderContext, serviceCollection) => serviceCollection.AddApplicationMetadata(hostBuilderContext.Configuration.GetSection(sectionName)));
     }
+
+    /// <summary>
+    /// Registers a configuration provider for application metadata and binds a model object onto the configuration.
+    /// </summary>
+    /// <typeparam name="TBuilder"><see cref="IHostApplicationBuilder"/>.</typeparam>
+    /// <param name="builder">The host builder.</param>
+    /// <param name="sectionName">Section name to bind configuration from. Default set to "ambientmetadata:application".</param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="sectionName"/> is either <see langword="null"/>, empty, or whitespace.</exception>
+    public static TBuilder UseApplicationMetadata<TBuilder>(this TBuilder builder, string sectionName = DefaultSectionName)
+        where TBuilder : IHostApplicationBuilder
+    {
+        _ = Throw.IfNull(builder);
+        _ = Throw.IfNullOrWhitespace(sectionName);
+
+        _ = builder.Configuration.AddApplicationMetadata(builder.Environment, sectionName);
+        _ = builder.Services.AddApplicationMetadata(builder.Configuration.GetSection(sectionName));
+
+        return builder;
+    }
 }
