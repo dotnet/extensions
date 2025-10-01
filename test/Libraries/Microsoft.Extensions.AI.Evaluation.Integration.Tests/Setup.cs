@@ -27,31 +27,22 @@ internal static class Setup
         var endpoint = new Uri(new Uri(Settings.Current.Endpoint), "/openai/v1");
         var credential = new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential());
 
-        OpenAIClient client = OfflineOnly
-            ? new OpenAIClient(endpoint, new ApiKeyCredential("Bogus"))
-            : new OpenAIClient(endpoint, new AzureTokenCredentialWrapper(credential));
-
-        return client.GetChatClient(Settings.Current.DeploymentName);
-    }
-
-    /// <summary>Wraps an Azure TokenCredential for use with OpenAI client.</summary>
-    private sealed class AzureTokenCredentialWrapper : ApiKeyCredential
-    {
-        private readonly TokenCredential _tokenCredential;
-
-        public AzureTokenCredentialWrapper(TokenCredential tokenCredential)
-            : base("placeholder")
+        OpenAIClient client;
+        if (OfflineOnly)
         {
-            _tokenCredential = tokenCredential;
+            var options = new OpenAIClientOptions { Endpoint = endpoint };
+            client = new OpenAIClient(new ApiKeyCredential("Bogus"), options);
         }
-
-        public override void Deconstruct(out string key)
+        else
         {
-            // Get Azure token and use it as the API key
-            var token = _tokenCredential.GetToken(
+            // Get Azure token and use as API key
+            var token = credential.GetToken(
                 new TokenRequestContext(["https://cognitiveservices.azure.com/.default"]),
                 default);
-            key = token.Token;
+            var options = new OpenAIClientOptions { Endpoint = endpoint };
+            client = new OpenAIClient(new ApiKeyCredential(token.Token), options);
         }
+
+        return client.GetChatClient(Settings.Current.DeploymentName);
     }
 }
