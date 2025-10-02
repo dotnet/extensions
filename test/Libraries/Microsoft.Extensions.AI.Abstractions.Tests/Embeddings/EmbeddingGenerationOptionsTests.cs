@@ -41,18 +41,23 @@ public class EmbeddingGenerationOptionsTests
             ["key"] = "value",
         };
 
+        Func<IEmbeddingGenerator?, object?> rawRepresentationFactory = (c) => null;
+
         options.ModelId = "modelId";
         options.Dimensions = 1536;
         options.AdditionalProperties = additionalProps;
+        options.RawRepresentationFactory = rawRepresentationFactory;
 
         Assert.Equal("modelId", options.ModelId);
         Assert.Equal(1536, options.Dimensions);
         Assert.Same(additionalProps, options.AdditionalProperties);
+        Assert.Same(rawRepresentationFactory, options.RawRepresentationFactory);
 
         EmbeddingGenerationOptions clone = options.Clone();
         Assert.Equal("modelId", clone.ModelId);
         Assert.Equal(1536, clone.Dimensions);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
+        Assert.Same(rawRepresentationFactory, clone.RawRepresentationFactory);
     }
 
     [Fact]
@@ -82,5 +87,71 @@ public class EmbeddingGenerationOptionsTests
         Assert.True(deserialized.AdditionalProperties.TryGetValue("key", out object? value));
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
+    }
+
+    [Fact]
+    public void CopyConstructors_EnableHeirarchyCloning()
+    {
+        OptionsB b = new()
+        {
+            ModelId = "test",
+            A = 42,
+            B = 84,
+        };
+
+        EmbeddingGenerationOptions clone = b.Clone();
+
+        Assert.Equal("test", clone.ModelId);
+        Assert.Equal(42, Assert.IsType<OptionsA>(clone, exactMatch: false).A);
+        Assert.Equal(84, Assert.IsType<OptionsB>(clone, exactMatch: true).B);
+    }
+
+    private class OptionsA : EmbeddingGenerationOptions
+    {
+        public OptionsA()
+        {
+        }
+
+        protected OptionsA(OptionsA other)
+            : base(other)
+        {
+            A = other.A;
+        }
+
+        public int A { get; set; }
+
+        public override EmbeddingGenerationOptions Clone() => new OptionsA(this);
+    }
+
+    private class OptionsB : OptionsA
+    {
+        public OptionsB()
+        {
+        }
+
+        protected OptionsB(OptionsB other)
+            : base(other)
+        {
+            B = other.B;
+        }
+
+        public int B { get; set; }
+
+        public override EmbeddingGenerationOptions Clone() => new OptionsB(this);
+    }
+
+    [Fact]
+    public void CopyConstructor_Null_Valid()
+    {
+        PassedNullToBaseOptions options = new();
+        Assert.NotNull(options);
+    }
+
+    private class PassedNullToBaseOptions : EmbeddingGenerationOptions
+    {
+        public PassedNullToBaseOptions()
+            : base(null)
+        {
+        }
     }
 }

@@ -11,6 +11,27 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public class SpeechToTextOptions
 {
+    /// <summary>Initializes a new instance of the <see cref="SpeechToTextOptions"/> class.</summary>
+    public SpeechToTextOptions()
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="SpeechToTextOptions"/> class, performing a shallow copy of all properties from <paramref name="other"/>.</summary>
+    protected SpeechToTextOptions(SpeechToTextOptions? other)
+    {
+        if (other is null)
+        {
+            return;
+        }
+
+        AdditionalProperties = other.AdditionalProperties?.Clone();
+        ModelId = other.ModelId;
+        RawRepresentationFactory = other.RawRepresentationFactory;
+        SpeechLanguage = other.SpeechLanguage;
+        SpeechSampleRate = other.SpeechSampleRate;
+        TextLanguage = other.TextLanguage;
+    }
+
     /// <summary>Gets or sets any additional properties associated with the options.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
@@ -47,17 +68,5 @@ public class SpeechToTextOptions
 
     /// <summary>Produces a clone of the current <see cref="SpeechToTextOptions"/> instance.</summary>
     /// <returns>A clone of the current <see cref="SpeechToTextOptions"/> instance.</returns>
-    public virtual SpeechToTextOptions Clone()
-    {
-        SpeechToTextOptions options = new()
-        {
-            AdditionalProperties = AdditionalProperties?.Clone(),
-            ModelId = ModelId,
-            SpeechLanguage = SpeechLanguage,
-            SpeechSampleRate = SpeechSampleRate,
-            TextLanguage = TextLanguage,
-        };
-
-        return options;
-    }
+    public virtual SpeechToTextOptions Clone() => new(this);
 }
