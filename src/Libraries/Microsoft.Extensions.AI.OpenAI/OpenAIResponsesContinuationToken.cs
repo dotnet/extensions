@@ -21,8 +21,8 @@ internal sealed class OpenAIResponsesContinuationToken : ResponseContinuationTok
         ResponseId = responseId;
     }
 
-    /// <summary>Gets or sets the Id of the response.</summary>
-    internal string ResponseId { get; set; }
+    /// <summary>Gets the Id of the response.</summary>
+    internal string ResponseId { get; }
 
     /// <summary>Gets or sets the sequence number of a streamed update.</summary>
     internal int? SequenceNumber { get; set; }

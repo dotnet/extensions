@@ -127,6 +127,10 @@ public static class ChatClientExtensions
     /// <param name="options">The chat options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The background response.</returns>
+    /// <remarks>
+    /// The options provided should be the same as those used to start the background operation.
+    /// Using different options is not supported and may lead to unexpected results.
+    /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="continuationToken"/> is <see langword="null"/>.</exception>
     [Experimental("MEAI001")]
