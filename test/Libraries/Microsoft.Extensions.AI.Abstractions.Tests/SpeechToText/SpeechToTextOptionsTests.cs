@@ -89,7 +89,7 @@ public class SpeechToTextOptionsTests
     }
 
     [Fact]
-    public void CopyConstructors_EnableHeirarchyCloning()
+    public void CopyConstructors_EnableHierarchyCloning()
     {
         OptionsB b = new()
         {
