@@ -380,6 +380,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("fg", response.Messages[0].Text);
         Assert.Equal(ChatRole.Tool, response.Messages[0].Role);
         Assert.Equal(now, response.Messages[0].CreatedAt);
+        Assert.Equal(now, response.CreatedAt);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)
