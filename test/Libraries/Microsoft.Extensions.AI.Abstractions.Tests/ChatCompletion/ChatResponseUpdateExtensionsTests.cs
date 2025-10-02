@@ -367,6 +367,7 @@ public class ChatResponseUpdateExtensionsTests
         DateTimeOffset early = new(2024, 1, 1, 10, 0, 0, TimeSpan.Zero);
         DateTimeOffset middle = new(2024, 1, 1, 11, 0, 0, TimeSpan.Zero);
         DateTimeOffset late = new(2024, 1, 1, 12, 0, 0, TimeSpan.Zero);
+        DateTimeOffset unixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
         ChatResponseUpdate[] updates =
         [
@@ -375,7 +376,7 @@ public class ChatResponseUpdateExtensionsTests
             new(ChatRole.Tool, "a") { MessageId = "4", CreatedAt = early },
 
             // Unix epoch (as "null") should not overwrite
-            new(null, "b") { CreatedAt = DateTimeOffset.UnixEpoch },
+            new(null, "b") { CreatedAt = unixEpoch },
 
             // Newer timestamp should overwrite
             new(null, "c") { CreatedAt = middle },
@@ -387,7 +388,7 @@ public class ChatResponseUpdateExtensionsTests
             new(null, "e") { CreatedAt = late },
 
             // Unix epoch should not overwrite again
-            new(null, "f") { CreatedAt = DateTimeOffset.UnixEpoch },
+            new(null, "f") { CreatedAt = unixEpoch },
         ];
 
         ChatResponse response = useAsync ?
