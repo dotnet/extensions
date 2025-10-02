@@ -5,6 +5,7 @@ using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -467,11 +468,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         break;
 
                     case HostedMcpServerTool mcpTool:
-                        McpTool responsesMcpTool = ResponseTool.CreateMcpTool(
-                            mcpTool.ServerName,
-                            mcpTool.Url,
-                            serverDescription: mcpTool.ServerDescription,
-                            headers: mcpTool.Headers);
+
+                        McpTool responsesMcpTool = ToOpenAIMcpTool(mcpTool);
 
                         if (mcpTool.AllowedTools is not null)
                         {
@@ -860,6 +858,28 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
 
         return parts;
+    }
+
+    private static McpTool ToOpenAIMcpTool(HostedMcpServerTool meaiMcpTool)
+    {
+        Debug.Assert(meaiMcpTool.Url is null != meaiMcpTool.ConnectorID is null, "Either Url or ConnectorID must be present but never both.");
+
+        if (meaiMcpTool.Url != null)
+        {
+            return ResponseTool.CreateMcpTool(
+                meaiMcpTool.ServerName,
+                meaiMcpTool.Url,
+                serverDescription: meaiMcpTool.ServerDescription,
+                headers: meaiMcpTool.Headers);
+        }
+        else
+        {
+            return ResponseTool.CreateMcpTool(
+                meaiMcpTool.ServerName,
+                new McpToolConnectorId(meaiMcpTool.ConnectorID),
+                serverDescription: meaiMcpTool.ServerDescription,
+                headers: meaiMcpTool.Headers);
+        }
     }
 
     /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="mtci"/> into <paramref name="contents"/>.</summary>
