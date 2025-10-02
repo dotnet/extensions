@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": [ "Common", "AI", "Web", "Blazor", ".NET Aspire" ],
+  "classifications": [ "Common", "AI", "Web", "Blazor", "Aspire" ],
   "identity": "Microsoft.Extensions.AI.Templates.WebChat.CSharp",
   "name": "AI Chat Web App",
   "description": "A project template for creating an AI chat application, which uses retrieval-augmented generation (RAG) to chat with your own data.",
@@ -62,6 +62,12 @@
           "ChatWithCustomData-CSharp.Web/Program.Aspire.cs",
           "README.Aspire.md",
           "*.sln"
+        ]
+      },
+      {
+        "condition": "(!IsAspire || !IsOllama)",
+        "exclude": [
+          "ChatWithCustomData-CSharp.Web/OllamaResilienceHandlerExtensions.cs"
         ]
       },
       {
@@ -177,7 +183,7 @@
       "displayName": "Use Aspire orchestration",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Create the project as a distributed application using .NET Aspire."
+      "description": "Create the project as a distributed application using Aspire."
     },
     "IsAspire": {
       "type": "computed",

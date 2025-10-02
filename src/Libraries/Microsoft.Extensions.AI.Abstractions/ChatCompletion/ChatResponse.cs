@@ -91,11 +91,11 @@ public class ChatResponse
     /// <summary>Gets or sets the continuation token for getting result of the background chat response.</summary>
     /// <remarks>
     /// <see cref="IChatClient"/> implementations that support background responses will return
-    /// a continuation token if background responses are enabled in <see cref="ChatOptions.BackgroundResponsesOptions"/>
+    /// a continuation token if background responses are allowed in <see cref="ChatOptions.BackgroundResponsesOptions"/>
     /// and the result of the response has not been obtained yet. Otherwise, the token will be <see langword="null"/>.
     /// <para>
     /// This property should be used in conjunction with <see cref="ChatOptions.ContinuationToken"/> to 
-    /// continue or polling for the completion the response. Pass this token to
+    /// continue to poll for the completion of the response. Pass this token to
     /// <see cref="ChatOptions.ContinuationToken"/> on subsequent calls to <see cref="IChatClient.GetResponseAsync"/>
     /// to poll for completion.
     /// </para>
