@@ -1,5 +1,13 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Added `[Experimental]` `ResponseContinuationToken` to represent a base class for continuation tokens.
+- Added `[Experimental]` `BackgroundResponsesOptions` to represent options for background responses.
+- Added `[Experimental]` `ChatOptions.BackgroundResponsesOptions` and `ChatOptions.ContinuationToken` properties to accept options for background responses and continuation token.
+- Added `[Experimental]` `ChatResponse.ContinuationToken` and `ChatResponseUpdate.ContinuationToken` to return continuation token for background responses.
+- Added `[Experimental]` `GetResponseAsync` and `GetStreamingResponseAsync` extension methods for `IChatClient` to continue background responses.
+
 ## 9.9.1
 
 - Added new `ChatResponseFormat.ForJsonSchema` overloads that export a JSON schema from a .NET type.

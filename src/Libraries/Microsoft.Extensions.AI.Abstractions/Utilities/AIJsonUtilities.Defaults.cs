@@ -116,6 +116,7 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(Embedding<double>))]
     [JsonSerializable(typeof(AIContent))]
     [JsonSerializable(typeof(AIFunctionArguments))]
+    [JsonSerializable(typeof(ResponseContinuationToken))]
     [EditorBrowsable(EditorBrowsableState.Never)] // Never use JsonContext directly, use DefaultOptions instead.
     private sealed partial class JsonContext : JsonSerializerContext;
 

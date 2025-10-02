@@ -158,6 +158,153 @@ public class ChatClientExtensionsTests
         Assert.Equal(1, count);
     }
 
+    [Fact]
+    public async Task GetResponseAsync_UsesProvidedContinuationTokenAndCloneChatOptions()
+    {
+        var expectedResponse = new ChatResponse();
+        var expectedContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+        var expectedBackgroundResponsesOptions = new BackgroundResponsesOptions();
+        var expectedChatOptions = new ChatOptions
+        {
+            BackgroundResponsesOptions = expectedBackgroundResponsesOptions,
+            AdditionalProperties = new AdditionalPropertiesDictionary // Setting this to ensure cloning is happening
+            {
+                { "key", "value" },
+            },
+        };
+
+        using var cts = new CancellationTokenSource();
+
+        using TestChatClient client = new()
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                Assert.Empty(messages);
+                Assert.NotNull(options);
+
+                Assert.True(options.AdditionalProperties!.ContainsKey("key")); // Assert that chat options were cloned
+
+                Assert.NotSame(expectedChatOptions, options);
+                Assert.Same(expectedContinuationToken, options.ContinuationToken);
+                Assert.NotSame(expectedBackgroundResponsesOptions, options.BackgroundResponsesOptions);
+
+                Assert.Equal(cts.Token, cancellationToken);
+
+                return Task.FromResult(expectedResponse);
+            },
+        };
+
+        ChatResponse response = await client.GetResponseAsync(expectedContinuationToken, expectedChatOptions, cts.Token);
+
+        Assert.Same(expectedResponse, response);
+    }
+
+    [Fact]
+    public async Task GetResponseAsync_UsesProvidedContinuationTokenAndCreatesChatOptions()
+    {
+        var expectedResponse = new ChatResponse();
+        var expectedContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+
+        using var cts = new CancellationTokenSource();
+
+        using TestChatClient client = new()
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                Assert.Empty(messages);
+                Assert.NotNull(options);
+
+                Assert.Same(expectedContinuationToken, options.ContinuationToken);
+
+                Assert.Equal(cts.Token, cancellationToken);
+
+                return Task.FromResult(expectedResponse);
+            },
+        };
+
+        ChatResponse response = await client.GetResponseAsync(expectedContinuationToken, cancellationToken: cts.Token);
+
+        Assert.Same(expectedResponse, response);
+    }
+
+    [Fact]
+    public async Task GetStreamingResponseAsync_UsesProvidedContinuationTokenAndCloneChatOptions()
+    {
+        var expectedOptions = new ChatOptions();
+        var expectedContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+        var expectedBackgroundResponsesOptions = new BackgroundResponsesOptions();
+        var expectedChatOptions = new ChatOptions
+        {
+            BackgroundResponsesOptions = expectedBackgroundResponsesOptions,
+            AdditionalProperties = new AdditionalPropertiesDictionary // Setting this to ensure cloning is happening
+            {
+                { "key", "value" },
+            },
+        };
+        using var cts = new CancellationTokenSource();
+
+        using TestChatClient client = new()
+        {
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                Assert.Empty(messages);
+                Assert.NotNull(options);
+
+                Assert.True(options.AdditionalProperties!.ContainsKey("key")); // Assert that chat options were cloned
+
+                Assert.NotSame(expectedChatOptions, options);
+                Assert.Same(expectedContinuationToken, options.ContinuationToken);
+                Assert.NotSame(expectedBackgroundResponsesOptions, options.BackgroundResponsesOptions);
+
+                Assert.Equal(cts.Token, cancellationToken);
+
+                return YieldAsync([new ChatResponseUpdate(ChatRole.Assistant, "world")]);
+            },
+        };
+
+        int count = 0;
+        await foreach (var update in client.GetStreamingResponseAsync(expectedContinuationToken, expectedChatOptions, cts.Token))
+        {
+            Assert.Equal(0, count);
+            count++;
+        }
+
+        Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public async Task GetStreamingResponseAsync_UsesProvidedContinuationTokenAndCreatesChatOptions()
+    {
+        var expectedOptions = new ChatOptions();
+        var expectedContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+
+        using var cts = new CancellationTokenSource();
+
+        using TestChatClient client = new()
+        {
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                Assert.Empty(messages);
+                Assert.NotNull(options);
+
+                Assert.Same(expectedContinuationToken, options.ContinuationToken);
+
+                Assert.Equal(cts.Token, cancellationToken);
+
+                return YieldAsync([new ChatResponseUpdate(ChatRole.Assistant, "world")]);
+            },
+        };
+
+        int count = 0;
+        await foreach (var update in client.GetStreamingResponseAsync(expectedContinuationToken, cancellationToken: cts.Token))
+        {
+            Assert.Equal(0, count);
+            count++;
+        }
+
+        Assert.Equal(1, count);
+    }
+
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(params ChatResponseUpdate[] updates)
     {
         await Task.Yield();

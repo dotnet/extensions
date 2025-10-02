@@ -1194,6 +1194,44 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(0, invoked);
     }
 
+    [Fact]
+    public async Task ClonesChatOptionsAndResetContinuationTokenForBackgroundResponsesAsync()
+    {
+        ChatOptions? actualChatOptions = null;
+
+        using var innerChatClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+            {
+                actualChatOptions = chatOptions;
+
+                List<ChatMessage> messages = [];
+
+                // Simulate the model returning a function call for the first call only
+                if (!chatContents.Any(m => m.Contents.OfType<FunctionCallContent>().Any()))
+                {
+                    messages.Add(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]));
+                }
+
+                return Task.FromResult(new ChatResponse { Messages = messages });
+            }
+        };
+
+        using var chatClient = new FunctionInvokingChatClient(innerChatClient);
+
+        var originalChatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { }, "Func1")],
+            ContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 }),
+        };
+
+        await chatClient.GetResponseAsync("hi", originalChatOptions);
+
+        // The original options should be cloned and have a null ContinuationToken
+        Assert.NotSame(originalChatOptions, actualChatOptions);
+        Assert.Null(actualChatOptions!.ContinuationToken);
+    }
+
     private sealed class CustomSynchronizationContext : SynchronizationContext
     {
         public override void Post(SendOrPostCallback d, object? state)
