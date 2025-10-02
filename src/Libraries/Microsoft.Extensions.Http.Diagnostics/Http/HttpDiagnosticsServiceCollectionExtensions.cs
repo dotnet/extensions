@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -41,6 +40,37 @@ public static class HttpDiagnosticsServiceCollectionExtensions
         _ = Throw.IfNull(services);
         services.TryAddSingleton<HttpDependencyMetadataResolver>();
         _ = services.AddSingleton<IDownstreamDependencyMetadata, T>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds services required for HTTP dependency metadata resolution.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddHttpDependencyMetadataResolver(this IServiceCollection services)
+    {
+        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
+        return services;
+    }
+
+    /// <summary>
+    /// Adds services required for HTTP dependency metadata resolution with the specified metadata providers.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <param name="metadataProviders">The HTTP dependency metadata providers to register.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddHttpDependencyMetadataResolver(
+        this IServiceCollection services,
+        params IHttpDependencyMetadata[] metadataProviders)
+    {
+        foreach (var provider in metadataProviders)
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpDependencyMetadata>(provider));
+        }
+
+        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
 
         return services;
     }
