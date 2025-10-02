@@ -359,6 +359,29 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("Hello, world!", Assert.IsType<TextContent>(Assert.Single(Assert.Single(response.Messages).Contents)).Text);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_AlternativeTimestamps(bool useAsync)
+    {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+
+        ChatResponseUpdate[] updates =
+        [
+            new(ChatRole.Tool, "f") { MessageId = "4", CreatedAt = now },
+            new(null, "g") { CreatedAt = DateTimeOffset.UnixEpoch },
+        ];
+
+        ChatResponse response = useAsync ?
+            updates.ToChatResponse() :
+            await YieldAsync(updates).ToChatResponseAsync();
+        Assert.Single(response.Messages);
+
+        Assert.Equal("fg", response.Messages[0].Text);
+        Assert.Equal(ChatRole.Tool, response.Messages[0].Role);
+        Assert.Equal(now, response.Messages[0].CreatedAt);
+    }
+
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)
     {
         foreach (ChatResponseUpdate update in updates)
