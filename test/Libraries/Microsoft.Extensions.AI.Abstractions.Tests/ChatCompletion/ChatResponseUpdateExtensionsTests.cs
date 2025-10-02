@@ -364,12 +364,30 @@ public class ChatResponseUpdateExtensionsTests
     [InlineData(true)]
     public async Task ToChatResponse_AlternativeTimestamps(bool useAsync)
     {
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        DateTimeOffset early = new(2024, 1, 1, 10, 0, 0, TimeSpan.Zero);
+        DateTimeOffset middle = new(2024, 1, 1, 11, 0, 0, TimeSpan.Zero);
+        DateTimeOffset late = new(2024, 1, 1, 12, 0, 0, TimeSpan.Zero);
 
         ChatResponseUpdate[] updates =
         [
-            new(ChatRole.Tool, "f") { MessageId = "4", CreatedAt = now },
-            new(null, "g") { CreatedAt = DateTimeOffset.UnixEpoch },
+
+            // Start with an early timestamp
+            new(ChatRole.Tool, "a") { MessageId = "4", CreatedAt = early },
+
+            // Unix epoch (as "null") should not overwrite
+            new(null, "b") { CreatedAt = DateTimeOffset.UnixEpoch },
+
+            // Newer timestamp should overwrite
+            new(null, "c") { CreatedAt = middle },
+
+            // Older timestamp should not overwrite
+            new(null, "d") { CreatedAt = early },
+
+            // Even newer timestamp should overwrite
+            new(null, "e") { CreatedAt = late },
+
+            // Unix epoch should not overwrite again
+            new(null, "f") { CreatedAt = DateTimeOffset.UnixEpoch },
         ];
 
         ChatResponse response = useAsync ?
@@ -377,10 +395,10 @@ public class ChatResponseUpdateExtensionsTests
             await YieldAsync(updates).ToChatResponseAsync();
         Assert.Single(response.Messages);
 
-        Assert.Equal("fg", response.Messages[0].Text);
+        Assert.Equal("abcdef", response.Messages[0].Text);
         Assert.Equal(ChatRole.Tool, response.Messages[0].Role);
-        Assert.Equal(now, response.Messages[0].CreatedAt);
-        Assert.Equal(now, response.CreatedAt);
+        Assert.Equal(late, response.Messages[0].CreatedAt);
+        Assert.Equal(late, response.CreatedAt);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)
