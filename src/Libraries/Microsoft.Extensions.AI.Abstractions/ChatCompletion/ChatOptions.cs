@@ -121,7 +121,7 @@ public class ChatOptions
     [JsonIgnore]
     public BackgroundResponsesOptions? BackgroundResponsesOptions { get; set; }
 
-    /// <summary>Gets or sets the continuation token for resuming and getting result of the chat response identified by this token.</summary>
+    /// <summary>Gets or sets the continuation token for resuming and getting the result of the chat response identified by this token.</summary>
     /// <remarks>
     /// This property is used for background responses that can be activated via the <see cref="BackgroundResponsesOptions.Allow"/>
     /// property if the <see cref="IChatClient"/> implementation supports them.
