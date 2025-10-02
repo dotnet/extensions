@@ -87,6 +87,10 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
         var templateNuGetConfigPath = Path.Combine(outputFolderPath, "nuget.config");
         File.Copy(WellKnownPaths.TemplateTestNuGetConfigPath, templateNuGetConfigPath);
 
+        var argsString = string.Join(" ", args);
+        var argsTxtPath = Path.Combine(outputFolderPath, "ARGS.txt");
+        File.WriteAllText(argsTxtPath, argsString);
+
         return new Project(outputFolderPath, projectName);
     }
 
