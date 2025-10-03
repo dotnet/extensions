@@ -371,6 +371,7 @@ public class ChatResponseUpdateExtensionsTests
 
         ChatResponseUpdate[] updates =
         [
+
             // Start with an early timestamp
             new(ChatRole.Tool, "a") { MessageId = "4", CreatedAt = early },
 
