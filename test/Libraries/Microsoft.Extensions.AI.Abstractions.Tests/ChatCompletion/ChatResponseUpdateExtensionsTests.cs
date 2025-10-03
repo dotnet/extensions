@@ -371,7 +371,6 @@ public class ChatResponseUpdateExtensionsTests
 
         ChatResponseUpdate[] updates =
         [
-
             // Start with an early timestamp
             new(ChatRole.Tool, "a") { MessageId = "4", CreatedAt = early },
 
@@ -389,6 +388,9 @@ public class ChatResponseUpdateExtensionsTests
 
             // Unix epoch should not overwrite again
             new(null, "f") { CreatedAt = unixEpoch },
+
+            // null should not overwrite
+            new(null, "g") { CreatedAt = null },
         ];
 
         ChatResponse response = useAsync ?
@@ -396,7 +398,7 @@ public class ChatResponseUpdateExtensionsTests
             await YieldAsync(updates).ToChatResponseAsync();
         Assert.Single(response.Messages);
 
-        Assert.Equal("abcdef", response.Messages[0].Text);
+        Assert.Equal("abcdefg", response.Messages[0].Text);
         Assert.Equal(ChatRole.Tool, response.Messages[0].Role);
         Assert.Equal(late, response.Messages[0].CreatedAt);
         Assert.Equal(late, response.CreatedAt);
