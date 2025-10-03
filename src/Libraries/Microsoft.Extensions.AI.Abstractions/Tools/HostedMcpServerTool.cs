@@ -37,6 +37,30 @@ public class HostedMcpServerTool : AITool
     {
         ServerName = Throw.IfNullOrWhitespace(serverName);
         Url = Throw.IfNull(url);
+        ConnectorID = null;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class with a connector ID.
+    /// </summary>
+    private HostedMcpServerTool(string serverName, string connectorID, Uri? url)
+    {
+        ServerName = Throw.IfNullOrWhitespace(serverName);
+        ConnectorID = Throw.IfNullOrWhitespace(connectorID);
+        Url = url; // needed for disambiguation.
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="HostedMcpServerTool"/> class using a connector ID.
+    /// </summary>
+    /// <param name="serverName">The name of the remote MCP server.</param>
+    /// <param name="connectorID">The connector ID of the known MCP server supported by the provider.</param>
+    /// <returns>A new <see cref="HostedMcpServerTool"/> instance configured with the specified connector ID.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="connectorID"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="serverName"/> or <paramref name="connectorID"/> are empty or composed entirely of whitespace.</exception>
+    public static HostedMcpServerTool CreateWithConnectorID(string serverName, string connectorID)
+    {
+        return new HostedMcpServerTool(serverName, connectorID, null);
     }
 
     /// <summary>
@@ -47,7 +71,18 @@ public class HostedMcpServerTool : AITool
     /// <summary>
     /// Gets the URL of the remote MCP server.
     /// </summary>
-    public Uri Url { get; }
+    /// <remarks>
+    /// This property is <see langword="null"/> when the tool is configured with a <see cref="ConnectorID" /> instead of a URL.
+    /// </remarks>
+    public Uri? Url { get; }
+
+    /// <summary>
+    /// Gets the connector ID of the known MCP server supported by the provider.
+    /// </summary>
+    /// <remarks>
+    /// This property is <see langword="null"/> when the tool is configured with a <see cref="Url" /> instead of a connector ID.
+    /// </remarks>
+    public string? ConnectorID { get; }
 
     /// <summary>
     /// Gets or sets the description of the remote MCP server, used to provide more context to the AI service.
