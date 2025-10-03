@@ -984,6 +984,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "Microsoft.Extensions.AI.ChatOptions.ChatOptions(Microsoft.Extensions.AI.ChatOptions? other);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "virtual Microsoft.Extensions.AI.ChatOptions Microsoft.Extensions.AI.ChatOptions.Clone();",
           "Stage": "Stable"
         }
@@ -1691,6 +1695,10 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.EmbeddingGenerationOptions.EmbeddingGenerationOptions();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.EmbeddingGenerationOptions.EmbeddingGenerationOptions(Microsoft.Extensions.AI.EmbeddingGenerationOptions? other);",
           "Stage": "Stable"
         },
         {

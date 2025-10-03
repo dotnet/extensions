@@ -1,5 +1,9 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Added protected copy constructors to options types.
+
 ## 9.9.1
 
 - Added new `ChatResponseFormat.ForJsonSchema` overloads that export a JSON schema from a .NET type.
