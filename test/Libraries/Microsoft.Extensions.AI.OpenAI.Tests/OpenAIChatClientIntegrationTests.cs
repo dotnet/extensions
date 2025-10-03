@@ -8,4 +8,8 @@ public class OpenAIChatClientIntegrationTests : ChatClientIntegrationTests
     protected override IChatClient? CreateChatClient() =>
         IntegrationTestHelpers.GetOpenAIClient()
         ?.GetChatClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini").AsIChatClient();
+
+    protected override IEmbeddingGenerator<string, Embedding<float>>? CreateEmbeddingGenerator() =>
+       IntegrationTestHelpers.GetOpenAIClient()
+           ?.GetEmbeddingClient(TestRunnerConfiguration.Instance["OpenAI:EmbeddingModel"] ?? "text-embedding-3-small").AsIEmbeddingGenerator();
 }
