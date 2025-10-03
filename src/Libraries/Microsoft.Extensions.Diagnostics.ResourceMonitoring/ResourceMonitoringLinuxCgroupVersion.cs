@@ -23,7 +23,13 @@ internal static class ResourceMonitoringLinuxCgroupVersion
     {
         DriveInfo[] allDrives = DriveInfo.GetDrives();
         var injectParserV2 = false;
-        const string CgroupVersion = "cgroup2fs";
+        const string CgroupVersion =
+#if NET10_0_OR_GREATER
+        "cgroup2";
+#else
+        "cgroup2fs";
+#endif
+
         const string UnifiedCgroupPath = "/sys/fs/cgroup/unified";
 
         // We check which cgroup version is mounted in the system and based on that we inject the parser.
