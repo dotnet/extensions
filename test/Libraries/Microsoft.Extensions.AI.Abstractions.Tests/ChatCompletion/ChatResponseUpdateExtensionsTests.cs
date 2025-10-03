@@ -405,6 +405,43 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(late, response.CreatedAt);
     }
 
+    [Theory]
+    [InlineData(false, null, null, null)]
+    [InlineData(true, null, null, null)]
+    [InlineData(false, "2024-01-01T10:00:00Z", null, "2024-01-01T10:00:00Z")]
+    [InlineData(true, "2024-01-01T10:00:00Z", null, "2024-01-01T10:00:00Z")]
+    [InlineData(false, null, "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z")]
+    [InlineData(true, null, "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z")]
+    [InlineData(false, "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z", "2024-01-01T11:00:00Z")]
+    [InlineData(true, "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z", "2024-01-01T11:00:00Z")]
+    [InlineData(false, "2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z")]
+    [InlineData(true, "2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z")]
+    [InlineData(false, "2024-01-01T10:00:00Z", "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z")]
+    [InlineData(true, "2024-01-01T10:00:00Z", "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z")]
+    [InlineData(false, "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z")]
+    [InlineData(true, "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z")]
+    public async Task ToChatResponse_TimestampFolding(bool useAsync, string? timestamp1, string? timestamp2, string? expectedTimestamp)
+    {
+        DateTimeOffset? first = timestamp1 is not null ? DateTimeOffset.Parse(timestamp1) : null;
+        DateTimeOffset? second = timestamp2 is not null ? DateTimeOffset.Parse(timestamp2) : null;
+        DateTimeOffset? expected = expectedTimestamp is not null ? DateTimeOffset.Parse(expectedTimestamp) : null;
+
+        ChatResponseUpdate[] updates =
+        [
+            new(ChatRole.Assistant, "a") { CreatedAt = first },
+            new(null, "b") { CreatedAt = second },
+        ];
+
+        ChatResponse response = useAsync ?
+            updates.ToChatResponse() :
+            await YieldAsync(updates).ToChatResponseAsync();
+
+        Assert.Single(response.Messages);
+        Assert.Equal("ab", response.Messages[0].Text);
+        Assert.Equal(expected, response.Messages[0].CreatedAt);
+        Assert.Equal(expected, response.CreatedAt);
+    }
+
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)
     {
         foreach (ChatResponseUpdate update in updates)
