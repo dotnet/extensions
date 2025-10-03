@@ -405,21 +405,30 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(late, response.CreatedAt);
     }
 
+    public static IEnumerable<object?[]> ToChatResponse_TimestampFolding_MemberData()
+    {
+        // Base test cases
+        var testCases = new (string? timestamp1, string? timestamp2, string? expectedTimestamp)[]
+        {
+            (null, null, null),
+            ("2024-01-01T10:00:00Z", null, "2024-01-01T10:00:00Z"),
+            (null, "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"),
+            ("2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z", "2024-01-01T11:00:00Z"),
+            ("2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z"),
+            ("2024-01-01T10:00:00Z", "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z"),
+            ("1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"),
+        };
+
+        // Yield each test case twice, once for useAsync = false and once for useAsync = true
+        foreach (var (timestamp1, timestamp2, expectedTimestamp) in testCases)
+        {
+            yield return new object?[] { false, timestamp1, timestamp2, expectedTimestamp };
+            yield return new object?[] { true, timestamp1, timestamp2, expectedTimestamp };
+        }
+    }
+
     [Theory]
-    [InlineData(false, null, null, null)]
-    [InlineData(true, null, null, null)]
-    [InlineData(false, "2024-01-01T10:00:00Z", null, "2024-01-01T10:00:00Z")]
-    [InlineData(true, "2024-01-01T10:00:00Z", null, "2024-01-01T10:00:00Z")]
-    [InlineData(false, null, "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z")]
-    [InlineData(true, null, "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z")]
-    [InlineData(false, "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z", "2024-01-01T11:00:00Z")]
-    [InlineData(true, "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z", "2024-01-01T11:00:00Z")]
-    [InlineData(false, "2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z")]
-    [InlineData(true, "2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z")]
-    [InlineData(false, "2024-01-01T10:00:00Z", "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z")]
-    [InlineData(true, "2024-01-01T10:00:00Z", "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z")]
-    [InlineData(false, "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z")]
-    [InlineData(true, "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z")]
+    [MemberData(nameof(ToChatResponse_TimestampFolding_MemberData))]
     public async Task ToChatResponse_TimestampFolding(bool useAsync, string? timestamp1, string? timestamp2, string? expectedTimestamp)
     {
         DateTimeOffset? first = timestamp1 is not null ? DateTimeOffset.Parse(timestamp1) : null;
