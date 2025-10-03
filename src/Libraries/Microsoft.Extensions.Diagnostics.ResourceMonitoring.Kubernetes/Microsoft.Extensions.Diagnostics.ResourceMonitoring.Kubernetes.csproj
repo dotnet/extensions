@@ -1,23 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.ResourceMonitoring</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes</RootNamespace>
     <Description>Measures processor and memory usage.</Description>
     <Workstream>ResourceMonitoring</Workstream>
     <NoWarn Condition="'$(TargetFramework)' == 'net462'">$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
-    <UseLoggingGenerator>true</UseLoggingGenerator>
-    <InjectSharedDataValidation>true</InjectSharedDataValidation>
-    <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
-    <InjectObsoleteAttributeOnLegacy>true</InjectObsoleteAttributeOnLegacy>
-    <InjectPlatformAttributesOnLegacy>true</InjectPlatformAttributesOnLegacy>
-    <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
-    <InjectStringSplitExtensions>true</InjectStringSplitExtensions>
     <InjectSharedInstruments>true</InjectSharedInstruments>
   </PropertyGroup>
 
@@ -32,9 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ResourceMonitoring\Microsoft.Extensions.Diagnostics.ResourceMonitoring.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Abstractions\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,6 +39,5 @@
   <ItemGroup>
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
-    <InternalsVisibleToTest Include="Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization.Tests" />
   </ItemGroup>
 </Project>
