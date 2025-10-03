@@ -92,16 +92,19 @@ public class ImageGeneratingChatClientTests
         Assert.True(innerClientCalled);
         Assert.NotNull(capturedOptions);
         Assert.NotNull(capturedOptions.Tools);
-        Assert.Equal(2, capturedOptions.Tools.Count); // Should have GenerateImage and EditImage functions
+        Assert.Equal(3, capturedOptions.Tools.Count);
 
         // Verify the functions are properly created
         var generateImageFunction = capturedOptions.Tools[0] as AIFunction;
         var editImageFunction = capturedOptions.Tools[1] as AIFunction;
+        var getImagesForEditImageFunction = capturedOptions.Tools[2] as AIFunction;
 
         Assert.NotNull(generateImageFunction);
         Assert.NotNull(editImageFunction);
+        Assert.NotNull(getImagesForEditImageFunction);
         Assert.Equal("GenerateImage", generateImageFunction.Name);
         Assert.Equal("EditImage", editImageFunction.Name);
+        Assert.Equal("GetImagesForEdit", getImagesForEditImageFunction.Name);
     }
 
     [Fact]
@@ -137,7 +140,7 @@ public class ImageGeneratingChatClientTests
         Assert.True(innerClientCalled);
         Assert.NotNull(capturedOptions);
         Assert.NotNull(capturedOptions.Tools);
-        Assert.Equal(3, capturedOptions.Tools.Count); // DummyFunction + GenerateImage + EditImage
+        Assert.Equal(4, capturedOptions.Tools.Count); // DummyFunction + GenerateImage + EditImage + GetImagesForEdit
 
         Assert.Same(dummyFunction, capturedOptions.Tools[0]); // Original function preserved
         Assert.IsAssignableFrom<AIFunction>(capturedOptions.Tools[1]); // GenerateImage function
@@ -244,7 +247,7 @@ public class ImageGeneratingChatClientTests
         Assert.True(innerClientCalled);
         Assert.NotNull(capturedOptions);
         Assert.NotNull(capturedOptions.Tools);
-        Assert.Equal(2, capturedOptions.Tools.Count); // GenerateImage and EditImage functions
+        Assert.Equal(3, capturedOptions.Tools.Count);
     }
 
     [Fact]

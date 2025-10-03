@@ -93,6 +93,7 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(IEnumerable<string>))]
     [JsonSerializable(typeof(char))]
     [JsonSerializable(typeof(string))]
+    [JsonSerializable(typeof(string[]))]
     [JsonSerializable(typeof(int))]
     [JsonSerializable(typeof(short))]
     [JsonSerializable(typeof(long))]
