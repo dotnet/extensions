@@ -116,8 +116,7 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             // Replace FunctionResultContent instances with generated image content
             foreach (var message in response.Messages)
             {
-                var newContents = ReplaceImageGenerationFunctionResults(message.Contents);
-                message.Contents = newContents;
+                message.Contents = ReplaceImageGenerationFunctionResults(message.Contents);
             }
 
             return response;
@@ -236,11 +235,6 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                 newMessages ??= new List<ChatMessage>(messages.Take(messageIndex));
 
                 var newMessage = message.Clone();
-                if (newMessage.Role == ChatRole.Tool)
-                {
-                    // workaround: the chat client will ignore tool messages, so change the role to assistant
-                    newMessage.Role = ChatRole.Assistant;
-                }
 
                 newMessage.Contents = newContents;
                 newMessages.Add(newMessage);
@@ -330,7 +324,15 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
         return imageId;
     }
 
-    /// <summary>Replaces FunctionResultContent instances for image generation functions with actual generated image content.</summary>
+    /// <summary>
+    /// Replaces FunctionResultContent instances for image generation functions with actual generated image content.
+    /// We will have two messages
+    /// 1. Role: Assistant, FunctionCall
+    /// 2. Role: Tool, FunctionResult
+    /// We need to content from both but we shouldn't remove the messages.
+    /// If we do not then ChatClient's may not accept our altered history.
+    /// A better approach might be to recreate history that matches what a server side HostedImageGenerationTool would have produced.
+    /// </summary>
     /// <param name="contents">The list of AI content to process.</param>
     private IList<AIContent> ReplaceImageGenerationFunctionResults(IList<AIContent> contents)
     {
@@ -344,15 +346,18 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             if (content is FunctionCallContent functionCall &&
                 _functionNames.Contains(functionCall.Name))
             {
-                // create a new list and skip this
+                // create a new list and omit the FunctionCallContent
                 newContents ??= CopyList(contents, i);
+
+                // add a placeholder text content to avoid empty contents which could cause the client to drop the message
+                newContents.Add(new TextContent(string.Empty));
             }
             else if (content is FunctionResultContent functionResult &&
                 _imageContentByCallId.TryGetValue(functionResult.CallId, out var imageContents))
             {
                 newContents ??= CopyList(contents, i, imageContents.Count - 1);
 
-                // Insert generated image content in its place
+                // Insert generated image content in its place, do not preserve the FunctionResultContent
                 foreach (var imageContent in imageContents)
                 {
                     newContents.Add(imageContent);
@@ -411,6 +416,15 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
     [Description("Lists the identifiers of all images available for edit.")]
     private string[] GetImagesForEdit()
     {
+        // Get the call ID from the current function invocation context
+        var callId = FunctionInvokingChatClient.CurrentContext?.CallContent.CallId;
+        if (callId == null)
+        {
+            return ["No call ID available for image editing."];
+        }
+
+        _imageContentByCallId[callId] = [];
+
         return _imageContentById.Keys.ToArray();
     }
 

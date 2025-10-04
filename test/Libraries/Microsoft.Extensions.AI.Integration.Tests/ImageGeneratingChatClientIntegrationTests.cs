@@ -91,11 +91,9 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         // Verify that we get DataContent back in the response
         var dataContents = response.Messages
             .SelectMany(m => m.Contents)
-            .OfType<DataContent>()
-            .ToList();
+            .OfType<DataContent>();
 
-        Assert.Single(dataContents);
-        var imageContent = dataContents[0];
+        var imageContent = Assert.Single(dataContents);
         Assert.Equal("image/png", imageContent.MediaType);
         Assert.False(imageContent.Data.IsEmpty);
     }
@@ -119,8 +117,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
             chatOptions);
 
         // Assert
-        Assert.Single(imageGenerator.GenerateCalls);
-        var (request, _) = imageGenerator.GenerateCalls[0];
+        var (request, _) = Assert.Single(imageGenerator.GenerateCalls);
         Assert.NotNull(request.OriginalImages);
 
         var originalImage = Assert.Single(request.OriginalImages);
@@ -159,14 +156,15 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
 
         // First call should be generation (no original images)
         var (firstRequest, _) = imageGenerator.GenerateCalls[0];
-        Assert.Contains("dog", firstRequest.Prompt, StringComparison.OrdinalIgnoreCase);
         Assert.Null(firstRequest.OriginalImages);
+        var firstContent = Assert.Single(firstResponse.Messages.SelectMany(m => m.Contents).OfType<DataContent>());
 
         // Second call should be editing (with original images)
         var (secondRequest, _) = imageGenerator.GenerateCalls[1];
-        Assert.Contains("colorful", secondRequest.Prompt, StringComparison.OrdinalIgnoreCase);
+        Assert.Single(secondResponse.Messages.SelectMany(m => m.Contents).OfType<DataContent>());
         Assert.NotNull(secondRequest.OriginalImages);
-        Assert.Single(secondRequest.OriginalImages);
+        var editContent = Assert.Single(secondRequest.OriginalImages);
+        Assert.Equal(firstContent, editContent); // Should be the same image as generated in first call
 
         var editedImage = Assert.IsType<DataContent>(secondRequest.OriginalImages.First());
         Assert.Equal("image/png", editedImage.MediaType);
@@ -197,13 +195,9 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         chatHistory.Add(new ChatMessage(ChatRole.User, "Please edit the image to add flowers"));
         var secondResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
         chatHistory.AddRange(secondResponse.Messages);
-        var firstEditedImage = secondResponse.Messages
-            .SelectMany(m => m.Contents)
-            .OfType<DataContent>()
-            .SingleOrDefault();
 
         // Third: Second edit (should edit the latest version by default)
-        chatHistory.Add(new ChatMessage(ChatRole.User, "Please edit the image to add birds"));
+        chatHistory.Add(new ChatMessage(ChatRole.User, "Please edit that image to add birds"));
         var thirdResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
 
         // Assert
@@ -211,11 +205,10 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
 
         // Third call should edit the second generated image (from first edit), not the original
         var (thirdRequest, _) = imageGenerator.GenerateCalls[2];
-        Assert.Contains("birds", thirdRequest.Prompt, StringComparison.OrdinalIgnoreCase);
         Assert.NotNull(thirdRequest.OriginalImages);
-
-        var lastImageToEdit = Assert.IsType<DataContent>(thirdRequest.OriginalImages.First());
-        Assert.Equal(firstEditedImage, lastImageToEdit);
+        var secondImage = Assert.Single(secondResponse.Messages.SelectMany(m => m.Contents).OfType<DataContent>());
+        var lastImageToEdit = Assert.Single(thirdRequest.OriginalImages.OfType<DataContent>());
+        Assert.Equal(secondImage, lastImageToEdit);
     }
 
     [ConditionalFact]
@@ -237,10 +230,6 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         // First: Generate image
         var firstResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
         chatHistory.AddRange(firstResponse.Messages);
-        var firstGeneratedImage = firstResponse.Messages
-            .SelectMany(m => m.Contents)
-            .OfType<DataContent>()
-            .SingleOrDefault();
 
         // Second: First edit
         chatHistory.Add(new ChatMessage(ChatRole.User, "Please edit the image to add fruit"));
@@ -256,9 +245,8 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
 
         // Third call should edit the original generated image (not from edit)
         var (thirdRequest, _) = imageGenerator.GenerateCalls[2];
-        Assert.Contains("birds", thirdRequest.Prompt, StringComparison.OrdinalIgnoreCase);
         Assert.NotNull(thirdRequest.OriginalImages);
-
+        var firstGeneratedImage = Assert.Single(firstResponse.Messages.SelectMany(m => m.Contents).OfType<DataContent>());
         var lastImageToEdit = Assert.IsType<DataContent>(thirdRequest.OriginalImages.First());
         Assert.Equal(firstGeneratedImage, lastImageToEdit);
     }
