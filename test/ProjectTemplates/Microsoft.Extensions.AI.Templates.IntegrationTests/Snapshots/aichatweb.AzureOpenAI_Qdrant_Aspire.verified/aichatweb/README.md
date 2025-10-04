@@ -5,6 +5,9 @@ This project is an AI chat application that demonstrates how to chat with custom
 >[!NOTE]
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
 
+### Prerequisites
+To use Azure OpenAI or Azure AI Search, you need an Azure account. If you don't already have one, [create an Azure account](https://azure.microsoft.com/free/).
+
 ### Known Issues
 
 #### Errors running Ollama or Docker

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.AI;
+using OpenAI;
 using aichatweb.Web.Components;
 using aichatweb.Web.Services;
 using aichatweb.Web.Services.Ingestion;
-using OpenAI;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();

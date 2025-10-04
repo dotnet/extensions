@@ -5,7 +5,7 @@ This project is an AI chat application that demonstrates how to chat with custom
 >[!NOTE]
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
 
-#### ---#if (UseAzure)
+#### ---#if (IsAzure)
 ### Prerequisites
 To use Azure OpenAI or Azure AI Search, you need an Azure account. If you don't already have one, [create an Azure account](https://azure.microsoft.com/free/).
 
@@ -81,13 +81,13 @@ Download, install, and run Docker Desktop from the [official website](https://ww
 Note: Ollama and Docker are excellent open source products, but are not maintained by Microsoft.
 
 #### ---#endif
-#### ---#if (IsAzureOpenAI || UseAzureAISearch)
+#### ---#if (IsAzureOpenAI || IsAzureAISearch)
 ## Using Azure Provisioning
 
 The project is set up to automatically provision Azure resources. When running the app for the first time, you will be prompted to provide Azure configuration values. For detailed instructions, see the [Local Provisioning documentation](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration).
 
 #### ---#endif
-#### ---#if (UseQdrant)
+#### ---#if (IsQdrant)
 
 ## Setting up a local environment for Qdrant
 This project is configured to run Qdrant in a Docker container. Docker Desktop must be installed and running for the project to run successfully. A Qdrant container will automatically start when running the application.

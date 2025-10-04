@@ -3,7 +3,7 @@
 namespace ChatWithCustomData_CSharp.Web.Services;
 
 public class SemanticSearch(
-#if (UseQdrant)
+#if (IsQdrant)
     VectorStoreCollection<Guid, IngestedChunk> vectorCollection)
 #else
     VectorStoreCollection<string, IngestedChunk> vectorCollection)
