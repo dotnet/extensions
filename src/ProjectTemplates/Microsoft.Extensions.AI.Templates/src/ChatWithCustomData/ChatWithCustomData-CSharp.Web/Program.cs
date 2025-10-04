@@ -63,7 +63,7 @@ var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small
 var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Endpoint. See the README for details.")), "/openai/v1");
 #if (IsManagedIdentity)
 var azureOpenAi = new OpenAIClient(
-    new BearerTokenPolicy(new DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"),
+    new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
     new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint });
 #else
 var openAIOptions = new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint };

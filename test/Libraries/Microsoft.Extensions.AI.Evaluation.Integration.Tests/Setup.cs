@@ -35,7 +35,7 @@ internal static class Setup
             new OpenAIClient(
                 new BearerTokenPolicy(
                     new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential()),
-                    "https://cognitiveservices.azure.com/.default"),
+                    "https://ai.azure.com/.default"),
                 options);
 
         return client.GetChatClient(Settings.Current.DeploymentName);

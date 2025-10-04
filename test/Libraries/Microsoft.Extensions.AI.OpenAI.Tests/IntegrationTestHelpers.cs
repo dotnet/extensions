@@ -30,7 +30,7 @@ internal static class IntegrationTestHelpers
             return apiKey is not null ?
                 new OpenAIClient(new ApiKeyCredential(apiKey), options) :
                 new OpenAIClient(
-                    new BearerTokenPolicy(new DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"),
+                    new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
                     options);
         }
         else if (apiKey is not null)
