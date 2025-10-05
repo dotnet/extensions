@@ -19,7 +19,7 @@ public class HostedMcpServerTool : AITool
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="url">The URL of the remote MCP server.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="url"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="url"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
     public HostedMcpServerTool(string serverName, [StringSyntax(StringSyntaxAttribute.Uri)] string url)
         : this(serverName, new Uri(Throw.IfNull(url)))
@@ -31,7 +31,7 @@ public class HostedMcpServerTool : AITool
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="url">The URL of the remote MCP server.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="url"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="url"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
     public HostedMcpServerTool(string serverName, Uri url)
     {

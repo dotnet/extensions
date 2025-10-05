@@ -24,7 +24,7 @@ public sealed class McpServerToolCallContent : AIContent
     /// <param name="callId">The tool call ID.</param>
     /// <param name="toolName">The tool name.</param>
     /// <param name="serverName">The MCP server name.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="callId"/>, <paramref name="toolName"/>, or <paramref name="serverName"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="callId"/>, <paramref name="toolName"/>, or <paramref name="serverName"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="callId"/>, <paramref name="toolName"/>, or <paramref name="serverName"/> are empty or composed entirely of whitespace.</exception>
     public McpServerToolCallContent(string callId, string toolName, string serverName)
     {

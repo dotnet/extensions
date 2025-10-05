@@ -1,5 +1,11 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Added protected copy constructors to options types (e.g. `ChatOptions`).
+- Fixed `EmbeddingGeneratorOptions`/`SpeechToTextOptions` `Clone` methods to correctly copy all properties.
+- Fixed `ToChatResponse` to not overwrite `ChatMessage/ChatResponse.CreatedAt` with older timestamps during coalescing. 
+
 ## 9.9.1
 
 - Added new `ChatResponseFormat.ForJsonSchema` overloads that export a JSON schema from a .NET type.

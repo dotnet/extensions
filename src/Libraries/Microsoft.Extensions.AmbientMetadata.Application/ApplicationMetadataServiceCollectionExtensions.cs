@@ -35,7 +35,7 @@ public static class ApplicationMetadataServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The dependency injection container to add the instance to.</param>
     /// <param name="configure">The delegate to configure <see cref="ApplicationMetadata"/> with.</param>
-    /// <returns>The value of <paramref name="services"/>>.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddApplicationMetadata(this IServiceCollection services, Action<ApplicationMetadata> configure)
     {
