@@ -1362,6 +1362,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         const string TravelToken = "TRAVEL-PLAN-TOKEN-4826";
 
+        List<List<string>> availableToolsPerInvocation = [];
+        string expansionFunctionName = string.Empty;
+
         var generateItinerary = AIFunctionFactory.Create(
             (string city) => $"{TravelToken}::{city.ToUpperInvariant()}::DAY-PLAN",
             new AIFunctionFactoryOptions
@@ -1386,6 +1389,20 @@ public abstract class ChatClientIntegrationTests : IDisposable
                     name: "TravelUtilities",
                     description: "Travel planning helpers that generate itinerary tokens.",
                     tools: new[] { generateItinerary, summarizePacking }));
+                expansionFunctionName = options.ExpansionFunctionName;
+            })
+            .Use((messages, options, next, cancellationToken) =>
+            {
+                if (options?.Tools is { Count: > 0 } tools)
+                {
+                    availableToolsPerInvocation.Add([.. tools.Select(static tool => tool.Name)]);
+                }
+                else
+                {
+                    availableToolsPerInvocation.Add([]);
+                }
+
+                return next(messages, options, cancellationToken);
             })
             .UseFunctionInvocation()
             .Build();
@@ -1412,6 +1429,15 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var nonStreamingText = response.Text ?? string.Empty;
         Assert.Contains(TravelToken.ToUpperInvariant(), nonStreamingText.ToUpperInvariant());
+
+        Assert.NotEmpty(availableToolsPerInvocation);
+        var firstInvocationTools = availableToolsPerInvocation[0];
+        Assert.Contains(expansionFunctionName, firstInvocationTools);
+        Assert.DoesNotContain(generateItinerary.Name, firstInvocationTools);
+
+        var expandedInvocationIndex = availableToolsPerInvocation.FindIndex(tools => tools.Contains(generateItinerary.Name));
+        Assert.True(expandedInvocationIndex >= 0, "GenerateItinerary was never exposed to the model.");
+        Assert.True(expandedInvocationIndex > 0, "GenerateItinerary was visible before the expansion function executed.");
     }
 
     [ConditionalFact]
@@ -1420,6 +1446,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
         SkipIfNotEnabled();
 
         const string LodgingToken = "LODGING-TOKEN-3895";
+
+        List<List<string>> availableToolsPerInvocation = [];
+        string expansionFunctionName = string.Empty;
 
         var suggestLodging = AIFunctionFactory.Create(
             (string city, string budget) => $"{LodgingToken}::{city.ToUpperInvariant()}::{budget}",
@@ -1437,6 +1466,20 @@ public abstract class ChatClientIntegrationTests : IDisposable
                     name: "TravelUtilities",
                     description: "Travel helpers used for lodging recommendations.",
                     tools: new[] { suggestLodging }));
+                expansionFunctionName = options.ExpansionFunctionName;
+            })
+            .Use((messages, options, next, cancellationToken) =>
+            {
+                if (options?.Tools is { Count: > 0 } tools)
+                {
+                    availableToolsPerInvocation.Add([.. tools.Select(static tool => tool.Name)]);
+                }
+                else
+                {
+                    availableToolsPerInvocation.Add([]);
+                }
+
+                return next(messages, options, cancellationToken);
             })
             .UseFunctionInvocation()
             .Build();
@@ -1463,6 +1506,15 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var streamingText = response.Text ?? string.Empty;
         Assert.Contains(LodgingToken.ToUpperInvariant(), streamingText.ToUpperInvariant());
+
+        Assert.NotEmpty(availableToolsPerInvocation);
+        var firstInvocationTools = availableToolsPerInvocation[0];
+        Assert.Contains(expansionFunctionName, firstInvocationTools);
+        Assert.DoesNotContain(suggestLodging.Name, firstInvocationTools);
+
+        var expandedInvocationIndex = availableToolsPerInvocation.FindIndex(tools => tools.Contains(suggestLodging.Name));
+        Assert.True(expandedInvocationIndex >= 0, "SuggestLodging was never exposed to the model.");
+        Assert.True(expandedInvocationIndex > 0, "SuggestLodging was visible before the expansion function executed.");
     }
 
     private sealed class TestSummarizingChatClient : IChatClient
