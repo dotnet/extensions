@@ -10,6 +10,25 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents the options for an embedding generation request.</summary>
 public class EmbeddingGenerationOptions
 {
+    /// <summary>Initializes a new instance of the <see cref="EmbeddingGenerationOptions"/> class.</summary>
+    public EmbeddingGenerationOptions()
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="EmbeddingGenerationOptions"/> class, performing a shallow copy of all properties from <paramref name="other"/>.</summary>
+    protected EmbeddingGenerationOptions(EmbeddingGenerationOptions? other)
+    {
+        if (other is null)
+        {
+            return;
+        }
+
+        AdditionalProperties = other.AdditionalProperties?.Clone();
+        Dimensions = other.Dimensions;
+        ModelId = other.ModelId;
+        RawRepresentationFactory = other.RawRepresentationFactory;
+    }
+
     /// <summary>Gets or sets the number of dimensions requested in the embedding.</summary>
     public int? Dimensions
     {
@@ -56,11 +75,5 @@ public class EmbeddingGenerationOptions
     /// The clone will have the same values for all properties as the original instance. Any collections, like <see cref="AdditionalProperties"/>
     /// are shallow-cloned, meaning a new collection instance is created, but any references contained by the collections are shared with the original.
     /// </remarks>
-    public virtual EmbeddingGenerationOptions Clone() =>
-        new()
-        {
-            ModelId = ModelId,
-            Dimensions = Dimensions,
-            AdditionalProperties = AdditionalProperties?.Clone(),
-        };
+    public virtual EmbeddingGenerationOptions Clone() => new(this);
 }

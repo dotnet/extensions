@@ -12,6 +12,55 @@ namespace Microsoft.Extensions.AI;
 /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#provide-options">Provide options.</related>
 public class ChatOptions
 {
+    /// <summary>Initializes a new instance of the <see cref="ChatOptions"/> class.</summary>
+    public ChatOptions()
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="ChatOptions"/> class, performing a shallow copy of all properties from <paramref name="other"/>.</summary>
+    protected ChatOptions(ChatOptions? other)
+    {
+        if (other is null)
+        {
+            return;
+        }
+
+        AdditionalProperties = other.AdditionalProperties?.Clone();
+        AllowMultipleToolCalls = other.AllowMultipleToolCalls;
+        ConversationId = other.ConversationId;
+        ContinuationToken = other.ContinuationToken;
+        FrequencyPenalty = other.FrequencyPenalty;
+        Instructions = other.Instructions;
+        MaxOutputTokens = other.MaxOutputTokens;
+        ModelId = other.ModelId;
+        PresencePenalty = other.PresencePenalty;
+        RawRepresentationFactory = other.RawRepresentationFactory;
+        ResponseFormat = other.ResponseFormat;
+        Seed = other.Seed;
+        Temperature = other.Temperature;
+        ToolMode = other.ToolMode;
+        TopK = other.TopK;
+        TopP = other.TopP;
+
+        if (other.StopSequences is not null)
+        {
+            StopSequences = [.. other.StopSequences];
+        }
+
+        if (other.Tools is not null)
+        {
+            Tools = [.. other.Tools];
+        }
+
+        if (other.BackgroundResponsesOptions is not null)
+        {
+            BackgroundResponsesOptions = new BackgroundResponsesOptions
+            {
+                Allow = other.BackgroundResponsesOptions.Allow
+            };
+        }
+    }
+
     /// <summary>Gets or sets an optional identifier used to associate a request with an existing conversation.</summary>
     /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#stateless-vs-stateful-clients">Stateless vs. stateful clients.</related>
     public string? ConversationId { get; set; }
@@ -162,50 +211,14 @@ public class ChatOptions
     /// <summary>Produces a clone of the current <see cref="ChatOptions"/> instance.</summary>
     /// <returns>A clone of the current <see cref="ChatOptions"/> instance.</returns>
     /// <remarks>
+    /// <para>
     /// The clone will have the same values for all properties as the original instance. Any collections, like <see cref="Tools"/>,
     /// <see cref="StopSequences"/>, and <see cref="AdditionalProperties"/>, are shallow-cloned, meaning a new collection instance is created,
     /// but any references contained by the collections are shared with the original.
+    /// </para>
+    /// <para>
+    /// Derived types should override <see cref="Clone"/> to return an instance of the derived type.
+    /// </para>
     /// </remarks>
-    public virtual ChatOptions Clone()
-    {
-        ChatOptions options = new()
-        {
-            AdditionalProperties = AdditionalProperties?.Clone(),
-            AllowMultipleToolCalls = AllowMultipleToolCalls,
-            ConversationId = ConversationId,
-            ContinuationToken = ContinuationToken,
-            FrequencyPenalty = FrequencyPenalty,
-            Instructions = Instructions,
-            MaxOutputTokens = MaxOutputTokens,
-            ModelId = ModelId,
-            PresencePenalty = PresencePenalty,
-            RawRepresentationFactory = RawRepresentationFactory,
-            ResponseFormat = ResponseFormat,
-            Seed = Seed,
-            Temperature = Temperature,
-            ToolMode = ToolMode,
-            TopK = TopK,
-            TopP = TopP,
-        };
-
-        if (BackgroundResponsesOptions is { } bros)
-        {
-            options.BackgroundResponsesOptions = new BackgroundResponsesOptions
-            {
-                Allow = bros.Allow
-            };
-        }
-
-        if (StopSequences is not null)
-        {
-            options.StopSequences = new List<string>(StopSequences);
-        }
-
-        if (Tools is not null)
-        {
-            options.Tools = new List<AITool>(Tools);
-        }
-
-        return options;
-    }
+    public virtual ChatOptions Clone() => new(this);
 }

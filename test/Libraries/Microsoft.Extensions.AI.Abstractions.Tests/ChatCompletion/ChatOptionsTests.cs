@@ -223,4 +223,70 @@ public class ChatOptionsTests
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
     }
+
+    [Fact]
+    public void CopyConstructors_EnableHierarchyCloning()
+    {
+        OptionsB b = new()
+        {
+            ModelId = "test",
+            A = 42,
+            B = 84,
+        };
+
+        ChatOptions clone = b.Clone();
+
+        Assert.Equal("test", clone.ModelId);
+        Assert.Equal(42, Assert.IsType<OptionsA>(clone, exactMatch: false).A);
+        Assert.Equal(84, Assert.IsType<OptionsB>(clone, exactMatch: true).B);
+    }
+
+    private class OptionsA : ChatOptions
+    {
+        public OptionsA()
+        {
+        }
+
+        protected OptionsA(OptionsA other)
+            : base(other)
+        {
+            A = other.A;
+        }
+
+        public int A { get; set; }
+
+        public override ChatOptions Clone() => new OptionsA(this);
+    }
+
+    private class OptionsB : OptionsA
+    {
+        public OptionsB()
+        {
+        }
+
+        protected OptionsB(OptionsB other)
+            : base(other)
+        {
+            B = other.B;
+        }
+
+        public int B { get; set; }
+
+        public override ChatOptions Clone() => new OptionsB(this);
+    }
+
+    [Fact]
+    public void CopyConstructor_Null_Valid()
+    {
+        PassedNullToBaseOptions options = new();
+        Assert.NotNull(options);
+    }
+
+    private class PassedNullToBaseOptions : ChatOptions
+    {
+        public PassedNullToBaseOptions()
+            : base(null)
+        {
+        }
+    }
 }
