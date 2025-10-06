@@ -80,14 +80,10 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
 
         // Get the thread ID.
         string? threadId = options?.ConversationId ?? _defaultThreadId;
-        if (threadId is null && toolResults is not null)
-        {
-            Throw.ArgumentException(nameof(messages), "No thread ID was provided, but chat messages includes tool results.");
-        }
 
         // Get any active run ID for this thread. This is necessary in case a thread has been left with an
-        // active run, in which all attempts other than submitting tools will fail. We thus need to cancel
-        // any active run on the thread.
+        // active run, in which case all attempts other than submitting tools will fail. We thus need to cancel
+        // any active run on the thread if we're not submitting tool results to it.
         ThreadRun? threadRun = null;
         if (threadId is not null)
         {
@@ -111,7 +107,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
             ConvertFunctionResultsToToolOutput(toolResults, out List<ToolOutput>? toolOutputs) is { } toolRunId &&
             toolRunId == threadRun.Id)
         {
-            // There's an active run and we have tool results to submit, so submit the results and continue streaming.
+            // There's an active run and, critically, we have tool results to submit for that exact run, so submit the results and continue streaming.
             // This is going to ignore any additional messages in the run options, as we are only submitting tool outputs,
             // but there doesn't appear to be a way to submit additional messages, and having such additional messages is rare.
             updates = _client.SubmitToolOutputsToRunStreamingAsync(threadRun.ThreadId, threadRun.Id, toolOutputs, cancellationToken);
@@ -487,7 +483,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                         messageContents.Add(MessageContent.FromImageUri(image.Uri));
                         break;
 
-                    case FunctionResultContent result:
+                    case FunctionResultContent result when chatMessage.Role == ChatRole.Tool:
                         (functionResults ??= []).Add(result);
                         break;
                 }
