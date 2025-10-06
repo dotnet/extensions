@@ -10,7 +10,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -124,7 +123,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         if (openAIResponse.OutputItems is not null)
         {
-            response.Messages = [.. ToChatMessages(openAIResponse.OutputItems)];
+            response.Messages = [.. ToChatMessages(openAIResponse.OutputItems, openAIOptions)];
 
             if (response.Messages.LastOrDefault() is { } lastMessage && openAIResponse.Error is { } error)
             {
@@ -140,7 +139,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         return response;
     }
 
-    internal static IEnumerable<ChatMessage> ToChatMessages(IEnumerable<ResponseItem> items)
+    internal static IEnumerable<ChatMessage> ToChatMessages(IEnumerable<ResponseItem> items, ResponseCreationOptions? options = null)
     {
         ChatMessage? message = null;
 
@@ -201,7 +200,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case ImageGenerationCallResponseItem imageGenItem:
-                    message.Contents.Add(GetContentFromImageGen(imageGenItem));
+                    message.Contents.Add(GetContentFromImageGen(imageGenItem, options));
                     break;
 
                 default:
@@ -216,72 +215,32 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ResponseItem))]
-    private static DataContent GetContentFromImageGen(ImageGenerationCallResponseItem outputItem)
+    private static DataContent GetContentFromImageGen(ImageGenerationCallResponseItem outputItem, ResponseCreationOptions? options)
     {
-        const BindingFlags InternalBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-        IDictionary<string, BinaryData>? additionalRawData = typeof(ResponseItem)
-            .GetProperty("SerializedAdditionalRawData", InternalBindingFlags)
-            ?.GetValue(outputItem) as IDictionary<string, BinaryData>;
-
-        string outputFormat = getStringProperty("output_format") ?? "png";
+        var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
+        string outputFormat = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
         return new DataContent(outputItem.GeneratedImageBytes, $"image/{outputFormat}")
         {
             RawRepresentation = outputItem
         };
-
-        string? getStringProperty(string name)
-        {
-            if (additionalRawData?.TryGetValue(name, out var outputFormat) == true)
-            {
-                var stringJsonTypeInfo = (JsonTypeInfo<string>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(string));
-                return JsonSerializer.Deserialize(outputFormat, stringJsonTypeInfo);
-            }
-
-            return null;
-        }
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ResponseItem))]
-    private static DataContent GetContentFromImageGenPartialImageEvent(StreamingResponseImageGenerationCallPartialImageUpdate update)
+    private static DataContent GetContentFromImageGenPartialImageEvent(StreamingResponseImageGenerationCallPartialImageUpdate update, ResponseCreationOptions? options)
     {
-        const BindingFlags InternalBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
+        var outputType = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
-        IDictionary<string, BinaryData>? additionalRawData = typeof(ResponseItem)
-            .GetProperty("SerializedAdditionalRawData", InternalBindingFlags)
-            ?.GetValue(update) as IDictionary<string, BinaryData>;
-
-        // Properties
-        //   background
-        //   output_format
-        //   quality
-        //   revised_prompt
-        //   size
-
-        string outputFormat = getStringProperty("output_format") ?? "png";
-
-        return new DataContent(update.PartialImageBytes, $"image/{outputFormat}")
+        return new DataContent(update.PartialImageBytes, $"image/{outputType}")
         {
             RawRepresentation = update,
             AdditionalProperties = new()
             {
-                ["ItemId"] = update.ItemId,
-                ["OutputIndex"] = update.OutputIndex,
-                ["PartialImageIndex"] = update.PartialImageIndex
+                [nameof(update.ItemId)] = update.ItemId,
+                [nameof(update.OutputIndex)] = update.OutputIndex,
+                [nameof(update.PartialImageIndex)] = update.PartialImageIndex
             }
         };
-
-        string? getStringProperty(string name)
-        {
-            if (additionalRawData?.TryGetValue(name, out var outputFormat) == true)
-            {
-                var stringJsonTypeInfo = (JsonTypeInfo<string>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(string));
-                return JsonSerializer.Deserialize(outputFormat, stringJsonTypeInfo);
-            }
-
-            return null;
-        }
     }
 
     /// <inheritdoc />
@@ -426,7 +385,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case StreamingResponseImageGenerationCallPartialImageUpdate streamingImageGenUpdate:
-                    yield return CreateUpdate(GetContentFromImageGenPartialImageEvent(streamingImageGenUpdate));
+                    yield return CreateUpdate(GetContentFromImageGenPartialImageEvent(streamingImageGenUpdate, options));
                     break;
 
                 default:
