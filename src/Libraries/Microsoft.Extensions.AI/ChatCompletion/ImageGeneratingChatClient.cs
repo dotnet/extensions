@@ -150,19 +150,11 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                 // Replace any FunctionResultContent instances with generated image content
                 var newContents = ReplaceImageGenerationFunctionResults(update.Contents);
 
-                if (newContents != update.Contents)
+                if (!ReferenceEquals(newContents, update.Contents))
                 {
                     // Create a new update instance with modified contents
-                    var modifiedUpdate = new ChatResponseUpdate(update.Role, newContents)
-                    {
-                        AuthorName = update.AuthorName,
-                        RawRepresentation = update.RawRepresentation,
-                        AdditionalProperties = update.AdditionalProperties,
-                        ResponseId = update.ResponseId,
-                        MessageId = update.MessageId,
-                        ConversationId = update.ConversationId
-                    };
-
+                    var modifiedUpdate = update.Clone();
+                    modifiedUpdate.Contents = newContents;
                     yield return modifiedUpdate;
                 }
                 else
@@ -329,9 +321,11 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
     /// We will have two messages
     /// 1. Role: Assistant, FunctionCall
     /// 2. Role: Tool, FunctionResult
-    /// We need to content from both but we shouldn't remove the messages.
+    /// We need to replace content from both but we shouldn't remove the messages.
     /// If we do not then ChatClient's may not accept our altered history.
-    /// A better approach might be to recreate history that matches what a server side HostedImageGenerationTool would have produced.
+    /// 
+    /// When interating with a HostedImageGenerationTool we will have typically only see a single Message with
+    /// Role: Assistant that contains the DataContent (or a provider specific content, that's exposed as DataContent).    
     /// </summary>
     /// <param name="contents">The list of AI content to process.</param>
     private IList<AIContent> ReplaceImageGenerationFunctionResults(IList<AIContent> contents)

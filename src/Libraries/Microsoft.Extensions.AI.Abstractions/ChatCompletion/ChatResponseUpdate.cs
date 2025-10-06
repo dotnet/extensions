@@ -58,6 +58,30 @@ public class ChatResponseUpdate
         _contents = contents;
     }
 
+    /// <summary>
+    /// Creates a new ChatResponseUpdate instance that is a copy of the current object.
+    /// </summary>
+    /// <remarks>The cloned object is a shallow copy; reference-type properties will reference the same
+    /// objects as the original. Use this method to duplicate the response update for further modification without
+    /// affecting the original instance.</remarks>
+    /// <returns>A new ChatResponseUpdate object with the same property values as the current instance.</returns>
+    [Experimental("MEAI001")]
+    public ChatResponseUpdate Clone() =>
+        new()
+        {
+            AdditionalProperties = AdditionalProperties,
+            AuthorName = AuthorName,
+            Contents = Contents,
+            CreatedAt = CreatedAt,
+            ConversationId = ConversationId,
+            FinishReason = FinishReason,
+            MessageId = MessageId,
+            ModelId = ModelId,
+            RawRepresentation = RawRepresentation,
+            ResponseId = ResponseId,
+            Role = Role,
+        };
+
     /// <summary>Gets or sets the name of the author of the response update.</summary>
     public string? AuthorName
     {
