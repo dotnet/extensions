@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -8,8 +9,9 @@ using Microsoft.Extensions.Http.Diagnostics;
 namespace Microsoft.Extensions.Telemetry.Internal;
 
 /// <summary>
-/// Interface to manage dependency metadata.
+/// (Obsolete) Use <see cref="HttpDependencyMetadataResolver"/>.
 /// </summary>
+[Obsolete("Use HttpDependencyMetadataResolver instead. This internal interface will be removed.")]
 internal interface IDownstreamDependencyMetadataManager
 {
     /// <summary>
