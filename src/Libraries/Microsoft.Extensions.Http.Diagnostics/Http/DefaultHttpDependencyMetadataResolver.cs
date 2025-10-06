@@ -15,7 +15,7 @@ public sealed class DefaultHttpDependencyMetadataResolver : HttpDependencyMetada
     /// Initializes a new instance of the <see cref="DefaultHttpDependencyMetadataResolver"/> class.
     /// </summary>
     /// <param name="dependencyMetadata">A collection of HTTP dependency metadata used for request resolution.</param>
-    public DefaultHttpDependencyMetadataResolver(IEnumerable<IHttpDependencyMetadata> dependencyMetadata)
+    public DefaultHttpDependencyMetadataResolver(IEnumerable<IDownstreamDependencyMetadata> dependencyMetadata)
         : base(dependencyMetadata)
     {
     }

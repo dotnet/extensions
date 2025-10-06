@@ -39,7 +39,7 @@ public abstract class HttpDependencyMetadataResolver
     /// </summary>
     /// <param name="dependencyMetadata">A collection of HTTP dependency metadata used for request resolution.</param>
     /// <exception cref="ArgumentNullException"><paramref name="dependencyMetadata"/> is <see langword="null"/>.</exception>
-    protected HttpDependencyMetadataResolver(IEnumerable<IHttpDependencyMetadata> dependencyMetadata)
+    protected HttpDependencyMetadataResolver(IEnumerable<IDownstreamDependencyMetadata> dependencyMetadata)
     {
         if (dependencyMetadata == null)
         {
@@ -304,7 +304,7 @@ public abstract class HttpDependencyMetadataResolver
         return null;
     }
 
-    private void AddDependency(IHttpDependencyMetadata dependencyMetadata, Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap)
+    private void AddDependency(IDownstreamDependencyMetadata dependencyMetadata, Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap)
     {
         foreach (var hostNameSuffix in dependencyMetadata.UniqueHostNameSuffixes)
         {

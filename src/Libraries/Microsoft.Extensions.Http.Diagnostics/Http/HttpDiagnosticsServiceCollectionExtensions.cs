@@ -22,9 +22,10 @@ public static class HttpDiagnosticsServiceCollectionExtensions
     public static IServiceCollection AddDownstreamDependencyMetadata(this IServiceCollection services, IDownstreamDependencyMetadata downstreamDependencyMetadata)
     {
         _ = Throw.IfNull(services);
-        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
-        _ = services.AddSingleton(downstreamDependencyMetadata);
+        _ = Throw.IfNull(downstreamDependencyMetadata);
 
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDownstreamDependencyMetadata>(downstreamDependencyMetadata));
+        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
         return services;
     }
 
@@ -38,9 +39,8 @@ public static class HttpDiagnosticsServiceCollectionExtensions
         where T : class, IDownstreamDependencyMetadata
     {
         _ = Throw.IfNull(services);
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDownstreamDependencyMetadata, T>());
         services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
-        _ = services.AddSingleton<IDownstreamDependencyMetadata, T>();
-
         return services;
     }
 
@@ -59,19 +59,20 @@ public static class HttpDiagnosticsServiceCollectionExtensions
     /// Adds services required for HTTP dependency metadata resolution with the specified metadata providers.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="metadataProviders">The HTTP dependency metadata providers to register.</param>
+    /// <param name="providers">The HTTP dependency metadata providers to register.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddHttpDependencyMetadataResolver(
         this IServiceCollection services,
-        params IHttpDependencyMetadata[] metadataProviders)
+        params IDownstreamDependencyMetadata[] providers)
     {
-        foreach (var provider in metadataProviders)
+        _ = Throw.IfNull(services);
+
+        foreach (var provider in providers)
         {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpDependencyMetadata>(provider));
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IDownstreamDependencyMetadata>(provider));
         }
 
         services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
-
         return services;
     }
 }
