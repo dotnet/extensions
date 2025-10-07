@@ -306,6 +306,8 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
 
             if (options.Tools is { Count: > 0 } tools)
             {
+                HashSet<ToolDefinition> toolsOverride = new(ToolDefinitionNameEqualityComparer.Instance);
+
                 // If the caller has provided any tool overrides, we'll assume they don't want to use the assistant's tools.
                 // But if they haven't, the only way we can provide our tools is via an override, whereas we'd really like to
                 // just add them. To handle that, we'll get all of the assistant's tools and add them to the override list
@@ -318,10 +320,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                         _assistantTools = assistant.Value.Tools;
                     }
 
-                    foreach (var tool in _assistantTools)
-                    {
-                        runOptions.ToolsOverride.Add(tool);
-                    }
+                    toolsOverride.UnionWith(_assistantTools);
                 }
 
                 // The caller can provide tools in the supplied ThreadAndRunOptions. Augment it with any supplied via ChatOptions.Tools.
@@ -330,12 +329,12 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                     switch (tool)
                     {
                         case AIFunctionDeclaration aiFunction:
-                            runOptions.ToolsOverride.Add(ToOpenAIAssistantsFunctionToolDefinition(aiFunction, options));
+                            _ = toolsOverride.Add(ToOpenAIAssistantsFunctionToolDefinition(aiFunction, options));
                             break;
 
                         case HostedCodeInterpreterTool codeInterpreterTool:
                             var interpreterToolDef = ToolDefinition.CreateCodeInterpreter();
-                            runOptions.ToolsOverride.Add(interpreterToolDef);
+                            _ = toolsOverride.Add(interpreterToolDef);
 
                             if (codeInterpreterTool.Inputs?.Count is > 0)
                             {
@@ -358,7 +357,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                             break;
 
                         case HostedFileSearchTool fileSearchTool:
-                            runOptions.ToolsOverride.Add(ToolDefinition.CreateFileSearch(fileSearchTool.MaximumResultCount));
+                            _ = toolsOverride.Add(ToolDefinition.CreateFileSearch(fileSearchTool.MaximumResultCount));
                             if (fileSearchTool.Inputs is { Count: > 0 } fileSearchInputs)
                             {
                                 foreach (var input in fileSearchInputs)
@@ -373,6 +372,11 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
 
                             break;
                     }
+                }
+
+                foreach (var tool in toolsOverride)
+                {
+                    runOptions.ToolsOverride.Add(tool);
                 }
             }
 
@@ -542,5 +546,23 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
         }
 
         return runId;
+    }
+
+    /// <summary>
+    /// Provides the same behavior as <see cref="EqualityComparer{ToolDefinition}.Default"/>, except
+    /// for <see cref="FunctionToolDefinition"/> it compares names so that two function tool definitions with the
+    /// same name compare equally.
+    /// </summary>
+    private sealed class ToolDefinitionNameEqualityComparer : IEqualityComparer<ToolDefinition>
+    {
+        public static ToolDefinitionNameEqualityComparer Instance { get; } = new();
+
+        public bool Equals(ToolDefinition? x, ToolDefinition? y) =>
+            x is FunctionToolDefinition xFtd && y is FunctionToolDefinition yFtd ? xFtd.FunctionName.Equals(yFtd.FunctionName, StringComparison.Ordinal) :
+            EqualityComparer<ToolDefinition?>.Default.Equals(x, y);
+
+        public int GetHashCode(ToolDefinition obj) =>
+            obj is FunctionToolDefinition ftd ? ftd.FunctionName.GetHashCode(StringComparison.Ordinal) :
+            EqualityComparer<ToolDefinition>.Default.GetHashCode(obj);
     }
 }
