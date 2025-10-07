@@ -1363,7 +1363,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         const string TravelToken = "TRAVEL-PLAN-TOKEN-4826";
 
         List<List<string>> availableToolsPerInvocation = [];
-        string expansionFunctionName = string.Empty;
+        string expansionFunctionName = "__expand_tool_group"; // Default expansion function name
 
         var generateItinerary = AIFunctionFactory.Create(
             (string city) => $"{TravelToken}::{city.ToUpperInvariant()}::DAY-PLAN",
@@ -1383,14 +1383,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         using var client = ChatClient!
             .AsBuilder()
-            .UseToolGrouping(options =>
-            {
-                options.Groups.Add(new AIToolGroup(
-                    name: "TravelUtilities",
-                    description: "Travel planning helpers that generate itinerary tokens.",
-                    tools: new[] { generateItinerary, summarizePacking }));
-                expansionFunctionName = options.ExpansionFunctionName;
-            })
+            .UseToolGrouping()
             .Use((messages, options, next, cancellationToken) =>
             {
                 if (options?.Tools is { Count: > 0 } tools)
@@ -1409,13 +1402,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         List<ChatMessage> messages =
         [
-            new(ChatRole.System, "You are a helpful assistant."),
+            new(ChatRole.System, "You are a helpful assistant. Use the available tools to assist the user."),
             new(ChatRole.User, "Plan a two-day cultural trip to Rome and tell me the itinerary token."),
         ];
 
         var response = await client.GetResponseAsync(messages, new ChatOptions
         {
-            Tools = [generateItinerary, summarizePacking]
+            Tools = [AIToolGroup.Create("TravelUtilities", "Travel planning helpers that generate itinerary tokens.", [generateItinerary, summarizePacking])]
         });
 
         Assert.Contains(response.Messages, message =>
@@ -1448,7 +1441,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         const string LodgingToken = "LODGING-TOKEN-3895";
 
         List<List<string>> availableToolsPerInvocation = [];
-        string expansionFunctionName = string.Empty;
+        string expansionFunctionName = "__expand_tool_group"; // Default expansion function name
 
         var suggestLodging = AIFunctionFactory.Create(
             (string city, string budget) => $"{LodgingToken}::{city.ToUpperInvariant()}::{budget}",
@@ -1460,14 +1453,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         using var client = ChatClient!
             .AsBuilder()
-            .UseToolGrouping(options =>
-            {
-                options.Groups.Add(new AIToolGroup(
-                    name: "TravelUtilities",
-                    description: "Travel helpers used for lodging recommendations.",
-                    tools: new[] { suggestLodging }));
-                expansionFunctionName = options.ExpansionFunctionName;
-            })
+            .UseToolGrouping()
             .Use((messages, options, next, cancellationToken) =>
             {
                 if (options?.Tools is { Count: > 0 } tools)
@@ -1486,13 +1472,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         List<ChatMessage> messages =
         [
-            new(ChatRole.System, "You are a helpful assistant."),
+            new(ChatRole.System, "You are a helpful assistant. Use the available tools to assist the user."),
             new(ChatRole.User, "We're visiting Paris with a nightly budget of 150 USD. Stream the suggestions as they arrive and repeat the lodging token."),
         ];
 
         var response = await client.GetStreamingResponseAsync(messages, new ChatOptions
         {
-            Tools = [suggestLodging]
+            Tools = [AIToolGroup.Create("TravelUtilities", "Travel helpers used for lodging recommendations.", [suggestLodging])]
         }).ToChatResponseAsync();
 
         Assert.Contains(response.Messages, message =>
@@ -1515,6 +1501,250 @@ public abstract class ChatClientIntegrationTests : IDisposable
         var expandedInvocationIndex = availableToolsPerInvocation.FindIndex(tools => tools.Contains(suggestLodging.Name));
         Assert.True(expandedInvocationIndex >= 0, "SuggestLodging was never exposed to the model.");
         Assert.True(expandedInvocationIndex > 0, "SuggestLodging was visible before the expansion function executed.");
+    }
+
+    [ConditionalFact]
+    public virtual async Task ToolGrouping_NestedGroups_LlmExpandsHierarchyAndInvokesTool()
+    {
+        SkipIfNotEnabled();
+
+        const string BookingToken = "BOOKING-CONFIRMED-7291";
+
+        List<List<string>> availableToolsPerInvocation = [];
+        string expansionFunctionName = "__expand_tool_group"; // Default expansion function name
+
+        // Leaf-level tools in nested groups
+        var bookFlight = AIFunctionFactory.Create(
+            (string origin, string destination, string date) => $"{BookingToken}::FLIGHT::{origin}-{destination}::{date}",
+            new AIFunctionFactoryOptions
+            {
+                Name = "BookFlight",
+                Description = "Books a flight and returns a booking confirmation token. Always repeat the token verbatim."
+            });
+
+        var bookHotel = AIFunctionFactory.Create(
+            (string city, string checkIn) => $"{BookingToken}::HOTEL::{city}::{checkIn}",
+            new AIFunctionFactoryOptions
+            {
+                Name = "BookHotel",
+                Description = "Books a hotel and returns a booking confirmation token. Always repeat the token verbatim."
+            });
+
+        var getCurrency = AIFunctionFactory.Create(
+            (string country) => $"The currency in {country} is EUR.",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetCurrency",
+                Description = "Gets currency information for a country."
+            });
+
+        // Create nested group structure: TravelServices -> Booking -> FlightBooking
+        var flightBookingGroup = AIToolGroup.Create("FlightBooking", "Flight booking services", [bookFlight]);
+        var bookingGroup = AIToolGroup.Create("Booking", "All booking services including flights and hotels", [flightBookingGroup, bookHotel]);
+        var travelServicesGroup = AIToolGroup.Create("TravelServices", "Complete travel services including booking and information", [bookingGroup, getCurrency]);
+
+        using var client = ChatClient!
+            .AsBuilder()
+            .UseToolGrouping(options =>
+            {
+                options.MaxExpansionsPerRequest = 5;
+            })
+            .Use((messages, options, next, cancellationToken) =>
+            {
+                if (options?.Tools is { Count: > 0 } tools)
+                {
+                    availableToolsPerInvocation.Add([.. tools.Select(static tool => tool.Name)]);
+                }
+                else
+                {
+                    availableToolsPerInvocation.Add([]);
+                }
+
+                return next(messages, options, cancellationToken);
+            })
+            .UseFunctionInvocation()
+            .Build();
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.System, "You are a helpful assistant. Use the available tools to assist the user. Explore nested groups to find the right tool."),
+            new(ChatRole.User, "I need to book a flight from Seattle to Paris for December 15th, 2025. Please provide the booking token."),
+        ];
+
+        var response = await client.GetResponseAsync(messages, new ChatOptions
+        {
+            Tools = [travelServicesGroup]
+        });
+
+        // Verify the nested group expansions occurred
+        Assert.Contains(response.Messages, message =>
+            message.Role == ChatRole.Tool &&
+            message.Contents.OfType<FunctionResultContent>().Any(content =>
+                content.Result?.ToString()?.IndexOf("Successfully expanded group 'TravelServices'", StringComparison.OrdinalIgnoreCase) >= 0));
+
+        Assert.Contains(response.Messages, message =>
+            message.Role == ChatRole.Tool &&
+            message.Contents.OfType<FunctionResultContent>().Any(content =>
+                content.Result?.ToString()?.IndexOf("Successfully expanded group 'Booking'", StringComparison.OrdinalIgnoreCase) >= 0));
+
+        Assert.Contains(response.Messages, message =>
+            message.Role == ChatRole.Tool &&
+            message.Contents.OfType<FunctionResultContent>().Any(content =>
+                content.Result?.ToString()?.IndexOf("Successfully expanded group 'FlightBooking'", StringComparison.OrdinalIgnoreCase) >= 0));
+
+        // Verify the actual tool was invoked
+        Assert.Contains(response.Messages, message =>
+            message.Contents.OfType<FunctionCallContent>().Any(content =>
+                string.Equals(content.Name, "BookFlight", StringComparison.Ordinal)));
+
+        // Verify the booking token appears in the response
+        var responseText = response.Text ?? string.Empty;
+        Assert.Contains(BookingToken, responseText);
+        Assert.Contains("SEATTLE", responseText.ToUpperInvariant());
+        Assert.Contains("PARIS", responseText.ToUpperInvariant());
+
+        // Verify progressive expansion: first only expansion function, then groups appear, finally leaf tools
+        Assert.NotEmpty(availableToolsPerInvocation);
+        var firstInvocationTools = availableToolsPerInvocation[0];
+        Assert.Contains(expansionFunctionName, firstInvocationTools);
+        Assert.DoesNotContain("BookFlight", firstInvocationTools);
+        Assert.DoesNotContain("Booking", firstInvocationTools);
+
+        // Verify BookFlight was not available until after all necessary expansions
+        var bookFlightInvocationIndex = availableToolsPerInvocation.FindIndex(tools => tools.Contains("BookFlight"));
+        Assert.True(bookFlightInvocationIndex >= 0, "BookFlight was never exposed to the model.");
+        Assert.True(bookFlightInvocationIndex > 2, "BookFlight was visible before completing the nested expansion hierarchy.");
+    }
+
+    [ConditionalFact]
+    public virtual async Task ToolGrouping_MultipleNestedGroups_LlmSelectsCorrectPathAndInvokesTool()
+    {
+        SkipIfNotEnabled();
+
+        const string DiagnosticToken = "DIAGNOSTIC-REPORT-5483";
+
+        List<List<string>> availableToolsPerInvocation = [];
+        string expansionFunctionName = "__expand_tool_group"; // Default expansion function name
+
+        // Healthcare nested tools
+        var runBloodTest = AIFunctionFactory.Create(
+            (string patientId) => $"{DiagnosticToken}::BLOOD-TEST::{patientId}::COMPLETE",
+            new AIFunctionFactoryOptions
+            {
+                Name = "RunBloodTest",
+                Description = "Orders a blood test and returns a diagnostic token. Always repeat the token verbatim."
+            });
+
+        var scheduleXRay = AIFunctionFactory.Create(
+            (string patientId, string bodyPart) => $"X-Ray scheduled for {bodyPart}",
+            new AIFunctionFactoryOptions
+            {
+                Name = "ScheduleXRay",
+                Description = "Schedules an X-ray appointment."
+            });
+
+        // Financial nested tools
+        var processPayment = AIFunctionFactory.Create(
+            (string accountId, decimal amount) => $"Payment of ${amount} processed for account {accountId}",
+            new AIFunctionFactoryOptions
+            {
+                Name = "ProcessPayment",
+                Description = "Processes a payment transaction."
+            });
+
+        var generateInvoice = AIFunctionFactory.Create(
+            (string customerId) => $"Invoice generated for customer {customerId}",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GenerateInvoice",
+                Description = "Generates an invoice document."
+            });
+
+        // Create two separate nested hierarchies
+        var diagnosticsGroup = AIToolGroup.Create("Diagnostics", "Medical diagnostic services", [runBloodTest]);
+        var imagingGroup = AIToolGroup.Create("Imaging", "Medical imaging services", [scheduleXRay]);
+        var healthcareGroup = AIToolGroup.Create("Healthcare", "All healthcare services including diagnostics and imaging", [diagnosticsGroup, imagingGroup]);
+
+        var paymentsGroup = AIToolGroup.Create("Payments", "Payment processing services", [processPayment]);
+        var billingGroup = AIToolGroup.Create("Billing", "Billing and invoicing services", [generateInvoice]);
+        var financialGroup = AIToolGroup.Create("Financial", "All financial services including payments and billing", [paymentsGroup, billingGroup]);
+
+        using var client = ChatClient!
+            .AsBuilder()
+            .UseToolGrouping(options =>
+            {
+                options.MaxExpansionsPerRequest = 5;
+            })
+            .Use((messages, options, next, cancellationToken) =>
+            {
+                if (options?.Tools is { Count: > 0 } tools)
+                {
+                    availableToolsPerInvocation.Add([.. tools.Select(static tool => tool.Name)]);
+                }
+                else
+                {
+                    availableToolsPerInvocation.Add([]);
+                }
+
+                return next(messages, options, cancellationToken);
+            })
+            .UseFunctionInvocation()
+            .Build();
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.System, "You are a helpful assistant. Use the available tools to assist the user. Navigate through nested groups to find the appropriate tool."),
+            new(ChatRole.User, "Patient P-42 needs a blood test ordered. Please provide the diagnostic token."),
+        ];
+
+        var response = await client.GetResponseAsync(messages, new ChatOptions
+        {
+            Tools = [healthcareGroup, financialGroup]
+        });
+
+        // Verify the correct nested path was taken (Healthcare -> Diagnostics)
+        Assert.Contains(response.Messages, message =>
+            message.Role == ChatRole.Tool &&
+            message.Contents.OfType<FunctionResultContent>().Any(content =>
+                content.Result?.ToString()?.IndexOf("Successfully expanded group 'Healthcare'", StringComparison.OrdinalIgnoreCase) >= 0));
+
+        Assert.Contains(response.Messages, message =>
+            message.Role == ChatRole.Tool &&
+            message.Contents.OfType<FunctionResultContent>().Any(content =>
+                content.Result?.ToString()?.IndexOf("Successfully expanded group 'Diagnostics'", StringComparison.OrdinalIgnoreCase) >= 0));
+
+        // Verify the incorrect path was NOT taken (Financial group should not be expanded)
+        Assert.DoesNotContain(response.Messages, message =>
+            message.Role == ChatRole.Tool &&
+            message.Contents.OfType<FunctionResultContent>().Any(content =>
+                content.Result?.ToString()?.IndexOf("Successfully expanded group 'Financial'", StringComparison.OrdinalIgnoreCase) >= 0));
+
+        // Verify the correct leaf tool was invoked
+        Assert.Contains(response.Messages, message =>
+            message.Contents.OfType<FunctionCallContent>().Any(content =>
+                string.Equals(content.Name, "RunBloodTest", StringComparison.Ordinal)));
+
+        // Verify wrong tools were not invoked
+        Assert.DoesNotContain(response.Messages, message =>
+            message.Contents.OfType<FunctionCallContent>().Any(content =>
+                string.Equals(content.Name, "ProcessPayment", StringComparison.Ordinal) ||
+                string.Equals(content.Name, "GenerateInvoice", StringComparison.Ordinal)));
+
+        // Verify the diagnostic token appears in the response
+        var responseText = response.Text ?? string.Empty;
+        Assert.Contains(DiagnosticToken, responseText);
+        Assert.Contains("P-42", responseText);
+
+        // Verify progressive expansion behavior
+        Assert.NotEmpty(availableToolsPerInvocation);
+        var firstInvocationTools = availableToolsPerInvocation[0];
+        Assert.Contains(expansionFunctionName, firstInvocationTools);
+        Assert.DoesNotContain("RunBloodTest", firstInvocationTools);
+
+        // Verify RunBloodTest only became available after the correct nested expansions
+        var runBloodTestInvocationIndex = availableToolsPerInvocation.FindIndex(tools => tools.Contains("RunBloodTest"));
+        Assert.True(runBloodTestInvocationIndex >= 0, "RunBloodTest was never exposed to the model.");
+        Assert.True(runBloodTestInvocationIndex > 1, "RunBloodTest was visible before completing necessary nested expansions.");
     }
 
     private sealed class TestSummarizingChatClient : IChatClient
