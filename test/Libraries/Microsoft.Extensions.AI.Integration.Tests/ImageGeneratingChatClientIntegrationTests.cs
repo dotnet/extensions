@@ -21,12 +21,13 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
 {
+    private const string ImageKey = "meai_image";
     private readonly IChatClient? _baseChatClient;
 
     protected ImageGeneratingChatClientIntegrationTests()
     {
         _baseChatClient = CreateChatClient();
-        ImageGenerator = CreateImageGenerator();
+        ImageGenerator = new();
 
         if (_baseChatClient != null)
         {
@@ -42,7 +43,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
     protected IChatClient? ChatClient { get; }
 
     /// <summary>Gets the IImageGenerator used for testing.</summary>
-    protected IImageGenerator ImageGenerator { get; }
+    protected CapturingImageGenerator ImageGenerator { get; }
 
     public void Dispose()
     {
@@ -60,25 +61,66 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
     protected abstract IChatClient? CreateChatClient();
 
     /// <summary>
-    /// Creates the IImageGenerator implementation for testing.
-    /// The default implementation creates a test image generator that captures calls.
+    /// Helper method to get a chat response using either streaming or non-streaming based on the parameter.
     /// </summary>
-    /// <returns>An IImageGenerator instance for testing.</returns>
-    protected virtual IImageGenerator CreateImageGenerator() => new CapturingImageGenerator();
+    /// <param name="useStreaming">Whether to use streaming or non-streaming response.</param>
+    /// <param name="messages">The chat messages to send.</param>
+    /// <param name="options">The chat options to use.</param>
+    /// <returns>A ChatResponse from either streaming or non-streaming call.</returns>
+    protected async Task<ChatResponse> GetResponseAsync(bool useStreaming, IEnumerable<ChatMessage> messages, ChatOptions? options = null, IChatClient? chatClient = null)
+    {
+        chatClient ??= ChatClient ?? throw new InvalidOperationException("ChatClient is not initialized.");
 
-    [ConditionalFact]
-    public virtual async Task GenerateImage_CallsGenerateFunction_ReturnsDataContent()
+        if (useStreaming)
+        {
+            return ValidateChatResponse(await chatClient.GetStreamingResponseAsync(messages, options).ToChatResponseAsync());
+        }
+        else
+        {
+            return ValidateChatResponse(await chatClient.GetResponseAsync(messages, options));
+        }
+
+        static ChatResponse ValidateChatResponse(ChatResponse response)
+        {
+            var contents = response.Messages.SelectMany(m => m.Contents).ToArray();
+
+            List<string> imageIds = [];
+            foreach (var dataContent in contents.OfType<DataContent>())
+            {
+                var imageId = dataContent.AdditionalProperties?[ImageKey] as string;
+                Assert.NotNull(imageId);
+                imageIds.Add(imageId);
+            }
+
+            foreach (var textContent in contents.OfType<TextContent>())
+            {
+                Assert.DoesNotContain(ImageKey, textContent.Text, StringComparison.OrdinalIgnoreCase);
+                foreach (var imageId in imageIds)
+                {
+                    // Ensure no image IDs appear in text content
+                    Assert.DoesNotContain(imageId, textContent.Text, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+
+            return response;
+        }
+    }
+
+    [ConditionalTheory]
+    [InlineData(false)] // Non-streaming
+    [InlineData(true)]  // Streaming
+    public virtual async Task GenerateImage_CallsGenerateFunction_ReturnsDataContent(bool useStreaming)
     {
         SkipIfNotEnabled();
 
-        var imageGenerator = (CapturingImageGenerator)ImageGenerator;
+        var imageGenerator = ImageGenerator;
         var chatOptions = new ChatOptions
         {
             Tools = [new HostedImageGenerationTool()]
         };
 
         // Act
-        var response = await ChatClient.GetResponseAsync(
+        var response = await GetResponseAsync(useStreaming,
             [new ChatMessage(ChatRole.User, "Please generate an image of a cat")],
             chatOptions);
 
@@ -98,12 +140,14 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.False(imageContent.Data.IsEmpty);
     }
 
-    [ConditionalFact]
-    public virtual async Task EditImage_WithImageInSameRequest_PassesExactDataContent()
+    [ConditionalTheory]
+    [InlineData(false)] // Non-streaming
+    [InlineData(true)]  // Streaming
+    public virtual async Task EditImage_WithImageInSameRequest_PassesExactDataContent(bool useStreaming)
     {
         SkipIfNotEnabled();
 
-        var imageGenerator = (CapturingImageGenerator)ImageGenerator;
+        var imageGenerator = ImageGenerator;
         var testImageData = new byte[] { 0x89, 0x50, 0x4E, 0x47 }; // PNG header
         var originalImageData = new DataContent(testImageData, "image/png") { Name = "original.png" };
         var chatOptions = new ChatOptions
@@ -112,7 +156,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         };
 
         // Act
-        var response = await ChatClient.GetResponseAsync(
+        var response = await GetResponseAsync(useStreaming,
             [new ChatMessage(ChatRole.User, [new TextContent("Please edit this image to add a red border"), originalImageData])],
             chatOptions);
 
@@ -127,12 +171,14 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.Equal("original.png", originalImageContent.Name);
     }
 
-    [ConditionalFact]
-    public virtual async Task GenerateThenEdit_FromChatHistory_EditsGeneratedImage()
+    [ConditionalTheory]
+    [InlineData(false)] // Non-streaming
+    [InlineData(true)]  // Streaming
+    public virtual async Task GenerateThenEdit_FromChatHistory_EditsGeneratedImage(bool useStreaming)
     {
         SkipIfNotEnabled();
 
-        var imageGenerator = (CapturingImageGenerator)ImageGenerator;
+        var imageGenerator = ImageGenerator;
         var chatOptions = new ChatOptions
         {
             Tools = [new HostedImageGenerationTool()]
@@ -144,12 +190,12 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         };
 
         // First request: Generate image
-        var firstResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        var firstResponse = await GetResponseAsync(useStreaming, chatHistory, chatOptions);
         chatHistory.AddRange(firstResponse.Messages);
 
         // Second request: Edit the generated image
         chatHistory.Add(new ChatMessage(ChatRole.User, "Please edit the image to make it more colorful"));
-        var secondResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        var secondResponse = await GetResponseAsync(useStreaming, chatHistory, chatOptions);
 
         // Assert
         Assert.Equal(2, imageGenerator.GenerateCalls.Count);
@@ -171,12 +217,14 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.Contains("generated_image_1", editedImage.Name);
     }
 
-    [ConditionalFact]
-    public virtual async Task MultipleEdits_EditsLatestImage()
+    [ConditionalTheory]
+    [InlineData(false)] // Non-streaming
+    [InlineData(true)]  // Streaming
+    public virtual async Task MultipleEdits_EditsLatestImage(bool useStreaming)
     {
         SkipIfNotEnabled();
 
-        var imageGenerator = (CapturingImageGenerator)ImageGenerator;
+        var imageGenerator = ImageGenerator;
         var chatOptions = new ChatOptions
         {
             Tools = [new HostedImageGenerationTool()]
@@ -188,17 +236,17 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         };
 
         // First: Generate image
-        var firstResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        var firstResponse = await GetResponseAsync(useStreaming, chatHistory, chatOptions);
         chatHistory.AddRange(firstResponse.Messages);
 
         // Second: First edit
         chatHistory.Add(new ChatMessage(ChatRole.User, "Please edit the image to add flowers"));
-        var secondResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        var secondResponse = await GetResponseAsync(useStreaming, chatHistory, chatOptions);
         chatHistory.AddRange(secondResponse.Messages);
 
         // Third: Second edit (should edit the latest version by default)
         chatHistory.Add(new ChatMessage(ChatRole.User, "Please edit that last image to add birds"));
-        var thirdResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        var thirdResponse = await GetResponseAsync(useStreaming, chatHistory, chatOptions);
 
         // Assert
         Assert.Equal(3, imageGenerator.GenerateCalls.Count);
@@ -211,12 +259,14 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.Equal(secondImage, lastImageToEdit);
     }
 
-    [ConditionalFact]
-    public virtual async Task MultipleEdits_EditsFirstImage()
+    [ConditionalTheory]
+    [InlineData(false)] // Non-streaming
+    [InlineData(true)]  // Streaming
+    public virtual async Task MultipleEdits_EditsFirstImage(bool useStreaming)
     {
         SkipIfNotEnabled();
 
-        var imageGenerator = (CapturingImageGenerator)ImageGenerator;
+        var imageGenerator = ImageGenerator;
         var chatOptions = new ChatOptions
         {
             Tools = [new HostedImageGenerationTool()]
@@ -228,17 +278,17 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         };
 
         // First: Generate image
-        var firstResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        var firstResponse = await GetResponseAsync(useStreaming, chatHistory, chatOptions);
         chatHistory.AddRange(firstResponse.Messages);
 
         // Second: First edit
         chatHistory.Add(new ChatMessage(ChatRole.User, "Please edit the image to add fruit"));
-        var secondResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        var secondResponse = await GetResponseAsync(useStreaming, chatHistory, chatOptions);
         chatHistory.AddRange(secondResponse.Messages);
 
         // Third: Second edit (should edit the latest version by default)
         chatHistory.Add(new ChatMessage(ChatRole.User, "That didn't work out.  Please edit the original image to add birds"));
-        var thirdResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        var thirdResponse = await GetResponseAsync(useStreaming, chatHistory, chatOptions);
 
         // Assert
         Assert.Equal(3, imageGenerator.GenerateCalls.Count);
@@ -251,12 +301,14 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.Equal(firstGeneratedImage, lastImageToEdit);
     }
 
-    [ConditionalFact]
-    public virtual async Task ImageGeneration_WithOptions_PassesOptionsToGenerator()
+    [ConditionalTheory]
+    [InlineData(false)] // Non-streaming
+    [InlineData(true)]  // Streaming
+    public virtual async Task ImageGeneration_WithOptions_PassesOptionsToGenerator(bool useStreaming)
     {
         SkipIfNotEnabled();
 
-        var imageGenerator = (CapturingImageGenerator)ImageGenerator;
+        var imageGenerator = ImageGenerator;
         var imageGenerationOptions = new ImageGenerationOptions
         {
             Count = 2,
@@ -269,7 +321,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         };
 
         // Act
-        var response = await ChatClient.GetResponseAsync(
+        var response = await GetResponseAsync(useStreaming,
             [new ChatMessage(ChatRole.User, "Generate an image of a castle")],
             chatOptions);
 
@@ -281,8 +333,10 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.Equal(new System.Drawing.Size(512, 512), options.ImageSize);
     }
 
-    [ConditionalFact]
-    public virtual async Task ImageContentHandling_AllImages_ReplacesImagesWithPlaceholders()
+    [ConditionalTheory]
+    [InlineData(false)] // Non-streaming
+    [InlineData(true)]  // Streaming
+    public virtual async Task ImageContentHandling_AllImages_ReplacesImagesWithPlaceholders(bool useStreaming)
     {
         SkipIfNotEnabled();
 
@@ -290,7 +344,6 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         var capturedMessages = new List<IEnumerable<ChatMessage>>();
 
         // Create a new ImageGeneratingChatClient with AllImages data content handling
-
         using var imageGeneratingClient = _baseChatClient!
             .AsBuilder()
             .UseImageGeneration(ImageGenerator)
@@ -305,12 +358,16 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         var originalImage = new DataContent(testImageData, "image/png") { Name = "test.png" };
 
         // Act
-        await imageGeneratingClient.GetResponseAsync([
-            new ChatMessage(ChatRole.User, [
-                new TextContent("Here's an image to process"),
-                originalImage
-            ])
-        ], new ChatOptions { Tools = [new HostedImageGenerationTool()] });
+        await GetResponseAsync(useStreaming,
+            [
+                new ChatMessage(ChatRole.User,
+                [
+                    new TextContent("Here's an image to process"),
+                    originalImage
+                ])
+            ],
+            new ChatOptions { Tools = [new HostedImageGenerationTool()] },
+            imageGeneratingClient);
 
         // Assert
         Assert.NotEmpty(capturedMessages);
@@ -319,7 +376,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
 
         // Should have text content with placeholder instead of original image
         var textContents = userMessage.Contents.OfType<TextContent>().ToList();
-        Assert.Contains(textContents, tc => tc.Text.Contains("[meai_image:") && tc.Text.Contains("] available for edit"));
+        Assert.Contains(textContents, tc => tc.Text.Contains(ImageKey) && tc.Text.Contains("] available for edit"));
 
         // Should not contain the original DataContent
         Assert.DoesNotContain(userMessage.Contents, c => c == originalImage);

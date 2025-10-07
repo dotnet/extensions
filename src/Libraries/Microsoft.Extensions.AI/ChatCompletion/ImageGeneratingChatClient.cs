@@ -142,6 +142,7 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
     {
         private readonly IImageGenerator _imageGenerator;
         private readonly DataContentHandling _dataContentHandling;
+        private readonly HashSet<string> _toolNames = new(StringComparer.Ordinal);
         private readonly Dictionary<string, List<AIContent>> _imageContentByCallId = [];
         private readonly Dictionary<string, AIContent> _imageContentById = new(StringComparer.OrdinalIgnoreCase);
         private ImageGenerationOptions? _imageGenerationOptions;
@@ -269,8 +270,9 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             {
                 var content = contents[i];
 
+                // We must lookup by name because in the streaming case we have not yet been called to record the CallId.
                 if (content is FunctionCallContent functionCall &&
-                    _imageContentByCallId.ContainsKey(functionCall.CallId))
+                    _toolNames.Contains(functionCall.Name))
                 {
                     // create a new list and omit the FunctionCallContent
                     newContents ??= CopyList(contents, i);
@@ -432,6 +434,11 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                 AIFunctionFactory.Create(EditImageAsync),
                 AIFunctionFactory.Create(GetImagesForEdit)
             ];
+
+            foreach (var tool in tools)
+            {
+                _toolNames.Add(tool.Name);
+            }
 
             var result = CopyList(existingTools, toOffsetExclusive, tools.Length);
             result.AddRange(tools);
