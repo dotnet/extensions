@@ -152,29 +152,6 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             _dataContentHandling = dataContentHandling;
         }
 
-        private static List<T> CopyList<T>(IList<T> original, int toOffsetExclusive, int additionalCapacity = 0)
-        {
-            var newList = new List<T>(original.Count + additionalCapacity);
-
-            // Copy all items up to and excluding the current index
-            for (int j = 0; j < toOffsetExclusive; j++)
-            {
-                newList.Add(original[j]);
-            }
-
-            return newList;
-        }
-
-        private AITool[] GetAITools()
-        {
-            return
-            [
-                AIFunctionFactory.Create(GenerateImageAsync),
-                AIFunctionFactory.Create(EditImageAsync),
-                AIFunctionFactory.Create(GetImagesForEdit)
-            ];
-        }
-
         public IEnumerable<ChatMessage> ProcessChatMessages(IEnumerable<ChatMessage> messages)
         {
             // If no special handling is needed, return the original messages
@@ -216,10 +193,8 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
 
                 if (newContents != null)
                 {
-                    newMessages ??= new List<ChatMessage>(messages.Take(messageIndex));
-
+                    newMessages ??= [.. messages.Take(messageIndex)];
                     var newMessage = message.Clone();
-
                     newMessage.Contents = newContents;
                     newMessages.Add(newMessage);
                 }
@@ -255,11 +230,7 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
 
                     // for the first image generation tool, clone the options and insert our function tools
                     // remove any subsequent image generation tools
-                    if (newTools is null)
-                    {
-                        newTools = CopyList(tools, i);
-                        newTools.AddRange(GetAITools());
-                    }
+                    newTools ??= InitializeTools(tools, i);
                 }
                 else
                 {
@@ -275,37 +246,6 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             }
 
             return options;
-        }
-
-        private DataContent? RetrieveImageContent(string imageId)
-        {
-            if (_imageContentById.TryGetValue(imageId, out var imageContent))
-            {
-                return imageContent as DataContent;
-            }
-
-            return null;
-        }
-
-        private string StoreImage(DataContent imageContent, bool isGenerated = false)
-        {
-            // Generate a unique ID for the image if it doesn't have one
-            string? imageId = null;
-            if (imageContent.AdditionalProperties?.TryGetValue(ImageKey, out imageId) is false || imageId is null)
-            {
-                imageId = imageContent.Name ?? Guid.NewGuid().ToString();
-            }
-
-            if (isGenerated)
-            {
-                imageContent.AdditionalProperties ??= new();
-                imageContent.AdditionalProperties[ImageKey] = imageId;
-            }
-
-            // Store the image content for later retrieval
-            _imageContentById[imageId] = imageContent;
-
-            return imageId;
         }
 
         /// <summary>
@@ -465,6 +405,68 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             {
                 return "Invalid image data format. Please provide a valid base64-encoded image.";
             }
+        }
+
+        private static List<T> CopyList<T>(IList<T> original, int toOffsetExclusive, int additionalCapacity = 0)
+        {
+            var newList = new List<T>(original.Count + additionalCapacity);
+
+            // Copy all items up to and excluding the current index
+            for (int j = 0; j < toOffsetExclusive; j++)
+            {
+                newList.Add(original[j]);
+            }
+
+            return newList;
+        }
+
+        private List<AITool> InitializeTools(IList<AITool> existingTools, int toOffsetExclusive)
+        {
+#if NET
+            ReadOnlySpan<AITool> tools =
+#else
+            AITool[] tools =
+#endif
+            [
+                AIFunctionFactory.Create(GenerateImageAsync),
+                AIFunctionFactory.Create(EditImageAsync),
+                AIFunctionFactory.Create(GetImagesForEdit)
+            ];
+
+            var result = CopyList(existingTools, toOffsetExclusive, tools.Length);
+            result.AddRange(tools);
+            return result;
+        }
+
+        private DataContent? RetrieveImageContent(string imageId)
+        {
+            if (_imageContentById.TryGetValue(imageId, out var imageContent))
+            {
+                return imageContent as DataContent;
+            }
+
+            return null;
+        }
+
+        private string StoreImage(DataContent imageContent, bool isGenerated = false)
+        {
+            // Generate a unique ID for the image if it doesn't have one
+            string? imageId = null;
+            if (imageContent.AdditionalProperties?.TryGetValue(ImageKey, out imageId) is false || imageId is null)
+            {
+                imageId = imageContent.Name ?? Guid.NewGuid().ToString();
+            }
+
+            if (isGenerated)
+            {
+                imageContent.AdditionalProperties ??= [];
+                imageContent.AdditionalProperties[ImageKey] = imageId;
+            }
+
+            // Store the image content for later retrieval
+            _imageContentById[imageId] = imageContent;
+
+            return imageId;
         }
     }
 }
