@@ -197,7 +197,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         chatHistory.AddRange(secondResponse.Messages);
 
         // Third: Second edit (should edit the latest version by default)
-        chatHistory.Add(new ChatMessage(ChatRole.User, "Please edit that image to add birds"));
+        chatHistory.Add(new ChatMessage(ChatRole.User, "Please edit that last image to add birds"));
         var thirdResponse = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
 
         // Assert
