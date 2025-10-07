@@ -624,7 +624,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         AddUsageTags(activity, totalUsage);
     }
 
-    private static ChatResponseUpdate ConvertToolResultMessageToUpdate(ChatMessage message, string? conversationId, string? messageId) =>
+    /// <summary>
+    /// Converts a tool result <see cref="ChatMessage"/> into a <see cref="ChatResponseUpdate"/> for streaming scenarios.
+    /// </summary>
+    /// <param name="message">The tool result message.</param>
+    /// <param name="conversationId">The conversation ID.</param>
+    /// <param name="messageId">The message ID.</param>
+    internal static ChatResponseUpdate ConvertToolResultMessageToUpdate(ChatMessage message, string? conversationId, string? messageId) =>
         new()
         {
             AdditionalProperties = message.AdditionalProperties,
@@ -662,7 +668,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="response">The most recent response being handled.</param>
     /// <param name="allTurnsResponseMessages">A list of all response messages received up until this point.</param>
     /// <param name="lastIterationHadConversationId">Whether the previous iteration's response had a conversation ID.</param>
-    private static void FixupHistories(
+    internal static void FixupHistories(
         IEnumerable<ChatMessage> originalMessages,
         ref IEnumerable<ChatMessage> messages,
         [NotNull] ref List<ChatMessage>? augmentedHistory,
