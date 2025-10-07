@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Diagnostics;
 
@@ -15,7 +14,9 @@ public sealed class ToolGroupingOptions
 {
     private string _expansionFunctionName = "__expand_tool_group";
     private string? _expansionFunctionDescription;
-    private int _maxExpansionsPerRequest = 1;
+    private string _listGroupsFunctionName = "__list_tool_groups";
+    private string? _listGroupsFunctionDescription;
+    private int _maxExpansionsPerRequest = 3;
 
     /// <summary>Gets or sets the name of the synthetic expansion function tool.</summary>
     public string ExpansionFunctionName
@@ -31,6 +32,20 @@ public sealed class ToolGroupingOptions
         set => _expansionFunctionDescription = value;
     }
 
+    /// <summary>Gets or sets the name of the synthetic list groups function tool.</summary>
+    public string ListGroupsFunctionName
+    {
+        get => _listGroupsFunctionName;
+        set => _listGroupsFunctionName = Throw.IfNull(value);
+    }
+
+    /// <summary>Gets or sets the description of the synthetic list groups function tool.</summary>
+    public string? ListGroupsFunctionDescription
+    {
+        get => _listGroupsFunctionDescription;
+        set => _listGroupsFunctionDescription = value;
+    }
+
     /// <summary>Gets or sets the maximum number of expansions allowed within a single request.</summary>
     /// <remarks>Defaults to 1 to keep the prototype deterministic and avoid runaway loops.</remarks>
     public int MaxExpansionsPerRequest
@@ -38,7 +53,4 @@ public sealed class ToolGroupingOptions
         get => _maxExpansionsPerRequest;
         set => _maxExpansionsPerRequest = Throw.IfLessThan(value, 1);
     }
-
-    /// <summary>Gets the configured tool groups (modifiable collection evaluated during request processing).</summary>
-    public IList<AIToolGroup> Groups { get; } = [];
 }

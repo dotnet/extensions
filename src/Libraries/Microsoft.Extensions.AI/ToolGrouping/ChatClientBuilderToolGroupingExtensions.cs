@@ -16,12 +16,11 @@ public static class ChatClientBuilderToolGroupingExtensions
     /// <param name="configure">Configuration delegate.</param>
     /// <returns>The builder for chaining.</returns>
     /// <remarks>Should appear before tool reduction and function invocation middleware.</remarks>
-    public static ChatClientBuilder UseToolGrouping(this ChatClientBuilder builder, Action<ToolGroupingOptions> configure)
+    public static ChatClientBuilder UseToolGrouping(this ChatClientBuilder builder, Action<ToolGroupingOptions>? configure = null)
     {
         _ = Throw.IfNull(builder);
-        _ = Throw.IfNull(configure);
         var opts = new ToolGroupingOptions();
-        configure(opts);
+        configure?.Invoke(opts);
         return builder.Use(inner => new ToolGroupingChatClient(inner, opts));
     }
 }
