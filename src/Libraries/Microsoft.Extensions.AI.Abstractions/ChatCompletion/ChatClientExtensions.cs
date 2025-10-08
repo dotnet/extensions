@@ -123,7 +123,7 @@ public static class ChatClientExtensions
 
     /// <summary>Gets a previously-submitted background response identified by the specified continuation token.</summary>
     /// <param name="client">The chat client.</param>
-    /// <param name="continuationToken">The continuation token.</param>
+    /// <param name="continuationToken">The continuation token provided with the previous response.</param>
     /// <param name="options">The chat options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The background response.</returns>
