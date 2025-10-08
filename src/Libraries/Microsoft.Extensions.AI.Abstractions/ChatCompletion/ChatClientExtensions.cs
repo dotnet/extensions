@@ -121,7 +121,7 @@ public static class ChatClientExtensions
         return client.GetResponseAsync([chatMessage], options, cancellationToken);
     }
 
-    /// <summary>Gets a background response identified by the specified continuation token.</summary>
+    /// <summary>Gets a previously-submitted background response identified by the specified continuation token.</summary>
     /// <param name="client">The chat client.</param>
     /// <param name="continuationToken">The continuation token.</param>
     /// <param name="options">The chat options to configure the request.</param>
