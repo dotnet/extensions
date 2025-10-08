@@ -5,10 +5,7 @@
 - Added protected copy constructors to options types (e.g. `ChatOptions`).
 - Fixed `EmbeddingGeneratorOptions`/`SpeechToTextOptions` `Clone` methods to correctly copy all properties.
 - Fixed `ToChatResponse` to not overwrite `ChatMessage/ChatResponse.CreatedAt` with older timestamps during coalescing. 
-- Added `[Experimental]` `ResponseContinuationToken` to represent a base class for continuation tokens.
-- Added `[Experimental]` `BackgroundResponsesOptions` to represent options for background responses.
-- Added `[Experimental]` `ChatOptions.BackgroundResponsesOptions` and `ChatOptions.ContinuationToken` properties to accept options for background responses and continuation token.
-- Added `[Experimental]` `ChatResponse.ContinuationToken` and `ChatResponseUpdate.ContinuationToken` to return continuation token for background responses.
+- Added `[Experimental]` support for background responses, such that non-streaming responses are allowed to be pollable, and such that responses and response updates can be tagged with continuation tokens to support later resumption.
 - Added `[Experimental]` `GetResponseAsync` and `GetStreamingResponseAsync` extension methods for `IChatClient` to continue background responses.
 
 ## 9.9.1
