@@ -1,16 +1,17 @@
-#if (!IsOllama)
+#if (IsGHModels || IsOpenAI || (IsAzureOpenAI && !IsManagedIdentity))
 using System.ClientModel;
+#elif (IsAzureOpenAI && IsManagedIdentity)
+using System.ClientModel.Primitives;
 #endif
 #if (IsAzureAISearch && !IsManagedIdentity)
 using Azure;
 #elif (IsManagedIdentity)
-using Azure.Core;
 using Azure.Identity;
 #endif
 using Microsoft.Extensions.AI;
 #if (IsOllama)
 using OllamaSharp;
-#else
+#elif (IsGHModels || IsOpenAI || IsAzureOpenAI)
 using OpenAI;
 #endif
 using ChatWithCustomData_CSharp.Web.Components;
@@ -44,15 +45,18 @@ IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = new OllamaApi
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
 //   dotnet user-secrets set OpenAI:Key YOUR-API-KEY
+
 var openAIClient = new OpenAIClient(
     new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key. See the README for details.")));
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+#pragma warning disable OPENAI001 // GetOpenAIResponseClient(string) is experimental and subject to change or removal in future updates.
 var chatClient = openAIClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
-#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore OPENAI001
+
 var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
 #elif (IsAzureAIFoundry)
 
-#else // IsAzureOpenAI
+#elif (IsAzureOpenAI)
 // You will need to set the endpoint and key to your own values
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
@@ -62,16 +66,20 @@ var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small
 #endif
 var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Endpoint. See the README for details.")), "/openai/v1");
 #if (IsManagedIdentity)
+#pragma warning disable OPENAI001 // OpenAIClient(AuthenticationPolicy, OpenAIClientOptions) and GetOpenAIResponseClient(string) are experimental and subject to change or removal in future updates.
 var azureOpenAi = new OpenAIClient(
     new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
     new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint });
-#else
+
+#elif (!IsManagedIdentity)
 var openAIOptions = new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint };
 var azureOpenAi = new OpenAIClient(new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Key. See the README for details.")), openAIOptions);
+
+#pragma warning disable OPENAI001 // GetOpenAIResponseClient(string) is experimental and subject to change or removal in future updates.
 #endif
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 var chatClient = azureOpenAi.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
-#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore OPENAI001
+
 var embeddingGenerator = azureOpenAi.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
 #endif
 
@@ -87,13 +95,13 @@ var azureAISearchEndpoint = new Uri(builder.Configuration["AzureAISearch:Endpoin
     ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details."));
 #if (IsManagedIdentity)
 var azureAISearchCredential = new DefaultAzureCredential();
-#else
+#elif (!IsManagedIdentity)
 var azureAISearchCredential = new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"]
     ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details."));
 #endif
 builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks", azureAISearchEndpoint, azureAISearchCredential);
 builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents", azureAISearchEndpoint, azureAISearchCredential);
-#else // IsLocalVectorStore
+#elif (IsLocalVectorStore)
 var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
 var vectorStoreConnectionString = $"Data Source={vectorStorePath}";
 builder.Services.AddSqliteCollection<string, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks", vectorStoreConnectionString);
