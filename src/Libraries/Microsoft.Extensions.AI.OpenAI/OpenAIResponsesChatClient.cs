@@ -603,6 +603,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             if (input.Role == ChatRole.User)
             {
                 yield return ResponseItem.CreateUserMessageItem(ToResponseContentParts(input.Contents));
+
+                foreach (AIContent item in input.Contents)
+                {
+                    if (item is McpServerToolApprovalResponseContent mcpApprovalResponseContent)
+                    {
+                        yield return ResponseItem.CreateMcpApprovalResponseItem(mcpApprovalResponseContent.Id, mcpApprovalResponseContent.Approved);
+                    }
+                }
+
                 continue;
             }
 
