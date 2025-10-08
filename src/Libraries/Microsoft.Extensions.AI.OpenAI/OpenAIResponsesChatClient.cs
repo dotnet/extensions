@@ -81,6 +81,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(messages);
+
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Convert the inputs into what OpenAIResponseClient expects.
@@ -230,6 +232,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(messages);
+
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Provided continuation token signals that an existing background response should be fetched.
