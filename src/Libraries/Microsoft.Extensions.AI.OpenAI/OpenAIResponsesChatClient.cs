@@ -81,17 +81,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var inputMessages = Throw.IfNull(messages) as IReadOnlyCollection<ChatMessage> ?? [.. messages];
-
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIResponseItems = ToOpenAIResponseItems(inputMessages, options);
+        var openAIResponseItems = ToOpenAIResponseItems(messages, options);
 
         // Provided continuation token signals that an existing background response should be fetched.
         if (options?.ContinuationToken is { } token)
         {
-            if (inputMessages.Count > 0)
+            if (messages.Any())
             {
                 throw new InvalidOperationException("Messages are not allowed when continuing a background response using a continuation token.");
             }
@@ -232,14 +230,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var inputMessages = Throw.IfNull(messages) as IReadOnlyCollection<ChatMessage> ?? [.. messages];
-
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Provided continuation token signals that an existing background response should be fetched.
         if (options?.ContinuationToken is { } token)
         {
-            if (inputMessages.Count > 0)
+            if (messages.Any())
             {
                 throw new InvalidOperationException("Messages are not allowed when resuming streamed background response using a continuation token.");
             }
@@ -251,7 +247,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             return FromOpenAIStreamingResponseUpdatesAsync(updates, openAIOptions, continuationToken.ResponseId, cancellationToken);
         }
 
-        var openAIResponseItems = ToOpenAIResponseItems(inputMessages, options);
+        var openAIResponseItems = ToOpenAIResponseItems(messages, options);
 
         var streamingUpdates = _createResponseStreamingAsync is not null ?
             _createResponseStreamingAsync(_responseClient, openAIResponseItems, openAIOptions, cancellationToken.ToRequestOptions(streaming: true)) :
@@ -492,7 +488,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         result.PreviousResponseId ??= options.ConversationId;
         result.Temperature ??= options.Temperature;
         result.TopP ??= options.TopP;
-        result.BackgroundModeEnabled ??= options.BackgroundResponsesOptions?.Allow;
+        result.BackgroundModeEnabled ??= options.AllowBackgroundResponses;
 
         if (options.Instructions is { } instructions)
         {

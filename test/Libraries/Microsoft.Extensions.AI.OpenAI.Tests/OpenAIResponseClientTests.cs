@@ -1567,10 +1567,7 @@ public class OpenAIResponseClientTests
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
-            BackgroundResponsesOptions = new BackgroundResponsesOptions
-            {
-                Allow = true
-            }
+            AllowBackgroundResponses = true,
         });
         Assert.NotNull(response);
 
@@ -1659,10 +1656,7 @@ public class OpenAIResponseClientTests
 
         var response = await client.GetResponseAsync(continuationToken, new()
         {
-            BackgroundResponsesOptions = new()
-            {
-                Allow = true
-            }
+            AllowBackgroundResponses = true,
         });
         Assert.NotNull(response);
 
@@ -1712,10 +1706,7 @@ public class OpenAIResponseClientTests
         var options = new ChatOptions
         {
             ContinuationToken = new TestOpenAIResponsesContinuationToken("resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed8"),
-            BackgroundResponsesOptions = new BackgroundResponsesOptions
-            {
-                Allow = true
-            }
+            AllowBackgroundResponses = true,
         };
 
         // A try to update a background response with new messages should fail.
@@ -1810,10 +1801,7 @@ public class OpenAIResponseClientTests
         List<ChatResponseUpdate> updates = [];
         await foreach (var update in client.GetStreamingResponseAsync("hello", new()
         {
-            BackgroundResponsesOptions = new BackgroundResponsesOptions
-            {
-                Allow = true
-            },
+            AllowBackgroundResponses = true,
         }))
         {
             updates.Add(update);
@@ -1899,7 +1887,7 @@ public class OpenAIResponseClientTests
 
         var chatOptions = new ChatOptions
         {
-            BackgroundResponsesOptions = new BackgroundResponsesOptions { Allow = true },
+            AllowBackgroundResponses = true,
         };
 
         List<ChatResponseUpdate> updates = [];
@@ -1960,7 +1948,7 @@ public class OpenAIResponseClientTests
         // Emulating resumption of the stream after receiving the first 9 updates that provided the text "Hello! How can I"
         var chatOptions = new ChatOptions
         {
-            BackgroundResponsesOptions = new BackgroundResponsesOptions { Allow = true, },
+            AllowBackgroundResponses = true,
             ContinuationToken = new TestOpenAIResponsesContinuationToken("resp_68d40dc671a0819cb0ee920078333451029e611c3cc4a34b")
             {
                 SequenceNumber = 9

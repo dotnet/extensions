@@ -163,10 +163,9 @@ public class ChatClientExtensionsTests
     {
         var expectedResponse = new ChatResponse();
         var expectedContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
-        var expectedBackgroundResponsesOptions = new BackgroundResponsesOptions();
         var expectedChatOptions = new ChatOptions
         {
-            BackgroundResponsesOptions = expectedBackgroundResponsesOptions,
+            AllowBackgroundResponses = true,
             AdditionalProperties = new AdditionalPropertiesDictionary // Setting this to ensure cloning is happening
             {
                 { "key", "value" },
@@ -186,7 +185,7 @@ public class ChatClientExtensionsTests
 
                 Assert.NotSame(expectedChatOptions, options);
                 Assert.Same(expectedContinuationToken, options.ContinuationToken);
-                Assert.NotSame(expectedBackgroundResponsesOptions, options.BackgroundResponsesOptions);
+                Assert.Equal(expectedChatOptions.AllowBackgroundResponses, options.AllowBackgroundResponses);
 
                 Assert.Equal(cts.Token, cancellationToken);
 
@@ -232,10 +231,9 @@ public class ChatClientExtensionsTests
     {
         var expectedOptions = new ChatOptions();
         var expectedContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
-        var expectedBackgroundResponsesOptions = new BackgroundResponsesOptions();
         var expectedChatOptions = new ChatOptions
         {
-            BackgroundResponsesOptions = expectedBackgroundResponsesOptions,
+            AllowBackgroundResponses = true,
             AdditionalProperties = new AdditionalPropertiesDictionary // Setting this to ensure cloning is happening
             {
                 { "key", "value" },
@@ -254,7 +252,7 @@ public class ChatClientExtensionsTests
 
                 Assert.NotSame(expectedChatOptions, options);
                 Assert.Same(expectedContinuationToken, options.ContinuationToken);
-                Assert.NotSame(expectedBackgroundResponsesOptions, options.BackgroundResponsesOptions);
+                Assert.Equal(expectedChatOptions.AllowBackgroundResponses, options.AllowBackgroundResponses);
 
                 Assert.Equal(cts.Token, cancellationToken);
 

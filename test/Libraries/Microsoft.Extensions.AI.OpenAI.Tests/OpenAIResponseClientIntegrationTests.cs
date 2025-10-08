@@ -198,7 +198,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         var chatOptions = new ChatOptions
         {
-            BackgroundResponsesOptions = new() { Allow = true }
+            AllowBackgroundResponses = true,
         };
 
         // Get initial response with continuation token
@@ -227,7 +227,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         var chatOptions = new ChatOptions
         {
-            BackgroundResponsesOptions = new() { Allow = true },
+            AllowBackgroundResponses = true,
             Tools = [AIFunctionFactory.Create(() => "5:43", new AIFunctionFactoryOptions { Name = "GetCurrentTime" })]
         };
 
@@ -255,7 +255,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         ChatOptions chatOptions = new()
         {
-            BackgroundResponsesOptions = new BackgroundResponsesOptions { Allow = true },
+            AllowBackgroundResponses = true,
         };
 
         string responseText = "";
@@ -276,7 +276,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         ChatOptions chatOptions = new()
         {
-            BackgroundResponsesOptions = new BackgroundResponsesOptions { Allow = true },
+            AllowBackgroundResponses = true,
         };
 
         int updateNumber = 0;
@@ -315,7 +315,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         var chatOptions = new ChatOptions
         {
-            BackgroundResponsesOptions = new() { Allow = true },
+            AllowBackgroundResponses = true,
             Tools = [AIFunctionFactory.Create(() => "5:43", new AIFunctionFactoryOptions { Name = "GetCurrentTime" })]
         };
 

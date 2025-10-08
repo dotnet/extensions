@@ -128,8 +128,13 @@ public static class ChatClientExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The background response.</returns>
     /// <remarks>
-    /// The options provided should be the same as those used to start the background operation.
-    /// Using different options is not supported and may lead to unexpected results.
+    /// The <paramref name="options"/> provided should be the same as those used to start the original background operation.
+    /// This is critical because the options may contain function definitions <see cref="ChatOptions.Tools"/>,
+    /// or other settings that the background operation depends on to complete successfully.
+    /// If the original operation was started with specific functions, those same functions must be provided
+    /// when retrieving the background response. Otherwise, function calls generated during background processing
+    /// cannot be resolved, leading to errors. Using different options is not supported
+    /// and will lead to unexpected results or failures.
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="continuationToken"/> is <see langword="null"/>.</exception>
@@ -195,6 +200,15 @@ public static class ChatClientExtensions
     /// <param name="options">The chat options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The background response messages.</returns>
+    /// <remarks>
+    /// The <paramref name="options"/> provided must match those used to start the original background operation.
+    /// This is critical because the options may contain function definitions (<see cref="ChatOptions.Tools"/>),
+    /// model configurations, or other settings that the background operation depends on to complete successfully.
+    /// If the original operation was started with specific tools or functions, those same tools must be provided
+    /// when retrieving the background response. Otherwise, function calls generated during background processing
+    /// cannot be resolved, leading to errors or incomplete responses. Using different options is not supported
+    /// and will lead to unexpected results or failures.
+    /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="continuationToken"/> is <see langword="null"/>.</exception>
     [Experimental("MEAI001")]

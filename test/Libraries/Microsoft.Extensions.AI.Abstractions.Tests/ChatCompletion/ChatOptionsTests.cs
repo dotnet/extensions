@@ -51,7 +51,7 @@ public class ChatOptionsTests
         Assert.Null(clone.AdditionalProperties);
         Assert.Null(clone.RawRepresentationFactory);
         Assert.Null(clone.ContinuationToken);
-        Assert.Null(clone.BackgroundResponsesOptions);
+        Assert.Null(clone.AllowBackgroundResponses);
     }
 
     [Fact]
@@ -80,11 +80,6 @@ public class ChatOptionsTests
 
         ResponseContinuationToken continuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
 
-        BackgroundResponsesOptions backgroundResponsesOptions = new()
-        {
-            Allow = true
-        };
-
         options.ConversationId = "12345";
         options.Instructions = "Some instructions";
         options.Temperature = 0.1f;
@@ -103,7 +98,7 @@ public class ChatOptionsTests
         options.RawRepresentationFactory = rawRepresentationFactory;
         options.AdditionalProperties = additionalProps;
         options.ContinuationToken = continuationToken;
-        options.BackgroundResponsesOptions = backgroundResponsesOptions;
+        options.AllowBackgroundResponses = true;
 
         Assert.Equal("12345", options.ConversationId);
         Assert.Equal("Some instructions", options.Instructions);
@@ -123,7 +118,7 @@ public class ChatOptionsTests
         Assert.Same(rawRepresentationFactory, options.RawRepresentationFactory);
         Assert.Same(additionalProps, options.AdditionalProperties);
         Assert.Same(continuationToken, options.ContinuationToken);
-        Assert.Same(backgroundResponsesOptions, options.BackgroundResponsesOptions);
+        Assert.True(options.AllowBackgroundResponses);
 
         ChatOptions clone = options.Clone();
         Assert.Equal("12345", clone.ConversationId);
@@ -143,8 +138,7 @@ public class ChatOptionsTests
         Assert.Same(rawRepresentationFactory, clone.RawRepresentationFactory);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
         Assert.Same(continuationToken, clone.ContinuationToken);
-        Assert.NotSame(backgroundResponsesOptions, clone.BackgroundResponsesOptions);
-        Assert.Equal(backgroundResponsesOptions.Allow, clone.BackgroundResponsesOptions?.Allow);
+        Assert.True(clone.AllowBackgroundResponses);
     }
 
     [Fact]
@@ -164,11 +158,6 @@ public class ChatOptionsTests
         };
 
         ResponseContinuationToken continuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
-
-        BackgroundResponsesOptions backgroundResponsesOptions = new()
-        {
-            Allow = true
-        };
 
         options.ConversationId = "12345";
         options.Instructions = "Some instructions";
@@ -192,7 +181,7 @@ public class ChatOptionsTests
         options.RawRepresentationFactory = (c) => null;
         options.AdditionalProperties = additionalProps;
         options.ContinuationToken = continuationToken;
-        options.BackgroundResponsesOptions = backgroundResponsesOptions;
+        options.AllowBackgroundResponses = true;
 
         string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.ChatOptions);
 

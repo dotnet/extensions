@@ -26,6 +26,7 @@ public class ChatOptions
         }
 
         AdditionalProperties = other.AdditionalProperties?.Clone();
+        AllowBackgroundResponses = other.AllowBackgroundResponses;
         AllowMultipleToolCalls = other.AllowMultipleToolCalls;
         ConversationId = other.ConversationId;
         ContinuationToken = other.ContinuationToken;
@@ -50,14 +51,6 @@ public class ChatOptions
         if (other.Tools is not null)
         {
             Tools = [.. other.Tools];
-        }
-
-        if (other.BackgroundResponsesOptions is not null)
-        {
-            BackgroundResponsesOptions = new BackgroundResponsesOptions
-            {
-                Allow = other.BackgroundResponsesOptions.Allow
-            };
         }
     }
 
@@ -165,14 +158,35 @@ public class ChatOptions
     [JsonIgnore]
     public IList<AITool>? Tools { get; set; }
 
-    /// <summary>Gets or sets the options for configuring background responses.</summary>
+    /// <summary>Gets or sets a value indicating whether the background responses are allowed.</summary>
+    /// <remarks>
+    /// <para>
+    /// Background responses allow running long-running operations or tasks asynchronously in the background that can be resumed by streaming APIs
+    /// and polled for completion by non-streaming APIs.
+    /// </para>
+    /// <para>
+    /// When this property is set to true, non-streaming APIs start a background operation and return an initial
+    /// response with a continuation token. Subsequent calls to the same API should be made in a polling manner with
+    /// the continuation token to get the final result of the operation.
+    /// </para>
+    /// <para>
+    /// When this property is set to true, streaming APIs also start a background operation and begin streaming
+    /// response updates until the operation is completed. If the streaming connection is interrupted, the
+    /// continuation token obtained from the last update should be supplied to a subsequent call to the same streaming API
+    /// to resume the stream from the point of interruption and continue receiving updates until the operation is completed.
+    /// </para>
+    /// <para>
+    /// This property only takes effect if the API it's used with supports background responses.
+    /// If the API does not support background responses, this property will be ignored.
+    /// </para>
+    /// </remarks>
     [Experimental("MEAI001")]
     [JsonIgnore]
-    public BackgroundResponsesOptions? BackgroundResponsesOptions { get; set; }
+    public bool? AllowBackgroundResponses { get; set; }
 
     /// <summary>Gets or sets the continuation token for resuming and getting the result of the chat response identified by this token.</summary>
     /// <remarks>
-    /// This property is used for background responses that can be activated via the <see cref="BackgroundResponsesOptions.Allow"/>
+    /// This property is used for background responses that can be activated via the <see cref="AllowBackgroundResponses"/>
     /// property if the <see cref="IChatClient"/> implementation supports them.
     /// Streamed background responses, such as those returned by default by <see cref="IChatClient.GetStreamingResponseAsync"/>,
     /// can be resumed if interrupted. This means that a continuation token obtained from the <see cref="ChatResponseUpdate.ContinuationToken"/> 
