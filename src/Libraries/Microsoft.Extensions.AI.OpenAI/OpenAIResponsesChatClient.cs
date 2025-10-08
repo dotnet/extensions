@@ -5,7 +5,6 @@ using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -182,8 +181,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case McpToolCallApprovalRequestItem mtcari:
-                    message.Contents.Add(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
+                    message.Contents.Add(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id)
                     {
+                        ToolName = mtcari.ToolName,
+                        ServerName = mtcari.ServerLabel,
                         Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
                         RawRepresentation = mtcari,
                     })
@@ -308,8 +309,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is McpToolCallApprovalRequestItem mtcari:
-                    yield return CreateUpdate(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
+                    yield return CreateUpdate(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id)
                     {
+                        ToolName = mtcari.ToolName,
+                        ServerName = mtcari.ServerLabel,
                         Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
                         RawRepresentation = mtcari,
                     })
@@ -468,8 +471,19 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         break;
 
                     case HostedMcpServerTool mcpTool:
-
-                        McpTool responsesMcpTool = ToOpenAIMcpTool(mcpTool);
+                        McpTool responsesMcpTool = Uri.TryCreate(mcpTool.ServerAddress, UriKind.Absolute, out Uri? url) ?
+                            ResponseTool.CreateMcpTool(
+                                mcpTool.ServerName,
+                                url,
+                                mcpTool.AuthorizationToken,
+                                mcpTool.ServerDescription,
+                                headers: mcpTool.Headers) :
+                            ResponseTool.CreateMcpTool(
+                                mcpTool.ServerName,
+                                new McpToolConnectorId(mcpTool.ServerAddress),
+                                mcpTool.AuthorizationToken,
+                                mcpTool.ServerDescription,
+                                headers: mcpTool.Headers);
 
                         if (mcpTool.AllowedTools is not null)
                         {
@@ -860,33 +874,13 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         return parts;
     }
 
-    private static McpTool ToOpenAIMcpTool(HostedMcpServerTool meaiMcpTool)
-    {
-        Debug.Assert(meaiMcpTool.Url is null != meaiMcpTool.ConnectorID is null, "Either Url or ConnectorID must be present but never both.");
-
-        if (meaiMcpTool.Url != null)
-        {
-            return ResponseTool.CreateMcpTool(
-                meaiMcpTool.ServerName,
-                meaiMcpTool.Url,
-                serverDescription: meaiMcpTool.ServerDescription,
-                headers: meaiMcpTool.Headers);
-        }
-        else
-        {
-            return ResponseTool.CreateMcpTool(
-                meaiMcpTool.ServerName,
-                new McpToolConnectorId(meaiMcpTool.ConnectorID),
-                serverDescription: meaiMcpTool.ServerDescription,
-                headers: meaiMcpTool.Headers);
-        }
-    }
-
     /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="mtci"/> into <paramref name="contents"/>.</summary>
     private static void AddMcpToolCallContent(McpToolCallItem mtci, IList<AIContent> contents)
     {
-        contents.Add(new McpServerToolCallContent(mtci.Id, mtci.ToolName, mtci.ServerLabel)
+        contents.Add(new McpServerToolCallContent(mtci.Id)
         {
+            ToolName = mtci.ToolName,
+            ServerName = mtci.ServerLabel,
             Arguments = JsonSerializer.Deserialize(mtci.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
 
             // We purposefully do not set the RawRepresentation on the McpServerToolCallContent, only on the McpServerToolResultContent, to avoid
