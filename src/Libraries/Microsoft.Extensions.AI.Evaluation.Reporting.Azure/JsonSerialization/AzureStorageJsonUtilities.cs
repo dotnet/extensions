@@ -32,7 +32,6 @@ internal static partial class AzureStorageJsonUtilities
         var options = new JsonSerializerOptions(JsonContext.Default.Options)
         {
             WriteIndented = writeIndented,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
         options.TypeInfoResolverChain.Add(AIJsonUtilities.DefaultOptions.TypeInfoResolver!);
         options.MakeReadOnly();
