@@ -18,7 +18,7 @@ public static class FakeRedactionServiceCollectionExtensions
     /// <summary>
     /// Registers the fake redactor provider that always returns fake redactor instances.
     /// </summary>
-    /// <param name="services">Container used to register fake redaction classes.</param>
+    /// <param name="services">The container used to register fake redaction classes.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddFakeRedaction(this IServiceCollection services)
@@ -42,10 +42,10 @@ public static class FakeRedactionServiceCollectionExtensions
     /// <summary>
     /// Registers the fake redactor provider that always returns fake redactor instances.
     /// </summary>
-    /// <param name="services">Container used to register fake redaction classes.</param>
+    /// <param name="services">The container used to register fake redaction classes.</param>
     /// <param name="configure">Configures fake redactor.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="configure"/>> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddFakeRedaction(this IServiceCollection services, Action<FakeRedactorOptions> configure)
     {
         _ = Throw.IfNull(services);

@@ -1,5 +1,9 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Added `OpenTelemetrySpeechToTextClient` to provide Open Telemetry instrumentation for `ISpeechToTextClient` implementations.
+
 ## 9.9.1
 
 - Updated the `EnableSensitiveData` properties on `OpenTelemetryChatClient/EmbeddingGenerator` to respect a `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` environment variable.

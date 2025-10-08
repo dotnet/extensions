@@ -346,7 +346,7 @@ public static class ChatResponseExtensions
             message.AuthorName = update.AuthorName;
         }
 
-        if (update.CreatedAt is not null)
+        if (message.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > message.CreatedAt))
         {
             message.CreatedAt = update.CreatedAt;
         }
@@ -391,7 +391,7 @@ public static class ChatResponseExtensions
             response.ConversationId = update.ConversationId;
         }
 
-        if (update.CreatedAt is not null)
+        if (response.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > response.CreatedAt))
         {
             response.CreatedAt = update.CreatedAt;
         }

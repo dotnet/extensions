@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -35,7 +34,6 @@ internal static partial class JsonUtilities
         var options = new JsonSerializerOptions(JsonContext.Default.Options)
         {
             WriteIndented = writeIndented,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
         options.TypeInfoResolverChain.Add(AIJsonUtilities.DefaultOptions.TypeInfoResolver!);
         options.MakeReadOnly();

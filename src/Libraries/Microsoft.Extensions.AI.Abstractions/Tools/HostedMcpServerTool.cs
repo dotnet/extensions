@@ -19,8 +19,8 @@ public class HostedMcpServerTool : AITool
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="serverAddress">The address of the remote MCP server.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> are <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="serverName"/> or <paramref name="serverAddress"/> are empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is empty or composed entirely of whitespace.</exception>
     public HostedMcpServerTool(string serverName, string serverAddress)
     {
         ServerName = Throw.IfNullOrWhitespace(serverName);
