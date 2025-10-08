@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Diagnostics;
 
@@ -41,10 +42,7 @@ public abstract class HttpDependencyMetadataResolver
     /// <exception cref="ArgumentNullException"><paramref name="dependencyMetadata"/> is <see langword="null"/>.</exception>
     protected HttpDependencyMetadataResolver(IEnumerable<IDownstreamDependencyMetadata> dependencyMetadata)
     {
-        if (dependencyMetadata == null)
-        {
-            throw new ArgumentNullException(nameof(dependencyMetadata));
-        }
+        _ = Throw.IfNull(dependencyMetadata);
 
         Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap = [];
         foreach (var dependency in dependencyMetadata)
@@ -55,6 +53,7 @@ public abstract class HttpDependencyMetadataResolver
         _frozenProcessedMetadataMap = ProcessDependencyMetadata(dependencyTrieMap).ToFrozenDictionary(StringComparer.Ordinal);
     }
 
+#if !NET462 
     /// <summary>
     /// Gets request metadata for the specified HTTP request message.
     /// </summary>
@@ -78,7 +77,7 @@ public abstract class HttpDependencyMetadataResolver
             return null;
         }
     }
-
+#else
     /// <summary>
     /// Gets request metadata for the specified HTTP web request.
     /// </summary>
@@ -97,6 +96,7 @@ public abstract class HttpDependencyMetadataResolver
             return null;
         }
     }
+#endif
 
     private static char[] MakeToUpperArray()
     {
