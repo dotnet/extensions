@@ -5,14 +5,14 @@ namespace ChatWithCustomData_CSharp.Web.Services;
 public class IngestedDocument
 {
     private const int VectorDimensions = 2;
-#if (UseAzureAISearch || UseQdrant)
+#if (IsAzureAISearch || IsQdrant)
     private const string VectorDistanceFunction = DistanceFunction.CosineSimilarity;
 #else
     private const string VectorDistanceFunction = DistanceFunction.CosineDistance;
 #endif
 
     [VectorStoreKey]
-#if (UseQdrant)
+#if (IsQdrant)
     public required Guid Key { get; set; }
 #else
     public required string Key { get; set; }
