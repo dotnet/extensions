@@ -397,6 +397,14 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                         runOptions.ToolConstraint = new ToolConstraint(ToolDefinition.CreateFunction(functionName));
                         break;
 
+                    case RequiredChatToolMode required when required.RequiredTool is HostedCodeInterpreterTool:
+                        runOptions.ToolConstraint = new ToolConstraint(ToolDefinition.CreateCodeInterpreter());
+                        break;
+
+                    case RequiredChatToolMode required when required.RequiredTool is HostedFileSearchTool:
+                        runOptions.ToolConstraint = new ToolConstraint(ToolDefinition.CreateFileSearch());
+                        break;
+
                     case RequiredChatToolMode required:
                         runOptions.ToolConstraint = ToolConstraint.Required;
                         break;

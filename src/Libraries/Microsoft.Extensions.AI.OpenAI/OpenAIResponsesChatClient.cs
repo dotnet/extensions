@@ -531,8 +531,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         break;
 
                     case RequiredChatToolMode required:
-                        result.ToolChoice = required.RequiredFunctionName is not null ?
-                            ResponseToolChoice.CreateFunctionChoice(required.RequiredFunctionName) :
+                        result.ToolChoice =
+                            required.RequiredFunctionName is not null ? ResponseToolChoice.CreateFunctionChoice(required.RequiredFunctionName) :
+                            required.RequiredTool is HostedWebSearchTool || required.RequiredTool is ResponseToolAITool { Tool: WebSearchTool } ? ResponseToolChoice.CreateWebSearchChoice() :
+                            required.RequiredTool is HostedFileSearchTool || required.RequiredTool is ResponseToolAITool { Tool: FileSearchTool } ? ResponseToolChoice.CreateFileSearchChoice() :
                             ResponseToolChoice.CreateRequiredChoice();
                         break;
                 }
