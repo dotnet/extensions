@@ -84,27 +84,87 @@ public class SummarizingChatReducerTests
     }
 
     [Fact]
-    public async Task ReduceAsync_IgnoresFunctionCallsAndResults()
+    public async Task ReduceAsync_PreservesCompleteToolCallSequence()
     {
         using var chatClient = new TestChatClient();
-        var reducer = new SummarizingChatReducer(chatClient, targetCount: 3, threshold: 0);
+
+        // Target 2 messages, but this would split a function call sequence
+        var reducer = new SummarizingChatReducer(chatClient, targetCount: 2, threshold: 0);
 
         List<ChatMessage> messages =
         [
+            new ChatMessage(ChatRole.User, "What's the time?"),
+            new ChatMessage(ChatRole.Assistant, "Let me check"),
             new ChatMessage(ChatRole.User, "What's the weather?"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call1", "get_weather", new Dictionary<string, object?> { ["location"] = "Seattle" })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("call1", "Sunny, 72°F")]),
-            new ChatMessage(ChatRole.Assistant, "The weather in Seattle is sunny and 72°F."),
-            new ChatMessage(ChatRole.User, "Thanks!"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call1", "get_weather")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("call1", "Sunny")]),
+            new ChatMessage(ChatRole.Assistant, "It's sunny"),
         ];
 
-        var result = await reducer.ReduceAsync(messages, CancellationToken.None);
+        chatClient.GetResponseAsyncCallback = (msgs, _, _) =>
+        {
+            Assert.DoesNotContain(msgs, m => m.Contents.Any(c => c is FunctionCallContent or FunctionResultContent));
+            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "Asked about time")));
+        };
 
-        // Function calls/results should be ignored, which means there aren't enough messages to generate a summary.
+        var result = await reducer.ReduceAsync(messages, CancellationToken.None);
         var resultList = result.ToList();
-        Assert.Equal(3, resultList.Count); // Function calls get removed in the summarized chat.
-        Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is FunctionCallContent));
-        Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is FunctionResultContent));
+
+        // Should have: summary + function content + last reply
+        Assert.Equal(4, resultList.Count);
+
+        // Verify the complete sequence is preserved
+        Assert.Collection(resultList,
+            m => Assert.Contains("Asked about time", m.Text),
+            m => Assert.Contains(m.Contents, c => c is FunctionCallContent),
+            m => Assert.Contains(m.Contents, c => c is FunctionResultContent),
+            m => Assert.Contains("sunny", m.Text));
+    }
+
+    [Fact]
+    public async Task ReduceAsync_PreservesUserMessageWhenWithinThreshold()
+    {
+        using var chatClient = new TestChatClient();
+
+        // Target 3 messages with threshold of 2
+        // This allows us to keep anywhere from 3 to 5 messages
+        var reducer = new SummarizingChatReducer(chatClient, targetCount: 3, threshold: 2);
+
+        List<ChatMessage> messages =
+        [
+            new ChatMessage(ChatRole.User, "First question"),
+            new ChatMessage(ChatRole.Assistant, "First answer"),
+            new ChatMessage(ChatRole.User, "Second question"),
+            new ChatMessage(ChatRole.Assistant, "Second answer"),
+            new ChatMessage(ChatRole.User, "Third question"),
+            new ChatMessage(ChatRole.Assistant, "Third answer"),
+        ];
+
+        chatClient.GetResponseAsyncCallback = (msgs, _, _) =>
+        {
+            var msgList = msgs.ToList();
+
+            // Should summarize messages 0-1 (First question and answer)
+            // The reducer should find the User message at index 2 within the threshold
+            Assert.Equal(3, msgList.Count); // 2 messages to summarize + system prompt
+            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "Summary of first exchange")));
+        };
+
+        var result = await reducer.ReduceAsync(messages, CancellationToken.None);
+        var resultList = result.ToList();
+
+        // Should have: summary + 4 kept messages (from "Second question" onward)
+        Assert.Equal(5, resultList.Count);
+
+        // Verify the summary is first
+        Assert.Contains("Summary", resultList[0].Text);
+
+        // Verify we kept the User message at index 2 and everything after
+        Assert.Collection(resultList.Skip(1),
+            m => Assert.Contains("Second question", m.Text),
+            m => Assert.Contains("Second answer", m.Text),
+            m => Assert.Contains("Third question", m.Text),
+            m => Assert.Contains("Third answer", m.Text));
     }
 
     [Theory]
@@ -121,7 +181,7 @@ public class SummarizingChatReducerTests
         var messages = new List<ChatMessage>();
         for (int i = 0; i < messageCount; i++)
         {
-            messages.Add(new ChatMessage(i % 2 == 0 ? ChatRole.User : ChatRole.Assistant, $"Message {i}"));
+            messages.Add(new ChatMessage(ChatRole.Assistant, $"Message {i}"));
         }
 
         var summarizationCalled = false;
