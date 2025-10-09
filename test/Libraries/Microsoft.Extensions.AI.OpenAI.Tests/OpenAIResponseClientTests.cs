@@ -2008,14 +2008,19 @@ public class OpenAIResponseClientTests
         /// <summary>Gets or sets the sequence number of a streamed update.</summary>
         internal int? SequenceNumber { get; set; }
 
-        internal static TestOpenAIResponsesContinuationToken FromToken(ResponseContinuationToken token)
+        internal static TestOpenAIResponsesContinuationToken FromToken(object token)
         {
             if (token is TestOpenAIResponsesContinuationToken testOpenAIResponsesContinuationToken)
             {
                 return testOpenAIResponsesContinuationToken;
             }
 
-            ReadOnlyMemory<byte> data = token.ToBytes();
+            if (token is not ResponseContinuationToken)
+            {
+                throw new ArgumentException("Failed to create OpenAIResponsesResumptionToken from provided token because it is not of type ResponseContinuationToken.", nameof(token));
+            }
+
+            ReadOnlyMemory<byte> data = ((ResponseContinuationToken)token).ToBytes();
 
             Utf8JsonReader reader = new(data.Span);
 

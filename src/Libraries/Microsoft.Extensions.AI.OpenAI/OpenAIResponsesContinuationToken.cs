@@ -53,18 +53,23 @@ internal sealed class OpenAIResponsesContinuationToken : ResponseContinuationTok
     /// </summary>
     /// <param name="token">The token to create the <see cref="OpenAIResponsesContinuationToken"/> from.</param>
     /// <returns>A <see cref="OpenAIResponsesContinuationToken"/> equivalent of the provided <paramref name="token"/>.</returns>
-    internal static OpenAIResponsesContinuationToken FromToken(ResponseContinuationToken token)
+    internal static OpenAIResponsesContinuationToken FromToken(object token)
     {
         if (token is OpenAIResponsesContinuationToken openAIResponsesContinuationToken)
         {
             return openAIResponsesContinuationToken;
         }
 
-        ReadOnlyMemory<byte> data = token.ToBytes();
+        if (token is not ResponseContinuationToken)
+        {
+            Throw.ArgumentException(nameof(token), "Failed to create OpenAIResponsesResumptionToken from provided token because it is not of type ResponseContinuationToken.");
+        }
+
+        ReadOnlyMemory<byte> data = ((ResponseContinuationToken)token).ToBytes();
 
         if (data.Length == 0)
         {
-            throw new InvalidOperationException("Failed to create OpenAIResponsesResumptionToken from provided token because it does not contain any data.");
+            Throw.InvalidOperationException("Failed to create OpenAIResponsesResumptionToken from provided token because it does not contain any data.");
         }
 
         Utf8JsonReader reader = new(data.Span);

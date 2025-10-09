@@ -16,20 +16,19 @@ namespace Microsoft.Extensions.AI;
 /// Subclasses of this class encapsulate all necessary information within the token to facilitate these actions.
 /// </summary>
 [JsonConverter(typeof(Converter))]
+[Experimental("MEAI001")]
 public class ResponseContinuationToken
 {
     /// <summary>Bytes representing this token.</summary>
     private readonly ReadOnlyMemory<byte>? _bytes;
 
     /// <summary>Initializes a new instance of the <see cref="ResponseContinuationToken"/> class.</summary>
-    [Experimental("MEAI001")]
     protected ResponseContinuationToken()
     {
     }
 
     /// <summary>Initializes a new instance of the <see cref="ResponseContinuationToken"/> class.</summary>
     /// <param name="bytes">Bytes to create the token from.</param>
-    [Experimental("MEAI001")]
     protected ResponseContinuationToken(ReadOnlyMemory<byte> bytes)
     {
         _ = Throw.IfNull(bytes);
@@ -42,7 +41,6 @@ public class ResponseContinuationToken
     /// <param name="bytes">Bytes representing the <see cref="ResponseContinuationToken"/>.</param>
     /// <returns>A <see cref="ResponseContinuationToken"/> equivalent to the one from which
     /// the original<see cref="ResponseContinuationToken"/> bytes were obtained.</returns>
-    [Experimental("MEAI001")]
     public static ResponseContinuationToken FromBytes(ReadOnlyMemory<byte> bytes) => new(bytes);
 
     /// <summary>Gets the bytes representing this <see cref="ResponseContinuationToken"/>.</summary>

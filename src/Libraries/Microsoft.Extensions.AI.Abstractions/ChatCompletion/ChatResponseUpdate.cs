@@ -149,7 +149,7 @@ public class ChatResponseUpdate
     /// </remarks>
     [JsonIgnore]
     [Experimental("MEAI001")]
-    public ResponseContinuationToken? ContinuationToken { get; set; }
+    public object? ContinuationToken { get; set; }
 
     /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

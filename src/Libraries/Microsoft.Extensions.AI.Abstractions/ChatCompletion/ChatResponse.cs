@@ -102,7 +102,7 @@ public class ChatResponse
     /// </remarks>
     [Experimental("MEAI001")]
     [JsonIgnore]
-    public ResponseContinuationToken? ContinuationToken { get; set; }
+    public object? ContinuationToken { get; set; }
 
     /// <summary>Gets or sets the raw representation of the chat response from an underlying implementation.</summary>
     /// <remarks>
