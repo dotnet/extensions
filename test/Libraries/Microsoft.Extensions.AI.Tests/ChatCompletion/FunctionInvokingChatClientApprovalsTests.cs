@@ -485,6 +485,69 @@ public class FunctionInvokingChatClientApprovalsTests
         await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
     }
 
+    /// <summary>
+    /// This verifies the following scenario:
+    /// 1. We are streaming (also including non-streaming in the test for completeness).
+    /// 2. There is one function that requires approval and one that does not.
+    /// 3. We only get back FCC for the function that does not require approval.
+    /// 4. This means that once we receive this FCC, we need to buffer all updates until the end, because we might receive more FCCs and some may require approval.
+    /// 5. We then need to verify that we will still stream all updates once we reach the end, including the buffered FCC.
+    /// </summary>
+    [Fact]
+    public async Task MixedApprovalRequiredToolsWithNonApprovalRequiringFunctionCallAsync()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+        ];
+
+        Func<Queue<List<ChatMessage>>> expectedDownstreamClientInput = () => new Queue<List<ChatMessage>>(
+        [
+            new List<ChatMessage>
+            {
+                new ChatMessage(ChatRole.User, "hello"),
+            },
+            new List<ChatMessage>
+            {
+                new ChatMessage(ChatRole.User, "hello"),
+                new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+                new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")])
+            }
+        ]);
+
+        Func<Queue<List<ChatMessage>>> downstreamClientOutput = () => new Queue<List<ChatMessage>>(
+        [
+            new List<ChatMessage>
+            {
+                new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            },
+            new List<ChatMessage>
+            {
+                new ChatMessage(ChatRole.Assistant, "World again"),
+            }
+        ]);
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Assistant, "World again"),
+        ];
+
+        await InvokeAndAssertMultiRoundAsync(options, input, downstreamClientOutput(), output, expectedDownstreamClientInput());
+
+        await InvokeAndAssertStreamingMultiRoundAsync(options, input, downstreamClientOutput(), output, expectedDownstreamClientInput());
+    }
+
     [Fact]
     public async Task ApprovalRequestWithoutApprovalResponseThrowsAsync()
     {
@@ -781,12 +844,29 @@ public class FunctionInvokingChatClientApprovalsTests
         }
     }
 
-    private static async Task<List<ChatMessage>> InvokeAndAssertAsync(
+    private static Task<List<ChatMessage>> InvokeAndAssertAsync(
         ChatOptions? options,
         List<ChatMessage> input,
         List<ChatMessage> downstreamClientOutput,
         List<ChatMessage> expectedOutput,
         List<ChatMessage>? expectedDownstreamClientInput = null,
+        Func<ChatClientBuilder, ChatClientBuilder>? configurePipeline = null,
+        AITool[]? additionalTools = null)
+        => InvokeAndAssertMultiRoundAsync(
+            options,
+            input,
+            new Queue<List<ChatMessage>>(new[] { downstreamClientOutput }),
+            expectedOutput,
+            expectedDownstreamClientInput is null ? null : new Queue<List<ChatMessage>>(new[] { expectedDownstreamClientInput }),
+            configurePipeline,
+            additionalTools);
+
+    private static async Task<List<ChatMessage>> InvokeAndAssertMultiRoundAsync(
+        ChatOptions? options,
+        List<ChatMessage> input,
+        Queue<List<ChatMessage>> downstreamClientOutput,
+        List<ChatMessage> expectedOutput,
+        Queue<List<ChatMessage>>? expectedDownstreamClientInput = null,
         Func<ChatClientBuilder, ChatClientBuilder>? configurePipeline = null,
         AITool[]? additionalTools = null)
     {
@@ -804,7 +884,7 @@ public class FunctionInvokingChatClientApprovalsTests
                 Assert.Equal(cts.Token, actualCancellationToken);
                 if (expectedDownstreamClientInput is not null)
                 {
-                    AssertExtensions.EqualMessageLists(expectedDownstreamClientInput, contents.ToList());
+                    AssertExtensions.EqualMessageLists(expectedDownstreamClientInput.Dequeue(), contents.ToList());
                 }
 
                 await Task.Yield();
@@ -812,8 +892,9 @@ public class FunctionInvokingChatClientApprovalsTests
                 var usage = CreateRandomUsage();
                 expectedTotalTokenCounts += usage.InputTokenCount!.Value;
 
-                downstreamClientOutput.ForEach(m => m.MessageId = Guid.NewGuid().ToString("N"));
-                return new ChatResponse(downstreamClientOutput) { Usage = usage };
+                var output = downstreamClientOutput.Dequeue();
+                output.ForEach(m => m.MessageId = Guid.NewGuid().ToString("N"));
+                return new ChatResponse(output) { Usage = usage };
             }
         };
 
@@ -851,12 +932,29 @@ public class FunctionInvokingChatClientApprovalsTests
         };
     }
 
-    private static async Task<List<ChatMessage>> InvokeAndAssertStreamingAsync(
+    private static Task<List<ChatMessage>> InvokeAndAssertStreamingAsync(
         ChatOptions? options,
         List<ChatMessage> input,
         List<ChatMessage> downstreamClientOutput,
         List<ChatMessage> expectedOutput,
         List<ChatMessage>? expectedDownstreamClientInput = null,
+        Func<ChatClientBuilder, ChatClientBuilder>? configurePipeline = null,
+        AITool[]? additionalTools = null)
+        => InvokeAndAssertStreamingMultiRoundAsync(
+            options,
+            input,
+            new Queue<List<ChatMessage>>(new[] { downstreamClientOutput }),
+            expectedOutput,
+            expectedDownstreamClientInput is null ? null : new Queue<List<ChatMessage>>(new[] { expectedDownstreamClientInput }),
+            configurePipeline,
+            additionalTools);
+
+    private static async Task<List<ChatMessage>> InvokeAndAssertStreamingMultiRoundAsync(
+        ChatOptions? options,
+        List<ChatMessage> input,
+        Queue<List<ChatMessage>> downstreamClientOutput,
+        List<ChatMessage> expectedOutput,
+        Queue<List<ChatMessage>>? expectedDownstreamClientInput = null,
         Func<ChatClientBuilder, ChatClientBuilder>? configurePipeline = null,
         AITool[]? additionalTools = null)
     {
@@ -873,11 +971,12 @@ public class FunctionInvokingChatClientApprovalsTests
                 Assert.Equal(cts.Token, actualCancellationToken);
                 if (expectedDownstreamClientInput is not null)
                 {
-                    AssertExtensions.EqualMessageLists(expectedDownstreamClientInput, contents.ToList());
+                    AssertExtensions.EqualMessageLists(expectedDownstreamClientInput.Dequeue(), contents.ToList());
                 }
 
-                downstreamClientOutput.ForEach(m => m.MessageId = Guid.NewGuid().ToString("N"));
-                return YieldAsync(new ChatResponse(downstreamClientOutput).ToChatResponseUpdates());
+                var output = downstreamClientOutput.Dequeue();
+                output.ForEach(m => m.MessageId = Guid.NewGuid().ToString("N"));
+                return YieldAsync(new ChatResponse(output).ToChatResponseUpdates());
             }
         };
 
