@@ -11,11 +11,11 @@ public class HostedCodeInterpreterToolTests
     public void Constructor_Roundtrips()
     {
         var tool = new HostedCodeInterpreterTool();
-        Assert.Equal(nameof(HostedCodeInterpreterTool), tool.Name);
+        Assert.Equal("code_interpreter", tool.Name);
         Assert.Empty(tool.Description);
         Assert.Empty(tool.AdditionalProperties);
         Assert.Null(tool.Inputs);
-        Assert.Equal(nameof(HostedCodeInterpreterTool), tool.ToString());
+        Assert.Equal(tool.Name, tool.ToString());
     }
 
     [Fact]

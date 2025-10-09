@@ -14,4 +14,7 @@ public class HostedWebSearchTool : AITool
     public HostedWebSearchTool()
     {
     }
+
+    /// <inheritdoc />
+    public override string Name => "web_search";
 }

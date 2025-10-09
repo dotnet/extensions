@@ -17,6 +17,9 @@ public class HostedFileSearchTool : AITool
     {
     }
 
+    /// <inheritdoc />
+    public override string Name => "file_search";
+
     /// <summary>Gets or sets a collection of <see cref="AIContent"/> to be used as input to the file search tool.</summary>
     /// <remarks>
     /// If no explicit inputs are provided, the service determines what inputs should be searched. Different services
