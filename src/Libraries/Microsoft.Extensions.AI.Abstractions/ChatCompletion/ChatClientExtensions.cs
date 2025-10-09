@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -121,39 +120,6 @@ public static class ChatClientExtensions
         return client.GetResponseAsync([chatMessage], options, cancellationToken);
     }
 
-    /// <summary>Gets a previously-submitted background response identified by the specified continuation token.</summary>
-    /// <param name="client">The chat client.</param>
-    /// <param name="continuationToken">The continuation token provided with the previous response.</param>
-    /// <param name="options">The chat options with which to configure the request.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The background response.</returns>
-    /// <remarks>
-    /// The <paramref name="options"/> provided must match those used to start the original background operation.
-    /// This is critical because the options may contain function definitions <see cref="ChatOptions.Tools"/>,
-    /// or other settings that the background operation depends on to complete successfully.
-    /// If the original operation was started with specific functions, those same functions must be provided
-    /// when retrieving the background response. Otherwise, function calls generated during background processing
-    /// cannot be resolved, leading to errors. Using different options is not supported
-    /// and will lead to unexpected results or failures.
-    /// </remarks>
-    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="continuationToken"/> is <see langword="null"/>.</exception>
-    [Experimental("MEAI001")]
-    public static Task<ChatResponse> GetResponseAsync(
-        this IChatClient client,
-        object continuationToken,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(client);
-        _ = Throw.IfNull(continuationToken);
-
-        ChatOptions chatOptions = options?.Clone() ?? new();
-        chatOptions.ContinuationToken = continuationToken;
-
-        return client.GetResponseAsync([], chatOptions, cancellationToken);
-    }
-
     /// <summary>Sends a user chat text message and streams the response messages.</summary>
     /// <param name="client">The chat client.</param>
     /// <param name="chatMessage">The text content for the chat message to send.</param>
@@ -192,38 +158,5 @@ public static class ChatClientExtensions
         _ = Throw.IfNull(chatMessage);
 
         return client.GetStreamingResponseAsync([chatMessage], options, cancellationToken);
-    }
-
-    /// <summary>Gets a background streamed response identified by the specified continuation token and streams its messages.</summary>
-    /// <param name="client">The chat client.</param>
-    /// <param name="continuationToken">The continuation token.</param>
-    /// <param name="options">The chat options to configure the request.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The background response messages.</returns>
-    /// <remarks>
-    /// The <paramref name="options"/> provided must match those used to start the original background operation.
-    /// This is critical because the options may contain function definitions <see cref="ChatOptions.Tools"/>,
-    /// or other settings that the background operation depends on to complete successfully.
-    /// If the original operation was started with specific functions, those same functions must be provided
-    /// when retrieving the background response. Otherwise, function calls generated during background processing
-    /// cannot be resolved, leading to errors. Using different options is not supported
-    /// and will lead to unexpected results or failures.
-    /// </remarks>
-    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="continuationToken"/> is <see langword="null"/>.</exception>
-    [Experimental("MEAI001")]
-    public static IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        this IChatClient client,
-        object continuationToken,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(client);
-        _ = Throw.IfNull(continuationToken);
-
-        ChatOptions chatOptions = options?.Clone() ?? new();
-        chatOptions.ContinuationToken = continuationToken;
-
-        return client.GetStreamingResponseAsync([], chatOptions, cancellationToken);
     }
 }

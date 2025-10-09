@@ -1654,8 +1654,9 @@ public class OpenAIResponseClientTests
 
         var continuationToken = new TestOpenAIResponsesContinuationToken("resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed8");
 
-        var response = await client.GetResponseAsync(continuationToken, new()
+        var response = await client.GetResponseAsync([], new()
         {
+            ContinuationToken = continuationToken,
             AllowBackgroundResponses = true,
         });
         Assert.NotNull(response);
@@ -1888,10 +1889,11 @@ public class OpenAIResponseClientTests
         var chatOptions = new ChatOptions
         {
             AllowBackgroundResponses = true,
+            ContinuationToken = continuationToken,
         };
 
         List<ChatResponseUpdate> updates = [];
-        await foreach (var update in client.GetStreamingResponseAsync(continuationToken, chatOptions))
+        await foreach (var update in client.GetStreamingResponseAsync([], chatOptions))
         {
             updates.Add(update);
         }

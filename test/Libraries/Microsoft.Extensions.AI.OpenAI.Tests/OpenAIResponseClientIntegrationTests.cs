@@ -211,7 +211,8 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         // Continue to poll until we get the final response
         while (response.ContinuationToken is not null && ++attempts < 10)
         {
-            response = await ChatClient.GetResponseAsync(response.ContinuationToken, chatOptions);
+            chatOptions.ContinuationToken = response.ContinuationToken;
+            response = await ChatClient.GetResponseAsync([], chatOptions);
             await Task.Delay(500);
         }
 
@@ -241,7 +242,9 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         // Poll until the result is received
         while (response.ContinuationToken is not null && ++attempts < 10)
         {
-            response = await chatClient.GetResponseAsync(response.ContinuationToken, chatOptions);
+            chatOptions.ContinuationToken = response.ContinuationToken;
+
+            response = await chatClient.GetResponseAsync([], chatOptions);
             await Task.Delay(1000);
         }
 
@@ -298,7 +301,8 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.DoesNotContain("Paris", responseText);
 
         // Resume streaming from the point of interruption captured by the continuation token.
-        await foreach (var update in ChatClient.GetStreamingResponseAsync(continuationToken!, chatOptions))
+        chatOptions.ContinuationToken = continuationToken;
+        await foreach (var update in ChatClient.GetStreamingResponseAsync([], chatOptions))
         {
             responseText += update;
         }
