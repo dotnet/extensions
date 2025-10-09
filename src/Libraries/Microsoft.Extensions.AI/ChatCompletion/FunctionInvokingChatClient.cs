@@ -529,7 +529,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                         .ToArray();
                 }
 
-                if (approvalRequiredFunctions is not { Length: > 0 })
+                if (approvalRequiredFunctions is not { Length: > 0 } || functionCallContents is not { Count: > 0 })
                 {
                     // If there are no function calls to make yet, or if none of the functions require approval at all,
                     // we can yield the update as-is.
@@ -572,6 +572,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // so we cannot yield the updates yet. We'll just keep them in the updates list for later.
                 // We will yield the updates as soon as we receive a function call content that requires approval
                 // or when we reach the end of the updates stream.
+            }
+
+            // We need to yield any remaining updates that were not yielded while looping through the streamed updates.
+            for (; lastYieldedUpdateIndex < updates.Count; lastYieldedUpdateIndex++)
+            {
+                var updateToYield = updates[lastYieldedUpdateIndex];
+                yield return updateToYield;
+                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
             // If there's nothing more to do, break out of the loop and allow the handling at the
