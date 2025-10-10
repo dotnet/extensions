@@ -751,26 +751,18 @@ public static partial class AIFunctionFactory
             const string AsyncSuffix = "Async";
             if (IsAsyncMethod(method))
             {
-                // For compiler-generated names, "Async" might be followed by ordinal suffix (e.g., "FetchDataAsync_0_0")
-                // We need to remove "Async" but keep the ordinal part
-#pragma warning disable CA1310 // Specify StringComparison for correctness - compiler-generated names are ASCII only
-#pragma warning disable S1449 // Culture should be specified - compiler-generated names are ASCII only
-                int asyncIndex = name.IndexOf(AsyncSuffix + "_");
-#pragma warning restore S1449
-#pragma warning restore CA1310
-                if (asyncIndex >= 0)
+                // If the method ends in "Async" or contains "Async_", remove the "Async".
+                int asyncIndex = name.LastIndexOf(AsyncSuffix, StringComparison.Ordinal);
+                if (asyncIndex > 0 &&
+                    (asyncIndex + AsyncSuffix.Length == name.Length ||
+                     ((asyncIndex + AsyncSuffix.Length < name.Length) && (name[asyncIndex + AsyncSuffix.Length] == '_'))))
                 {
-                    // Found "Async_" - remove just "Async", keeping the underscore and ordinal
+                    name =
 #if NET
-                    name = string.Concat(name.AsSpan(0, asyncIndex), name.AsSpan(asyncIndex + AsyncSuffix.Length));
+                        string.Concat(name.AsSpan(0, asyncIndex), name.AsSpan(asyncIndex + AsyncSuffix.Length));
 #else
-                    name = name.Substring(0, asyncIndex) + name.Substring(asyncIndex + AsyncSuffix.Length);
+                        string.Concat(name.Substring(0, asyncIndex), name.Substring(asyncIndex + AsyncSuffix.Length));
 #endif
-                }
-                else if (name.EndsWith(AsyncSuffix, StringComparison.Ordinal) && name.Length > AsyncSuffix.Length)
-                {
-                    // No ordinal suffix, just remove "Async" from the end
-                    name = name.Substring(0, name.Length - AsyncSuffix.Length);
                 }
             }
 
@@ -1128,20 +1120,12 @@ public static partial class AIFunctionFactory
         // Handle compiler-generated names (local functions and lambdas)
         // Local functions: <ContainingMethod>g__LocalFunctionName|ordinal_depth -> ContainingMethod_LocalFunctionName_ordinal_depth
         // Lambdas: <ContainingMethod>b__ordinal_depth -> ContainingMethod_ordinal_depth
-        var match = CompilerGeneratedNameRegex().Match(memberName);
-        if (match.Success)
+        if (CompilerGeneratedNameRegex().Match(memberName) is { Success: true } match)
         {
-            string containingMethod = match.Groups[1].Value;
-            string identifier = match.Groups[2].Value;
-
-            // For local functions, the identifier contains "FunctionName|ordinal_depth"
-            // We want to keep both parts but replace the pipe with underscore
-            identifier = identifier.Replace('|', '_');
-
-            return $"{containingMethod}_{identifier}";
+            memberName = $"{match.Groups[1].Value}_{match.Groups[2].Value}";
         }
 
-        // For any other cases, just replace invalid characters with underscores
+        // Replace all non-alphanumeric characters with underscores.
         return InvalidNameCharsRegex().Replace(memberName, "_");
     }
 
@@ -1154,13 +1138,14 @@ public static partial class AIFunctionFactory
     private static readonly Regex _compilerGeneratedNameRegex = new(@"^<([^>]+)>\w__(.+)", RegexOptions.Compiled);
 #endif
 
-    /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
+    /// <summary>Regex that flags any character other than ASCII digits or letters.</summary>
+    /// <remarks>Underscore isn't included so that sequences of underscores are replaced by a single one.</remarks>
 #if NET
-    [GeneratedRegex("[^0-9A-Za-z_]")]
+    [GeneratedRegex("[^0-9A-Za-z]+")]
     private static partial Regex InvalidNameCharsRegex();
 #else
     private static Regex InvalidNameCharsRegex() => _invalidNameCharsRegex;
-    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z]+", RegexOptions.Compiled);
 #endif
 
     /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>
