@@ -1118,11 +1118,13 @@ public static partial class AIFunctionFactory
         }
 
         // Handle compiler-generated lambda names: <ContainingMethod>b__ordinal_depth
-        // Extract: ContainingMethod
+        // Extract: ContainingMethod_ordinal to ensure uniqueness
         match = LambdaNameRegex().Match(memberName);
         if (match.Success)
         {
-            return match.Groups[1].Value;
+            string containingMethod = match.Groups[1].Value;
+            string ordinalPart = match.Groups[2].Value;
+            return $"{containingMethod}_{ordinalPart}";
         }
 
         // For any other cases, just replace invalid characters with underscores
@@ -1140,11 +1142,11 @@ public static partial class AIFunctionFactory
 
     /// <summary>Regex that matches compiler-generated lambda names.</summary>
 #if NET
-    [GeneratedRegex(@"^<([^>]+)>b__")]
+    [GeneratedRegex(@"^<([^>]+)>b__(.+)$")]
     private static partial Regex LambdaNameRegex();
 #else
     private static Regex LambdaNameRegex() => _lambdaNameRegex;
-    private static readonly Regex _lambdaNameRegex = new(@"^<([^>]+)>b__", RegexOptions.Compiled);
+    private static readonly Regex _lambdaNameRegex = new(@"^<([^>]+)>b__(.+)$", RegexOptions.Compiled);
 #endif
 
     /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>

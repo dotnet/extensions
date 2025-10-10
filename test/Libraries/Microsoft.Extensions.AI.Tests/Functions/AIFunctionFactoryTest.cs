@@ -1083,8 +1083,8 @@ public partial class AIFunctionFactoryTest
 
         var tool = AIFunctionFactory.Create(lambda);
 
-        // The name should be the containing method name
-        Assert.Equal("Lambda_NameCleanup", tool.Name);
+        // The name should be the containing method name with ordinal for uniqueness
+        Assert.Contains("Lambda_NameCleanup", tool.Name);
     }
 
     [Fact]
@@ -1101,10 +1101,11 @@ public partial class AIFunctionFactoryTest
         var tool1 = AIFunctionFactory.Create(lambda1);
         var tool2 = AIFunctionFactory.Create(lambda2);
 
-        // Both should have the same name since they're from the same method
-        // and lambdas don't have distinct names
-        Assert.Equal("Lambda_MultipleInSameMethod", tool1.Name);
-        Assert.Equal("Lambda_MultipleInSameMethod", tool2.Name);
+        // Each lambda should have a unique name based on its ordinal
+        // to allow the LLM to distinguish between them
+        Assert.Contains("Lambda_MultipleInSameMethod", tool1.Name);
+        Assert.Contains("Lambda_MultipleInSameMethod", tool2.Name);
+        Assert.NotEqual(tool1.Name, tool2.Name);
     }
 
     [Fact]
