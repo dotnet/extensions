@@ -269,7 +269,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity($"{nameof(FunctionInvokingChatClient)}.{nameof(GetResponseAsync)}");
+        using Activity? activity = _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
@@ -408,7 +408,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity($"{nameof(FunctionInvokingChatClient)}.{nameof(GetStreamingResponseAsync)}");
+        using Activity? activity = _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
         UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
