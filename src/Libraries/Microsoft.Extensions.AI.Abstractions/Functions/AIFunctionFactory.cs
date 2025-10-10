@@ -753,11 +753,19 @@ public static partial class AIFunctionFactory
             {
                 // For compiler-generated names, "Async" might be followed by ordinal suffix (e.g., "FetchDataAsync_0_0")
                 // We need to remove "Async" but keep the ordinal part
-                int asyncIndex = name.IndexOf(AsyncSuffix + "_", StringComparison.Ordinal);
+#pragma warning disable CA1310 // Specify StringComparison for correctness - compiler-generated names are ASCII only
+#pragma warning disable S1449 // Culture should be specified - compiler-generated names are ASCII only
+                int asyncIndex = name.IndexOf(AsyncSuffix + "_");
+#pragma warning restore S1449
+#pragma warning restore CA1310
                 if (asyncIndex >= 0)
                 {
                     // Found "Async_" - remove just "Async", keeping the underscore and ordinal
+#if NET
                     name = string.Concat(name.AsSpan(0, asyncIndex), name.AsSpan(asyncIndex + AsyncSuffix.Length));
+#else
+                    name = name.Substring(0, asyncIndex) + name.Substring(asyncIndex + AsyncSuffix.Length);
+#endif
                 }
                 else if (name.EndsWith(AsyncSuffix, StringComparison.Ordinal) && name.Length > AsyncSuffix.Length)
                 {
