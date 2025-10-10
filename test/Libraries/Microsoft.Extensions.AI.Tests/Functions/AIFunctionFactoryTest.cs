@@ -1051,8 +1051,8 @@ public partial class AIFunctionFactoryTest
 
         var tool = AIFunctionFactory.Create(DoSomething);
 
-        // The name should be: ContainingMethodName_LocalFunctionName
-        Assert.Equal("LocalFunction_NameCleanup_DoSomething", tool.Name);
+        // The name should start with: ContainingMethodName_LocalFunctionName (followed by ordinal)
+        Assert.StartsWith("LocalFunction_NameCleanup_DoSomething_", tool.Name);
     }
 
     [Fact]
@@ -1071,9 +1071,9 @@ public partial class AIFunctionFactoryTest
         var tool1 = AIFunctionFactory.Create(FirstLocal);
         var tool2 = AIFunctionFactory.Create(SecondLocal);
 
-        // Each should have unique names based on the local function name
-        Assert.Equal("LocalFunction_MultipleInSameMethod_FirstLocal", tool1.Name);
-        Assert.Equal("LocalFunction_MultipleInSameMethod_SecondLocal", tool2.Name);
+        // Each should have unique names based on the local function name (including ordinal)
+        Assert.StartsWith("LocalFunction_MultipleInSameMethod_FirstLocal_", tool1.Name);
+        Assert.StartsWith("LocalFunction_MultipleInSameMethod_SecondLocal_", tool2.Name);
         Assert.NotEqual(tool1.Name, tool2.Name);
     }
 
@@ -1121,7 +1121,7 @@ public partial class AIFunctionFactoryTest
 
         var tool = AIFunctionFactory.Create(Add);
 
-        Assert.Equal("LocalFunction_WithParameters_Add", tool.Name);
+        Assert.StartsWith("LocalFunction_WithParameters_Add_", tool.Name);
         Assert.Contains("firstNumber", tool.JsonSchema.ToString());
         Assert.Contains("secondNumber", tool.JsonSchema.ToString());
     }
@@ -1137,8 +1137,8 @@ public partial class AIFunctionFactoryTest
 
         var tool = AIFunctionFactory.Create(FetchDataAsync);
 
-        // Should strip "Async" suffix
-        Assert.Equal("LocalFunction_AsyncFunction_FetchData", tool.Name);
+        // Should strip "Async" suffix and include ordinal
+        Assert.StartsWith("LocalFunction_AsyncFunction_FetchData_", tool.Name);
 
         var result = await tool.InvokeAsync();
         AssertExtensions.EqualFunctionCallResults("data", result);
@@ -1163,7 +1163,7 @@ public partial class AIFunctionFactoryTest
         // Even local functions defined in test methods get cleaned up
         var tool = AIFunctionFactory.Create(Add, serializerOptions: JsonContext.Default.Options);
 
-        Assert.Equal("LocalFunction_InsideTestMethod_Add", tool.Name);
+        Assert.StartsWith("LocalFunction_InsideTestMethod_Add_", tool.Name);
 
         [return: Description("The summed result")]
         static int Add(int a, int b) => a + b;

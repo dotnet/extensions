@@ -749,11 +749,21 @@ public static partial class AIFunctionFactory
             string name = SanitizeMemberName(method.Name);
 
             const string AsyncSuffix = "Async";
-            if (IsAsyncMethod(method) &&
-                name.EndsWith(AsyncSuffix, StringComparison.Ordinal) &&
-                name.Length > AsyncSuffix.Length)
+            if (IsAsyncMethod(method))
             {
-                name = name.Substring(0, name.Length - AsyncSuffix.Length);
+                // For compiler-generated names, "Async" might be followed by ordinal suffix (e.g., "FetchDataAsync_0_0")
+                // We need to remove "Async" but keep the ordinal part
+                int asyncIndex = name.IndexOf(AsyncSuffix + "_", StringComparison.Ordinal);
+                if (asyncIndex >= 0)
+                {
+                    // Found "Async_" - remove just "Async", keeping the underscore and ordinal
+                    name = string.Concat(name.AsSpan(0, asyncIndex), name.AsSpan(asyncIndex + AsyncSuffix.Length));
+                }
+                else if (name.EndsWith(AsyncSuffix, StringComparison.Ordinal) && name.Length > AsyncSuffix.Length)
+                {
+                    // No ordinal suffix, just remove "Async" from the end
+                    name = name.Substring(0, name.Length - AsyncSuffix.Length);
+                }
             }
 
             return name;
@@ -1108,20 +1118,17 @@ public static partial class AIFunctionFactory
     private static string SanitizeMemberName(string memberName)
     {
         // Handle compiler-generated names (local functions and lambdas)
-        // Local functions: <ContainingMethod>g__LocalFunctionName|ordinal_depth -> ContainingMethod_LocalFunctionName
-        // Lambdas: <ContainingMethod>b__ordinal_depth -> ContainingMethod_ordinal
+        // Local functions: <ContainingMethod>g__LocalFunctionName|ordinal_depth -> ContainingMethod_LocalFunctionName_ordinal_depth
+        // Lambdas: <ContainingMethod>b__ordinal_depth -> ContainingMethod_ordinal_depth
         var match = CompilerGeneratedNameRegex().Match(memberName);
         if (match.Success)
         {
             string containingMethod = match.Groups[1].Value;
             string identifier = match.Groups[2].Value;
 
-            // For local functions, extract the name before the pipe character
-            int pipeIndex = identifier.IndexOf('|', StringComparison.Ordinal);
-            if (pipeIndex > 0)
-            {
-                identifier = identifier.Substring(0, pipeIndex);
-            }
+            // For local functions, the identifier contains "FunctionName|ordinal_depth"
+            // We want to keep both parts but replace the pipe with underscore
+            identifier = identifier.Replace('|', '_');
 
             return $"{containingMethod}_{identifier}";
         }
