@@ -1000,7 +1000,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 SequenceNumber = updateSequenceNumber,
             };
         }
-        else if (responseStatus is null && updateSequenceNumber is not null)
+
+        if (responseStatus is null && updateSequenceNumber is not null)
         {
             // In some cases, streaming needs to be resumed from an event (e.g., a text delta event) that does not have a response status,
             // response Id, and potentially other properties. In these cases, we know that the response is not yet complete
