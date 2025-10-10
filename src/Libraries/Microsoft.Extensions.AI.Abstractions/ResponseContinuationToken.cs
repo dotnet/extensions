@@ -31,8 +31,6 @@ public class ResponseContinuationToken
     /// <param name="bytes">Bytes to create the token from.</param>
     protected ResponseContinuationToken(ReadOnlyMemory<byte> bytes)
     {
-        _ = Throw.IfNull(bytes);
-
         _bytes = bytes;
     }
 
