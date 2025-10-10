@@ -147,8 +147,8 @@ public class ChatResponseUpdate
     /// to resume streaming from the point of interruption.
     /// </para>
     /// </remarks>
-    [JsonIgnore]
     [Experimental("MEAI001")]
+    [JsonIgnore]
     public object? ContinuationToken { get; set; }
 
     /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
