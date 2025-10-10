@@ -1107,46 +1107,36 @@ public static partial class AIFunctionFactory
     /// </returns>
     private static string SanitizeMemberName(string memberName)
     {
-        // Handle compiler-generated local function names: <ContainingMethod>g__LocalFunctionName|ordinal_depth
-        // Extract: ContainingMethod_LocalFunctionName
-        var match = LocalFunctionNameRegex().Match(memberName);
+        // Handle compiler-generated names (local functions and lambdas)
+        // Local functions: <ContainingMethod>g__LocalFunctionName|ordinal_depth -> ContainingMethod_LocalFunctionName
+        // Lambdas: <ContainingMethod>b__ordinal_depth -> ContainingMethod_ordinal
+        var match = CompilerGeneratedNameRegex().Match(memberName);
         if (match.Success)
         {
             string containingMethod = match.Groups[1].Value;
-            string localFunctionName = match.Groups[2].Value;
-            return $"{containingMethod}_{localFunctionName}";
-        }
+            string identifier = match.Groups[2].Value;
 
-        // Handle compiler-generated lambda names: <ContainingMethod>b__ordinal_depth
-        // Extract: ContainingMethod_ordinal to ensure uniqueness
-        match = LambdaNameRegex().Match(memberName);
-        if (match.Success)
-        {
-            string containingMethod = match.Groups[1].Value;
-            string ordinalPart = match.Groups[2].Value;
-            return $"{containingMethod}_{ordinalPart}";
+            // For local functions, extract the name before the pipe character
+            int pipeIndex = identifier.IndexOf('|', StringComparison.Ordinal);
+            if (pipeIndex > 0)
+            {
+                identifier = identifier.Substring(0, pipeIndex);
+            }
+
+            return $"{containingMethod}_{identifier}";
         }
 
         // For any other cases, just replace invalid characters with underscores
         return InvalidNameCharsRegex().Replace(memberName, "_");
     }
 
-    /// <summary>Regex that matches compiler-generated local function names.</summary>
+    /// <summary>Regex that matches compiler-generated names (local functions and lambdas).</summary>
 #if NET
-    [GeneratedRegex(@"^<([^>]+)>g__([^|]+)\|")]
-    private static partial Regex LocalFunctionNameRegex();
+    [GeneratedRegex(@"^<([^>]+)>\w__(.+)")]
+    private static partial Regex CompilerGeneratedNameRegex();
 #else
-    private static Regex LocalFunctionNameRegex() => _localFunctionNameRegex;
-    private static readonly Regex _localFunctionNameRegex = new(@"^<([^>]+)>g__([^|]+)\|", RegexOptions.Compiled);
-#endif
-
-    /// <summary>Regex that matches compiler-generated lambda names.</summary>
-#if NET
-    [GeneratedRegex(@"^<([^>]+)>b__(.+)$")]
-    private static partial Regex LambdaNameRegex();
-#else
-    private static Regex LambdaNameRegex() => _lambdaNameRegex;
-    private static readonly Regex _lambdaNameRegex = new(@"^<([^>]+)>b__(.+)$", RegexOptions.Compiled);
+    private static Regex CompilerGeneratedNameRegex() => _compilerGeneratedNameRegex;
+    private static readonly Regex _compilerGeneratedNameRegex = new(@"^<([^>]+)>\w__(.+)", RegexOptions.Compiled);
 #endif
 
     /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>

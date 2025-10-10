@@ -1117,13 +1117,13 @@ public partial class AIFunctionFactoryTest
     [Fact]
     public void LocalFunction_WithParameters()
     {
-        static int Add(int a, int b) => a + b;
+        static int Add(int firstNumber, int secondNumber) => firstNumber + secondNumber;
 
         var tool = AIFunctionFactory.Create(Add);
 
         Assert.Equal("LocalFunction_WithParameters_Add", tool.Name);
-        Assert.Contains("a", tool.JsonSchema.ToString());
-        Assert.Contains("b", tool.JsonSchema.ToString());
+        Assert.Contains("firstNumber", tool.JsonSchema.ToString());
+        Assert.Contains("secondNumber", tool.JsonSchema.ToString());
     }
 
     [Fact]
