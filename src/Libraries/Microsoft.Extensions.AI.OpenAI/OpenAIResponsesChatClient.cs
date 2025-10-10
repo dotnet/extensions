@@ -982,8 +982,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Also returns a continuation token if there is no status but there is a sequence number,
         // which can occur for certain streaming updates related to response content part updates: response.content_part.*,
         // response.output_text.*
-        if ((responseStatus == ResponseStatus.InProgress || responseStatus == ResponseStatus.Queued)
-            || (responseStatus == null && updateSequenceNumber != null))
+        if ((responseStatus is ResponseStatus.InProgress or ResponseStatus.Queued) ||
+            (responseStatus is null && updateSequenceNumber is not null))
         {
             return new OpenAIResponsesContinuationToken(responseId)
             {

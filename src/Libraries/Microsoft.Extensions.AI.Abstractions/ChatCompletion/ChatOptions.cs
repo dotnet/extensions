@@ -176,8 +176,8 @@ public class ChatOptions
     /// to resume the stream from the point of interruption and continue receiving updates until the operation is completed.
     /// </para>
     /// <para>
-    /// This property only takes effect if the API it's used with supports background responses.
-    /// If the API does not support background responses, this property will be ignored.
+    /// This property only takes effect if the implementation it's used with supports background responses.
+    /// If the implementation does not support background responses, this property will be ignored.
     /// </para>
     /// </remarks>
     [Experimental("MEAI001")]
