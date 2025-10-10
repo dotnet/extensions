@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.AI;
 public class ResponseContinuationToken
 {
     /// <summary>Bytes representing this token.</summary>
-    private readonly ReadOnlyMemory<byte>? _bytes;
+    private readonly ReadOnlyMemory<byte> _bytes;
 
     /// <summary>Initializes a new instance of the <see cref="ResponseContinuationToken"/> class.</summary>
     protected ResponseContinuationToken()
