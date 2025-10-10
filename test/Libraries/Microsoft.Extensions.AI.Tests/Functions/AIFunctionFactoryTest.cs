@@ -1005,6 +1005,8 @@ public partial class AIFunctionFactoryTest
 
     private sealed class MyArgumentType;
 
+    private static int TestStaticMethod(int a, int b) => a + b;
+
     private class A;
     private class B : A;
     private sealed class C : B;
@@ -1038,6 +1040,135 @@ public partial class AIFunctionFactoryTest
                 return default;
             },
         };
+
+    [Fact]
+    public void LocalFunction_NameCleanup()
+    {
+        static void DoSomething()
+        {
+        }
+
+        var tool = AIFunctionFactory.Create(DoSomething);
+
+        // The name should be: ContainingMethodName_LocalFunctionName
+        Assert.Equal("LocalFunction_NameCleanup_DoSomething", tool.Name);
+    }
+
+    [Fact]
+    public void LocalFunction_MultipleInSameMethod()
+    {
+        static void FirstLocal()
+        {
+        }
+
+        static void SecondLocal()
+        {
+        }
+
+        var tool1 = AIFunctionFactory.Create(FirstLocal);
+        var tool2 = AIFunctionFactory.Create(SecondLocal);
+
+        // Each should have unique names based on the local function name
+        Assert.Equal("LocalFunction_MultipleInSameMethod_FirstLocal", tool1.Name);
+        Assert.Equal("LocalFunction_MultipleInSameMethod_SecondLocal", tool2.Name);
+        Assert.NotEqual(tool1.Name, tool2.Name);
+    }
+
+    [Fact]
+    public void Lambda_NameCleanup()
+    {
+        Action lambda = () =>
+        {
+        };
+
+        var tool = AIFunctionFactory.Create(lambda);
+
+        // The name should be the containing method name
+        Assert.Equal("Lambda_NameCleanup", tool.Name);
+    }
+
+    [Fact]
+    public void Lambda_MultipleInSameMethod()
+    {
+        Action lambda1 = () =>
+        {
+        };
+
+        Action lambda2 = () =>
+        {
+        };
+
+        var tool1 = AIFunctionFactory.Create(lambda1);
+        var tool2 = AIFunctionFactory.Create(lambda2);
+
+        // Both should have the same name since they're from the same method
+        // and lambdas don't have distinct names
+        Assert.Equal("Lambda_MultipleInSameMethod", tool1.Name);
+        Assert.Equal("Lambda_MultipleInSameMethod", tool2.Name);
+    }
+
+    [Fact]
+    public void LocalFunction_WithParameters()
+    {
+        static int Add(int a, int b) => a + b;
+
+        var tool = AIFunctionFactory.Create(Add);
+
+        Assert.Equal("LocalFunction_WithParameters_Add", tool.Name);
+        Assert.Contains("a", tool.JsonSchema.ToString());
+        Assert.Contains("b", tool.JsonSchema.ToString());
+    }
+
+    [Fact]
+    public async Task LocalFunction_AsyncFunction()
+    {
+        static async Task<string> FetchDataAsync()
+        {
+            await Task.Yield();
+            return "data";
+        }
+
+        var tool = AIFunctionFactory.Create(FetchDataAsync);
+
+        // Should strip "Async" suffix
+        Assert.Equal("LocalFunction_AsyncFunction_FetchData", tool.Name);
+
+        var result = await tool.InvokeAsync();
+        AssertExtensions.EqualFunctionCallResults("data", result);
+    }
+
+    [Fact]
+    public void LocalFunction_ExplicitNameOverride()
+    {
+        static void DoSomething()
+        {
+        }
+
+        var tool = AIFunctionFactory.Create(DoSomething, name: "CustomName");
+
+        Assert.Equal("CustomName", tool.Name);
+    }
+
+    [Fact]
+    public void LocalFunction_InsideTestMethod()
+    {
+        // Even local functions defined in test methods get cleaned up
+        var tool = AIFunctionFactory.Create(Add, serializerOptions: JsonContext.Default.Options);
+
+        Assert.Equal("LocalFunction_InsideTestMethod_Add", tool.Name);
+
+        [return: Description("The summed result")]
+        static int Add(int a, int b) => a + b;
+    }
+
+    [Fact]
+    public void RegularStaticMethod_NameUnchanged()
+    {
+        // Test that actual static methods (not local functions) have names unchanged
+        var tool = AIFunctionFactory.Create(TestStaticMethod, null, serializerOptions: JsonContext.Default.Options);
+
+        Assert.Equal("TestStaticMethod", tool.Name);
+    }
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
     [JsonSerializable(typeof(int[]))]

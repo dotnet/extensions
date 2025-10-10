@@ -1105,8 +1105,47 @@ public static partial class AIFunctionFactory
     /// Replaces non-alphanumeric characters in the identifier with the underscore character.
     /// Primarily intended to remove characters produced by compiler-generated method name mangling.
     /// </returns>
-    private static string SanitizeMemberName(string memberName) =>
-        InvalidNameCharsRegex().Replace(memberName, "_");
+    private static string SanitizeMemberName(string memberName)
+    {
+        // Handle compiler-generated local function names: <ContainingMethod>g__LocalFunctionName|ordinal_depth
+        // Extract: ContainingMethod_LocalFunctionName
+        var match = LocalFunctionNameRegex().Match(memberName);
+        if (match.Success)
+        {
+            string containingMethod = match.Groups[1].Value;
+            string localFunctionName = match.Groups[2].Value;
+            return $"{containingMethod}_{localFunctionName}";
+        }
+
+        // Handle compiler-generated lambda names: <ContainingMethod>b__ordinal_depth
+        // Extract: ContainingMethod
+        match = LambdaNameRegex().Match(memberName);
+        if (match.Success)
+        {
+            return match.Groups[1].Value;
+        }
+
+        // For any other cases, just replace invalid characters with underscores
+        return InvalidNameCharsRegex().Replace(memberName, "_");
+    }
+
+    /// <summary>Regex that matches compiler-generated local function names.</summary>
+#if NET
+    [GeneratedRegex(@"^<([^>]+)>g__([^|]+)\|")]
+    private static partial Regex LocalFunctionNameRegex();
+#else
+    private static Regex LocalFunctionNameRegex() => _localFunctionNameRegex;
+    private static readonly Regex _localFunctionNameRegex = new(@"^<([^>]+)>g__([^|]+)\|", RegexOptions.Compiled);
+#endif
+
+    /// <summary>Regex that matches compiler-generated lambda names.</summary>
+#if NET
+    [GeneratedRegex(@"^<([^>]+)>b__")]
+    private static partial Regex LambdaNameRegex();
+#else
+    private static Regex LambdaNameRegex() => _lambdaNameRegex;
+    private static readonly Regex _lambdaNameRegex = new(@"^<([^>]+)>b__", RegexOptions.Compiled);
+#endif
 
     /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
 #if NET
