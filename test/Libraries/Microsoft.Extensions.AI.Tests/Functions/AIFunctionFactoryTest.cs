@@ -1005,6 +1005,8 @@ public partial class AIFunctionFactoryTest
 
     private sealed class MyArgumentType;
 
+    private static int TestStaticMethod(int a, int b) => a + b;
+
     private class A;
     private class B : A;
     private sealed class C : B;
@@ -1038,6 +1040,143 @@ public partial class AIFunctionFactoryTest
                 return default;
             },
         };
+
+    [Fact]
+    public void LocalFunction_NameCleanup()
+    {
+        static void DoSomething()
+        {
+            // Empty local function for testing name cleanup
+        }
+
+        var tool = AIFunctionFactory.Create(DoSomething);
+
+        // The name should start with: ContainingMethodName_LocalFunctionName (followed by ordinal)
+        Assert.StartsWith("LocalFunction_NameCleanup_DoSomething_", tool.Name);
+    }
+
+    [Fact]
+    public void LocalFunction_MultipleInSameMethod()
+    {
+        static void FirstLocal()
+        {
+            // Empty local function for testing name cleanup
+        }
+
+        static void SecondLocal()
+        {
+            // Empty local function for testing name cleanup
+        }
+
+        var tool1 = AIFunctionFactory.Create(FirstLocal);
+        var tool2 = AIFunctionFactory.Create(SecondLocal);
+
+        // Each should have unique names based on the local function name (including ordinal)
+        Assert.StartsWith("LocalFunction_MultipleInSameMethod_FirstLocal_", tool1.Name);
+        Assert.StartsWith("LocalFunction_MultipleInSameMethod_SecondLocal_", tool2.Name);
+        Assert.NotEqual(tool1.Name, tool2.Name);
+    }
+
+    [Fact]
+    public void Lambda_NameCleanup()
+    {
+        Action lambda = () =>
+        {
+            // Empty lambda for testing name cleanup
+        };
+
+        var tool = AIFunctionFactory.Create(lambda);
+
+        // The name should be the containing method name with ordinal for uniqueness
+        Assert.StartsWith("Lambda_NameCleanup", tool.Name);
+    }
+
+    [Fact]
+    public void Lambda_MultipleInSameMethod()
+    {
+        Action lambda1 = () =>
+        {
+            // Empty lambda for testing name cleanup
+        };
+
+        Action lambda2 = () =>
+        {
+            // Empty lambda for testing name cleanup
+        };
+
+        var tool1 = AIFunctionFactory.Create(lambda1);
+        var tool2 = AIFunctionFactory.Create(lambda2);
+
+        // Each lambda should have a unique name based on its ordinal
+        // to allow the LLM to distinguish between them
+        Assert.StartsWith("Lambda_MultipleInSameMethod", tool1.Name);
+        Assert.StartsWith("Lambda_MultipleInSameMethod", tool2.Name);
+        Assert.NotEqual(tool1.Name, tool2.Name);
+    }
+
+    [Fact]
+    public void LocalFunction_WithParameters()
+    {
+        static int Add(int firstNumber, int secondNumber) => firstNumber + secondNumber;
+
+        var tool = AIFunctionFactory.Create(Add);
+
+        Assert.StartsWith("LocalFunction_WithParameters_Add_", tool.Name);
+        Assert.Contains("firstNumber", tool.JsonSchema.ToString());
+        Assert.Contains("secondNumber", tool.JsonSchema.ToString());
+    }
+
+    [Fact]
+    public async Task LocalFunction_AsyncFunction()
+    {
+        static async Task<string> FetchDataAsync()
+        {
+            await Task.Yield();
+            return "data";
+        }
+
+        var tool = AIFunctionFactory.Create(FetchDataAsync);
+
+        // Should strip "Async" suffix and include ordinal
+        Assert.StartsWith("LocalFunction_AsyncFunction_FetchData_", tool.Name);
+
+        var result = await tool.InvokeAsync();
+        AssertExtensions.EqualFunctionCallResults("data", result);
+    }
+
+    [Fact]
+    public void LocalFunction_ExplicitNameOverride()
+    {
+        static void DoSomething()
+        {
+            // Empty local function for testing name cleanup
+        }
+
+        var tool = AIFunctionFactory.Create(DoSomething, name: "CustomName");
+
+        Assert.Equal("CustomName", tool.Name);
+    }
+
+    [Fact]
+    public void LocalFunction_InsideTestMethod()
+    {
+        // Even local functions defined in test methods get cleaned up
+        var tool = AIFunctionFactory.Create(Add, serializerOptions: JsonContext.Default.Options);
+
+        Assert.StartsWith("LocalFunction_InsideTestMethod_Add_", tool.Name);
+
+        [return: Description("The summed result")]
+        static int Add(int a, int b) => a + b;
+    }
+
+    [Fact]
+    public void RegularStaticMethod_NameUnchanged()
+    {
+        // Test that actual static methods (not local functions) have names unchanged
+        var tool = AIFunctionFactory.Create(TestStaticMethod, null, serializerOptions: JsonContext.Default.Options);
+
+        Assert.Equal("TestStaticMethod", tool.Name);
+    }
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
     [JsonSerializable(typeof(int[]))]
