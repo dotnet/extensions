@@ -31,7 +31,8 @@ public class HostedMcpServerToolTests
 
         Assert.Empty(tool.AdditionalProperties);
         Assert.Empty(tool.Description);
-        Assert.Equal(nameof(HostedMcpServerTool), tool.Name);
+        Assert.Equal("mcp", tool.Name);
+        Assert.Equal(tool.Name, tool.ToString());
 
         Assert.Equal("serverName", tool.ServerName);
         Assert.Equal("https://localhost/", tool.Url.ToString());

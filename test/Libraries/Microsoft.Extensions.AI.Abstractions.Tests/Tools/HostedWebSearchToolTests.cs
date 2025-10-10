@@ -11,9 +11,9 @@ public class HostedWebSearchToolTests
     public void Constructor_Roundtrips()
     {
         var tool = new HostedWebSearchTool();
-        Assert.Equal(nameof(HostedWebSearchTool), tool.Name);
+        Assert.Equal("web_search", tool.Name);
         Assert.Empty(tool.Description);
         Assert.Empty(tool.AdditionalProperties);
-        Assert.Equal(nameof(HostedWebSearchTool), tool.ToString());
+        Assert.Equal(tool.Name, tool.ToString());
     }
 }
