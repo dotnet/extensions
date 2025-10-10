@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.Tests;
 
-public class BuiltInEvaluatorUtilitiesTests
+public class BuiltInMetricUtilitiesTests
 {
     [Fact]
     public void MarkAsBuiltInAddsMetadata()
@@ -32,7 +32,7 @@ public class BuiltInEvaluatorUtilitiesTests
     public void MetadataValueOfTrueIsCaseInsensitive(string value)
     {
         var metric = new BooleanMetric("name");
-        metric.AddOrUpdateMetadata(BuiltInEvaluatorUtilities.BuiltInEvalMetadataName, value);
+        metric.AddOrUpdateMetadata(BuiltInMetricUtilities.BuiltInEvalMetadataName, value);
         Assert.True(metric.IsBuiltIn());
     }
 
@@ -43,7 +43,7 @@ public class BuiltInEvaluatorUtilitiesTests
     public void MetadataValueOfFalseIsCaseInsensitive(string value)
     {
         var metric = new StringMetric("name");
-        metric.AddOrUpdateMetadata(BuiltInEvaluatorUtilities.BuiltInEvalMetadataName, value);
+        metric.AddOrUpdateMetadata(BuiltInMetricUtilities.BuiltInEvalMetadataName, value);
         Assert.False(metric.IsBuiltIn());
     }
 
@@ -51,7 +51,7 @@ public class BuiltInEvaluatorUtilitiesTests
     public void UnrecognizedMetadataValueIsTreatedAsFalse()
     {
         var metric = new NumericMetric("name");
-        metric.AddOrUpdateMetadata(BuiltInEvaluatorUtilities.BuiltInEvalMetadataName, "unrecognized");
+        metric.AddOrUpdateMetadata(BuiltInMetricUtilities.BuiltInEvalMetadataName, "unrecognized");
         Assert.False(metric.IsBuiltIn());
     }
 
@@ -59,7 +59,7 @@ public class BuiltInEvaluatorUtilitiesTests
     public void EmptyMetadataValueIsTreatedAsFalse()
     {
         var metric = new NumericMetric("name");
-        metric.AddOrUpdateMetadata(BuiltInEvaluatorUtilities.BuiltInEvalMetadataName, string.Empty);
+        metric.AddOrUpdateMetadata(BuiltInMetricUtilities.BuiltInEvalMetadataName, string.Empty);
         Assert.False(metric.IsBuiltIn());
     }
 }

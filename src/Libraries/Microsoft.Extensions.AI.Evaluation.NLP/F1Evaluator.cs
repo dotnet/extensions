@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -70,16 +69,17 @@ public sealed class F1Evaluator : IEvaluator
             return new ValueTask<EvaluationResult>(result);
         }
 
-        (double score, TimeSpan duration) = TimingHelper.ExecuteWithTiming(() =>
-        {
-            string[] reference = SimpleWordTokenizer.WordTokenize(context.GroundTruth).ToArray();
-            string[] hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
-            return F1Algorithm.CalculateF1Score(reference, hypothesis);
-        });
+        (double score, TimeSpan duration) =
+            TimingHelper.ExecuteWithTiming(() =>
+            {
+                string[] reference = SimpleWordTokenizer.WordTokenize(context.GroundTruth).ToArray();
+                string[] hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
+                double score = F1Algorithm.CalculateF1Score(reference, hypothesis);
+                return score;
+            });
 
         metric.Value = score;
-        string durationText = $"{duration.TotalSeconds.ToString("F4", CultureInfo.InvariantCulture)} s";
-        metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
+        metric.AddOrUpdateDurationMetadata(duration);
         metric.AddOrUpdateContext(context);
         metric.Interpretation = metric.Interpret();
 
