@@ -1046,6 +1046,7 @@ public partial class AIFunctionFactoryTest
     {
         static void DoSomething()
         {
+            // Empty local function for testing name cleanup
         }
 
         var tool = AIFunctionFactory.Create(DoSomething);
@@ -1059,10 +1060,12 @@ public partial class AIFunctionFactoryTest
     {
         static void FirstLocal()
         {
+            // Empty local function for testing name cleanup
         }
 
         static void SecondLocal()
         {
+            // Empty local function for testing name cleanup
         }
 
         var tool1 = AIFunctionFactory.Create(FirstLocal);
@@ -1079,6 +1082,7 @@ public partial class AIFunctionFactoryTest
     {
         Action lambda = () =>
         {
+            // Empty lambda for testing name cleanup
         };
 
         var tool = AIFunctionFactory.Create(lambda);
@@ -1092,10 +1096,12 @@ public partial class AIFunctionFactoryTest
     {
         Action lambda1 = () =>
         {
+            // Empty lambda for testing name cleanup
         };
 
         Action lambda2 = () =>
         {
+            // Empty lambda for testing name cleanup
         };
 
         var tool1 = AIFunctionFactory.Create(lambda1);
@@ -1143,6 +1149,7 @@ public partial class AIFunctionFactoryTest
     {
         static void DoSomething()
         {
+            // Empty local function for testing name cleanup
         }
 
         var tool = AIFunctionFactory.Create(DoSomething, name: "CustomName");
