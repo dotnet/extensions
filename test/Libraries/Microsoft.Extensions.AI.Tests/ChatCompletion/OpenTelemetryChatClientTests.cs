@@ -134,6 +134,9 @@ public class OpenTelemetryChatClientTests
             [
                 AIFunctionFactory.Create((string personName) => personName, "GetPersonAge", "Gets the age of a person by name."),
                 new HostedWebSearchTool(),
+                new HostedFileSearchTool(),
+                new HostedCodeInterpreterTool(),
+                new HostedMcpServerTool("myAwesomeServer", "http://localhost:1234/somewhere"),
                 AIFunctionFactory.Create((string location) => "", "GetCurrentWeather", "Gets the current weather for a location.").AsDeclarationOnly(),
             ],
         };
@@ -287,6 +290,18 @@ public class OpenTelemetryChatClientTests
                         "personName"
                       ]
                     }
+                  },
+                  {
+                    "type": "web_search"
+                  },
+                  {
+                    "type": "file_search"
+                  },
+                  {
+                    "type": "code_interpreter"
+                  },
+                  {
+                    "type": "mcp"
                   },
                   {
                     "type": "function",
