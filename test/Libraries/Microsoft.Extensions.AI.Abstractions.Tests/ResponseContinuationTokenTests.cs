@@ -9,11 +9,11 @@ namespace Microsoft.Extensions.AI;
 
 public class ResponseContinuationTokenTests
 {
-    [Fact]
-    public void Bytes_Roundtrip()
+    [Theory]
+    [InlineData(new byte[0])]
+    [InlineData(new byte[] { 1, 2, 3, 4, 5 })]
+    public void Bytes_Roundtrip(byte[] testBytes)
     {
-        byte[] testBytes = [1, 2, 3, 4, 5];
-
         ResponseContinuationToken token = ResponseContinuationToken.FromBytes(testBytes);
 
         Assert.NotNull(token);

@@ -140,7 +140,7 @@ public class ChatResponseUpdate
     /// <remarks>
     /// <see cref="IChatClient"/> implementations that support background responses will return
     /// a continuation token on each update if background responses are allowed in <see cref="ChatOptions.AllowBackgroundResponses"/>
-    /// and not all updates for the response have been streamed yet. Otherwise, the token will be <see langword="null"/>.
+    /// except of the last update, for which the token will be <see langword="null"/>.
     /// <para>
     /// This property should be used for stream resumption, where the continuation token of the latest received update should be
     /// passed to <see cref="ChatOptions.ContinuationToken"/> on subsequent calls to <see cref="IChatClient.GetStreamingResponseAsync"/>

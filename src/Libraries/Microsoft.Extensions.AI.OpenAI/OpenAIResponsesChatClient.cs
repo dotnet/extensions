@@ -83,25 +83,18 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
+        // Convert the inputs into what OpenAIResponseClient expects.
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
-        // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIResponseItems = ToOpenAIResponseItems(messages, options);
-
         // Provided continuation token signals that an existing background response should be fetched.
-        if (options?.ContinuationToken is { } token)
+        if (GetContinuationToken(messages, options) is { } token)
         {
-            if (messages.Any())
-            {
-                throw new InvalidOperationException("Messages are not allowed when continuing a background response using a continuation token.");
-            }
-
-            var continuationToken = OpenAIResponsesContinuationToken.FromToken(token);
-
-            var response = await _responseClient.GetResponseAsync(continuationToken.ResponseId, cancellationToken).ConfigureAwait(false);
+            var response = await _responseClient.GetResponseAsync(token.ResponseId, cancellationToken).ConfigureAwait(false);
 
             return FromOpenAIResponse(response, openAIOptions);
         }
+
+        var openAIResponseItems = ToOpenAIResponseItems(messages, options);
 
         // Make the call to the OpenAIResponseClient.
         var task = _createResponseAsync is not null ?
@@ -120,7 +113,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             ConversationId = openAIOptions?.StoredOutputEnabled is false ? null : openAIResponse.Id,
             CreatedAt = openAIResponse.CreatedAt,
-            ContinuationToken = GetContinuationToken(openAIResponse),
+            ContinuationToken = CreateContinuationToken(openAIResponse),
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
             ModelId = openAIResponse.Model,
             RawRepresentation = openAIResponse,
@@ -237,18 +230,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Provided continuation token signals that an existing background response should be fetched.
-        if (options?.ContinuationToken is { } token)
+        if (GetContinuationToken(messages, options) is { } token)
         {
-            if (messages.Any())
-            {
-                throw new InvalidOperationException("Messages are not allowed when resuming streamed background response using a continuation token.");
-            }
+            IAsyncEnumerable<StreamingResponseUpdate> updates = _responseClient.GetResponseStreamingAsync(token.ResponseId, token.SequenceNumber, cancellationToken);
 
-            var continuationToken = OpenAIResponsesContinuationToken.FromToken(token);
-
-            IAsyncEnumerable<StreamingResponseUpdate> updates = _responseClient.GetResponseStreamingAsync(continuationToken.ResponseId, continuationToken.SequenceNumber, cancellationToken);
-
-            return FromOpenAIStreamingResponseUpdatesAsync(updates, openAIOptions, continuationToken.ResponseId, cancellationToken);
+            return FromOpenAIStreamingResponseUpdatesAsync(updates, openAIOptions, token.ResponseId, cancellationToken);
         }
 
         var openAIResponseItems = ToOpenAIResponseItems(messages, options);
@@ -287,7 +273,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     ModelId = modelId,
                     RawRepresentation = streamingUpdate,
                     ResponseId = responseId,
-                    ContinuationToken = GetContinuationToken(
+                    ContinuationToken = CreateContinuationToken(
                         responseId!,
                         latestResponseStatus,
                         options?.BackgroundModeEnabled,
@@ -973,15 +959,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
     }
 
-    private static OpenAIResponsesContinuationToken? GetContinuationToken(OpenAIResponse openAIResponse)
+    private static OpenAIResponsesContinuationToken? CreateContinuationToken(OpenAIResponse openAIResponse)
     {
-        return GetContinuationToken(
+        return CreateContinuationToken(
             responseId: openAIResponse.Id,
             responseStatus: openAIResponse.Status,
             isBackgroundModeEnabled: openAIResponse.BackgroundModeEnabled);
     }
 
-    private static OpenAIResponsesContinuationToken? GetContinuationToken(
+    private static OpenAIResponsesContinuationToken? CreateContinuationToken(
         string responseId,
         ResponseStatus? responseStatus,
         bool? isBackgroundModeEnabled,
@@ -992,21 +978,13 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             return null;
         }
 
-        // Return a continuation token for in-progress or queued responses because they are not yet complete.
-        if (responseStatus is (ResponseStatus.InProgress or ResponseStatus.Queued))
+        // Returns a continuation token for in-progress or queued responses as they are not yet complete.
+        // Also returns a continuation token if there is no status but there is a sequence number,
+        // which can occur for certain streaming updates related to response content part updates: response.content_part.*,
+        // response.output_text.*
+        if ((responseStatus == ResponseStatus.InProgress || responseStatus == ResponseStatus.Queued)
+            || (responseStatus == null && updateSequenceNumber != null))
         {
-            return new OpenAIResponsesContinuationToken(responseId)
-            {
-                SequenceNumber = updateSequenceNumber,
-            };
-        }
-
-        if (responseStatus is null && updateSequenceNumber is not null)
-        {
-            // In some cases, streaming needs to be resumed from an event (e.g., a text delta event) that does not have a response status,
-            // response Id, and potentially other properties. In these cases, we know that the response is not yet complete
-            // because we are receiving updates for it, so we create a continuation token from the response Id obtained from the continuation token
-            // supplied to resume the streaming and the sequence number available on the event.
             return new OpenAIResponsesContinuationToken(responseId)
             {
                 SequenceNumber = updateSequenceNumber,
@@ -1016,6 +994,21 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // For all other statuses: completed, failed, canceled, incomplete
         // return null to indicate the operation is finished allowing the caller
         // to stop and access the final result, failure details, reason for incompletion, etc.
+        return null;
+    }
+
+    private static OpenAIResponsesContinuationToken? GetContinuationToken(IEnumerable<ChatMessage> messages, ChatOptions? options = null)
+    {
+        if (options?.ContinuationToken is { } token)
+        {
+            if (messages.Any())
+            {
+                throw new InvalidOperationException("Messages are not allowed when continuing a background response using a continuation token.");
+            }
+
+            return OpenAIResponsesContinuationToken.FromToken(token);
+        }
+
         return null;
     }
 

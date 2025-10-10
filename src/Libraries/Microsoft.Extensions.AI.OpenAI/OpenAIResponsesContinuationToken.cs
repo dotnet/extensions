@@ -69,13 +69,13 @@ internal sealed class OpenAIResponsesContinuationToken : ResponseContinuationTok
 
         if (data.Length == 0)
         {
-            Throw.InvalidOperationException("Failed to create OpenAIResponsesResumptionToken from provided token because it does not contain any data.");
+            Throw.ArgumentException(nameof(token), "Failed to create OpenAIResponsesResumptionToken from provided token because it does not contain any data.");
         }
 
         Utf8JsonReader reader = new(data.Span);
 
         string? responseId = null;
-        int? startAfter = null;
+        int? sequenceNumber = null;
 
         _ = reader.Read();
 
@@ -96,10 +96,11 @@ internal sealed class OpenAIResponsesContinuationToken : ResponseContinuationTok
                     break;
                 case "sequenceNumber":
                     _ = reader.Read();
-                    startAfter = reader.GetInt32();
+                    sequenceNumber = reader.GetInt32();
                     break;
                 default:
-                    throw new JsonException($"Unrecognized property '{propertyName}'.");
+                    Throw.ArgumentException(nameof(token), $"Unrecognized property '{propertyName}'.");
+                    break;
             }
         }
 
@@ -110,7 +111,7 @@ internal sealed class OpenAIResponsesContinuationToken : ResponseContinuationTok
 
         return new(responseId)
         {
-            SequenceNumber = startAfter
+            SequenceNumber = sequenceNumber
         };
     }
 }

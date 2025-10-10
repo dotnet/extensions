@@ -92,7 +92,8 @@ public class ChatResponse
     /// <remarks>
     /// <see cref="IChatClient"/> implementations that support background responses will return
     /// a continuation token if background responses are allowed in <see cref="ChatOptions.AllowBackgroundResponses"/>
-    /// and the result of the response has not been obtained yet. Otherwise, the token will be <see langword="null"/>.
+    /// and the result of the response has not been obtained yet. If the response has completed and the result has been obtained,
+    /// the token will be <see langword="null"/>.
     /// <para>
     /// This property should be used in conjunction with <see cref="ChatOptions.ContinuationToken"/> to 
     /// continue to poll for the completion of the response. Pass this token to

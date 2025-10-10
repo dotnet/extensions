@@ -213,7 +213,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         {
             chatOptions.ContinuationToken = response.ContinuationToken;
             response = await ChatClient.GetResponseAsync([], chatOptions);
-            await Task.Delay(500);
+            await Task.Delay(1000);
         }
 
         Assert.Contains("whale", response.Text, StringComparison.OrdinalIgnoreCase);
@@ -224,12 +224,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
+        int callCount = 0;
+
         using var chatClient = new FunctionInvokingChatClient(ChatClient);
 
         var chatOptions = new ChatOptions
         {
             AllowBackgroundResponses = true,
-            Tools = [AIFunctionFactory.Create(() => "5:43", new AIFunctionFactoryOptions { Name = "GetCurrentTime" })]
+            Tools = [AIFunctionFactory.Create(() => { callCount++; return "5:43"; }, new AIFunctionFactoryOptions { Name = "GetCurrentTime" })]
         };
 
         // Get initial response with continuation token
@@ -249,6 +251,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         }
 
         Assert.Contains("5:43", response.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(1, callCount);
     }
 
     [ConditionalFact]
@@ -315,12 +318,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
+        int callCount = 0;
+
         using var chatClient = new FunctionInvokingChatClient(ChatClient);
 
         var chatOptions = new ChatOptions
         {
             AllowBackgroundResponses = true,
-            Tools = [AIFunctionFactory.Create(() => "5:43", new AIFunctionFactoryOptions { Name = "GetCurrentTime" })]
+            Tools = [AIFunctionFactory.Create(() => { callCount++; return "5:43"; }, new AIFunctionFactoryOptions { Name = "GetCurrentTime" })]
         };
 
         string responseText = "";
@@ -331,5 +336,6 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         }
 
         Assert.Contains("5:43", responseText);
+        Assert.Equal(1, callCount);
     }
 }
