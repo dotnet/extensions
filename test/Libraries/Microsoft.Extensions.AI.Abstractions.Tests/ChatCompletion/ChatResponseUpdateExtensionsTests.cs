@@ -36,8 +36,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
         Assert.NotNull(response);
 
         Assert.NotNull(response.Usage);
@@ -88,8 +88,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
         Assert.Equal(9, response.Messages.Count);
 
         Assert.Equal("!a", response.Messages[0].Text);
@@ -151,8 +151,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
 
         Assert.Equal(4, response.Messages.Count);
 
@@ -201,8 +201,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
 
         Assert.Equal(5, response.Messages.Count);
 
@@ -258,8 +258,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
 
         ChatMessage message = Assert.Single(response.Messages);
         Assert.Equal("Hello world! How are you?", message.Text);
@@ -288,8 +288,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
 
         Assert.Equal(2, response.Messages.Count);
 
@@ -323,8 +323,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
 
         Assert.Equal(2, response.Messages.Count);
 
@@ -361,8 +361,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
 
         ChatMessage message = Assert.Single(response.Messages);
         Assert.Equal("Hello world! How are you?", message.Text);
@@ -391,8 +391,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
 
         Assert.Equal(2, response.Messages.Count);
 
@@ -428,8 +428,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
 
         Assert.Equal(3, response.Messages.Count);
 
@@ -729,8 +729,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
         Assert.Single(response.Messages);
 
         Assert.Equal("abcdefg", response.Messages[0].Text);
@@ -776,8 +776,8 @@ public class ChatResponseUpdateExtensionsTests
         ];
 
         ChatResponse response = useAsync ?
-            updates.ToChatResponse() :
-            await YieldAsync(updates).ToChatResponseAsync();
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
 
         Assert.Single(response.Messages);
         Assert.Equal("ab", response.Messages[0].Text);
