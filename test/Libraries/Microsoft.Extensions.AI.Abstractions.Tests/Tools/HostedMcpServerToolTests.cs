@@ -17,17 +17,20 @@ public class HostedMcpServerToolTests
         Assert.Empty(tool.AdditionalProperties);
 
         Assert.Equal("serverName", tool.ServerName);
-        Assert.Equal("https://localhost/", tool.Url.ToString());
+        Assert.Equal("https://localhost/", tool.ServerAddress);
 
         Assert.Empty(tool.Description);
+        Assert.Null(tool.AuthorizationToken);
+        Assert.Null(tool.ServerDescription);
         Assert.Null(tool.AllowedTools);
         Assert.Null(tool.ApprovalMode);
+        Assert.Null(tool.Headers);
     }
 
     [Fact]
     public void Constructor_Roundtrips()
     {
-        HostedMcpServerTool tool = new("serverName", "https://localhost/");
+        HostedMcpServerTool tool = new("serverName", "connector_id");
 
         Assert.Empty(tool.AdditionalProperties);
         Assert.Empty(tool.Description);
@@ -35,8 +38,13 @@ public class HostedMcpServerToolTests
         Assert.Equal(tool.Name, tool.ToString());
 
         Assert.Equal("serverName", tool.ServerName);
-        Assert.Equal("https://localhost/", tool.Url.ToString());
+        Assert.Equal("connector_id", tool.ServerAddress);
         Assert.Empty(tool.Description);
+
+        Assert.Null(tool.AuthorizationToken);
+        string authToken = "Bearer token123";
+        tool.AuthorizationToken = authToken;
+        Assert.Equal(authToken, tool.AuthorizationToken);
 
         Assert.Null(tool.ServerDescription);
         string serverDescription = "This is a test server";
@@ -68,10 +76,9 @@ public class HostedMcpServerToolTests
     [Fact]
     public void Constructor_Throws()
     {
-        Assert.Throws<ArgumentException>(() => new HostedMcpServerTool(string.Empty, new Uri("https://localhost/")));
-        Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool(null!, new Uri("https://localhost/")));
-        Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool("name", (Uri)null!));
-        Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool("name", (string)null!));
-        Assert.Throws<UriFormatException>(() => new HostedMcpServerTool("name", string.Empty));
+        Assert.Throws<ArgumentException>(() => new HostedMcpServerTool(string.Empty, "https://localhost/"));
+        Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool(null!, "https://localhost/"));
+        Assert.Throws<ArgumentException>(() => new HostedMcpServerTool("name", string.Empty));
+        Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool("name", null!));
     }
 }
