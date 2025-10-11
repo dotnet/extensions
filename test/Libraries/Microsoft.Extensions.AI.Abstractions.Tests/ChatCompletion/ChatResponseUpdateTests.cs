@@ -167,4 +167,165 @@ public class ChatResponseUpdateTests
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
     }
+
+    [Fact]
+    public void Clone_CreatesShallowCopy()
+    {
+        // Arrange
+        var originalAdditionalProperties = new AdditionalPropertiesDictionary { ["key"] = "value" };
+        var originalContents = new List<AIContent> { new TextContent("text1"), new TextContent("text2") };
+        var originalRawRepresentation = new object();
+        var originalCreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var original = new ChatResponseUpdate
+        {
+            AdditionalProperties = originalAdditionalProperties,
+            AuthorName = "author",
+            Contents = originalContents,
+            CreatedAt = originalCreatedAt,
+            ConversationId = "conv123",
+            FinishReason = ChatFinishReason.ContentFilter,
+            MessageId = "msg456",
+            ModelId = "model789",
+            RawRepresentation = originalRawRepresentation,
+            ResponseId = "resp012",
+            Role = ChatRole.Assistant,
+        };
+
+        // Act
+        var clone = original.Clone();
+
+        // Assert - Different instances
+        Assert.NotSame(original, clone);
+
+        // Assert - All properties copied correctly
+        Assert.Equal(original.AuthorName, clone.AuthorName);
+        Assert.Equal(original.Role, clone.Role);
+        Assert.Equal(original.CreatedAt, clone.CreatedAt);
+        Assert.Equal(original.ConversationId, clone.ConversationId);
+        Assert.Equal(original.FinishReason, clone.FinishReason);
+        Assert.Equal(original.MessageId, clone.MessageId);
+        Assert.Equal(original.ModelId, clone.ModelId);
+        Assert.Equal(original.ResponseId, clone.ResponseId);
+
+        // Assert - Reference properties are shallow copied (same references)
+        Assert.Same(original.AdditionalProperties, clone.AdditionalProperties);
+        Assert.Same(original.Contents, clone.Contents);
+        Assert.Same(original.RawRepresentation, clone.RawRepresentation);
+    }
+
+    [Fact]
+    public void Clone_WithNullProperties_CopiesCorrectly()
+    {
+        // Arrange
+        var original = new ChatResponseUpdate
+        {
+            Role = ChatRole.User,
+            ResponseId = "resp123"
+        };
+
+        // Act
+        var clone = original.Clone();
+
+        // Assert
+        Assert.NotSame(original, clone);
+        Assert.Equal(ChatRole.User, clone.Role);
+        Assert.Equal("resp123", clone.ResponseId);
+        Assert.Null(clone.AdditionalProperties);
+        Assert.Null(clone.AuthorName);
+        Assert.Null(clone.CreatedAt);
+        Assert.Null(clone.ConversationId);
+        Assert.Null(clone.FinishReason);
+        Assert.Null(clone.MessageId);
+        Assert.Null(clone.ModelId);
+        Assert.Null(clone.RawRepresentation);
+        Assert.Empty(clone.Contents); // Contents property initializes to empty list
+    }
+
+    [Fact]
+    public void Clone_WithDefaultConstructor_CopiesCorrectly()
+    {
+        // Arrange
+        var original = new ChatResponseUpdate();
+
+        // Act
+        var clone = original.Clone();
+
+        // Assert
+        Assert.NotSame(original, clone);
+        Assert.Null(clone.AuthorName);
+        Assert.Null(clone.Role);
+        Assert.Empty(clone.Contents);
+        Assert.Null(clone.RawRepresentation);
+        Assert.Null(clone.AdditionalProperties);
+        Assert.Null(clone.ResponseId);
+        Assert.Null(clone.MessageId);
+        Assert.Null(clone.CreatedAt);
+        Assert.Null(clone.FinishReason);
+        Assert.Null(clone.ConversationId);
+        Assert.Null(clone.ModelId);
+    }
+
+    [Fact]
+    public void Clone_ModifyingClone_DoesNotAffectOriginal()
+    {
+        // Arrange
+        var original = new ChatResponseUpdate
+        {
+            AuthorName = "original_author",
+            Role = ChatRole.User,
+            ResponseId = "original_id",
+            ModelId = "original_model"
+        };
+
+        // Act
+        var clone = original.Clone();
+        clone.AuthorName = "modified_author";
+        clone.Role = ChatRole.Assistant;
+        clone.ResponseId = "modified_id";
+        clone.ModelId = "modified_model";
+
+        // Assert - Original remains unchanged
+        Assert.Equal("original_author", original.AuthorName);
+        Assert.Equal(ChatRole.User, original.Role);
+        Assert.Equal("original_id", original.ResponseId);
+        Assert.Equal("original_model", original.ModelId);
+
+        // Assert - Clone has modified values
+        Assert.Equal("modified_author", clone.AuthorName);
+        Assert.Equal(ChatRole.Assistant, clone.Role);
+        Assert.Equal("modified_id", clone.ResponseId);
+        Assert.Equal("modified_model", clone.ModelId);
+    }
+
+    [Fact]
+    public void Clone_ModifyingSharedReferences_AffectsBothInstances()
+    {
+        // Arrange
+        var sharedAdditionalProperties = new AdditionalPropertiesDictionary { ["initial"] = "value" };
+        var sharedContents = new List<AIContent> { new TextContent("initial") };
+
+        var original = new ChatResponseUpdate
+        {
+            AdditionalProperties = sharedAdditionalProperties,
+            Contents = sharedContents
+        };
+
+        // Act
+        var clone = original.Clone();
+
+        // Modify the shared reference objects
+        sharedAdditionalProperties["modified"] = "new_value";
+        sharedContents.Add(new TextContent("added"));
+
+        // Assert - Both original and clone are affected due to shallow copy
+        Assert.Same(original.AdditionalProperties, clone.AdditionalProperties);
+        Assert.Same(original.Contents, clone.Contents);
+        Assert.Equal(2, original.AdditionalProperties.Count);
+        Assert.Equal(2, clone.AdditionalProperties?.Count);
+        Assert.Equal(2, original.Contents.Count);
+        Assert.Equal(2, clone.Contents.Count);
+        Assert.True(original.AdditionalProperties.ContainsKey("modified"));
+        Assert.True(clone.AdditionalProperties?.ContainsKey("modified"));
+    }
 }
