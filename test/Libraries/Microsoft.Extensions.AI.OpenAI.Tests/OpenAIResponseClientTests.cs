@@ -6,6 +6,7 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -1507,6 +1508,466 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task GetResponseAsync_BackgroundResponses_FirstCall()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "background":true,
+                "input": [{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"hello"}]
+                }],
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed7",
+              "object": "response",
+              "created_at": 1758712522,
+              "status": "queued",
+              "background": true,
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": null,
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "reasoning": {
+                "effort": null,
+                "generate_summary": null
+              },
+              "store": true,
+              "temperature": 0.5,
+              "text": {
+                "format": {
+                  "type": "text"
+                }
+              },
+              "tool_choice": "auto",
+              "tools": [],
+              "top_p": 1.0,
+              "usage": null,
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            AllowBackgroundResponses = true,
+        });
+        Assert.NotNull(response);
+
+        Assert.Equal("resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed7", response.ResponseId);
+        Assert.Equal("resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed7", response.ConversationId);
+        Assert.Empty(response.Messages);
+
+        Assert.NotNull(response.ContinuationToken);
+        var responsesContinuationToken = TestOpenAIResponsesContinuationToken.FromToken(response.ContinuationToken);
+        Assert.Equal("resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed7", responsesContinuationToken.ResponseId);
+        Assert.Null(responsesContinuationToken.SequenceNumber);
+    }
+
+    [Theory]
+    [InlineData(ResponseStatus.Queued)]
+    [InlineData(ResponseStatus.InProgress)]
+    [InlineData(ResponseStatus.Completed)]
+    [InlineData(ResponseStatus.Cancelled)]
+    [InlineData(ResponseStatus.Failed)]
+    [InlineData(ResponseStatus.Incomplete)]
+    public async Task GetResponseAsync_BackgroundResponses_PollingCall(ResponseStatus expectedStatus)
+    {
+        var expectedInput = new HttpHandlerExpectedInput
+        {
+            Uri = new Uri("https://api.openai.com/v1/responses/resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed8"),
+            Method = HttpMethod.Get,
+        };
+
+        string output = $$""""
+            {
+              "id": "resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed8",
+              "object": "response",
+              "created_at": 1758712522,
+              "status": "{{ResponseStatusToRequestValue(expectedStatus)}}",
+              "background": true,
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": null,
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": {{(expectedStatus is (ResponseStatus.Queued or ResponseStatus.InProgress)
+                ? "[]"
+                : """
+                    [{
+                      "type": "message",
+                      "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                      "status": "completed",
+                      "role": "assistant",
+                      "content": [
+                        {
+                          "type": "output_text",
+                          "text": "The background response result.",
+                          "annotations": []
+                        }
+                      ]
+                    }]
+                    """
+              )}},
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "reasoning": {
+                "effort": null,
+                "generate_summary": null
+              },
+              "store": true,
+              "temperature": 0.5,
+              "text": {
+                "format": {
+                  "type": "text"
+                }
+              },
+              "tool_choice": "auto",
+              "tools": [],
+              "top_p": 1.0,
+              "usage": null,
+              "user": null,
+              "metadata": {}
+            }
+            """";
+
+        using VerbatimHttpHandler handler = new(expectedInput, output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var continuationToken = new TestOpenAIResponsesContinuationToken("resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed8");
+
+        var response = await client.GetResponseAsync([], new()
+        {
+            ContinuationToken = continuationToken,
+            AllowBackgroundResponses = true,
+        });
+        Assert.NotNull(response);
+
+        Assert.Equal("resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed8", response.ResponseId);
+        Assert.Equal("resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed8", response.ConversationId);
+
+        switch (expectedStatus)
+        {
+            case ResponseStatus.Queued:
+            case ResponseStatus.InProgress:
+            {
+                Assert.NotNull(response.ContinuationToken);
+
+                var responsesContinuationToken = TestOpenAIResponsesContinuationToken.FromToken(response.ContinuationToken);
+                Assert.Equal("resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed8", responsesContinuationToken.ResponseId);
+                Assert.Null(responsesContinuationToken.SequenceNumber);
+
+                Assert.Empty(response.Messages);
+                break;
+            }
+
+            case ResponseStatus.Completed:
+            case ResponseStatus.Cancelled:
+            case ResponseStatus.Failed:
+            case ResponseStatus.Incomplete:
+            {
+                Assert.Null(response.ContinuationToken);
+
+                Assert.Equal("The background response result.", response.Text);
+                Assert.Single(response.Messages.Single().Contents);
+                Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
+                break;
+            }
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(expectedStatus), expectedStatus, null);
+        }
+    }
+
+    [Fact]
+    public async Task GetResponseAsync_BackgroundResponses_PollingCall_WithMessages()
+    {
+        using VerbatimHttpHandler handler = new(string.Empty, string.Empty);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var options = new ChatOptions
+        {
+            ContinuationToken = new TestOpenAIResponsesContinuationToken("resp_68d3d2c9ef7c8195863e4e2b2ec226a205007262ecbbfed8"),
+            AllowBackgroundResponses = true,
+        };
+
+        // A try to update a background response with new messages should fail.
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await client.GetResponseAsync("Please book hotel as well", options);
+        });
+    }
+
+    [Fact]
+    public async Task GetStreamingResponseAsync_BackgroundResponses()
+    {
+        const string Input = """
+            {
+              "model": "gpt-4o-2024-08-06",
+              "background": true,
+              "input":[{
+                "type":"message",
+                "role":"user",
+                "content":[{
+                  "type":"input_text",
+                  "text":"hello"
+                }]
+              }],
+              
+              "stream": true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_68d401a7b36c81a288600e95a5a119d4073420ed59d5f559","object":"response","created_at":1758724519,"status":"queued","background":true,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.queued
+            data: {"type":"response.queued","sequence_number":1,"response":{"id":"resp_68d401a7b36c81a288600e95a5a119d4073420ed59d5f559","object":"response","created_at":1758724519,"status":"queued","background":true,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","sequence_number":2,"response":{"truncation":"disabled","id":"resp_68d401a7b36c81a288600e95a5a119d4073420ed59d5f559","tool_choice":"auto","temperature":1.0,"top_p":1.0,"status":"in_progress","top_logprobs":0,"usage":null,"object":"response","created_at":1758724519,"prompt_cache_key":null,"text":{"format":{"type":"text"},"verbosity":"medium"},"incomplete_details":null,"model":"gpt-4o-2024-08-06","previous_response_id":null,"safety_identifier":null,"metadata":{},"store":true,"output":[],"parallel_tool_calls":true,"error":null,"background":true,"instructions":null,"service_tier":"auto","max_tool_calls":null,"max_output_tokens":null,"tools":[],"user":null,"reasoning":{"effort":null,"summary":null}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":3,"item":{"id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content":[],"role":"assistant","status":"in_progress","type":"message"},"output_index":0}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","sequence_number":4,"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"part":{"text":"","logprobs":[],"type":"output_text","annotations":[]},"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":5,"delta":"Hello","logprobs":[],"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":6,"delta":"!","logprobs":[],"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":7,"delta":" How","logprobs":[],"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":8,"delta":" can","logprobs":[],"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":9,"delta":" I","logprobs":[],"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":10,"delta":" assist","logprobs":[],"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":11,"delta":" you","logprobs":[],"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":12,"delta":" today","logprobs":[],"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":13,"delta":"?","logprobs":[],"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"output_index":0}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","sequence_number":14,"text":"Hello! How can I assist you today?","logprobs":[],"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"output_index":0}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","sequence_number":15,"item_id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content_index":0,"part":{"text":"Hello! How can I assist you today?","logprobs":[],"type":"output_text","annotations":[]},"output_index":0}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":16,"item":{"id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content":[{"text":"Hello! How can I assist you today?","logprobs":[],"type":"output_text","annotations":[]}],"role":"assistant","status":"completed","type":"message"},"output_index":0}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":17,"response":{"truncation":"disabled","id":"resp_68d401a7b36c81a288600e95a5a119d4073420ed59d5f559","tool_choice":"auto","temperature":1.0,"top_p":1.0,"status":"completed","top_logprobs":0,"usage":{"total_tokens":18,"input_tokens_details":{"cached_tokens":0},"output_tokens_details":{"reasoning_tokens":0},"output_tokens":10,"input_tokens":8},"object":"response","created_at":1758724519,"prompt_cache_key":null,"text":{"format":{"type":"text"},"verbosity":"medium"},"incomplete_details":null,"model":"gpt-4o-2024-08-06","previous_response_id":null,"safety_identifier":null,"metadata":{},"store":true,"output":[{"id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content":[{"text":"Hello! How can I assist you today?","logprobs":[],"type":"output_text","annotations":[]}],"role":"assistant","status":"completed","type":"message"}],"parallel_tool_calls":true,"error":null,"background":true,"instructions":null,"service_tier":"default","max_tool_calls":null,"max_output_tokens":null,"tools":[],"user":null,"reasoning":{"effort":null,"summary":null}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-2024-08-06");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
+        {
+            AllowBackgroundResponses = true,
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Hello! How can I assist you today?", string.Concat(updates.Select(u => u.Text)));
+        Assert.Equal(18, updates.Count);
+
+        var createdAt = DateTimeOffset.FromUnixTimeSeconds(1_758_724_519);
+
+        for (int i = 0; i < updates.Count; i++)
+        {
+            Assert.Equal("resp_68d401a7b36c81a288600e95a5a119d4073420ed59d5f559", updates[i].ResponseId);
+            Assert.Equal("resp_68d401a7b36c81a288600e95a5a119d4073420ed59d5f559", updates[i].ConversationId);
+            Assert.Equal(createdAt, updates[i].CreatedAt);
+            Assert.Equal("gpt-4o-2024-08-06", updates[i].ModelId);
+            Assert.Null(updates[i].AdditionalProperties);
+
+            if (i < updates.Count - 1)
+            {
+                Assert.NotNull(updates[i].ContinuationToken);
+                var responsesContinuationToken = TestOpenAIResponsesContinuationToken.FromToken(updates[i].ContinuationToken!);
+                Assert.Equal("resp_68d401a7b36c81a288600e95a5a119d4073420ed59d5f559", responsesContinuationToken.ResponseId);
+                Assert.Equal(i, responsesContinuationToken.SequenceNumber);
+                Assert.Null(updates[i].FinishReason);
+            }
+            else
+            {
+                Assert.Null(updates[i].ContinuationToken);
+                Assert.Equal(ChatFinishReason.Stop, updates[i].FinishReason);
+            }
+
+            Assert.Equal((i >= 5 && i <= 13) || i == 17 ? 1 : 0, updates[i].Contents.Count);
+        }
+    }
+
+    [Fact]
+    public async Task GetStreamingResponseAsync_BackgroundResponses_StreamResumption()
+    {
+        var expectedInput = new HttpHandlerExpectedInput
+        {
+            Uri = new Uri("https://api.openai.com/v1/responses/resp_68d40dc671a0819cb0ee920078333451029e611c3cc4a34b?stream=true&starting_after=9"),
+            Method = HttpMethod.Get,
+        };
+
+        const string Output = """
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":10,"delta":" assist","logprobs":[],"item_id":"msg_68d40dcb2d34819c88f5d6a8ca7b0308029e611c3cc4a34b","content_index":0,"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":11,"delta":" you","logprobs":[],"item_id":"msg_68d40dcb2d34819c88f5d6a8ca7b0308029e611c3cc4a34b","content_index":0,"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":12,"delta":" today","logprobs":[],"item_id":"msg_68d40dcb2d34819c88f5d6a8ca7b0308029e611c3cc4a34b","content_index":0,"output_index":0}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":13,"delta":"?","logprobs":[],"item_id":"msg_68d40dcb2d34819c88f5d6a8ca7b0308029e611c3cc4a34b","content_index":0,"output_index":0}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","sequence_number":14,"text":"Hello! How can I assist you today?","logprobs":[],"item_id":"msg_68d40dcb2d34819c88f5d6a8ca7b0308029e611c3cc4a34b","content_index":0,"output_index":0}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","sequence_number":15,"item_id":"msg_68d40dcb2d34819c88f5d6a8ca7b0308029e611c3cc4a34b","content_index":0,"part":{"text":"Hello! How can I assist you today?","logprobs":[],"type":"output_text","annotations":[]},"output_index":0}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":16,"item":{"id":"msg_68d40dcb2d34819c88f5d6a8ca7b0308029e611c3cc4a34b","content":[{"text":"Hello! How can I assist you today?","logprobs":[],"type":"output_text","annotations":[]}],"role":"assistant","status":"completed","type":"message"},"output_index":0}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":17,"response":{"truncation":"disabled","id":"resp_68d40dc671a0819cb0ee920078333451029e611c3cc4a34b","tool_choice":"auto","temperature":1.0,"top_p":1.0,"status":"completed","top_logprobs":0,"usage":{"total_tokens":18,"input_tokens_details":{"cached_tokens":0},"output_tokens_details":{"reasoning_tokens":0},"output_tokens":10,"input_tokens":8},"object":"response","created_at":1758727622,"prompt_cache_key":null,"text":{"format":{"type":"text"},"verbosity":"medium"},"incomplete_details":null,"model":"gpt-4o-2024-08-06","previous_response_id":null,"safety_identifier":null,"metadata":{},"store":true,"output":[{"id":"msg_68d40dcb2d34819c88f5d6a8ca7b0308029e611c3cc4a34b","content":[{"text":"Hello! How can I assist you today?","logprobs":[],"type":"output_text","annotations":[]}],"role":"assistant","status":"completed","type":"message"}],"parallel_tool_calls":true,"error":null,"background":true,"instructions":null,"service_tier":"default","max_tool_calls":null,"max_output_tokens":null,"tools":[],"user":null,"reasoning":{"effort":null,"summary":null}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(expectedInput, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-2024-08-06");
+
+        // Emulating resumption of the stream after receiving the first 9 updates that provided the text "Hello! How can I"
+        var continuationToken = new TestOpenAIResponsesContinuationToken("resp_68d40dc671a0819cb0ee920078333451029e611c3cc4a34b")
+        {
+            SequenceNumber = 9
+        };
+
+        var chatOptions = new ChatOptions
+        {
+            AllowBackgroundResponses = true,
+            ContinuationToken = continuationToken,
+        };
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync([], chatOptions))
+        {
+            updates.Add(update);
+        }
+
+        // Receiving the remaining updates to complete the response "Hello! How can I assist you today?"
+        Assert.Equal(" assist you today?", string.Concat(updates.Select(u => u.Text)));
+        Assert.Equal(8, updates.Count);
+
+        var createdAt = DateTimeOffset.FromUnixTimeSeconds(1_758_727_622);
+
+        for (int i = 0; i < updates.Count; i++)
+        {
+            Assert.Equal("resp_68d40dc671a0819cb0ee920078333451029e611c3cc4a34b", updates[i].ResponseId);
+            Assert.Equal("resp_68d40dc671a0819cb0ee920078333451029e611c3cc4a34b", updates[i].ConversationId);
+
+            var sequenceNumber = i + 10;
+
+            if (sequenceNumber is (>= 10 and <= 13))
+            {
+                // Text deltas
+                Assert.NotNull(updates[i].ContinuationToken);
+                var responsesContinuationToken = TestOpenAIResponsesContinuationToken.FromToken(updates[i].ContinuationToken!);
+                Assert.Equal("resp_68d40dc671a0819cb0ee920078333451029e611c3cc4a34b", responsesContinuationToken.ResponseId);
+                Assert.Equal(sequenceNumber, responsesContinuationToken.SequenceNumber);
+
+                Assert.Single(updates[i].Contents);
+            }
+            else if (sequenceNumber is (>= 14 and <= 16))
+            {
+                // Response Complete and Assistant message updates
+                Assert.NotNull(updates[i].ContinuationToken);
+                var responsesContinuationToken = TestOpenAIResponsesContinuationToken.FromToken(updates[i].ContinuationToken!);
+                Assert.Equal("resp_68d40dc671a0819cb0ee920078333451029e611c3cc4a34b", responsesContinuationToken.ResponseId);
+                Assert.Equal(sequenceNumber, responsesContinuationToken.SequenceNumber);
+
+                Assert.Empty(updates[i].Contents);
+            }
+            else
+            {
+                // The last update with the response completion
+                Assert.Null(updates[i].ContinuationToken);
+                Assert.Single(updates[i].Contents);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task GetStreamingResponseAsync_BackgroundResponses_StreamResumption_WithMessages()
+    {
+        using VerbatimHttpHandler handler = new(string.Empty, string.Empty);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-2024-08-06");
+
+        // Emulating resumption of the stream after receiving the first 9 updates that provided the text "Hello! How can I"
+        var chatOptions = new ChatOptions
+        {
+            AllowBackgroundResponses = true,
+            ContinuationToken = new TestOpenAIResponsesContinuationToken("resp_68d40dc671a0819cb0ee920078333451029e611c3cc4a34b")
+            {
+                SequenceNumber = 9
+            }
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var update in client.GetStreamingResponseAsync("Please book a hotel for me", chatOptions))
+#pragma warning disable S108 // Nested blocks of code should not be left empty
+            {
+            }
+#pragma warning restore S108 // Nested blocks of code should not be left empty
+        });
+    }
+
+    [Fact]
     public async Task RequestHeaders_UserAgent_ContainsMEAI()
     {
         using var handler = new ThrowUserAgentExceptionHandler();
@@ -1525,4 +1986,101 @@ public class OpenAIResponseClientTests
             new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
         .GetOpenAIResponseClient(modelId)
         .AsIChatClient();
+
+    private static string ResponseStatusToRequestValue(ResponseStatus status)
+    {
+        if (status == ResponseStatus.InProgress)
+        {
+            return "in_progress";
+        }
+
+        return status.ToString().ToLowerInvariant();
+    }
+
+    private sealed class TestOpenAIResponsesContinuationToken : ResponseContinuationToken
+    {
+        internal TestOpenAIResponsesContinuationToken(string responseId)
+        {
+            ResponseId = responseId;
+        }
+
+        /// <summary>Gets or sets the Id of the response.</summary>
+        internal string ResponseId { get; set; }
+
+        /// <summary>Gets or sets the sequence number of a streamed update.</summary>
+        internal int? SequenceNumber { get; set; }
+
+        internal static TestOpenAIResponsesContinuationToken FromToken(object token)
+        {
+            if (token is TestOpenAIResponsesContinuationToken testOpenAIResponsesContinuationToken)
+            {
+                return testOpenAIResponsesContinuationToken;
+            }
+
+            if (token is not ResponseContinuationToken)
+            {
+                throw new ArgumentException("Failed to create OpenAIResponsesResumptionToken from provided token because it is not of type ResponseContinuationToken.", nameof(token));
+            }
+
+            ReadOnlyMemory<byte> data = ((ResponseContinuationToken)token).ToBytes();
+
+            Utf8JsonReader reader = new(data.Span);
+
+            string responseId = null!;
+            int? startAfter = null;
+
+            _ = reader.Read();
+
+            while (reader.Read())
+            {
+                if (reader.TokenType == JsonTokenType.EndObject)
+                {
+                    break;
+                }
+
+                string propertyName = reader.GetString()!;
+
+                switch (propertyName)
+                {
+                    case "responseId":
+                        _ = reader.Read();
+                        responseId = reader.GetString()!;
+                        break;
+                    case "sequenceNumber":
+                        _ = reader.Read();
+                        startAfter = reader.GetInt32();
+                        break;
+                    default:
+                        throw new JsonException($"Unrecognized property '{propertyName}'.");
+                }
+            }
+
+            return new(responseId)
+            {
+                SequenceNumber = startAfter
+            };
+        }
+
+        public override ReadOnlyMemory<byte> ToBytes()
+        {
+            using MemoryStream stream = new();
+            using Utf8JsonWriter writer = new(stream);
+
+            writer.WriteStartObject();
+
+            writer.WriteString("responseId", ResponseId);
+
+            if (SequenceNumber.HasValue)
+            {
+                writer.WriteNumber("sequenceNumber", SequenceNumber.Value);
+            }
+
+            writer.WriteEndObject();
+
+            writer.Flush();
+            stream.Position = 0;
+
+            return stream.ToArray();
+        }
+    }
 }
