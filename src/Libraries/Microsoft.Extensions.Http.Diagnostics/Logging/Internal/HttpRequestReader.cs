@@ -12,7 +12,6 @@ using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
@@ -43,7 +42,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
     private readonly OutgoingPathLoggingMode _outgoingPathLogMode;
     private readonly IOutgoingRequestContext _requestMetadataContext;
-    private readonly IDownstreamDependencyMetadataManager? _downstreamDependencyMetadataManager;
+    private readonly HttpDependencyMetadataResolver? _dependencyMetadataResolver;
 
     public HttpRequestReader(
         IServiceProvider serviceProvider,
@@ -51,7 +50,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         IHttpRouteFormatter routeFormatter,
         IHttpRouteParser httpRouteParser,
         IOutgoingRequestContext requestMetadataContext,
-        IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null,
+        HttpDependencyMetadataResolver? dependencyMetadataResolver = null,
         [ServiceKey] string? serviceKey = null)
         : this(
               optionsMonitor.GetKeyedOrCurrent(serviceKey),
@@ -59,7 +58,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
               httpRouteParser,
               serviceProvider.GetRequiredOrKeyedRequiredService<IHttpHeadersReader>(serviceKey),
               requestMetadataContext,
-              downstreamDependencyMetadataManager)
+              dependencyMetadataResolver)
     {
     }
 
@@ -69,7 +68,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         IHttpRouteParser httpRouteParser,
         IHttpHeadersReader httpHeadersReader,
         IOutgoingRequestContext requestMetadataContext,
-        IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null)
+        HttpDependencyMetadataResolver? dependencyMetadataResolver = null)
     {
         _outgoingPathLogMode = Throw.IfOutOfRange(options.RequestPathLoggingMode);
         _httpHeadersReader = httpHeadersReader;
@@ -77,7 +76,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         _routeFormatter = routeFormatter;
         _httpRouteParser = httpRouteParser;
         _requestMetadataContext = requestMetadataContext;
-        _downstreamDependencyMetadataManager = downstreamDependencyMetadataManager;
+        _dependencyMetadataResolver = dependencyMetadataResolver;
 
         _defaultSensitiveParameters = options.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
         _queryParameterDataClasses = options.RequestQueryParametersDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
@@ -234,7 +233,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         var requestMetadata = request.GetRequestMetadata() ??
             _requestMetadataContext.RequestMetadata ??
-            _downstreamDependencyMetadataManager?.GetRequestMetadata(request);
+            _dependencyMetadataResolver?.GetRequestMetadata(request);
 
         if (requestMetadata == null)
         {
