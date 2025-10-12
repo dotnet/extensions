@@ -14,7 +14,7 @@ public interface IExceptionSummarizationBuilder
     /// <summary>
     /// Gets the service collection into which the summary provider instances are registered.
     /// </summary>
-    public IServiceCollection Services { get; }
+    IServiceCollection Services { get; }
 
     /// <summary>
     /// Adds a summary provider to the builder.

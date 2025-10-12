@@ -4,6 +4,10 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Bcl.Memory" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Bcl.TimeProvider" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
@@ -77,6 +81,10 @@
       <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Options" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="9.0.9" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>893c2ebbd49952ca49e93298148af2d95a61a0a4</Sha>
     </Dependency>
@@ -180,6 +188,10 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>ff66c263be7ed395794bdaf616322977b8ec897c</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Features" Version="9.0.9">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
+      <Sha>ff66c263be7ed395794bdaf616322977b8ec897c</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Http.Polly" Version="9.0.9">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>ff66c263be7ed395794bdaf616322977b8ec897c</Sha>
@@ -194,17 +206,17 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.25428.3">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25476.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>5fe939db0a156be6f10e17c105b1842c0c8c8bdc</Sha>
+      <Sha>a4c9a07d978c070ef5c19d2ec9f811d6a5b20914</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.25428.3">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="10.0.0-beta.25476.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>5fe939db0a156be6f10e17c105b1842c0c8c8bdc</Sha>
+      <Sha>a4c9a07d978c070ef5c19d2ec9f811d6a5b20914</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="9.0.0-beta.25428.3">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="10.0.0-beta.25476.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>5fe939db0a156be6f10e17c105b1842c0c8c8bdc</Sha>
+      <Sha>a4c9a07d978c070ef5c19d2ec9f811d6a5b20914</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>

@@ -57,16 +57,7 @@ public class Settings
 #pragma warning restore CA2208
     }
 
-    private static Settings? _currentSettings;
-
-    public static Settings Current
-    {
-        get
-        {
-            _currentSettings ??= GetCurrentSettings();
-            return _currentSettings;
-        }
-    }
+    public static Settings Current => field ??= GetCurrentSettings();
 
     private static Settings GetCurrentSettings()
     {

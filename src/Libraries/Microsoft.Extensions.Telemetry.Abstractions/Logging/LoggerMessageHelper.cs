@@ -18,26 +18,11 @@ namespace Microsoft.Extensions.Logging;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class LoggerMessageHelper
 {
-    [ThreadStatic]
-    private static LoggerMessageState? _state;
-
     /// <summary>
     /// Gets a thread-local instance of this type.
     /// </summary>
-    public static LoggerMessageState ThreadLocalState
-    {
-        get
-        {
-            var result = _state;
-            if (result == null)
-            {
-                result = new();
-                _state = result;
-            }
-
-            return result;
-        }
-    }
+    [field: ThreadStatic]
+    public static LoggerMessageState ThreadLocalState => field ??= new();
 
     /// <summary>
     /// Enumerates an enumerable into a string.

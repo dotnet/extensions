@@ -21,7 +21,9 @@ namespace Microsoft.Extensions.AI;
 
 // These should be added in once they're no longer [Experimental]. If they're included while still
 // experimental, any JsonSerializerContext that includes AIContent will incur errors about using
-// experimental types in its source generated files.
+// experimental types in its source generated files. When [Experimental] is removed from these types,
+// these lines should be uncommented and the corresponding lines in AIJsonUtilities.CreateDefaultOptions
+// as well as the [JsonSerializable] attributes for them on the JsonContext should be removed.
 // [JsonDerivedType(typeof(FunctionApprovalRequestContent), typeDiscriminator: "functionApprovalRequest")]
 // [JsonDerivedType(typeof(FunctionApprovalResponseContent), typeDiscriminator: "functionApprovalResponse")]
 // [JsonDerivedType(typeof(McpServerToolCallContent), typeDiscriminator: "mcpServerToolCall")]

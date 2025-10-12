@@ -10,6 +10,7 @@ using static Microsoft.Extensions.Caching.Hybrid.Tests.DistributedCacheTests;
 using static Microsoft.Extensions.Caching.Hybrid.Tests.L2Tests;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
+
 public class ExpirationTests(ITestOutputHelper log)
 {
     [Fact]

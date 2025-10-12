@@ -24,12 +24,7 @@ public static class RedactionAbstractionsExtensionsTest
         var sb = new StringBuilder();
         var redactor = NullRedactor.Instance;
 
-        sb.AppendRedacted(NullRedactor.Instance,
-#if NETCOREAPP3_1_OR_GREATER
-            null);
-#else
-    (string?)null);
-#endif
+        sb.AppendRedacted(NullRedactor.Instance, null);
 
         Assert.Equal(0, sb.Length);
     }

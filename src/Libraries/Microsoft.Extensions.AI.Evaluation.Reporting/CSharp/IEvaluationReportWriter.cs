@@ -17,7 +17,7 @@ public interface IEvaluationReportWriter
     /// Writes a report containing all the <see cref="EvaluationMetric"/>s present in the supplied
     /// <paramref name="scenarioRunResults"/>s.
     /// </summary>
-    /// <param name="scenarioRunResults">An enumeration of <see cref="ScenarioRunResult"/>s.</param>
+    /// <param name="scenarioRunResults">A collection of run results from which to generate the report.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous operation.</returns>
     ValueTask WriteReportAsync(

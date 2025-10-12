@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup Label="Version settings">
-    <MajorVersion>9</MajorVersion>
-    <MinorVersion>10</MinorVersion>
+    <MajorVersion>10</MajorVersion>
+    <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
@@ -34,6 +34,7 @@
   <PropertyGroup Label="Automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftBclAsyncInterfacesVersion>9.0.9</MicrosoftBclAsyncInterfacesVersion>
+    <MicrosoftBclMemoryVersion>9.0.9</MicrosoftBclMemoryVersion>
     <MicrosoftBclTimeProviderVersion>9.0.9</MicrosoftBclTimeProviderVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>9.0.9</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>9.0.9</MicrosoftExtensionsCachingMemoryVersion>
@@ -53,6 +54,7 @@
     <MicrosoftExtensionsLoggingVersion>9.0.9</MicrosoftExtensionsLoggingVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>9.0.9</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
     <MicrosoftExtensionsOptionsVersion>9.0.9</MicrosoftExtensionsOptionsVersion>
+    <MicrosoftExtensionsPrimitivesVersion>9.0.9</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftNETCoreAppRefVersion>9.0.9</MicrosoftNETCoreAppRefVersion>
     <MicrosoftNETCoreAppRuntimewinx64Version>9.0.9</MicrosoftNETCoreAppRuntimewinx64Version>
     <SystemCollectionsImmutableVersion>9.0.9</SystemCollectionsImmutableVersion>
@@ -78,12 +80,13 @@
     <MicrosoftExtensionsCachingSqlServerVersion>9.0.9</MicrosoftExtensionsCachingSqlServerVersion>
     <MicrosoftExtensionsCachingStackExchangeRedisVersion>9.0.9</MicrosoftExtensionsCachingStackExchangeRedisVersion>
     <MicrosoftExtensionsDiagnosticsHealthChecksVersion>9.0.9</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
+    <MicrosoftExtensionsFeaturesVersion>9.0.9</MicrosoftExtensionsFeaturesVersion>
     <MicrosoftExtensionsHttpPollyVersion>9.0.9</MicrosoftExtensionsHttpPollyVersion>
     <MicrosoftExtensionsObjectPoolVersion>9.0.9</MicrosoftExtensionsObjectPoolVersion>
     <!-- Dependencies from https://github.com/dotnet/efcore -->
     <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.9</MicrosoftEntityFrameworkCoreSqliteVersion>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksTemplatingVersion>9.0.0-beta.25428.3</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.25476.2</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <PropertyGroup Label="No longer automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
@@ -107,6 +110,7 @@
     <MicrosoftExtensionsLoggingLTSVersion>8.0.1</MicrosoftExtensionsLoggingLTSVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsLTSVersion>8.0.0</MicrosoftExtensionsOptionsConfigurationExtensionsLTSVersion>
     <MicrosoftExtensionsOptionsLTSVersion>8.0.2</MicrosoftExtensionsOptionsLTSVersion>
+    <MicrosoftExtensionsPrimitivesLTSVersion>8.0.0</MicrosoftExtensionsPrimitivesLTSVersion>
     <MicrosoftNETCoreAppRefLTSVersion>8.0.20</MicrosoftNETCoreAppRefLTSVersion>
     <MicrosoftNETCoreAppRuntimewinx64LTSVersion>8.0.20</MicrosoftNETCoreAppRuntimewinx64LTSVersion>
     <SystemCollectionsImmutableLTSVersion>8.0.0</SystemCollectionsImmutableLTSVersion>
@@ -132,6 +136,7 @@
     <MicrosoftExtensionsCachingSqlServerLTSVersion>8.0.20</MicrosoftExtensionsCachingSqlServerLTSVersion>
     <MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>8.0.20</MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>
     <MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>8.0.20</MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>
+    <MicrosoftExtensionsFeaturesLTSVersion>8.0.20</MicrosoftExtensionsFeaturesLTSVersion>
     <MicrosoftExtensionsHttpPollyLTSVersion>8.0.20</MicrosoftExtensionsHttpPollyLTSVersion>
     <MicrosoftExtensionsObjectPoolLTSVersion>8.0.20</MicrosoftExtensionsObjectPoolLTSVersion>
     <!-- Dependencies from https://github.com/dotnet/efcore -->
@@ -159,5 +164,9 @@
       https://github.com/dotnet/arcade/blob/f5a7c5d5c56197b09715dece7541ca06beb94eb0/src/Microsoft.DotNet.Arcade.Sdk/tools/XUnit/XUnit.targets#L9
      -->
     <XUnitVersion>2.9.3</XUnitVersion>
+    <!--
+      Starting with 3.0.0, xunit.runner.visualstudio only supports net472, but we target net462
+     -->
+    <XUnitRunnerVisualStudioVersion>2.8.2</XUnitRunnerVisualStudioVersion>
   </PropertyGroup>
 </Project>

@@ -2,6 +2,10 @@
 
 ## NOT YET RELEASED
 
+- Fixed issue with IChatClient for Assistants API where a chat history including unrelated function calls would cause an exception.
+
+## 9.9.1-preview.1.25474.6
+
 - Updated to depend on OpenAI 2.5.0.
 - Added M.E.AI to OpenAI conversions for response format types.
 - Added `ResponseTool` to `AITool` conversions.

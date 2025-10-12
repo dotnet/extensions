@@ -11,12 +11,12 @@ public class HostedFileSearchToolTests
     public void Constructor_Roundtrips()
     {
         var tool = new HostedFileSearchTool();
-        Assert.Equal(nameof(HostedFileSearchTool), tool.Name);
+        Assert.Equal("file_search", tool.Name);
         Assert.Empty(tool.Description);
         Assert.Empty(tool.AdditionalProperties);
         Assert.Null(tool.Inputs);
         Assert.Null(tool.MaximumResultCount);
-        Assert.Equal(nameof(HostedFileSearchTool), tool.ToString());
+        Assert.Equal(tool.Name, tool.ToString());
     }
 
     [Fact]
