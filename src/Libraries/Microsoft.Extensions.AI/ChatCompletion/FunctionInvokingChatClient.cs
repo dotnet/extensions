@@ -269,7 +269,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity($"{nameof(FunctionInvokingChatClient)}.{nameof(GetResponseAsync)}");
+        using Activity? activity = _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
@@ -408,7 +408,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity($"{nameof(FunctionInvokingChatClient)}.{nameof(GetStreamingResponseAsync)}");
+        using Activity? activity = _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
         UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
@@ -529,7 +529,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                         .ToArray();
                 }
 
-                if (approvalRequiredFunctions is not { Length: > 0 })
+                if (approvalRequiredFunctions is not { Length: > 0 } || functionCallContents is not { Count: > 0 })
                 {
                     // If there are no function calls to make yet, or if none of the functions require approval at all,
                     // we can yield the update as-is.
@@ -572,6 +572,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // so we cannot yield the updates yet. We'll just keep them in the updates list for later.
                 // We will yield the updates as soon as we receive a function call content that requires approval
                 // or when we reach the end of the updates stream.
+            }
+
+            // We need to yield any remaining updates that were not yielded while looping through the streamed updates.
+            for (; lastYieldedUpdateIndex < updates.Count; lastYieldedUpdateIndex++)
+            {
+                var updateToYield = updates[lastYieldedUpdateIndex];
+                yield return updateToYield;
+                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
             // If there's nothing more to do, break out of the loop and allow the handling at the
@@ -797,6 +805,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // We only need to clone the options if we're actually mutating it.
             options = options.Clone();
             options.ConversationId = conversationId;
+        }
+        else if (options.ContinuationToken is not null)
+        {
+            // Clone options before resetting the continuation token below.
+            options = options.Clone();
+        }
+
+        // Reset the continuation token of a background response operation
+        // to signal the inner client to handle function call result rather
+        // than getting the result of the operation.
+        if (options?.ContinuationToken is not null)
+        {
+            options.ContinuationToken = null;
         }
     }
 

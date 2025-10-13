@@ -27,6 +27,9 @@ public class HostedMcpServerTool : AITool
         ServerAddress = Throw.IfNullOrWhitespace(serverAddress);
     }
 
+    /// <inheritdoc />
+    public override string Name => "mcp";
+
     /// <summary>
     /// Gets the name of the remote MCP server that is used to identify it.
     /// </summary>

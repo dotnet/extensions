@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
 
@@ -52,5 +53,41 @@ public class AIContentTests
         Assert.Null(deserialized.RawRepresentation);
         Assert.NotNull(deserialized.AdditionalProperties);
         Assert.Single(deserialized.AdditionalProperties);
+    }
+
+    [Fact]
+    public void Serialization_DerivedTypes_Roundtrips()
+    {
+        ChatMessage message = new(ChatRole.User,
+        [
+            new TextContent("a"),
+            new TextReasoningContent("reasoning text"),
+            new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream"),
+            new UriContent("http://example.com", "application/json"),
+            new ErrorContent("error message"),
+            new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } }),
+            new FunctionResultContent("call123", "result data"),
+            new HostedFileContent("file123"),
+            new HostedVectorStoreContent("vectorStore123"),
+            new UsageContent(new UsageDetails { InputTokenCount = 10, OutputTokenCount = 20, TotalTokenCount = 30 }),
+            new FunctionApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
+            new FunctionApprovalResponseContent("request123", approved: true, new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
+            new McpServerToolCallContent("call123", "myTool"),
+            new McpServerToolResultContent("call123"),
+            new McpServerToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool")),
+            new McpServerToolApprovalResponseContent("request123", approved: true)
+        ]);
+
+        var serialized = JsonSerializer.Serialize(message, AIJsonUtilities.DefaultOptions);
+        ChatMessage? deserialized = JsonSerializer.Deserialize<ChatMessage>(serialized, AIJsonUtilities.DefaultOptions);
+        Assert.NotNull(deserialized);
+
+        Assert.Equal(message.Role, deserialized.Role);
+        Assert.Equal(message.Contents.Count, deserialized.Contents.Count);
+        for (int i = 0; i < message.Contents.Count; i++)
+        {
+            Assert.NotNull(message.Contents[i]);
+            Assert.Equal(message.Contents[i].GetType(), deserialized.Contents[i].GetType());
+        }
     }
 }
