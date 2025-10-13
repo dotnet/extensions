@@ -827,6 +827,277 @@ public class OpenAIResponseClientTests
     }
 
     [Theory]
+    [InlineData("user")]
+    [InlineData("tool")]
+    public async Task McpToolCall_ApprovalRequired_NonStreaming(string role)
+    {
+        string input = """
+            {
+              "model": "gpt-4o-mini",
+              "tools": [
+                {
+                  "type": "mcp",
+                  "server_label": "deepwiki",
+                  "server_url": "https://mcp.deepwiki.com/mcp"
+                }
+              ],
+              "tool_choice": "auto",
+              "input": [
+                {
+                  "type": "message",
+                  "role": "user",
+                  "content": [
+                    {
+                      "type": "input_text",
+                      "text": "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository"
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        string output = """
+            {
+              "id": "resp_04e29d5bdd80bd9f0068e6b01f786081a29148febb92892aee",
+              "object": "response",
+              "created_at": 1759948831,
+              "status": "completed",
+              "background": false,
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": null,
+              "max_tool_calls": null,
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "id": "mcpr_04e29d5bdd80bd9f0068e6b022a9c081a2ae898104b7a75051",
+                  "type": "mcp_approval_request",
+                  "arguments": "{\"repoName\":\"dotnet/extensions\"}",
+                  "name": "ask_question",
+                  "server_label": "deepwiki"
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "prompt_cache_key": null,
+              "reasoning": {
+                "effort": null,
+                "summary": null
+              },
+              "safety_identifier": null,
+              "service_tier": "default",
+              "store": true,
+              "temperature": 1.0,
+              "text": {
+                "format": {
+                  "type": "text"
+                },
+                "verbosity": "medium"
+              },
+              "tool_choice": "auto",
+              "tools": [
+                {
+                  "type": "mcp",
+                  "allowed_tools": null,
+                  "headers": null,
+                  "require_approval": "always",
+                  "server_description": null,
+                  "server_label": "deepwiki",
+                  "server_url": "https://mcp.deepwiki.com/<redacted>"
+                }
+              ],
+              "top_logprobs": 0,
+              "top_p": 1.0,
+              "truncation": "disabled",
+              "usage": {
+                "input_tokens": 193,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 23,
+                "output_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "total_tokens": 216
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")]
+        };
+        McpServerToolApprovalRequestContent approvalRequest;
+
+        using (VerbatimHttpHandler handler = new(input, output))
+        using (HttpClient httpClient = new(handler))
+        using (IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini"))
+        {
+            var response = await client.GetResponseAsync(
+                "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository",
+                chatOptions);
+
+            approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
+            chatOptions.ConversationId = response.ConversationId;
+        }
+
+        input = $$"""
+            {
+                "previous_response_id": "resp_04e29d5bdd80bd9f0068e6b01f786081a29148febb92892aee",
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "server_label": "deepwiki",
+                        "server_url": "https://mcp.deepwiki.com/mcp"
+                    }
+                ],
+                "tool_choice": "auto",
+                "input": [
+                    {
+                        "type": "mcp_approval_response",
+                        "approval_request_id": "mcpr_04e29d5bdd80bd9f0068e6b022a9c081a2ae898104b7a75051",
+                        "approve": true
+                    }
+                ]
+            }
+            """;
+
+        output = """
+            {
+              "id": "resp_06ee3b1962eeb8470068e6b21c377081a3a20dbf60eee7a736",
+              "object": "response",
+              "created_at": 1759949340,
+              "status": "completed",
+              "background": false,
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": null,
+              "max_tool_calls": null,
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "id": "mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f",
+                  "type": "mcp_call",
+                  "status": "completed",
+                  "approval_request_id": "mcpr_06ee3b1962eeb8470068e6b192985c81a383a16059ecd8230e",
+                  "arguments": "{\"repoName\":\"dotnet/extensions\",\"question\":\"What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?\"}",
+                  "error": null,
+                  "name": "ask_question",
+                  "output": "The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at `src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md` within the `dotnet/extensions` repository.  This file provides an overview of the package, including installation instructions and usage examples for its core interfaces like `IChatClient` and `IEmbeddingGenerator`. \n\n## Path to README.md\n\nThe specific path to the `README.md` file for the `Microsoft.Extensions.AI.Abstractions` project is `src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md`.  This path is also referenced in the `AI Extensions Framework` wiki page as a relevant source file. \n\n## Notes\n\nThe `Packaging.targets` file in the `eng/MSBuild` directory indicates that `README.md` files are included in packages when `IsPackable` and `IsShipping` properties are true.  This suggests that the `README.md` file located at `src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md` is intended to be part of the distributed NuGet package for `Microsoft.Extensions.AI.Abstractions`. \n\nWiki pages you might want to explore:\n- [AI Extensions Framework (dotnet/extensions)](/wiki/dotnet/extensions#3)\n- [Chat Completion (dotnet/extensions)](/wiki/dotnet/extensions#3.3)\n\nView this search on DeepWiki: https://deepwiki.com/search/what-is-the-path-to-the-readme_315595bd-9b39-4f04-9fa3-42dc778fa9f3\n",
+                  "server_label": "deepwiki"
+                },
+                {
+                  "id": "msg_06ee3b1962eeb8470068e6b226ab0081a39fccce9aa47aedbc",
+                  "type": "message",
+                  "status": "completed",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "annotations": [],
+                      "logprobs": [],
+                      "text": "The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at:\n\n```\nsrc/Libraries/Microsoft.Extensions.AI.Abstractions/README.md\n```\n\nThis file provides an overview of the `Microsoft.Extensions.AI.Abstractions` package, including installation instructions and usage examples for its core interfaces like `IChatClient` and `IEmbeddingGenerator`."
+                    }
+                  ],
+                  "role": "assistant"
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": "resp_06ee3b1962eeb8470068e6b18e0db881a3bdfd255a60327cdc",
+              "prompt_cache_key": null,
+              "reasoning": {
+                "effort": null,
+                "summary": null
+              },
+              "safety_identifier": null,
+              "service_tier": "default",
+              "store": true,
+              "temperature": 1.0,
+              "text": {
+                "format": {
+                  "type": "text"
+                },
+                "verbosity": "medium"
+              },
+              "tool_choice": "auto",
+              "tools": [
+                {
+                  "type": "mcp",
+                  "allowed_tools": null,
+                  "headers": null,
+                  "require_approval": "always",
+                  "server_description": null,
+                  "server_label": "deepwiki",
+                  "server_url": "https://mcp.deepwiki.com/<redacted>"
+                }
+              ],
+              "top_logprobs": 0,
+              "top_p": 1.0,
+              "truncation": "disabled",
+              "usage": {
+                "input_tokens": 542,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 72,
+                "output_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "total_tokens": 614
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using (VerbatimHttpHandler handler = new(input, output))
+        using (HttpClient httpClient = new(handler))
+        using (IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini"))
+        {
+            var response = await client.GetResponseAsync(
+                new ChatMessage(new ChatRole(role), [approvalRequest.CreateResponse(true)]), chatOptions);
+
+            Assert.NotNull(response);
+
+            Assert.Equal("resp_06ee3b1962eeb8470068e6b21c377081a3a20dbf60eee7a736", response.ResponseId);
+            Assert.Equal("resp_06ee3b1962eeb8470068e6b21c377081a3a20dbf60eee7a736", response.ConversationId);
+            Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+            Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_759_949_340), response.CreatedAt);
+            Assert.Null(response.FinishReason);
+
+            var message = Assert.Single(response.Messages);
+            Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
+            Assert.Equal("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at:\n\n```\nsrc/Libraries/Microsoft.Extensions.AI.Abstractions/README.md\n```\n\nThis file provides an overview of the `Microsoft.Extensions.AI.Abstractions` package, including installation instructions and usage examples for its core interfaces like `IChatClient` and `IEmbeddingGenerator`.", response.Messages[0].Text);
+
+            Assert.Equal(3, message.Contents.Count);
+
+            var call = Assert.IsType<McpServerToolCallContent>(message.Contents[0]);
+            Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", call.CallId);
+            Assert.Equal("deepwiki", call.ServerName);
+            Assert.Equal("ask_question", call.ToolName);
+            Assert.NotNull(call.Arguments);
+            Assert.Equal(2, call.Arguments.Count);
+            Assert.Equal("dotnet/extensions", ((JsonElement)call.Arguments["repoName"]!).GetString());
+            Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)call.Arguments["question"]!).GetString());
+
+            var result = Assert.IsType<McpServerToolResultContent>(message.Contents[1]);
+            Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", result.CallId);
+            Assert.NotNull(result.Output);
+            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(result.Output)).Text);
+
+            Assert.NotNull(response.Usage);
+            Assert.Equal(542, response.Usage.InputTokenCount);
+            Assert.Equal(72, response.Usage.OutputTokenCount);
+            Assert.Equal(614, response.Usage.TotalTokenCount);
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task McpToolCall_ApprovalNotRequired_NonStreaming(bool rawTool)
