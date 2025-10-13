@@ -232,7 +232,7 @@ public class YarpServiceDiscoveryTests
     [Fact]
     public async Task ServiceDiscoveryDestinationResolverTests_Dns()
     {
-        DnsResolver resolver = new DnsResolver(TimeProvider.System, NullLogger<DnsResolver>.Instance);
+        DnsResolver resolver = new DnsResolver(TimeProvider.System, NullLogger<DnsResolver>.Instance, new ResolverOptions());
 
         await using var services = new ServiceCollection()
             .AddSingleton<IDnsResolver>(resolver)

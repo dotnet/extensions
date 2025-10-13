@@ -5,27 +5,26 @@ using System.Net;
 
 namespace Microsoft.Extensions.ServiceDiscovery.Dns.Resolver;
 
-internal sealed class ResolverOptions
+/// <summary>
+/// Provides configuration options for DNS resolution, including server endpoints, retry attempts, and timeout settings.
+/// </summary>
+public class ResolverOptions
 {
-    public IReadOnlyList<IPEndPoint> Servers;
-    public int Attempts = 2;
-    public TimeSpan Timeout = TimeSpan.FromSeconds(3);
+    /// <summary>
+    /// Gets or sets the collection of server endpoints used for network connections.
+    /// </summary>
+    public IList<IPEndPoint> Servers { get; set; } = new List<IPEndPoint>();
+
+    /// <summary>
+    /// Gets or sets the number of allowed attempts for the operation.
+    /// </summary>
+    public int Attempts { get; set; } = 2;
+
+    /// <summary>
+    /// Gets or sets the maximum duration to wait for an operation to complete before timing out.
+    /// </summary>
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(3);
 
     // override for testing purposes
     internal Func<Memory<byte>, int, int>? _transportOverride;
-
-    public ResolverOptions(IReadOnlyList<IPEndPoint> servers)
-    {
-        if (servers.Count == 0)
-        {
-            throw new ArgumentException("At least one DNS server is required.", nameof(servers));
-        }
-
-        Servers = servers;
-    }
-
-    public ResolverOptions(IPEndPoint server)
-    {
-        Servers = new IPEndPoint[] { server };
-    }
 }

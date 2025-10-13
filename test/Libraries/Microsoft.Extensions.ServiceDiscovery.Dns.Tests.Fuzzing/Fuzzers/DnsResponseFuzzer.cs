@@ -19,8 +19,9 @@ internal sealed class DnsResponseFuzzer : IFuzzer
         if (_resolver == null)
         {
             _buffer = new byte[4096];
-            _resolver = new DnsResolver(new ResolverOptions(new IPEndPoint(IPAddress.Loopback, 53))
+            _resolver = new DnsResolver(new ResolverOptions
             {
+                Servers = [new IPEndPoint(IPAddress.Loopback, 53)],
                 Timeout = TimeSpan.FromSeconds(5),
                 Attempts = 1,
                 _transportOverride = (buffer, length) =>

@@ -9,8 +9,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.ServiceDiscovery.Dns.Resolver;
 
@@ -28,16 +30,26 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<DnsResolver> _logger;
 
-    public DnsResolver(TimeProvider timeProvider, ILogger<DnsResolver> logger) : this(timeProvider, logger, OperatingSystem.IsLinux() || OperatingSystem.IsMacOS() ? ResolvConf.GetOptions() : NetworkInfo.GetOptions())
-    {
-    }
-
-    internal DnsResolver(TimeProvider timeProvider, ILogger<DnsResolver> logger, ResolverOptions options)
+    public DnsResolver(TimeProvider timeProvider, ILogger<DnsResolver> logger, ResolverOptions options)
     {
         _timeProvider = timeProvider;
         _logger = logger;
         _options = options;
-        Debug.Assert(_options.Servers.Count > 0);
+
+        if (_options.Servers.Count == 0)
+        {
+            foreach (var server in OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()
+                ? ResolvConf.GetServers()
+                : NetworkInfo.GetServers())
+            {
+                _options.Servers.Add(server);
+            }
+
+            if (_options.Servers.Count == 0)
+            {
+                throw new ArgumentException("At least one DNS server is required.", nameof(options));
+            }
+        }
 
         if (options.Timeout != Timeout.InfiniteTimeSpan)
         {
@@ -50,12 +62,22 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
     {
     }
 
-    internal DnsResolver(IEnumerable<IPEndPoint> servers) : this(new ResolverOptions(servers.ToArray()))
+    internal DnsResolver(IEnumerable<IPEndPoint> servers) : this(new ResolverOptions { Servers = servers.ToArray() })
     {
     }
 
-    internal DnsResolver(IPEndPoint server) : this(new ResolverOptions(server))
+    internal DnsResolver(IPEndPoint server) : this(new ResolverOptions { Servers = [server] })
     {
+    }
+
+    internal static DnsResolver Create(IServiceProvider serviceProvider)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+
+        var resolverOptions = serviceProvider.GetRequiredService<IOptions<DnsSrvServiceEndpointProviderOptions>>().Value.ResolverOptions;
+        var timeProvider = serviceProvider.GetRequiredService<TimeProvider>();
+        var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<DnsResolver>();
+        return new DnsResolver(timeProvider, logger, resolverOptions);
     }
 
     public ValueTask<ServiceResult[]> ResolveServiceAsync(string name, CancellationToken cancellationToken = default)

@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.ServiceDiscovery;
 using Microsoft.Extensions.ServiceDiscovery.Dns;
 using Microsoft.Extensions.ServiceDiscovery.Dns.Resolver;
@@ -49,7 +50,7 @@ public static class ServiceDiscoveryDnsServiceCollectionExtensions
 
         if (!GetDnsClientFallbackFlag())
         {
-            services.TryAddSingleton<IDnsResolver, DnsResolver>();
+            services.TryAddSingleton<IDnsResolver>(DnsResolver.Create);
         }
         else
         {

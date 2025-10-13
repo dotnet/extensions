@@ -22,6 +22,8 @@ internal sealed partial class DnsSrvServiceEndpointProviderFactory(
     /// <inheritdoc/>
     public bool TryCreateProvider(ServiceEndpointQuery query, [NotNullWhen(true)] out IServiceEndpointProvider? provider)
     {
+        var optionsValue = options.CurrentValue;
+
         // If a default namespace is not specified, then this provider will attempt to infer the namespace from the service name, but only when running inside Kubernetes.
         // Kubernetes DNS spec: https://github.com/kubernetes/dns/blob/master/docs/specification.md
         // SRV records are available for headless services with named ports.
@@ -30,15 +32,16 @@ internal sealed partial class DnsSrvServiceEndpointProviderFactory(
         // Otherwise, the namespace can be read from /var/run/secrets/kubernetes.io/serviceaccount/namespace and combined with an assumed suffix of "svc.cluster.local".
         // The protocol is assumed to be "tcp".
         // The portName is the name of the port in the service definition. If the serviceName parses as a URI, we use the scheme as the port name, otherwise "default".
-        if (string.IsNullOrWhiteSpace(_querySuffix))
+        if (optionsValue.GetQueryText == null && string.IsNullOrWhiteSpace(_querySuffix))
         {
             DnsServiceEndpointProviderBase.Log.NoDnsSuffixFound(logger, query.ToString()!);
             provider = default;
             return false;
         }
 
-        var portName = query.EndpointName ?? "default";
-        var srvQuery = $"_{portName}._tcp.{query.ServiceName}.{_querySuffix}";
+        var srvQuery = optionsValue.GetQueryText != null
+            ? optionsValue.GetQueryText(query)
+            : optionsValue.GetDefaultQueryText(query);
         provider = new DnsSrvServiceEndpointProvider(query, srvQuery, hostName: query.ServiceName, options, logger, resolver, timeProvider);
         return true;
     }

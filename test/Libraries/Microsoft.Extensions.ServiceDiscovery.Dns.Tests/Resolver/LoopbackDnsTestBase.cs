@@ -26,8 +26,9 @@ public abstract class LoopbackDnsTestBase : IDisposable
         Output = output;
         DnsServer = new();
         TimeProvider = new();
-        Options = new([DnsServer.DnsEndPoint])
+        Options = new()
         {
+            Servers = [DnsServer.DnsEndPoint],
             Timeout = TimeSpan.FromSeconds(5),
             Attempts = 1,
         };
