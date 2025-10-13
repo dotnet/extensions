@@ -36,7 +36,7 @@ public class HostedMcpServerTool : AITool
     public string ServerName { get; }
 
     /// <summary>
-    /// Gets the address of the remote MCP server.
+    /// Gets the address of the remote MCP server. This may be a URL, or in the case of a service providing built-in MCP servers with known names, it can be such a name.
     /// </summary>
     public string ServerAddress { get; }
 

@@ -72,9 +72,9 @@ public class AIContentTests
             new UsageContent(new UsageDetails { InputTokenCount = 10, OutputTokenCount = 20, TotalTokenCount = 30 }),
             new FunctionApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
             new FunctionApprovalResponseContent("request123", approved: true, new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
-            new McpServerToolCallContent("call123", "myTool"),
+            new McpServerToolCallContent("call123", "myTool", "myServer"),
             new McpServerToolResultContent("call123"),
-            new McpServerToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool")),
+            new McpServerToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
             new McpServerToolApprovalResponseContent("request123", approved: true)
         ]);
 
