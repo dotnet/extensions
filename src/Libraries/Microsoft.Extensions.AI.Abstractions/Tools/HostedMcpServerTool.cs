@@ -18,25 +18,13 @@ public class HostedMcpServerTool : AITool
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
-    /// <param name="url">The URL of the remote MCP server.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="url"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
-    public HostedMcpServerTool(string serverName, [StringSyntax(StringSyntaxAttribute.Uri)] string url)
-        : this(serverName, new Uri(Throw.IfNull(url)))
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
-    /// </summary>
-    /// <param name="serverName">The name of the remote MCP server.</param>
-    /// <param name="url">The URL of the remote MCP server.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="url"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
-    public HostedMcpServerTool(string serverName, Uri url)
+    /// <param name="serverAddress">The address of the remote MCP server. This may be a URL, or in the case of a service providing built-in MCP servers with known names, it can be such a name.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is empty or composed entirely of whitespace.</exception>
+    public HostedMcpServerTool(string serverName, string serverAddress)
     {
         ServerName = Throw.IfNullOrWhitespace(serverName);
-        Url = Throw.IfNull(url);
+        ServerAddress = Throw.IfNullOrWhitespace(serverAddress);
     }
 
     /// <inheritdoc />
@@ -48,9 +36,14 @@ public class HostedMcpServerTool : AITool
     public string ServerName { get; }
 
     /// <summary>
-    /// Gets the URL of the remote MCP server.
+    /// Gets the address of the remote MCP server. This may be a URL, or in the case of a service providing built-in MCP servers with known names, it can be such a name.
     /// </summary>
-    public Uri Url { get; }
+    public string ServerAddress { get; }
+
+    /// <summary>
+    /// Gets or sets the OAuth authorization token that the AI service should use when calling the remote MCP server.
+    /// </summary>
+    public string? AuthorizationToken { get; set; }
 
     /// <summary>
     /// Gets or sets the description of the remote MCP server, used to provide more context to the AI service.
@@ -81,12 +74,4 @@ public class HostedMcpServerTool : AITool
     /// </para>
     /// </remarks>
     public HostedMcpServerToolApprovalMode? ApprovalMode { get; set; }
-
-    /// <summary>
-    /// Gets or sets the HTTP headers that the AI service should use when calling the remote MCP server.
-    /// </summary>
-    /// <remarks>
-    /// This property is useful for specifying the authentication header or other headers required by the MCP server.
-    /// </remarks>
-    public IDictionary<string, string>? Headers { get; set; }
 }
