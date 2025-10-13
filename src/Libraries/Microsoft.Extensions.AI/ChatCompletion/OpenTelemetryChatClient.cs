@@ -249,6 +249,10 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         m.Parts.Add(new OtelGenericPart { Content = tc.Text });
                         break;
 
+                    case TextReasoningContent trc when !string.IsNullOrWhiteSpace(trc.Text):
+                        m.Parts.Add(new OtelGenericPart { Type = "reasoning", Content = trc.Text });
+                        break;
+
                     case FunctionCallContent fcc:
                         m.Parts.Add(new OtelToolCallRequestPart
                         {
@@ -267,10 +271,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         break;
 
                     // These are non-standard and are using the "generic" non-text part that provides an extensibility mechanism:
-
-                    case TextReasoningContent trc when !string.IsNullOrWhiteSpace(trc.Text):
-                        m.Parts.Add(new OtelGenericPart { Type = "reasoning", Content = trc.Text });
-                        break;
 
                     case UriContent uc:
                         m.Parts.Add(new OtelGenericPart { Type = "image", Content = uc.Uri.ToString() });
@@ -396,16 +396,20 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
                     if (EnableSensitiveData)
                     {
-                        if (options.Tools?.Any(t => t is AIFunctionDeclaration) is true)
+                        if (options.Tools is { Count: > 0 })
                         {
                             _ = activity.AddTag(
-                                    OpenTelemetryConsts.GenAI.Tool.Definitions,
-                                    JsonSerializer.Serialize(options.Tools.OfType<AIFunctionDeclaration>().Select(t => new OtelFunction
+                                OpenTelemetryConsts.GenAI.Tool.Definitions,
+                                JsonSerializer.Serialize(options.Tools.Select(t => t switch
+                                {
+                                    _ when t.GetService<AIFunctionDeclaration>() is { } af => new OtelFunction
                                     {
-                                        Name = t.Name,
-                                        Description = t.Description,
-                                        Parameters = t.JsonSchema,
-                                    }), OtelContext.Default.IEnumerableOtelFunction));
+                                        Name = af.Name,
+                                        Description = af.Description,
+                                        Parameters = af.JsonSchema,
+                                    },
+                                    _ => new OtelFunction { Type = t.Name },
+                                }), OtelContext.Default.IEnumerableOtelFunction));
                         }
 
                         // Log all additional request options as raw values on the span.
@@ -601,7 +605,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         public string Type { get; set; } = "function";
         public string? Name { get; set; }
         public string? Description { get; set; }
-        public JsonElement Parameters { get; set; }
+        public JsonElement? Parameters { get; set; }
     }
 
     private static readonly JsonSerializerOptions _defaultOptions = CreateDefaultOptions();
