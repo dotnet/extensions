@@ -329,7 +329,77 @@ public class OpenTelemetryChatClientTests
             Assert.False(tags.ContainsKey("gen_ai.system_instructions"));
             Assert.False(tags.ContainsKey("gen_ai.tool.definitions"));
         }
-
-        static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
     }
+
+    [Fact]
+    public async Task UnknownContentTypes_Ignored()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "The blue whale, I think."));
+            },
+        };
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName, configure: instance =>
+            {
+                instance.EnableSensitiveData = true;
+                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+            })
+            .Build();
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User,
+            [
+                new TextContent("Hello!"),
+                new NonSerializableAIContent(),
+                new TextContent("How are you?"),
+            ]),
+        ];
+
+        var response = await chatClient.GetResponseAsync(messages);
+        Assert.NotNull(response);
+
+        var activity = Assert.Single(activities);
+        Assert.NotNull(activity);
+
+        var inputMessages = activity.Tags.First(kvp => kvp.Key == "gen_ai.input.messages").Value;
+        Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "role": "user",
+                    "parts": [
+                      {
+                        "type": "text",
+                        "content": "Hello!"
+                      },
+                      {
+                        "type": "Microsoft.Extensions.AI.OpenTelemetryChatClientTests+NonSerializableAIContent",
+                        "content": {}
+                      },
+                      {
+                          "type": "text",
+                          "content": "How are you?"
+                      }
+                    ]
+                  }
+                ]
+                """), ReplaceWhitespace(inputMessages));
+    }
+
+    private sealed class NonSerializableAIContent : AIContent;
+
+    private static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
 }
