@@ -476,14 +476,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 mcpTool.ServerName,
                                 url,
                                 mcpTool.AuthorizationToken,
-                                mcpTool.ServerDescription,
-                                headers: mcpTool.Headers) :
+                                mcpTool.ServerDescription) :
                             ResponseTool.CreateMcpTool(
                                 mcpTool.ServerName,
                                 new McpToolConnectorId(mcpTool.ServerAddress),
                                 mcpTool.AuthorizationToken,
-                                mcpTool.ServerDescription,
-                                headers: mcpTool.Headers);
+                                mcpTool.ServerDescription);
 
                         if (mcpTool.AllowedTools is not null)
                         {

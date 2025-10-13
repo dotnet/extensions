@@ -71,12 +71,4 @@ public class HostedMcpServerTool : AITool
     /// </para>
     /// </remarks>
     public HostedMcpServerToolApprovalMode? ApprovalMode { get; set; }
-
-    /// <summary>
-    /// Gets or sets the HTTP headers that the AI service should use when calling the remote MCP server.
-    /// </summary>
-    /// <remarks>
-    /// This property is useful for specifying headers required by the MCP server.
-    /// </remarks>
-    public IDictionary<string, string>? Headers { get; set; }
 }

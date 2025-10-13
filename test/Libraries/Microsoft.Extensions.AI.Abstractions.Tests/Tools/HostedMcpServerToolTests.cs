@@ -24,7 +24,6 @@ public class HostedMcpServerToolTests
         Assert.Null(tool.ServerDescription);
         Assert.Null(tool.AllowedTools);
         Assert.Null(tool.ApprovalMode);
-        Assert.Null(tool.Headers);
     }
 
     [Fact]
@@ -65,11 +64,6 @@ public class HostedMcpServerToolTests
         var customApprovalMode = new HostedMcpServerToolRequireSpecificApprovalMode(["tool1"], ["tool2"]);
         tool.ApprovalMode = customApprovalMode;
         Assert.Same(customApprovalMode, tool.ApprovalMode);
-
-        Assert.Null(tool.Headers);
-        Dictionary<string, string> headers = [];
-        tool.Headers = headers;
-        Assert.Same(headers, tool.Headers);
     }
 
     [Fact]
