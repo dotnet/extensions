@@ -574,7 +574,7 @@ internal sealed class Parser
             returnType.TypeKind != TypeKind.Error)
         {
             // Make sure return type is not from existing known type
-            Diag(DiagDescriptors.ErrorInvalidMethodReturnType, methodSymbol.ReturnType.GetLocation(), methodSymbol.Name);
+            Diag(DiagDescriptors.ErrorInvalidMethodReturnType, returnType.GetLocation(), returnType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
             return false;
         }
 

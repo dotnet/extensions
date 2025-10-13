@@ -81,6 +81,7 @@ public partial class ParserTests
 
         _ = Assert.Single(d);
         Assert.Equal(DiagDescriptors.ErrorInvalidMethodReturnType.Id, d[0].Id);
+        Assert.Contains($"must not return '{returnType}'", d[0].GetMessage());
     }
 
     [Theory]
