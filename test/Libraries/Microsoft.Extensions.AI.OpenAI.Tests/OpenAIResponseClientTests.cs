@@ -957,7 +957,6 @@ public class OpenAIResponseClientTests
                 ],
                 "tool_choice": "auto",
                 "input": [
-                    {{(role == "user" ? @"{""type"": ""message"",""role"": ""user"",""content"": [{""type"": ""input_text"",""text"": """"}]}," : string.Empty)}}
                     {
                         "type": "mcp_approval_response",
                         "approval_request_id": "mcpr_04e29d5bdd80bd9f0068e6b022a9c081a2ae898104b7a75051",

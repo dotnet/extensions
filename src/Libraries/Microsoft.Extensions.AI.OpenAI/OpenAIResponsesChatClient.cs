@@ -600,14 +600,55 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             if (input.Role == ChatRole.User)
             {
-                yield return ResponseItem.CreateUserMessageItem(ToResponseContentParts(input.Contents));
-
+                bool handleEmptyMessage = true; // MCP approval responses (and future cases) yield an item rather than adding a part and we don't want to return an empty user message in that case.
+                List<ResponseContentPart> parts = [];
                 foreach (AIContent item in input.Contents)
                 {
-                    if (item is McpServerToolApprovalResponseContent mcpApprovalResponseContent)
+                    switch (item)
                     {
-                        yield return ResponseItem.CreateMcpApprovalResponseItem(mcpApprovalResponseContent.Id, mcpApprovalResponseContent.Approved);
+                        case AIContent when item.RawRepresentation is ResponseContentPart rawRep:
+                            parts.Add(rawRep);
+                            break;
+
+                        case TextContent textContent:
+                            parts.Add(ResponseContentPart.CreateInputTextPart(textContent.Text));
+                            break;
+
+                        case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
+                            parts.Add(ResponseContentPart.CreateInputImagePart(uriContent.Uri));
+                            break;
+
+                        case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
+                            parts.Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
+                            break;
+
+                        case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
+                            parts.Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
+                            break;
+
+                        case HostedFileContent fileContent:
+                            parts.Add(ResponseContentPart.CreateInputFilePart(fileContent.FileId));
+                            break;
+
+                        case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
+                            parts.Add(ResponseContentPart.CreateRefusalPart(errorContent.Message));
+                            break;
+
+                        case McpServerToolApprovalResponseContent mcpApprovalResponseContent:
+                            handleEmptyMessage = false;
+                            yield return ResponseItem.CreateMcpApprovalResponseItem(mcpApprovalResponseContent.Id, mcpApprovalResponseContent.Approved);
+                            break;
                     }
+                }
+
+                if (parts.Count == 0 && handleEmptyMessage)
+                {
+                    parts.Add(ResponseContentPart.CreateInputTextPart(string.Empty));
+                }
+
+                if (parts.Count > 0)
+                {
+                    yield return ResponseItem.CreateUserMessageItem(parts);
                 }
 
                 continue;
@@ -833,52 +874,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 (destination.Annotations ??= []).Add(ca);
             }
         }
-    }
-
-    /// <summary>Convert a list of <see cref="AIContent"/>s to a list of <see cref="ResponseContentPart"/>.</summary>
-    private static List<ResponseContentPart> ToResponseContentParts(IList<AIContent> contents)
-    {
-        List<ResponseContentPart> parts = [];
-        foreach (var content in contents)
-        {
-            switch (content)
-            {
-                case AIContent when content.RawRepresentation is ResponseContentPart rawRep:
-                    parts.Add(rawRep);
-                    break;
-
-                case TextContent textContent:
-                    parts.Add(ResponseContentPart.CreateInputTextPart(textContent.Text));
-                    break;
-
-                case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
-                    parts.Add(ResponseContentPart.CreateInputImagePart(uriContent.Uri));
-                    break;
-
-                case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
-                    parts.Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
-                    break;
-
-                case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
-                    parts.Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
-                    break;
-
-                case HostedFileContent fileContent:
-                    parts.Add(ResponseContentPart.CreateInputFilePart(fileContent.FileId));
-                    break;
-
-                case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
-                    parts.Add(ResponseContentPart.CreateRefusalPart(errorContent.Message));
-                    break;
-            }
-        }
-
-        if (parts.Count == 0)
-        {
-            parts.Add(ResponseContentPart.CreateInputTextPart(string.Empty));
-        }
-
-        return parts;
     }
 
     /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="mtci"/> into <paramref name="contents"/>.</summary>
