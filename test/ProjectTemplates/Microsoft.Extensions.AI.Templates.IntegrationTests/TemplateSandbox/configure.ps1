@@ -423,18 +423,25 @@ function Get-ExistingSecretConfiguration {
     }
     
     $totalProjects = $Secret.Projects.Count
-    $isFullyConfigured = ($configuredCount -eq $totalProjects)
+    $uniqueValues = @($existingValues.Values | Where-Object { $null -ne $_ } | Select-Object -Unique)
     
-    Write-Verbose "Secret '$($Secret.Key)': $configuredCount/$totalProjects configured, IsFullyConfigured=$isFullyConfigured"
+    # Fully configured means: all projects have a value AND they all have the SAME value
+    $isFullyConfigured = ($configuredCount -eq $totalProjects) -and ($uniqueValues.Count -eq 1)
+    
+    # Partially configured means: some projects have values, OR all have values but they're different
+    $isPartiallyConfigured = (($configuredCount -gt 0 -and $configuredCount -lt $totalProjects) -or 
+                              ($configuredCount -eq $totalProjects -and $uniqueValues.Count -gt 1))
+    
+    Write-Verbose "Secret '$($Secret.Key)': $configuredCount/$totalProjects configured, $($uniqueValues.Count) unique value(s), IsFullyConfigured=$isFullyConfigured, IsPartiallyConfigured=$isPartiallyConfigured"
     
     return @{
         ConfiguredCount = $configuredCount
         TotalProjects   = $totalProjects
         IsFullyConfigured = $isFullyConfigured
-        IsPartiallyConfigured = ($configuredCount -gt 0 -and $configuredCount -lt $totalProjects)
+        IsPartiallyConfigured = $isPartiallyConfigured
         IsNotConfigured = ($configuredCount -eq 0)
         ExistingValues = $existingValues
-        UniqueValues = @($existingValues.Values | Where-Object { $null -ne $_ } | Select-Object -Unique)
+        UniqueValues = $uniqueValues
     }
 }
 
