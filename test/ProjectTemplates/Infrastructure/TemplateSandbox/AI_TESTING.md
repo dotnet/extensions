@@ -10,13 +10,9 @@ For each `<test ai_status="pending">` in `output/AI_TODO.txt`: run the test proj
 ## QUICK REFERENCES
 
 * `AI_TODO.txt` path:
-  `test\ProjectTemplates\Microsoft.Extensions.AI.Templates.IntegrationTests\TemplateSandbox\output\AI_TODO.txt`
-* Runner script:
-  `test\ProjectTemplates\Microsoft.Extensions.AI.Templates.IntegrationTests\TemplateSandbox\Start-Project.ps1`
-* Stopper script:
-  `test\ProjectTemplates\Microsoft.Extensions.AI.Templates.IntegrationTests\TemplateSandbox\Stop-Project.ps1`
+  `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/output/AI_TODO.txt`
 * Evidence dir:
-  `test\ProjectTemplates\Microsoft.Extensions.AI.Templates.IntegrationTests\TemplateSandbox\output\ai\`
+  `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/output/ai/`
 
 ---
 
@@ -24,8 +20,8 @@ For each `<test ai_status="pending">` in `output/AI_TODO.txt`: run the test proj
 
 * Start by creating an individual TODO for each pending test in `AI_TODO.txt`.
 * Don't run any commands other than variations of the ones listed below:
-* `Start-Project.ps1`
-* `Stop-Project.ps1`
+* `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/Start-Project.ps1`
+* `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/Stop-Project.ps1`
 * `Start-Sleep`
   * Wait a max of 3 seconds for most operations
   * For known long-running operations (like provisioning Azure resources), wait at most 30 seconds at a time
@@ -33,6 +29,10 @@ For each `<test ai_status="pending">` in `output/AI_TODO.txt`: run the test proj
 * `Copy-Item`
 
 Using the Playwright tools when interacting with the browser. If these aren't available, end the testing procedure.
+
+Aspire projects require configuration via the Aspire dashboard. Please provide this configuration when prompted:
+* Azure Subscription ID: Read from the `AZURE_SUBSCRIPTION_ID` environment variable
+* Location: East US 2
 
 If you are unable to do what you need without using only these commands, consider the test failed. In the `<ai_remarks>`, describe how you got stuck.
 
@@ -64,6 +64,7 @@ Follow these steps for one test. Keep outputs short and machine-parseable where 
    * The runner will output a file path containing the application's standard output.
    * Read this file to obtain the launch URL.
    * If app is still starting, try again.
+   * NOTE: The page may fail to load at first while the app initializes. Retry up to 3 times in 30 second intervals. If the page still fails to load, consider the test failed.
 
 5. **Open UI & send the test query**
 
