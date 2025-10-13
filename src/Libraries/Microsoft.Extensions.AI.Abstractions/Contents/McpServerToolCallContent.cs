@@ -22,11 +22,13 @@ public sealed class McpServerToolCallContent : AIContent
     /// Initializes a new instance of the <see cref="McpServerToolCallContent"/> class.
     /// </summary>
     /// <param name="callId">The tool call ID.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="callId"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="callId"/> is empty or composed entirely of whitespace.</exception>
-    public McpServerToolCallContent(string callId)
+    /// <param name="toolName">The tool name.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="callId"/> or <paramref name="toolName"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="callId"/> or <paramref name="toolName"/> is empty or composed entirely of whitespace.</exception>
+    public McpServerToolCallContent(string callId, string toolName)
     {
         CallId = Throw.IfNullOrWhitespace(callId);
+        ToolName = Throw.IfNullOrWhitespace(toolName);
     }
 
     /// <summary>
@@ -35,9 +37,9 @@ public sealed class McpServerToolCallContent : AIContent
     public string CallId { get; }
 
     /// <summary>
-    /// Gets or sets the name of the tool called.
+    /// Gets the name of the tool called.
     /// </summary>
-    public string? ToolName { get; set; }
+    public string ToolName { get; }
 
     /// <summary>
     /// Gets or sets the name of the MCP server.

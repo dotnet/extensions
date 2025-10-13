@@ -181,9 +181,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case McpToolCallApprovalRequestItem mtcari:
-                    message.Contents.Add(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id)
+                    message.Contents.Add(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id, mtcari.ToolName)
                     {
-                        ToolName = mtcari.ToolName,
                         ServerName = mtcari.ServerLabel,
                         Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
                         RawRepresentation = mtcari,
@@ -309,9 +308,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is McpToolCallApprovalRequestItem mtcari:
-                    yield return CreateUpdate(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id)
+                    yield return CreateUpdate(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id, mtcari.ToolName)
                     {
-                        ToolName = mtcari.ToolName,
                         ServerName = mtcari.ServerLabel,
                         Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
                         RawRepresentation = mtcari,
@@ -879,9 +877,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="mtci"/> into <paramref name="contents"/>.</summary>
     private static void AddMcpToolCallContent(McpToolCallItem mtci, IList<AIContent> contents)
     {
-        contents.Add(new McpServerToolCallContent(mtci.Id)
+        contents.Add(new McpServerToolCallContent(mtci.Id, mtci.ToolName)
         {
-            ToolName = mtci.ToolName,
             ServerName = mtci.ServerLabel,
             Arguments = JsonSerializer.Deserialize(mtci.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
 
