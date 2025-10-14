@@ -86,7 +86,7 @@
     <!-- Dependencies from https://github.com/dotnet/efcore -->
     <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.9</MicrosoftEntityFrameworkCoreSqliteVersion>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.25476.2</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>9.0.0-beta.25503.3</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <PropertyGroup Label="No longer automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
