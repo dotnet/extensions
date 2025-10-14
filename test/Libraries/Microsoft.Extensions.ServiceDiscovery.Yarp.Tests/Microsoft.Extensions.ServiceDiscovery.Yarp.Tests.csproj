@@ -4,6 +4,7 @@
     <TargetFrameworks>$(TestNetCoreTargetFrameworks)</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <StrongNameKeyId>Open</StrongNameKeyId>
     <!-- https://github.com/dotnet/extensions/issues/6871 tracks enabling these -->
     <NoWarn>$(NoWarn);CA2000;S103;S1144;S3459;S4136;SA1208;SA1210;VSTHRD003</NoWarn>
   </PropertyGroup>
