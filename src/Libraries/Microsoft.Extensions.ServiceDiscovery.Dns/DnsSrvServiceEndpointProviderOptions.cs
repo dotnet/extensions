@@ -29,11 +29,6 @@ public class DnsSrvServiceEndpointProviderOptions
     public double RetryBackOffFactor { get; set; } = 2;
 
     /// <summary>
-    /// Gets or sets the options used to configure the underlying DNS resolution behavior.
-    /// </summary>
-    public DnsResolverOptions DnsResolverOptions { get; set; } = new();
-
-    /// <summary>
     /// Gets or sets the default DNS query suffix for services resolved via this provider.
     /// </summary>
     /// <remarks>

@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.ServiceDiscovery.Dns.Tests;
 using Microsoft.Extensions.Time.Testing;
 using Xunit.Abstractions;
@@ -40,8 +42,7 @@ public abstract class LoopbackDnsTestBase : IDisposable
         ServiceCollection services = new();
         services.AddXunitLogging(Output);
 
-        // construct DnsResolver manually via internal constructor which accepts DnsResolverOptions
-        var resolver = new DnsResolver(TimeProvider, services.BuildServiceProvider().GetRequiredService<ILogger<DnsResolver>>(), Options);
+        var resolver = new DnsResolver(TimeProvider, NullLogger<DnsResolver>.Instance, new OptionsWrapper<DnsResolverOptions>(Options));
         return resolver;
     }
 

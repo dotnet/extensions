@@ -9,7 +9,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -21,20 +20,17 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
     private const int IPv4Length = 4;
     private const int IPv6Length = 16;
 
-    // CancellationTokenSource.CancelAfter has a maximum timeout of Int32.MaxValue milliseconds.
-    private static readonly TimeSpan s_maxTimeout = TimeSpan.FromMilliseconds(int.MaxValue);
-
     private bool _disposed;
     private readonly DnsResolverOptions _options;
     private readonly CancellationTokenSource _pendingRequestsCts = new();
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<DnsResolver> _logger;
 
-    public DnsResolver(TimeProvider timeProvider, ILogger<DnsResolver> logger, DnsResolverOptions options)
+    public DnsResolver(TimeProvider timeProvider, ILogger<DnsResolver> logger, IOptions<DnsResolverOptions> options)
     {
         _timeProvider = timeProvider;
         _logger = logger;
-        _options = options;
+        _options = options.Value;
 
         if (_options.Servers.Count == 0)
         {
@@ -50,15 +46,9 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
                 throw new ArgumentException("At least one DNS server is required.", nameof(options));
             }
         }
-
-        if (options.Timeout != Timeout.InfiniteTimeSpan)
-        {
-            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(options.Timeout, TimeSpan.Zero);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Timeout, s_maxTimeout);
-        }
     }
 
-    internal DnsResolver(DnsResolverOptions options) : this(TimeProvider.System, NullLogger<DnsResolver>.Instance, options)
+    internal DnsResolver(DnsResolverOptions options) : this(TimeProvider.System, NullLogger<DnsResolver>.Instance, new OptionsWrapper<DnsResolverOptions>(options))
     {
     }
 
@@ -68,16 +58,6 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
 
     internal DnsResolver(IPEndPoint server) : this(new DnsResolverOptions { Servers = [server] })
     {
-    }
-
-    internal static DnsResolver Create(IServiceProvider serviceProvider)
-    {
-        ArgumentNullException.ThrowIfNull(serviceProvider);
-
-        var resolverOptions = serviceProvider.GetRequiredService<IOptions<DnsSrvServiceEndpointProviderOptions>>().Value.DnsResolverOptions;
-        var timeProvider = serviceProvider.GetRequiredService<TimeProvider>();
-        var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<DnsResolver>();
-        return new DnsResolver(timeProvider, logger, resolverOptions);
     }
 
     public ValueTask<ServiceResult[]> ResolveServiceAsync(string name, CancellationToken cancellationToken = default)
