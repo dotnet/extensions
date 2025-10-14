@@ -12,9 +12,12 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public sealed class ToolGroupingOptions
 {
-    private string _expansionFunctionName = "__expand_tool_group";
+    private const string DefaultExpansionFunctionName = "__expand_tool_group";
+    private const string DefaultListGroupsFunctionName = "__list_tool_groups";
+
+    private string _expansionFunctionName = DefaultExpansionFunctionName;
     private string? _expansionFunctionDescription;
-    private string _listGroupsFunctionName = "__list_tool_groups";
+    private string _listGroupsFunctionName = DefaultListGroupsFunctionName;
     private string? _listGroupsFunctionDescription;
     private int _maxExpansionsPerRequest = 3;
 
@@ -47,7 +50,7 @@ public sealed class ToolGroupingOptions
     }
 
     /// <summary>Gets or sets the maximum number of expansions allowed within a single request.</summary>
-    /// <remarks>Defaults to 1 to keep the prototype deterministic and avoid runaway loops.</remarks>
+    /// <remarks>Defaults to 3.</remarks>
     public int MaxExpansionsPerRequest
     {
         get => _maxExpansionsPerRequest;
