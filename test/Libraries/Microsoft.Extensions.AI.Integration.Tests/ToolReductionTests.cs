@@ -229,7 +229,7 @@ public class ToolReductionTests
             new ChatMessage(ChatRole.User, "Now instead solve a math problem.")
         };
 
-        strategy.MessagesEmbeddingTextSelector = msgs => msgs.LastOrDefault()?.Text ?? string.Empty;
+        strategy.MessagesEmbeddingTextSelector = msgs => new ValueTask<string>(msgs.LastOrDefault()?.Text ?? string.Empty);
 
         var reduced = (await strategy.SelectToolsForRequestAsync(
             messages,
@@ -251,7 +251,7 @@ public class ToolReductionTests
         strategy.MessagesEmbeddingTextSelector = msgs =>
         {
             invocationCount++;
-            return string.Join("\n", msgs.Select(m => m.Text));
+            return new ValueTask<string>(string.Join("\n", msgs.Select(m => m.Text)));
         };
 
         _ = await strategy.SelectToolsForRequestAsync(
@@ -470,7 +470,7 @@ public class ToolReductionTests
         using var gen = new DeterministicTestEmbeddingGenerator();
         var strategy = new EmbeddingToolReductionStrategy(gen, toolLimit: 1)
         {
-            MessagesEmbeddingTextSelector = _ => "   "
+            MessagesEmbeddingTextSelector = _ => new ValueTask<string>("   ")
         };
 
         var tools = CreateTools("One", "Two");

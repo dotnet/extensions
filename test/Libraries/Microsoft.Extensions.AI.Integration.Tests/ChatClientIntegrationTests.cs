@@ -1624,6 +1624,101 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.DoesNotContain("Sunny and dry.", secondResponse.Text, StringComparison.OrdinalIgnoreCase);
     }
 
+    [ConditionalFact]
+    public virtual async Task ToolReduction_MessagesEmbeddingTextSelector_UsesChatClientToAnalyzeConversation()
+    {
+        SkipIfNotEnabled();
+        EnsureEmbeddingGenerator();
+
+        // Create tools for different domains.
+        var weatherTool = AIFunctionFactory.Create(
+            () => "Weather data",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetWeatherForecast",
+                Description = "Returns weather forecast and temperature for a given city."
+            });
+
+        var translateTool = AIFunctionFactory.Create(
+            () => "Translated text",
+            new AIFunctionFactoryOptions
+            {
+                Name = "TranslateText",
+                Description = "Translates text between human languages."
+            });
+
+        var mathTool = AIFunctionFactory.Create(
+            () => 42,
+            new AIFunctionFactoryOptions
+            {
+                Name = "SolveMath",
+                Description = "Solves basic math problems."
+            });
+
+        var allTools = new List<AITool> { weatherTool, translateTool, mathTool };
+
+        // Track the analysis result from the chat client used in the selector.
+        string? capturedAnalysis = null;
+
+        var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 2)
+        {
+            // Use a chat client to analyze the conversation and extract relevant tool categories.
+            MessagesEmbeddingTextSelector = async messages =>
+            {
+                var conversationText = string.Join("\n", messages.Select(m => $"{m.Role}: {m.Text}"));
+
+                var analysisPrompt = $"""
+                    Analyze the following conversation and identify what kinds of tools would be most helpful.
+                    Focus on the key topics and tasks being discussed.
+                    Respond with a brief summary of the relevant tool categories (e.g., "weather", "translation", "math").
+
+                    Conversation:
+                    {conversationText}
+
+                    Relevant tool categories:
+                    """;
+
+                var response = await ChatClient!.GetResponseAsync(analysisPrompt);
+                capturedAnalysis = response.Text;
+
+                // Return the analysis as the query text for embedding-based tool selection.
+                return capturedAnalysis;
+            }
+        };
+
+        IList<AITool>? selectedTools = null;
+
+        using var client = ChatClient!
+            .AsBuilder()
+            .UseToolReduction(strategy)
+            .Use(async (messages, options, next, ct) =>
+            {
+                selectedTools = options?.Tools;
+                await next(messages, options, ct);
+            })
+            .UseFunctionInvocation()
+            .Build();
+
+        // Conversation that clearly indicates weather-related needs.
+        List<ChatMessage> history = [];
+        history.Add(new ChatMessage(ChatRole.User, "What will the weather be like in London tomorrow?"));
+
+        var response = await client.GetResponseAsync(history, new ChatOptions { Tools = allTools });
+        history.AddMessages(response);
+
+        // Verify that the chat client was used to analyze the conversation.
+        Assert.NotNull(capturedAnalysis);
+        Assert.True(
+            capturedAnalysis.IndexOf("weather", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            capturedAnalysis.IndexOf("forecast", StringComparison.OrdinalIgnoreCase) >= 0,
+            $"Expected analysis to mention weather or forecast: {capturedAnalysis}");
+
+        // Verify that the tool selection was influenced by the analysis.
+        Assert.NotNull(selectedTools);
+        Assert.True(selectedTools.Count <= 2, $"Expected at most 2 tools, got {selectedTools.Count}");
+        Assert.Contains(selectedTools, t => t.Name == "GetWeatherForecast");
+    }
+
     // Test-only custom strategy: include tools on first request, then remove them afterward.
     private sealed class RemoveToolAfterFirstUseStrategy : IToolReductionStrategy
     {

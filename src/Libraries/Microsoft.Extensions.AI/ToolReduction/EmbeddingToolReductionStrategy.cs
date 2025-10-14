@@ -46,7 +46,7 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
         return t.Name + Environment.NewLine + t.Description;
     };
 
-    private Func<IEnumerable<ChatMessage>, string> _messagesEmbeddingTextSelector = static messages =>
+    private Func<IEnumerable<ChatMessage>, ValueTask<string>> _messagesEmbeddingTextSelector = static messages =>
     {
         var sb = new StringBuilder();
         foreach (var message in messages)
@@ -71,7 +71,7 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
             }
         }
 
-        return sb.ToString();
+        return new ValueTask<string>(sb.ToString());
     };
 
     private Func<ReadOnlyMemory<float>, ReadOnlyMemory<float>, float> _similarity = static (a, b) => TensorPrimitives.CosineSimilarity(a.Span, b.Span);
@@ -107,7 +107,7 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
     /// Gets or sets the selector used to generate a single text string from a collection of chat messages for
     /// embedding purposes.
     /// </summary>
-    public Func<IEnumerable<ChatMessage>, string> MessagesEmbeddingTextSelector
+    public Func<IEnumerable<ChatMessage>, ValueTask<string>> MessagesEmbeddingTextSelector
     {
         get => _messagesEmbeddingTextSelector;
         set => _messagesEmbeddingTextSelector = Throw.IfNull(value);
@@ -192,7 +192,7 @@ public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
             }
 
             // Build query text from recent messages.
-            var queryText = MessagesEmbeddingTextSelector(messages);
+            var queryText = await MessagesEmbeddingTextSelector(messages).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(queryText))
             {
                 // We couldn't build a meaningful query, likely because the message list was empty.
