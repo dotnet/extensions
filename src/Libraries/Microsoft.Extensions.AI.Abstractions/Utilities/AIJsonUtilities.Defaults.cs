@@ -48,6 +48,16 @@ public static partial class AIJsonUtilities
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
 
+        // Temporary workaround: these types are [Experimental] and can't be added as [JsonDerivedType] on AIContent yet,
+        // or else consuming assemblies that used source generation with AIContent would implicitly reference them.
+        // Once they're no longer [Experimental] and added as [JsonDerivedType] on AIContent, these lines should be removed.
+        AddAIContentType(options, typeof(FunctionApprovalRequestContent), typeDiscriminatorId: "functionApprovalRequest", checkBuiltIn: false);
+        AddAIContentType(options, typeof(FunctionApprovalResponseContent), typeDiscriminatorId: "functionApprovalResponse", checkBuiltIn: false);
+        AddAIContentType(options, typeof(McpServerToolCallContent), typeDiscriminatorId: "mcpServerToolCall", checkBuiltIn: false);
+        AddAIContentType(options, typeof(McpServerToolResultContent), typeDiscriminatorId: "mcpServerToolResult", checkBuiltIn: false);
+        AddAIContentType(options, typeof(McpServerToolApprovalRequestContent), typeDiscriminatorId: "mcpServerToolApprovalRequest", checkBuiltIn: false);
+        AddAIContentType(options, typeof(McpServerToolApprovalResponseContent), typeDiscriminatorId: "mcpServerToolApprovalResponse", checkBuiltIn: false);
+
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
             // If reflection-based serialization is enabled by default, use it as a fallback for all other types.
@@ -116,6 +126,16 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(Embedding<double>))]
     [JsonSerializable(typeof(AIContent))]
     [JsonSerializable(typeof(AIFunctionArguments))]
+
+    // Temporary workaround:
+    // These should be added in once they're no longer [Experimental] and included via [JsonDerivedType] on AIContent.
+    [JsonSerializable(typeof(FunctionApprovalRequestContent))]
+    [JsonSerializable(typeof(FunctionApprovalResponseContent))]
+    [JsonSerializable(typeof(McpServerToolCallContent))]
+    [JsonSerializable(typeof(McpServerToolResultContent))]
+    [JsonSerializable(typeof(McpServerToolApprovalRequestContent))]
+    [JsonSerializable(typeof(McpServerToolApprovalResponseContent))]
+    [JsonSerializable(typeof(ResponseContinuationToken))]
     [EditorBrowsable(EditorBrowsableState.Never)] // Never use JsonContext directly, use DefaultOptions instead.
     private sealed partial class JsonContext : JsonSerializerContext;
 

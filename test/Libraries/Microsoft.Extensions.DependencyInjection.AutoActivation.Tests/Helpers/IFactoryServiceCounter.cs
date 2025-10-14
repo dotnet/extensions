@@ -5,5 +5,5 @@ namespace Microsoft.Extensions.DependencyInjection.Test.Helpers;
 
 public interface IFactoryServiceCounter
 {
-    public int Counter { get; set; }
+    int Counter { get; set; }
 }

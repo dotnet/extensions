@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.AsyncState;
 
 /// <summary>
 /// Encapsulates all information within the asynchronous flow in an <see cref="AsyncLocal{T}"/> variable.
-/// Some implementations of this interface may not be thread safe.
+/// Some implementations of this interface might not be thread safe.
 /// </summary>
 public interface IAsyncState
 {
@@ -54,5 +54,5 @@ public interface IAsyncState
     /// Registers new async context with the state.
     /// </summary>
     /// <returns>Token that gives access to the reserved context.</returns>
-    public AsyncStateToken RegisterAsyncContext();
+    AsyncStateToken RegisterAsyncContext();
 }

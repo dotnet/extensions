@@ -16,8 +16,6 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// </summary>
 public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage>
 {
-    private bool _shouldRetryAfterHeader;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpRetryStrategyOptions"/> class.
     /// </summary>
@@ -47,12 +45,12 @@ public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage
     /// </remarks>
     public bool ShouldRetryAfterHeader
     {
-        get => _shouldRetryAfterHeader;
+        get;
         set
         {
-            _shouldRetryAfterHeader = value;
+            field = value;
 
-            if (_shouldRetryAfterHeader)
+            if (field)
             {
                 DelayGenerator = args => args.Outcome.Result switch
                 {

@@ -36,7 +36,7 @@ public static partial class AIJsonUtilities
         _ = Throw.IfNull(options);
         _ = Throw.IfNull(typeDiscriminatorId);
 
-        AddAIContentTypeCore(options, typeof(TContent), typeDiscriminatorId);
+        AddAIContentType(options, typeof(TContent), typeDiscriminatorId, checkBuiltIn: true);
     }
 
     /// <summary>
@@ -56,10 +56,10 @@ public static partial class AIJsonUtilities
 
         if (!typeof(AIContent).IsAssignableFrom(contentType))
         {
-            Throw.ArgumentException(nameof(contentType), "The content type must derive from AIContent.");
+            Throw.ArgumentException(nameof(contentType), $"The content type must derive from {nameof(AIContent)}.");
         }
 
-        AddAIContentTypeCore(options, contentType, typeDiscriminatorId);
+        AddAIContentType(options, contentType, typeDiscriminatorId, checkBuiltIn: true);
     }
 
     /// <summary>Serializes the supplied values and computes a string hash of the resulting JSON.</summary>
@@ -186,11 +186,11 @@ public static partial class AIJsonUtilities
         }
     }
 
-    private static void AddAIContentTypeCore(JsonSerializerOptions options, Type contentType, string typeDiscriminatorId)
+    private static void AddAIContentType(JsonSerializerOptions options, Type contentType, string typeDiscriminatorId, bool checkBuiltIn)
     {
-        if (contentType.Assembly == typeof(AIContent).Assembly)
+        if (checkBuiltIn && (contentType.Assembly == typeof(AIContent).Assembly))
         {
-            Throw.ArgumentException(nameof(contentType), "Cannot register built-in AI content types.");
+            Throw.ArgumentException(nameof(contentType), $"Cannot register built-in {nameof(AIContent)} types.");
         }
 
         IJsonTypeInfoResolver resolver = options.TypeInfoResolver ?? DefaultOptions.TypeInfoResolver!;

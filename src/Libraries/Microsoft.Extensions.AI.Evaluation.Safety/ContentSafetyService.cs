@@ -20,15 +20,10 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
     private const string APIVersionForServiceDiscoveryInHubBasedProjects = "?api-version=2023-08-01-preview";
     private const string APIVersionForNonHubBasedProjects = "?api-version=2025-05-15-preview";
 
-    private static HttpClient? _sharedHttpClient;
-    private static HttpClient SharedHttpClient
-    {
-        get
-        {
-            _sharedHttpClient ??= new HttpClient();
-            return _sharedHttpClient;
-        }
-    }
+    private static HttpClient SharedHttpClient =>
+        field ??
+        Interlocked.CompareExchange(ref field, new(), null) ??
+        field;
 
     private static readonly ConcurrentDictionary<UrlCacheKey, string> _serviceUrlCache =
         new ConcurrentDictionary<UrlCacheKey, string>();
@@ -445,9 +440,8 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
         httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
 
-        if (httpRequestMessage.Content is not null)
-        {
-            httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        }
+#pragma warning disable IDE0058 // Temporary workaround for Roslyn analyzer issue (see https://github.com/dotnet/roslyn/issues/80499).
+        httpRequestMessage.Content?.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+#pragma warning restore IDE0058
     }
 }

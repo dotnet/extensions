@@ -2,6 +2,16 @@
 
 ## NOT YET RELEASED
 
+## 9.10.0
+
+- Added `OpenTelemetrySpeechToTextClient` to provide Open Telemetry instrumentation for `ISpeechToTextClient` implementations.
+- Augmented `OpenTelemetryChatClient` to output tool information for all tools rather than only `AIFunctionDeclaration`-based tools.
+- Fixed `OpenTelemetryChatClient` to avoid throwing exceptions when trying to serialize unknown `AIContent`-derived types.
+- Fixed issue with `FunctionInvokingChatClient` where some buffered updates in the face of possible approvals weren't being propagated.
+- Simplified the name of the activity span emitted by `FunctionInvokingChatClient`.
+
+## 9.9.1
+
 - Updated the `EnableSensitiveData` properties on `OpenTelemetryChatClient/EmbeddingGenerator` to respect a `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` environment variable.
 - Updated `OpenTelemetryChatClient/EmbeddingGenerator` to emit recent additions to the OpenTelemetry Semantic Conventions for Generative AI systems.
 - Added `OpenTelemetryImageGenerator` to provide OpenTelemetry instrumentation for `IImageGenerator` implementations.

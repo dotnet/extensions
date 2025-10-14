@@ -33,18 +33,17 @@
       Specifies external packages that get referenced in generated template content.
     -->
     <PropertyGroup>
-      <TemplatePackageVersion_Aspire>9.4.0</TemplatePackageVersion_Aspire>
-      <TemplatePackageVersion_Aspire_Preview>9.4.0-preview.1.25378.8</TemplatePackageVersion_Aspire_Preview>
-      <TemplatePackageVersion_AzureAIOpenAI>2.3.0-beta.1</TemplatePackageVersion_AzureAIOpenAI>
+      <TemplatePackageVersion_Aspire>9.5.0</TemplatePackageVersion_Aspire>
+      <TemplatePackageVersion_Aspire_Preview>9.5.0-preview.1.25474.7</TemplatePackageVersion_Aspire_Preview>
       <TemplatePackageVersion_AzureAIProjects>1.0.0-beta.9</TemplatePackageVersion_AzureAIProjects>
-      <TemplatePackageVersion_AzureIdentity>1.14.0</TemplatePackageVersion_AzureIdentity>
+      <TemplatePackageVersion_AzureIdentity>1.16.0</TemplatePackageVersion_AzureIdentity>
       <TemplatePackageVersion_AzureSearchDocuments>11.6.1</TemplatePackageVersion_AzureSearchDocuments>
       <TemplatePackageVersion_CommunityToolkitAspire>9.4.1-beta.291</TemplatePackageVersion_CommunityToolkitAspire>
       <TemplatePackageVersion_MicrosoftExtensionsHosting>10.0.0-preview.6.25358.103</TemplatePackageVersion_MicrosoftExtensionsHosting>
       <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>9.3.1</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
       <TemplatePackageVersion_MicrosoftSemanticKernel>1.61.0</TemplatePackageVersion_MicrosoftSemanticKernel>
       <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.61.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
-      <TemplatePackageVersion_ModelContextProtocol>0.3.0-preview.2</TemplatePackageVersion_ModelContextProtocol>
+      <TemplatePackageVersion_ModelContextProtocol>0.4.0-preview.1</TemplatePackageVersion_ModelContextProtocol>
       <TemplatePackageVersion_OllamaSharp>5.1.18</TemplatePackageVersion_OllamaSharp>
       <TemplatePackageVersion_OpenTelemetry>1.12.0</TemplatePackageVersion_OpenTelemetry>
       <TemplatePackageVersion_PdfPig>0.1.10</TemplatePackageVersion_PdfPig>
@@ -62,7 +61,6 @@
         <!-- Package version properties -->
         TemplatePackageVersion_Aspire=$(TemplatePackageVersion_Aspire);
         TemplatePackageVersion_Aspire_Preview=$(TemplatePackageVersion_Aspire_Preview);
-        TemplatePackageVersion_AzureAIOpenAI=$(TemplatePackageVersion_AzureAIOpenAI);
         TemplatePackageVersion_AzureAIProjects=$(TemplatePackageVersion_AzureAIProjects);
         TemplatePackageVersion_AzureIdentity=$(TemplatePackageVersion_AzureIdentity);
         TemplatePackageVersion_AzureSearchDocuments=$(TemplatePackageVersion_AzureSearchDocuments);

@@ -2936,7 +2936,7 @@ dotnet_diagnostic.S103.severity = suggestion
 # Title    : Files should not have too many lines of code
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-104
-dotnet_diagnostic.S104.severity = warning
+dotnet_diagnostic.S104.severity = none
 
 # Title    : Finalizers should not throw exceptions
 # Category : Blocker Bug
@@ -5889,7 +5889,7 @@ dotnet_diagnostic.SA1414.severity = warning
 # Title    : Braces for multi-line statements should not share line
 # Category : StyleCop.CSharp.LayoutRules
 # Help Link: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1500.md
-dotnet_diagnostic.SA1500.severity = warning
+dotnet_diagnostic.SA1500.severity = suggestion # rule does not work well with field-based property initializers
 
 # Title    : Statement should not be on a single line
 # Category : StyleCop.CSharp.LayoutRules
@@ -5957,7 +5957,7 @@ dotnet_diagnostic.SA1512.severity = none
 # Title    : Closing brace should be followed by blank line
 # Category : StyleCop.CSharp.LayoutRules
 # Help Link: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1513.md
-dotnet_diagnostic.SA1513.severity = warning
+dotnet_diagnostic.SA1513.severity = suggestion # rule does not work well with field-based property initializers
 
 # Title    : Element documentation header should be preceded by blank line
 # Category : StyleCop.CSharp.LayoutRules
