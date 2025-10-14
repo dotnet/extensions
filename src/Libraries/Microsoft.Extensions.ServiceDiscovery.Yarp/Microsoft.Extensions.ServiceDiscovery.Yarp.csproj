@@ -12,6 +12,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Workstream>ServiceDiscovery</Workstream>
+    <Stage>normal</Stage>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Yarp.ReverseProxy" />
   </ItemGroup>

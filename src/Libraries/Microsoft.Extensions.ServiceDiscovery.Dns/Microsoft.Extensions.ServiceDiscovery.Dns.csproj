@@ -11,6 +11,11 @@
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Workstream>ServiceDiscovery</Workstream>
+    <Stage>normal</Stage>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="DnsClient" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
