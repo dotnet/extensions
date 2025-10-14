@@ -3,7 +3,7 @@
 
 using System.Net;
 
-namespace Microsoft.Extensions.ServiceDiscovery.Dns.Resolver;
+namespace Microsoft.Extensions.ServiceDiscovery.Dns;
 
 /// <summary>
 /// Provides configuration options for DNS resolution, including server endpoints, retry attempts, and timeout settings.
