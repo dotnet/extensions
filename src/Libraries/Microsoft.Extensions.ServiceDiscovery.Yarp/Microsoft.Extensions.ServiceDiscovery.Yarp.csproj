@@ -15,6 +15,7 @@
   <PropertyGroup>
     <Workstream>ServiceDiscovery</Workstream>
     <Stage>normal</Stage>
+    <PackageValidationBaselineVersion>9.5.1</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>
