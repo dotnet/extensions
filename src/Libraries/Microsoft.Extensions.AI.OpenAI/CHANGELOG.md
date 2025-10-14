@@ -2,7 +2,14 @@
 
 ## NOT YET RELEASED
 
-- Fixed issue with IChatClient for Assistants API where a chat history including unrelated function calls would cause an exception.
+- Updated `IChatClient` for Responses API to support connectors with `HostedMcpServerTool`.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.10.0-preview.1.25513.3
+
+- Fixed issue with `IChatClient` for the OpenAI Assistants API where a chat history including unrelated function calls would cause an exception.
+- Fixed issue with `IChatClient` for the OpenAI Assistants API sending a tool in `ChatOptions.Tools` that had the same name as a function configured with the Assistant would cause an exception.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.9.1-preview.1.25474.6
 
