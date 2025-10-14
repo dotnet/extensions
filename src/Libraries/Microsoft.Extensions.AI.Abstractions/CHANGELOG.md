@@ -2,6 +2,18 @@
 
 ## NOT YET RELEASED
 
+- Added protected copy constructors to options types (e.g. `ChatOptions`).
+- Fixed `EmbeddingGeneratorOptions`/`SpeechToTextOptions` `Clone` methods to correctly copy all properties.
+- Fixed `ToChatResponse` to not overwrite `ChatMessage/ChatResponse.CreatedAt` with older timestamps during coalescing. 
+- Added `[Experimental]` support for background responses, such that non-streaming responses are allowed to be pollable, and such that responses and response updates can be tagged with continuation tokens to support later resumption.
+
+## 9.9.1
+
+- Added new `ChatResponseFormat.ForJsonSchema` overloads that export a JSON schema from a .NET type.
+- Added new `AITool.GetService` virtual method.
+- Updated `TextReasoningContent` to include `ProtectedData` for representing encrypted/redacted content.
+- Fixed `MinLength`/`MaxLength`/`Length` attribute mapping in nullable string properties during schema export.
+
 ## 9.9.0
 
 - Added non-invocable `AIFunctionDeclaration` (base class for `AIFunction`), `AIFunctionFactory.CreateDeclaration`, and `AIFunction.AsDeclarationOnly`.

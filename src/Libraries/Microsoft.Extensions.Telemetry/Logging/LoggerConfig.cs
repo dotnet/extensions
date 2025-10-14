@@ -14,7 +14,6 @@ namespace Microsoft.Extensions.Logging;
 
 internal sealed class LoggerConfig
 {
-#pragma warning disable S107 // Methods should not have too many parameters
     public LoggerConfig(
         KeyValuePair<string, object?>[] staticTags,
         Action<IEnrichmentTagCollector>[] enrichers,
@@ -31,7 +30,6 @@ internal sealed class LoggerConfig
         bool addRedactionDiscriminator)
 #endif
     {
-#pragma warning restore S107 // Methods should not have too many parameters
         StaticTags = staticTags;
         Enrichers = enrichers;
         Sampler = sampler;

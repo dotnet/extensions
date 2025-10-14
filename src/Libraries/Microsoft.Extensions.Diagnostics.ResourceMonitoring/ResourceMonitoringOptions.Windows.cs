@@ -17,9 +17,7 @@ public partial class ResourceMonitoringOptions
     /// This property is Windows-specific and has no effect on other operating systems.
     /// </remarks>
     [Required]
-#pragma warning disable CA2227 // Collection properties should be read only
     public ISet<string> SourceIpAddresses { get; set; } = new HashSet<string>();
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Gets or sets a value indicating whether CPU and Memory utilization metric values should be in range <c>[0, 1]</c> instead of <c>[0, 100]</c>.

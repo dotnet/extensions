@@ -5,17 +5,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-#pragma warning disable EA0011 // Consider removing unnecessary conditional access operators
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an image generation request.</summary>
 [Experimental("MEAI001")]
 public class ImageGenerationResponse
 {
-    /// <summary>The content items in the generated text response.</summary>
-    private IList<AIContent>? _contents;
-
     /// <summary>Initializes a new instance of the <see cref="ImageGenerationResponse"/> class.</summary>
     [JsonConstructor]
     public ImageGenerationResponse()
@@ -26,7 +21,7 @@ public class ImageGenerationResponse
     /// <param name="contents">The contents for this response.</param>
     public ImageGenerationResponse(IList<AIContent>? contents)
     {
-        _contents = contents;
+        Contents = contents;
     }
 
     /// <summary>Gets or sets the raw representation of the image generation response from an underlying implementation.</summary>
@@ -48,7 +43,10 @@ public class ImageGenerationResponse
     [AllowNull]
     public IList<AIContent> Contents
     {
-        get => _contents ??= [];
-        set => _contents = value;
+        get => field ??= [];
+        set;
     }
+
+    /// <summary>Gets or sets usage details for the image generation response.</summary>
+    public UsageDetails? Usage { get; set; }
 }

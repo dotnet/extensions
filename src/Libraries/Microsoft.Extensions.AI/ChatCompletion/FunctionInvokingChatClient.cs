@@ -14,16 +14,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable CA1508 // Avoid dead conditional code
 #pragma warning disable CA2213 // Disposable fields should be disposed
-#pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
-#pragma warning disable SA1202 // 'protected' members should come before 'private' members
-#pragma warning disable S107 // Methods should not have too many parameters
-#pragma warning disable S907 // "goto" statement should not be used
-#pragma warning disable S1659 // Multiple variables should not be declared on the same line
 #pragma warning disable S3353 // Unchanged local variables should be "const"
-#pragma warning disable IDE0031 // Use null propagation, suppressed until repo updates to C# 14
-#pragma warning disable IDE0032 // Use auto property, suppressed until repo updates to C# 14
 
 namespace Microsoft.Extensions.AI;
 
@@ -84,12 +76,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>The <see cref="ActivitySource"/> to use for telemetry.</summary>
     /// <remarks>This component does not own the instance and should not dispose it.</remarks>
     private readonly ActivitySource? _activitySource;
-
-    /// <summary>Maximum number of roundtrips allowed to the inner client.</summary>
-    private int _maximumIterationsPerRequest = 40; // arbitrary default to prevent runaway execution
-
-    /// <summary>Maximum number of consecutive iterations that are allowed contain at least one exception result. If the limit is exceeded, we rethrow the exception instead of continuing.</summary>
-    private int _maximumConsecutiveErrorsPerRequest = 3;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
@@ -184,7 +170,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </remarks>
     public int MaximumIterationsPerRequest
     {
-        get => _maximumIterationsPerRequest;
+        get;
         set
         {
             if (value < 1)
@@ -192,9 +178,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 Throw.ArgumentOutOfRangeException(nameof(value));
             }
 
-            _maximumIterationsPerRequest = value;
+            field = value;
         }
-    }
+    } = 40;
 
     /// <summary>
     /// Gets or sets the maximum number of consecutive iterations that are allowed to fail with an error.
@@ -226,9 +212,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </remarks>
     public int MaximumConsecutiveErrorsPerRequest
     {
-        get => _maximumConsecutiveErrorsPerRequest;
-        set => _maximumConsecutiveErrorsPerRequest = Throw.IfLessThan(value, 0);
-    }
+        get;
+        set => field = Throw.IfLessThan(value, 0);
+    } = 3;
 
     /// <summary>Gets or sets a collection of additional tools the client is able to invoke.</summary>
     /// <remarks>
@@ -283,7 +269,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity($"{nameof(FunctionInvokingChatClient)}.{nameof(GetResponseAsync)}");
+        using Activity? activity = _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
@@ -422,7 +408,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity($"{nameof(FunctionInvokingChatClient)}.{nameof(GetStreamingResponseAsync)}");
+        using Activity? activity = _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
         UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
@@ -430,7 +416,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage> originalMessages = [.. messages];
         messages = originalMessages;
 
-        ApprovalRequiredAIFunction[]? approvalRequiredFunctions = null; // available tools that require approval
+        AITool[]? approvalRequiredFunctions = null; // available tools that require approval
         List<ChatMessage>? augmentedHistory = null; // the actual history of messages sent on turns other than the first
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
@@ -539,11 +525,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     approvalRequiredFunctions =
                         (options?.Tools ?? Enumerable.Empty<AITool>())
                         .Concat(AdditionalTools ?? Enumerable.Empty<AITool>())
-                        .OfType<ApprovalRequiredAIFunction>()
+                        .Where(t => t.GetService<ApprovalRequiredAIFunction>() is not null)
                         .ToArray();
                 }
 
-                if (approvalRequiredFunctions is not { Length: > 0 })
+                if (approvalRequiredFunctions is not { Length: > 0 } || functionCallContents is not { Count: > 0 })
                 {
                     // If there are no function calls to make yet, or if none of the functions require approval at all,
                     // we can yield the update as-is.
@@ -586,6 +572,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // so we cannot yield the updates yet. We'll just keep them in the updates list for later.
                 // We will yield the updates as soon as we receive a function call content that requires approval
                 // or when we reach the end of the updates stream.
+            }
+
+            // We need to yield any remaining updates that were not yielded while looping through the streamed updates.
+            for (; lastYieldedUpdateIndex < updates.Count; lastYieldedUpdateIndex++)
+            {
+                var updateToYield = updates[lastYieldedUpdateIndex];
+                yield return updateToYield;
+                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
             // If there's nothing more to do, break out of the loop and allow the handling at the
@@ -741,7 +735,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 for (int i = 0; i < count; i++)
                 {
                     AITool tool = toolList[i];
-                    anyRequireApproval |= tool is ApprovalRequiredAIFunction;
+                    anyRequireApproval |= tool.GetService<ApprovalRequiredAIFunction>() is not null;
                     map[tool.Name] = tool;
                 }
             }
@@ -811,6 +805,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // We only need to clone the options if we're actually mutating it.
             options = options.Clone();
             options.ConversationId = conversationId;
+        }
+        else if (options.ContinuationToken is not null)
+        {
+            // Clone options before resetting the continuation token below.
+            options = options.Clone();
+        }
+
+        // Reset the continuation token of a background response operation
+        // to signal the inner client to handle function call result rather
+        // than getting the result of the operation.
+        if (options?.ContinuationToken is not null)
+        {
+            options.ContinuationToken = null;
         }
     }
 
@@ -1113,29 +1120,41 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         _ = Throw.IfNull(context);
 
         using Activity? activity = _activitySource?.StartActivity(
-            $"{OpenTelemetryConsts.GenAI.ExecuteTool} {context.Function.Name}",
+            $"{OpenTelemetryConsts.GenAI.ExecuteToolName} {context.Function.Name}",
             ActivityKind.Internal,
             default(ActivityContext),
             [
-                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteTool),
+                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteToolName),
                 new(OpenTelemetryConsts.GenAI.Tool.Type, OpenTelemetryConsts.ToolTypeFunction),
                 new(OpenTelemetryConsts.GenAI.Tool.Call.Id, context.CallContent.CallId),
                 new(OpenTelemetryConsts.GenAI.Tool.Name, context.Function.Name),
                 new(OpenTelemetryConsts.GenAI.Tool.Description, context.Function.Description),
             ]);
 
-        long startingTimestamp = 0;
-        if (_logger.IsEnabled(LogLevel.Debug))
+        long startingTimestamp = Stopwatch.GetTimestamp();
+
+        bool enableSensitiveData = activity is { IsAllDataRequested: true } && InnerClient.GetService<OpenTelemetryChatClient>()?.EnableSensitiveData is true;
+        bool traceLoggingEnabled = _logger.IsEnabled(LogLevel.Trace);
+        bool loggedInvoke = false;
+        if (enableSensitiveData || traceLoggingEnabled)
         {
-            startingTimestamp = Stopwatch.GetTimestamp();
-            if (_logger.IsEnabled(LogLevel.Trace))
+            string functionArguments = TelemetryHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions);
+
+            if (enableSensitiveData)
             {
-                LogInvokingSensitive(context.Function.Name, TelemetryHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions));
+                _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Arguments, functionArguments);
             }
-            else
+
+            if (traceLoggingEnabled)
             {
-                LogInvoking(context.Function.Name);
+                LogInvokingSensitive(context.Function.Name, functionArguments);
+                loggedInvoke = true;
             }
+        }
+
+        if (!loggedInvoke && _logger.IsEnabled(LogLevel.Debug))
+        {
+            LogInvoking(context.Function.Name);
         }
 
         object? result = null;
@@ -1165,18 +1184,26 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
         finally
         {
-            if (_logger.IsEnabled(LogLevel.Debug))
+            bool loggedResult = false;
+            if (enableSensitiveData || traceLoggingEnabled)
             {
-                TimeSpan elapsed = GetElapsedTime(startingTimestamp);
+                string functionResult = TelemetryHelpers.AsJson(result, context.Function.JsonSerializerOptions);
 
-                if (result is not null && _logger.IsEnabled(LogLevel.Trace))
+                if (enableSensitiveData)
                 {
-                    LogInvocationCompletedSensitive(context.Function.Name, elapsed, TelemetryHelpers.AsJson(result, context.Function.JsonSerializerOptions));
+                    _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Result, functionResult);
                 }
-                else
+
+                if (traceLoggingEnabled)
                 {
-                    LogInvocationCompleted(context.Function.Name, elapsed);
+                    LogInvocationCompletedSensitive(context.Function.Name, GetElapsedTime(startingTimestamp), functionResult);
+                    loggedResult = true;
                 }
+            }
+
+            if (!loggedResult && _logger.IsEnabled(LogLevel.Debug))
+            {
+                LogInvocationCompleted(context.Function.Name, GetElapsedTime(startingTimestamp));
             }
         }
 
@@ -1416,10 +1443,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     currentMessage.Contents.Add(resultWithRequestMessage.Response.FunctionCall);
                 }
 
-                if (messagesById is not null)
-                {
-                    messagesById[currentMessage.MessageId ?? string.Empty] = currentMessage;
-                }
+#pragma warning disable IDE0058 // Temporary workaround for Roslyn analyzer issue (see https://github.com/dotnet/roslyn/issues/80499)
+                messagesById?[currentMessage.MessageId ?? string.Empty] = currentMessage;
+#pragma warning restore IDE0058
             }
 
             if (messagesById?.Values is ICollection<ChatMessage> cm)
@@ -1455,7 +1481,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     private static (bool hasApprovalRequiringFcc, int lastApprovalCheckedFCCIndex) CheckForApprovalRequiringFCC(
         List<FunctionCallContent>? functionCallContents,
-        ApprovalRequiredAIFunction[] approvalRequiredFunctions,
+        AITool[] approvalRequiredFunctions,
         bool hasApprovalRequiringFcc,
         int lastApprovalCheckedFCCIndex)
     {
@@ -1536,7 +1562,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     {
                         foreach (var t in toolMap)
                         {
-                            if (t.Value is ApprovalRequiredAIFunction araf && araf.Name == functionCall.Name)
+                            if (t.Value.GetService<ApprovalRequiredAIFunction>() is { } araf && araf.Name == functionCall.Name)
                             {
                                 anyApprovalRequired = true;
                                 break;

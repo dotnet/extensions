@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
 
-#pragma warning disable CA2227 // Collection properties should be read only
-
 namespace Microsoft.Extensions.Logging.Testing;
 
 /// <summary>

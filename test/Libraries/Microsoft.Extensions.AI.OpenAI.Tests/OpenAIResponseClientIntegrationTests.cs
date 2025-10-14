@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,6 +21,22 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
     // Test structure doesn't make sense with Responses.
     public override Task Caching_AfterFunctionInvocation_FunctionOutputUnchangedAsync() => Task.CompletedTask;
+
+    [ConditionalFact]
+    public async Task UseCodeInterpreter_ProducesCodeExecutionResults()
+    {
+        SkipIfNotEnabled();
+
+        var response = await ChatClient.GetResponseAsync("Use the code interpreter to calculate the square root of 42. Return only the nearest integer value and no other text.", new()
+        {
+            Tools = [new HostedCodeInterpreterTool()],
+        });
+        Assert.NotNull(response);
+
+        ChatMessage message = Assert.Single(response.Messages);
+
+        Assert.Equal("6", message.Text);
+    }
 
     [ConditionalFact]
     public async Task UseWebSearch_AnnotationsReflectResults()
@@ -171,6 +188,213 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             // Validate final response
             Assert.Equal(2, approvalsCount);
             Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task GetResponseAsync_BackgroundResponses()
+    {
+        SkipIfNotEnabled();
+
+        var chatOptions = new ChatOptions
+        {
+            AllowBackgroundResponses = true,
+        };
+
+        // Get initial response with continuation token
+        var response = await ChatClient.GetResponseAsync("What's the biggest animal?", chatOptions);
+        Assert.NotNull(response.ContinuationToken);
+        Assert.Empty(response.Messages);
+
+        int attempts = 0;
+
+        // Continue to poll until we get the final response
+        while (response.ContinuationToken is not null && ++attempts < 10)
+        {
+            chatOptions.ContinuationToken = response.ContinuationToken;
+            response = await ChatClient.GetResponseAsync([], chatOptions);
+            await Task.Delay(1000);
+        }
+
+        Assert.Contains("whale", response.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task GetResponseAsync_BackgroundResponses_WithFunction()
+    {
+        SkipIfNotEnabled();
+
+        int callCount = 0;
+
+        using var chatClient = new FunctionInvokingChatClient(ChatClient);
+
+        var chatOptions = new ChatOptions
+        {
+            AllowBackgroundResponses = true,
+            Tools = [AIFunctionFactory.Create(() => { callCount++; return "5:43"; }, new AIFunctionFactoryOptions { Name = "GetCurrentTime" })]
+        };
+
+        // Get initial response with continuation token
+        var response = await chatClient.GetResponseAsync("What time is it?", chatOptions);
+        Assert.NotNull(response.ContinuationToken);
+        Assert.Empty(response.Messages);
+
+        int attempts = 0;
+
+        // Poll until the result is received
+        while (response.ContinuationToken is not null && ++attempts < 10)
+        {
+            chatOptions.ContinuationToken = response.ContinuationToken;
+
+            response = await chatClient.GetResponseAsync([], chatOptions);
+            await Task.Delay(1000);
+        }
+
+        Assert.Contains("5:43", response.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(1, callCount);
+    }
+
+    [ConditionalFact]
+    public async Task GetStreamingResponseAsync_BackgroundResponses()
+    {
+        SkipIfNotEnabled();
+
+        ChatOptions chatOptions = new()
+        {
+            AllowBackgroundResponses = true,
+        };
+
+        string responseText = "";
+
+        await foreach (var update in ChatClient.GetStreamingResponseAsync("What is the capital of France?", chatOptions))
+        {
+            responseText += update;
+        }
+
+        // Assert
+        Assert.Contains("Paris", responseText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task GetStreamingResponseAsync_BackgroundResponses_StreamResumption()
+    {
+        SkipIfNotEnabled();
+
+        ChatOptions chatOptions = new()
+        {
+            AllowBackgroundResponses = true,
+        };
+
+        int updateNumber = 0;
+        string responseText = "";
+        object? continuationToken = null;
+
+        await foreach (var update in ChatClient.GetStreamingResponseAsync("What is the capital of France?", chatOptions))
+        {
+            responseText += update;
+
+            // Simulate an interruption after receiving 8 updates.
+            if (updateNumber++ == 8)
+            {
+                continuationToken = update.ContinuationToken;
+                break;
+            }
+        }
+
+        Assert.DoesNotContain("Paris", responseText);
+
+        // Resume streaming from the point of interruption captured by the continuation token.
+        chatOptions.ContinuationToken = continuationToken;
+        await foreach (var update in ChatClient.GetStreamingResponseAsync([], chatOptions))
+        {
+            responseText += update;
+        }
+
+        Assert.Contains("Paris", responseText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task GetStreamingResponseAsync_BackgroundResponses_WithFunction()
+    {
+        SkipIfNotEnabled();
+
+        int callCount = 0;
+
+        using var chatClient = new FunctionInvokingChatClient(ChatClient);
+
+        var chatOptions = new ChatOptions
+        {
+            AllowBackgroundResponses = true,
+            Tools = [AIFunctionFactory.Create(() => { callCount++; return "5:43"; }, new AIFunctionFactoryOptions { Name = "GetCurrentTime" })]
+        };
+
+        string responseText = "";
+
+        await foreach (var update in chatClient.GetStreamingResponseAsync("What time is it?", chatOptions))
+        {
+            responseText += update;
+        }
+
+        Assert.Contains("5:43", responseText);
+        Assert.Equal(1, callCount);
+    }
+
+    [ConditionalFact]
+    public async Task RemoteMCP_Connector()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["RemoteMCP:ConnectorAccessToken"] is not string accessToken)
+        {
+            throw new SkipTestException(
+                "To run this test, set a value for RemoteMCP:ConnectorAccessToken. " +
+                "You can obtain one by following https://platform.openai.com/docs/guides/tools-connectors-mcp?quickstart-panels=connector#authorizing-a-connector.");
+        }
+
+        await RunAsync(false, false);
+        await RunAsync(true, true);
+
+        async Task RunAsync(bool streaming, bool approval)
+        {
+            ChatOptions chatOptions = new()
+            {
+                Tools = [new HostedMcpServerTool("calendar", "connector_googlecalendar")
+                    {
+                        ApprovalMode = approval ?
+                                HostedMcpServerToolApprovalMode.AlwaysRequire :
+                                HostedMcpServerToolApprovalMode.NeverRequire,
+                        AuthorizationToken = accessToken
+                    }
+                ],
+            };
+
+            using var client = CreateChatClient()!;
+
+            List<ChatMessage> input = [new ChatMessage(ChatRole.User, "What is on my calendar for today?")];
+
+            ChatResponse response = streaming ?
+                await client.GetStreamingResponseAsync(input, chatOptions).ToChatResponseAsync() :
+                await client.GetResponseAsync(input, chatOptions);
+
+            if (approval)
+            {
+                input.AddRange(response.Messages);
+                var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
+                Assert.Equal("search_events", approvalRequest.ToolCall.ToolName);
+                input.Add(new ChatMessage(ChatRole.Tool, [approvalRequest.CreateResponse(true)]));
+
+                response = streaming ?
+                    await client.GetStreamingResponseAsync(input, chatOptions).ToChatResponseAsync() :
+                    await client.GetResponseAsync(input, chatOptions);
+            }
+
+            Assert.NotNull(response);
+            var toolCall = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
+            Assert.Equal("search_events", toolCall.ToolName);
+
+            var toolResult = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
+            var content = Assert.IsType<TextContent>(Assert.Single(toolResult.Output!));
+            Assert.Equal(@"{""events"": [], ""next_page_token"": null}", content.Text);
         }
     }
 }

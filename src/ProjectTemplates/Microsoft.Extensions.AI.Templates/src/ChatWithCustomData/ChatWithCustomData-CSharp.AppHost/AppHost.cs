@@ -29,7 +29,7 @@ openai.AddDeployment(
     modelName: "text-embedding-3-small",
     modelVersion: "1");
 #endif
-#if (UseAzureAISearch)
+#if (IsAzureAISearch)
 
 // See https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration
 // for instructions providing configuration values
@@ -42,16 +42,16 @@ var ollama = builder.AddOllama("ollama")
 var chat = ollama.AddModel("chat", "llama3.2");
 var embeddings = ollama.AddModel("embeddings", "all-minilm");
 #endif
-#if (UseAzureAISearch) // VECTOR DATABASE CONFIGURATION
-#elif (UseQdrant)
+#if (IsAzureAISearch) // VECTOR DATABASE CONFIGURATION
+#elif (IsQdrant)
 
 var vectorDB = builder.AddQdrant("vectordb")
     .WithDataVolume()
     .WithLifetime(ContainerLifetime.Persistent);
-#else // UseLocalVectorStore
+#else // IsLocalVectorStore
 #endif
 
-var webApp = builder.AddProject<Projects.ChatWithCustomData_CSharp_Web>("aichatweb-app");
+var webApp = builder.AddProject<Projects.ChatWithCustomData_CSharp_Web_AspireClassName_Web>("aichatweb-app");
 #if (IsOllama) // AI SERVICE PROVIDER REFERENCES
 webApp
     .WithReference(chat)
@@ -65,15 +65,15 @@ webApp
     .WithReference(openai)
     .WaitFor(openai);
 #endif
-#if (UseAzureAISearch) // VECTOR DATABASE REFERENCES
+#if (IsAzureAISearch) // VECTOR DATABASE REFERENCES
 webApp
     .WithReference(search)
     .WaitFor(search);
-#elif (UseQdrant)
+#elif (IsQdrant)
 webApp
     .WithReference(vectorDB)
     .WaitFor(vectorDB);
-#else // UseLocalVectorStore
+#else // IsLocalVectorStore
 #endif
 
 builder.Build().Run();

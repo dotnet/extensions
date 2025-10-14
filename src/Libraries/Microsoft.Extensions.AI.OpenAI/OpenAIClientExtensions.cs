@@ -16,7 +16,6 @@ using OpenAI.Embeddings;
 using OpenAI.Images;
 using OpenAI.Responses;
 
-#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 
 namespace Microsoft.Extensions.AI;

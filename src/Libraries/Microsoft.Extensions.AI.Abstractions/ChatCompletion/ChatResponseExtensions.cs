@@ -11,9 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S109 // Magic numbers should not be used
-#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -186,17 +183,17 @@ public static class ChatResponseExtensions
     /// <summary>Coalesces sequential <see cref="AIContent"/> content elements.</summary>
     internal static void CoalesceTextContent(IList<AIContent> contents)
     {
-        Coalesce<TextContent>(contents, mergeSingle: false, static (contents, start, end) =>
-            new(MergeText(contents, start, end))
-            {
-                AdditionalProperties = contents[start].AdditionalProperties?.Clone()
-            });
+        Coalesce<TextContent>(
+            contents,
+            mergeSingle: false,
+            canMerge: null,
+            static (contents, start, end) => new(MergeText(contents, start, end)) { AdditionalProperties = contents[start].AdditionalProperties?.Clone() });
 
-        Coalesce<TextReasoningContent>(contents, mergeSingle: false, static (contents, start, end) =>
-            new(MergeText(contents, start, end))
-            {
-                AdditionalProperties = contents[start].AdditionalProperties?.Clone()
-            });
+        Coalesce<TextReasoningContent>(
+            contents,
+            mergeSingle: false,
+            canMerge: static (r1, r2) => string.IsNullOrEmpty(r1.ProtectedData), // we allow merging if the first item has no ProtectedData, even if the second does
+            static (contents, start, end) => new(MergeText(contents, start, end)) { AdditionalProperties = contents[start].AdditionalProperties?.Clone() });
 
         static string MergeText(IList<AIContent> contents, int start, int end)
         {
@@ -209,7 +206,11 @@ public static class ChatResponseExtensions
             return sb.ToString();
         }
 
-        static void Coalesce<TContent>(IList<AIContent> contents, bool mergeSingle, Func<IList<AIContent>, int, int, TContent> merge)
+        static void Coalesce<TContent>(
+            IList<AIContent> contents,
+            bool mergeSingle,
+            Func<TContent, TContent, bool>? canMerge,
+            Func<IList<AIContent>, int, int, TContent> merge)
             where TContent : AIContent
         {
             // Iterate through all of the items in the list looking for contiguous items that can be coalesced.
@@ -224,9 +225,11 @@ public static class ChatResponseExtensions
 
                 // Iterate until we find a non-coalescable item.
                 int i = start + 1;
-                while (i < contents.Count && TryAsCoalescable(contents[i], out _))
+                TContent prev = firstContent;
+                while (i < contents.Count && TryAsCoalescable(contents[i], out TContent? next) && (canMerge is null || canMerge(prev, next)))
                 {
                     i++;
+                    prev = next;
                 }
 
                 // If there's only one item in the run, and we don't want to merge single items, skip it.
@@ -303,26 +306,19 @@ public static class ChatResponseExtensions
     private static void ProcessUpdate(ChatResponseUpdate update, ChatResponse response)
     {
         // If there is no message created yet, or if the last update we saw had a different
-        // message ID or role than the newest update, create a new message.
-        ChatMessage message;
-        var isNewMessage = false;
-        if (response.Messages.Count == 0)
+        // identifying parts, create a new message.
+        bool isNewMessage = true;
+        if (response.Messages.Count != 0)
         {
-            isNewMessage = true;
-        }
-        else if (update.MessageId is { Length: > 0 } updateMessageId
-            && response.Messages[response.Messages.Count - 1].MessageId is string lastMessageId
-            && updateMessageId != lastMessageId)
-        {
-            isNewMessage = true;
-        }
-        else if (update.Role is { } updateRole
-            && response.Messages[response.Messages.Count - 1].Role is { } lastRole
-            && updateRole != lastRole)
-        {
-            isNewMessage = true;
+            var lastMessage = response.Messages[response.Messages.Count - 1];
+            isNewMessage =
+                NotEmptyOrEqual(update.AuthorName, lastMessage.AuthorName) ||
+                NotEmptyOrEqual(update.MessageId, lastMessage.MessageId) ||
+                NotNullOrEqual(update.Role, lastMessage.Role);
         }
 
+        // Get the message to target, either a new one or the last ones.
+        ChatMessage message;
         if (isNewMessage)
         {
             message = new(ChatRole.Assistant, []);
@@ -343,7 +339,7 @@ public static class ChatResponseExtensions
             message.AuthorName = update.AuthorName;
         }
 
-        if (update.CreatedAt is not null)
+        if (message.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > message.CreatedAt))
         {
             message.CreatedAt = update.CreatedAt;
         }
@@ -388,7 +384,7 @@ public static class ChatResponseExtensions
             response.ConversationId = update.ConversationId;
         }
 
-        if (update.CreatedAt is not null)
+        if (response.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > response.CreatedAt))
         {
             response.CreatedAt = update.CreatedAt;
         }
@@ -415,4 +411,12 @@ public static class ChatResponseExtensions
             }
         }
     }
+
+    /// <summary>Gets whether both strings are not null/empty and not the same as each other.</summary>
+    private static bool NotEmptyOrEqual(string? s1, string? s2) =>
+        s1 is { Length: > 0 } str1 && s2 is { Length: > 0 } str2 && str1 != str2;
+
+    /// <summary>Gets whether two roles are not null and not the same as each other.</summary>
+    private static bool NotNullOrEqual(ChatRole? r1, ChatRole? r2) =>
+        r1.HasValue && r2.HasValue && r1.Value != r2.Value;
 }

@@ -26,6 +26,15 @@ public static class MicrosoftExtensionsAIChatExtensions
     public static ChatTool AsOpenAIChatTool(this AIFunctionDeclaration function) =>
         OpenAIChatClient.ToOpenAIChatTool(Throw.IfNull(function));
 
+    /// <summary>
+    /// Creates an OpenAI <see cref="ChatResponseFormat"/> from a <see cref="Microsoft.Extensions.AI.ChatResponseFormat"/>.
+    /// </summary>
+    /// <param name="format">The format.</param>
+    /// <param name="options">The options to use when interpreting the format.</param>
+    /// <returns>The converted OpenAI <see cref="ChatResponseFormat"/>.</returns>
+    public static ChatResponseFormat? AsOpenAIChatResponseFormat(this Microsoft.Extensions.AI.ChatResponseFormat? format, ChatOptions? options = null) =>
+        OpenAIChatClient.ToOpenAIChatResponseFormat(format, options);
+
     /// <summary>Creates a sequence of OpenAI <see cref="ChatMessage"/> instances from the specified input messages.</summary>
     /// <param name="messages">The input messages to convert.</param>
     /// <param name="options">The options employed while processing <paramref name="messages"/>.</param>

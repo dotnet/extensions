@@ -36,4 +36,6 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(Guid))] // Used in Content tests
 [JsonSerializable(typeof(decimal))] // Used in Content tests
 [JsonSerializable(typeof(HostedMcpServerToolApprovalMode))]
+[JsonSerializable(typeof(ChatResponseFormatTests.SomeType))]
+[JsonSerializable(typeof(ResponseContinuationToken))]
 internal sealed partial class TestJsonSerializerContext : JsonSerializerContext;

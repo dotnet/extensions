@@ -130,6 +130,15 @@ public class OpenTelemetryChatClientTests
                 ["SomethingElse"] = "value2",
             },
             Instructions = "You are helpful.",
+            Tools =
+            [
+                AIFunctionFactory.Create((string personName) => personName, "GetPersonAge", "Gets the age of a person by name."),
+                new HostedWebSearchTool(),
+                new HostedFileSearchTool(),
+                new HostedCodeInterpreterTool(),
+                new HostedMcpServerTool("myAwesomeServer", "http://localhost:1234/somewhere"),
+                AIFunctionFactory.Create((string location) => "", "GetCurrentWeather", "Gets the current weather for a location.").AsDeclarationOnly(),
+            ],
         };
 
         if (streaming)
@@ -263,14 +272,134 @@ public class OpenTelemetryChatClientTests
                   }
                 ]
                 """), ReplaceWhitespace(tags["gen_ai.system_instructions"]));
+
+            Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "type": "function",
+                    "name": "GetPersonAge",
+                    "description": "Gets the age of a person by name.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "personName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "personName"
+                      ]
+                    }
+                  },
+                  {
+                    "type": "web_search"
+                  },
+                  {
+                    "type": "file_search"
+                  },
+                  {
+                    "type": "code_interpreter"
+                  },
+                  {
+                    "type": "mcp"
+                  },
+                  {
+                    "type": "function",
+                    "name": "GetCurrentWeather",
+                    "description": "Gets the current weather for a location.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "location": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "location"
+                      ]
+                    }
+                  }
+                ]
+                """), ReplaceWhitespace(tags["gen_ai.tool.definitions"]));
         }
         else
         {
             Assert.False(tags.ContainsKey("gen_ai.input.messages"));
             Assert.False(tags.ContainsKey("gen_ai.output.messages"));
             Assert.False(tags.ContainsKey("gen_ai.system_instructions"));
+            Assert.False(tags.ContainsKey("gen_ai.tool.definitions"));
         }
-
-        static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
     }
+
+    [Fact]
+    public async Task UnknownContentTypes_Ignored()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "The blue whale, I think."));
+            },
+        };
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName, configure: instance =>
+            {
+                instance.EnableSensitiveData = true;
+                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+            })
+            .Build();
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User,
+            [
+                new TextContent("Hello!"),
+                new NonSerializableAIContent(),
+                new TextContent("How are you?"),
+            ]),
+        ];
+
+        var response = await chatClient.GetResponseAsync(messages);
+        Assert.NotNull(response);
+
+        var activity = Assert.Single(activities);
+        Assert.NotNull(activity);
+
+        var inputMessages = activity.Tags.First(kvp => kvp.Key == "gen_ai.input.messages").Value;
+        Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "role": "user",
+                    "parts": [
+                      {
+                        "type": "text",
+                        "content": "Hello!"
+                      },
+                      {
+                        "type": "Microsoft.Extensions.AI.OpenTelemetryChatClientTests+NonSerializableAIContent",
+                        "content": {}
+                      },
+                      {
+                          "type": "text",
+                          "content": "How are you?"
+                      }
+                    ]
+                  }
+                ]
+                """), ReplaceWhitespace(inputMessages));
+    }
+
+    private sealed class NonSerializableAIContent : AIContent;
+
+    private static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
 }

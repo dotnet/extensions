@@ -686,6 +686,14 @@
           "Stage": "Stable"
         },
         {
+          "Member": "virtual object? Microsoft.Extensions.AI.AITool.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TService? Microsoft.Extensions.AI.AITool.GetService<TService>(object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "override string Microsoft.Extensions.AI.AITool.ToString();",
           "Stage": "Stable"
         }
@@ -976,6 +984,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "Microsoft.Extensions.AI.ChatOptions.ChatOptions(Microsoft.Extensions.AI.ChatOptions? other);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "virtual Microsoft.Extensions.AI.ChatOptions Microsoft.Extensions.AI.ChatOptions.Clone();",
           "Stage": "Stable"
         }
@@ -1155,6 +1167,14 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(System.Text.Json.JsonElement schema, string? schemaName = null, string? schemaDescription = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema<T>(System.Text.Json.JsonSerializerOptions? serializerOptions = null, string? schemaName = null, string? schemaDescription = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(System.Type schemaType, System.Text.Json.JsonSerializerOptions? serializerOptions = null, string? schemaName = null, string? schemaDescription = null);",
           "Stage": "Stable"
         }
       ],
@@ -1470,6 +1490,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "override object? Microsoft.Extensions.AI.DelegatingAIFunction.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "override System.Threading.Tasks.ValueTask<object?> Microsoft.Extensions.AI.DelegatingAIFunction.InvokeCoreAsync(Microsoft.Extensions.AI.AIFunctionArguments arguments, System.Threading.CancellationToken cancellationToken);",
           "Stage": "Stable"
         },
@@ -1671,6 +1695,10 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.EmbeddingGenerationOptions.EmbeddingGenerationOptions();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.EmbeddingGenerationOptions.EmbeddingGenerationOptions(Microsoft.Extensions.AI.EmbeddingGenerationOptions? other);",
           "Stage": "Stable"
         },
         {
@@ -1924,6 +1952,10 @@
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedCodeInterpreterTool.Inputs { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedCodeInterpreterTool.Name { get; }",
+          "Stage": "Stable"
         }
       ]
     },
@@ -1944,6 +1976,10 @@
         {
           "Member": "int? Microsoft.Extensions.AI.HostedFileSearchTool.MaximumResultCount { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedFileSearchTool.Name { get; }",
+          "Stage": "Stable"
         }
       ]
     },
@@ -1953,6 +1989,12 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedWebSearchTool.Name { get; }",
           "Stage": "Stable"
         }
       ]
@@ -2421,6 +2463,10 @@
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.AI.TextReasoningContent.Text { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextReasoningContent.ProtectedData { get; set; }",
           "Stage": "Stable"
         }
       ]

@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable S3604
-// S3604: Member initializer values should not be redundant.
-// We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
-// constructor syntax.
-
 #pragma warning disable CA1725
 // CA1725: Parameter names should match base declaration.
 // All functions on 'IDistributedCache' use the parameter name 'token' in place of 'cancellationToken'. However,

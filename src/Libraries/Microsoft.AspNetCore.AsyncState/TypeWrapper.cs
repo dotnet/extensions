@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.AsyncState;
 /// Note that <see cref="TypeWrapper{T}"/> is not public, so nobody else can use it.
 /// </summary>
 /// <typeparam name="T">The type of the value to store into <see cref="AspNetCore.Http.HttpContext.Features"/>.</typeparam>
-#pragma warning disable S1694  // Convert this 'abstract' class to a concrete type with protected constructor.
 internal abstract class TypeWrapper<T>
-#pragma warning restore S1694  // Convert this 'abstract' class to a concrete type with protected constructor.
 {
 }

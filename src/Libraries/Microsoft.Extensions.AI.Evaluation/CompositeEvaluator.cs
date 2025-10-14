@@ -50,10 +50,8 @@ public sealed class CompositeEvaluator : IEvaluator
         {
             if (evaluator.EvaluationMetricNames.Count == 0)
             {
-#pragma warning disable S103 // Lines should not be too long
                 throw new InvalidOperationException(
                     $"The '{nameof(evaluator.EvaluationMetricNames)}' property on '{evaluator.GetType().FullName}' returned an empty collection. An evaluator must advertise the names of the metrics that it supports.");
-#pragma warning restore S103
             }
 
             foreach (string metricName in evaluator.EvaluationMetricNames)
@@ -149,10 +147,8 @@ public sealed class CompositeEvaluator : IEvaluator
 
                 if (e.EvaluationMetricNames.Count == 0)
                 {
-#pragma warning disable S103 // Lines should not be too long
                     throw new InvalidOperationException(
                         $"The '{nameof(e.EvaluationMetricNames)}' property on '{e.GetType().FullName}' returned an empty collection. An evaluator must advertise the names of the metrics that it supports.");
-#pragma warning restore S103
                 }
 
                 foreach (string metricName in e.EvaluationMetricNames)

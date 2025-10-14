@@ -34,13 +34,10 @@ internal static class ImmutableTypeCache
             GCHandle.Alloc(obj, GCHandleType.Pinned).Free();
             return true;
         }
-#pragma warning disable CA1031 // Do not catch general exception types: interpret any failure here as "nope"
         catch
         {
             return false;
         }
-#pragma warning restore CA1031
-
 #endif
     }
 

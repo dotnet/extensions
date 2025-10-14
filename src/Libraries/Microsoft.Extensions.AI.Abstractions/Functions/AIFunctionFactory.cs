@@ -22,11 +22,7 @@ using System.Threading.Tasks;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable CA1031 // Do not catch general exception types
-#pragma warning disable S2333 // Redundant modifiers should not be used
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning disable SA1202 // Public members should come before private members
-#pragma warning disable SA1203 // Constants should appear before fields
 
 namespace Microsoft.Extensions.AI;
 
@@ -753,11 +749,21 @@ public static partial class AIFunctionFactory
             string name = SanitizeMemberName(method.Name);
 
             const string AsyncSuffix = "Async";
-            if (IsAsyncMethod(method) &&
-                name.EndsWith(AsyncSuffix, StringComparison.Ordinal) &&
-                name.Length > AsyncSuffix.Length)
+            if (IsAsyncMethod(method))
             {
-                name = name.Substring(0, name.Length - AsyncSuffix.Length);
+                // If the method ends in "Async" or contains "Async_", remove the "Async".
+                int asyncIndex = name.LastIndexOf(AsyncSuffix, StringComparison.Ordinal);
+                if (asyncIndex > 0 &&
+                    (asyncIndex + AsyncSuffix.Length == name.Length ||
+                     ((asyncIndex + AsyncSuffix.Length < name.Length) && (name[asyncIndex + AsyncSuffix.Length] == '_'))))
+                {
+                    name =
+#if NET
+                        string.Concat(name.AsSpan(0, asyncIndex), name.AsSpan(asyncIndex + AsyncSuffix.Length));
+#else
+                        string.Concat(name.Substring(0, asyncIndex), name.Substring(asyncIndex + AsyncSuffix.Length));
+#endif
+                }
             }
 
             return name;
@@ -1109,16 +1115,37 @@ public static partial class AIFunctionFactory
     /// Replaces non-alphanumeric characters in the identifier with the underscore character.
     /// Primarily intended to remove characters produced by compiler-generated method name mangling.
     /// </returns>
-    private static string SanitizeMemberName(string memberName) =>
-        InvalidNameCharsRegex().Replace(memberName, "_");
+    private static string SanitizeMemberName(string memberName)
+    {
+        // Handle compiler-generated names (local functions and lambdas)
+        // Local functions: <ContainingMethod>g__LocalFunctionName|ordinal_depth -> ContainingMethod_LocalFunctionName_ordinal_depth
+        // Lambdas: <ContainingMethod>b__ordinal_depth -> ContainingMethod_ordinal_depth
+        if (CompilerGeneratedNameRegex().Match(memberName) is { Success: true } match)
+        {
+            memberName = $"{match.Groups[1].Value}_{match.Groups[2].Value}";
+        }
 
-    /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
+        // Replace all non-alphanumeric characters with underscores.
+        return InvalidNameCharsRegex().Replace(memberName, "_");
+    }
+
+    /// <summary>Regex that matches compiler-generated names (local functions and lambdas).</summary>
 #if NET
-    [GeneratedRegex("[^0-9A-Za-z_]")]
+    [GeneratedRegex(@"^<([^>]+)>\w__(.+)")]
+    private static partial Regex CompilerGeneratedNameRegex();
+#else
+    private static Regex CompilerGeneratedNameRegex() => _compilerGeneratedNameRegex;
+    private static readonly Regex _compilerGeneratedNameRegex = new(@"^<([^>]+)>\w__(.+)", RegexOptions.Compiled);
+#endif
+
+    /// <summary>Regex that flags any character other than ASCII digits or letters.</summary>
+    /// <remarks>Underscore isn't included so that sequences of underscores are replaced by a single one.</remarks>
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z]+")]
     private static partial Regex InvalidNameCharsRegex();
 #else
     private static Regex InvalidNameCharsRegex() => _invalidNameCharsRegex;
-    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z]+", RegexOptions.Compiled);
 #endif
 
     /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>

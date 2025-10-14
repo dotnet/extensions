@@ -1,6 +1,7 @@
 <!-- This file gets automatically imported by Arcade infrastructure when calling the build scripts -->
 <Project>
     <ItemGroup>
+        <FileExtensionSignInfo Update=".js" CertificateName="MicrosoftDotNet500" />
         <ItemsToSign Include="$(ArtifactsDir)VSIX\*.vsix" />
     </ItemGroup>
 </Project>
