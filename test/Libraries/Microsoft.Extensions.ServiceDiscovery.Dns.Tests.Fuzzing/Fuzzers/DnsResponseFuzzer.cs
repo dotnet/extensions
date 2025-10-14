@@ -19,11 +19,11 @@ internal sealed class DnsResponseFuzzer : IFuzzer
         if (_resolver == null)
         {
             _buffer = new byte[4096];
-            _resolver = new DnsResolver(new ResolverOptions
+            _resolver = new DnsResolver(new DnsResolverOptions
             {
                 Servers = [new IPEndPoint(IPAddress.Loopback, 53)],
                 Timeout = TimeSpan.FromSeconds(5),
-                Attempts = 1,
+                MaxAttempts = 1,
                 _transportOverride = (buffer, length) =>
                 {
                     // the first two bytes are the random transaction ID, so we keep that

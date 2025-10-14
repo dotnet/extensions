@@ -42,7 +42,7 @@ public class TcpFailoverTests : LoopbackDnsTestBase
     public async Task TcpFailover_ServerClosesWithoutData_EmptyResult()
     {
         string hostName = "tcp-server-closes.test";
-        Options.Attempts = 1;
+        Options.MaxAttempts = 1;
         Options.Timeout = TimeSpan.FromSeconds(60);
 
         _ = DnsServer.ProcessUdpRequest(builder =>
@@ -66,7 +66,7 @@ public class TcpFailoverTests : LoopbackDnsTestBase
     public async Task TcpFailover_TcpNotAvailable_EmptyResult()
     {
         string hostName = "tcp-not-available.test";
-        Options.Attempts = 1;
+        Options.MaxAttempts = 1;
         Options.Timeout = TimeSpan.FromMilliseconds(100000);
 
         _ = DnsServer.ProcessUdpRequest(builder =>

@@ -25,12 +25,12 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
     private static readonly TimeSpan s_maxTimeout = TimeSpan.FromMilliseconds(int.MaxValue);
 
     private bool _disposed;
-    private readonly ResolverOptions _options;
+    private readonly DnsResolverOptions _options;
     private readonly CancellationTokenSource _pendingRequestsCts = new();
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<DnsResolver> _logger;
 
-    public DnsResolver(TimeProvider timeProvider, ILogger<DnsResolver> logger, ResolverOptions options)
+    public DnsResolver(TimeProvider timeProvider, ILogger<DnsResolver> logger, DnsResolverOptions options)
     {
         _timeProvider = timeProvider;
         _logger = logger;
@@ -58,15 +58,15 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
         }
     }
 
-    internal DnsResolver(ResolverOptions options) : this(TimeProvider.System, NullLogger<DnsResolver>.Instance, options)
+    internal DnsResolver(DnsResolverOptions options) : this(TimeProvider.System, NullLogger<DnsResolver>.Instance, options)
     {
     }
 
-    internal DnsResolver(IEnumerable<IPEndPoint> servers) : this(new ResolverOptions { Servers = servers.ToArray() })
+    internal DnsResolver(IEnumerable<IPEndPoint> servers) : this(new DnsResolverOptions { Servers = servers.ToArray() })
     {
     }
 
-    internal DnsResolver(IPEndPoint server) : this(new ResolverOptions { Servers = [server] })
+    internal DnsResolver(IPEndPoint server) : this(new DnsResolverOptions { Servers = [server] })
     {
     }
 
@@ -74,7 +74,7 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
     {
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
-        var resolverOptions = serviceProvider.GetRequiredService<IOptions<DnsSrvServiceEndpointProviderOptions>>().Value.ResolverOptions;
+        var resolverOptions = serviceProvider.GetRequiredService<IOptions<DnsSrvServiceEndpointProviderOptions>>().Value.DnsResolverOptions;
         var timeProvider = serviceProvider.GetRequiredService<TimeProvider>();
         var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<DnsResolver>();
         return new DnsResolver(timeProvider, logger, resolverOptions);
@@ -387,7 +387,7 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
         {
             IPEndPoint serverEndPoint = _options.Servers[index];
 
-            for (int attempt = 1; attempt <= _options.Attempts; attempt++)
+            for (int attempt = 1; attempt <= _options.MaxAttempts; attempt++)
             {
                 DnsResponse response = default;
                 try

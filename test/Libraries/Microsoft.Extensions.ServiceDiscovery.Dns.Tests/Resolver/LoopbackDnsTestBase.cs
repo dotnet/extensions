@@ -18,7 +18,7 @@ public abstract class LoopbackDnsTestBase : IDisposable
     internal LoopbackDnsServer DnsServer { get; }
     private readonly Lazy<DnsResolver> _resolverLazy;
     internal DnsResolver Resolver => _resolverLazy.Value;
-    internal ResolverOptions Options { get; }
+    internal DnsResolverOptions Options { get; }
     protected readonly FakeTimeProvider TimeProvider;
 
     public LoopbackDnsTestBase(ITestOutputHelper output)
@@ -30,7 +30,7 @@ public abstract class LoopbackDnsTestBase : IDisposable
         {
             Servers = [DnsServer.DnsEndPoint],
             Timeout = TimeSpan.FromSeconds(5),
-            Attempts = 1,
+            MaxAttempts = 1,
         };
         _resolverLazy = new(InitializeResolver);
     }
@@ -40,7 +40,7 @@ public abstract class LoopbackDnsTestBase : IDisposable
         ServiceCollection services = new();
         services.AddXunitLogging(Output);
 
-        // construct DnsResolver manually via internal constructor which accepts ResolverOptions
+        // construct DnsResolver manually via internal constructor which accepts DnsResolverOptions
         var resolver = new DnsResolver(TimeProvider, services.BuildServiceProvider().GetRequiredService<ILogger<DnsResolver>>(), Options);
         return resolver;
     }

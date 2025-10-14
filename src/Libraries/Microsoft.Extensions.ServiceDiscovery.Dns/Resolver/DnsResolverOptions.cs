@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.ServiceDiscovery.Dns.Resolver;
 /// <summary>
 /// Provides configuration options for DNS resolution, including server endpoints, retry attempts, and timeout settings.
 /// </summary>
-public class ResolverOptions
+public class DnsResolverOptions
 {
     /// <summary>
     /// Gets or sets the collection of server endpoints used for network connections.
@@ -16,13 +16,16 @@ public class ResolverOptions
     public IList<IPEndPoint> Servers { get; set; } = new List<IPEndPoint>();
 
     /// <summary>
-    /// Gets or sets the number of allowed attempts for the operation.
+    /// Gets or sets the maximum number of attempts per server.
     /// </summary>
-    public int Attempts { get; set; } = 2;
+    public int MaxAttempts { get; set; } = 2;
 
     /// <summary>
-    /// Gets or sets the maximum duration to wait for an operation to complete before timing out.
+    /// Gets or sets the maximum duration per attempt to wait before timing out.
     /// </summary>
+    /// <remarks>
+    /// The maximum time for resolving a query is <see cref="MaxAttempts"/> * <see cref="Servers"/> count * <see cref="Timeout"/>.
+    /// </remarks>
     public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(3);
 
     // override for testing purposes

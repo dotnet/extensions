@@ -31,9 +31,9 @@ public class DnsSrvServiceEndpointProviderOptions
     public double RetryBackOffFactor { get; set; } = 2;
 
     /// <summary>
-    /// Gets or sets the options used to configure the resolver's behavior.
+    /// Gets or sets the options used to configure the underlying DNS resolution behavior.
     /// </summary>
-    public ResolverOptions ResolverOptions { get; set; } = new();
+    public DnsResolverOptions DnsResolverOptions { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the default DNS query suffix for services resolved via this provider.
@@ -46,16 +46,10 @@ public class DnsSrvServiceEndpointProviderOptions
     /// <summary>
     /// Gets or sets a delegate that generates a DNS SRV query from a specified <see cref="ServiceEndpointQuery"/> instance.
     /// </summary>
-    public Func<ServiceEndpointQuery, string>? GetQueryText { get; set; }
+    public Func<ServiceEndpointQuery, string>? ServiceDomainNameCallback { get; set; }
 
     /// <summary>
     /// Gets or sets a delegate used to determine whether to apply host name metadata to each resolved endpoint. Defaults to <c>false</c>.
     /// </summary>
     public Func<ServiceEndpoint, bool> ShouldApplyHostNameMetadata { get; set; } = _ => false;
-
-    internal string GetDefaultQueryText(ServiceEndpointQuery query)
-    {
-        var portName = query.EndpointName ?? "default";
-        return $"_{portName}._tcp.{query.ServiceName}.{QuerySuffix}";
-    }
 }
