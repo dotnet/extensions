@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -14,15 +15,16 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 #pragma warning disable S103 // Lines should not be too long
+#pragma warning disable IDE0058 // Expression value is never used
 
 /// <summary>
-/// A delegating chat client that enables tool groups (see <see cref="AIToolGroup"/>) to be dynamically expanded.
+/// A chat client that enables tool groups (see <see cref="AIToolGroup"/>) to be dynamically expanded.
 /// </summary>
 /// <remarks>
 /// <para>
-/// On each request, the client initially presents a minimal tool surface consisting of: (a) tools in
-/// <see cref="ChatOptions.Tools"/> that are not <see cref="AIToolGroup"/> instances
-/// plus (b) a synthetic expansion function, plus (c) a function returning the current list of available groups.
+/// On each request, this chat client initially presents a minimal tool surface consisting of: (a) a function
+/// returning the current list of available groups plus (b) a synthetic expansion function plus (c) tools in
+/// <see cref="ChatOptions.Tools"/> that are not <see cref="AIToolGroup"/> instances.
 /// If the model calls the expansion function with a valid group name, the
 /// client issues another request with that group's tools visible.
 /// Only one group may be expanded per top-level request, and by default at most three expansion loops are performed.
@@ -35,15 +37,14 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public sealed class ToolGroupingChatClient : DelegatingChatClient
 {
-    /// <summary>
-    /// Gets or sets the name of the parameter used to specify the group name when calling the expansion function.
-    /// </summary>
-    public const string GroupNameParameter = "groupName";
+    private const string ExpansionFunctionGroupNameParameter = "groupName";
+    private static readonly Delegate _expansionFunctionDelegate = static string (string groupName)
+        => throw new InvalidOperationException("The tool expansion function should not be invoked directly.");
 
-    private static readonly Delegate _expansionFunctionDelegate = static (string groupName) => string.Empty;
-
-    private readonly ToolGroupingOptions _options;
+    private readonly int _maxExpansionsPerRequest;
     private readonly AIFunctionDeclaration _expansionFunction;
+    private readonly string _listGroupsFunctionName;
+    private readonly string _listGroupsFunctionDescription;
 
     /// <summary>Initializes a new instance of the <see cref="ToolGroupingChatClient"/> class.</summary>
     /// <param name="innerClient">Inner client.</param>
@@ -51,20 +52,22 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
     public ToolGroupingChatClient(IChatClient innerClient, ToolGroupingOptions options)
         : base(innerClient)
     {
-        _options = Throw.IfNull(options);
+        _ = Throw.IfNull(options);
 
-        var expansionDescription = _options.ExpansionFunctionDescription ??
-            $"Expands a tool group to make its tools available. Use the list groups function to see available groups.";
+        _maxExpansionsPerRequest = options.MaxExpansionsPerRequest;
+        _listGroupsFunctionName = options.ListGroupsFunctionName;
+        _listGroupsFunctionDescription = options.ListGroupsFunctionDescription
+            ?? "Returns the list of available tool groups that can be expanded.";
 
-        // We create a delegate with signature (string groupName) => string to leverage simple argument binding.
+        var expansionFunctionName = options.ExpansionFunctionName;
+        var expansionDescription = options.ExpansionFunctionDescription
+            ?? $"Expands a tool group to make its tools available. Use the '{_listGroupsFunctionName}' function to see available groups.";
+
         _expansionFunction = AIFunctionFactory.Create(
             method: _expansionFunctionDelegate,
-            name: _options.ExpansionFunctionName,
+            name: expansionFunctionName,
             description: expansionDescription).AsDeclarationOnly();
     }
-
-    /// <summary>Gets the default expansion function name.</summary>
-    public string ExpansionFunctionName => _options.ExpansionFunctionName;
 
     /// <inheritdoc />
     public override async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -85,21 +88,20 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
         messages = originalMessages;
 
         // Build top-level groups dictionary
-        var topLevelGroupsByName = toolGroups.ToDictionary(g => g.Name, StringComparer.Ordinal);
+        var topLevelToolGroupsByName = toolGroups.ToDictionary(g => g.Name, StringComparer.Ordinal);
 
-        // Create mutable state for nested groups (captured by closure)
-        AIToolGroup? expandedGroup = null; // the currently-expanded group of tools
-        List<AIToolGroup>? expandedGroupToolGroups = null;
-        List<AITool>? expandedGroupTools = null;
+        // Track the currently-expanded group and all its constituent tools
+        AIToolGroup? expandedGroup = null;
+        List<AIToolGroup>? expandedGroupToolGroups = null; // tool groups within the currently-expanded tool group
+        List<AITool>? expandedGroupTools = null; // non-group tools within the currently-expanded tool group
 
-        // Create list groups function once - it will see updates to nestedGroupsByName
-        var listGroupsDescription = _options.ListGroupsFunctionDescription ??
-            "Returns the list of available tool groups that can be expanded.";
+        // Create the "list groups" function. Its behavior is controlled by values captured in the lambda below.
         var listGroupsFunction = AIFunctionFactory.Create(
             method: () => CreateListGroupsResult(expandedGroup, toolGroups, expandedGroupToolGroups),
-            name: _options.ListGroupsFunctionName,
-            description: listGroupsDescription);
+            name: _listGroupsFunctionName,
+            description: _listGroupsFunctionDescription);
 
+        // Construct new chat options containing ungrouped tools and utility functions.
         List<AITool> baseTools = ComputeBaseTools(options, listGroupsFunction);
         ChatOptions modifiedOptions = options?.Clone() ?? new();
         modifiedOptions.Tools = baseTools;
@@ -124,7 +126,10 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
             }
 
             // Any expansions to perform? If yes, ensure we're tracking that work in expansionRequests.
-            bool requiresExpansion = CopyExpansionRequests(response.Messages, ref expansionRequests);
+            bool requiresExpansion =
+                expansionIterationCount < _maxExpansionsPerRequest &&
+                CopyExpansionRequests(response.Messages, ref expansionRequests);
+
             if (!requiresExpansion && expansionIterationCount == 0)
             {
                 // Fast path: no function calling work required
@@ -145,28 +150,27 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
                 }
             }
 
+            if (!requiresExpansion)
+            {
+                // No more work to do.
+                break;
+            }
+
             // Prepare the history for the next iteration.
             FunctionInvokingChatClient.FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
 
             expandedGroupTools ??= [];
             expandedGroupToolGroups ??= [];
-            (var addedMessages, var shouldTerminate, expandedGroup) = await ProcessExpansionsAsync(
+            (var addedMessages, expandedGroup) = await ProcessExpansionsAsync(
                 expansionRequests!,
-                topLevelGroupsByName,
+                topLevelToolGroupsByName,
                 expandedGroupTools,
                 expandedGroupToolGroups,
                 expandedGroup,
-                expansionIterationCount,
                 cancellationToken);
 
             augmentedHistory.AddRange(addedMessages);
             responseMessages.AddRange(addedMessages);
-
-            if (shouldTerminate)
-            {
-                // No more expansions to handle.
-                break;
-            }
 
             (modifiedTools ??= []).Clear();
             modifiedTools.AddRange(baseTools);
@@ -206,21 +210,20 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
         messages = originalMessages;
 
         // Build top-level groups dictionary
-        var topLevelGroupsByName = toolGroups.ToDictionary(g => g.Name, StringComparer.Ordinal);
+        var topLevelToolGroupsByName = toolGroups.ToDictionary(g => g.Name, StringComparer.Ordinal);
 
-        // Create mutable state for nested groups (captured by closure)
-        AIToolGroup? expandedGroup = null; // the currently-expanded group of tools
-        List<AIToolGroup>? expandedGroupToolGroups = null;
-        List<AITool>? expandedGroupTools = null;
+        // Track the currently-expanded group and all its constituent tools
+        AIToolGroup? expandedGroup = null;
+        List<AIToolGroup>? expandedGroupToolGroups = null; // tool groups within the currently-expanded tool group
+        List<AITool>? expandedGroupTools = null; // non-group tools within the currently-expanded tool group
 
-        // Create list groups function once - it will see updates to nestedGroupsByName
-        var listGroupsDescription = _options.ListGroupsFunctionDescription ??
-            "Returns the list of available tool groups that can be expanded.";
+        // Create the "list groups" function. Its behavior is controlled by values captured in the lambda below.
         var listGroupsFunction = AIFunctionFactory.Create(
             method: () => CreateListGroupsResult(expandedGroup, toolGroups, expandedGroupToolGroups),
-            name: _options.ListGroupsFunctionName,
-            description: listGroupsDescription);
+            name: _listGroupsFunctionName,
+            description: _listGroupsFunctionDescription);
 
+        // Construct new chat options containing ungrouped tools and utility functions.
         List<AITool> baseTools = ComputeBaseTools(options, listGroupsFunction);
         ChatOptions modifiedOptions = options?.Clone() ?? new();
         modifiedOptions.Tools = baseTools;
@@ -253,9 +256,10 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
                 yield return update;
             }
 
-            if (expansionRequests is not { Count: > 0 })
+            if (expansionIterationCount >= _maxExpansionsPerRequest || expansionRequests is not { Count: > 0 })
             {
-                // No expansion function calls were made this iteration, so we're done streaming the response.
+                // We've either hit the expansion iteration limit or no expansion function calls were made,
+                // so we're done streaming the response.
                 break;
             }
 
@@ -271,13 +275,12 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
             // list of response messages.
             expandedGroupTools ??= [];
             expandedGroupToolGroups ??= [];
-            (var addedMessages, var shouldTerminate, expandedGroup) = await ProcessExpansionsAsync(
+            (var addedMessages, expandedGroup) = await ProcessExpansionsAsync(
                 expansionRequests!,
-                topLevelGroupsByName,
+                topLevelToolGroupsByName,
                 expandedGroupTools,
                 expandedGroupToolGroups,
                 expandedGroup,
-                expansionIterationCount,
                 cancellationToken);
 
             augmentedHistory!.AddRange(addedMessages);
@@ -287,12 +290,6 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
             foreach (var message in addedMessages)
             {
                 yield return FunctionInvokingChatClient.ConvertToolResultMessageToUpdate(message, response.ConversationId, toolMessageId);
-            }
-
-            if (shouldTerminate)
-            {
-                // No more expansions to handle.
-                break;
             }
 
             // If a valid group was requested for expansion, and it does not match the currently-expanded group,
@@ -342,8 +339,122 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
             return "No tool groups are currently available.";
         }
 
-        var groupsSummary = string.Join(Environment.NewLine, allToolGroups.Select(g => $"- {g.Name}: {g.Description}"));
-        return $"Available tool groups:{Environment.NewLine}{groupsSummary}";
+        var sb = new StringBuilder();
+        sb.Append("Available tool groups:");
+        AppendAIToolList(sb, allToolGroups);
+        return sb.ToString();
+    }
+
+    /// <summary>Processes expansion requests and returns messages to add, termination flag, and updated group state.</summary>
+    private static async Task<(IList<ChatMessage> messagesToAdd, AIToolGroup? expandedGroup)> ProcessExpansionsAsync(
+        List<FunctionCallContent> expansionRequests,
+        Dictionary<string, AIToolGroup> topLevelGroupsByName,
+        List<AITool> expandedGroupTools,
+        List<AIToolGroup> expandedGroupToolGroups,
+        AIToolGroup? expandedGroup,
+        CancellationToken cancellationToken)
+    {
+        Debug.Assert(expansionRequests.Count != 0, "Expected at least one expansion request.");
+
+        var contents = new List<AIContent>(expansionRequests.Count);
+
+        foreach (var expansionRequest in expansionRequests)
+        {
+            if (expansionRequest.Arguments is not { Count: > 0 } arguments ||
+                !arguments.TryGetValue(ExpansionFunctionGroupNameParameter, out var groupNameArg) ||
+                groupNameArg is null)
+            {
+                contents.Add(new FunctionResultContent(
+                    callId: expansionRequest.CallId,
+                    result: "No group name was specified; ignoring expansion request."));
+                continue;
+            }
+
+            bool TryGetValidToolGroup(string groupName, [NotNullWhen(true)] out AIToolGroup? group)
+            {
+                if (topLevelGroupsByName.TryGetValue(groupName, out group))
+                {
+                    return true;
+                }
+
+                group = expandedGroupToolGroups.FirstOrDefault(g => string.Equals(g.Name, groupName, StringComparison.Ordinal));
+                return group is not null;
+            }
+
+            var groupName = groupNameArg.ToString();
+            if (groupName is null || !TryGetValidToolGroup(groupName, out var group))
+            {
+                contents.Add(new FunctionResultContent(
+                    callId: expansionRequest.CallId,
+                    result: $"The specific group name '{groupName}' was invalid; ignoring expansion request."));
+                continue;
+            }
+
+            if (group == expandedGroup)
+            {
+                contents.Add(new FunctionResultContent(
+                    callId: expansionRequest.CallId,
+                    result: $"Ignoring duplicate expansion of group '{groupName}'."));
+                continue;
+            }
+
+            // Expand the group
+            expandedGroup = group;
+            var groupTools = await group.GetToolsAsync(cancellationToken).ConfigureAwait(false);
+
+            expandedGroupTools.Clear();
+            expandedGroupToolGroups.Clear();
+
+            foreach (var tool in groupTools)
+            {
+                if (tool is AIToolGroup toolGroup)
+                {
+                    expandedGroupToolGroups.Add(toolGroup);
+                }
+                else
+                {
+                    expandedGroupTools.Add(tool);
+                }
+            }
+
+            // Build success message
+            var sb = new StringBuilder();
+            sb.Append("Successfully expanded group '");
+            sb.Append(groupName);
+            sb.Append("'.");
+
+            if (expandedGroupTools.Count > 0)
+            {
+                sb.Append(" Only this group's tools are now available:");
+                AppendAIToolList(sb, expandedGroupTools);
+            }
+
+            if (expandedGroupToolGroups.Count > 0)
+            {
+                sb.AppendLine();
+                sb.Append("Additional groups available for expansion:");
+                AppendAIToolList(sb, expandedGroupToolGroups);
+            }
+
+            contents.Add(new FunctionResultContent(
+                callId: expansionRequest.CallId,
+                result: sb.ToString()));
+        }
+
+        return (messagesToAdd: [new ChatMessage(ChatRole.Tool, contents)], expandedGroup);
+    }
+
+    /// <summary>Appends a formatted list of AI tools to the specified <see cref="StringBuilder"/>.</summary>
+    private static void AppendAIToolList(StringBuilder sb, IEnumerable<AITool> tools)
+    {
+        foreach (var tool in tools)
+        {
+            sb.AppendLine();
+            sb.Append("- ");
+            sb.Append(tool.Name);
+            sb.Append(": ");
+            sb.Append(tool.Description);
+        }
     }
 
     /// <summary>Copies expansion requests from messages.</summary>
@@ -383,7 +494,7 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
     /// </summary>
     private List<AITool> ComputeBaseTools(ChatOptions? options, AIFunction listGroupsFunction)
     {
-        List<AITool> baseTools = [_expansionFunction, listGroupsFunction];
+        List<AITool> baseTools = [listGroupsFunction, _expansionFunction];
 
         foreach (var tool in options?.Tools ?? [])
         {
@@ -401,111 +512,5 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
         }
 
         return baseTools;
-    }
-
-    /// <summary>Processes expansion requests and returns messages to add, termination flag, and updated group state.</summary>
-    private async Task<(IList<ChatMessage> MessagesToAdd, bool ShouldTerminate, AIToolGroup? ExpandedGroup)> ProcessExpansionsAsync(
-            List<FunctionCallContent> expansionRequests,
-            Dictionary<string, AIToolGroup> topLevelGroupsByName,
-            List<AITool> expandedGroupTools,
-            List<AIToolGroup> expandedGroupToolGroups,
-            AIToolGroup? expandedGroup,
-            int expansionIterationCount,
-            CancellationToken cancellationToken)
-    {
-        if (expansionRequests.Count == 0)
-        {
-            return ([], true, null);
-        }
-
-        var didExpandNewGroup = false;
-        var maxExpansionsReached = expansionIterationCount >= _options.MaxExpansionsPerRequest;
-        var contents = new List<AIContent>(expansionRequests.Count);
-
-        foreach (var expansionRequest in expansionRequests)
-        {
-            if (maxExpansionsReached)
-            {
-                contents.Add(new FunctionResultContent(
-                    callId: expansionRequest.CallId,
-                    result: "Max expansion iteration count reached; ignoring additional expansion request."));
-                continue;
-            }
-
-            if (expansionRequest.Arguments is not { Count: > 0 } arguments ||
-                !arguments.TryGetValue(GroupNameParameter, out var groupNameArg) ||
-                groupNameArg is null)
-            {
-                contents.Add(new FunctionResultContent(
-                    callId: expansionRequest.CallId,
-                    result: "No group name was specified; ignoring expansion request."));
-                continue;
-            }
-
-            bool TryGetValidToolGroup(string groupName, [NotNullWhen(true)] out AIToolGroup? group)
-            {
-                if (topLevelGroupsByName.TryGetValue(groupName, out group))
-                {
-                    return true;
-                }
-
-                group = expandedGroupToolGroups.FirstOrDefault(g => string.Equals(g.Name, groupName, StringComparison.Ordinal));
-                return group is not null;
-            }
-
-            var groupName = groupNameArg.ToString();
-            if (groupName is null || !TryGetValidToolGroup(groupName, out var group))
-            {
-                contents.Add(new FunctionResultContent(
-                    callId: expansionRequest.CallId,
-                    result: $"The specific group name '{groupName}' was invalid; ignoring expansion request."));
-                continue;
-            }
-
-            if (group == expandedGroup)
-            {
-                contents.Add(new FunctionResultContent(
-                    callId: expansionRequest.CallId,
-                    result: $"Ignoring duplicate expansion of group '{groupName}'."));
-                continue;
-            }
-
-            // Expand the group
-            expandedGroup = group;
-            didExpandNewGroup = true;
-            var groupTools = await group.GetToolsAsync(cancellationToken).ConfigureAwait(false);
-
-            expandedGroupTools.Clear();
-            expandedGroupToolGroups.Clear();
-
-            foreach (var tool in groupTools)
-            {
-                if (tool is AIToolGroup toolGroup)
-                {
-                    expandedGroupToolGroups.Add(toolGroup);
-                }
-                else
-                {
-                    expandedGroupTools.Add(tool);
-                }
-            }
-
-            // Build success message
-            var toolsSummary = string.Join(Environment.NewLine, expandedGroupTools.Select(t => $"- {t.Name}: {t.Description}"));
-            var resultMessage = $"Successfully expanded group '{groupName}'. Only this group's tools are now available:{Environment.NewLine}{toolsSummary}";
-
-            // If there are nested groups, mention them
-            if (expandedGroupToolGroups is { Count: > 0 })
-            {
-                var nestedSummary = string.Join(Environment.NewLine, expandedGroupToolGroups.Select(g => $"- {g.Name}: {g.Description}"));
-                resultMessage += $"{Environment.NewLine}Additional groups available for expansion:{Environment.NewLine}{nestedSummary}";
-            }
-
-            contents.Add(new FunctionResultContent(
-                callId: expansionRequest.CallId,
-                result: resultMessage));
-        }
-
-        return ([new ChatMessage(ChatRole.Tool, contents)], !didExpandNewGroup, expandedGroup);
     }
 }

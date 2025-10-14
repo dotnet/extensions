@@ -19,8 +19,8 @@ public static class ChatClientBuilderToolGroupingExtensions
     public static ChatClientBuilder UseToolGrouping(this ChatClientBuilder builder, Action<ToolGroupingOptions>? configure = null)
     {
         _ = Throw.IfNull(builder);
-        var opts = new ToolGroupingOptions();
-        configure?.Invoke(opts);
-        return builder.Use(inner => new ToolGroupingChatClient(inner, opts));
+        var options = new ToolGroupingOptions();
+        configure?.Invoke(options);
+        return builder.Use(inner => new ToolGroupingChatClient(inner, options));
     }
 }
