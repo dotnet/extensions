@@ -21,7 +21,9 @@ public class ServiceDiscoveryDnsServiceCollectionExtensionsTests
         services.AddDnsServiceEndpointProvider();
 
         using var serviceProvider = services.BuildServiceProvider(true);
-        _ = serviceProvider.GetServices<IServiceEndpointProviderFactory>();
+
+        var exception = Record.Exception(() => serviceProvider.GetServices<IServiceEndpointProviderFactory>());
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -31,7 +33,9 @@ public class ServiceDiscoveryDnsServiceCollectionExtensionsTests
         services.AddDnsSrvServiceEndpointProvider();
 
         using var serviceProvider = services.BuildServiceProvider(true);
-        _ = serviceProvider.GetServices<IServiceEndpointProviderFactory>();
+
+        var exception = Record.Exception(() => serviceProvider.GetServices<IServiceEndpointProviderFactory>());
+        Assert.Null(exception);
     }
 
     [Fact]

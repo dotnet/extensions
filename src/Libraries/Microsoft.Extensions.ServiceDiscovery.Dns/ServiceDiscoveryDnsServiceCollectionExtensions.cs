@@ -60,7 +60,7 @@ public static class ServiceDiscoveryDnsServiceCollectionExtensions
 
         services.AddSingleton<IServiceEndpointProviderFactory, DnsSrvServiceEndpointProviderFactory>();
         var options = services.AddOptions<DnsSrvServiceEndpointProviderOptions>();
-        options.Configure(o => configureOptions.Invoke(o));
+        options.Configure(configureOptions);
 
         return services;
 
@@ -109,7 +109,7 @@ public static class ServiceDiscoveryDnsServiceCollectionExtensions
 
         services.AddSingleton<IServiceEndpointProviderFactory, DnsServiceEndpointProviderFactory>();
         var options = services.AddOptions<DnsServiceEndpointProviderOptions>();
-        options.Configure(o => configureOptions.Invoke(o));
+        options.Configure(configureOptions);
 
         return services;
     }

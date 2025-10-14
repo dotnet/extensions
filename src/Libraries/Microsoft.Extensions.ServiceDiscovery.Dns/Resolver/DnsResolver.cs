@@ -48,16 +48,12 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
         }
     }
 
-    internal DnsResolver(DnsResolverOptions options) : this(TimeProvider.System, NullLogger<DnsResolver>.Instance, new OptionsWrapper<DnsResolverOptions>(options))
+    // This constructor is for unit testing only. Does not auto-add system DNS servers.
+    internal DnsResolver(DnsResolverOptions options)
     {
-    }
-
-    internal DnsResolver(IEnumerable<IPEndPoint> servers) : this(new DnsResolverOptions { Servers = servers.ToArray() })
-    {
-    }
-
-    internal DnsResolver(IPEndPoint server) : this(new DnsResolverOptions { Servers = [server] })
-    {
+        _timeProvider = TimeProvider.System;
+        _logger = NullLogger<DnsResolver>.Instance;
+        _options = options;
     }
 
     public ValueTask<ServiceResult[]> ResolveServiceAsync(string name, CancellationToken cancellationToken = default)

@@ -1,15 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Yarp.ReverseProxy.Configuration;
 using System.Net;
 using System.Net.Sockets;
-using Microsoft.Extensions.ServiceDiscovery.Dns.Resolver;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.ServiceDiscovery.Dns;
+using Microsoft.Extensions.ServiceDiscovery.Dns.Resolver;
+using Yarp.ReverseProxy.Configuration;
 
 namespace Microsoft.Extensions.ServiceDiscovery.Yarp.Tests;
 
@@ -231,7 +232,7 @@ public class YarpServiceDiscoveryTests
     [Fact]
     public async Task ServiceDiscoveryDestinationResolverTests_Dns()
     {
-        DnsResolver resolver = new DnsResolver(new DnsResolverOptions());
+        DnsResolver resolver = new DnsResolver(TimeProvider.System, NullLogger<DnsResolver>.Instance, new OptionsWrapper<DnsResolverOptions>(new DnsResolverOptions()));
 
         await using var services = new ServiceCollection()
             .AddSingleton<IDnsResolver>(resolver)
