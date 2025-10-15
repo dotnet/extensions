@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -23,9 +22,10 @@ public static class HttpDiagnosticsServiceCollectionExtensions
     public static IServiceCollection AddDownstreamDependencyMetadata(this IServiceCollection services, IDownstreamDependencyMetadata downstreamDependencyMetadata)
     {
         _ = Throw.IfNull(services);
-        services.TryAddSingleton<IDownstreamDependencyMetadataManager, DownstreamDependencyMetadataManager>();
-        _ = services.AddSingleton(downstreamDependencyMetadata);
+        _ = Throw.IfNull(downstreamDependencyMetadata);
 
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDownstreamDependencyMetadata>(downstreamDependencyMetadata));
+        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
         return services;
     }
 
@@ -39,9 +39,40 @@ public static class HttpDiagnosticsServiceCollectionExtensions
         where T : class, IDownstreamDependencyMetadata
     {
         _ = Throw.IfNull(services);
-        services.TryAddSingleton<IDownstreamDependencyMetadataManager, DownstreamDependencyMetadataManager>();
-        _ = services.AddSingleton<IDownstreamDependencyMetadata, T>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDownstreamDependencyMetadata, T>());
+        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
+        return services;
+    }
 
+    /// <summary>
+    /// Adds services required for HTTP dependency metadata resolution.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddHttpDependencyMetadataResolver(this IServiceCollection services)
+    {
+        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
+        return services;
+    }
+
+    /// <summary>
+    /// Adds services required for HTTP dependency metadata resolution with the specified metadata providers.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <param name="providers">The HTTP dependency metadata providers to register.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddHttpDependencyMetadataResolver(
+        this IServiceCollection services,
+        params IDownstreamDependencyMetadata[] providers)
+    {
+        _ = Throw.IfNull(services);
+
+        foreach (var provider in providers)
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IDownstreamDependencyMetadata>(provider));
+        }
+
+        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
         return services;
     }
 }
