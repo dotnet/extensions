@@ -74,7 +74,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         ChatOptions chatOptions = new()
         {
-            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp") { ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire }],
+            Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp")) { ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire }],
         };
 
         ChatResponse response = await CreateChatClient()!.GetResponseAsync("Which tools are available on the wiki_tools MCP server?", chatOptions);
@@ -96,7 +96,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         {
             ChatOptions chatOptions = new()
             {
-                Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+                Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
                     {
                         ApprovalMode = requireSpecific ?
                             HostedMcpServerToolApprovalMode.RequireSpecific(null, ["read_wiki_structure", "ask_question"]) :
@@ -136,7 +136,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         {
             ChatOptions chatOptions = new()
             {
-                Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+                Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
                     {
                         ApprovalMode = requireSpecific ?
                             HostedMcpServerToolApprovalMode.RequireSpecific(["read_wiki_structure", "ask_question"], null) :

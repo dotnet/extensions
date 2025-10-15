@@ -27,6 +27,31 @@ public class HostedMcpServerTool : AITool
         ServerAddress = Throw.IfNullOrWhitespace(serverAddress);
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
+    /// </summary>
+    /// <param name="serverName">The name of the remote MCP server.</param>
+    /// <param name="serverUrl">The URL of the remote MCP server.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentException"><paramref name="serverUrl"/> is not an absolute URL.</exception>
+    public HostedMcpServerTool(string serverName, Uri serverUrl)
+        : this(serverName, ValidateUrl(serverUrl))
+    {
+    }
+
+    private static string ValidateUrl(Uri serverUrl)
+    {
+        _ = Throw.IfNull(serverUrl);
+
+        if (!serverUrl.IsAbsoluteUri)
+        {
+            Throw.ArgumentException(nameof(serverUrl), "The provided URL is not absolute.");
+        }
+
+        return serverUrl.AbsoluteUri;
+    }
+
     /// <inheritdoc />
     public override string Name => "mcp";
 
