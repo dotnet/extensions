@@ -135,7 +135,7 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(McpServerToolResultContent))]
     [JsonSerializable(typeof(McpServerToolApprovalRequestContent))]
     [JsonSerializable(typeof(McpServerToolApprovalResponseContent))]
-
+    [JsonSerializable(typeof(ResponseContinuationToken))]
     [EditorBrowsable(EditorBrowsableState.Never)] // Never use JsonContext directly, use DefaultOptions instead.
     private sealed partial class JsonContext : JsonSerializerContext;
 

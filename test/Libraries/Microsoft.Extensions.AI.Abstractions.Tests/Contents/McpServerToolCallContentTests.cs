@@ -12,15 +12,14 @@ public class McpServerToolCallContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        McpServerToolCallContent c = new("callId1", "toolName", "serverName");
+        McpServerToolCallContent c = new("callId1", "toolName", null);
 
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
 
         Assert.Equal("callId1", c.CallId);
         Assert.Equal("toolName", c.ToolName);
-        Assert.Equal("serverName", c.ServerName);
-
+        Assert.Null(c.ServerName);
         Assert.Null(c.Arguments);
     }
 
@@ -52,12 +51,10 @@ public class McpServerToolCallContentTests
     [Fact]
     public void Constructor_Throws()
     {
-        Assert.Throws<ArgumentException>("callId", () => new McpServerToolCallContent(string.Empty, "name", "serverName"));
-        Assert.Throws<ArgumentException>("toolName", () => new McpServerToolCallContent("callId1", string.Empty, "serverName"));
-        Assert.Throws<ArgumentException>("serverName", () => new McpServerToolCallContent("callId1", "name", string.Empty));
+        Assert.Throws<ArgumentException>("callId", () => new McpServerToolCallContent(string.Empty, "name", null));
+        Assert.Throws<ArgumentException>("toolName", () => new McpServerToolCallContent("callId1", string.Empty, null));
 
-        Assert.Throws<ArgumentNullException>("callId", () => new McpServerToolCallContent(null!, "name", "serverName"));
-        Assert.Throws<ArgumentNullException>("toolName", () => new McpServerToolCallContent("callId1", null!, "serverName"));
-        Assert.Throws<ArgumentNullException>("serverName", () => new McpServerToolCallContent("callId1", "name", null!));
+        Assert.Throws<ArgumentNullException>("callId", () => new McpServerToolCallContent(null!, "name", null));
+        Assert.Throws<ArgumentNullException>("toolName", () => new McpServerToolCallContent("callId1", null!, null));
     }
 }
