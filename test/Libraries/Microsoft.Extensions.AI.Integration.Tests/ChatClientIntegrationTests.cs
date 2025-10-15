@@ -1531,7 +1531,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var history = new List<ChatMessage>
         {
-            new(ChatRole.User, "What will the weather be like in Redmond next week?.")
+            new(ChatRole.User, "What will the weather be like in Redmond next week?")
         };
 
         var response = await client.GetResponseAsync(history, new ChatOptions
