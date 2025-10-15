@@ -929,7 +929,7 @@ public class OpenAIResponseClientTests
 
         var chatOptions = new ChatOptions
         {
-            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")]
+            Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))]
         };
         McpServerToolApprovalRequestContent approvalRequest;
 
@@ -1307,7 +1307,7 @@ public class OpenAIResponseClientTests
 
         AITool mcpTool = rawTool ?
             ResponseTool.CreateMcpTool("deepwiki", serverUri: new("https://mcp.deepwiki.com/mcp"), toolCallApprovalPolicy: new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval)).AsAITool() :
-            new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+            new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
             {
                 ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
             };
@@ -1723,7 +1723,7 @@ public class OpenAIResponseClientTests
 
         ChatOptions chatOptions = new()
         {
-            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+            Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
                 {
                     ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
                 }
