@@ -222,6 +222,7 @@ public class ResolveAddressesTests : LoopbackDnsTestBase
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await Resolver.ResolveIPAddressesAsync("invalid-af.test", AddressFamily.Unknown));
     }
 
+    [Theory]
     [InlineData("localhost", AddressFamily.InterNetwork, "127.0.0.1")]
     [InlineData("localhost", AddressFamily.InterNetworkV6, "::1")]
     [InlineData("localhost.", AddressFamily.InterNetwork, "127.0.0.1")]
