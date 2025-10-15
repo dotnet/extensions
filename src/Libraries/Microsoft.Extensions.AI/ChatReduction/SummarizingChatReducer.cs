@@ -157,7 +157,7 @@ public sealed class SummarizingChatReducer : IChatReducer
             // We want to keep complete function call sequences together with their responses
             while (indexOfFirstMessageToKeep > 0)
             {
-                if (!unsummarizedMessages[indexOfFirstMessageToKeep - 1].Contents.Any(c => c is FunctionCallContent or FunctionResultContent))
+                if (!unsummarizedMessages[indexOfFirstMessageToKeep - 1].Contents.Any(IsToolRelatedContent))
                 {
                     break;
                 }
@@ -198,6 +198,18 @@ public sealed class SummarizingChatReducer : IChatReducer
             }
         }
 
+        /// <summary>Returns whether the given <see cref="AIContent"/> relates to tool calling capabilities.</summary>
+        /// <remarks>
+        /// This method returns <see langword="true"/> for content types whose meaning depends on other related <see cref="AIContent"/> 
+        /// instances in the conversation, such as function calls that require corresponding results, or other tool interactions that span 
+        /// multiple messages. Such content should be kept together during summarization.
+        /// </remarks>
+        private static bool IsToolRelatedContent(AIContent content) => content
+            is FunctionCallContent
+            or FunctionResultContent
+            or UserInputRequestContent
+            or UserInputResponseContent;
+
         /// <summary>Builds the list of messages to send to the chat client for summarization.</summary>
         private IEnumerable<ChatMessage> ToSummarizerChatMessages(int indexOfFirstMessageToKeep, string summarizationPrompt)
         {
@@ -209,7 +221,7 @@ public sealed class SummarizingChatReducer : IChatReducer
             for (var i = 0; i < indexOfFirstMessageToKeep; i++)
             {
                 var message = unsummarizedMessages[i];
-                if (!message.Contents.Any(c => c is FunctionCallContent or FunctionResultContent))
+                if (!message.Contents.Any(IsToolRelatedContent))
                 {
                     yield return message;
                 }

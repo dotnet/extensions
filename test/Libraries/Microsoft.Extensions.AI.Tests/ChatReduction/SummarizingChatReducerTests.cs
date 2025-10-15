@@ -96,28 +96,34 @@ public class SummarizingChatReducerTests
             new ChatMessage(ChatRole.User, "What's the time?"),
             new ChatMessage(ChatRole.Assistant, "Let me check"),
             new ChatMessage(ChatRole.User, "What's the weather?"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call1", "get_weather")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call1", "get_weather"), new TestUserInputRequestContent("uir1")]),
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("call1", "Sunny")]),
+            new ChatMessage(ChatRole.User, [new TestUserInputResponseContent("uir1")]),
             new ChatMessage(ChatRole.Assistant, "It's sunny"),
         ];
 
         chatClient.GetResponseAsyncCallback = (msgs, _, _) =>
         {
-            Assert.DoesNotContain(msgs, m => m.Contents.Any(c => c is FunctionCallContent or FunctionResultContent));
+            Assert.DoesNotContain(msgs, m => m.Contents.Any(c => c is FunctionCallContent or FunctionResultContent or TestUserInputRequestContent or TestUserInputResponseContent));
             return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "Asked about time")));
         };
 
         var result = await reducer.ReduceAsync(messages, CancellationToken.None);
         var resultList = result.ToList();
 
-        // Should have: summary + function content + last reply
-        Assert.Equal(4, resultList.Count);
+        // Should have: summary + function call + function result + user input response + last reply
+        Assert.Equal(5, resultList.Count);
 
         // Verify the complete sequence is preserved
         Assert.Collection(resultList,
             m => Assert.Contains("Asked about time", m.Text),
-            m => Assert.Contains(m.Contents, c => c is FunctionCallContent),
+            m =>
+            {
+                Assert.Contains(m.Contents, c => c is FunctionCallContent);
+                Assert.Contains(m.Contents, c => c is TestUserInputRequestContent);
+            },
             m => Assert.Contains(m.Contents, c => c is FunctionResultContent),
+            m => Assert.Contains(m.Contents, c => c is TestUserInputResponseContent),
             m => Assert.Contains("sunny", m.Text));
     }
 
@@ -165,6 +171,58 @@ public class SummarizingChatReducerTests
             m => Assert.Contains("Second answer", m.Text),
             m => Assert.Contains("Third question", m.Text),
             m => Assert.Contains("Third answer", m.Text));
+    }
+
+    [Fact]
+    public async Task ReduceAsync_ExcludesToolCallsFromSummarizedPortion()
+    {
+        using var chatClient = new TestChatClient();
+
+        // Target 3 messages - this will cause function calls in older messages to be summarized (excluded)
+        // while function calls in recent messages are kept
+        var reducer = new SummarizingChatReducer(chatClient, targetCount: 3, threshold: 0);
+
+        List<ChatMessage> messages =
+        [
+            new ChatMessage(ChatRole.User, "What's the weather in Seattle?"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call1", "get_weather", new Dictionary<string, object?> { ["location"] = "Seattle" }), new TestUserInputRequestContent("uir2")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("call1", "Sunny, 72°F")]),
+            new ChatMessage(ChatRole.User, [new TestUserInputResponseContent("uir2")]),
+            new ChatMessage(ChatRole.Assistant, "It's sunny and 72°F in Seattle."),
+            new ChatMessage(ChatRole.User, "What about New York?"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call2", "get_weather", new Dictionary<string, object?> { ["location"] = "New York" })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("call2", "Rainy, 65°F")]),
+            new ChatMessage(ChatRole.Assistant, "It's rainy and 65°F in New York."),
+        ];
+
+        chatClient.GetResponseAsyncCallback = (msgs, _, _) =>
+        {
+            var msgList = msgs.ToList();
+
+            Assert.Equal(4, msgList.Count); // 3 non-function messages + system prompt
+            Assert.DoesNotContain(msgList, m => m.Contents.Any(c => c is FunctionCallContent or FunctionResultContent or TestUserInputRequestContent or TestUserInputResponseContent));
+            Assert.Contains(msgList, m => m.Text.Contains("What's the weather in Seattle?"));
+            Assert.Contains(msgList, m => m.Text.Contains("sunny and 72°F in Seattle"));
+            Assert.Contains(msgList, m => m.Text.Contains("What about New York?"));
+            Assert.Contains(msgList, m => m.Role == ChatRole.System);
+
+            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "User asked about weather in Seattle and New York.")));
+        };
+
+        var result = await reducer.ReduceAsync(messages, CancellationToken.None);
+        var resultList = result.ToList();
+
+        // Should have: summary + 3 kept messages (the last 3 messages with function calls)
+        Assert.Equal(4, resultList.Count);
+
+        Assert.Contains("User asked about weather", resultList[0].Text);
+        Assert.Contains(resultList, m => m.Contents.Any(c => c is FunctionCallContent fc && fc.CallId == "call2"));
+        Assert.Contains(resultList, m => m.Contents.Any(c => c is FunctionResultContent fr && fr.CallId == "call2"));
+        Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is FunctionCallContent fc && fc.CallId == "call1"));
+        Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is FunctionResultContent fr && fr.CallId == "call1"));
+        Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is TestUserInputRequestContent));
+        Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is TestUserInputResponseContent));
+        Assert.DoesNotContain(resultList, m => m.Text.Contains("sunny and 72°F in Seattle"));
     }
 
     [Theory]
@@ -325,5 +383,21 @@ public class SummarizingChatReducerTests
             m => Assert.StartsWith("The user and assistant are discussing", m.Text, StringComparison.Ordinal),
             m => Assert.StartsWith("Golden retrievers get along", m.Text, StringComparison.Ordinal),
             m => Assert.StartsWith("Do they make good lap dogs", m.Text, StringComparison.Ordinal));
+    }
+
+    private sealed class TestUserInputRequestContent : UserInputRequestContent
+    {
+        public TestUserInputRequestContent(string id)
+            : base(id)
+        {
+        }
+    }
+
+    private sealed class TestUserInputResponseContent : UserInputResponseContent
+    {
+        public TestUserInputResponseContent(string id)
+            : base(id)
+        {
+        }
     }
 }
