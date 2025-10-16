@@ -5,6 +5,7 @@
     <IsPackable>true</IsPackable>
     <Description>Provides extensions to HttpClient that enable service discovery based on configuration.</Description>
     <StrongNameKeyId>Open</StrongNameKeyId>
+    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
     <!-- https://github.com/dotnet/extensions/issues/6871 tracks enabling these -->
     <NoWarn>$(NoWarn);CS8600;CS8602;CS8604;IDE0040;IDE0055;IDE0058;IDE1006;CA1307;CA1310;CA1849;CA2007;CA2213;SA1204;SA1128;SA1205;SA1405;SA1612;SA1623;SA1625;SA1642;S1144;S1449;S2302;S2692;S3872;S4457;EA0000;EA0009;EA0014;LA0001;LA0003;LA0008;VSTHRD200</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
