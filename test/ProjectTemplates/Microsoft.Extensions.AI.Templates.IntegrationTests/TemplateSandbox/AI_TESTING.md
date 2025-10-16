@@ -51,10 +51,10 @@ Follow these steps for one test. Keep outputs short and machine-parseable where 
    * Open the project's `README.md` (in the `<path>` folder) to learn how the project works. Assume pre-run configuration values have already been set.
 
 3. **Run the project**
-   * From the repo root, run the `Start-Project.ps1 script, using the `.csproj` in the `<path>`:
+   * From the repo root, run the `Start-Project.ps1 script, passing the directory specified in `<path>`:
 
      ```powershell
-     .\test\ProjectTemplates\Microsoft.Extensions.AI.Templates.IntegrationTests\TemplateSandbox\Start-Project.ps1 -ProjectPath "<path-from-OVERVIEW>"
+     .\test\ProjectTemplates\Microsoft.Extensions.AI.Templates.IntegrationTests\TemplateSandbox\Start-Project.ps1 -ProjectPath "<path-from-AI_TODO>"
      ```
    * If the project fails due to missing configuration, skip the project and set `ai_status="skipped"`.
    * Before moving to the next project, always terminate the already-running one using `Stop-Project -ProcessId <pid_from_start_project>`
