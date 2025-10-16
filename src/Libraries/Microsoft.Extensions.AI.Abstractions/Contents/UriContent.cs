@@ -30,7 +30,7 @@ public class UriContent : AIContent
     /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="mediaType"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="mediaType"/> is an invalid media type.</exception>
-    /// <exception cref="UriFormat"><paramref name="uri"/> is an invalid URL.</exception>
+    /// <exception cref="UriFormatException"><paramref name="uri"/> is an invalid URL.</exception>
     /// <remarks>
     /// A media type must be specified, so that consumers know what to do with the content.
     /// If an exact media type is not known, but the category (e.g. image) is known, a wildcard
