@@ -10,12 +10,12 @@ internal static class ResolvConf
 {
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("osx")]
-    public static ResolverOptions GetOptions()
+    public static IList<IPEndPoint> GetServers()
     {
-        return GetOptions(new StreamReader("/etc/resolv.conf"));
+        return GetServers(new StreamReader("/etc/resolv.conf"));
     }
 
-    public static ResolverOptions GetOptions(TextReader reader)
+    public static IList<IPEndPoint> GetServers(TextReader reader)
     {
         List<IPEndPoint> serverList = new();
 
@@ -40,9 +40,9 @@ internal static class ResolvConf
         if (serverList.Count == 0)
         {
             // If no nameservers are configured, fall back to the default behavior of using the system resolver configuration.
-            return NetworkInfo.GetOptions();
+            return NetworkInfo.GetServers();
         }
 
-        return new ResolverOptions(serverList);
+        return serverList;
     }
 }
