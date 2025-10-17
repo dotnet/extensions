@@ -41,6 +41,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     protected IChatClient? ChatClient { get; }
 
+    protected IEmbeddingGenerator<string, Embedding<float>>? EmbeddingGenerator { get; private set; }
+
     public void Dispose()
     {
         ChatClient?.Dispose();
@@ -48,6 +50,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     protected abstract IChatClient? CreateChatClient();
+
+    /// <summary>
+    /// Optionally supplies an embedding generator for integration tests that exercise
+    /// embedding-based components (e.g., tool reduction). Default returns null and
+    /// tests depending on embeddings will skip if not overridden.
+    /// </summary>
+    protected virtual IEmbeddingGenerator<string, Embedding<float>>? CreateEmbeddingGenerator() => null;
 
     [ConditionalFact]
     public virtual async Task GetResponseAsync_SingleRequestMessage()
@@ -1395,6 +1404,343 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
     }
 
+    [ConditionalFact]
+    public virtual async Task ToolReduction_DynamicSelection_RespectsConversationHistory()
+    {
+        SkipIfNotEnabled();
+        EnsureEmbeddingGenerator();
+
+        // Limit to 2 so that, once the conversation references both weather and translation,
+        // both tools can be included even if the latest user turn only mentions one of them.
+        var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 2);
+
+        var weatherTool = AIFunctionFactory.Create(
+            () => "Weather data",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetWeatherForecast",
+                Description = "Returns weather forecast and temperature for a given city."
+            });
+
+        var translateTool = AIFunctionFactory.Create(
+            () => "Translated text",
+            new AIFunctionFactoryOptions
+            {
+                Name = "TranslateText",
+                Description = "Translates text between human languages."
+            });
+
+        var mathTool = AIFunctionFactory.Create(
+            () => 42,
+            new AIFunctionFactoryOptions
+            {
+                Name = "SolveMath",
+                Description = "Solves basic math problems."
+            });
+
+        var allTools = new List<AITool> { weatherTool, translateTool, mathTool };
+
+        IList<AITool>? firstTurnTools = null;
+        IList<AITool>? secondTurnTools = null;
+
+        using var client = ChatClient!
+            .AsBuilder()
+            .UseToolReduction(strategy)
+            .Use(async (messages, options, next, ct) =>
+            {
+                // Capture the (possibly reduced) tool list for each turn.
+                if (firstTurnTools is null)
+                {
+                    firstTurnTools = options?.Tools;
+                }
+                else
+                {
+                    secondTurnTools ??= options?.Tools;
+                }
+
+                await next(messages, options, ct);
+            })
+            .UseFunctionInvocation()
+            .Build();
+
+        // Maintain chat history across turns.
+        List<ChatMessage> history = [];
+
+        // Turn 1: Ask a weather question.
+        history.Add(new ChatMessage(ChatRole.User, "What will the weather be in Seattle tomorrow?"));
+        var firstResponse = await client.GetResponseAsync(history, new ChatOptions { Tools = allTools });
+        history.AddMessages(firstResponse); // Append assistant reply.
+
+        Assert.NotNull(firstTurnTools);
+        Assert.Contains(firstTurnTools, t => t.Name == "GetWeatherForecast");
+
+        // Turn 2: Ask a translation question. Even though only translation is mentioned now,
+        // conversation history still contains a weather request. Expect BOTH weather + translation tools.
+        history.Add(new ChatMessage(ChatRole.User, "Please translate 'good evening' into French."));
+        var secondResponse = await client.GetResponseAsync(history, new ChatOptions { Tools = allTools });
+        history.AddMessages(secondResponse);
+
+        Assert.NotNull(secondTurnTools);
+        Assert.Equal(2, secondTurnTools.Count); // Should have filled both slots with the two relevant domains.
+        Assert.Contains(secondTurnTools, t => t.Name == "GetWeatherForecast");
+        Assert.Contains(secondTurnTools, t => t.Name == "TranslateText");
+
+        // Ensure unrelated tool was excluded.
+        Assert.DoesNotContain(secondTurnTools, t => t.Name == "SolveMath");
+    }
+
+    [ConditionalFact]
+    public virtual async Task ToolReduction_RequireSpecificToolPreservedAndOrdered()
+    {
+        SkipIfNotEnabled();
+        EnsureEmbeddingGenerator();
+
+        // Limit would normally reduce to 1, but required tool plus another should remain.
+        var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 1);
+
+        var translateTool = AIFunctionFactory.Create(
+            () => "Translated text",
+            new AIFunctionFactoryOptions
+            {
+                Name = "TranslateText",
+                Description = "Translates phrases between languages."
+            });
+
+        var weatherTool = AIFunctionFactory.Create(
+            () => "Weather data",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetWeatherForecast",
+                Description = "Returns forecast data for a city."
+            });
+
+        var tools = new List<AITool> { translateTool, weatherTool };
+
+        IList<AITool>? captured = null;
+
+        using var client = ChatClient!
+            .AsBuilder()
+            .UseToolReduction(strategy)
+            .UseFunctionInvocation()
+            .Use((messages, options, next, ct) =>
+            {
+                captured = options?.Tools;
+                return next(messages, options, ct);
+            })
+            .Build();
+
+        var history = new List<ChatMessage>
+        {
+            new(ChatRole.User, "What will the weather be like in Redmond next week?")
+        };
+
+        var response = await client.GetResponseAsync(history, new ChatOptions
+        {
+            Tools = tools,
+            ToolMode = ChatToolMode.RequireSpecific(translateTool.Name)
+        });
+        history.AddMessages(response);
+
+        Assert.NotNull(captured);
+        Assert.Equal(2, captured!.Count);
+        Assert.Equal("TranslateText", captured[0].Name); // Required should appear first.
+        Assert.Equal("GetWeatherForecast", captured[1].Name);
+    }
+
+    [ConditionalFact]
+    public virtual async Task ToolReduction_ToolRemovedAfterFirstUse_NotInvokedAgain()
+    {
+        SkipIfNotEnabled();
+        EnsureEmbeddingGenerator();
+
+        int weatherInvocationCount = 0;
+
+        var weatherTool = AIFunctionFactory.Create(
+            () =>
+            {
+                weatherInvocationCount++;
+                return "Sunny and dry.";
+            },
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetWeather",
+                Description = "Gets the weather forecast for a given location."
+            });
+
+        // Strategy exposes tools only on the first request, then removes them.
+        var removalStrategy = new RemoveToolAfterFirstUseStrategy();
+
+        IList<AITool>? firstTurnTools = null;
+        IList<AITool>? secondTurnTools = null;
+
+        using var client = ChatClient!
+            .AsBuilder()
+            // Place capture immediately after reduction so it's invoked exactly once per user request.
+            .UseToolReduction(removalStrategy)
+            .Use((messages, options, next, ct) =>
+            {
+                if (firstTurnTools is null)
+                {
+                    firstTurnTools = options?.Tools;
+                }
+                else
+                {
+                    secondTurnTools ??= options?.Tools;
+                }
+
+                return next(messages, options, ct);
+            })
+            .UseFunctionInvocation()
+            .Build();
+
+        List<ChatMessage> history = [];
+
+        // Turn 1
+        history.Add(new ChatMessage(ChatRole.User, "What's the weather like tomorrow in Seattle?"));
+        var firstResponse = await client.GetResponseAsync(history, new ChatOptions
+        {
+            Tools = [weatherTool],
+            ToolMode = ChatToolMode.RequireAny
+        });
+        history.AddMessages(firstResponse);
+
+        Assert.Equal(1, weatherInvocationCount);
+        Assert.NotNull(firstTurnTools);
+        Assert.Contains(firstTurnTools!, t => t.Name == "GetWeather");
+
+        // Turn 2 (tool removed by strategy even though caller supplies it again)
+        history.Add(new ChatMessage(ChatRole.User, "And what about next week?"));
+        var secondResponse = await client.GetResponseAsync(history, new ChatOptions
+        {
+            Tools = [weatherTool]
+        });
+        history.AddMessages(secondResponse);
+
+        Assert.Equal(1, weatherInvocationCount); // Not invoked again.
+        Assert.NotNull(secondTurnTools);
+        Assert.Empty(secondTurnTools!);          // Strategy removed the tool set.
+
+        // Response text shouldn't just echo the tool's stub output.
+        Assert.DoesNotContain("Sunny and dry.", secondResponse.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public virtual async Task ToolReduction_MessagesEmbeddingTextSelector_UsesChatClientToAnalyzeConversation()
+    {
+        SkipIfNotEnabled();
+        EnsureEmbeddingGenerator();
+
+        // Create tools for different domains.
+        var weatherTool = AIFunctionFactory.Create(
+            () => "Weather data",
+            new AIFunctionFactoryOptions
+            {
+                Name = "GetWeatherForecast",
+                Description = "Returns weather forecast and temperature for a given city."
+            });
+
+        var translateTool = AIFunctionFactory.Create(
+            () => "Translated text",
+            new AIFunctionFactoryOptions
+            {
+                Name = "TranslateText",
+                Description = "Translates text between human languages."
+            });
+
+        var mathTool = AIFunctionFactory.Create(
+            () => 42,
+            new AIFunctionFactoryOptions
+            {
+                Name = "SolveMath",
+                Description = "Solves basic math problems."
+            });
+
+        var allTools = new List<AITool> { weatherTool, translateTool, mathTool };
+
+        // Track the analysis result from the chat client used in the selector.
+        string? capturedAnalysis = null;
+
+        var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 2)
+        {
+            // Use a chat client to analyze the conversation and extract relevant tool categories.
+            MessagesEmbeddingTextSelector = async messages =>
+            {
+                var conversationText = string.Join("\n", messages.Select(m => $"{m.Role}: {m.Text}"));
+
+                var analysisPrompt = $"""
+                    Analyze the following conversation and identify what kinds of tools would be most helpful.
+                    Focus on the key topics and tasks being discussed.
+                    Respond with a brief summary of the relevant tool categories (e.g., "weather", "translation", "math").
+
+                    Conversation:
+                    {conversationText}
+
+                    Relevant tool categories:
+                    """;
+
+                var response = await ChatClient!.GetResponseAsync(analysisPrompt);
+                capturedAnalysis = response.Text;
+
+                // Return the analysis as the query text for embedding-based tool selection.
+                return capturedAnalysis;
+            }
+        };
+
+        IList<AITool>? selectedTools = null;
+
+        using var client = ChatClient!
+            .AsBuilder()
+            .UseToolReduction(strategy)
+            .Use(async (messages, options, next, ct) =>
+            {
+                selectedTools = options?.Tools;
+                await next(messages, options, ct);
+            })
+            .UseFunctionInvocation()
+            .Build();
+
+        // Conversation that clearly indicates weather-related needs.
+        List<ChatMessage> history = [];
+        history.Add(new ChatMessage(ChatRole.User, "What will the weather be like in London tomorrow?"));
+
+        var response = await client.GetResponseAsync(history, new ChatOptions { Tools = allTools });
+        history.AddMessages(response);
+
+        // Verify that the chat client was used to analyze the conversation.
+        Assert.NotNull(capturedAnalysis);
+        Assert.True(
+            capturedAnalysis.IndexOf("weather", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            capturedAnalysis.IndexOf("forecast", StringComparison.OrdinalIgnoreCase) >= 0,
+            $"Expected analysis to mention weather or forecast: {capturedAnalysis}");
+
+        // Verify that the tool selection was influenced by the analysis.
+        Assert.NotNull(selectedTools);
+        Assert.True(selectedTools.Count <= 2, $"Expected at most 2 tools, got {selectedTools.Count}");
+        Assert.Contains(selectedTools, t => t.Name == "GetWeatherForecast");
+    }
+
+    // Test-only custom strategy: include tools on first request, then remove them afterward.
+    private sealed class RemoveToolAfterFirstUseStrategy : IToolReductionStrategy
+    {
+        private bool _used;
+
+        public Task<IEnumerable<AITool>> SelectToolsForRequestAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options,
+            CancellationToken cancellationToken = default)
+        {
+            if (!_used && options?.Tools is { Count: > 0 })
+            {
+                _used = true;
+                // Returning the same instance signals no change.
+                return Task.FromResult<IEnumerable<AITool>>(options.Tools);
+            }
+
+            // After first use, remove all tools.
+            return Task.FromResult<IEnumerable<AITool>>(Array.Empty<AITool>());
+        }
+    }
+
     [MemberNotNull(nameof(ChatClient))]
     protected void SkipIfNotEnabled()
     {
@@ -1403,6 +1749,17 @@ public abstract class ChatClientIntegrationTests : IDisposable
         if (skipIntegration is not null || ChatClient is null)
         {
             throw new SkipTestException("Client is not enabled.");
+        }
+    }
+
+    [MemberNotNull(nameof(EmbeddingGenerator))]
+    protected void EnsureEmbeddingGenerator()
+    {
+        EmbeddingGenerator ??= CreateEmbeddingGenerator();
+
+        if (EmbeddingGenerator is null)
+        {
+            throw new SkipTestException("Embedding generator is not enabled.");
         }
     }
 }
