@@ -37,7 +37,7 @@ public abstract class AITool
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly-typed services that might be provided by the <see cref="AITool"/>,
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that might be provided by the <see cref="AITool"/>,
     /// including itself or any services it might be wrapping.
     /// </remarks>
     public virtual object? GetService(Type serviceType, object? serviceKey = null)
