@@ -119,6 +119,95 @@ public static class ChatResponseExtensions
             list.AddMessages(await updates.ToChatResponseAsync(cancellationToken).ConfigureAwait(false));
     }
 
+    /// <summary>Applies a <see cref="ChatResponseUpdate"/> to an existing <see cref="ChatResponse"/>.</summary>
+    /// <param name="response">The response to which the update should be applied.</param>
+    /// <param name="update">The update to apply to the response.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="update"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// This method modifies the existing <paramref name="response"/> by incorporating the content and metadata
+    /// from the <paramref name="update"/>. This includes using <see cref="ChatResponseUpdate.MessageId"/> to determine
+    /// message boundaries, as well as coalescing contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
+    /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
+    /// </remarks>
+    [Experimental("MEAI0001")]
+    public static void ApplyUpdate(this ChatResponse response, ChatResponseUpdate update)
+    {
+        _ = Throw.IfNull(response);
+        _ = Throw.IfNull(update);
+
+        ProcessUpdate(update, response);
+        FinalizeResponse(response);
+    }
+
+    /// <summary>Applies <see cref="ChatResponseUpdate"/> instances to an existing <see cref="ChatResponse"/>.</summary>
+    /// <param name="response">The response to which the updates should be applied.</param>
+    /// <param name="updates">The updates to apply to the response.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// This method modifies the existing <paramref name="response"/> by incorporating the content and metadata
+    /// from the <paramref name="updates"/>. This includes using <see cref="ChatResponseUpdate.MessageId"/> to determine
+    /// message boundaries, as well as coalescing contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
+    /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
+    /// </remarks>
+    [Experimental("MEAI0001")]
+    public static void ApplyUpdates(this ChatResponse response, IEnumerable<ChatResponseUpdate> updates)
+    {
+        _ = Throw.IfNull(response);
+        _ = Throw.IfNull(updates);
+
+        if (updates is ICollection<ChatResponseUpdate> { Count: 0 })
+        {
+            return;
+        }
+
+        foreach (var update in updates)
+        {
+            ProcessUpdate(update, response);
+        }
+
+        FinalizeResponse(response);
+    }
+
+    /// <summary>Applies <see cref="ChatResponseUpdate"/> instances to an existing <see cref="ChatResponse"/> asynchronously.</summary>
+    /// <param name="response">The response to which the updates should be applied.</param>
+    /// <param name="updates">The updates to apply to the response.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// This method modifies the existing <paramref name="response"/> by incorporating the content and metadata
+    /// from the <paramref name="updates"/>. This includes using <see cref="ChatResponseUpdate.MessageId"/> to determine
+    /// message boundaries, as well as coalescing contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
+    /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
+    /// </remarks>
+    [Experimental("MEAI0001")]
+    public static Task ApplyUpdatesAsync(
+        this ChatResponse response,
+        IAsyncEnumerable<ChatResponseUpdate> updates,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(response);
+        _ = Throw.IfNull(updates);
+
+        return ApplyUpdatesAsync(response, updates, cancellationToken);
+
+        static async Task ApplyUpdatesAsync(
+            ChatResponse response,
+            IAsyncEnumerable<ChatResponseUpdate> updates,
+            CancellationToken cancellationToken)
+        {
+            await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                ProcessUpdate(update, response);
+            }
+
+            FinalizeResponse(response);
+        }
+    }
+
     /// <summary>Combines <see cref="ChatResponseUpdate"/> instances into a single <see cref="ChatResponse"/>.</summary>
     /// <param name="updates">The updates to be combined.</param>
     /// <returns>The combined <see cref="ChatResponse"/>.</returns>
@@ -363,6 +452,29 @@ public static class ChatResponseExtensions
                 // Usage content is treated specially and propagated to the response's Usage.
                 case UsageContent usage:
                     (response.Usage ??= new()).Add(usage.Details);
+                    break;
+
+                case DataContent dataContent when
+                    !string.IsNullOrEmpty(dataContent.Name):
+                    // Check if there's an existing DataContent with the same name to replace
+                    for (int i = 0; i < message.Contents.Count; i++)
+                    {
+                        if (message.Contents[i] is DataContent existingDataContent &&
+                            string.Equals(existingDataContent.Name, dataContent.Name, StringComparison.Ordinal))
+                        {
+                            // Replace the existing DataContent
+                            message.Contents[i] = dataContent;
+                            dataContent = null!;
+                            break;
+                        }
+                    }
+
+                    if (dataContent is not null)
+                    {
+                        // No existing DataContent with the same name, add it normally
+                        message.Contents.Add(dataContent);
+                    }
+
                     break;
 
                 default:
