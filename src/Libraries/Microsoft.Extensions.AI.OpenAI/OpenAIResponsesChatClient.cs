@@ -202,7 +202,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case McpToolCallApprovalResponseItem mtcari:
-                    message.Contents.Add(new McpServerToolApprovalResponseContent(mtcari.ApprovalRequestId, mtcari.Approved));
+                    message.Contents.Add(new McpServerToolApprovalResponseContent(mtcari.ApprovalRequestId, mtcari.Approved) { RawRepresentation = mtcari });
                     break;
 
                 case FunctionCallOutputResponseItem functionCallOutputItem:
@@ -663,60 +663,86 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             if (input.Role == ChatRole.User)
             {
-                bool handleEmptyMessage = true; // MCP approval responses (and future cases) yield an item rather than adding a part and we don't want to return an empty user message in that case.
-                List<ResponseContentPart> parts = [];
+                // Some AIContent items may map to ResponseItems directly. Others map to ResponseContentParts that need to be grouped together.
+                // In order to preserve ordering, we yield ResponseItems as we find them, grouping ResponseContentParts between those yielded
+                // items together into their own yielded item.
+
+                List<ResponseContentPart>? parts = null;
+                bool responseItemYielded = false;
+
                 foreach (AIContent item in input.Contents)
                 {
+                    // Items that directly map to a ResponseItem.
+                    ResponseItem? directItem = item switch
+                    {
+                        { RawRepresentation: ResponseItem rawRep } => rawRep,
+                        McpServerToolApprovalResponseContent mcpResp => ResponseItem.CreateMcpApprovalResponseItem(mcpResp.Id, mcpResp.Approved),
+                        _ => null
+                    };
+
+                    if (directItem is not null)
+                    {
+                        // Yield any parts already accumulated.
+                        if (parts is not null)
+                        {
+                            yield return ResponseItem.CreateUserMessageItem(parts);
+                            parts = null;
+                        }
+
+                        // Now yield the directly mapped item.
+                        yield return directItem;
+
+                        responseItemYielded = true;
+                        continue;
+                    }
+
+                    // Items that map into ResponseContentParts and are grouped.
                     switch (item)
                     {
-                        case AIContent when item.RawRepresentation is ResponseItem rawRep:
-                            handleEmptyMessage = false;
-                            yield return rawRep;
-                            break;
-
                         case AIContent when item.RawRepresentation is ResponseContentPart rawRep:
-                            parts.Add(rawRep);
+                            (parts ??= []).Add(rawRep);
                             break;
 
                         case TextContent textContent:
-                            parts.Add(ResponseContentPart.CreateInputTextPart(textContent.Text));
+                            (parts ??= []).Add(ResponseContentPart.CreateInputTextPart(textContent.Text));
                             break;
 
                         case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
-                            parts.Add(ResponseContentPart.CreateInputImagePart(uriContent.Uri));
+                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(uriContent.Uri));
                             break;
 
                         case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
-                            parts.Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
+                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
                             break;
 
                         case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
-                            parts.Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
+                            (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
                             break;
 
                         case HostedFileContent fileContent:
-                            parts.Add(ResponseContentPart.CreateInputFilePart(fileContent.FileId));
+                            (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(fileContent.FileId));
                             break;
 
                         case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
-                            parts.Add(ResponseContentPart.CreateRefusalPart(errorContent.Message));
-                            break;
-
-                        case McpServerToolApprovalResponseContent mcpApprovalResponseContent:
-                            handleEmptyMessage = false;
-                            yield return ResponseItem.CreateMcpApprovalResponseItem(mcpApprovalResponseContent.Id, mcpApprovalResponseContent.Approved);
+                            (parts ??= []).Add(ResponseContentPart.CreateRefusalPart(errorContent.Message));
                             break;
                     }
                 }
 
-                if (parts.Count == 0 && handleEmptyMessage)
+                // If we haven't accumulated any parts nor have we yielded any items, manufacture an empty input text part
+                // to guarantee that every user message results in at least one ResponseItem.
+                if (parts is null && !responseItemYielded)
                 {
+                    parts = [];
                     parts.Add(ResponseContentPart.CreateInputTextPart(string.Empty));
+                    responseItemYielded = true;
                 }
 
-                if (parts.Count > 0)
+                // Final yield of any accumulated parts.
+                if (parts is not null)
                 {
                     yield return ResponseItem.CreateUserMessageItem(parts);
+                    parts = null;
                 }
 
                 continue;

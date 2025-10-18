@@ -282,10 +282,11 @@ public class OpenAIConversionTests
         [
             new(ChatRole.User,
             [
-                new TextContent("Hello"),
+                new TextContent("Hello, "),
                 new AIContent { RawRepresentation = ResponseItem.CreateWebSearchCallItem() },
                 new AIContent { RawRepresentation = ResponseItem.CreateReferenceItem("123") },
                 new TextContent("World"),
+                new TextContent("!"),
             ]),
             new(ChatRole.Assistant,
             [
@@ -300,14 +301,15 @@ public class OpenAIConversionTests
 
         var items = messages.AsOpenAIResponseItems().ToArray();
 
-        Assert.Equal(6, items.Length);
-        Assert.Same(messages[0].Contents[1].RawRepresentation, items[0]);
-        Assert.Same(messages[0].Contents[2].RawRepresentation, items[1]);
-        Assert.Equal("Hello", ((MessageResponseItem)items[2]).Content[0].Text);
-        Assert.Equal("World", ((MessageResponseItem)items[2]).Content[1].Text);
-        Assert.Equal("Hi!", ((MessageResponseItem)items[3]).Content[0].Text);
-        Assert.Same(messages[1].Contents[1].RawRepresentation, items[4]);
-        Assert.Same(messages[2].Contents[0].RawRepresentation, items[5]);
+        Assert.Equal(7, items.Length);
+        Assert.Equal("Hello, ", ((MessageResponseItem)items[0]).Content[0].Text);
+        Assert.Same(messages[0].Contents[1].RawRepresentation, items[1]);
+        Assert.Same(messages[0].Contents[2].RawRepresentation, items[2]);
+        Assert.Equal("World", ((MessageResponseItem)items[3]).Content[0].Text);
+        Assert.Equal("!", ((MessageResponseItem)items[3]).Content[1].Text);
+        Assert.Equal("Hi!", ((MessageResponseItem)items[4]).Content[0].Text);
+        Assert.Same(messages[1].Contents[1].RawRepresentation, items[5]);
+        Assert.Same(messages[2].Contents[0].RawRepresentation, items[6]);
     }
 
     [Fact]
