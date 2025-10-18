@@ -276,6 +276,43 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseItems_RoundtripsRawRepresentation()
+    {
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User,
+            [
+                new TextContent("Hello, "),
+                new AIContent { RawRepresentation = ResponseItem.CreateWebSearchCallItem() },
+                new AIContent { RawRepresentation = ResponseItem.CreateReferenceItem("123") },
+                new TextContent("World"),
+                new TextContent("!"),
+            ]),
+            new(ChatRole.Assistant,
+            [
+                new TextContent("Hi!"),
+                new AIContent { RawRepresentation = ResponseItem.CreateReasoningItem("text") },
+            ]),
+            new(ChatRole.User,
+            [
+                new AIContent { RawRepresentation = ResponseItem.CreateSystemMessageItem("test") },
+            ]),
+        ];
+
+        var items = messages.AsOpenAIResponseItems().ToArray();
+
+        Assert.Equal(7, items.Length);
+        Assert.Equal("Hello, ", ((MessageResponseItem)items[0]).Content[0].Text);
+        Assert.Same(messages[0].Contents[1].RawRepresentation, items[1]);
+        Assert.Same(messages[0].Contents[2].RawRepresentation, items[2]);
+        Assert.Equal("World", ((MessageResponseItem)items[3]).Content[0].Text);
+        Assert.Equal("!", ((MessageResponseItem)items[3]).Content[1].Text);
+        Assert.Equal("Hi!", ((MessageResponseItem)items[4]).Content[0].Text);
+        Assert.Same(messages[1].Contents[1].RawRepresentation, items[5]);
+        Assert.Same(messages[2].Contents[0].RawRepresentation, items[6]);
+    }
+
+    [Fact]
     public void AsChatResponse_ConvertsOpenAIChatCompletion()
     {
         Assert.Throws<ArgumentNullException>("chatCompletion", () => ((ChatCompletion)null!).AsChatResponse());
