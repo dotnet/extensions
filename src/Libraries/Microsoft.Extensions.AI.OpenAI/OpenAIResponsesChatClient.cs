@@ -669,6 +669,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 {
                     switch (item)
                     {
+                        case AIContent when item.RawRepresentation is ResponseItem rawRep:
+                            handleEmptyMessage = false;
+                            yield return rawRep;
+                            break;
+
                         case AIContent when item.RawRepresentation is ResponseContentPart rawRep:
                             parts.Add(rawRep);
                             break;
