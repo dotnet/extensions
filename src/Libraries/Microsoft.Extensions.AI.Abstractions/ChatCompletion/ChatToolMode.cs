@@ -59,5 +59,23 @@ public class ChatToolMode
     /// </summary>
     /// <param name="functionName">The name of the required function.</param>
     /// <returns>An instance of <see cref="RequiredChatToolMode"/> for the specified function name.</returns>
+    /// <remarks>
+    /// Specifying a <paramref name="functionName"/> in a <see cref="RequiredChatToolMode"/> stored
+    /// into <see cref="ChatOptions.ToolMode"/> does not automatically include that tool in <see cref="ChatOptions.Tools"/>.
+    /// The tool must still be provided separately from the <see cref="ChatOptions.ToolMode"/>.
+    /// </remarks>
     public static RequiredChatToolMode RequireSpecific(string functionName) => new(functionName);
+
+    /// <summary>
+    /// Instantiates a <see cref="ChatToolMode"/> indicating that tool usage is required,
+    /// and that the specified tool must be selected.
+    /// </summary>
+    /// <param name="tool">The required tool.</param>
+    /// <returns>An instance of <see cref="RequiredChatToolMode"/> for the specified tool.</returns>
+    /// <remarks>
+    /// Specifying a <paramref name="tool"/> in a <see cref="RequiredChatToolMode"/> stored
+    /// into <see cref="ChatOptions.ToolMode"/> does not automatically include that tool in <see cref="ChatOptions.Tools"/>.
+    /// The tool must still be provided separately from the <see cref="ChatOptions.ToolMode"/>.
+    /// </remarks>
+    public static RequiredChatToolMode RequireSpecific(AITool tool) => new(tool);
 }
