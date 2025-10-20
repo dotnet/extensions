@@ -165,7 +165,7 @@ public class ChatOptions
     /// and polled for completion by non-streaming APIs.
     /// </para>
     /// <para>
-    /// When this property is set to true, non-streaming APIs can start a background operation and return an initial
+    /// When this property is set to <see langword="true" />, non-streaming APIs have permission to start a background operation and return an initial
     /// response with a continuation token. Subsequent calls to the same API should be made in a polling manner with
     /// the continuation token to get the final result of the operation.
     /// </para>
