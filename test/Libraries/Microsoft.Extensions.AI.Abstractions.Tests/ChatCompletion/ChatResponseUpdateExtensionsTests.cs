@@ -634,6 +634,43 @@ public class ChatResponseUpdateExtensionsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ToChatResponse_CoalescesTextReasoningContentUpToProtectedData(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        {
+            new() { Contents = [new TextReasoningContent("A") { ProtectedData = "1" }] },
+            new() { Contents = [new TextReasoningContent("B") { ProtectedData = "2" }] },
+            new() { Contents = [new TextReasoningContent("C")] },
+            new() { Contents = [new TextReasoningContent("D")] },
+            new() { Contents = [new TextReasoningContent("E") { ProtectedData = "3" }] },
+            new() { Contents = [new TextReasoningContent("F") { ProtectedData = "4" }] },
+            new() { Contents = [new TextReasoningContent("G")] },
+            new() { Contents = [new TextReasoningContent("H")] },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+        Assert.Equal(5, message.Contents.Count);
+
+        Assert.Equal("A", Assert.IsType<TextReasoningContent>(message.Contents[0]).Text);
+        Assert.Equal("1", ((TextReasoningContent)message.Contents[0]).ProtectedData);
+
+        Assert.Equal("B", Assert.IsType<TextReasoningContent>(message.Contents[1]).Text);
+        Assert.Equal("2", ((TextReasoningContent)message.Contents[1]).ProtectedData);
+
+        Assert.Equal("CDE", Assert.IsType<TextReasoningContent>(message.Contents[2]).Text);
+        Assert.Equal("3", ((TextReasoningContent)message.Contents[2]).ProtectedData);
+
+        Assert.Equal("F", Assert.IsType<TextReasoningContent>(message.Contents[3]).Text);
+        Assert.Equal("4", ((TextReasoningContent)message.Contents[3]).ProtectedData);
+
+        Assert.Equal("GH", Assert.IsType<TextReasoningContent>(message.Contents[4]).Text);
+        Assert.Null(((TextReasoningContent)message.Contents[4]).ProtectedData);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ToChatResponse_DoesNotCoalesceAnnotatedContent(bool useAsync)
     {
         ChatResponseUpdate[] updates =
