@@ -1383,26 +1383,26 @@ public class OpenAIChatClientTests
                         "tool_calls": [
                             {
                                 "id": "12345",
+                                "type": "function",
                                 "function": {
                                     "name": "SayHello",
                                     "arguments": "null"
-                                },
-                                "type": "function"
+                                }
                             },
                             {
                                 "id": "12346",
+                                "type": "function",
                                 "function": {
                                     "name": "SayHi",
                                     "arguments": "null"
-                                },
-                                "type": "function"
+                                }
                             }
                         ]
                     },
                     {
                         "role": "tool",
                         "tool_call_id": "12345",
-                        "content": "Said hello"
+                        "content": "{ \"$type\": \"text\", \"text\": \"Said hello\" }"
                     },
                     {
                         "role":"tool",
@@ -1471,7 +1471,7 @@ public class OpenAIChatClientTests
             ]),
             new (ChatRole.Tool,
             [
-                new FunctionResultContent("12345", "Said hello"),
+                new FunctionResultContent("12345", new TextContent("Said hello")),
                 new FunctionResultContent("12346", "Said hi"),
             ]),
             new(ChatRole.Assistant, "You are great."),

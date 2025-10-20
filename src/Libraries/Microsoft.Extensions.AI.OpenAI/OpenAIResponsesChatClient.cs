@@ -760,15 +760,27 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         case FunctionResultContent resultContent:
                             string? result = resultContent.Result as string;
-                            if (result is null && resultContent.Result is not null)
+                            if (result is null && resultContent.Result is { } resultObj)
                             {
-                                try
+                                switch (resultObj)
                                 {
-                                    result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
-                                }
-                                catch (NotSupportedException)
-                                {
-                                    // If the type can't be serialized, skip it.
+                                    // https://github.com/openai/openai-dotnet/issues/759
+                                    // Once OpenAI supports other forms of tool call outputs, special-case various AIContent types here, e.g.
+                                    // case DataContent
+                                    // case HostedFileContent
+                                    // case IEnumerable<AIContent>
+                                    // etc.
+
+                                    default:
+                                        try
+                                        {
+                                            result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
+                                        }
+                                        catch (NotSupportedException)
+                                        {
+                                            // If the type can't be serialized, skip it.
+                                        }
+                                        break;
                                 }
                             }
 
