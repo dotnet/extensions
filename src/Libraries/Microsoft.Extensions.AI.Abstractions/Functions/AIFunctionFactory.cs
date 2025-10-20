@@ -99,6 +99,11 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
     /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// However, return values whose declared type is <see cref="AIContent"/>, a derived type of <see cref="AIContent"/>, or
+    /// any type assignable from <see cref="IEnumerable{AIContent}"/> (e.g. <c>AIContent[]</c>, <c>List&lt;AIContent&gt;</c>) are
+    /// special-cased and are not serialized: the created function returns the original instance(s) directly to enable
+    /// callers (such as an <c>IChatClient</c>) to perform type tests and implement specialized handling. If
+    /// <see cref="AIFunctionFactoryOptions.MarshalResult"/> is supplied, that delegate governs the behavior instead.
     /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
     /// </remarks>
@@ -172,7 +177,9 @@ public static partial class AIFunctionFactory
     /// </para>
     /// <para>
     /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/> if provided,
-    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>. However, return values whose declared type is <see cref="AIContent"/>, a
+    /// derived type of <see cref="AIContent"/>, or any type assignable from <see cref="IEnumerable{AIContent}"/> are not serialized;
+    /// they are returned as-is to facilitate specialized handling.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -262,6 +269,8 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
     /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// However, return values whose declared type is <see cref="AIContent"/>, a derived type of <see cref="AIContent"/>, or
+    /// any type assignable from <see cref="IEnumerable{AIContent}"/> are not serialized and are instead returned directly.
     /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
     /// </remarks>
@@ -345,7 +354,9 @@ public static partial class AIFunctionFactory
     /// </para>
     /// <para>
     /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/> if provided,
-    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>. However, return values whose declared type is <see cref="AIContent"/>, a
+    /// derived type of <see cref="AIContent"/>, or any type assignable from <see cref="IEnumerable{AIContent}"/> are returned
+    /// without serialization to enable specialized handling.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -448,6 +459,8 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
     /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// However, return values whose declared type is <see cref="AIContent"/>, a derived type of <see cref="AIContent"/>, or any type
+    /// assignable from <see cref="IEnumerable{AIContent}"/> are returned directly without serialization.
     /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
     /// </remarks>
