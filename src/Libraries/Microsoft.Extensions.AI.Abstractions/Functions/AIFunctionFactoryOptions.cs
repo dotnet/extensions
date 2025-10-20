@@ -90,7 +90,7 @@ public sealed class AIFunctionFactoryOptions
     /// <see langword="void"/>-returning methods).
     /// </para>
     /// <para>
-    /// Methods strongly-typed to return types of <see cref="Task"/>, <see cref="Task{TResult}"/>, <see cref="ValueTask"/>,
+    /// Methods strongly typed to return types of <see cref="Task"/>, <see cref="Task{TResult}"/>, <see cref="ValueTask"/>,
     /// and <see cref="ValueTask{TResult}"/> are special-cased. For methods typed to return <see cref="Task"/> or <see cref="ValueTask"/>,
     /// <see cref="MarshalResult"/> will be invoked with the <see langword="null"/> value after the returned task has successfully completed.
     /// For methods typed to return <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the delegate will be invoked with the

@@ -12,10 +12,10 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents the response to a chat request.</summary>
 /// <remarks>
 /// <see cref="ChatResponse"/> provides one or more response messages and metadata about the response.
-/// A typical response will contain a single message, however a response may contain multiple messages
+/// A typical response will contain a single message, however a response might contain multiple messages
 /// in a variety of scenarios. For example, if automatic function calling is employed, such that a single
-/// request to a <see cref="IChatClient"/> may actually generate multiple roundtrips to an inner <see cref="IChatClient"/>
-/// it uses, all of the involved messages may be surfaced as part of the final <see cref="ChatResponse"/>.
+/// request to a <see cref="IChatClient"/> might actually generate multiple round-trips to an inner <see cref="IChatClient"/>
+/// it uses, all of the involved messages might be surfaced as part of the final <see cref="ChatResponse"/>.
 /// </remarks>
 public class ChatResponse
 {
@@ -69,8 +69,7 @@ public class ChatResponse
     /// the input messages supplied to <see cref="IChatClient.GetResponseAsync"/> need only be the additional messages beyond
     /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
     /// and it should be used in a subsequent <see cref="ChatOptions.ConversationId"/> instead of supplying the same messages
-    /// (and this <see cref="ChatResponse"/>'s message) as part of the <c>messages</c> parameter. Note that the value may
-    /// or may not differ on every response, depending on whether the underlying provider uses a fixed ID for each conversation
+    /// (and this <see cref="ChatResponse"/>'s message) as part of the <c>messages</c> parameter. Note that the value might differ on every response, depending on whether the underlying provider uses a fixed ID for each conversation
     /// or updates it for each message.
     /// </remarks>
     /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#stateless-vs-stateful-clients">Stateless vs. stateful clients.</related>
@@ -95,7 +94,7 @@ public class ChatResponse
     /// and the result of the response has not been obtained yet. If the response has completed and the result has been obtained,
     /// the token will be <see langword="null"/>.
     /// <para>
-    /// This property should be used in conjunction with <see cref="ChatOptions.ContinuationToken"/> to 
+    /// This property should be used in conjunction with <see cref="ChatOptions.ContinuationToken"/> to
     /// continue to poll for the completion of the response. Pass this token to
     /// <see cref="ChatOptions.ContinuationToken"/> on subsequent calls to <see cref="IChatClient.GetResponseAsync"/>
     /// to poll for completion.
@@ -121,7 +120,7 @@ public class ChatResponse
     public override string ToString() => Text;
 
     /// <summary>Creates an array of <see cref="ChatResponseUpdate" /> instances that represent this <see cref="ChatResponse" />.</summary>
-    /// <returns>An array of <see cref="ChatResponseUpdate" /> instances that may be used to represent this <see cref="ChatResponse" />.</returns>
+    /// <returns>An array of <see cref="ChatResponseUpdate" /> instances that can be used to represent this <see cref="ChatResponse" />.</returns>
     public ChatResponseUpdate[] ToChatResponseUpdates()
     {
         ChatResponseUpdate? extra = null;
