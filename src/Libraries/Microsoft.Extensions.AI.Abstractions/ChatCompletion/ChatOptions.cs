@@ -170,7 +170,7 @@ public class ChatOptions
     /// the continuation token to get the final result of the operation.
     /// </para>
     /// <para>
-    /// When this property is set to true, streaming APIs can also start a background operation and begin streaming
+    /// When this property is set to <see langword="true" />, streaming APIs are also permitted to start a background operation and begin streaming
     /// response updates until the operation is completed. If the streaming connection is interrupted, the
     /// continuation token obtained from the last update that has one should be supplied to a subsequent call to the same streaming API
     /// to resume the stream from the point of interruption and continue receiving updates until the operation is completed.
