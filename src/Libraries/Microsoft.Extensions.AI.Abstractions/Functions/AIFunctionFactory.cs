@@ -720,7 +720,7 @@ public static partial class AIFunctionFactory
             Description = key.Description ?? key.Method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty;
             JsonSerializerOptions = serializerOptions;
             ReturnJsonSchema = returnType is null || key.ExcludeResultSchema ? null : AIJsonUtilities.CreateJsonSchema(
-                returnType,
+                NormalizeReturnType(returnType, serializerOptions),
                 description: key.Method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 serializerOptions: serializerOptions,
                 inferenceOptions: schemaOptions);
@@ -978,6 +978,7 @@ public static partial class AIFunctionFactory
                     MethodInfo taskResultGetter = GetMethodFromGenericMethodDefinition(returnType, _taskGetResult);
                     returnType = taskResultGetter.ReturnType;
 
+                    // If a MarshalResult delegate is provided, use it.
                     if (marshalResult is not null)
                     {
                         return async (taskObj, cancellationToken) =>
@@ -988,6 +989,18 @@ public static partial class AIFunctionFactory
                         };
                     }
 
+                    // Special-case AIContent results to not be serialized, so that IChatClients can type test and handle them
+                    // specially, such as by returning content to the model/service in a manner appropriate to the content type.
+                    if (IsAIContentRelatedType(returnType))
+                    {
+                        return async (taskObj, cancellationToken) =>
+                        {
+                            await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(true);
+                            return ReflectionInvoke(taskResultGetter, taskObj, null);
+                        };
+                    }
+
+                    // For everything else, just serialize the result as-is.
                     returnTypeInfo = serializerOptions.GetTypeInfo(returnType);
                     return async (taskObj, cancellationToken) =>
                     {
@@ -1004,6 +1017,7 @@ public static partial class AIFunctionFactory
                     MethodInfo asTaskResultGetter = GetMethodFromGenericMethodDefinition(valueTaskAsTask.ReturnType, _taskGetResult);
                     returnType = asTaskResultGetter.ReturnType;
 
+                    // If a MarshalResult delegate is provided, use it.
                     if (marshalResult is not null)
                     {
                         return async (taskObj, cancellationToken) =>
@@ -1015,6 +1029,19 @@ public static partial class AIFunctionFactory
                         };
                     }
 
+                    // Special-case AIContent results to not be serialized, so that IChatClients can type test and handle them
+                    // specially, such as by returning content to the model/service in a manner appropriate to the content type.
+                    if (IsAIContentRelatedType(returnType))
+                    {
+                        return async (taskObj, cancellationToken) =>
+                        {
+                            var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
+                            await task.ConfigureAwait(true);
+                            return ReflectionInvoke(asTaskResultGetter, task, null);
+                        };
+                    }
+
+                    // For everything else, just serialize the result as-is.
                     returnTypeInfo = serializerOptions.GetTypeInfo(returnType);
                     return async (taskObj, cancellationToken) =>
                     {
@@ -1026,13 +1053,21 @@ public static partial class AIFunctionFactory
                 }
             }
 
-            // For everything else, just serialize the result as-is.
+            // If a MarshalResult delegate is provided, use it.
             if (marshalResult is not null)
             {
                 Type returnTypeCopy = returnType;
                 return (result, cancellationToken) => marshalResult(result, returnTypeCopy, cancellationToken);
             }
 
+            // Special-case AIContent results to not be serialized, so that IChatClients can type test and handle them
+            // specially, such as by returning content to the model/service in a manner appropriate to the content type.
+            if (IsAIContentRelatedType(returnType))
+            {
+                return static (result, _) => new ValueTask<object?>(result);
+            }
+
+            // For everything else, just serialize the result as-is.
             returnTypeInfo = serializerOptions.GetTypeInfo(returnType);
             return (result, cancellationToken) => SerializeResultAsync(result, returnTypeInfo, cancellationToken);
 
@@ -1067,6 +1102,41 @@ public static partial class AIFunctionFactory
             const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
             return specializedType.GetMethods(All).First(m => m.MetadataToken == genericMethodDefinition.MetadataToken);
 #endif
+        }
+
+        private static bool IsAIContentRelatedType(Type type) =>
+            typeof(AIContent).IsAssignableFrom(type) ||
+            typeof(IEnumerable<AIContent>).IsAssignableFrom(type);
+
+        private static Type NormalizeReturnType(Type type, JsonSerializerOptions? options)
+        {
+            options ??= AIJsonUtilities.DefaultOptions;
+
+            if (options == AIJsonUtilities.DefaultOptions && !options.TryGetTypeInfo(type, out _))
+            {
+                // GetTypeInfo is not polymorphic, so attempts to look up derived types will fail even if the
+                // base type is registered. In some cases, though, we can fall back to using interfaces
+                // we know we have contracts for in AIJsonUtilities.DefaultOptions where the semantics of using
+                // that interface will be reasonable. This should really only affect situations where
+                // reflection-based serialization is disabled.
+
+                if (typeof(IEnumerable<AIContent>).IsAssignableFrom(type))
+                {
+                    return typeof(IEnumerable<AIContent>);
+                }
+
+                if (typeof(IEnumerable<ChatMessage>).IsAssignableFrom(type))
+                {
+                    return typeof(IEnumerable<ChatMessage>);
+                }
+
+                if (typeof(IEnumerable<string>).IsAssignableFrom(type))
+                {
+                    return typeof(IEnumerable<string>);
+                }
+            }
+
+            return type;
         }
 
         private record struct DescriptorKey(
