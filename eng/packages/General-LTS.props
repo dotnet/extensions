@@ -38,7 +38,6 @@
     <PackageVersion Include="System.IO.Pipelines" Version="$(SystemIOPipelinesLTSVersion)" />
     <PackageVersion Include="System.Memory.Data" Version="$(SystemMemoryDataLTSVersion)" />
     <PackageVersion Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonLTSVersion)" />
-    <PackageVersion Include="System.Numerics.Tensors" Version="$(SystemNumericsTensorsLTSVersion)" />
     <PackageVersion Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebLTSVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonLTSVersion)" />
     <PackageVersion Include="System.Threading.Channels" Version="$(SystemThreadingChannelsLTSVersion)" />
