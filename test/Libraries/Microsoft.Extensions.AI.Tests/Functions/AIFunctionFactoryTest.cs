@@ -15,10 +15,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 #pragma warning disable IDE0004 // Remove Unnecessary Cast
+#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable S107 // Methods should not have too many parameters
 #pragma warning disable S2760 // Sequential tests should not check the same condition
 #pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable S5034 // "ValueTask" should be consumed correctly
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 namespace Microsoft.Extensions.AI;
 
@@ -842,6 +844,63 @@ public partial class AIFunctionFactoryTest
 
         object? result = await f.InvokeAsync(new() { ["i"] = 42 }, cts.Token);
         Assert.Equal("marshalResultInvoked", result);
+    }
+
+    [Fact]
+    public async Task AIContentReturnType_NotSerializedByDefault()
+    {
+        await ValidateAsync<TextContent>(
+        [
+            AIFunctionFactory.Create(() => (AIContent)new TextContent("text")),
+            AIFunctionFactory.Create(async () => (AIContent)new TextContent("text")),
+            AIFunctionFactory.Create(async ValueTask<AIContent> () => (AIContent)new TextContent("text")),
+            AIFunctionFactory.Create(() => new TextContent("text")),
+            AIFunctionFactory.Create(async () => new TextContent("text")),
+            AIFunctionFactory.Create(async ValueTask<AIContent> () => new TextContent("text")),
+        ]);
+
+        await ValidateAsync<DataContent>(
+        [
+            AIFunctionFactory.Create(() => new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")),
+            AIFunctionFactory.Create(async () => new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")),
+            AIFunctionFactory.Create(async ValueTask<DataContent> () => new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")),
+        ]);
+
+        await ValidateAsync<IEnumerable<AIContent>>(
+        [
+            AIFunctionFactory.Create(() => (IEnumerable<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async () => (IEnumerable<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async ValueTask<IEnumerable<AIContent>> () => (IEnumerable<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+        ]);
+
+        await ValidateAsync<AIContent[]>(
+        [
+            AIFunctionFactory.Create(() => (AIContent[])[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async () => (AIContent[])[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async ValueTask<AIContent[]> () => (AIContent[])[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+        ]);
+
+        await ValidateAsync<List<AIContent>>(
+        [
+            AIFunctionFactory.Create(() => (List<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async () => (List<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async ValueTask<List<AIContent>> () => (List<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+        ]);
+
+        await ValidateAsync<IEnumerable<AIContent>>(
+        [
+            AIFunctionFactory.Create(() => (IList<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async () => (IList<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async ValueTask<IList<AIContent>> () => (List<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+        ]);
+
+        static async Task ValidateAsync<T>(IEnumerable<AIFunction> functions)
+        {
+            foreach (var f in functions)
+            {
+                Assert.IsAssignableFrom<T>(await f.InvokeAsync());
+            }
+        }
     }
 
     [Fact]
