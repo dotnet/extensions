@@ -238,6 +238,39 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
+    public void Metadata_DisplayNameAttribute()
+    {
+        // Test DisplayNameAttribute on a delegate method
+        Func<string> funcWithDisplayName = [DisplayName("get_user_id")] () => "test";
+        AIFunction func = AIFunctionFactory.Create(funcWithDisplayName);
+        Assert.Equal("get_user_id", func.Name);
+        Assert.Empty(func.Description);
+
+        // Test DisplayNameAttribute with DescriptionAttribute
+        Func<string> funcWithBoth = [DisplayName("my_function")][Description("A test function")] () => "test";
+        func = AIFunctionFactory.Create(funcWithBoth);
+        Assert.Equal("my_function", func.Name);
+        Assert.Equal("A test function", func.Description);
+
+        // Test that explicit name parameter takes precedence over DisplayNameAttribute
+        func = AIFunctionFactory.Create(funcWithDisplayName, name: "explicit_name");
+        Assert.Equal("explicit_name", func.Name);
+
+        // Test DisplayNameAttribute with options
+        func = AIFunctionFactory.Create(funcWithDisplayName, new AIFunctionFactoryOptions());
+        Assert.Equal("get_user_id", func.Name);
+
+        // Test that options.Name takes precedence over DisplayNameAttribute
+        func = AIFunctionFactory.Create(funcWithDisplayName, new AIFunctionFactoryOptions { Name = "options_name" });
+        Assert.Equal("options_name", func.Name);
+
+        // Test function without DisplayNameAttribute falls back to method name
+        Func<string> funcWithoutDisplayName = () => "test";
+        func = AIFunctionFactory.Create(funcWithoutDisplayName);
+        Assert.Contains("Metadata_DisplayNameAttribute", func.Name); // Will contain the lambda method name
+    }
+
+    [Fact]
     public void AIFunctionFactoryCreateOptions_ValuesPropagateToAIFunction()
     {
         IReadOnlyDictionary<string, object?> metadata = new Dictionary<string, object?> { ["a"] = "b" };

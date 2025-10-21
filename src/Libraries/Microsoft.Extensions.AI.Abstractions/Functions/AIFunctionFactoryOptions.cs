@@ -39,7 +39,7 @@ public sealed class AIFunctionFactoryOptions
 
     /// <summary>Gets or sets the name to use for the function.</summary>
     /// <value>
-    /// The name to use for the function. The default value is a name derived from the method represented by the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
+    /// The name to use for the function. The default value is a name derived from the passed <see cref="Delegate"/> or <see cref="MethodInfo"/> (for example, via a <see cref="DisplayNameAttribute"/> on the method).
     /// </value>
     public string? Name { get; set; }
 
