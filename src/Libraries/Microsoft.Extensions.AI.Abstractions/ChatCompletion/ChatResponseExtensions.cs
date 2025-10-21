@@ -193,10 +193,32 @@ public static class ChatResponseExtensions
             contents,
             mergeSingle: false,
             canMerge: static (r1, r2) => string.IsNullOrEmpty(r1.ProtectedData), // we allow merging if the first item has no ProtectedData, even if the second does
-            static (contents, start, end) => new(MergeText(contents, start, end)) { AdditionalProperties = contents[start].AdditionalProperties?.Clone() });
+            static (contents, start, end) =>
+            {
+                TextReasoningContent content = new(MergeText(contents, start, end))
+                {
+                    AdditionalProperties = contents[start].AdditionalProperties?.Clone()
+                };
+
+#if DEBUG
+                for (int i = start; i < end - 1; i++)
+                {
+                    Debug.Assert(contents[i] is TextReasoningContent { ProtectedData: null }, "Expected all but the last to have a null ProtectedData");
+                }
+#endif
+
+                if (((TextReasoningContent)contents[end - 1]).ProtectedData is { } protectedData)
+                {
+                    content.ProtectedData = protectedData;
+                }
+
+                return content;
+            });
 
         static string MergeText(IList<AIContent> contents, int start, int end)
         {
+            Debug.Assert(end - start > 1, "Expected multiple contents to merge");
+
             StringBuilder sb = new();
             for (int i = start; i < end; i++)
             {
