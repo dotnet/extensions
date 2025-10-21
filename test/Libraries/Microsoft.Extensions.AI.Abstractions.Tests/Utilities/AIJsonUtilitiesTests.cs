@@ -424,6 +424,41 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateFunctionJsonSchema_DisplayNameAttribute_UsedForTitle()
+    {
+        [DisplayName("custom_method_name")]
+        [Description("Method description")]
+        static void TestMethod(int x, int y)
+        {
+        }
+
+        var method = ((Action<int, int>)TestMethod).Method;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method);
+
+        using JsonDocument doc = JsonDocument.Parse(schema.GetRawText());
+        Assert.True(doc.RootElement.TryGetProperty("title", out JsonElement titleElement));
+        Assert.Equal("custom_method_name", titleElement.GetString());
+        Assert.True(doc.RootElement.TryGetProperty("description", out JsonElement descElement));
+        Assert.Equal("Method description", descElement.GetString());
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_DisplayNameAttribute_CanBeOverridden()
+    {
+        [DisplayName("custom_method_name")]
+        static void TestMethod()
+        {
+        }
+
+        var method = ((Action)TestMethod).Method;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method, title: "override_title");
+
+        using JsonDocument doc = JsonDocument.Parse(schema.GetRawText());
+        Assert.True(doc.RootElement.TryGetProperty("title", out JsonElement titleElement));
+        Assert.Equal("override_title", titleElement.GetString());
+    }
+
+    [Fact]
     public static void CreateJsonSchema_CanBeBoolean()
     {
         JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(object));
