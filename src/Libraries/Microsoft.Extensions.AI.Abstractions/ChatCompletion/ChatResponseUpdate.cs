@@ -136,6 +136,21 @@ public class ChatResponseUpdate
     /// <inheritdoc/>
     public override string ToString() => Text;
 
+    /// <summary>Gets or sets the continuation token for resuming the streamed chat response of which this update is a part.</summary>
+    /// <remarks>
+    /// <see cref="IChatClient"/> implementations that support background responses will return
+    /// a continuation token on each update if background responses are allowed in <see cref="ChatOptions.AllowBackgroundResponses"/>
+    /// except of the last update, for which the token will be <see langword="null"/>.
+    /// <para>
+    /// This property should be used for stream resumption, where the continuation token of the latest received update should be
+    /// passed to <see cref="ChatOptions.ContinuationToken"/> on subsequent calls to <see cref="IChatClient.GetStreamingResponseAsync"/>
+    /// to resume streaming from the point of interruption.
+    /// </para>
+    /// </remarks>
+    [Experimental("MEAI001")]
+    [JsonIgnore]
+    public object? ContinuationToken { get; set; }
+
     /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private AIContent? ContentForDebuggerDisplay

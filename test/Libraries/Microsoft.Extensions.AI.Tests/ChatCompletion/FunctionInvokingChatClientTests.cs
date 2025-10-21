@@ -678,11 +678,11 @@ public class FunctionInvokingChatClientTests
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
             new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName) { EnableSensitiveData = enableSensitiveData }));
 
-        await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure), streaming: false);
+        await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure));
 
-        await InvokeAsync(() => InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure), streaming: true);
+        await InvokeAsync(() => InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure));
 
-        async Task InvokeAsync(Func<Task> work, bool streaming)
+        async Task InvokeAsync(Func<Task> work)
         {
             var activities = new List<Activity>();
             using TracerProvider? tracerProvider = enableTelemetry ?
@@ -700,7 +700,7 @@ public class FunctionInvokingChatClientTests
                     activity => Assert.Equal("chat", activity.DisplayName),
                     activity => Assert.Equal("execute_tool Func1", activity.DisplayName),
                     activity => Assert.Equal("chat", activity.DisplayName),
-                    activity => Assert.Equal(streaming ? "FunctionInvokingChatClient.GetStreamingResponseAsync" : "FunctionInvokingChatClient.GetResponseAsync", activity.DisplayName));
+                    activity => Assert.Equal("orchestrate_tools", activity.DisplayName));
 
                 var executeTool = activities[1];
                 if (enableSensitiveData)
@@ -1192,6 +1192,44 @@ public class FunctionInvokingChatClientTests
         configure = b => b.Use(s => new FunctionInvokingChatClient(s) { TerminateOnUnknownCalls = true });
         await InvokeAndAssertStreamingAsync(options, fullPlan, expected, configure);
         Assert.Equal(0, invoked);
+    }
+
+    [Fact]
+    public async Task ClonesChatOptionsAndResetContinuationTokenForBackgroundResponsesAsync()
+    {
+        ChatOptions? actualChatOptions = null;
+
+        using var innerChatClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+            {
+                actualChatOptions = chatOptions;
+
+                List<ChatMessage> messages = [];
+
+                // Simulate the model returning a function call for the first call only
+                if (!chatContents.Any(m => m.Contents.OfType<FunctionCallContent>().Any()))
+                {
+                    messages.Add(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]));
+                }
+
+                return Task.FromResult(new ChatResponse { Messages = messages });
+            }
+        };
+
+        using var chatClient = new FunctionInvokingChatClient(innerChatClient);
+
+        var originalChatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { }, "Func1")],
+            ContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 }),
+        };
+
+        await chatClient.GetResponseAsync("hi", originalChatOptions);
+
+        // The original options should be cloned and have a null ContinuationToken
+        Assert.NotSame(originalChatOptions, actualChatOptions);
+        Assert.Null(actualChatOptions!.ContinuationToken);
     }
 
     private sealed class CustomSynchronizationContext : SynchronizationContext
