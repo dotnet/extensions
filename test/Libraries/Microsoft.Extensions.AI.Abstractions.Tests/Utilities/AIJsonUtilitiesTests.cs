@@ -430,6 +430,7 @@ public static partial class AIJsonUtilitiesTests
         [Description("Method description")]
         static void TestMethod(int x, int y)
         {
+            // Test method for schema generation
         }
 
         var method = ((Action<int, int>)TestMethod).Method;
@@ -448,6 +449,7 @@ public static partial class AIJsonUtilitiesTests
         [DisplayName("custom_method_name")]
         static void TestMethod()
         {
+            // Test method for schema generation
         }
 
         var method = ((Action)TestMethod).Method;
