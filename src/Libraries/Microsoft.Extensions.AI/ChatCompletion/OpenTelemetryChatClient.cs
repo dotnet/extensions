@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -216,7 +217,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
     }
 
-    internal static string SerializeChatMessages(IEnumerable<ChatMessage> messages, ChatFinishReason? chatFinishReason = null)
+    internal static string SerializeChatMessages(
+        IEnumerable<ChatMessage> messages, ChatFinishReason? chatFinishReason = null, JsonSerializerOptions? customContentSerializerOptions = null)
     {
         List<object> output = [];
 
@@ -249,6 +251,10 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         m.Parts.Add(new OtelGenericPart { Content = tc.Text });
                         break;
 
+                    case TextReasoningContent trc when !string.IsNullOrWhiteSpace(trc.Text):
+                        m.Parts.Add(new OtelGenericPart { Type = "reasoning", Content = trc.Text });
+                        break;
+
                     case FunctionCallContent fcc:
                         m.Parts.Add(new OtelToolCallRequestPart
                         {
@@ -267,10 +273,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         break;
 
                     // These are non-standard and are using the "generic" non-text part that provides an extensibility mechanism:
-
-                    case TextReasoningContent trc when !string.IsNullOrWhiteSpace(trc.Text):
-                        m.Parts.Add(new OtelGenericPart { Type = "reasoning", Content = trc.Text });
-                        break;
 
                     case UriContent uc:
                         m.Parts.Add(new OtelGenericPart { Type = "image", Content = uc.Uri.ToString() });
@@ -293,10 +295,28 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         break;
 
                     default:
+                        JsonElement element = _emptyObject;
+                        try
+                        {
+                            JsonTypeInfo? unknownContentTypeInfo =
+                                customContentSerializerOptions?.TryGetTypeInfo(content.GetType(), out JsonTypeInfo? ctsi) is true ? ctsi :
+                                _defaultOptions.TryGetTypeInfo(content.GetType(), out JsonTypeInfo? dtsi) ? dtsi :
+                                null;
+
+                            if (unknownContentTypeInfo is not null)
+                            {
+                                element = JsonSerializer.SerializeToElement(content, unknownContentTypeInfo);
+                            }
+                        }
+                        catch
+                        {
+                            // Ignore the contents of any parts that can't be serialized.
+                        }
+
                         m.Parts.Add(new OtelGenericPart
                         {
                             Type = content.GetType().FullName!,
-                            Content = content,
+                            Content = element,
                         });
                         break;
                 }
@@ -396,16 +416,20 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
                     if (EnableSensitiveData)
                     {
-                        if (options.Tools?.Any(t => t is AIFunctionDeclaration) is true)
+                        if (options.Tools is { Count: > 0 })
                         {
                             _ = activity.AddTag(
-                                    OpenTelemetryConsts.GenAI.Tool.Definitions,
-                                    JsonSerializer.Serialize(options.Tools.OfType<AIFunctionDeclaration>().Select(t => new OtelFunction
+                                OpenTelemetryConsts.GenAI.Tool.Definitions,
+                                JsonSerializer.Serialize(options.Tools.Select(t => t switch
+                                {
+                                    _ when t.GetService<AIFunctionDeclaration>() is { } af => new OtelFunction
                                     {
-                                        Name = t.Name,
-                                        Description = t.Description,
-                                        Parameters = t.JsonSchema,
-                                    }), OtelContext.Default.IEnumerableOtelFunction));
+                                        Name = af.Name,
+                                        Description = af.Description,
+                                        Parameters = af.JsonSchema,
+                                    },
+                                    _ => new OtelFunction { Type = t.Name },
+                                }), OtelContext.Default.IEnumerableOtelFunction));
                         }
 
                         // Log all additional request options as raw values on the span.
@@ -554,7 +578,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
             _ = activity.AddTag(
                 OpenTelemetryConsts.GenAI.Input.Messages,
-                SerializeChatMessages(messages));
+                SerializeChatMessages(messages, customContentSerializerOptions: _jsonSerializerOptions));
         }
     }
 
@@ -564,7 +588,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         {
             _ = activity.AddTag(
                 OpenTelemetryConsts.GenAI.Output.Messages,
-                SerializeChatMessages(response.Messages, response.FinishReason));
+                SerializeChatMessages(response.Messages, response.FinishReason, customContentSerializerOptions: _jsonSerializerOptions));
         }
     }
 
@@ -601,10 +625,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         public string Type { get; set; } = "function";
         public string? Name { get; set; }
         public string? Description { get; set; }
-        public JsonElement Parameters { get; set; }
+        public JsonElement? Parameters { get; set; }
     }
 
     private static readonly JsonSerializerOptions _defaultOptions = CreateDefaultOptions();
+    private static readonly JsonElement _emptyObject = JsonSerializer.SerializeToElement(new object(), _defaultOptions.GetTypeInfo(typeof(object)));
 
     private static JsonSerializerOptions CreateDefaultOptions()
     {

@@ -17,6 +17,9 @@ public class HostedCodeInterpreterTool : AITool
     {
     }
 
+    /// <inheritdoc />
+    public override string Name => "code_interpreter";
+
     /// <summary>Gets or sets a collection of <see cref="AIContent"/> to be used as input to the code interpreter tool.</summary>
     /// <remarks>
     /// Services support different varied kinds of inputs. Most support the IDs of files that are hosted by the service,
