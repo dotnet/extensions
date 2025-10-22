@@ -96,6 +96,14 @@ public partial class AIFunctionFactoryTest
         
         AssertExtensions.EqualFunctionCallResults(84, await funcInt.InvokeAsync());
         AssertExtensions.EqualFunctionCallResults(10, await funcInt.InvokeAsync(new() { ["x"] = 5 }));
+        
+        // Test that DefaultValue attribute takes precedence over C# default value
+        AIFunction funcBoth = AIFunctionFactory.Create(([DefaultValue(100)] int y = 50) => y);
+        schema = funcBoth.JsonSchema.ToString();
+        Assert.DoesNotContain("\"required\"", schema);
+        Assert.Contains("\"default\":100", schema); // DefaultValue should take precedence
+        
+        AssertExtensions.EqualFunctionCallResults(100, await funcBoth.InvokeAsync()); // Should use DefaultValue, not C# default
     }
 
     [Fact]
