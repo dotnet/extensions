@@ -23,10 +23,9 @@ public static class HttpDiagnosticsServiceCollectionExtensions
     public static IServiceCollection AddDownstreamDependencyMetadata(this IServiceCollection services, IDownstreamDependencyMetadata downstreamDependencyMetadata)
     {
         _ = Throw.IfNull(services);
-        _ = Throw.IfNull(downstreamDependencyMetadata);
-
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDownstreamDependencyMetadata>(downstreamDependencyMetadata));
         services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
+        _ = services.AddSingleton(downstreamDependencyMetadata);
+
         return services;
     }
 
@@ -40,8 +39,8 @@ public static class HttpDiagnosticsServiceCollectionExtensions
         where T : class, IDownstreamDependencyMetadata
     {
         _ = Throw.IfNull(services);
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IDownstreamDependencyMetadata, T>());
         services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
+        _ = services.AddSingleton<IDownstreamDependencyMetadata, T>();
         return services;
     }
 
