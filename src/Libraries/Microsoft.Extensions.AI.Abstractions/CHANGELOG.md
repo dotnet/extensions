@@ -1,5 +1,20 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Updated `HostedMcpServerTool` to allow for non-`Uri` server addresses, in order to enable built-in names.
+- Updated `HostedMcpServerTool` to replace the header collection with an `AuthorizationToken` property.
+
+## 9.10.0
+
+- Added protected copy constructors to options types (e.g. `ChatOptions`).
+- Added `[Experimental]` support for background responses, such that non-streaming responses are allowed to be pollable and responses / response updates can be tagged with continuation tokens to support later resumption.
+- Updated `AIFunctionFactory.Create` to produce better default names for lambdas and local functions.
+- Fixed `AIJsonUtilities.DefaultOptions` to handle the built-in `[Experimental]` `AIContent` types, like `FunctionApprovalRequestContent`.
+- Fixed `ToChatResponse{Async}` to factor `ChatResponseUpdate.AuthorName` into message boundary detection.
+- Fixed `ToChatResponse{Async}` to not overwrite `ChatMessage/ChatResponse.CreatedAt` with older timestamps during coalescing.
+- Fixed `EmbeddingGeneratorOptions`/`SpeechToTextOptions` `Clone` methods to correctly copy all properties.
+
 ## 9.9.1
 
 - Added new `ChatResponseFormat.ForJsonSchema` overloads that export a JSON schema from a .NET type.

@@ -169,6 +169,34 @@ public class ChatResponseFormatTests
         Assert.Equal(description ?? "abcd", format.SchemaDescription);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ForJsonSchema_DisplayNameAttribute_UsedForSchemaName(bool generic)
+    {
+        ChatResponseFormatJson format = generic ?
+            ChatResponseFormat.ForJsonSchema<TypeWithDisplayName>(TestJsonSerializerContext.Default.Options) :
+            ChatResponseFormat.ForJsonSchema(typeof(TypeWithDisplayName), TestJsonSerializerContext.Default.Options);
+
+        Assert.NotNull(format);
+        Assert.NotNull(format.Schema);
+        Assert.Equal("custom_type_name", format.SchemaName);
+        Assert.Equal("Type description", format.SchemaDescription);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ForJsonSchema_DisplayNameAttribute_CanBeOverridden(bool generic)
+    {
+        ChatResponseFormatJson format = generic ?
+            ChatResponseFormat.ForJsonSchema<TypeWithDisplayName>(TestJsonSerializerContext.Default.Options, schemaName: "override_name") :
+            ChatResponseFormat.ForJsonSchema(typeof(TypeWithDisplayName), TestJsonSerializerContext.Default.Options, schemaName: "override_name");
+
+        Assert.NotNull(format);
+        Assert.Equal("override_name", format.SchemaName);
+    }
+
     [Description("abcd")]
     public class SomeType
     {
@@ -177,5 +205,12 @@ public class ChatResponseFormatTests
 
         [Description("hijk")]
         public string? SomeString { get; set; }
+    }
+
+    [DisplayName("custom_type_name")]
+    [Description("Type description")]
+    public class TypeWithDisplayName
+    {
+        public int Value { get; set; }
     }
 }

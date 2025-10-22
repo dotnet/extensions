@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.ServiceDiscovery.Dns.Tests;
 using Microsoft.Extensions.Time.Testing;
 using Xunit.Abstractions;
@@ -18,7 +20,7 @@ public abstract class LoopbackDnsTestBase : IDisposable
     internal LoopbackDnsServer DnsServer { get; }
     private readonly Lazy<DnsResolver> _resolverLazy;
     internal DnsResolver Resolver => _resolverLazy.Value;
-    internal ResolverOptions Options { get; }
+    internal DnsResolverOptions Options { get; }
     protected readonly FakeTimeProvider TimeProvider;
 
     public LoopbackDnsTestBase(ITestOutputHelper output)
@@ -26,10 +28,11 @@ public abstract class LoopbackDnsTestBase : IDisposable
         Output = output;
         DnsServer = new();
         TimeProvider = new();
-        Options = new([DnsServer.DnsEndPoint])
+        Options = new()
         {
+            Servers = [DnsServer.DnsEndPoint],
             Timeout = TimeSpan.FromSeconds(5),
-            Attempts = 1,
+            MaxAttempts = 1,
         };
         _resolverLazy = new(InitializeResolver);
     }
@@ -39,8 +42,7 @@ public abstract class LoopbackDnsTestBase : IDisposable
         ServiceCollection services = new();
         services.AddXunitLogging(Output);
 
-        // construct DnsResolver manually via internal constructor which accepts ResolverOptions
-        var resolver = new DnsResolver(TimeProvider, services.BuildServiceProvider().GetRequiredService<ILogger<DnsResolver>>(), Options);
+        var resolver = new DnsResolver(TimeProvider, NullLogger<DnsResolver>.Instance, new OptionsWrapper<DnsResolverOptions>(Options));
         return resolver;
     }
 

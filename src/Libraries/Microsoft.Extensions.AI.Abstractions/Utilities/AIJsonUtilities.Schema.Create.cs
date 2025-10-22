@@ -80,7 +80,7 @@ public static partial class AIJsonUtilities
 
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
-        title ??= method.Name;
+        title ??= method.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? method.Name;
         description ??= method.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
         JsonObject parameterSchemas = new();

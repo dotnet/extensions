@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageVersion Include="Azure.Core" Version="1.45.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.13.2" />
+    <PackageVersion Include="Azure.Core" Version="1.49.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.16.0" />
     <PackageVersion Include="Azure.Storage.Files.DataLake" Version="12.21.0" />
     <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.5" />
     <PackageVersion Include="DnsClient" Version="1.8.0" />
@@ -29,6 +29,7 @@
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageVersion Include="System.Memory" Version="4.5.5" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="$(SystemNumericsTensorsVersion)" />
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Runtime.Caching" Version="$(SystemRuntimeCachingVersion)" />
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.0" />
