@@ -108,17 +108,18 @@ public static partial class AIJsonUtilities
                 continue;
             }
 
+            bool hasDefaultValue = HasEffectiveDefaultValue(parameter);
             JsonNode parameterSchema = CreateJsonSchemaCore(
                 type: parameter.ParameterType,
                 parameter: parameter,
                 description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                hasDefaultValue: parameter.HasDefaultValue,
-                defaultValue: GetDefaultValueNormalized(parameter),
+                hasDefaultValue: hasDefaultValue,
+                defaultValue: GetEffectiveDefaultValue(parameter),
                 serializerOptions,
                 inferenceOptions);
 
             parameterSchemas.Add(parameter.Name, parameterSchema);
-            if (!parameter.IsOptional)
+            if (!parameter.IsOptional && !hasDefaultValue)
             {
                 (requiredProperties ??= []).Add((JsonNode)parameter.Name);
             }
@@ -758,6 +759,27 @@ public static partial class AIJsonUtilities
     {
         Utf8JsonReader reader = new(utf8Json);
         return JsonElement.ParseValue(ref reader);
+    }
+
+    /// <summary>
+    /// Checks if a parameter has an effective default value, either through C# default value syntax or DefaultValueAttribute.
+    /// </summary>
+    private static bool HasEffectiveDefaultValue(ParameterInfo parameterInfo) =>
+        parameterInfo.HasDefaultValue || parameterInfo.GetCustomAttribute<DefaultValueAttribute>(inherit: true) is not null;
+
+    /// <summary>
+    /// Gets the effective default value for a parameter, checking both C# default value and DefaultValueAttribute.
+    /// </summary>
+    private static object? GetEffectiveDefaultValue(ParameterInfo parameterInfo)
+    {
+        // First check for DefaultValueAttribute
+        if (parameterInfo.GetCustomAttribute<DefaultValueAttribute>(inherit: true) is { } attr)
+        {
+            return attr.Value;
+        }
+
+        // Fall back to the parameter's declared default value
+        return GetDefaultValueNormalized(parameterInfo);
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.",
