@@ -8,10 +8,20 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.DataIngestion;
 
+/// <summary>
+/// Reads source content and converts it to an <see cref="IngestionDocument"/>.
+/// </summary>
 // Design notes: this class no longer exposes an overload that takes a Stream and a CancellationToken.
 // The reason is that Stream does not provide the necessary information like the MIME type or the file name.
 public abstract class IngestionDocumentReader
 {
+    /// <summary>
+    /// Reads a file and converts it to an <see cref="IngestionDocument"/>.
+    /// </summary>
+    /// <param name="source">The file to read.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>A task representing the asynchronous read operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
     public Task<IngestionDocument> ReadAsync(FileInfo source, CancellationToken cancellationToken = default)
     {
         if (cancellationToken.IsCancellationRequested)
@@ -28,6 +38,15 @@ public abstract class IngestionDocumentReader
         return ReadAsync(source, identifier, GetMediaType(source), cancellationToken);
     }
 
+    /// <summary>
+    /// Reads a file and converts it to an <see cref="IngestionDocument"/>.
+    /// </summary>
+    /// <param name="source">The file to read.</param>
+    /// <param name="identifier">The unique identifier for the document.</param>
+    /// <param name="mediaType">The media type of the file.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>A task representing the asynchronous read operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="source"/> or <paramref name="identifier"/> is <see langword="null"/> or empty.</exception>
     public virtual Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         if (cancellationToken.IsCancellationRequested)
@@ -48,6 +67,14 @@ public abstract class IngestionDocumentReader
         return ReadAsync(stream, identifier, string.IsNullOrEmpty(mediaType) ? GetMediaType(source) : mediaType!, cancellationToken);
     }
 
+    /// <summary>
+    /// Reads a stream and converts it to an <see cref="IngestionDocument"/>.
+    /// </summary>
+    /// <param name="source">The stream to read.</param>
+    /// <param name="identifier">The unique identifier for the document.</param>
+    /// <param name="mediaType">The media type of the content.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>A task representing the asynchronous read operation.</returns>
     public abstract Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default);
 
     private string GetMediaType(FileInfo source)
