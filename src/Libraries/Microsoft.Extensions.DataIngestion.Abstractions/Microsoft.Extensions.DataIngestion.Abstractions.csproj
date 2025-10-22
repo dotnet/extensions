@@ -6,6 +6,9 @@
     
     <!-- we are not ready to publish yet -->
     <IsPackable>false</IsPackable>
+    <!--  Convert abstract class into interface -->
+    <NoWarn>$(NoWarn);S1694</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

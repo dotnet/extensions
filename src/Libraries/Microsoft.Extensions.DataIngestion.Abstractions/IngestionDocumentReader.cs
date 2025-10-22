@@ -5,14 +5,13 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
 
 /// <summary>
 /// Reads source content and converts it to an <see cref="IngestionDocument"/>.
 /// </summary>
-// Design notes: this class no longer exposes an overload that takes a Stream and a CancellationToken.
-// The reason is that Stream does not provide the necessary information like the MIME type or the file name.
 public abstract class IngestionDocumentReader
 {
     /// <summary>
@@ -29,12 +28,7 @@ public abstract class IngestionDocumentReader
             return Task.FromCanceled<IngestionDocument>(cancellationToken);
         }
 
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-
-        string identifier = source.FullName; // entire path is more unique than just part of it.
+        string identifier = Throw.IfNull(source).FullName; // entire path is more unique than just part of it.
         return ReadAsync(source, identifier, GetMediaType(source), cancellationToken);
     }
 
@@ -47,24 +41,15 @@ public abstract class IngestionDocumentReader
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous read operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="source"/> or <paramref name="identifier"/> is <see langword="null"/> or empty.</exception>
-    public virtual Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
+    public virtual async Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return Task.FromCanceled<IngestionDocument>(cancellationToken);
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-        else if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentNullException(nameof(identifier));
-        }
+        _ = Throw.IfNull(source);
+        _ = Throw.IfNullOrEmpty(identifier);
 
         using FileStream stream = new(source.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 1, FileOptions.Asynchronous);
-        return ReadAsync(stream, identifier, string.IsNullOrEmpty(mediaType) ? GetMediaType(source) : mediaType!, cancellationToken);
+        return await ReadAsync(stream, identifier, string.IsNullOrEmpty(mediaType) ? GetMediaType(source) : mediaType!, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -77,7 +62,7 @@ public abstract class IngestionDocumentReader
     /// <returns>A task representing the asynchronous read operation.</returns>
     public abstract Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default);
 
-    private string GetMediaType(FileInfo source)
+    private static string GetMediaType(FileInfo source)
         => source.Extension switch
         {
             ".pdf" => "application/pdf",
@@ -152,21 +137,13 @@ public abstract class IngestionDocumentReader
             ".uos1" => "application/vnd.uoml+xml",
             ".uos2" => "application/vnd.uoml+xml",
             ".dbf" => "application/vnd.dbf",
-            ".wk1" => "application/vnd.lotus-1-2-3",
-            ".wk2" => "application/vnd.lotus-1-2-3",
-            ".wk3" => "application/vnd.lotus-1-2-3",
-            ".wk4" => "application/vnd.lotus-1-2-3",
-            ".wks" => "application/vnd.lotus-1-2-3",
             ".123" => "application/vnd.lotus-1-2-3",
             ".wq1" => "application/x-lotus",
             ".wq2" => "application/x-lotus",
-            ".wb1" => "application/x-quattro-pro",
-            ".wb2" => "application/x-quattro-pro",
-            ".wb3" => "application/x-quattro-pro",
             ".qpw" => "application/x-quattro-pro",
             ".xlr" => "application/vnd.ms-works",
             ".eth" => "application/ethos",
             ".tsv" => "text/tab-separated-values",
-            _ => "", // only some readers require the media type, so we return empty string here and they are expected to handle it.
+            _ => string.Empty // only some readers require the media type, so we return empty string here and they are expected to handle it.
         };
 }

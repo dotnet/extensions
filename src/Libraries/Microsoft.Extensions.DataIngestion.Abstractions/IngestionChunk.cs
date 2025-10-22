@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
 
@@ -55,20 +56,16 @@ public sealed class IngestionChunk<T>
     /// </exception>
     public IngestionChunk(T content, IngestionDocument document, string? context = null)
     {
-        if (content is null)
-        {
-            throw new ArgumentNullException(nameof(content));
-        }
         if (typeof(T) == typeof(string))
         {
-            if (string.IsNullOrWhiteSpace((string)(object)content))
-            {
-                throw new ArgumentException("Content cannot be null or whitespace.", nameof(content));
-            }
+            Content = (T)(object)Throw.IfNullOrEmpty((string)(object)content!);
+        }
+        else
+        {
+            Content = Throw.IfNull(content);
         }
 
-        Content = content;
-        Document = document ?? throw new ArgumentNullException(nameof(document));
+        Document = Throw.IfNull(document);
         Context = context;
     }
 }

@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DataIngestion.Tests;
 
 public class IngestionDocumentTests
 {
-    private readonly IngestionDocumentElement?[,] rows =
+    private readonly IngestionDocumentElement?[,] _rows =
     {
         { new IngestionDocumentParagraph("header") },
         { new IngestionDocumentParagraph("row1") },
@@ -26,7 +26,7 @@ public class IngestionDocumentTests
             {
                 new IngestionDocumentHeader("header"),
                 new IngestionDocumentParagraph("paragraph"),
-                new IngestionDocumentTable("table", rows),
+                new IngestionDocumentTable("table", _rows),
                 new IngestionDocumentSection("nested section")
                 {
                     Elements =
