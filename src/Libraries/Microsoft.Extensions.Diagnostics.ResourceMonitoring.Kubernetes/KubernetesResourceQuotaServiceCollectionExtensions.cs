@@ -10,13 +10,13 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Lets you configure and register Kubernetes resource monitoring components.
 /// </summary>
-public static class KubernetesResourceQuotaServiceCollectionsExtensions
+public static class KubernetesResourceQuotaServiceCollectionExtensions
 {
     /// <summary>
     /// Configures and adds an Kubernetes resource monitoring components to a service collection alltoghter with necessary basic resource monitoring components.
     /// </summary>
     /// <param name="services">The dependency injection container to add the Kubernetes resource monitoring to.</param>
-    /// <param name="environmentVariablePrefix">Value of prefix used to read environment varialbes in the container.</param>
+    /// <param name="environmentVariablePrefix">Optional value of prefix used to read environment variables in the container.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     /// <remarks>
     /// <para>
@@ -26,21 +26,21 @@ public static class KubernetesResourceQuotaServiceCollectionsExtensions
     /// <para>
     /// <strong>Important:</strong> Do not call <see cref="ResourceMonitoringServiceCollectionExtensions.AddResourceMonitoring(IServiceCollection)"/> 
     /// if you are using this method, as it already includes all necessary resource monitoring components and registers a Kubernetes-specific 
-    /// <see cref="IResourceQuotaProvider"/> implementation. Calling both methods may result in conflicting service registrations.
+    /// <see cref="ResourceQuotaProvider"/> implementation. Calling both methods may result in conflicting service registrations.
     /// </para>
     /// </remarks>
     public static IServiceCollection AddKubernetesResourceMonitoring(
         this IServiceCollection services,
-        string environmentVariablePrefix = "")
+        string? environmentVariablePrefix = default)
     {
         services.TryAddSingleton<KubernetesMetadata>(serviceProvider =>
         {
-            var metadata = new KubernetesMetadata(environmentVariablePrefix);
+            var metadata = new KubernetesMetadata(environmentVariablePrefix ?? string.Empty);
             metadata.Build();
 
             return metadata;
         });
-        services.TryAddSingleton<IResourceQuotaProvider, KubernetesResourceQuotaProvider>();
+        services.TryAddSingleton<ResourceQuotaProvider, KubernetesResourceQuotaProvider>();
 
         _ = services.AddResourceMonitoring();
 

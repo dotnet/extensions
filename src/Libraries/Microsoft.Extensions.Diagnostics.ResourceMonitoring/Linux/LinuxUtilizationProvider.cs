@@ -53,7 +53,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         IOptions<ResourceMonitoringOptions> options,
         ILinuxUtilizationParser parser,
         IMeterFactory meterFactory,
-        IResourceQuotaProvider resourceQuotaProvider,
+        ResourceQuotaProvider resourceQuotaProvider,
         ILogger<LinuxUtilizationProvider>? logger = null,
         TimeProvider? timeProvider = null)
     {
@@ -69,10 +69,10 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
 
         var quota = resourceQuotaProvider.GetResourceQuota();
-        _memoryLimit = quota.LimitsMemory;
-        _cpuLimit = quota.LimitsCpu;
-        _cpuRequest = quota.RequestsCpu;
-        _memoryRequest = quota.RequestsMemory;
+        _memoryLimit = quota.MaxMemoryInBytes;
+        _cpuLimit = quota.MaxCpuInCores;
+        _cpuRequest = quota.GuaranteedCpuInCores;
+        _memoryRequest = quota.GuaranteedMemoryInBytes;
 
         float hostCpus = _parser.GetHostCpuCount();
         double scaleRelativeToCpuLimit = hostCpus / _cpuLimit;

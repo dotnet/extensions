@@ -7,7 +7,7 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
-internal class WindowsContainerResourceQuotaProvider : IResourceQuotaProvider
+internal class WindowsContainerResourceQuotaProvider : ResourceQuotaProvider
 {
     private readonly ISystemInfo _systemInfo;
     private readonly Lazy<MEMORYSTATUSEX> _memoryStatus;
@@ -28,21 +28,21 @@ internal class WindowsContainerResourceQuotaProvider : IResourceQuotaProvider
             LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
-    public ResourceQuota GetResourceQuota()
+    public override ResourceQuota GetResourceQuota()
     {
         // bring logic from WindowsContainerSnapshotProvider for limits and requests
         using IJobHandle jobHandle = _createJobHandleObject();
 
         var resourceQuota = new ResourceQuota
         {
-            LimitsCpu = GetCpuLimit(jobHandle, _systemInfo),
-            LimitsMemory = GetMemoryLimit(jobHandle),
+            MaxCpuInCores = GetCpuLimit(jobHandle, _systemInfo),
+            MaxMemoryInBytes = GetMemoryLimit(jobHandle),
         };
 
-        // CPU request (aka guaranteed CPU units) is not supported on Windows, so we set it to the same value as CPU limit (aka maximum CPU units).
-        // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
-        resourceQuota.RequestsCpu = resourceQuota.LimitsCpu;
-        resourceQuota.RequestsMemory = resourceQuota.LimitsMemory;
+        // CPU guaranteed (aka minimum CPU units) is not supported on Windows, so we set it to the same value as CPU maximum (aka limit CPU units).
+        // Memory guaranteed (aka minimum memory) is not supported on Windows, so we set it to the same value as memory maximum (aka limit memory).
+        resourceQuota.GuaranteedCpuInCores = resourceQuota.MaxCpuInCores;
+        resourceQuota.GuaranteedMemoryInBytes = resourceQuota.MaxMemoryInBytes;
 
         return resourceQuota;
     }

@@ -58,7 +58,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         ILogger<WindowsContainerSnapshotProvider>? logger,
         IMeterFactory meterFactory,
         IOptions<ResourceMonitoringOptions> options,
-        IResourceQuotaProvider resourceQuotaProvider)
+        ResourceQuotaProvider resourceQuotaProvider)
         : this(new ProcessInfo(), logger, meterFactory,
               static () => new JobHandleWrapper(), TimeProvider.System, options.Value, resourceQuotaProvider)
     {
@@ -75,7 +75,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         Func<IJobHandle> createJobHandleObject,
         TimeProvider timeProvider,
         ResourceMonitoringOptions options,
-        IResourceQuotaProvider resourceQuotaProvider)
+        ResourceQuotaProvider resourceQuotaProvider)
     {
         _logger = logger ?? NullLogger<WindowsContainerSnapshotProvider>.Instance;
         _logger.RunningInsideJobObject();
@@ -90,10 +90,10 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         using IJobHandle jobHandle = _createJobHandleObject();
 
         var quota = resourceQuotaProvider.GetResourceQuota();
-        _cpuLimit = quota.LimitsCpu;
-        _memoryLimit = quota.LimitsMemory;
-        _cpuRequest = quota.RequestsCpu;
-        _memoryRequest = quota.RequestsMemory;
+        _cpuLimit = quota.MaxCpuInCores;
+        _memoryLimit = quota.MaxMemoryInBytes;
+        _cpuRequest = quota.GuaranteedCpuInCores;
+        _memoryRequest = quota.GuaranteedMemoryInBytes;
 
         ulong memoryLimitRounded = (ulong)Math.Round(_memoryLimit);
         Resources = new SystemResources(_cpuRequest, _cpuLimit, _memoryRequest, memoryLimitRounded);

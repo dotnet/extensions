@@ -3,24 +3,24 @@
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes;
 
-internal class KubernetesResourceQuotaProvider : IResourceQuotaProvider
+internal class KubernetesResourceQuotaProvider : ResourceQuotaProvider
 {
     private const double MillicoresPerCore = 1000.0;
-    private KubernetesMetadata _cosmicMetadata;
+    private KubernetesMetadata _kubernetesMetadata;
 
-    public KubernetesResourceQuotaProvider(KubernetesMetadata cosmicMetadata)
+    public KubernetesResourceQuotaProvider(KubernetesMetadata kubernetesMetadata)
     {
-        _cosmicMetadata = cosmicMetadata;
+        _kubernetesMetadata = kubernetesMetadata;
     }
 
-    public ResourceQuota GetResourceQuota()
+    public override ResourceQuota GetResourceQuota()
     {
         return new ResourceQuota
         {
-            RequestsCpu = ConvertMillicoreToCpuUnit(_cosmicMetadata.RequestsCpu),
-            LimitsCpu = ConvertMillicoreToCpuUnit(_cosmicMetadata.LimitsCpu),
-            RequestsMemory = _cosmicMetadata.RequestsMemory,
-            LimitsMemory = _cosmicMetadata.LimitsMemory,
+            GuaranteedCpuInCores = ConvertMillicoreToCpuUnit(_kubernetesMetadata.RequestsCpu),
+            MaxCpuInCores = ConvertMillicoreToCpuUnit(_kubernetesMetadata.LimitsCpu),
+            GuaranteedMemoryInBytes = _kubernetesMetadata.RequestsMemory,
+            MaxMemoryInBytes = _kubernetesMetadata.LimitsMemory,
         };
     }
 

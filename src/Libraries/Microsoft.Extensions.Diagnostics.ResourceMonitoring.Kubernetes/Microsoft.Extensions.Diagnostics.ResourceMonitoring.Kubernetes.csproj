@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ResourceMonitoring\Microsoft.Extensions.Diagnostics.ResourceMonitoring.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Abstractions\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

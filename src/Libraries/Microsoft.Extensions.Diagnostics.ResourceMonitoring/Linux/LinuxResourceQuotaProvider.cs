@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 
-internal class LinuxResourceQuotaProvider : IResourceQuotaProvider
+internal class LinuxResourceQuotaProvider : ResourceQuotaProvider
 {
     private readonly ILinuxUtilizationParser _parser;
     private bool _useLinuxCalculationV2;
@@ -16,22 +16,22 @@ internal class LinuxResourceQuotaProvider : IResourceQuotaProvider
         _useLinuxCalculationV2 = options.Value.UseLinuxCalculationV2;
     }
 
-    public ResourceQuota GetResourceQuota()
+    public override ResourceQuota GetResourceQuota()
     {
         var resourceQuota = new ResourceQuota();
         if (_useLinuxCalculationV2)
         {
-            resourceQuota.LimitsCpu = _parser.GetCgroupLimitV2();
-            resourceQuota.RequestsCpu = _parser.GetCgroupRequestCpuV2();
+            resourceQuota.MaxCpuInCores = _parser.GetCgroupLimitV2();
+            resourceQuota.GuaranteedCpuInCores = _parser.GetCgroupRequestCpuV2();
         }
         else
         {
-            resourceQuota.LimitsCpu = _parser.GetCgroupLimitedCpus();
-            resourceQuota.RequestsCpu = _parser.GetCgroupRequestCpu();
+            resourceQuota.MaxCpuInCores = _parser.GetCgroupLimitedCpus();
+            resourceQuota.GuaranteedCpuInCores = _parser.GetCgroupRequestCpu();
         }
 
-        resourceQuota.LimitsMemory = _parser.GetAvailableMemoryInBytes();
-        resourceQuota.RequestsMemory = resourceQuota.LimitsMemory;
+        resourceQuota.MaxMemoryInBytes = _parser.GetAvailableMemoryInBytes();
+        resourceQuota.GuaranteedMemoryInBytes = resourceQuota.MaxMemoryInBytes; // TODO: use real value
 
         return resourceQuota;
     }

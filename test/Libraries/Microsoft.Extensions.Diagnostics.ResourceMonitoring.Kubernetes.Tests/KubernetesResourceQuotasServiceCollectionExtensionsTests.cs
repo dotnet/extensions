@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes.Tests;
@@ -21,7 +20,7 @@ public class KubernetesResourceQuotasServiceCollectionExtensionsTests
         // Assert
         using var serviceProvider = services.BuildServiceProvider();
 
-        IResourceQuotaProvider? resourceQuotaProvider = serviceProvider.GetService<IResourceQuotaProvider>();
+        ResourceQuotaProvider? resourceQuotaProvider = serviceProvider.GetService<ResourceQuotaProvider>();
         Assert.NotNull(resourceQuotaProvider);
         Assert.IsType<KubernetesResourceQuotaProvider>(resourceQuotaProvider);
         Assert.NotNull(serviceProvider.GetService<KubernetesMetadata>());
