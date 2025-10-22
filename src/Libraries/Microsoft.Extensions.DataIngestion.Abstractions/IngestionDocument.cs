@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -11,7 +10,6 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// A format-agnostic container that normalizes diverse input formats into a structured hierarchy.
 /// </summary>
-[Experimental("MEDI001")]
 public sealed class IngestionDocument
 {
     /// <summary>

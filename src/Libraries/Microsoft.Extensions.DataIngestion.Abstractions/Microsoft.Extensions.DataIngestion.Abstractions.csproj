@@ -8,9 +8,7 @@
     <IsPackable>false</IsPackable>
     <!--  Convert abstract class into interface -->
     <NoWarn>$(NoWarn);S1694</NoWarn>
-    <NoWarn>$(NoWarn);MEDI001</NoWarn>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <Stage>preview</Stage>
   </PropertyGroup>
 
   <ItemGroup>

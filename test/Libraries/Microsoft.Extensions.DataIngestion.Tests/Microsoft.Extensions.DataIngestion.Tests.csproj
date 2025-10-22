@@ -3,7 +3,6 @@
   <PropertyGroup>
     <!--  Multidimensional arrays should not be used -->
     <NoWarn>$(NoWarn);S3967</NoWarn>
-    <NoWarn>$(NoWarn);MEDI001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -11,7 +10,6 @@ namespace Microsoft.Extensions.DataIngestion;
 /// Splits an <see cref="IngestionDocument"/> into chunks.
 /// </summary>
 /// <typeparam name="T">The type of the chunk content.</typeparam>
-[Experimental("MEDI001")]
 public abstract class IngestionChunker<T>
 {
     /// <summary>

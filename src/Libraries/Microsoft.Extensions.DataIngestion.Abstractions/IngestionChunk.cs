@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -13,36 +12,10 @@ namespace Microsoft.Extensions.DataIngestion;
 /// Represents a chunk of content extracted from an <see cref="IngestionDocument"/>.
 /// </summary>
 /// <typeparam name="T">The type of the content.</typeparam>
-[DebuggerDisplay("{Content}")]
-[Experimental("MEDI001")]
+[DebuggerDisplay("Content = {Content}")]
 public sealed class IngestionChunk<T>
 {
     private Dictionary<string, object>? _metadata;
-
-    /// <summary>
-    /// Gets the content of the chunk.
-    /// </summary>
-    public T Content { get; }
-
-    /// <summary>
-    /// Gets the document from which this chunk was extracted.
-    /// </summary>
-    public IngestionDocument Document { get; }
-
-    /// <summary>
-    /// Gets additional context for the chunk.
-    /// </summary>
-    public string? Context { get; }
-
-    /// <summary>
-    /// Gets a value indicating whether this chunk has metadata.
-    /// </summary>
-    public bool HasMetadata => _metadata?.Count > 0;
-
-    /// <summary>
-    /// Gets the metadata associated with this chunk.
-    /// </summary>
-    public IDictionary<string, object> Metadata => _metadata ??= [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IngestionChunk{T}"/> class.
@@ -70,4 +43,29 @@ public sealed class IngestionChunk<T>
         Document = Throw.IfNull(document);
         Context = context;
     }
+
+    /// <summary>
+    /// Gets the content of the chunk.
+    /// </summary>
+    public T Content { get; }
+
+    /// <summary>
+    /// Gets the document from which this chunk was extracted.
+    /// </summary>
+    public IngestionDocument Document { get; }
+
+    /// <summary>
+    /// Gets additional context for the chunk.
+    /// </summary>
+    public string? Context { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether this chunk has metadata.
+    /// </summary>
+    public bool HasMetadata => _metadata?.Count > 0;
+
+    /// <summary>
+    /// Gets the metadata associated with this chunk.
+    /// </summary>
+    public IDictionary<string, object> Metadata => _metadata ??= [];
 }

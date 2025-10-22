@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
@@ -15,11 +14,12 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Represents an element within an <see cref="IngestionDocument"/>.
 /// </summary>
-[DebuggerDisplay("{GetType().Name}: {GetMarkdown()}")]
-[Experimental("MEDI001")]
+[DebuggerDisplay("Type = {GetType().Name}, Markdown = {GetMarkdown()}")]
 public abstract class IngestionDocumentElement
 {
-    private protected string Markdown;
+#pragma warning disable IDE1006 // Naming Styles
+    private protected string _markdown;
+#pragma warning restore IDE1006 // Naming Styles
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IngestionDocumentElement"/> class.
@@ -28,12 +28,12 @@ public abstract class IngestionDocumentElement
     /// <exception cref="ArgumentNullException"><paramref name="markdown"/> is <see langword="null"/> or empty.</exception>
     private protected IngestionDocumentElement(string markdown)
     {
-        Markdown = string.IsNullOrEmpty(markdown) ? throw new ArgumentNullException(nameof(markdown)) : markdown;
+        _markdown = string.IsNullOrEmpty(markdown) ? throw new ArgumentNullException(nameof(markdown)) : markdown;
     }
 
     private protected IngestionDocumentElement()
     {
-        Markdown = null!;
+        _markdown = null!;
     }
 
     private Dictionary<string, object?>? _metadata;
@@ -47,7 +47,7 @@ public abstract class IngestionDocumentElement
     /// Gets the markdown representation of the element.
     /// </summary>
     /// <returns>The markdown representation.</returns>
-    public virtual string GetMarkdown() => Markdown;
+    public virtual string GetMarkdown() => _markdown;
 
     /// <summary>
     /// Gets or sets the page number where this element appears.
@@ -68,7 +68,6 @@ public abstract class IngestionDocumentElement
 /// <summary>
 /// A section can be just a page or a logical grouping of elements in a document.
 /// </summary>
-[Experimental("MEDI001")]
 public sealed class IngestionDocumentSection : IngestionDocumentElement
 {
     /// <summary>
@@ -100,7 +99,6 @@ public sealed class IngestionDocumentSection : IngestionDocumentElement
 /// <summary>
 /// Represents a paragraph in a document.
 /// </summary>
-[Experimental("MEDI001")]
 public sealed class IngestionDocumentParagraph : IngestionDocumentElement
 {
     /// <summary>
@@ -116,7 +114,6 @@ public sealed class IngestionDocumentParagraph : IngestionDocumentElement
 /// <summary>
 /// Represents a header in a document.
 /// </summary>
-[Experimental("MEDI001")]
 public sealed class IngestionDocumentHeader : IngestionDocumentElement
 {
     /// <summary>
@@ -137,7 +134,6 @@ public sealed class IngestionDocumentHeader : IngestionDocumentElement
 /// <summary>
 /// Represents a footer in a document.
 /// </summary>
-[Experimental("MEDI001")]
 public sealed class IngestionDocumentFooter : IngestionDocumentElement
 {
     /// <summary>
@@ -153,7 +149,6 @@ public sealed class IngestionDocumentFooter : IngestionDocumentElement
 /// <summary>
 /// Represents a table in a document.
 /// </summary>
-[Experimental("MEDI001")]
 public sealed class IngestionDocumentTable : IngestionDocumentElement
 {
     /// <summary>
@@ -188,7 +183,6 @@ public sealed class IngestionDocumentTable : IngestionDocumentElement
 /// <summary>
 /// Represents an image in a document.
 /// </summary>
-[Experimental("MEDI001")]
 public sealed class IngestionDocumentImage : IngestionDocumentElement
 {
     /// <summary>
