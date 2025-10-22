@@ -63,7 +63,7 @@ public abstract class HttpDependencyMetadataResolver
     {
         try
         {
-            if (requestMessage.RequestUri == null)
+            if (requestMessage?.RequestUri == null)
             {
                 return null;
             }
