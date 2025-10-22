@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
-using System.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -41,7 +39,8 @@ internal sealed partial class ConfigurationServiceEndpointProvider : IServiceEnd
         _serviceName = query.ServiceName;
         _endpointName = query.EndpointName;
         _includeAllSchemes = serviceDiscoveryOptions.Value.AllowAllSchemes && query.IncludedSchemes.Count == 0;
-        _schemes = ServiceDiscoveryOptions.ApplyAllowedSchemes(query.IncludedSchemes, serviceDiscoveryOptions.Value.AllowedSchemes, serviceDiscoveryOptions.Value.AllowAllSchemes);
+        var allowedSchemes = serviceDiscoveryOptions.Value.ApplyAllowedSchemes(query.IncludedSchemes);
+        _schemes = allowedSchemes as string[] ?? allowedSchemes.ToArray();
         _configuration = configuration;
         _logger = logger;
         _options = options;
@@ -190,52 +189,18 @@ internal sealed partial class ConfigurationServiceEndpointProvider : IServiceEnd
 
     private void AddEndpoint(List<ServiceEndpoint> endpoints, IConfigurationSection section, string endpointName)
     {
-        var value = section.Value;
-        if (string.IsNullOrWhiteSpace(value) || !TryParseEndPoint(value, out var endPoint))
+        if (!ServiceEndpoint.TryParse(section.Value, out var serviceEndpoint))
         {
             throw new KeyNotFoundException($"The endpoint configuration section for service '{_serviceName}' endpoint '{endpointName}' has an invalid value with key '{section.Key}'.");
         }
 
-        endpoints.Add(CreateEndpoint(endPoint));
-    }
-
-    private static bool TryParseEndPoint(string value, [NotNullWhen(true)] out EndPoint? endPoint)
-    {
-        if (value.IndexOf("://") < 0 && Uri.TryCreate($"fakescheme://{value}", default, out var uri))
-        {
-            var port = uri.Port > 0 ? uri.Port : 0;
-            if (IPAddress.TryParse(uri.Host, out var ip))
-            {
-                endPoint = new IPEndPoint(ip, port);
-            }
-            else
-            {
-                endPoint = new DnsEndPoint(uri.Host, port);
-            }
-        }
-        else if (Uri.TryCreate(value, default, out uri))
-        {
-            endPoint = new UriEndPoint(uri);
-        }
-        else
-        {
-            endPoint = null;
-            return false;
-        }
-
-        return true;
-    }
-
-    private ServiceEndpoint CreateEndpoint(EndPoint endPoint)
-    {
-        var serviceEndpoint = ServiceEndpoint.Create(endPoint);
         serviceEndpoint.Features.Set<IServiceEndpointProvider>(this);
         if (_options.Value.ShouldApplyHostNameMetadata(serviceEndpoint))
         {
             serviceEndpoint.Features.Set<IHostNameFeature>(this);
         }
 
-        return serviceEndpoint;
+        endpoints.Add(serviceEndpoint);
     }
 
     public override string ToString() => "Configuration";

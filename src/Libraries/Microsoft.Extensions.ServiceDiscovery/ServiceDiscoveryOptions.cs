@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.ServiceDiscovery;
@@ -30,24 +31,30 @@ public sealed class ServiceDiscoveryOptions
     /// </remarks>
     public IList<string> AllowedSchemes { get; set; } = new List<string>();
 
-    internal static string[] ApplyAllowedSchemes(IReadOnlyList<string> schemes, IList<string> allowedSchemes, bool allowAllSchemes)
+    /// <summary>
+    /// Filters the specified URI schemes to include only those that are applicable, based on the current settings.
+    /// </summary>
+    /// <param name="requestedSchemes">The URI schemes to be evaluated against the allowed schemes.</param>
+    /// <returns>
+    /// The URI schemes that are applicable. If no schemes are requested, all allowed schemes are returned.
+    /// If all schemes are allowed, only the requested schemes are returned.
+    /// Otherwise, the intersection of requested and allowed schemes is returned.
+    /// </returns>
+    public IReadOnlyList<string> ApplyAllowedSchemes(IReadOnlyList<string> requestedSchemes)
     {
-        if (schemes.Count > 0)
-        {
-            if (allowAllSchemes)
-            {
-                if (schemes is string[] array && array.Length > 0)
-                {
-                    return array;
-                }
+        ArgumentNullException.ThrowIfNull(requestedSchemes);
 
-                return schemes.ToArray();
+        if (requestedSchemes.Count > 0)
+        {
+            if (AllowAllSchemes)
+            {
+                return requestedSchemes;
             }
 
             List<string> result = [];
-            foreach (var s in schemes)
+            foreach (var s in requestedSchemes)
             {
-                foreach (var allowed in allowedSchemes)
+                foreach (var allowed in AllowedSchemes)
                 {
                     if (string.Equals(s, allowed, StringComparison.OrdinalIgnoreCase))
                     {
@@ -57,10 +64,10 @@ public sealed class ServiceDiscoveryOptions
                 }
             }
 
-            return result.ToArray();
+            return result.AsReadOnly();
         }
 
         // If no schemes were specified, but a set of allowed schemes were specified, allow those.
-        return allowedSchemes.ToArray();
+        return new ReadOnlyCollection<string>(AllowedSchemes);
     }
 }
