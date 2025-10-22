@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Reads source content and converts it to an <see cref="IngestionDocument"/>.
 /// </summary>
+[Experimental("MEDI001")]
 public abstract class IngestionDocumentReader
 {
     /// <summary>

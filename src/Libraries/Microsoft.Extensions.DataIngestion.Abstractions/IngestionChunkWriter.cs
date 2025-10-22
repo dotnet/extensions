@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +13,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// Writes chunks to a destination.
 /// </summary>
 /// <typeparam name="T">The type of the chunk content.</typeparam>
+[Experimental("MEDI001")]
 public abstract class IngestionChunkWriter<T> : IDisposable
 {
     /// <summary>

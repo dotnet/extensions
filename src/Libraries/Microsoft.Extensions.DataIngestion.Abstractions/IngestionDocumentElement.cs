@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
@@ -15,6 +16,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// Represents an element within an <see cref="IngestionDocument"/>.
 /// </summary>
 [DebuggerDisplay("{GetType().Name}: {GetMarkdown()}")]
+[Experimental("MEDI001")]
 public abstract class IngestionDocumentElement
 {
     private protected string Markdown;
@@ -66,6 +68,7 @@ public abstract class IngestionDocumentElement
 /// <summary>
 /// A section can be just a page or a logical grouping of elements in a document.
 /// </summary>
+[Experimental("MEDI001")]
 public sealed class IngestionDocumentSection : IngestionDocumentElement
 {
     /// <summary>
@@ -97,6 +100,7 @@ public sealed class IngestionDocumentSection : IngestionDocumentElement
 /// <summary>
 /// Represents a paragraph in a document.
 /// </summary>
+[Experimental("MEDI001")]
 public sealed class IngestionDocumentParagraph : IngestionDocumentElement
 {
     /// <summary>
@@ -112,6 +116,7 @@ public sealed class IngestionDocumentParagraph : IngestionDocumentElement
 /// <summary>
 /// Represents a header in a document.
 /// </summary>
+[Experimental("MEDI001")]
 public sealed class IngestionDocumentHeader : IngestionDocumentElement
 {
     /// <summary>
@@ -132,6 +137,7 @@ public sealed class IngestionDocumentHeader : IngestionDocumentElement
 /// <summary>
 /// Represents a footer in a document.
 /// </summary>
+[Experimental("MEDI001")]
 public sealed class IngestionDocumentFooter : IngestionDocumentElement
 {
     /// <summary>
@@ -147,6 +153,7 @@ public sealed class IngestionDocumentFooter : IngestionDocumentElement
 /// <summary>
 /// Represents a table in a document.
 /// </summary>
+[Experimental("MEDI001")]
 public sealed class IngestionDocumentTable : IngestionDocumentElement
 {
     /// <summary>
@@ -181,6 +188,7 @@ public sealed class IngestionDocumentTable : IngestionDocumentElement
 /// <summary>
 /// Represents an image in a document.
 /// </summary>
+[Experimental("MEDI001")]
 public sealed class IngestionDocumentImage : IngestionDocumentElement
 {
     /// <summary>

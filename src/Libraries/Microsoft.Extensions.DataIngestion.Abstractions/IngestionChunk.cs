@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -13,6 +14,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </summary>
 /// <typeparam name="T">The type of the content.</typeparam>
 [DebuggerDisplay("{Content}")]
+[Experimental("MEDI001")]
 public sealed class IngestionChunk<T>
 {
     private Dictionary<string, object>? _metadata;
