@@ -52,7 +52,7 @@ public sealed class EquivalenceEvaluator : IEvaluator
         new ChatOptions
         {
             Temperature = 0.0f,
-            MaxOutputTokens = 5, // See https://github.com/dotnet/extensions/issues/6814.
+            MaxOutputTokens = 16, // Azure OpenAI requires minimum of 16 tokens. See https://github.com/dotnet/extensions/issues/6814.
             TopP = 1.0f,
             PresencePenalty = 0.0f,
             FrequencyPenalty = 0.0f,
