@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -49,29 +50,9 @@ public static class HttpDiagnosticsServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddHttpDependencyMetadataResolver(this IServiceCollection services)
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IServiceCollection AddStandardHttpDependencyMetadataResolver(this IServiceCollection services)
     {
-        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
-        return services;
-    }
-
-    /// <summary>
-    /// Adds services required for HTTP dependency metadata resolution with the specified metadata providers.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="providers">The HTTP dependency metadata providers to register.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddHttpDependencyMetadataResolver(
-        this IServiceCollection services,
-        params IDownstreamDependencyMetadata[] providers)
-    {
-        _ = Throw.IfNull(services);
-
-        foreach (var provider in providers)
-        {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IDownstreamDependencyMetadata>(provider));
-        }
-
         services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
         return services;
     }

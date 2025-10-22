@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.Diagnostics;
 
@@ -9,6 +11,7 @@ namespace Microsoft.Extensions.Http.Diagnostics;
 /// Default implementation of <see cref="HttpDependencyMetadataResolver"/> that uses the base
 /// trie-based lookup algorithm.
 /// </summary>
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class DefaultHttpDependencyMetadataResolver : HttpDependencyMetadataResolver
 {
     /// <summary>

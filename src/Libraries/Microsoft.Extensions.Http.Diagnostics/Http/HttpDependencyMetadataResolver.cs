@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Diagnostics;
@@ -19,6 +20,7 @@ namespace Microsoft.Extensions.Http.Diagnostics;
 /// configured metadata using specialized trie-based data structures. This enables efficient lookup
 /// of service information, operation names, and other metadata for telemetry and policy application.
 /// </remarks>
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class HttpDependencyMetadataResolver
 {
     internal readonly struct ProcessedMetadata
