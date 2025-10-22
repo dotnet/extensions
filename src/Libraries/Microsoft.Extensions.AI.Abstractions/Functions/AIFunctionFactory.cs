@@ -804,27 +804,6 @@ public static partial class AIFunctionFactory
         }
 
         /// <summary>
-        /// Checks if a parameter has an effective default value, either through C# default value syntax or DefaultValueAttribute.
-        /// </summary>
-        private static bool HasEffectiveDefaultValue(ParameterInfo parameter) =>
-            parameter.HasDefaultValue || parameter.GetCustomAttribute<DefaultValueAttribute>(inherit: true) is not null;
-
-        /// <summary>
-        /// Gets the effective default value for a parameter, checking both C# default value and DefaultValueAttribute.
-        /// </summary>
-        private static object? GetEffectiveDefaultValue(ParameterInfo parameter)
-        {
-            // First check for DefaultValueAttribute
-            if (parameter.GetCustomAttribute<DefaultValueAttribute>(inherit: true) is { } attr)
-            {
-                return attr.Value;
-            }
-
-            // Fall back to the parameter's declared default value
-            return parameter.DefaultValue;
-        }
-
-        /// <summary>
         /// Gets a delegate for handling the marshaling of a parameter.
         /// </summary>
         private static Func<AIFunctionArguments, CancellationToken, object?> GetParameterMarshaller(
@@ -868,7 +847,7 @@ public static partial class AIFunctionFactory
                 return (arguments, _) =>
                 {
                     IServiceProvider? services = arguments.Services;
-                    if (!HasEffectiveDefaultValue(parameter) && services is null)
+                    if (!AIJsonUtilities.HasEffectiveDefaultValue(parameter) && services is null)
                     {
                         ThrowNullServices(parameter.Name);
                     }
@@ -928,13 +907,13 @@ public static partial class AIFunctionFactory
                 }
 
                 // If the parameter is required and there's no argument specified for it, throw.
-                if (!HasEffectiveDefaultValue(parameter))
+                if (!AIJsonUtilities.HasEffectiveDefaultValue(parameter))
                 {
                     Throw.ArgumentException(nameof(arguments), $"The arguments dictionary is missing a value for the required parameter '{parameter.Name}'.");
                 }
 
                 // Otherwise, use the optional parameter's default value.
-                return GetEffectiveDefaultValue(parameter);
+                return AIJsonUtilities.GetEffectiveDefaultValue(parameter);
             };
 
             // Throws an ArgumentNullException indicating that AIFunctionArguments.Services must be provided.

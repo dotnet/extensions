@@ -319,4 +319,3 @@ BenchmarkDotNet.artifacts/
 
 # VERIFY
 !**/*.verified/**
-/.nuget/

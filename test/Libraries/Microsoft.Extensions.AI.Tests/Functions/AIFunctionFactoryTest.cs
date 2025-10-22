@@ -66,43 +66,43 @@ public partial class AIFunctionFactoryTest
     {
         // Test with null default value
         AIFunction funcNull = AIFunctionFactory.Create(([DefaultValue(null)] string? s) => s ?? "was null");
-        
+
         // Schema should not list 's' as required and should have default value
         string schema = funcNull.JsonSchema.ToString();
         Assert.Contains("\"s\"", schema);
         Assert.DoesNotContain("\"required\"", schema);
         Assert.Contains("\"default\":null", schema);
-        
+
         // Should be invocable without providing the parameter
         AssertExtensions.EqualFunctionCallResults("was null", await funcNull.InvokeAsync());
-        
+
         // Should be overridable
         AssertExtensions.EqualFunctionCallResults("hello", await funcNull.InvokeAsync(new() { ["s"] = "hello" }));
-        
+
         // Test with non-null default value
         AIFunction funcValue = AIFunctionFactory.Create(([DefaultValue("default")] string s) => s);
         schema = funcValue.JsonSchema.ToString();
         Assert.DoesNotContain("\"required\"", schema);
         Assert.Contains("\"default\":\"default\"", schema);
-        
+
         AssertExtensions.EqualFunctionCallResults("default", await funcValue.InvokeAsync());
         AssertExtensions.EqualFunctionCallResults("custom", await funcValue.InvokeAsync(new() { ["s"] = "custom" }));
-        
+
         // Test with int default value
         AIFunction funcInt = AIFunctionFactory.Create(([DefaultValue(42)] int x) => x * 2);
         schema = funcInt.JsonSchema.ToString();
         Assert.DoesNotContain("\"required\"", schema);
         Assert.Contains("\"default\":42", schema);
-        
+
         AssertExtensions.EqualFunctionCallResults(84, await funcInt.InvokeAsync());
         AssertExtensions.EqualFunctionCallResults(10, await funcInt.InvokeAsync(new() { ["x"] = 5 }));
-        
+
         // Test that DefaultValue attribute takes precedence over C# default value
         AIFunction funcBoth = AIFunctionFactory.Create(([DefaultValue(100)] int y = 50) => y);
         schema = funcBoth.JsonSchema.ToString();
         Assert.DoesNotContain("\"required\"", schema);
         Assert.Contains("\"default\":100", schema); // DefaultValue should take precedence
-        
+
         AssertExtensions.EqualFunctionCallResults(100, await funcBoth.InvokeAsync()); // Should use DefaultValue, not C# default
     }
 

@@ -764,13 +764,13 @@ public static partial class AIJsonUtilities
     /// <summary>
     /// Checks if a parameter has an effective default value, either through C# default value syntax or DefaultValueAttribute.
     /// </summary>
-    private static bool HasEffectiveDefaultValue(ParameterInfo parameterInfo) =>
+    internal static bool HasEffectiveDefaultValue(ParameterInfo parameterInfo) =>
         parameterInfo.HasDefaultValue || parameterInfo.GetCustomAttribute<DefaultValueAttribute>(inherit: true) is not null;
 
     /// <summary>
     /// Gets the effective default value for a parameter, checking both C# default value and DefaultValueAttribute.
     /// </summary>
-    private static object? GetEffectiveDefaultValue(ParameterInfo parameterInfo)
+    internal static object? GetEffectiveDefaultValue(ParameterInfo parameterInfo)
     {
         // First check for DefaultValueAttribute
         if (parameterInfo.GetCustomAttribute<DefaultValueAttribute>(inherit: true) is { } attr)
