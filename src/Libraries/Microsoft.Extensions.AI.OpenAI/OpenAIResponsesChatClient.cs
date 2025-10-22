@@ -202,7 +202,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case McpToolCallApprovalResponseItem mtcari:
-                    message.Contents.Add(new McpServerToolApprovalResponseContent(mtcari.ApprovalRequestId, mtcari.Approved));
+                    message.Contents.Add(new McpServerToolApprovalResponseContent(mtcari.ApprovalRequestId, mtcari.Approved) { RawRepresentation = mtcari });
                     break;
 
                 case FunctionCallOutputResponseItem functionCallOutputItem:
@@ -534,11 +534,17 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         break;
 
                     case HostedMcpServerTool mcpTool:
-                        McpTool responsesMcpTool = ResponseTool.CreateMcpTool(
-                            mcpTool.ServerName,
-                            mcpTool.Url,
-                            serverDescription: mcpTool.ServerDescription,
-                            headers: mcpTool.Headers);
+                        McpTool responsesMcpTool = Uri.TryCreate(mcpTool.ServerAddress, UriKind.Absolute, out Uri? url) ?
+                            ResponseTool.CreateMcpTool(
+                                mcpTool.ServerName,
+                                url,
+                                mcpTool.AuthorizationToken,
+                                mcpTool.ServerDescription) :
+                            ResponseTool.CreateMcpTool(
+                                mcpTool.ServerName,
+                                new McpToolConnectorId(mcpTool.ServerAddress),
+                                mcpTool.AuthorizationToken,
+                                mcpTool.ServerDescription);
 
                         if (mcpTool.AllowedTools is not null)
                         {
@@ -657,7 +663,88 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             if (input.Role == ChatRole.User)
             {
-                yield return ResponseItem.CreateUserMessageItem(ToResponseContentParts(input.Contents));
+                // Some AIContent items may map to ResponseItems directly. Others map to ResponseContentParts that need to be grouped together.
+                // In order to preserve ordering, we yield ResponseItems as we find them, grouping ResponseContentParts between those yielded
+                // items together into their own yielded item.
+
+                List<ResponseContentPart>? parts = null;
+                bool responseItemYielded = false;
+
+                foreach (AIContent item in input.Contents)
+                {
+                    // Items that directly map to a ResponseItem.
+                    ResponseItem? directItem = item switch
+                    {
+                        { RawRepresentation: ResponseItem rawRep } => rawRep,
+                        McpServerToolApprovalResponseContent mcpResp => ResponseItem.CreateMcpApprovalResponseItem(mcpResp.Id, mcpResp.Approved),
+                        _ => null
+                    };
+
+                    if (directItem is not null)
+                    {
+                        // Yield any parts already accumulated.
+                        if (parts is not null)
+                        {
+                            yield return ResponseItem.CreateUserMessageItem(parts);
+                            parts = null;
+                        }
+
+                        // Now yield the directly mapped item.
+                        yield return directItem;
+
+                        responseItemYielded = true;
+                        continue;
+                    }
+
+                    // Items that map into ResponseContentParts and are grouped.
+                    switch (item)
+                    {
+                        case AIContent when item.RawRepresentation is ResponseContentPart rawRep:
+                            (parts ??= []).Add(rawRep);
+                            break;
+
+                        case TextContent textContent:
+                            (parts ??= []).Add(ResponseContentPart.CreateInputTextPart(textContent.Text));
+                            break;
+
+                        case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
+                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(uriContent.Uri));
+                            break;
+
+                        case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
+                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
+                            break;
+
+                        case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
+                            (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
+                            break;
+
+                        case HostedFileContent fileContent:
+                            (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(fileContent.FileId));
+                            break;
+
+                        case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
+                            (parts ??= []).Add(ResponseContentPart.CreateRefusalPart(errorContent.Message));
+                            break;
+                    }
+                }
+
+                // If we haven't accumulated any parts nor have we yielded any items, manufacture an empty input text part
+                // to guarantee that every user message results in at least one ResponseItem.
+                if (parts is null && !responseItemYielded)
+                {
+                    parts = [];
+                    parts.Add(ResponseContentPart.CreateInputTextPart(string.Empty));
+                    responseItemYielded = true;
+                }
+
+                // Final yield of any accumulated parts.
+                if (parts is not null)
+                {
+                    yield return ResponseItem.CreateUserMessageItem(parts);
+                    parts = null;
+                }
+
                 continue;
             }
 
@@ -673,15 +760,27 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         case FunctionResultContent resultContent:
                             string? result = resultContent.Result as string;
-                            if (result is null && resultContent.Result is not null)
+                            if (result is null && resultContent.Result is { } resultObj)
                             {
-                                try
+                                switch (resultObj)
                                 {
-                                    result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
-                                }
-                                catch (NotSupportedException)
-                                {
-                                    // If the type can't be serialized, skip it.
+                                    // https://github.com/openai/openai-dotnet/issues/759
+                                    // Once OpenAI supports other forms of tool call outputs, special-case various AIContent types here, e.g.
+                                    // case DataContent
+                                    // case HostedFileContent
+                                    // case IEnumerable<AIContent>
+                                    // etc.
+
+                                    default:
+                                        try
+                                        {
+                                            result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
+                                        }
+                                        catch (NotSupportedException)
+                                        {
+                                            // If the type can't be serialized, skip it.
+                                        }
+                                        break;
                                 }
                             }
 
@@ -881,52 +980,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 (destination.Annotations ??= []).Add(ca);
             }
         }
-    }
-
-    /// <summary>Convert a list of <see cref="AIContent"/>s to a list of <see cref="ResponseContentPart"/>.</summary>
-    private static List<ResponseContentPart> ToResponseContentParts(IList<AIContent> contents)
-    {
-        List<ResponseContentPart> parts = [];
-        foreach (var content in contents)
-        {
-            switch (content)
-            {
-                case AIContent when content.RawRepresentation is ResponseContentPart rawRep:
-                    parts.Add(rawRep);
-                    break;
-
-                case TextContent textContent:
-                    parts.Add(ResponseContentPart.CreateInputTextPart(textContent.Text));
-                    break;
-
-                case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
-                    parts.Add(ResponseContentPart.CreateInputImagePart(uriContent.Uri));
-                    break;
-
-                case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
-                    parts.Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
-                    break;
-
-                case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
-                    parts.Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
-                    break;
-
-                case HostedFileContent fileContent:
-                    parts.Add(ResponseContentPart.CreateInputFilePart(fileContent.FileId));
-                    break;
-
-                case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
-                    parts.Add(ResponseContentPart.CreateRefusalPart(errorContent.Message));
-                    break;
-            }
-        }
-
-        if (parts.Count == 0)
-        {
-            parts.Add(ResponseContentPart.CreateInputTextPart(string.Empty));
-        }
-
-        return parts;
     }
 
     /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="mtci"/> into <paramref name="contents"/>.</summary>

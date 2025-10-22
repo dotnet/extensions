@@ -20,11 +20,14 @@
       "TemplatePackageVersion_{PackageName}"
       where {PackageName} is the package ID with '.' characters removed.
       The value of each property will be the computed package version.
+
+      IMPORTANT: Internal packages that ship at a different cadence than these project templates should
+                 be referenced using explicit package versions instead (see the "ComputeGeneratedContentProperties"
+                 target below).
     -->
     <ItemGroup>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj"></PackageVersionVariableReference>
-      <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj"></PackageVersionVariableReference>
     </ItemGroup>
   </Target>
 
@@ -40,6 +43,7 @@
       <TemplatePackageVersion_AzureSearchDocuments>11.6.1</TemplatePackageVersion_AzureSearchDocuments>
       <TemplatePackageVersion_CommunityToolkitAspire>9.4.1-beta.291</TemplatePackageVersion_CommunityToolkitAspire>
       <TemplatePackageVersion_MicrosoftExtensionsHosting>10.0.0-preview.6.25358.103</TemplatePackageVersion_MicrosoftExtensionsHosting>
+      <TemplatePackageVersion_MicrosoftExtensionsHttpResilience>9.10.0</TemplatePackageVersion_MicrosoftExtensionsHttpResilience>
       <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>9.3.1</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
       <TemplatePackageVersion_MicrosoftSemanticKernel>1.61.0</TemplatePackageVersion_MicrosoftSemanticKernel>
       <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.61.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
@@ -66,6 +70,7 @@
         TemplatePackageVersion_AzureSearchDocuments=$(TemplatePackageVersion_AzureSearchDocuments);
         TemplatePackageVersion_CommunityToolkitAspire=$(TemplatePackageVersion_CommunityToolkitAspire);
         TemplatePackageVersion_MicrosoftExtensionsHosting=$(TemplatePackageVersion_MicrosoftExtensionsHosting);
+        TemplatePackageVersion_MicrosoftExtensionsHttpResilience=$(TemplatePackageVersion_MicrosoftExtensionsHttpResilience);
         TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery=$(TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery);
         TemplatePackageVersion_MicrosoftSemanticKernel=$(TemplatePackageVersion_MicrosoftSemanticKernel);
         TemplatePackageVersion_MicrosoftSemanticKernel_Preview=$(TemplatePackageVersion_MicrosoftSemanticKernel_Preview);

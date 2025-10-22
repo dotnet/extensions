@@ -74,7 +74,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         ChatOptions chatOptions = new()
         {
-            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp") { ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire }],
+            Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp")) { ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire }],
         };
 
         ChatResponse response = await CreateChatClient()!.GetResponseAsync("Which tools are available on the wiki_tools MCP server?", chatOptions);
@@ -96,7 +96,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         {
             ChatOptions chatOptions = new()
             {
-                Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+                Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
                     {
                         ApprovalMode = requireSpecific ?
                             HostedMcpServerToolApprovalMode.RequireSpecific(null, ["read_wiki_structure", "ask_question"]) :
@@ -136,7 +136,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         {
             ChatOptions chatOptions = new()
             {
-                Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+                Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
                     {
                         ApprovalMode = requireSpecific ?
                             HostedMcpServerToolApprovalMode.RequireSpecific(["read_wiki_structure", "ask_question"], null) :
@@ -337,5 +337,64 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         Assert.Contains("5:43", responseText);
         Assert.Equal(1, callCount);
+    }
+
+    [ConditionalFact]
+    public async Task RemoteMCP_Connector()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["RemoteMCP:ConnectorAccessToken"] is not string accessToken)
+        {
+            throw new SkipTestException(
+                "To run this test, set a value for RemoteMCP:ConnectorAccessToken. " +
+                "You can obtain one by following https://platform.openai.com/docs/guides/tools-connectors-mcp?quickstart-panels=connector#authorizing-a-connector.");
+        }
+
+        await RunAsync(false, false);
+        await RunAsync(true, true);
+
+        async Task RunAsync(bool streaming, bool approval)
+        {
+            ChatOptions chatOptions = new()
+            {
+                Tools = [new HostedMcpServerTool("calendar", "connector_googlecalendar")
+                    {
+                        ApprovalMode = approval ?
+                                HostedMcpServerToolApprovalMode.AlwaysRequire :
+                                HostedMcpServerToolApprovalMode.NeverRequire,
+                        AuthorizationToken = accessToken
+                    }
+                ],
+            };
+
+            using var client = CreateChatClient()!;
+
+            List<ChatMessage> input = [new ChatMessage(ChatRole.User, "What is on my calendar for today?")];
+
+            ChatResponse response = streaming ?
+                await client.GetStreamingResponseAsync(input, chatOptions).ToChatResponseAsync() :
+                await client.GetResponseAsync(input, chatOptions);
+
+            if (approval)
+            {
+                input.AddRange(response.Messages);
+                var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
+                Assert.Equal("search_events", approvalRequest.ToolCall.ToolName);
+                input.Add(new ChatMessage(ChatRole.Tool, [approvalRequest.CreateResponse(true)]));
+
+                response = streaming ?
+                    await client.GetStreamingResponseAsync(input, chatOptions).ToChatResponseAsync() :
+                    await client.GetResponseAsync(input, chatOptions);
+            }
+
+            Assert.NotNull(response);
+            var toolCall = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
+            Assert.Equal("search_events", toolCall.ToolName);
+
+            var toolResult = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
+            var content = Assert.IsType<TextContent>(Assert.Single(toolResult.Output!));
+            Assert.Equal(@"{""events"": [], ""next_page_token"": null}", content.Text);
+        }
     }
 }
