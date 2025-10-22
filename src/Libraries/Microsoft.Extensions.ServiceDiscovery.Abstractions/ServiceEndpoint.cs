@@ -65,7 +65,9 @@ public abstract class ServiceEndpoint
     {
         if (!string.IsNullOrWhiteSpace(value))
         {
+#pragma warning disable CS8602
             if (value.IndexOf("://", StringComparison.Ordinal) < 0 && Uri.TryCreate($"fakescheme://{value}", default, out var uri))
+#pragma warning restore CS8602
             {
                 var port = uri.Port > 0 ? uri.Port : 0;
                 return IPAddress.TryParse(uri.Host, out var ip)
