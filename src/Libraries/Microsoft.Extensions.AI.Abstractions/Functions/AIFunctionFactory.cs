@@ -844,10 +844,11 @@ public static partial class AIFunctionFactory
             // For IServiceProvider parameters, we bind to the services passed to InvokeAsync via AIFunctionArguments.
             if (parameterType == typeof(IServiceProvider))
             {
+                bool hasDefault = AIJsonUtilities.TryGetEffectiveDefaultValue(parameter, out _);
                 return (arguments, _) =>
                 {
                     IServiceProvider? services = arguments.Services;
-                    if (!AIJsonUtilities.HasEffectiveDefaultValue(parameter) && services is null)
+                    if (!hasDefault && services is null)
                     {
                         ThrowNullServices(parameter.Name);
                     }
@@ -859,6 +860,7 @@ public static partial class AIFunctionFactory
             // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary.
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             JsonTypeInfo? typeInfo = serializerOptions.GetTypeInfo(parameterType);
+            bool hasDefaultValue = AIJsonUtilities.TryGetEffectiveDefaultValue(parameter, out object? effectiveDefaultValue);
             return (arguments, _) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
@@ -907,13 +909,13 @@ public static partial class AIFunctionFactory
                 }
 
                 // If the parameter is required and there's no argument specified for it, throw.
-                if (!AIJsonUtilities.HasEffectiveDefaultValue(parameter))
+                if (!hasDefaultValue)
                 {
                     Throw.ArgumentException(nameof(arguments), $"The arguments dictionary is missing a value for the required parameter '{parameter.Name}'.");
                 }
 
                 // Otherwise, use the optional parameter's default value.
-                return AIJsonUtilities.GetEffectiveDefaultValue(parameter);
+                return effectiveDefaultValue;
             };
 
             // Throws an ArgumentNullException indicating that AIFunctionArguments.Services must be provided.
