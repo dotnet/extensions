@@ -5,7 +5,6 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using Microsoft.Shared.Diagnostics;
@@ -53,7 +52,6 @@ public abstract class HttpDependencyMetadataResolver
         _frozenProcessedMetadataMap = ProcessDependencyMetadata(dependencyTrieMap).ToFrozenDictionary(StringComparer.Ordinal);
     }
 
-#if !NET462 
     /// <summary>
     /// Gets request metadata for the specified HTTP request message.
     /// </summary>
@@ -77,27 +75,6 @@ public abstract class HttpDependencyMetadataResolver
             return null;
         }
     }
-#else
-    /// <summary>
-    /// Gets request metadata for the specified HTTP web request.
-    /// </summary>
-    /// <param name="requestMessage">The HTTP web request.</param>
-    /// <returns>The resolved <see cref="RequestMetadata"/> if found; otherwise, <see langword="null"/>.</returns>
-    public virtual RequestMetadata? GetRequestMetadata(HttpWebRequest requestMessage)
-    {
-        try
-        {
-            var hostMetadata = GetHostMetadata(requestMessage.RequestUri.Host);
-            return GetRequestMetadataInternal(requestMessage.Method, requestMessage.RequestUri.AbsolutePath, hostMetadata);
-        }
-        catch (Exception)
-        {
-            // Catch exceptions here to avoid impacting services if a bug ever gets introduced in this path.
-            return null;
-        }
-    }
-#endif
-
     private static char[] MakeToUpperArray()
     {
         // Initialize the _toUpper array for quick conversion of any ascii char to upper
