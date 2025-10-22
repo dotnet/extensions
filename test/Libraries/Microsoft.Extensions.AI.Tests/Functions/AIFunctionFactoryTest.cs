@@ -65,11 +65,11 @@ public partial class AIFunctionFactoryTest
     public async Task Parameters_DefaultValueAttributeIsRespected_Async()
     {
         // Test with null default value
-        AIFunction funcNull = AIFunctionFactory.Create(([DefaultValue(null)] string? s) => s ?? "was null");
+        AIFunction funcNull = AIFunctionFactory.Create(([DefaultValue(null)] string? text) => text ?? "was null");
 
-        // Schema should not list 's' as required and should have default value
+        // Schema should not list 'text' as required and should have default value
         string schema = funcNull.JsonSchema.ToString();
-        Assert.Contains("\"s\"", schema);
+        Assert.Contains("\"text\"", schema);
         Assert.DoesNotContain("\"required\"", schema);
         Assert.Contains("\"default\":null", schema);
 
@@ -77,16 +77,16 @@ public partial class AIFunctionFactoryTest
         AssertExtensions.EqualFunctionCallResults("was null", await funcNull.InvokeAsync());
 
         // Should be overridable
-        AssertExtensions.EqualFunctionCallResults("hello", await funcNull.InvokeAsync(new() { ["s"] = "hello" }));
+        AssertExtensions.EqualFunctionCallResults("hello", await funcNull.InvokeAsync(new() { ["text"] = "hello" }));
 
         // Test with non-null default value
-        AIFunction funcValue = AIFunctionFactory.Create(([DefaultValue("default")] string s) => s);
+        AIFunction funcValue = AIFunctionFactory.Create(([DefaultValue("default")] string text) => text);
         schema = funcValue.JsonSchema.ToString();
         Assert.DoesNotContain("\"required\"", schema);
         Assert.Contains("\"default\":\"default\"", schema);
 
         AssertExtensions.EqualFunctionCallResults("default", await funcValue.InvokeAsync());
-        AssertExtensions.EqualFunctionCallResults("custom", await funcValue.InvokeAsync(new() { ["s"] = "custom" }));
+        AssertExtensions.EqualFunctionCallResults("custom", await funcValue.InvokeAsync(new() { ["text"] = "custom" }));
 
         // Test with int default value
         AIFunction funcInt = AIFunctionFactory.Create(([DefaultValue(42)] int x) => x * 2);
