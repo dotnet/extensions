@@ -105,10 +105,10 @@ public class OpenTelemetryChatClientTests
         List<ChatMessage> messages =
         [
             new(ChatRole.System, "You are a close friend."),
-            new(ChatRole.User, "Hey!"),
+            new(ChatRole.User, "Hey!") { AuthorName = "Alice" },
             new(ChatRole.Assistant, [new FunctionCallContent("12345", "GetPersonName")]),
             new(ChatRole.Tool, [new FunctionResultContent("12345", "John")]),
-            new(ChatRole.Assistant, "Hey John, what's up?"),
+            new(ChatRole.Assistant, "Hey John, what's up?") { AuthorName = "BotAssistant" },
             new(ChatRole.User, "What's the biggest animal?")
         ];
 
@@ -201,6 +201,7 @@ public class OpenTelemetryChatClientTests
                   },
                   {
                     "role": "user",
+                    "name": "Alice",
                     "parts": [
                       {
                         "type": "text",
@@ -230,6 +231,7 @@ public class OpenTelemetryChatClientTests
                   },
                   {
                     "role": "assistant",
+                    "name": "BotAssistant",
                     "parts": [
                       {
                         "type": "text",
@@ -400,89 +402,6 @@ public class OpenTelemetryChatClientTests
     }
 
     private sealed class NonSerializableAIContent : AIContent;
-
-    [Fact]
-    public async Task AuthorName_IncludedInTelemetry()
-    {
-        var sourceName = Guid.NewGuid().ToString();
-        var activities = new List<Activity>();
-        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
-            .AddSource(sourceName)
-            .AddInMemoryExporter(activities)
-            .Build();
-
-        using var innerClient = new TestChatClient
-        {
-            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
-            {
-                await Task.Yield();
-                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Response"));
-            },
-        };
-
-        using var chatClient = innerClient
-            .AsBuilder()
-            .UseOpenTelemetry(null, sourceName, configure: instance =>
-            {
-                instance.EnableSensitiveData = true;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
-            })
-            .Build();
-
-        List<ChatMessage> messages =
-        [
-            new(ChatRole.User, "Hello!") { AuthorName = "Alice" },
-            new(ChatRole.Assistant, "Hi there!") { AuthorName = "BotAssistant" },
-            new(ChatRole.User, "How are you?") { AuthorName = "Bob" },
-        ];
-
-        var response = await chatClient.GetResponseAsync(messages);
-        Assert.NotNull(response);
-
-        var activity = Assert.Single(activities);
-        Assert.NotNull(activity);
-
-        var inputMessages = activity.Tags.First(kvp => kvp.Key == "gen_ai.input.messages").Value;
-        Assert.Contains("\"name\": \"Alice\"", inputMessages);
-        Assert.Contains("\"name\": \"BotAssistant\"", inputMessages);
-        Assert.Contains("\"name\": \"Bob\"", inputMessages);
-
-        // Verify the exact structure
-        Assert.Equal(ReplaceWhitespace("""
-                [
-                  {
-                    "role": "user",
-                    "name": "Alice",
-                    "parts": [
-                      {
-                        "type": "text",
-                        "content": "Hello!"
-                      }
-                    ]
-                  },
-                  {
-                    "role": "assistant",
-                    "name": "BotAssistant",
-                    "parts": [
-                      {
-                        "type": "text",
-                        "content": "Hi there!"
-                      }
-                    ]
-                  },
-                  {
-                    "role": "user",
-                    "name": "Bob",
-                    "parts": [
-                      {
-                        "type": "text",
-                        "content": "How are you?"
-                      }
-                    ]
-                  }
-                ]
-                """), ReplaceWhitespace(inputMessages));
-    }
 
     private static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
 }
