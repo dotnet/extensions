@@ -3,10 +3,12 @@
   <PropertyGroup>
     <!--  Multidimensional arrays should not be used -->
     <NoWarn>$(NoWarn);S3967</NoWarn>
+    <!--  Project reference can be removed -->
+    <NoWarn>$(NoWarn);RT0002</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion.Abstractions\Microsoft.Extensions.DataIngestion.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj" />
   </ItemGroup>
 
 </Project>
