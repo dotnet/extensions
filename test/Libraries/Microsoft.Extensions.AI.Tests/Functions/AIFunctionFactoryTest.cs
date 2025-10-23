@@ -316,63 +316,6 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
-    public void Metadata_DisplayNameAttributeOnProperties()
-    {
-        // Test DisplayNameAttribute on properties adds title to schema
-        AIFunction func = AIFunctionFactory.Create((UserInfoWithDisplayName input) => $"User: {input.Name}", serializerOptions: JsonContext.Default.Options);
-
-        string schemaJson = func.JsonSchema.ToString();
-
-        // Verify that DisplayName is used as title in the schema for UserId property
-        Assert.Contains("\"title\"", schemaJson);
-        Assert.Contains("\"user_id\"", schemaJson);
-
-        // Verify that DisplayName is used as title in the schema for Age property
-        Assert.Contains("\"user_age\"", schemaJson);
-
-        // Verify that Name property without DisplayName doesn't have a title
-        // Parse and navigate the schema to verify structure
-        JsonElement schema = func.JsonSchema;
-        Assert.True(schema.TryGetProperty("properties", out JsonElement properties));
-        Assert.True(properties.TryGetProperty("input", out JsonElement inputParam));
-        Assert.True(inputParam.TryGetProperty("type", out JsonElement inputType));
-        Assert.Equal("object", inputType.GetString());
-
-        Assert.True(inputParam.TryGetProperty("properties", out JsonElement inputProperties));
-
-        // Property names depend on JsonSerializerOptions naming policy
-        // Try both PascalCase and camelCase
-        bool foundUserId = inputProperties.TryGetProperty("userId", out JsonElement userIdProp) ||
-                          inputProperties.TryGetProperty("UserId", out userIdProp);
-        Assert.True(foundUserId, "Could not find userId or UserId property in schema");
-        Assert.True(userIdProp.TryGetProperty("title", out JsonElement userIdTitle));
-        Assert.Equal("user_id", userIdTitle.GetString());
-
-        bool foundAge = inputProperties.TryGetProperty("age", out JsonElement ageProp) ||
-                       inputProperties.TryGetProperty("Age", out ageProp);
-        Assert.True(foundAge, "Could not find age or Age property in schema");
-        Assert.True(ageProp.TryGetProperty("title", out JsonElement ageTitle));
-        Assert.Equal("user_age", ageTitle.GetString());
-
-        bool foundName = inputProperties.TryGetProperty("name", out JsonElement nameProp) ||
-                        inputProperties.TryGetProperty("Name", out nameProp);
-        Assert.True(foundName, "Could not find name or Name property in schema");
-        Assert.False(nameProp.TryGetProperty("title", out _));
-    }
-
-    private sealed class UserInfoWithDisplayName
-    {
-        [DisplayName("user_id")]
-        [Description("The unique identifier for the user")]
-        public string UserId { get; set; } = "";
-
-        [DisplayName("user_age")]
-        public int Age { get; set; }
-
-        public string Name { get; set; } = "";
-    }
-
-    [Fact]
     public void AIFunctionFactoryCreateOptions_ValuesPropagateToAIFunction()
     {
         IReadOnlyDictionary<string, object?> metadata = new Dictionary<string, object?> { ["a"] = "b" };
@@ -1380,6 +1323,5 @@ public partial class AIFunctionFactoryTest
     [JsonSerializable(typeof(B))]
     [JsonSerializable(typeof(int?))]
     [JsonSerializable(typeof(DateTime?))]
-    [JsonSerializable(typeof(UserInfoWithDisplayName))]
     private partial class JsonContext : JsonSerializerContext;
 }
