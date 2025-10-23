@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Sdk Name="Aspire.AppHost.Sdk" Version="9.5.2" />
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.5.1" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,9 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.2" />
-    <PackageReference Include="Aspire.Hosting.Azure.Search" Version="9.5.2" />
-    <PackageReference Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.5.2" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.1" />
+    <PackageReference Include="Aspire.Hosting.Azure.Search" Version="9.5.1" />
+    <PackageReference Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.5.1" />
   </ItemGroup>
 
   <ItemGroup>

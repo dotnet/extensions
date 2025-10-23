@@ -33,8 +33,8 @@
       Specifies external packages that get referenced in generated template content.
     -->
     <PropertyGroup>
-      <TemplatePackageVersion_Aspire>9.5.2</TemplatePackageVersion_Aspire>
-      <TemplatePackageVersion_Aspire_Preview>9.5.2-preview.1.25522.3</TemplatePackageVersion_Aspire_Preview>
+      <TemplatePackageVersion_Aspire>9.5.1</TemplatePackageVersion_Aspire>
+      <TemplatePackageVersion_Aspire_Preview>9.5.1-preview.1.25502.11</TemplatePackageVersion_Aspire_Preview>
       <TemplatePackageVersion_AzureAIProjects>1.0.0</TemplatePackageVersion_AzureAIProjects>
       <TemplatePackageVersion_AzureIdentity>1.17.0</TemplatePackageVersion_AzureIdentity>
       <TemplatePackageVersion_AzureSearchDocuments>11.7.0</TemplatePackageVersion_AzureSearchDocuments>
