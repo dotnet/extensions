@@ -1,14 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.VectorData;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.VectorData;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
 
+/// <summary>
+/// Writes chunks to the <see cref="VectorStore"/> using dynamic schema. 
+/// </summary>
+/// <typeparam name="T">The type of the chunk content.</typeparam>
 public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
 {
     // The names are lowercase with no special characters to ensure compatibility with various vector stores.
@@ -26,42 +31,43 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
     private VectorStoreCollection<object, Dictionary<string, object?>>? _vectorStoreCollection;
 
     /// <summary>
-    /// Creates a new instance of <see cref="VectorStoreCollection{TKey, Dictionary{string, object?}}"/> that uses dynamic schema to store the <see cref="IngestionChunk"/> instances as <see cref="Dictionary{string, object?}"/> using provided vector store, collection name and dimension count.
+    /// Initializes a new instance of the <see cref="VectorStoreWriter{T}"/> class.
     /// </summary>
-    /// <param name="vectorStore">The <see cref="VectorStore"/> to use to store the <see cref="IngestionChunk"/> instances.</param>
+    /// <param name="vectorStore">The <see cref="VectorStore"/> to use to store the <see cref="IngestionChunk{T}"/> instances.</param>
     /// <param name="dimensionCount">The number of dimensions that the vector has. This value is required when creating collections.</param>
     /// <param name="options">The options for the vector store writer.</param>
     /// <exception cref="ArgumentNullException">When <paramref name="vectorStore"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">When <paramref name="dimensionCount"/> is less or equal zero.</exception>
     public VectorStoreWriter(VectorStore vectorStore, int dimensionCount, VectorStoreWriterOptions? options = default)
     {
-        _vectorStore = vectorStore ?? throw new ArgumentNullException(nameof(vectorStore));
-        _dimensionCount = dimensionCount > 0 ? dimensionCount : throw new ArgumentOutOfRangeException(nameof(dimensionCount));
+        _vectorStore = Throw.IfNull(vectorStore);
+        _dimensionCount = Throw.IfLessThanOrEqual(dimensionCount, 0);
         _options = options ?? new VectorStoreWriterOptions();
+
         // Not all vector store support string as the key type, examples:
         // Qdrant: https://github.com/microsoft/semantic-kernel/blob/28ea2f4df872e8fd03ef0792ebc9e1989b4be0ee/dotnet/src/VectorData/Qdrant/QdrantCollection.cs#L104
         // When https://github.com/microsoft/semantic-kernel/issues/13141 gets released,
-        // we are going to support Guid keys as well.
+        // we need to remoe this workaround.
         _keysAreStrings = vectorStore.GetType().Name != "QdrantVectorStore";
     }
 
+    /// <summary>
+    /// Gets the underlying <see cref="VectorStoreCollection{TKey,TRecord}"/> used to store the chunks.
+    /// </summary>
+    /// <remarks>
+    /// The collection is initialized when <see cref="WriteAsync(IAsyncEnumerable{IngestionChunk{T}}, CancellationToken)"/> is called for the first time.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">The collection has not been initialized yet.
+    /// Call <see cref="WriteAsync(IAsyncEnumerable{IngestionChunk{T}}, CancellationToken)"/> first.</exception>
     public VectorStoreCollection<object, Dictionary<string, object?>> VectorStoreCollection
         => _vectorStoreCollection ?? throw new InvalidOperationException("The collection has not been initialized yet. Call WriteAsync first.");
 
-    protected override void Dispose(bool disposing)
-    {
-        _vectorStore.Dispose();
-        _vectorStoreCollection?.Dispose();
-    }
-
+    /// <inheritdoc/>
     public override async Task WriteAsync(IAsyncEnumerable<IngestionChunk<T>> chunks, CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
+        _ = Throw.IfNull(chunks);
 
-        if (chunks is null)
-        {
-            throw new ArgumentNullException(nameof(chunks));
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
         IReadOnlyList<object>? preExistingKeys = null;
         await foreach (IngestionChunk<T> chunk in chunks.WithCancellation(cancellationToken))
@@ -73,15 +79,12 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
                 await _vectorStoreCollection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            if (preExistingKeys is null)
-            {
-                // We obtain the IDs of the pre-existing chunks for given document,
-                // and delete them after we finish inserting the new chunks.
-                // To avoid a situation where we delete the chunks and then fail to insert the new ones.
-                preExistingKeys = await GetPreExistingChunksIds(chunk.Document, cancellationToken).ConfigureAwait(false);
-            }
+            // We obtain the IDs of the pre-existing chunks for given document,
+            // and delete them after we finish inserting the new chunks.
+            // To avoid a situation where we delete the chunks and then fail to insert the new ones.
+            preExistingKeys ??= await GetPreExistingChunksIdsAsync(chunk.Document, cancellationToken).ConfigureAwait(false);
 
-            Guid key = Guid.NewGuid();
+            var key = Guid.NewGuid();
             Dictionary<string, object?> record = new()
             {
                 [KeyName] = _keysAreStrings ? key.ToString() : key,
@@ -108,6 +111,20 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
         }
     }
 
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        try
+        {
+            _vectorStore.Dispose();
+            _vectorStoreCollection?.Dispose();
+        }
+        finally
+        {
+            base.Dispose(disposing);
+        }
+    }
+
     private VectorStoreCollectionDefinition GetVectorStoreRecordDefinition(IngestionChunk<T> representativeChunk)
     {
         VectorStoreCollectionDefinition definition = new()
@@ -115,6 +132,7 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
             Properties =
             {
                 new VectorStoreKeyProperty(KeyName, _keysAreStrings ? typeof(string) : typeof(Guid)),
+
                 // By using T as the type here we allow the vector store
                 // to handle the conversion from T to the actual vector type it supports.
                 new VectorStoreVectorProperty(EmbeddingName, typeof(T), _dimensionCount)
@@ -135,20 +153,23 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
             foreach (var metadata in representativeChunk.Metadata)
             {
                 Type propertyType = metadata.Value.GetType();
+#pragma warning disable CA1308 // Normalize strings to uppercase
                 definition.Properties.Add(new VectorStoreDataProperty(metadata.Key, propertyType)
                 {
                     // We use lowercase storage names to ensure compatibility with various vector stores.
                     StorageName = metadata.Key.ToLowerInvariant()
+
                     // We could consider indexing for certain keys like classification etc. but for now we leave it as non-indexed.
                     // The reason is that not every DB supports it, moreover we would need to expose the ability to configure it.
                 });
+#pragma warning restore CA1308 // Normalize strings to uppercase
             }
         }
 
         return definition;
     }
 
-    private async Task<IReadOnlyList<object>> GetPreExistingChunksIds(IngestionDocument document, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<object>> GetPreExistingChunksIdsAsync(IngestionDocument document, CancellationToken cancellationToken)
     {
         if (!_options.IncrementalIngestion)
         {
@@ -167,12 +188,13 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
             await foreach (var record in _vectorStoreCollection!.GetAsync(
                 filter: record => (string)record[DocumentIdName]! == document.Identifier,
                 top: MaxTopCount,
-                cancellationToken: cancellationToken))
+                cancellationToken: cancellationToken).ConfigureAwait(false))
             {
                 keys.Add(record[KeyName]!);
                 insertedCount++;
             }
-        } while (insertedCount == MaxTopCount);
+        }
+        while (insertedCount == MaxTopCount);
 
         return keys;
     }

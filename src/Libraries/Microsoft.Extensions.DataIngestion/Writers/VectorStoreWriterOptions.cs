@@ -5,12 +5,15 @@ using System;
 
 namespace Microsoft.Extensions.DataIngestion;
 
+/// <summary>
+/// Represents options for the <see cref="VectorStoreWriter{T}"/>.
+/// </summary>
 public sealed class VectorStoreWriterOptions
 {
     private string _collectionName = "chunks";
 
     /// <summary>
-    /// The name of the collection. When not provided, "chunks" will be used.
+    /// Gets or sets the name of the collection. When not provided, "chunks" will be used.
     /// </summary>
     public string CollectionName
     {
@@ -19,13 +22,19 @@ public sealed class VectorStoreWriterOptions
     }
 
     /// <summary>
-    /// The distance function to use when creating the collection. When not provided, the default specific to given database will be used. Check <see cref="VectorData.DistanceFunction"/> for available values.
+    /// Gets or sets the distance function to use when creating the collection.
     /// </summary>
+    /// <remarks>
+    /// When not provided, the default specific to given database will be used. Check <see cref="VectorData.DistanceFunction"/> for available values.
+    /// </remarks>
     public string? DistanceFunction { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether to perform incremental ingestion.
+    /// </summary>
+    /// <remarks>
     /// When enabled, the writer will delete the chunks for the given document before inserting the new ones.
     /// So the ingestion will "replace" the existing chunks for the document with the new ones.
-    /// </summary>
-    public bool IncrementalIngestion { get; set; } = false;
+    /// </remarks>
+    public bool IncrementalIngestion { get; set; }
 }
