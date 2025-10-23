@@ -47,7 +47,7 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
         // Not all vector store support string as the key type, examples:
         // Qdrant: https://github.com/microsoft/semantic-kernel/blob/28ea2f4df872e8fd03ef0792ebc9e1989b4be0ee/dotnet/src/VectorData/Qdrant/QdrantCollection.cs#L104
         // When https://github.com/microsoft/semantic-kernel/issues/13141 gets released,
-        // we need to remoe this workaround.
+        // we need to remove this workaround.
         _keysAreStrings = vectorStore.GetType().Name != "QdrantVectorStore";
     }
 
