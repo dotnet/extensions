@@ -9,6 +9,7 @@
     <!--  Convert abstract class into interface -->
     <NoWarn>$(NoWarn);S1694</NoWarn>
     <Stage>preview</Stage>
+    <EnablePackageValidation>false</EnablePackageValidation> 
   </PropertyGroup>
 
   <ItemGroup>
