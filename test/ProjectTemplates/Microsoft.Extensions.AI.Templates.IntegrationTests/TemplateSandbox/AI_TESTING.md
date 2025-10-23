@@ -18,7 +18,8 @@ For each `<test ai_status="pending">` in `output/AI_TODO.txt`: run the test proj
 
 ## CONSTITUTION
 
-* Start by creating an individual TODO for each pending test in `AI_TODO.txt`.
+* Start by creating an individual TODO for each pending test in `AI_TODO.txt`
+* Run each test as its own subagent
 * Don't run any commands other than variations of the ones listed below:
 * `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/Start-Project.ps1`
 * `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/Stop-Project.ps1`
