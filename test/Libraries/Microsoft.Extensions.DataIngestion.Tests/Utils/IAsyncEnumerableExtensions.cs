@@ -32,15 +32,20 @@ internal static class IAsyncEnumerableExtensions
 
     internal static async ValueTask<T> SingleAsync<T>(this IAsyncEnumerable<T> source)
     {
-        int count = 0;
+        bool found = false;
         T result = default!;
         await foreach (T item in source)
         {
+            if (found)
+            {
+                throw new InvalidOperationException();
+            }
+
             result = item;
-            count++;
+            found = true;
         }
 
-        return count == 1
+        return found
             ? result
             : throw new InvalidOperationException();
     }
