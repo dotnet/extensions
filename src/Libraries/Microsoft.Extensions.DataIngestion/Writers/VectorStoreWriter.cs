@@ -11,7 +11,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.DataIngestion;
 
 /// <summary>
-/// Writes chunks to the <see cref="VectorStore"/> using dynamic schema. 
+/// Writes chunks to the <see cref="VectorStore"/> using the default schema. 
 /// </summary>
 /// <typeparam name="T">The type of the chunk content.</typeparam>
 public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
@@ -67,8 +67,6 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
     {
         _ = Throw.IfNull(chunks);
 
-        cancellationToken.ThrowIfCancellationRequested();
-
         IReadOnlyList<object>? preExistingKeys = null;
         await foreach (IngestionChunk<T> chunk in chunks.WithCancellation(cancellationToken))
         {
@@ -80,8 +78,8 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
             }
 
             // We obtain the IDs of the pre-existing chunks for given document,
-            // and delete them after we finish inserting the new chunks.
-            // To avoid a situation where we delete the chunks and then fail to insert the new ones.
+            // and delete them after we finish inserting the new chunks,
+            // to avoid a situation where we delete the chunks and then fail to insert the new ones.
             preExistingKeys ??= await GetPreExistingChunksIdsAsync(chunk.Document, cancellationToken).ConfigureAwait(false);
 
             var key = Guid.NewGuid();
@@ -116,11 +114,11 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
     {
         try
         {
-            _vectorStore.Dispose();
             _vectorStoreCollection?.Dispose();
         }
         finally
         {
+            _vectorStore.Dispose();
             base.Dispose(disposing);
         }
     }
@@ -137,7 +135,8 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
                 // to handle the conversion from T to the actual vector type it supports.
                 new VectorStoreVectorProperty(EmbeddingName, typeof(T), _dimensionCount)
                 {
-                    DistanceFunction = _options.DistanceFunction
+                    DistanceFunction = _options.DistanceFunction,
+                    IndexKind = _options.IndexKind
                 },
                 new VectorStoreDataProperty(ContentName, typeof(T)),
                 new VectorStoreDataProperty(ContextName, typeof(string)),
@@ -153,16 +152,16 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
             foreach (var metadata in representativeChunk.Metadata)
             {
                 Type propertyType = metadata.Value.GetType();
-#pragma warning disable CA1308 // Normalize strings to uppercase
                 definition.Properties.Add(new VectorStoreDataProperty(metadata.Key, propertyType)
                 {
                     // We use lowercase storage names to ensure compatibility with various vector stores.
+#pragma warning disable CA1308 // Normalize strings to uppercase
                     StorageName = metadata.Key.ToLowerInvariant()
+#pragma warning restore CA1308 // Normalize strings to uppercase
 
                     // We could consider indexing for certain keys like classification etc. but for now we leave it as non-indexed.
                     // The reason is that not every DB supports it, moreover we would need to expose the ability to configure it.
                 });
-#pragma warning restore CA1308 // Normalize strings to uppercase
             }
         }
 

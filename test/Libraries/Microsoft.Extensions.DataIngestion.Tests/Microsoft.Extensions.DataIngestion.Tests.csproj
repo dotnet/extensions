@@ -19,4 +19,9 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- We don't run Sqlite tests on Full Framework due to some native dependency issues -->
+    <Compile Remove="SqliteVectorStoreWriterTests.cs"  Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+  </ItemGroup>
+
 </Project>

@@ -3,44 +3,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Connectors.SqliteVec;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Tests;
 
-public class VectorStoreWriterTests
+public abstract class VectorStoreWriterTests
 {
-    public static IEnumerable<object[]> VectorStoreTestData
-    {
-        get
-        {
-            TestEmbeddingGenerator<string> first = new();
-            TestEmbeddingGenerator<string> second = new();
-
-            yield return new object[]
-            {
-                new SqliteVectorStore($"Data Source={Path.GetTempFileName()};Pooling=false", new() { EmbeddingGenerator = first }),
-                first
-            };
-            yield return new object[]
-            {
-                new InMemoryVectorStore(new() { EmbeddingGenerator = second }), second
-            };
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(VectorStoreTestData))]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1042:The member referenced by the MemberData attribute returns untyped data rows",
-        Justification = "Given members are not Serializable.")]
-    public async Task CanGenerateDynamicSchema(VectorStore vectorStore, TestEmbeddingGenerator<string> testEmbeddingGenerator)
+    [Fact]
+    public async Task CanGenerateDynamicSchema()
     {
         string documentId = Guid.NewGuid().ToString();
 
+        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
         using VectorStoreWriter<string> writer = new(
             vectorStore,
             dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
@@ -79,14 +56,13 @@ public class VectorStoreWriterTests
         }
     }
 
-    [Theory]
-    [MemberData(nameof(VectorStoreTestData))]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1042:The member referenced by the MemberData attribute returns untyped data rows",
-        Justification = "Given members are not Serializable.")]
-    public async Task DoesSupportIncrementalIngestion(VectorStore vectorStore, TestEmbeddingGenerator<string> _)
+    [Fact]
+    public async Task DoesSupportIncrementalIngestion()
     {
         string documentId = Guid.NewGuid().ToString();
 
+        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
         using VectorStoreWriter<string> writer = new(
             vectorStore,
             dimensionCount: TestEmbeddingGenerator<string>.DimensionCount,
@@ -139,4 +115,6 @@ public class VectorStoreWriterTests
         Assert.Equal("different content", record["content"]);
         Assert.Equal("value2", record["key1"]);
     }
+
+    protected abstract VectorStore CreateVectorStore(TestEmbeddingGenerator<string> testEmbeddingGenerator);
 }
