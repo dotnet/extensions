@@ -294,6 +294,86 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithAllowedTools_ProducesValidMcpTool()
+    {
+        var allowedTools = new List<string> { "tool1", "tool2", "tool3" };
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            AllowedTools = allowedTools
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.NotNull(tool.AllowedTools);
+        Assert.Equal(3, tool.AllowedTools.ToolNames.Count);
+        Assert.Contains("tool1", tool.AllowedTools.ToolNames);
+        Assert.Contains("tool2", tool.AllowedTools.ToolNames);
+        Assert.Contains("tool3", tool.AllowedTools.ToolNames);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithAlwaysRequireApprovalMode_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            ApprovalMode = HostedMcpServerToolApprovalMode.AlwaysRequire
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.NotNull(tool.ToolCallApprovalPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.GlobalPolicy);
+        Assert.Equal(GlobalMcpToolCallApprovalPolicy.AlwaysRequireApproval, tool.ToolCallApprovalPolicy.GlobalPolicy);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithNeverRequireApprovalMode_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.NotNull(tool.ToolCallApprovalPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.GlobalPolicy);
+        Assert.Equal(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval, tool.ToolCallApprovalPolicy.GlobalPolicy);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithRequireSpecificApprovalMode_ProducesValidMcpTool()
+    {
+        var alwaysRequireTools = new List<string> { "tool1", "tool2" };
+        var neverRequireTools = new List<string> { "tool3" };
+        var approvalMode = HostedMcpServerToolApprovalMode.RequireSpecific(alwaysRequireTools, neverRequireTools);
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            ApprovalMode = approvalMode
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.NotNull(tool.ToolCallApprovalPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.CustomPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval);
+        Assert.Equal(2, tool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval.ToolNames.Count);
+        Assert.Single(tool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval.ToolNames);
+        Assert.Contains("tool1", tool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval.ToolNames);
+        Assert.Contains("tool2", tool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval.ToolNames);
+        Assert.Contains("tool3", tool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval.ToolNames);
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_WithUnknownToolType_ReturnsNull()
     {
         var unknownTool = new UnknownAITool();
