@@ -31,8 +31,8 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
     /// <param name="chatClient">The chat client used for keyword extraction.</param>
     /// <param name="predefinedKeywords">The set of predefined keywords for extraction.</param>
     /// <param name="chatOptions">Options for the chat client.</param>
-    /// <param name="maxKeywords">The maximum number of keywords to extract.</param>
-    /// <param name="confidenceThreshold">The confidence threshold for keyword inclusion.</param>
+    /// <param name="maxKeywords">The maximum number of keywords to extract. When not provided, it defaults to 5.</param>
+    /// <param name="confidenceThreshold">The confidence threshold for keyword inclusion. When not provided, it defaults to 0.7.</param>
     /// <remarks>
     /// If no predefined keywords are provided, the model will extract keywords based on the content alone.
     /// Such results may vary more significantly between different AI models.

@@ -28,8 +28,8 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
     /// </summary>
     /// <param name="chatClient">The chat client used for sentiment analysis.</param>
     /// <param name="chatOptions">Options for the chat client.</param>
-    /// <param name="confidenceThreshold">The confidence threshold for sentiment determination.</param>
-    public SentimentEnricher(IChatClient chatClient, ChatOptions? chatOptions = null, double? confidenceThreshold = 0.7)
+    /// <param name="confidenceThreshold">The confidence threshold for sentiment determination. When not provided, it defaults to 0.7.</param>
+    public SentimentEnricher(IChatClient chatClient, ChatOptions? chatOptions = null, double? confidenceThreshold = null)
     {
         _chatClient = Throw.IfNull(chatClient);
         _chatOptions = chatOptions;

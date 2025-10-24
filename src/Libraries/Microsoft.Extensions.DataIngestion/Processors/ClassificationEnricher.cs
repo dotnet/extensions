@@ -30,7 +30,7 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
     /// <param name="chatClient">The chat client used for classification.</param>
     /// <param name="predefinedClasses">The set of predefined classification classes.</param>
     /// <param name="chatOptions">Options for the chat client.</param>
-    /// <param name="fallbackClass">The fallback class to use when no suitable classification is found.</param>
+    /// <param name="fallbackClass">The fallback class to use when no suitable classification is found. When not provided, it defaults to "Unknown".</param>
     public ClassificationEnricher(IChatClient chatClient, ReadOnlySpan<string> predefinedClasses,
         ChatOptions? chatOptions = null, string? fallbackClass = null)
     {

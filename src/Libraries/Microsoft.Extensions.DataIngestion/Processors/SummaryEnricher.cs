@@ -28,7 +28,7 @@ public sealed class SummaryEnricher : IngestionChunkProcessor<string>
     /// </summary>
     /// <param name="chatClient">The chat client used for summary generation.</param>
     /// <param name="chatOptions">Options for the chat client.</param>
-    /// <param name="maxWordCount">The maximum number of words for the summary.</param>
+    /// <param name="maxWordCount">The maximum number of words for the summary. When not provided, it defaults to 100.</param>
     public SummaryEnricher(IChatClient chatClient, ChatOptions? chatOptions = null, int? maxWordCount = null)
     {
         _chatClient = Throw.IfNull(chatClient);
