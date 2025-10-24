@@ -21,6 +21,13 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     public static FunctionTool AsOpenAIResponseTool(this AIFunctionDeclaration function) =>
         OpenAIResponsesChatClient.ToResponseTool(Throw.IfNull(function));
 
+    /// <summary>Creates an OpenAI <see cref="ResponseTool"/> from an <see cref="AITool"/>.</summary>
+    /// <param name="tool">The tool to convert.</param>
+    /// <returns>An OpenAI <see cref="ResponseTool"/> representing <paramref name="tool"/> or <see langword="null"/> if there is no mapping.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="tool"/> is <see langword="null"/>.</exception>
+    public static ResponseTool? AsOpenAIResponseTool(this AITool tool)
+        => OpenAIResponsesChatClient.ToResponseTool(Throw.IfNull(tool));
+
     /// <summary>
     /// Creates an OpenAI <see cref="ResponseTextFormat"/> from a <see cref="ChatResponseFormat"/>.
     /// </summary>
