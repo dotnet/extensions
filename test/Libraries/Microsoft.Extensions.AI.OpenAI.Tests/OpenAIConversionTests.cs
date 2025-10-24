@@ -113,12 +113,14 @@ public class OpenAIConversionTests
     }
 
     [Fact]
-    public void AsOpenAIResponseTool_WithAIFunctionDeclaration_ProducesValidFunctionTool()
+    public void AsOpenAIResponseTool_WithAIFunctionTool_ProducesValidFunctionTool()
     {
-        var tool = _testFunction.AsOpenAIResponseTool();
+        var tool = MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTool(tool: _testFunction);
 
         Assert.NotNull(tool);
-        Assert.IsType<FunctionTool>(tool);
+        var functionTool = Assert.IsType<FunctionTool>(tool);
+        Assert.Equal("test_function", functionTool.FunctionName);
+        Assert.Equal("A test function for conversion", functionTool.FunctionDescription);
     }
 
     [Fact]
