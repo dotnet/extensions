@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.AI;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
 
@@ -20,31 +21,34 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
 {
     private readonly IChatClient _chatClient;
     private readonly ChatOptions? _chatOptions;
-    private readonly double _confidenceThreshold;
+    private readonly TextContent _request;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SentimentEnricher"/> class.
+    /// </summary>
+    /// <param name="chatClient">The chat client used for sentiment analysis.</param>
+    /// <param name="chatOptions">Options for the chat client.</param>
+    /// <param name="confidenceThreshold">The confidence threshold for sentiment determination.</param>
     public SentimentEnricher(IChatClient chatClient, ChatOptions? chatOptions = null, double? confidenceThreshold = 0.7)
     {
-        if (confidenceThreshold.HasValue && (confidenceThreshold < 0.0 || confidenceThreshold > 1.0))
-        {
-            throw new ArgumentOutOfRangeException(nameof(confidenceThreshold), "The confidence threshold must be between 0.0 and 1.0.");
-        }
-
-        _chatClient = chatClient ?? throw new ArgumentNullException(nameof(chatClient));
+        _chatClient = Throw.IfNull(chatClient);
         _chatOptions = chatOptions;
-        _confidenceThreshold = confidenceThreshold ?? 0.7;
+
+        double threshold = confidenceThreshold.HasValue ? Throw.IfOutOfRange(confidenceThreshold.Value, 0.0, 1.0) : 0.7;
+        _request = new("You are a sentiment analysis expert. Analyze the sentiment of the given text and return Positive/Negative/Neutral or" +
+            $" Unknown when confidence score is below {threshold}. Return just the value of the sentiment.");
     }
 
+    /// <summary>
+    /// Gets the metadata key used to store the sentiment.
+    /// </summary>
     public static string MetadataKey => "sentiment";
 
+    /// <inheritdoc/>
     public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IAsyncEnumerable<IngestionChunk<string>> chunks,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (chunks is null)
-        {
-            throw new ArgumentNullException(nameof(chunks));
-        }
+        _ = Throw.IfNull(chunks);
 
         await foreach (var chunk in chunks.WithCancellation(cancellationToken))
         {
@@ -52,10 +56,10 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
             [
                 new(ChatRole.User,
                 [
-                    new TextContent($"You are a sentiment analysis expert. Analyze the sentiment of the given text and return Positive/Negative/Neutral or Unknown when confidence score is below {_confidenceThreshold}. Return just the value of the sentiment."),
+                    _request,
                     new TextContent(chunk.Content),
                 ])
-            ], _chatOptions, cancellationToken: cancellationToken);
+            ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             chunk.Metadata[MetadataKey] = response.Text;
 

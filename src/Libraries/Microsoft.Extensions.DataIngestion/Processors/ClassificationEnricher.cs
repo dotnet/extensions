@@ -1,12 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.AI;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
 
@@ -22,30 +24,36 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
     private readonly ChatOptions? _chatOptions;
     private readonly TextContent _request;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ClassificationEnricher"/> class.
+    /// </summary>
+    /// <param name="chatClient">The chat client used for classification.</param>
+    /// <param name="predefinedClasses">The set of predefined classification classes.</param>
+    /// <param name="chatOptions">Options for the chat client.</param>
+    /// <param name="fallbackClass">The fallback class to use when no suitable classification is found.</param>
     public ClassificationEnricher(IChatClient chatClient, ReadOnlySpan<string> predefinedClasses,
         ChatOptions? chatOptions = null, string? fallbackClass = null)
     {
         if (predefinedClasses.Length == 0)
         {
-            throw new ArgumentException("Predefined classes must be provided.", nameof(predefinedClasses));
+            Throw.ArgumentException(nameof(predefinedClasses), "Predefined classes must be provided.");
         }
 
-        _chatClient = chatClient ?? throw new ArgumentNullException(nameof(chatClient));
+        _chatClient = Throw.IfNull(chatClient);
         _chatOptions = chatOptions;
         _request = CreateLlmRequest(predefinedClasses, string.IsNullOrEmpty(fallbackClass) ? "Unknown" : fallbackClass!);
     }
 
+    /// <summary>
+    /// Gets the metadata key used to store the classification.
+    /// </summary>
     public static string MetadataKey => "classification";
 
+    /// <inheritdoc />
     public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IAsyncEnumerable<IngestionChunk<string>> chunks,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (chunks is null)
-        {
-            throw new ArgumentNullException(nameof(chunks));
-        }
+        _ = Throw.IfNull(chunks);
 
         await foreach (IngestionChunk<string> chunk in chunks.WithCancellation(cancellationToken))
         {
@@ -56,7 +64,7 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
                     _request,
                     new TextContent(chunk.Content),
                 ])
-            ], _chatOptions, cancellationToken: cancellationToken);
+            ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             chunk.Metadata[MetadataKey] = response.Text;
 
@@ -65,13 +73,23 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
     }
 
     private static TextContent CreateLlmRequest(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
-        => new($"You are a classification expert. Analyze the given text and assign single, most relevant class. " +
-            $"Use only the following predefined classes: {Join(predefinedClasses)} and return {fallbackClass} when unable to classify.");
+    {
+        StringBuilder sb = new("You are a classification expert. Analyze the given text and assign single, most relevant class. ");
 
-    private static string Join(ReadOnlySpan<string> predefinedClasses)
-        => string.Join(", ", predefinedClasses!
-#if !NET
-                .ToArray()
-#endif
-        );
+#pragma warning disable IDE0058 // Expression value is never used
+        sb.Append("Use only the following predefined classes: ");
+        for (int i = 0; i < predefinedClasses.Length; i++)
+        {
+            sb.Append(predefinedClasses[i]);
+            if (i < predefinedClasses.Length - 1)
+            {
+                sb.Append(", ");
+            }
+        }
+
+        sb.Append(" and return ").Append(fallbackClass).Append(" when unable to classify.");
+#pragma warning restore IDE0058 // Expression value is never used
+
+        return new(sb.ToString());
+    }
 }

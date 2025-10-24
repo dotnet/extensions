@@ -1,10 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.AI;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
 
@@ -16,27 +17,30 @@ public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
 {
     private readonly IChatClient _chatClient;
     private readonly ChatOptions? _chatOptions;
+    private readonly TextContent _request;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ImageAlternativeTextEnricher"/> class.
+    /// </summary>
+    /// <param name="chatClient">The chat client used to get responses for generating alternative text.</param>
+    /// <param name="chatOptions">Options for the chat client.</param>
     public ImageAlternativeTextEnricher(IChatClient chatClient, ChatOptions? chatOptions = null)
     {
-        _chatClient = chatClient ?? throw new ArgumentNullException(nameof(chatClient));
+        _chatClient = Throw.IfNull(chatClient);
         _chatOptions = chatOptions;
+        _request = new("Write a detailed alternative text for this image with less than 50 words.");
     }
 
+    /// <inheritdoc/>
     public override async Task<IngestionDocument> ProcessAsync(IngestionDocument document, CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (document is null)
-        {
-            throw new ArgumentNullException(nameof(document));
-        }
+        _ = Throw.IfNull(document);
 
         foreach (var element in document.EnumerateContent())
         {
             if (element is IngestionDocumentImage image)
             {
-                await ProcessAsync(image, cancellationToken);
+                await ProcessAsync(image, cancellationToken).ConfigureAwait(false);
             }
             else if (element is IngestionDocumentTable table)
             {
@@ -44,7 +48,7 @@ public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
                 {
                     if (cell is IngestionDocumentImage cellImage)
                     {
-                        await ProcessAsync(cellImage, cancellationToken);
+                        await ProcessAsync(cellImage, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
@@ -62,10 +66,10 @@ public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
             [
                 new(ChatRole.User,
                 [
-                    new TextContent("Write a detailed alternative text for this image with less than 50 words."),
+                    _request,
                     new DataContent(image.Content.Value, image.MediaType!),
                 ])
-            ], _chatOptions, cancellationToken: cancellationToken);
+            ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             image.AlternativeText = response.Text;
         }

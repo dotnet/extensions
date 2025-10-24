@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.AI;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
 
@@ -20,32 +21,33 @@ public sealed class SummaryEnricher : IngestionChunkProcessor<string>
 {
     private readonly IChatClient _chatClient;
     private readonly ChatOptions? _chatOptions;
-    private readonly int _maxWordCount;
+    private readonly TextContent _request;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SummaryEnricher"/> class.
+    /// </summary>
+    /// <param name="chatClient">The chat client used for summary generation.</param>
+    /// <param name="chatOptions">Options for the chat client.</param>
+    /// <param name="maxWordCount">The maximum number of words for the summary.</param>
     public SummaryEnricher(IChatClient chatClient, ChatOptions? chatOptions = null, int? maxWordCount = null)
     {
-        _chatClient = chatClient ?? throw new ArgumentNullException(nameof(chatClient));
+        _chatClient = Throw.IfNull(chatClient);
         _chatOptions = chatOptions;
 
-        if (maxWordCount.HasValue && maxWordCount.Value <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxWordCount), "Max word count must be greater than zero.");
-        }
-
-        _maxWordCount = maxWordCount ?? 100;
+        int wordCount = maxWordCount.HasValue ? Throw.IfLessThanOrEqual(maxWordCount.Value, 0) : 100;
+        _request = new($"Write a summary text for this text with less than {wordCount} words. Return just the summary.");
     }
 
+    /// <summary>
+    /// Gets the metadata key used to store the summary.
+    /// </summary>
     public static string MetadataKey => "summary";
 
+    /// <inheritdoc/>
     public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IAsyncEnumerable<IngestionChunk<string>> chunks,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (chunks is null)
-        {
-            throw new ArgumentNullException(nameof(chunks));
-        }
+        _ = Throw.IfNull(chunks);
 
         await foreach (var chunk in chunks.WithCancellation(cancellationToken))
         {
@@ -53,10 +55,10 @@ public sealed class SummaryEnricher : IngestionChunkProcessor<string>
             [
                 new(ChatRole.User,
                 [
-                    new TextContent($"Write a summary text for this text with less than {_maxWordCount} words. Return just the summary."),
+                    _request,
                     new TextContent(chunk.Content),
                 ])
-            ], _chatOptions, cancellationToken: cancellationToken);
+            ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             chunk.Metadata[MetadataKey] = response.Text;
 
