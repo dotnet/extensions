@@ -1232,6 +1232,49 @@ public class FunctionInvokingChatClientTests
         Assert.Null(actualChatOptions!.ContinuationToken);
     }
 
+    [Fact]
+    public async Task ToolGroups_GetExpandedAutomatically()
+    {
+        var innerGroup = AIToolGroup.Create(
+            "InnerGroup",
+            "Inner group of tools",
+            new List<AITool>
+            {
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+            });
+
+        var outerGroup = AIToolGroup.Create(
+            "OuterGroup",
+            "Outer group of tools",
+            new List<AITool>
+            {
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+                innerGroup,
+                AIFunctionFactory.Create((int i) => { }, "VoidReturn"),
+            });
+
+        ChatOptions options = new()
+        {
+            Tools = [outerGroup]
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, plan);
+
+        await InvokeAndAssertStreamingAsync(options, plan);
+    }
+
     private sealed class CustomSynchronizationContext : SynchronizationContext
     {
         public override void Post(SendOrPostCallback d, object? state)

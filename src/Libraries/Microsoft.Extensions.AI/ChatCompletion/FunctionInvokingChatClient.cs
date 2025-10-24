@@ -284,7 +284,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         int consecutiveErrorCount = 0;
 
-        (Dictionary<string, AITool>? toolMap, bool anyToolsRequireApproval) = CreateToolsMap(AdditionalTools, options?.Tools); // all available tools, indexed by name
+        (Dictionary<string, AITool>? toolMap, bool anyToolsRequireApproval) = await CreateToolsMapAsync([AdditionalTools, options?.Tools], cancellationToken); // all available tools, indexed by name
 
         if (HasAnyApprovalContent(originalMessages))
         {
@@ -424,7 +424,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatResponseUpdate> updates = []; // updates from the current response
         int consecutiveErrorCount = 0;
 
-        (Dictionary<string, AITool>? toolMap, bool anyToolsRequireApproval) = CreateToolsMap(AdditionalTools, options?.Tools); // all available tools, indexed by name
+        (Dictionary<string, AITool>? toolMap, bool anyToolsRequireApproval) = await CreateToolsMapAsync([AdditionalTools, options?.Tools], cancellationToken); // all available tools, indexed by name
 
         // This is a synthetic ID since we're generating the tool messages instead of getting them from
         // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
@@ -624,7 +624,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         AddUsageTags(activity, totalUsage);
     }
 
-    private static ChatResponseUpdate ConvertToolResultMessageToUpdate(ChatMessage message, string? conversationId, string? messageId) =>
+    /// <summary>
+    /// Converts a tool result <see cref="ChatMessage"/> into a <see cref="ChatResponseUpdate"/> for streaming scenarios.
+    /// </summary>
+    /// <param name="message">The tool result message.</param>
+    /// <param name="conversationId">The conversation ID.</param>
+    /// <param name="messageId">The message ID.</param>
+    internal static ChatResponseUpdate ConvertToolResultMessageToUpdate(ChatMessage message, string? conversationId, string? messageId) =>
         new()
         {
             AdditionalProperties = message.AdditionalProperties,
@@ -662,7 +668,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="response">The most recent response being handled.</param>
     /// <param name="allTurnsResponseMessages">A list of all response messages received up until this point.</param>
     /// <param name="lastIterationHadConversationId">Whether the previous iteration's response had a conversation ID.</param>
-    private static void FixupHistories(
+    internal static void FixupHistories(
         IEnumerable<ChatMessage> originalMessages,
         ref IEnumerable<ChatMessage> messages,
         [NotNull] ref List<ChatMessage>? augmentedHistory,
@@ -722,26 +728,51 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// The lists of tools to combine into a single dictionary. Tools from later lists are preferred
     /// over tools from earlier lists if they have the same name.
     /// </param>
-    private static (Dictionary<string, AITool>? ToolMap, bool AnyRequireApproval) CreateToolsMap(params ReadOnlySpan<IList<AITool>?> toolLists)
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    private static async ValueTask<(Dictionary<string, AITool>? ToolMap, bool AnyRequireApproval)> CreateToolsMapAsync(IList<AITool>?[] toolLists, CancellationToken cancellationToken)
     {
         Dictionary<string, AITool>? map = null;
         bool anyRequireApproval = false;
 
         foreach (var toolList in toolLists)
         {
-            if (toolList?.Count is int count && count > 0)
+            if (toolList is not null)
             {
-                map ??= new(StringComparer.Ordinal);
-                for (int i = 0; i < count; i++)
-                {
-                    AITool tool = toolList[i];
-                    anyRequireApproval |= tool.GetService<ApprovalRequiredAIFunction>() is not null;
-                    map[tool.Name] = tool;
-                }
+                map ??= [];
+                var anyInListRequireApproval = await AddToolListAsync(map, toolList, cancellationToken).ConfigureAwait(false);
+                anyRequireApproval |= anyInListRequireApproval;
             }
         }
 
         return (map, anyRequireApproval);
+
+        static async ValueTask<bool> AddToolListAsync(Dictionary<string, AITool> map, IEnumerable<AITool> tools, CancellationToken cancellationToken)
+        {
+#if NET
+            if (tools.TryGetNonEnumeratedCount(out var count) && count == 0)
+            {
+                return false;
+            }
+#endif
+            var anyRequireApproval = false;
+
+            foreach (var tool in tools)
+            {
+                if (tool is AIToolGroup toolGroup)
+                {
+                    var nestedTools = await toolGroup.GetToolsAsync(cancellationToken).ConfigureAwait(false);
+                    var nestedToolsRequireApproval = await AddToolListAsync(map, nestedTools, cancellationToken).ConfigureAwait(false);
+                    anyRequireApproval |= nestedToolsRequireApproval;
+                }
+                else
+                {
+                    anyRequireApproval |= tool.GetService<ApprovalRequiredAIFunction>() is not null;
+                    map[tool.Name] = tool;
+                }
+            }
+
+            return anyRequireApproval;
+        }
     }
 
     /// <summary>
