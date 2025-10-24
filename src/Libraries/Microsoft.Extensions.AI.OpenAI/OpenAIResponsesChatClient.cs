@@ -587,7 +587,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         if (result.PreviousResponseId is null)
         {
             // Technically, OpenAI's IDs are opaque. However, by convention conversation IDs start with "conv_" and
-            // we can use that to disamibuate whether we're lookinag at a conversation ID or a response ID.
+            // we can use that to disambiguate whether we're looking at a conversation ID or a response ID.
             string? chatOptionsConversationId = options.ConversationId;
             bool chatOptionsHasOpenAIConversationId = chatOptionsConversationId?.StartsWith("conv_", StringComparison.OrdinalIgnoreCase) is true;
 
