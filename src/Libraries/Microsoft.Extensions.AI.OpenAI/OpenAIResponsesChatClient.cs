@@ -464,9 +464,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             case HostedCodeInterpreterTool codeTool:
                 return ResponseTool.CreateCodeInterpreterTool(
-                        new CodeInterpreterToolContainer(codeTool.Inputs?.OfType<HostedFileContent>().Select(f => f.FileId).ToList() is { Count: > 0 } ids ?
-                            CodeInterpreterToolContainerConfiguration.CreateAutomaticContainerConfiguration(ids) :
-                            new()));
+                    new CodeInterpreterToolContainer(codeTool.Inputs?.OfType<HostedFileContent>().Select(f => f.FileId).ToList() is { Count: > 0 } ids ?
+                        CodeInterpreterToolContainerConfiguration.CreateAutomaticContainerConfiguration(ids) :
+                        new()));
 
             case HostedMcpServerTool mcpTool:
                 McpTool responsesMcpTool = Uri.TryCreate(mcpTool.ServerAddress, UriKind.Absolute, out Uri? url) ?
