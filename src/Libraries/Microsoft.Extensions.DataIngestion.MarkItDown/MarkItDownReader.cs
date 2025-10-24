@@ -7,35 +7,36 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
 
+/// <summary>
+/// Reads documents by converting them to Markdown using the <see href="https://github.com/microsoft/markitdown">MarkItDown</see> tool.
+/// </summary>
 public class MarkItDownReader : IngestionDocumentReader
 {
     private readonly string _exePath;
     private readonly bool _extractImages;
-    private readonly MarkdownReader _markdownReader;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MarkItDownReader"/> class.
+    /// </summary>
+    /// <param name="exePath">The path to the MarkItDown executable. When not provided, "markitdown" needs to be added to PATH.</param>
+    /// <param name="extractImages">A value indicating whether to extract images.</param>
     public MarkItDownReader(string exePath = "markitdown", bool extractImages = false)
     {
-        _exePath = exePath ?? throw new ArgumentNullException(nameof(exePath));
+        _exePath = Throw.IfNullOrEmpty(exePath);
         _extractImages = extractImages;
-        _markdownReader = new();
     }
 
+    /// <inheritdoc/>
     public override async Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
+        _ = Throw.IfNull(source);
+        _ = Throw.IfNullOrEmpty(identifier);
 
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-        else if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentNullException(nameof(identifier));
-        }
-        else if (!source.Exists)
+        if (!source.Exists)
         {
             throw new FileNotFoundException("The specified file does not exist.", source.FullName);
         }
@@ -61,24 +62,19 @@ public class MarkItDownReader : IngestionDocumentReader
             startInfo.ArgumentList.Add("--keep-data-uris");
         }
 #else
-        startInfo.Arguments = $"\"{source.FullName}\"" + (_extractImages ? " --keep-data-uris" : "");
+        startInfo.Arguments = $"\"{source.FullName}\"" + (_extractImages ? " --keep-data-uris" : string.Empty);
 #endif
 
-        string outputContent = "";
+        string outputContent = string.Empty;
         using (Process process = new() { StartInfo = startInfo })
         {
             process.Start();
 
-            // Read standard output asynchronously
-            outputContent = await process.StandardOutput.ReadToEndAsync(
 #if NET
-                cancellationToken
-#endif
-            );
-
-#if NET
-            await process.WaitForExitAsync(cancellationToken);
+            outputContent = await process.StandardOutput.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
 #else
+            outputContent = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
             process.WaitForExit();
 #endif
 
@@ -88,39 +84,35 @@ public class MarkItDownReader : IngestionDocumentReader
             }
         }
 
-        return _markdownReader.Read(outputContent, identifier);
+        return MarkdownParser.Parse(outputContent, identifier);
     }
 
+    /// <inheritdoc/>
+    /// <remarks>The contents of <paramref name="source"/> are copied to a temporary file.</remarks>
     public override async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-        else if (string.IsNullOrEmpty(identifier))
-        {
-            throw new ArgumentNullException(nameof(identifier));
-        }
+        _ = Throw.IfNull(source);
+        _ = Throw.IfNullOrEmpty(identifier);
 
         // Instead of creating a temporary file, we could write to the StandardInput of the process.
         // MarkItDown says it supports reading from stdin, but it does not work as expected.
         // Even the sample command line does not work with stdin: "cat example.pdf | markitdown"
         // I can be doing something wrong, but for now, let's write to a temporary file.
-        string inputFilePath = Path.GetTempFileName();
-        using (FileStream inputFile = new(inputFilePath, FileMode.Open, FileAccess.Write, FileShare.None, bufferSize: 1, FileOptions.Asynchronous))
+        string inputFilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        using (FileStream inputFile = new(inputFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize: 1, FileOptions.Asynchronous))
         {
-            await source.CopyToAsync(inputFile
+            await source
 #if NET
-                , cancellationToken
+                .CopyToAsync(inputFile, cancellationToken)
+#else
+                .CopyToAsync(inputFile)
 #endif
-            );
+            .ConfigureAwait(false);
         }
 
         try
         {
-            return await ReadAsync(new FileInfo(inputFilePath), identifier, mediaType, cancellationToken);
+            return await ReadAsync(new FileInfo(inputFilePath), identifier, mediaType, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
