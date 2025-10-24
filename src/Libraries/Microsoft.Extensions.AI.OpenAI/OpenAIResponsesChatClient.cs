@@ -591,8 +591,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             foreach (AITool tool in tools)
             {
-                var responseTool = ToResponseTool(tool, options);
-                if (responseTool is not null)
+                if (ToResponseTool(tool, options) is { } responseTool)
                 {
                     result.Tools.Add(responseTool);
                 }
