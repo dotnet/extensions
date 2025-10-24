@@ -41,12 +41,15 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
         ChatOptions? chatOptions = null, int? maxKeywords = null, double? confidenceThreshold = null)
     {
         double threshold = confidenceThreshold.HasValue
-            ? Throw.IfOutOfRange(confidenceThreshold.Value, 0.0, 1.0)
+            ? Throw.IfOutOfRange(confidenceThreshold.Value, 0.0, 1.0, nameof(confidenceThreshold))
             : 0.7;
+        int keywordsCount = maxKeywords.HasValue
+            ? Throw.IfLessThanOrEqual(maxKeywords.Value, 0, nameof(maxKeywords))
+            : DefaultMaxKeywords;
 
         _chatClient = Throw.IfNull(chatClient);
         _chatOptions = chatOptions;
-        _request = CreateLlmRequest(maxKeywords ?? DefaultMaxKeywords, predefinedKeywords, threshold);
+        _request = CreateLlmRequest(keywordsCount, predefinedKeywords, threshold);
     }
 
     /// <summary>

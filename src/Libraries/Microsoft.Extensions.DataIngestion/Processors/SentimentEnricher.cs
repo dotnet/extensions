@@ -34,7 +34,7 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
         _chatClient = Throw.IfNull(chatClient);
         _chatOptions = chatOptions;
 
-        double threshold = confidenceThreshold.HasValue ? Throw.IfOutOfRange(confidenceThreshold.Value, 0.0, 1.0) : 0.7;
+        double threshold = confidenceThreshold.HasValue ? Throw.IfOutOfRange(confidenceThreshold.Value, 0.0, 1.0, nameof(confidenceThreshold)) : 0.7;
         _request = new("You are a sentiment analysis expert. Analyze the sentiment of the given text and return Positive/Negative/Neutral or" +
             $" Unknown when confidence score is below {threshold}. Return just the value of the sentiment.");
     }

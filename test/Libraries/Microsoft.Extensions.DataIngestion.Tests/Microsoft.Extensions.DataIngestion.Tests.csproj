@@ -20,8 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
     <!-- We don't run Sqlite tests on Full Framework due to some native dependency issues -->
-    <Compile Remove="SqliteVectorStoreWriterTests.cs"  Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+    <Compile Remove="SqliteVectorStoreWriterTests.cs" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
   </ItemGroup>
 
 </Project>

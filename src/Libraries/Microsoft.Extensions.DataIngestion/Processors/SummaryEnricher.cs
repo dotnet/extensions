@@ -34,7 +34,7 @@ public sealed class SummaryEnricher : IngestionChunkProcessor<string>
         _chatClient = Throw.IfNull(chatClient);
         _chatOptions = chatOptions;
 
-        int wordCount = maxWordCount.HasValue ? Throw.IfLessThanOrEqual(maxWordCount.Value, 0) : 100;
+        int wordCount = maxWordCount.HasValue ? Throw.IfLessThanOrEqual(maxWordCount.Value, 0, nameof(maxWordCount)) : 100;
         _request = new($"Write a summary text for this text with less than {wordCount} words. Return just the summary.");
     }
 
