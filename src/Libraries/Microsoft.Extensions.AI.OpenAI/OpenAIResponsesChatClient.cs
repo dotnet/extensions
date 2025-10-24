@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -84,14 +85,14 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         _ = Throw.IfNull(messages);
 
         // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIOptions = ToOpenAIResponseCreationOptions(options);
+        var openAIOptions = ToOpenAIResponseCreationOptions(options, out string? openAIConversationId);
 
         // Provided continuation token signals that an existing background response should be fetched.
         if (GetContinuationToken(messages, options) is { } token)
         {
             var response = await _responseClient.GetResponseAsync(token.ResponseId, cancellationToken).ConfigureAwait(false);
 
-            return FromOpenAIResponse(response, openAIOptions);
+            return FromOpenAIResponse(response, openAIOptions, openAIConversationId);
         }
 
         var openAIResponseItems = ToOpenAIResponseItems(messages, options);
@@ -103,15 +104,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var openAIResponse = (await task.ConfigureAwait(false)).Value;
 
         // Convert the response to a ChatResponse.
-        return FromOpenAIResponse(openAIResponse, openAIOptions);
+        return FromOpenAIResponse(openAIResponse, openAIOptions, openAIConversationId);
     }
 
-    internal static ChatResponse FromOpenAIResponse(OpenAIResponse openAIResponse, ResponseCreationOptions? openAIOptions)
+    internal static ChatResponse FromOpenAIResponse(OpenAIResponse openAIResponse, ResponseCreationOptions? openAIOptions, string? conversationId)
     {
         // Convert and return the results.
         ChatResponse response = new()
         {
-            ConversationId = openAIOptions?.StoredOutputEnabled is false ? null : openAIResponse.Id,
+            ConversationId = conversationId ?? (openAIOptions?.StoredOutputEnabled is false ? null : openAIResponse.Id),
             CreatedAt = openAIResponse.CreatedAt,
             ContinuationToken = CreateContinuationToken(openAIResponse),
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
@@ -227,14 +228,14 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var openAIOptions = ToOpenAIResponseCreationOptions(options);
+        var openAIOptions = ToOpenAIResponseCreationOptions(options, out string? openAIConversationId);
 
         // Provided continuation token signals that an existing background response should be fetched.
         if (GetContinuationToken(messages, options) is { } token)
         {
             IAsyncEnumerable<StreamingResponseUpdate> updates = _responseClient.GetResponseStreamingAsync(token.ResponseId, token.SequenceNumber, cancellationToken);
 
-            return FromOpenAIStreamingResponseUpdatesAsync(updates, openAIOptions, token.ResponseId, cancellationToken);
+            return FromOpenAIStreamingResponseUpdatesAsync(updates, openAIOptions, openAIConversationId, token.ResponseId, cancellationToken);
         }
 
         var openAIResponseItems = ToOpenAIResponseItems(messages, options);
@@ -243,18 +244,19 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             _createResponseStreamingAsync(_responseClient, openAIResponseItems, openAIOptions, cancellationToken.ToRequestOptions(streaming: true)) :
             _responseClient.CreateResponseStreamingAsync(openAIResponseItems, openAIOptions, cancellationToken);
 
-        return FromOpenAIStreamingResponseUpdatesAsync(streamingUpdates, openAIOptions, cancellationToken: cancellationToken);
+        return FromOpenAIStreamingResponseUpdatesAsync(streamingUpdates, openAIOptions, openAIConversationId, cancellationToken: cancellationToken);
     }
 
     internal static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingResponseUpdatesAsync(
         IAsyncEnumerable<StreamingResponseUpdate> streamingResponseUpdates,
         ResponseCreationOptions? options,
+        string? conversationId,
         string? resumeResponseId = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         DateTimeOffset? createdAt = null;
         string? responseId = resumeResponseId;
-        string? conversationId = options?.StoredOutputEnabled is false ? null : resumeResponseId;
+        conversationId ??= options?.StoredOutputEnabled is false ? null : resumeResponseId;
         string? modelId = null;
         string? lastMessageId = null;
         ChatRole? lastRole = null;
@@ -285,7 +287,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case StreamingResponseCreatedUpdate createdUpdate:
                     createdAt = createdUpdate.Response.CreatedAt;
                     responseId = createdUpdate.Response.Id;
-                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
+                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
                     modelId = createdUpdate.Response.Model;
                     latestResponseStatus = createdUpdate.Response.Status;
                     goto default;
@@ -293,7 +295,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case StreamingResponseQueuedUpdate queuedUpdate:
                     createdAt = queuedUpdate.Response.CreatedAt;
                     responseId = queuedUpdate.Response.Id;
-                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
+                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
                     modelId = queuedUpdate.Response.Model;
                     latestResponseStatus = queuedUpdate.Response.Status;
                     goto default;
@@ -301,7 +303,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case StreamingResponseInProgressUpdate inProgressUpdate:
                     createdAt = inProgressUpdate.Response.CreatedAt;
                     responseId = inProgressUpdate.Response.Id;
-                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
+                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
                     modelId = inProgressUpdate.Response.Model;
                     latestResponseStatus = inProgressUpdate.Response.Status;
                     goto default;
@@ -309,7 +311,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case StreamingResponseIncompleteUpdate incompleteUpdate:
                     createdAt = incompleteUpdate.Response.CreatedAt;
                     responseId = incompleteUpdate.Response.Id;
-                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
+                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
                     modelId = incompleteUpdate.Response.Model;
                     latestResponseStatus = incompleteUpdate.Response.Status;
                     goto default;
@@ -317,7 +319,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case StreamingResponseFailedUpdate failedUpdate:
                     createdAt = failedUpdate.Response.CreatedAt;
                     responseId = failedUpdate.Response.Id;
-                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
+                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
                     modelId = failedUpdate.Response.Model;
                     latestResponseStatus = failedUpdate.Response.Status;
                     goto default;
@@ -326,7 +328,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 {
                     createdAt = completedUpdate.Response.CreatedAt;
                     responseId = completedUpdate.Response.Id;
-                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
+                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
                     modelId = completedUpdate.Response.Model;
                     latestResponseStatus = completedUpdate.Response?.Status;
                     var update = CreateUpdate(ToUsageDetails(completedUpdate.Response) is { } usage ? new UsageContent(usage) : null);
@@ -552,24 +554,99 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         null;
 
     /// <summary>Converts a <see cref="ChatOptions"/> to a <see cref="ResponseCreationOptions"/>.</summary>
-    private ResponseCreationOptions ToOpenAIResponseCreationOptions(ChatOptions? options)
+    private ResponseCreationOptions ToOpenAIResponseCreationOptions(ChatOptions? options, out string? openAIConversationId)
     {
+        openAIConversationId = null;
+
         if (options is null)
         {
             return new ResponseCreationOptions();
         }
 
-        if (options.RawRepresentationFactory?.Invoke(this) is not ResponseCreationOptions result)
+        bool hasRawRco = false;
+        if (options.RawRepresentationFactory?.Invoke(this) is ResponseCreationOptions result)
+        {
+            hasRawRco = true;
+        }
+        else
         {
             result = new ResponseCreationOptions();
         }
 
-        // Handle strongly-typed properties.
         result.MaxOutputTokenCount ??= options.MaxOutputTokens;
-        result.PreviousResponseId ??= options.ConversationId;
         result.Temperature ??= options.Temperature;
         result.TopP ??= options.TopP;
         result.BackgroundModeEnabled ??= options.AllowBackgroundResponses;
+
+        // If the ResponseCreationOptions.PreviousResponseId is already set (likely rare), then we don't need to do
+        // anything with regards to Conversation, because they're mutually exclusive and we would want to ignore
+        // ChatOptions.ConversationId regardless of its value. If it's null, we want to examine the ResponseCreationOptions
+        // instance to see if a conversation ID has already been set on it and use that conversation ID subsequently if
+        // it has. If one hasn't been set, but ChatOptions.ConversationId has been set, we'll either set
+        // ResponseCreationOptions.Conversation if the string represents a conversation ID or else PreviousResponseId.
+        if (result.PreviousResponseId is null)
+        {
+            // Technically, OpenAI's IDs are opaque. However, by convention conversation IDs start with "conv_" and
+            // we can use that to disambiguate whether we're looking at a conversation ID or a response ID.
+            string? chatOptionsConversationId = options.ConversationId;
+            bool chatOptionsHasOpenAIConversationId = chatOptionsConversationId?.StartsWith("conv_", StringComparison.OrdinalIgnoreCase) is true;
+
+            if (hasRawRco || chatOptionsHasOpenAIConversationId)
+            {
+                const string ConversationPropertyName = "conversation";
+                try
+                {
+                    // ResponseCreationOptions currently doesn't expose either Conversation nor JSON Path for accessing
+                    // arbitrary properties publicly. Until it does, we need to serialize the RCO and examine
+                    // and possibly mutate/deserialize the resulting JSON.
+                    var rcoJsonModel = (IJsonModel<ResponseCreationOptions>)result;
+                    var rcoJsonBinaryData = rcoJsonModel.Write(ModelReaderWriterOptions.Json);
+                    if (JsonNode.Parse(rcoJsonBinaryData.ToMemory().Span) is JsonObject rcoJsonObject)
+                    {
+                        // Check if a conversation ID is already set on the RCO. If one is, store it for later.
+                        if (rcoJsonObject.TryGetPropertyValue(ConversationPropertyName, out JsonNode? existingConversationNode))
+                        {
+                            switch (existingConversationNode?.GetValueKind())
+                            {
+                                case JsonValueKind.String:
+                                    openAIConversationId = existingConversationNode.GetValue<string>();
+                                    break;
+
+                                case JsonValueKind.Object:
+                                    openAIConversationId =
+                                        existingConversationNode.AsObject().TryGetPropertyValue("id", out JsonNode? idNode) && idNode?.GetValueKind() == JsonValueKind.String ?
+                                            idNode.GetValue<string>() :
+                                            null;
+                                    break;
+                            }
+                        }
+
+                        // If one isn't set, and ChatOptions.ConversationId is set to a conversation ID, set it now.
+                        if (openAIConversationId is null && chatOptionsHasOpenAIConversationId)
+                        {
+                            rcoJsonObject[ConversationPropertyName] = JsonValue.Create(chatOptionsConversationId);
+                            rcoJsonBinaryData = new(JsonSerializer.SerializeToUtf8Bytes(rcoJsonObject, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonNode))));
+                            if (rcoJsonModel.Create(rcoJsonBinaryData, ModelReaderWriterOptions.Json) is ResponseCreationOptions newRco)
+                            {
+                                result = newRco;
+                                openAIConversationId = chatOptionsConversationId;
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore any JSON formatting / parsing failures
+                }
+            }
+
+            // If after all that we still don't have a conversation ID, and ChatOptions.ConversationId is set,
+            // treat it as a response ID.
+            if (openAIConversationId is null && options.ConversationId is { } previousResponseId)
+            {
+                result.PreviousResponseId = previousResponseId;
+            }
+        }
 
         if (options.Instructions is { } instructions)
         {
