@@ -62,7 +62,7 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <returns>A converted <see cref="ChatResponse"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
     public static ChatResponse AsChatResponse(this OpenAIResponse response, ResponseCreationOptions? options = null) =>
-        OpenAIResponsesChatClient.FromOpenAIResponse(Throw.IfNull(response), options);
+        OpenAIResponsesChatClient.FromOpenAIResponse(Throw.IfNull(response), options, conversationId: null);
 
     /// <summary>
     /// Creates a sequence of Microsoft.Extensions.AI <see cref="ChatResponseUpdate"/> instances from the specified
@@ -75,7 +75,7 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <exception cref="ArgumentNullException"><paramref name="responseUpdates"/> is <see langword="null"/>.</exception>
     public static IAsyncEnumerable<ChatResponseUpdate> AsChatResponseUpdatesAsync(
         this IAsyncEnumerable<StreamingResponseUpdate> responseUpdates, ResponseCreationOptions? options = null, CancellationToken cancellationToken = default) =>
-        OpenAIResponsesChatClient.FromOpenAIStreamingResponseUpdatesAsync(Throw.IfNull(responseUpdates), options, cancellationToken: cancellationToken);
+        OpenAIResponsesChatClient.FromOpenAIStreamingResponseUpdatesAsync(Throw.IfNull(responseUpdates), options, conversationId: null, cancellationToken: cancellationToken);
 
     /// <summary>Creates an OpenAI <see cref="OpenAIResponse"/> from a <see cref="ChatResponse"/>.</summary>
     /// <param name="response">The response to convert.</param>
