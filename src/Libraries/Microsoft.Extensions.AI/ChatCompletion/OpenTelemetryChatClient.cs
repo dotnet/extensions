@@ -239,6 +239,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     message.Role == ChatRole.Tool ? "tool" :
                     message.Role == ChatRole.System || message.Role == new ChatRole("developer") ? "system" :
                     "user",
+                Name = message.AuthorName,
             };
 
             foreach (AIContent content in message.Contents)
@@ -595,6 +596,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     private sealed class OtelMessage
     {
         public string? Role { get; set; }
+        public string? Name { get; set; }
         public List<object> Parts { get; set; } = [];
         public string? FinishReason { get; set; }
     }
