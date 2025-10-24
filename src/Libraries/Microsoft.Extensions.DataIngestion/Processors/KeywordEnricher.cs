@@ -62,7 +62,8 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
 
         await foreach (IngestionChunk<string> chunk in chunks.WithCancellation(cancellationToken))
         {
-            ChatResponse<string[]> response = await _chatClient.GetResponseAsync<string[]>(
+            // Structured response is not used here because it's not part of Microsoft.Extensions.AI.Abstractions.
+            var response = await _chatClient.GetResponseAsync(
             [
                 new(ChatRole.User,
                 [
@@ -71,7 +72,9 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
                 ])
             ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            chunk.Metadata[MetadataKey] = response.Result;
+#pragma warning disable EA0009 // Use 'System.MemoryExtensions.Split' for improved performance
+            chunk.Metadata[MetadataKey] = response.Text.Split(';');
+#pragma warning restore EA0009 // Use 'System.MemoryExtensions.Split' for improved performance
 
             yield return chunk;
         }
@@ -98,6 +101,7 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
         }
 
         sb.Append("Exclude keywords with confidence score below ").Append(confidenceThreshold).Append('.');
+        sb.Append("Return just the keywords separated with ';'.");
 #pragma warning restore IDE0058 // Expression value is never used
 
         return new(sb.ToString());
