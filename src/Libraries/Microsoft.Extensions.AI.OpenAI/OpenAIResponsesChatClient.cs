@@ -439,15 +439,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 return rtat.Tool;
 
             case AIFunctionDeclaration aiFunction:
-                bool? strict =
-                            OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
-                            OpenAIClientExtensions.HasStrict(options?.AdditionalProperties);
-
-                return ResponseTool.CreateFunctionTool(
-                    aiFunction.Name,
-                    OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction, strict),
-                    strict,
-                    aiFunction.Description);
+                return ToResponseTool(aiFunction, options);
 
             case HostedWebSearchTool webSearchTool:
                 WebSearchToolLocation? location = null;
