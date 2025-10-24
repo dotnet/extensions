@@ -1,6 +1,9 @@
 # Release History
 
-## NOT YET RELEASED
+## 9.10.1
+
+- Added an `[Experimental]` implementation of tool reduction component for constraining the set of tools exposed.
+- Fixed `SummarizingChatReducer` to preserve function calling content in the chat history.
 
 ## 9.10.0
 
