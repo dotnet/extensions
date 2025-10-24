@@ -113,6 +113,168 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseTool_WithAIFunctionDeclaration_ProducesValidFunctionTool()
+    {
+        var tool = _testFunction.AsOpenAIResponseTool();
+
+        Assert.NotNull(tool);
+        Assert.IsType<FunctionTool>(tool);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedWebSearchTool_ProducesValidWebSearchTool()
+    {
+        var webSearchTool = new HostedWebSearchTool();
+
+        var result = webSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        Assert.IsType<WebSearchTool>(result);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedFileSearchTool_ProducesValidFileSearchTool()
+    {
+        var fileSearchTool = new HostedFileSearchTool();
+
+        var result = fileSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        Assert.IsType<FileSearchTool>(result);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedFileSearchToolWithVectorStores_ProducesValidFileSearchTool()
+    {
+        var vectorStoreContent = new HostedVectorStoreContent("vector-store-123");
+        var fileSearchTool = new HostedFileSearchTool
+        {
+            Inputs = [vectorStoreContent]
+        };
+
+        var result = fileSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<FileSearchTool>(result);
+        Assert.Single(tool.VectorStoreIds);
+        Assert.Equal(vectorStoreContent.VectorStoreId, tool.VectorStoreIds[0]);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedFileSearchToolWithMaxResults_ProducesValidFileSearchTool()
+    {
+        var fileSearchTool = new HostedFileSearchTool
+        {
+            MaximumResultCount = 10
+        };
+
+        var result = fileSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<FileSearchTool>(result);
+        Assert.Equal(10, tool.MaxResultCount);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedCodeInterpreterTool_ProducesValidCodeInterpreterTool()
+    {
+        var codeTool = new HostedCodeInterpreterTool();
+
+        var result = codeTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<CodeInterpreterTool>(result);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedCodeInterpreterToolWithFiles_ProducesValidCodeInterpreterTool()
+    {
+        var fileContent = new HostedFileContent("file-123");
+        var codeTool = new HostedCodeInterpreterTool
+        {
+            Inputs = [fileContent]
+        };
+
+        var result = codeTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<CodeInterpreterTool>(result);
+        var autoContainerConfig = Assert.IsType<AutomaticCodeInterpreterToolContainerConfiguration>(tool.Container.ContainerConfiguration);
+        Assert.Single(autoContainerConfig.FileIds);
+        Assert.Equal(fileContent.FileId, autoContainerConfig.FileIds[0]);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerTool_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000");
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Equal(new Uri("http://localhost:8000"), tool.ServerUri);
+        Assert.Equal("test-server", tool.ServerLabel);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithDescription_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            ServerDescription = "A test MCP server"
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Equal("A test MCP server", tool.ServerDescription);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithAuthToken_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            AuthorizationToken = "test-token"
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Equal("test-token", tool.AuthorizationToken);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithUri_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", new Uri("http://localhost:8000"));
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        Assert.IsType<McpTool>(result);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithUnknownToolType_ReturnsNull()
+    {
+        var unknownTool = new UnknownAITool();
+
+        var result = unknownTool.AsOpenAIResponseTool();
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithNullTool_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>("tool", () => ((AITool)null!).AsOpenAIResponseTool());
+    }
+
+    [Fact]
     public void AsOpenAIConversationFunctionTool_ProducesValidInstance()
     {
         var tool = _testFunction.AsOpenAIConversationFunctionTool();
@@ -1256,4 +1418,10 @@ public class OpenAIConversionTests
     }
 
     private static string RemoveWhitespace(string input) => Regex.Replace(input, @"\s+", "");
+
+    /// <summary>Helper class for testing unknown tool types.</summary>
+    private sealed class UnknownAITool : AITool
+    {
+        public override string Name => "unknown_tool";
+    }
 }
