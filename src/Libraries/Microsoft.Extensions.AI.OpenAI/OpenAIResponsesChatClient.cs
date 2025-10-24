@@ -591,96 +591,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             foreach (AITool tool in tools)
             {
-                switch (tool)
+                var responseTool = ToResponseTool(tool, options);
+                if (responseTool is not null)
                 {
-                    case ResponseToolAITool rtat:
-                        result.Tools.Add(rtat.Tool);
-                        break;
-
-                    case AIFunctionDeclaration aiFunction:
-                        result.Tools.Add(ToResponseTool(aiFunction, options));
-                        break;
-
-                    case HostedWebSearchTool webSearchTool:
-                        WebSearchToolLocation? location = null;
-                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchToolLocation), out object? objLocation))
-                        {
-                            location = objLocation as WebSearchToolLocation;
-                        }
-
-                        WebSearchToolContextSize? size = null;
-                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchToolContextSize), out object? objSize) &&
-                            objSize is WebSearchToolContextSize)
-                        {
-                            size = (WebSearchToolContextSize)objSize;
-                        }
-
-                        result.Tools.Add(ResponseTool.CreateWebSearchTool(location, size));
-                        break;
-
-                    case HostedFileSearchTool fileSearchTool:
-                        result.Tools.Add(ResponseTool.CreateFileSearchTool(
-                            fileSearchTool.Inputs?.OfType<HostedVectorStoreContent>().Select(c => c.VectorStoreId) ?? [],
-                            fileSearchTool.MaximumResultCount));
-                        break;
-
-                    case HostedCodeInterpreterTool codeTool:
-                        result.Tools.Add(
-                            ResponseTool.CreateCodeInterpreterTool(
-                                new CodeInterpreterToolContainer(codeTool.Inputs?.OfType<HostedFileContent>().Select(f => f.FileId).ToList() is { Count: > 0 } ids ?
-                                    CodeInterpreterToolContainerConfiguration.CreateAutomaticContainerConfiguration(ids) :
-                                    new())));
-                        break;
-
-                    case HostedMcpServerTool mcpTool:
-                        McpTool responsesMcpTool = Uri.TryCreate(mcpTool.ServerAddress, UriKind.Absolute, out Uri? url) ?
-                            ResponseTool.CreateMcpTool(
-                                mcpTool.ServerName,
-                                url,
-                                mcpTool.AuthorizationToken,
-                                mcpTool.ServerDescription) :
-                            ResponseTool.CreateMcpTool(
-                                mcpTool.ServerName,
-                                new McpToolConnectorId(mcpTool.ServerAddress),
-                                mcpTool.AuthorizationToken,
-                                mcpTool.ServerDescription);
-
-                        if (mcpTool.AllowedTools is not null)
-                        {
-                            responsesMcpTool.AllowedTools = new();
-                            AddAllMcpFilters(mcpTool.AllowedTools, responsesMcpTool.AllowedTools);
-                        }
-
-                        switch (mcpTool.ApprovalMode)
-                        {
-                            case HostedMcpServerToolAlwaysRequireApprovalMode:
-                                responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.AlwaysRequireApproval);
-                                break;
-
-                            case HostedMcpServerToolNeverRequireApprovalMode:
-                                responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval);
-                                break;
-
-                            case HostedMcpServerToolRequireSpecificApprovalMode specificMode:
-                                responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(new CustomMcpToolCallApprovalPolicy());
-
-                                if (specificMode.AlwaysRequireApprovalToolNames is { Count: > 0 } alwaysRequireToolNames)
-                                {
-                                    responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval = new();
-                                    AddAllMcpFilters(alwaysRequireToolNames, responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval);
-                                }
-
-                                if (specificMode.NeverRequireApprovalToolNames is { Count: > 0 } neverRequireToolNames)
-                                {
-                                    responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval = new();
-                                    AddAllMcpFilters(neverRequireToolNames, responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval);
-                                }
-
-                                break;
-                        }
-
-                        result.Tools.Add(responsesMcpTool);
-                        break;
+                    result.Tools.Add(responseTool);
                 }
             }
 
