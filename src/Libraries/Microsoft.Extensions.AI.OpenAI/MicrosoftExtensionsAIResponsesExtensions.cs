@@ -29,8 +29,8 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// This method is only able to create <see cref="ResponseTool"/>s for <see cref="AITool"/> types
     /// it's aware of, namely all of those available from the Microsoft.Extensions.AI.Abstractions library.
     /// </remarks>
-    public static ResponseTool? AsOpenAIResponseTool(this AITool tool)
-        => OpenAIResponsesChatClient.ToResponseTool(Throw.IfNull(tool));
+    public static ResponseTool? AsOpenAIResponseTool(this AITool tool) =>
+        OpenAIResponsesChatClient.ToResponseTool(Throw.IfNull(tool));
 
     /// <summary>
     /// Creates an OpenAI <see cref="ResponseTextFormat"/> from a <see cref="ChatResponseFormat"/>.
