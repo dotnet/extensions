@@ -131,18 +131,46 @@ public class OpenAIConversionTests
         var result = webSearchTool.AsOpenAIResponseTool();
 
         Assert.NotNull(result);
-        Assert.IsType<WebSearchTool>(result);
+        var tool = Assert.IsType<WebSearchTool>(result);
+        Assert.NotNull(tool);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedWebSearchToolWithAdditionalProperties_ProducesValidWebSearchTool()
+    {
+        var location = WebSearchToolLocation.CreateApproximateLocation("US", "Region", "City", "UTC");
+        var webSearchTool = new HostedWebSearchToolWithProperties(new Dictionary<string, object?>
+        {
+            [nameof(WebSearchToolLocation)] = location,
+            [nameof(WebSearchToolContextSize)] = WebSearchToolContextSize.High
+        });
+
+        var result = webSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+
+        var tool = Assert.IsType<WebSearchTool>(result);
+        Assert.Equal(WebSearchToolContextSize.High, tool.SearchContextSize);
+        Assert.NotNull(tool);
+
+        var approximateLocation = Assert.IsType<WebSearchToolApproximateLocation>(tool.UserLocation);
+        Assert.Equal(location.Country, approximateLocation.Country);
+        Assert.Equal(location.Region, approximateLocation.Region);
+        Assert.Equal(location.City, approximateLocation.City);
+        Assert.Equal(location.Timezone, approximateLocation.Timezone);
     }
 
     [Fact]
     public void AsOpenAIResponseTool_WithHostedFileSearchTool_ProducesValidFileSearchTool()
     {
-        var fileSearchTool = new HostedFileSearchTool();
+        var fileSearchTool = new HostedFileSearchTool { MaximumResultCount = 10 };
 
         var result = fileSearchTool.AsOpenAIResponseTool();
 
         Assert.NotNull(result);
-        Assert.IsType<FileSearchTool>(result);
+        var tool = Assert.IsType<FileSearchTool>(result);
+        Assert.Empty(tool.VectorStoreIds);
+        Assert.Equal(fileSearchTool.MaximumResultCount, tool.MaxResultCount);
     }
 
     [Fact]
@@ -186,6 +214,8 @@ public class OpenAIConversionTests
 
         Assert.NotNull(result);
         var tool = Assert.IsType<CodeInterpreterTool>(result);
+        Assert.NotNull(tool.Container);
+        Assert.NotNull(tool.Container.ContainerConfiguration);
     }
 
     [Fact]
@@ -252,12 +282,15 @@ public class OpenAIConversionTests
     [Fact]
     public void AsOpenAIResponseTool_WithHostedMcpServerToolWithUri_ProducesValidMcpTool()
     {
-        var mcpTool = new HostedMcpServerTool("test-server", new Uri("http://localhost:8000"));
+        var expectedUri = new Uri("http://localhost:8000");
+        var mcpTool = new HostedMcpServerTool("test-server", expectedUri);
 
         var result = mcpTool.AsOpenAIResponseTool();
 
         Assert.NotNull(result);
-        Assert.IsType<McpTool>(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Equal(expectedUri, tool.ServerUri);
+        Assert.Equal("test-server", tool.ServerLabel);
     }
 
     [Fact]
@@ -1425,5 +1458,18 @@ public class OpenAIConversionTests
     private sealed class UnknownAITool : AITool
     {
         public override string Name => "unknown_tool";
+    }
+
+    /// <summary>Helper class for testing WebSearchTool with additional properties.</summary>
+    private sealed class HostedWebSearchToolWithProperties : HostedWebSearchTool
+    {
+        private readonly Dictionary<string, object?> _additionalProperties;
+
+        public override IReadOnlyDictionary<string, object?> AdditionalProperties => _additionalProperties;
+
+        public HostedWebSearchToolWithProperties(Dictionary<string, object?> additionalProperties)
+        {
+            _additionalProperties = additionalProperties;
+        }
     }
 }
