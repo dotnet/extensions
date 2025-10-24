@@ -3,8 +3,8 @@
   <PropertyGroup>
     <!--  Multidimensional arrays should not be used -->
     <NoWarn>$(NoWarn);S3967</NoWarn>
-    <!--  Project reference can be removed -->
-    <NoWarn>$(NoWarn);RT0002</NoWarn>
+    <!--  Implement IDisposable correctly -->
+    <NoWarn>$(NoWarn);CA1063</NoWarn>
 
     <!-- https://github.com/dotnet/efcore/issues/33472#issuecomment-2042146335 -->
     <PlatformTarget Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">x64</PlatformTarget>
