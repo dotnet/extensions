@@ -25,6 +25,10 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <param name="tool">The tool to convert.</param>
     /// <returns>An OpenAI <see cref="ResponseTool"/> representing <paramref name="tool"/> or <see langword="null"/> if there is no mapping.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="tool"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// This method is only able to create <see cref="ResponseTool"/>s for <see cref="AITool"/> types
+    /// it's aware of, namely all of those available from the Microsoft.Extensions.AI.Abstractions library.
+    /// </remarks>
     public static ResponseTool? AsOpenAIResponseTool(this AITool tool)
         => OpenAIResponsesChatClient.ToResponseTool(Throw.IfNull(tool));
 
