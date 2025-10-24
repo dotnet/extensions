@@ -104,7 +104,7 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
         }
 
         sb.Append("Exclude keywords with confidence score below ").Append(confidenceThreshold).Append('.');
-        sb.Append("Return just the keywords separated with ';'.");
+        sb.Append(" Return just the keywords separated with ';'.");
 #pragma warning restore IDE0058 // Expression value is never used
 
         return new(sb.ToString());

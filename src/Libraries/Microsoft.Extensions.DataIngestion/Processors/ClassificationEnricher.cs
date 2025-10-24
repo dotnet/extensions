@@ -74,7 +74,7 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
 
     private static TextContent CreateLlmRequest(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
     {
-        StringBuilder sb = new("You are a classification expert. Analyze the given text and assign single, most relevant class. ");
+        StringBuilder sb = new("You are a classification expert. Analyze the given text and assign a single, most relevant class. ");
 
 #pragma warning disable IDE0058 // Expression value is never used
         sb.Append("Use only the following predefined classes: ");
