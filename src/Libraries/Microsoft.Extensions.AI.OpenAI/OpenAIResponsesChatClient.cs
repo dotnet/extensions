@@ -643,17 +643,22 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         };
 
     /// <summary>Convert a sequence of <see cref="ChatMessage"/>s to <see cref="ResponseItem"/>s.</summary>
-    internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> inputs, ChatOptions? options)
+    internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> messages, ChatOptions? options)
     {
         _ = options; // currently unused
 
         Dictionary<string, AIContent>? idToContentMapping = null;
 
-        foreach (ChatMessage input in inputs)
+        foreach (ChatMessage input in messages)
         {
             if (input.Role == ChatRole.System ||
                 input.Role == OpenAIClientExtensions.ChatRoleDeveloper)
             {
+                if (input.Contents.OfType<McpServerToolApprovalResponseContent>().Any())
+                {
+                    Throw.ArgumentException(nameof(messages), $"{nameof(McpServerToolApprovalResponseContent)} can only be included in messages with ChatRole.User.");
+                }
+
                 string text = input.Text;
                 if (!string.IsNullOrWhiteSpace(text))
                 {
@@ -791,8 +796,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             yield return ResponseItem.CreateFunctionCallOutputItem(resultContent.CallId, result ?? string.Empty);
                             break;
 
-                        case McpServerToolApprovalResponseContent mcpApprovalResponseContent:
-                            yield return ResponseItem.CreateMcpApprovalResponseItem(mcpApprovalResponseContent.Id, mcpApprovalResponseContent.Approved);
+                        case McpServerToolApprovalResponseContent mstrec:
+                            Throw.ArgumentException(nameof(messages), $"{nameof(McpServerToolApprovalResponseContent)} can only be included in messages with ChatRole.User.");
                             break;
                     }
                 }
@@ -862,6 +867,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 yield return mtci;
                             }
 
+                            break;
+
+                        case McpServerToolApprovalResponseContent mstrec:
+                            Throw.ArgumentException(nameof(messages), $"{nameof(McpServerToolApprovalResponseContent)} can only be included in messages with ChatRole.User.");
                             break;
                     }
                 }

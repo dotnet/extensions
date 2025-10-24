@@ -826,10 +826,8 @@ public class OpenAIResponseClientTests
         Assert.Equal(36, response.Usage.TotalTokenCount);
     }
 
-    [Theory]
-    [InlineData("user")]
-    [InlineData("tool")]
-    public async Task McpToolCall_ApprovalRequired_NonStreaming(string role)
+    [Fact]
+    public async Task McpToolCall_ApprovalRequired_NonStreaming()
     {
         string input = """
             {
@@ -1060,7 +1058,7 @@ public class OpenAIResponseClientTests
         using (IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini"))
         {
             var response = await client.GetResponseAsync(
-                new ChatMessage(new ChatRole(role), [approvalRequest.CreateResponse(true)]), chatOptions);
+                new ChatMessage(ChatRole.User, [approvalRequest.CreateResponse(true)]), chatOptions);
 
             Assert.NotNull(response);
 
@@ -1095,6 +1093,30 @@ public class OpenAIResponseClientTests
             Assert.Equal(72, response.Usage.OutputTokenCount);
             Assert.Equal(614, response.Usage.TotalTokenCount);
         }
+    }
+
+    [Theory]
+    [InlineData("system")]
+    [InlineData("assistant")]
+    [InlineData("tool")]
+    public async Task McpToolCall_ApprovalResponseWithInvalidRoleThrows(string roleValue)
+    {
+        var invalidRole = new ChatRole(roleValue);
+        var chatOptions = new ChatOptions
+        {
+            Tools = [new HostedMcpServerTool("my-mcp-server", new Uri("https://localhost/mcp"))]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(invalidRole, [new McpServerToolApprovalResponseContent("mcpr_test", true)]),
+        ];
+
+        using HttpClient httpClient = new();
+        using IChatClient client = CreateResponseClient(httpClient, "my-model");
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>("messages", () => client.GetResponseAsync(input, chatOptions));
+        Assert.Contains(nameof(McpServerToolApprovalResponseContent), exception.Message);
     }
 
     [Theory]
