@@ -56,7 +56,7 @@ internal static class LoggerExtensions
         return defaultValue;
     }
 
-#pragma warning disable EA0014 // The async method doesn't support cancellation
+#pragma warning disable EA0014 // The async method doesn't support cancellation.
     internal static async ValueTask ExecuteWithCatchAsync(
         this ILogger logger,
         Func<Task> operation,
