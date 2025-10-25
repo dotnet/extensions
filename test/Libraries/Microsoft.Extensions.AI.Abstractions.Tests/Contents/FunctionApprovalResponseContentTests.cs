@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Contents;
@@ -32,5 +33,21 @@ public class FunctionApprovalResponseContentTests
         Assert.Same(id, content.Id);
         Assert.Equal(approved, content.Approved);
         Assert.Same(functionCall, content.FunctionCall);
+    }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new FunctionApprovalResponseContent("request123", true, new FunctionCallContent("call123", "functionName"));
+
+        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+        var deserializedContent = JsonSerializer.Deserialize<FunctionApprovalResponseContent>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(deserializedContent);
+        Assert.Equal(content.Id, deserializedContent.Id);
+        Assert.Equal(content.Approved, deserializedContent.Approved);
+        Assert.NotNull(deserializedContent.FunctionCall);
+        Assert.Equal(content.FunctionCall.CallId, deserializedContent.FunctionCall.CallId);
+        Assert.Equal(content.FunctionCall.Name, deserializedContent.FunctionCall.Name);
     }
 }

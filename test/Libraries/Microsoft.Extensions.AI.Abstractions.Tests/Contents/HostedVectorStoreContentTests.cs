@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -48,5 +49,17 @@ public class HostedVectorStoreContentTests
         AdditionalPropertiesDictionary props = new() { { "key", "value" } };
         c.AdditionalProperties = props;
         Assert.Same(props, c.AdditionalProperties);
+    }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new HostedVectorStoreContent("vectorstore123");
+
+        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+        var deserializedContent = JsonSerializer.Deserialize<HostedVectorStoreContent>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(deserializedContent);
+        Assert.Equal(content.VectorStoreId, deserializedContent.VectorStoreId);
     }
 }
