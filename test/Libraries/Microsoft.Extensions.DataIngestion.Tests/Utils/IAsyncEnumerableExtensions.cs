@@ -49,4 +49,15 @@ internal static class IAsyncEnumerableExtensions
             ? result
             : throw new InvalidOperationException();
     }
+
+    internal static async ValueTask<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> source)
+    {
+        List<T> list = [];
+        await foreach (var item in source)
+        {
+            list.Add(item);
+        }
+
+        return list;
+    }
 }
