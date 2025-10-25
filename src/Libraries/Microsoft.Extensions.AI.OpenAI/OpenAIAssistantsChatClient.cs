@@ -196,6 +196,58 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                     yield return ruUpdate;
                     break;
 
+                case RunStepDetailsUpdate details:
+                    if (!string.IsNullOrEmpty(details.CodeInterpreterInput))
+                    {
+                        CodeInterpreterToolCallContent hcitcc = new()
+                        {
+                            CallId = details.ToolCallId,
+                            Inputs = [new DataContent(Encoding.UTF8.GetBytes(details.CodeInterpreterInput), "text/x-python")],
+                            RawRepresentation = details,
+                        };
+
+                        yield return new ChatResponseUpdate(ChatRole.Assistant, [hcitcc])
+                        {
+                            AuthorName = _assistantId,
+                            ConversationId = threadId,
+                            MessageId = responseId,
+                            RawRepresentation = update,
+                            ResponseId = responseId,
+                        };
+                    }
+
+                    if (details.CodeInterpreterOutputs is { Count: > 0 })
+                    {
+                        CodeInterpreterToolResultContent hcitrc = new()
+                        {
+                            CallId = details.ToolCallId,
+                            RawRepresentation = details,
+                        };
+
+                        foreach (var output in details.CodeInterpreterOutputs)
+                        {
+                            if (output.ImageFileId is not null)
+                            {
+                                (hcitrc.Output ??= []).Add(new HostedFileContent(output.ImageFileId) { MediaType = "image/*" });
+                            }
+
+                            if (output.Logs is string logs)
+                            {
+                                (hcitrc.Output ??= []).Add(new TextContent(logs));
+                            }
+                        }
+
+                        yield return new ChatResponseUpdate(ChatRole.Assistant, [hcitrc])
+                        {
+                            AuthorName = _assistantId,
+                            ConversationId = threadId,
+                            MessageId = responseId,
+                            RawRepresentation = update,
+                            ResponseId = responseId,
+                        };
+                    }
+                    break;
+
                 case MessageContentUpdate mcu:
                     ChatResponseUpdate textUpdate = new(mcu.Role == MessageRole.User ? ChatRole.User : ChatRole.Assistant, mcu.Text)
                     {

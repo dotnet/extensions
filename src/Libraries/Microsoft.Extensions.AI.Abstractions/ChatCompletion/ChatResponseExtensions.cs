@@ -5,7 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+#if !NET
+using System.Runtime.InteropServices;
+#endif
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -181,7 +185,7 @@ public static class ChatResponseExtensions
     }
 
     /// <summary>Coalesces sequential <see cref="AIContent"/> content elements.</summary>
-    internal static void CoalesceTextContent(IList<AIContent> contents)
+    internal static void CoalesceContent(IList<AIContent> contents)
     {
         Coalesce<TextContent>(
             contents,
@@ -213,6 +217,110 @@ public static class ChatResponseExtensions
                 }
 
                 return content;
+            });
+
+        Coalesce<DataContent>(
+            contents,
+            mergeSingle: false,
+            canMerge: static (r1, r2) => r1.MediaType == r2.MediaType && r1.HasTopLevelMediaType("text") && r1.Name == r2.Name,
+            static (contents, start, end) =>
+            {
+                Debug.Assert(end - start > 1, "Expected multiple contents to merge");
+
+                MemoryStream ms = new();
+                for (int i = start; i < end; i++)
+                {
+                    var current = (DataContent)contents[i];
+#if NET
+                    ms.Write(current.Data.Span);
+#else
+                    if (!MemoryMarshal.TryGetArray(current.Data, out var segment))
+                    {
+                        segment = new(current.Data.ToArray());
+                    }
+
+                    ms.Write(segment.Array!, segment.Offset, segment.Count);
+#endif
+                }
+
+                var first = (DataContent)contents[start];
+                return new DataContent(new ReadOnlyMemory<byte>(ms.GetBuffer(), 0, (int)ms.Length), first.MediaType) { Name = first.Name };
+            });
+
+        Coalesce<CodeInterpreterToolCallContent>(
+            contents,
+            mergeSingle: true,
+            canMerge: static (r1, r2) => r1.CallId is not null && r2.CallId is not null && r1.CallId == r2.CallId,
+            static (contents, start, end) =>
+            {
+                var firstContent = (CodeInterpreterToolCallContent)contents[start];
+
+                if (start == end - 1)
+                {
+                    if (firstContent.Inputs is not null)
+                    {
+                        CoalesceContent(firstContent.Inputs);
+                    }
+
+                    return firstContent;
+                }
+
+                List<AIContent>? inputs = null;
+
+                for (int i = start; i < end; i++)
+                {
+                    (inputs ??= []).AddRange(((CodeInterpreterToolCallContent)contents[i]).Inputs ?? []);
+                }
+
+                if (inputs is not null)
+                {
+                    CoalesceContent(inputs);
+                }
+
+                return new()
+                {
+                    CallId = firstContent.CallId,
+                    Inputs = inputs,
+                    AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
+                };
+            });
+
+        Coalesce<CodeInterpreterToolResultContent>(
+            contents,
+            mergeSingle: true,
+            canMerge: static (r1, r2) => r1.CallId is not null && r2.CallId is not null && r1.CallId == r2.CallId,
+            static (contents, start, end) =>
+            {
+                var firstContent = (CodeInterpreterToolResultContent)contents[start];
+
+                if (start == end - 1)
+                {
+                    if (firstContent.Output is not null)
+                    {
+                        CoalesceContent(firstContent.Output);
+                    }
+
+                    return firstContent;
+                }
+
+                List<AIContent>? output = null;
+
+                for (int i = start; i < end; i++)
+                {
+                    (output ??= []).AddRange(((CodeInterpreterToolResultContent)contents[i]).Output ?? []);
+                }
+
+                if (output is not null)
+                {
+                    CoalesceContent(output);
+                }
+
+                return new()
+                {
+                    CallId = firstContent.CallId,
+                    Output = output,
+                    AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
+                };
             });
 
         static string MergeText(IList<AIContent> contents, int start, int end)
@@ -318,7 +426,7 @@ public static class ChatResponseExtensions
         int count = response.Messages.Count;
         for (int i = 0; i < count; i++)
         {
-            CoalesceTextContent((List<AIContent>)response.Messages[i].Contents);
+            CoalesceContent((List<AIContent>)response.Messages[i].Contents);
         }
     }
 

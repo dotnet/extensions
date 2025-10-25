@@ -14,11 +14,9 @@ namespace Microsoft.Extensions.AI;
 /// Unlike <see cref="DataContent"/> which contains the data for a file or blob, this class represents a file that is hosted
 /// by the AI service and referenced by an identifier. Such identifiers are specific to the provider.
 /// </remarks>
-[DebuggerDisplay("FileId = {FileId}")]
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class HostedFileContent : AIContent
 {
-    private string _fileId;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HostedFileContent"/> class.
     /// </summary>
@@ -27,7 +25,7 @@ public sealed class HostedFileContent : AIContent
     /// <exception cref="ArgumentException"><paramref name="fileId"/> is empty or composed entirely of whitespace.</exception>
     public HostedFileContent(string fileId)
     {
-        _fileId = Throw.IfNullOrWhitespace(fileId);
+        FileId = fileId;
     }
 
     /// <summary>
@@ -37,7 +35,40 @@ public sealed class HostedFileContent : AIContent
     /// <exception cref="ArgumentException"><paramref name="value"/> is empty or composed entirely of whitespace.</exception>
     public string FileId
     {
-        get => _fileId;
-        set => _fileId = Throw.IfNullOrWhitespace(value);
+        get => field;
+        set => field = Throw.IfNullOrWhitespace(value);
+    }
+
+    /// <summary>Gets or sets an optional media type (also known as MIME type) associated with the file.</summary>
+    /// <exception cref="ArgumentException"><paramref name="value"/> represents an invalid media type.</exception>
+    public string? MediaType
+    {
+        get;
+        set => field = value is not null ? DataUriParser.ThrowIfInvalidMediaType(value) : value;
+    }
+
+    /// <summary>Gets or sets an optional name associated with the file.</summary>
+    public string? Name { get; set; }
+
+    /// <summary>Gets a string representing this instance to display in the debugger.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay
+    {
+        get
+        {
+            string display = $"FileId = {FileId}";
+
+            if (MediaType is string mediaType)
+            {
+                display += $", MediaType = {mediaType}";
+            }
+
+            if (Name is string name)
+            {
+                display += $", Name = \"{name}\"";
+            }
+
+            return display;
+        }
     }
 }
