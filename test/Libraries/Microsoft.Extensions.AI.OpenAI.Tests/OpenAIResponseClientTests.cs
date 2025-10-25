@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
@@ -2236,6 +2237,361 @@ public class OpenAIResponseClientTests
             }
 #pragma warning restore S108 // Nested blocks of code should not be left empty
         });
+    }
+
+    [Fact]
+    public async Task CodeInterpreterTool_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-2024-08-06",
+                "input":[{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"Calculate the sum of numbers from 1 to 5"}]
+                }],
+                "tool_choice":"auto",
+                "tools":[{
+                    "type":"code_interpreter",
+                    "container":{"type":"auto"}
+                }]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_0e599e83cc6642210068fb7475165481a08efc750483c7048f",
+              "object": "response",
+              "created_at": 1761309813,
+              "status": "completed",
+              "background": false,
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": null,
+              "max_tool_calls": null,
+              "model": "gpt-4o-2024-08-06",
+              "output": [
+                {
+                  "id": "ci_0e599e83cc6642210068fb7477fb9881a0811e8b0dc054b2fa",
+                  "type": "code_interpreter_call",
+                  "status": "completed",
+                  "code": "# Calculating the sum of numbers from 1 to 5\nresult = sum(range(1, 6))\nresult",
+                  "container_id": "cntr_68fb7476c384819186524b78cdc3180000a9a0fdd06b3cd4",
+                  "outputs": null
+                },
+                {
+                  "id": "msg_0e599e83cc6642210068fb747e118081a08c3ed46daa9d9dcb",
+                  "type": "message",
+                  "status": "completed",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "annotations": [],
+                      "logprobs": [],
+                      "text": "15"
+                    }
+                  ],
+                  "role": "assistant"
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "prompt_cache_key": null,
+              "reasoning": {
+                "effort": null,
+                "summary": null
+              },
+              "safety_identifier": null,
+              "service_tier": "default",
+              "store": true,
+              "temperature": 1.0,
+              "text": {
+                "format": {
+                  "type": "text"
+                },
+                "verbosity": "medium"
+              },
+              "tool_choice": "auto",
+              "tools": [
+                {
+                  "type": "code_interpreter",
+                  "container": {
+                    "type": "auto"
+                  }
+                }
+              ],
+              "top_logprobs": 0,
+              "top_p": 1.0,
+              "truncation": "disabled",
+              "usage": {
+                "input_tokens": 225,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 34,
+                "output_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "total_tokens": 259
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-2024-08-06");
+
+        var response = await client.GetResponseAsync("Calculate the sum of numbers from 1 to 5", new()
+        {
+            Tools = [new HostedCodeInterpreterTool()],
+        });
+
+        Assert.NotNull(response);
+        Assert.Single(response.Messages);
+
+        var message = response.Messages[0];
+        Assert.Equal(ChatRole.Assistant, message.Role);
+        Assert.Equal(3, message.Contents.Count);
+
+        var codeCall = Assert.IsType<CodeInterpreterToolCallContent>(message.Contents[0]);
+        Assert.NotNull(codeCall.Inputs);
+        var codeInput = Assert.IsType<DataContent>(Assert.Single(codeCall.Inputs));
+        Assert.Equal("text/x-python", codeInput.MediaType);
+
+        var codeResult = Assert.IsType<CodeInterpreterToolResultContent>(message.Contents[1]);
+        Assert.Equal(codeCall.CallId, codeResult.CallId);
+
+        var textContent = Assert.IsType<TextContent>(message.Contents[2]);
+        Assert.Equal("15", textContent.Text);
+    }
+
+    [Fact]
+    public async Task CodeInterpreterTool_Streaming()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-2024-08-06",
+                "input":[{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"Calculate the sum of numbers from 1 to 10 using Python"}]
+                }],
+                "tool_choice":"auto",
+                "tools":[{
+                    "type":"code_interpreter",
+                    "container":{"type":"auto"}
+                }],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_05d8f42f04f94cb80068fc3b7e07bc819eaf0d6e2c1923e564","object":"response","created_at":1761360766,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"code_interpreter","container":{"type":"auto"}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_05d8f42f04f94cb80068fc3b7e07bc819eaf0d6e2c1923e564","object":"response","created_at":1761360766,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"code_interpreter","container":{"type":"auto"}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","type":"code_interpreter_call","status":"in_progress","code":"","container_id":"cntr_68fc3b80043c8191990a5837d7617af704511ed77cec9447","outputs":null}}
+
+            event: response.code_interpreter_call.in_progress
+            data: {"type":"response.code_interpreter_call.in_progress","sequence_number":3,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":4,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"#","obfuscation":"sl1L6kjYGbL3W7b"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":5,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" Calculate","obfuscation":"nXS0Oz"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":6,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" the","obfuscation":"BeywG4wkYSPO"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":7,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" sum","obfuscation":"lQQwYY1jVUku"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":8,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" of","obfuscation":"B7ZYHyd1bTIIr"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":9,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" numbers","obfuscation":"c9P1UFe4"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":10,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" from","obfuscation":"jARdbqvpfdt"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":11,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" ","obfuscation":"wciF7LWnjGSdWPb"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":12,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"1","obfuscation":"KLuWFhT8xPOyTNH"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":13,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" to","obfuscation":"5QCNr2nNt72Hg"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":14,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" ","obfuscation":"F3vctEo2cPUvnhe"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":15,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"10","obfuscation":"JBwcgWLYbSTskz"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":16,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"\n","obfuscation":"AgU5f5WddGwHDJg"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":17,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"sum","obfuscation":"Vey8vqQPTbewO"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":18,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"_of","obfuscation":"Lyrmc5oOwdmsp"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":19,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"_numbers","obfuscation":"YxvseUG4"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":20,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" =","obfuscation":"yoo1CBUhRbgI36"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":21,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" sum","obfuscation":"pKTBmkNEE4SA"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":22,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"(range","obfuscation":"BixU5bs5ms"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":23,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"(","obfuscation":"nsarVNP46dpVYMb"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":24,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"1","obfuscation":"qkth7DCPzS6mfEd"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":25,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":",","obfuscation":"J5uAitISxtjRSQA"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":26,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" ","obfuscation":"thr4ylmBRbAk0PY"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":27,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"11","obfuscation":"FWxcmwOFHJKEPJ"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":28,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"))\n","obfuscation":"ifI2JoREexe3t"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":29,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"sum","obfuscation":"VI7RlYoKWGMKP"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":30,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"_of","obfuscation":"lkv27YflY8GLq"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":31,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"_numbers","obfuscation":"xAQFrVav"}
+
+            event: response.code_interpreter_call_code.done
+            data: {"type":"response.code_interpreter_call_code.done","sequence_number":32,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","code":"# Calculate the sum of numbers from 1 to 10\nsum_of_numbers = sum(range(1, 11))\nsum_of_numbers"}
+
+            event: response.code_interpreter_call.interpreting
+            data: {"type":"response.code_interpreter_call.interpreting","sequence_number":33,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3"}
+
+            event: response.code_interpreter_call.completed
+            data: {"type":"response.code_interpreter_call.completed","sequence_number":34,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3"}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":35,"output_index":0,"item":{"id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","type":"code_interpreter_call","status":"completed","code":"# Calculate the sum of numbers from 1 to 10\nsum_of_numbers = sum(range(1, 11))\nsum_of_numbers","container_id":"cntr_68fc3b80043c8191990a5837d7617af704511ed77cec9447","outputs":null}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":36,"output_index":1,"item":{"id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","type":"message","status":"in_progress","content":[],"role":"assistant"}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","sequence_number":37,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":""}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":38,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":"The","logprobs":[],"obfuscation":"r7iIr1QJ50aER"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":39,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" sum","logprobs":[],"obfuscation":"AQlXzWBYj2nu"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":40,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" of","logprobs":[],"obfuscation":"PpVAep2w6YBTd"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":41,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" numbers","logprobs":[],"obfuscation":"q2oosiA3"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":42,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" from","logprobs":[],"obfuscation":"BBLhSYyDDUG"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":43,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" ","logprobs":[],"obfuscation":"itOENAMFwzo6ESp"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":44,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":"1","logprobs":[],"obfuscation":"g93CJ2MyMSbq26V"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":45,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" to","logprobs":[],"obfuscation":"WyzXmwaUVATTs"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":46,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" ","logprobs":[],"obfuscation":"DBgQSKk2myfDWpq"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":47,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":"10","logprobs":[],"obfuscation":"RA4RYQSLNug4pg"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":48,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" is","logprobs":[],"obfuscation":"CgEfKJVj1DJtz"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":49,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" ","logprobs":[],"obfuscation":"TVg4ccd4ZMwEiru"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":50,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":"55","logprobs":[],"obfuscation":"CVN92VujTbUiZ0"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":51,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":".","logprobs":[],"obfuscation":"7YegRUzag3K6fdV"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","sequence_number":52,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"text":"The sum of numbers from 1 to 10 is 55.","logprobs":[]}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","sequence_number":53,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":"The sum of numbers from 1 to 10 is 55."}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":54,"output_index":1,"item":{"id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"The sum of numbers from 1 to 10 is 55."}],"role":"assistant"}}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":55,"response":{"id":"resp_05d8f42f04f94cb80068fc3b7e07bc819eaf0d6e2c1923e564","object":"response","created_at":1761360766,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[{"id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","type":"code_interpreter_call","status":"completed","code":"# Calculate the sum of numbers from 1 to 10\nsum_of_numbers = sum(range(1, 11))\nsum_of_numbers","container_id":"cntr_68fc3b80043c8191990a5837d7617af704511ed77cec9447","outputs":null},{"id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"The sum of numbers from 1 to 10 is 55."}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"code_interpreter","container":{"type":"auto"}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":219,"input_tokens_details":{"cached_tokens":0},"output_tokens":50,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":269},"user":null,"metadata":{}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-2024-08-06");
+
+        var response = await client.GetStreamingResponseAsync("Calculate the sum of numbers from 1 to 10 using Python", new()
+        {
+            Tools = [new HostedCodeInterpreterTool()],
+        }).ToChatResponseAsync();
+
+        Assert.NotNull(response);
+        Assert.Single(response.Messages);
+
+        var message = response.Messages[0];
+        Assert.Equal(ChatRole.Assistant, message.Role);
+        Assert.Equal(3, message.Contents.Count);
+
+        var codeCall = Assert.IsType<CodeInterpreterToolCallContent>(message.Contents[0]);
+        Assert.NotNull(codeCall.Inputs);
+        var codeInput = Assert.IsType<DataContent>(Assert.Single(codeCall.Inputs));
+        Assert.Equal("text/x-python", codeInput.MediaType);
+        Assert.Contains("sum_of_numbers", Encoding.UTF8.GetString(codeInput.Data.ToArray()));
+
+        var codeResult = Assert.IsType<CodeInterpreterToolResultContent>(message.Contents[1]);
+        Assert.Equal(codeCall.CallId, codeResult.CallId);
+
+        var textContent = Assert.IsType<TextContent>(message.Contents[2]);
+        Assert.Equal("The sum of numbers from 1 to 10 is 55.", textContent.Text);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(219, response.Usage.InputTokenCount);
+        Assert.Equal(50, response.Usage.OutputTokenCount);
+        Assert.Equal(269, response.Usage.TotalTokenCount);
     }
 
     [Fact]

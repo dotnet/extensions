@@ -12,7 +12,7 @@ public class AdditionalPropertiesDictionaryTests
     [Fact]
     public void Constructor_Roundtrips()
     {
-        AdditionalPropertiesDictionary d = new();
+        AdditionalPropertiesDictionary d = [];
         Assert.Empty(d);
 
         d = new(new Dictionary<string, object?> { ["key1"] = "value1" });

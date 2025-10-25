@@ -45,7 +45,7 @@ public class BinaryEmbeddingTests
         Assert.Equal(createdAt, e.CreatedAt);
 
         Assert.Null(e.AdditionalProperties);
-        AdditionalPropertiesDictionary props = new();
+        AdditionalPropertiesDictionary props = [];
         e.AdditionalProperties = props;
         Assert.Same(props, e.AdditionalProperties);
     }

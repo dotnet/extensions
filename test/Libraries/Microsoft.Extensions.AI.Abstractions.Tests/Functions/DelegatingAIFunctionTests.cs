@@ -79,7 +79,7 @@ public class DelegatingAIFunctionTests
         Assert.Same(inner.AdditionalProperties, actual.AdditionalProperties);
         Assert.Equal(inner.ToString(), actual.ToString());
 
-        object? result = await actual.InvokeAsync(new(), CancellationToken.None);
+        object? result = await actual.InvokeAsync([], CancellationToken.None);
         Assert.Contains("84", result?.ToString());
 
         Assert.False(innerInvoked);
