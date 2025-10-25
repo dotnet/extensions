@@ -167,7 +167,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                     input.AddRange(response.Messages);
                 }
 
-                var approvalResponse = new ChatMessage(ChatRole.Tool,
+                var approvalResponse = new ChatMessage(ChatRole.User,
                     response.Messages
                             .SelectMany(m => m.Contents)
                             .OfType<McpServerToolApprovalRequestContent>()
