@@ -48,11 +48,11 @@ public class UserInputResponseContentTests
         var deserializedContents = JsonSerializer.Deserialize(serializedContents, TestJsonSerializerContext.Default.UserInputResponseContentArray);
         Assert.NotNull(deserializedContents);
 
-        Assert.Equal(contents.Count(), deserializedContents.Length);
+        Assert.Equal(contents.Length, deserializedContents.Length);
         for (int i = 0; i < deserializedContents.Length; i++)
         {
-            Assert.NotNull(contents.ElementAt(i));
-            Assert.Equal(contents.ElementAt(i).GetType(), deserializedContents[i].GetType());
+            Assert.NotNull(contents[i]);
+            Assert.Equal(contents[i].GetType(), deserializedContents[i].GetType());
         }
     }
 
