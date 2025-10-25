@@ -27,7 +27,7 @@ public class GeneratedEmbeddingsTests
         GeneratedEmbeddings<Embedding<float>>[] instances =
         [
             [],
-            new(0),
+            [],
             new(42),
             new([])
         ];
