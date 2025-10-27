@@ -15,11 +15,38 @@ public class ClassificationEnricherTests
 
     [Fact]
     public void ThrowsOnNullChatClient()
-        => Assert.Throws<ArgumentNullException>(() => new ClassificationEnricher(null!, predefinedClasses: ["some"]));
+    {
+        var ex = Assert.Throws<ArgumentNullException>(() => new ClassificationEnricher(null!, predefinedClasses: ["some"]));
+        Assert.Equal("chatClient", ex.ParamName);
+    }
 
     [Fact]
     public void ThrowsOnEmptyPredefinedClasses()
-        => Assert.Throws<ArgumentException>(() => new ClassificationEnricher(new TestChatClient(), predefinedClasses: []));
+    {
+        var ex = Assert.Throws<ArgumentException>(() => new ClassificationEnricher(new TestChatClient(), predefinedClasses: []));
+        Assert.Equal("predefinedClasses", ex.ParamName);
+    }
+
+    [Fact]
+    public void ThrowsOnDuplicatePredefinedClasses()
+    {
+        var ex = Assert.Throws<ArgumentException>(() => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["same", "same"]));
+        Assert.Equal("predefinedClasses", ex.ParamName);
+    }
+
+    [Fact]
+    public void ThrowsOnPredefinedClassesContainingFallback()
+    {
+        var ex = Assert.Throws<ArgumentException>(() => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["same", "Unknown"]));
+        Assert.Equal("predefinedClasses", ex.ParamName);
+    }
+
+    [Fact]
+    public void ThrowsOnFallbackInPredefinedClasses()
+    {
+        var ex = Assert.Throws<ArgumentException>(() => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["some"], fallbackClass: "some"));
+        Assert.Equal("predefinedClasses", ex.ParamName);
+    }
 
     [Fact]
     public async Task ThrowsOnNullChunks()
@@ -59,6 +86,32 @@ public class ClassificationEnricherTests
         Assert.Equal("AI", got[0].Metadata[ClassificationEnricher.MetadataKey]);
         Assert.Equal("Animals", got[1].Metadata[ClassificationEnricher.MetadataKey]);
         Assert.Equal("UFO", got[2].Metadata[ClassificationEnricher.MetadataKey]);
+    }
+
+    [Fact]
+    public async Task ThrowsOnInvalidResponse()
+    {
+        using TestChatClient chatClient = new()
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                return Task.FromResult(new ChatResponse(new[]
+                {
+                    new ChatMessage(ChatRole.Assistant, "Unexpected result!")
+                }));
+            }
+        };
+
+        ClassificationEnricher sut = new(chatClient, ["AI", "Animals", "Sports"]);
+        var input = CreateChunks().ToAsyncEnumerable();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var _ in sut.ProcessAsync(input))
+            {
+                // No-op
+            }
+        });
     }
 
     private static List<IngestionChunk<string>> CreateChunks() =>

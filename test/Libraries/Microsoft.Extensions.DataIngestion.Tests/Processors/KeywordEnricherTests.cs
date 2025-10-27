@@ -36,6 +36,13 @@ public class KeywordEnricherTests
     }
 
     [Fact]
+    public void ThrowsOnDuplicateKeywords()
+    {
+        var ex = Assert.Throws<ArgumentException>(() => new KeywordEnricher(new TestChatClient(), predefinedKeywords: ["same", "same"], confidenceThreshold: 0.5));
+        Assert.Equal("predefinedKeywords", ex.ParamName);
+    }
+
+    [Fact]
     public async Task ThrowsOnNullChunks()
     {
         using TestChatClient chatClient = new();
@@ -75,6 +82,32 @@ public class KeywordEnricherTests
 
         Assert.Equal(["AI", "MEAI"], (string[])got[0].Metadata[KeywordEnricher.MetadataKey]);
         Assert.Equal(["Animals", "Rabbits"], (string[])got[1].Metadata[KeywordEnricher.MetadataKey]);
+    }
+
+    [Fact]
+    public async Task ThrowsOnInvalidResponse()
+    {
+        using TestChatClient chatClient = new()
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                return Task.FromResult(new ChatResponse(new[]
+                {
+                    new ChatMessage(ChatRole.Assistant, "Unexpected result!")
+                }));
+            }
+        };
+
+        KeywordEnricher sut = new(chatClient, ["some"]);
+        var input = CreateChunks().ToAsyncEnumerable();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var _ in sut.ProcessAsync(input))
+            {
+                // No-op
+            }
+        });
     }
 
     private static List<IngestionChunk<string>> CreateChunks() =>

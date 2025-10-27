@@ -16,8 +16,7 @@ namespace Microsoft.Extensions.DataIngestion;
 public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
 {
     private readonly IChatClient _chatClient;
-    private readonly ChatOptions? _chatOptions;
-    private readonly TextContent _request;
+    private readonly ChatOptions _chatOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageAlternativeTextEnricher"/> class.
@@ -27,8 +26,8 @@ public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
     public ImageAlternativeTextEnricher(IChatClient chatClient, ChatOptions? chatOptions = null)
     {
         _chatClient = Throw.IfNull(chatClient);
-        _chatOptions = chatOptions;
-        _request = new("Write a detailed alternative text for this image with less than 50 words.");
+        _chatOptions = chatOptions?.Clone() ?? new();
+        _chatOptions.Instructions = "Write a detailed alternative text for this image with less than 50 words.";
     }
 
     /// <inheritdoc/>
@@ -64,11 +63,7 @@ public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
         {
             var response = await _chatClient.GetResponseAsync(
             [
-                new(ChatRole.User,
-                [
-                    _request,
-                    new DataContent(image.Content.Value, image.MediaType!),
-                ])
+                new(ChatRole.User, [new DataContent(image.Content.Value, image.MediaType!)])
             ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             image.AlternativeText = response.Text;

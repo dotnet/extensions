@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -22,8 +23,8 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
 {
     private const int DefaultMaxKeywords = 5;
     private readonly IChatClient _chatClient;
-    private readonly ChatOptions? _chatOptions;
-    private readonly TextContent _request;
+    private readonly ChatOptions _chatOptions;
+    private readonly FrozenSet<string>? _predefinedKeywords;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KeywordEnricher"/> class.
@@ -48,8 +49,8 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
             : DefaultMaxKeywords;
 
         _chatClient = Throw.IfNull(chatClient);
-        _chatOptions = chatOptions;
-        _request = CreateLlmRequest(keywordsCount, predefinedKeywords, threshold);
+        _predefinedKeywords = CreatePredfinedKeywords(predefinedKeywords);
+        _chatOptions = CreateChatOptions(keywordsCount, predefinedKeywords, threshold, chatOptions);
     }
 
     /// <summary>
@@ -68,22 +69,48 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
             // Structured response is not used here because it's not part of Microsoft.Extensions.AI.Abstractions.
             var response = await _chatClient.GetResponseAsync(
             [
-                new(ChatRole.User,
-                [
-                    _request,
-                    new TextContent(chunk.Content),
-                ])
+                new(ChatRole.User, chunk.Content)
             ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable EA0009 // Use 'System.MemoryExtensions.Split' for improved performance
-            chunk.Metadata[MetadataKey] = response.Text.Split(';');
-#pragma warning restore EA0009 // Use 'System.MemoryExtensions.Split' for improved performance
+            string[] keywords = response.Text.Split(';');
+            if (_predefinedKeywords is not null)
+            {
+                foreach (var keyword in keywords)
+                {
+                    if (!_predefinedKeywords.Contains(keyword))
+                    {
+                        throw new InvalidOperationException($"The extracted keyword '{keyword}' is not in the predefined keywords list.");
+                    }
+                }
+            }
+
+            chunk.Metadata[MetadataKey] = keywords;
 
             yield return chunk;
         }
     }
 
-    private static TextContent CreateLlmRequest(int maxKeywords, ReadOnlySpan<string> predefinedKeywords, double confidenceThreshold)
+    private static FrozenSet<string>? CreatePredfinedKeywords(ReadOnlySpan<string> predefinedKeywords)
+    {
+        if (predefinedKeywords.Length == 0)
+        {
+            return null;
+        }
+
+        HashSet<string> result = new(StringComparer.Ordinal);
+        foreach (string keyword in predefinedKeywords)
+        {
+            if (!result.Add(keyword))
+            {
+                Throw.ArgumentException(nameof(predefinedKeywords), $"Duplicate keyword found: '{keyword}'");
+            }
+        }
+
+        return result.ToFrozenSet(StringComparer.Ordinal);
+    }
+
+    private static ChatOptions CreateChatOptions(int maxKeywords, ReadOnlySpan<string> predefinedKeywords, double confidenceThreshold, ChatOptions? userProvided)
     {
         StringBuilder sb = new($"You are a keyword extraction expert. Analyze the given text and extract up to {maxKeywords} most relevant keywords. ");
 
@@ -107,6 +134,8 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
         sb.Append(" Return just the keywords separated with ';'.");
 #pragma warning restore IDE0058 // Expression value is never used
 
-        return new(sb.ToString());
+        ChatOptions result = userProvided?.Clone() ?? new();
+        result.Instructions = sb.ToString();
+        return result;
     }
 }

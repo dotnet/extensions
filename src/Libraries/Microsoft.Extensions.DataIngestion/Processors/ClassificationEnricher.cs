@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -21,8 +22,8 @@ namespace Microsoft.Extensions.DataIngestion;
 public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
 {
     private readonly IChatClient _chatClient;
-    private readonly ChatOptions? _chatOptions;
-    private readonly TextContent _request;
+    private readonly ChatOptions _chatOptions;
+    private readonly FrozenSet<string> _predefinedClasses;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClassificationEnricher"/> class.
@@ -34,14 +35,14 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
     public ClassificationEnricher(IChatClient chatClient, ReadOnlySpan<string> predefinedClasses,
         ChatOptions? chatOptions = null, string? fallbackClass = null)
     {
-        if (predefinedClasses.Length == 0)
+        _chatClient = Throw.IfNull(chatClient);
+        if (string.IsNullOrWhiteSpace(fallbackClass))
         {
-            Throw.ArgumentException(nameof(predefinedClasses), "Predefined classes must be provided.");
+            fallbackClass = "Unknown";
         }
 
-        _chatClient = Throw.IfNull(chatClient);
-        _chatOptions = chatOptions;
-        _request = CreateLlmRequest(predefinedClasses, string.IsNullOrEmpty(fallbackClass) ? "Unknown" : fallbackClass!);
+        _predefinedClasses = CreatePredefinedSet(predefinedClasses, fallbackClass!);
+        _chatOptions = CreateChatOptions(predefinedClasses, chatOptions, fallbackClass!);
     }
 
     /// <summary>
@@ -59,20 +60,42 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
         {
             var response = await _chatClient.GetResponseAsync(
             [
-                new(ChatRole.User,
-                [
-                    _request,
-                    new TextContent(chunk.Content),
-                ])
+                new(ChatRole.User, chunk.Content)
             ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            chunk.Metadata[MetadataKey] = response.Text;
+            chunk.Metadata[MetadataKey] = _predefinedClasses.Contains(response.Text)
+                ? response.Text
+                : throw new InvalidOperationException($"Classification returned an unexpected class: '{response.Text}'.");
 
             yield return chunk;
         }
     }
 
-    private static TextContent CreateLlmRequest(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
+    private static FrozenSet<string> CreatePredefinedSet(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
+    {
+        if (predefinedClasses.Length == 0)
+        {
+            Throw.ArgumentException(nameof(predefinedClasses), "Predefined classes must be provided.");
+        }
+
+        HashSet<string> predefinedClassesSet = new(StringComparer.Ordinal) { fallbackClass };
+        foreach (string predefinedClass in predefinedClasses)
+        {
+            if (!predefinedClassesSet.Add(predefinedClass))
+            {
+                if (predefinedClass.Equals(fallbackClass, StringComparison.Ordinal))
+                {
+                    Throw.ArgumentException(nameof(predefinedClasses), $"Fallback class '{fallbackClass}' must not be one of the predefined classes.");
+                }
+
+                Throw.ArgumentException(nameof(predefinedClasses), $"Duplicate class found: '{predefinedClass}'.");
+            }
+        }
+
+        return predefinedClassesSet.ToFrozenSet();
+    }
+
+    private static ChatOptions CreateChatOptions(ReadOnlySpan<string> predefinedClasses, ChatOptions? userProvided, string fallbackClass)
     {
         StringBuilder sb = new("You are a classification expert. Analyze the given text and assign a single, most relevant class. ");
 
@@ -90,6 +113,8 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
         sb.Append(" and return ").Append(fallbackClass).Append(" when unable to classify.");
 #pragma warning restore IDE0058 // Expression value is never used
 
-        return new(sb.ToString());
+        ChatOptions result = userProvided?.Clone() ?? new();
+        result.Instructions = sb.ToString();
+        return result;
     }
 }

@@ -37,7 +37,8 @@ public class AlternativeTextEnricherTests
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 var message = Assert.Single(messages);
-                DataContent dataContent = Assert.IsType<DataContent>(message.Contents[1]);
+                var content = Assert.Single(message.Contents);
+                DataContent dataContent = Assert.IsType<DataContent>(content);
                 Assert.Equal("image/png", dataContent.MediaType);
                 Assert.Equal(imageContent.ToArray(), dataContent.Data.ToArray());
 

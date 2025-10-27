@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -20,8 +21,13 @@ namespace Microsoft.Extensions.DataIngestion;
 public sealed class SentimentEnricher : IngestionChunkProcessor<string>
 {
     private readonly IChatClient _chatClient;
-    private readonly ChatOptions? _chatOptions;
-    private readonly TextContent _request;
+    private readonly ChatOptions _chatOptions;
+    private readonly FrozenSet<string> _validSentiments =
+#if NET9_0_OR_GREATER
+        FrozenSet.Create(StringComparer.Ordinal, "Positive", "Negative", "Neutral", "Unknown");
+#else
+        new string[] { "Positive", "Negative", "Neutral", "Unknown" }.ToFrozenSet(StringComparer.Ordinal);
+#endif
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SentimentEnricher"/> class.
@@ -32,11 +38,11 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
     public SentimentEnricher(IChatClient chatClient, ChatOptions? chatOptions = null, double? confidenceThreshold = null)
     {
         _chatClient = Throw.IfNull(chatClient);
-        _chatOptions = chatOptions;
 
         double threshold = confidenceThreshold.HasValue ? Throw.IfOutOfRange(confidenceThreshold.Value, 0.0, 1.0, nameof(confidenceThreshold)) : 0.7;
-        _request = new("You are a sentiment analysis expert. Analyze the sentiment of the given text and return Positive/Negative/Neutral or" +
-            $" Unknown when confidence score is below {threshold}. Return just the value of the sentiment.");
+        _chatOptions = chatOptions?.Clone() ?? new();
+        _chatOptions.Instructions = "You are a sentiment analysis expert. Analyze the sentiment of the given text and return Positive/Negative/Neutral or" +
+            $" Unknown when confidence score is below {threshold}. Return just the value of the sentiment.";
     }
 
     /// <summary>
@@ -54,12 +60,13 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
         {
             var response = await _chatClient.GetResponseAsync(
             [
-                new(ChatRole.User,
-                [
-                    _request,
-                    new TextContent(chunk.Content),
-                ])
+                new(ChatRole.User, chunk.Content)
             ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            if (!_validSentiments.Contains(response.Text))
+            {
+                throw new InvalidOperationException($"Invalid sentiment response: '{response.Text}'.");
+            }
 
             chunk.Metadata[MetadataKey] = response.Text;
 
