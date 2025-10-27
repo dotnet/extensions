@@ -1,8 +1,9 @@
 # Release History
 
-## NOT YET RELEASED
+## 9.10.1-preview.1.25521.4
 
-- Updated `IChatClient` for Responses API to support connectors with `HostedMcpServerTool`.
+- Updated the `IChatClient` for the OpenAI Responses API to support connectors with `HostedMcpServerTool`.
+- Fixed the `IChatClient` for the OpenAI Responses API to roundtrip a `ResponseItem` stored in an `AIContent` in a `ChatRole.User` message.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.10.0-preview.1.25513.3
