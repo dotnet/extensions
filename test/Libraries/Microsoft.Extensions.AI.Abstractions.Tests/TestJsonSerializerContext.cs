@@ -38,4 +38,6 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(HostedMcpServerToolApprovalMode))]
 [JsonSerializable(typeof(ChatResponseFormatTests.SomeType))]
 [JsonSerializable(typeof(ResponseContinuationToken))]
+[JsonSerializable(typeof(UserInputRequestContent[]))]
+[JsonSerializable(typeof(UserInputResponseContent[]))]
 internal sealed partial class TestJsonSerializerContext : JsonSerializerContext;
