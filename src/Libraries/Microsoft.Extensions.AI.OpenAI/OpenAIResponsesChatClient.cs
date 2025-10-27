@@ -574,12 +574,13 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             aiFunction.Description);
     }
 
-    internal ResponseTool ToImageResponseTool(HostedImageGenerationTool imageGenerationTool)
+    internal static ImageGenerationTool ToImageResponseTool(HostedImageGenerationTool imageGenerationTool)
     {
         ImageGenerationOptions? imageGenerationOptions = imageGenerationTool.Options;
 
-        // A bit unusual to get an ImageGenerationTool from the ImageGenerationOptions factory, we could
-        var result = imageGenerationTool.RawRepresentationFactory?.Invoke(this) as ImageGenerationTool ?? new();
+        // Not every option is available on ImageGenerationOptions, so we allow the tool to define a factory for 
+        // the OpenAi ImageGenerationTool.  This is important to set partial_images, input_image_mask, etc.
+        var result = imageGenerationTool.RawRepresentationFactory?.Invoke(null) as ImageGenerationTool ?? new();
 
         // Model: Image generation model
         if (imageGenerationOptions?.ModelId is not null && result.Model is null)

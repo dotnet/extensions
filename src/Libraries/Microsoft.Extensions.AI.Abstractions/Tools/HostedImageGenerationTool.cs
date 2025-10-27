@@ -45,5 +45,5 @@ public class HostedImageGenerationTool : AITool
     /// properties on <see cref="ImageGenerationOptions" />.
     /// </remarks>
     [JsonIgnore]
-    public Func<IChatClient, object?>? RawRepresentationFactory { get; set; }
+    public Func<IChatClient?, object?>? RawRepresentationFactory { get; set; }
 }
