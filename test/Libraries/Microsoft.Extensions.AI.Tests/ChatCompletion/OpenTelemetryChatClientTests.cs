@@ -105,10 +105,10 @@ public class OpenTelemetryChatClientTests
         List<ChatMessage> messages =
         [
             new(ChatRole.System, "You are a close friend."),
-            new(ChatRole.User, "Hey!"),
+            new(ChatRole.User, "Hey!") { AuthorName = "Alice" },
             new(ChatRole.Assistant, [new FunctionCallContent("12345", "GetPersonName")]),
             new(ChatRole.Tool, [new FunctionResultContent("12345", "John")]),
-            new(ChatRole.Assistant, "Hey John, what's up?"),
+            new(ChatRole.Assistant, "Hey John, what's up?") { AuthorName = "BotAssistant" },
             new(ChatRole.User, "What's the biggest animal?")
         ];
 
@@ -201,6 +201,7 @@ public class OpenTelemetryChatClientTests
                   },
                   {
                     "role": "user",
+                    "name": "Alice",
                     "parts": [
                       {
                         "type": "text",
@@ -230,6 +231,7 @@ public class OpenTelemetryChatClientTests
                   },
                   {
                     "role": "assistant",
+                    "name": "BotAssistant",
                     "parts": [
                       {
                         "type": "text",
