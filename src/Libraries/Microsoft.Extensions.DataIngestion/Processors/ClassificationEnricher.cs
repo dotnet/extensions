@@ -81,6 +81,15 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
         HashSet<string> predefinedClassesSet = new(StringComparer.Ordinal) { fallbackClass };
         foreach (string predefinedClass in predefinedClasses)
         {
+#if NET
+            if (predefinedClass.Contains(',', StringComparison.Ordinal))
+#else
+            if (predefinedClass.IndexOf(',') >= 0)
+#endif
+            {
+                Throw.ArgumentException(nameof(predefinedClasses), $"Predefined class '{predefinedClass}' must not contain ',' character.");
+            }
+
             if (!predefinedClassesSet.Add(predefinedClass))
             {
                 if (predefinedClass.Equals(fallbackClass, StringComparison.Ordinal))

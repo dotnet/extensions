@@ -42,6 +42,15 @@ public class KeywordEnricherTests
         Assert.Equal("predefinedKeywords", ex.ParamName);
     }
 
+    [Theory]
+    [InlineData(',')]
+    [InlineData(';')]
+    public void ThrowsOnIllegalCharacters(char illegal)
+    {
+        var ex = Assert.Throws<ArgumentException>(() => new KeywordEnricher(new TestChatClient(), predefinedKeywords: [$"n{illegal}t"]));
+        Assert.Equal("predefinedKeywords", ex.ParamName);
+    }
+
     [Fact]
     public async Task ThrowsOnNullChunks()
     {

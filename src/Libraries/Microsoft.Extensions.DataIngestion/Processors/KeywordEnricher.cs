@@ -22,6 +22,11 @@ namespace Microsoft.Extensions.DataIngestion;
 public sealed class KeywordEnricher : IngestionChunkProcessor<string>
 {
     private const int DefaultMaxKeywords = 5;
+#if NET
+    private static readonly System.Buffers.SearchValues<char> _illegalCharacters = System.Buffers.SearchValues.Create([';', ',']);
+#else
+    private static readonly char[] _illegalCharacters = [';', ','];
+#endif
     private readonly IChatClient _chatClient;
     private readonly ChatOptions _chatOptions;
     private readonly FrozenSet<string>? _predefinedKeywords;
@@ -101,6 +106,15 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
         HashSet<string> result = new(StringComparer.Ordinal);
         foreach (string keyword in predefinedKeywords)
         {
+#if NET
+            if (keyword.AsSpan().ContainsAny(_illegalCharacters))
+#else
+            if (keyword.IndexOfAny(_illegalCharacters) >= 0)
+#endif
+            {
+                Throw.ArgumentException(nameof(predefinedKeywords), $"Predefined keyword '{keyword}' contains an invalid character (';' or ',').");
+            }
+
             if (!result.Add(keyword))
             {
                 Throw.ArgumentException(nameof(predefinedKeywords), $"Duplicate keyword found: '{keyword}'");
