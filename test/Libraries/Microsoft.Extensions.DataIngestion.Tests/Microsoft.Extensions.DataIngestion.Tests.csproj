@@ -3,15 +3,22 @@
   <PropertyGroup>
     <!--  Multidimensional arrays should not be used -->
     <NoWarn>$(NoWarn);S3967</NoWarn>
-    <!--  Project reference can be removed -->
-    <NoWarn>$(NoWarn);RT0002</NoWarn>
+    <!--  Referenced assembly does not have a strong name -->
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
+    <!--  The member referenced by the MemberData attribute returns untyped data rows -->
+    <NoWarn>$(NoWarn);xUnit1042</NoWarn>
 
     <!-- https://github.com/dotnet/efcore/issues/33472#issuecomment-2042146335 -->
     <PlatformTarget Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">x64</PlatformTarget>
+    <!-- Markdig is not signed -->
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion.Markdown\Microsoft.Extensions.DataIngestion.Markdown.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion.MarkItDown\Microsoft.Extensions.DataIngestion.MarkItDown.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj" />
+    <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,7 +28,13 @@
 
   <ItemGroup>
     <!-- We don't run Sqlite tests on Full Framework due to some native dependency issues -->
-    <Compile Remove="SqliteVectorStoreWriterTests.cs"  Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+    <Compile Remove="SqliteVectorStoreWriterTests.cs" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestFiles\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
