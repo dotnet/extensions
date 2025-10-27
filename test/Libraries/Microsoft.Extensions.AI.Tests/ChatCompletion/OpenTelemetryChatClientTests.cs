@@ -105,10 +105,10 @@ public class OpenTelemetryChatClientTests
         List<ChatMessage> messages =
         [
             new(ChatRole.System, "You are a close friend."),
-            new(ChatRole.User, "Hey!"),
+            new(ChatRole.User, "Hey!") { AuthorName = "Alice" },
             new(ChatRole.Assistant, [new FunctionCallContent("12345", "GetPersonName")]),
             new(ChatRole.Tool, [new FunctionResultContent("12345", "John")]),
-            new(ChatRole.Assistant, "Hey John, what's up?"),
+            new(ChatRole.Assistant, "Hey John, what's up?") { AuthorName = "BotAssistant" },
             new(ChatRole.User, "What's the biggest animal?")
         ];
 
@@ -134,6 +134,9 @@ public class OpenTelemetryChatClientTests
             [
                 AIFunctionFactory.Create((string personName) => personName, "GetPersonAge", "Gets the age of a person by name."),
                 new HostedWebSearchTool(),
+                new HostedFileSearchTool(),
+                new HostedCodeInterpreterTool(),
+                new HostedMcpServerTool("myAwesomeServer", "http://localhost:1234/somewhere"),
                 AIFunctionFactory.Create((string location) => "", "GetCurrentWeather", "Gets the current weather for a location.").AsDeclarationOnly(),
             ],
         };
@@ -198,6 +201,7 @@ public class OpenTelemetryChatClientTests
                   },
                   {
                     "role": "user",
+                    "name": "Alice",
                     "parts": [
                       {
                         "type": "text",
@@ -227,6 +231,7 @@ public class OpenTelemetryChatClientTests
                   },
                   {
                     "role": "assistant",
+                    "name": "BotAssistant",
                     "parts": [
                       {
                         "type": "text",
@@ -289,6 +294,18 @@ public class OpenTelemetryChatClientTests
                     }
                   },
                   {
+                    "type": "web_search"
+                  },
+                  {
+                    "type": "file_search"
+                  },
+                  {
+                    "type": "code_interpreter"
+                  },
+                  {
+                    "type": "mcp"
+                  },
+                  {
                     "type": "function",
                     "name": "GetCurrentWeather",
                     "description": "Gets the current weather for a location.",
@@ -314,7 +331,77 @@ public class OpenTelemetryChatClientTests
             Assert.False(tags.ContainsKey("gen_ai.system_instructions"));
             Assert.False(tags.ContainsKey("gen_ai.tool.definitions"));
         }
-
-        static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
     }
+
+    [Fact]
+    public async Task UnknownContentTypes_Ignored()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "The blue whale, I think."));
+            },
+        };
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName, configure: instance =>
+            {
+                instance.EnableSensitiveData = true;
+                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+            })
+            .Build();
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User,
+            [
+                new TextContent("Hello!"),
+                new NonSerializableAIContent(),
+                new TextContent("How are you?"),
+            ]),
+        ];
+
+        var response = await chatClient.GetResponseAsync(messages);
+        Assert.NotNull(response);
+
+        var activity = Assert.Single(activities);
+        Assert.NotNull(activity);
+
+        var inputMessages = activity.Tags.First(kvp => kvp.Key == "gen_ai.input.messages").Value;
+        Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "role": "user",
+                    "parts": [
+                      {
+                        "type": "text",
+                        "content": "Hello!"
+                      },
+                      {
+                        "type": "Microsoft.Extensions.AI.OpenTelemetryChatClientTests+NonSerializableAIContent",
+                        "content": {}
+                      },
+                      {
+                          "type": "text",
+                          "content": "How are you?"
+                      }
+                    ]
+                  }
+                ]
+                """), ReplaceWhitespace(inputMessages));
+    }
+
+    private sealed class NonSerializableAIContent : AIContent;
+
+    private static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
 }

@@ -2,7 +2,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.17.0" />
-    <PackageVersion Include="Azure.AI.OpenAI" Version="2.3.0-beta.2" />
     <PackageVersion Include="autofixture" Version="4.17.0" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.13.5" />
     <PackageVersion Include="AwesomeAssertions" Version="8.0.2" />
@@ -13,6 +12,8 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="$(MicrosoftMLTokenizersVersion)" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="$(MicrosoftSemanticKernelConnectorsVersion)" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="$(MicrosoftSemanticKernelConnectorsVersion)" />
     <PackageVersion Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="9.0.201" />
     <PackageVersion Include="Microsoft.TemplateEngine.TestHelper" Version="9.0.200-rtm.25066.4" />
     <PackageVersion Include="Moq.AutoMock" Version="3.1.0" />
@@ -22,7 +23,6 @@
     <PackageVersion Include="Polly.Testing" Version="8.4.2" />
     <PackageVersion Include="StrongNamer" Version="0.2.5" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerVersion)" />
-    <PackageVersion Include="System.Numerics.Tensors" Version="$(SystemNumericsTensorsVersion)" />
     <PackageVersion Include="Verify.Xunit" Version="28.15.0" />
     <PackageVersion Include="Xunit.Combinatorial" Version="1.6.24" />
     <PackageVersion Include="xunit.extensibility.execution" Version="$(XUnitVersion)" />

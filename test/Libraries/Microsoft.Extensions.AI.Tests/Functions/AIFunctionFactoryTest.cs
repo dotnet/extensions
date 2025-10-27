@@ -15,10 +15,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 #pragma warning disable IDE0004 // Remove Unnecessary Cast
+#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable S107 // Methods should not have too many parameters
 #pragma warning disable S2760 // Sequential tests should not check the same condition
 #pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable S5034 // "ValueTask" should be consumed correctly
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 namespace Microsoft.Extensions.AI;
 
@@ -57,6 +59,51 @@ public partial class AIFunctionFactoryTest
         AIFunction func = AIFunctionFactory.Create((string a = "test") => a + " " + a);
         AssertExtensions.EqualFunctionCallResults("test test", await func.InvokeAsync());
         AssertExtensions.EqualFunctionCallResults("hello hello", await func.InvokeAsync(new() { ["a"] = "hello" }));
+    }
+
+    [Fact]
+    public async Task Parameters_DefaultValueAttributeIsRespected_Async()
+    {
+        // Test with null default value
+        AIFunction funcNull = AIFunctionFactory.Create(([DefaultValue(null)] string? text) => text ?? "was null");
+
+        // Schema should not list 'text' as required and should have default value
+        string schema = funcNull.JsonSchema.ToString();
+        Assert.Contains("\"text\"", schema);
+        Assert.DoesNotContain("\"required\"", schema);
+        Assert.Contains("\"default\":null", schema);
+
+        // Should be invocable without providing the parameter
+        AssertExtensions.EqualFunctionCallResults("was null", await funcNull.InvokeAsync());
+
+        // Should be overridable
+        AssertExtensions.EqualFunctionCallResults("hello", await funcNull.InvokeAsync(new() { ["text"] = "hello" }));
+
+        // Test with non-null default value
+        AIFunction funcValue = AIFunctionFactory.Create(([DefaultValue("default")] string text) => text);
+        schema = funcValue.JsonSchema.ToString();
+        Assert.DoesNotContain("\"required\"", schema);
+        Assert.Contains("\"default\":\"default\"", schema);
+
+        AssertExtensions.EqualFunctionCallResults("default", await funcValue.InvokeAsync());
+        AssertExtensions.EqualFunctionCallResults("custom", await funcValue.InvokeAsync(new() { ["text"] = "custom" }));
+
+        // Test with int default value
+        AIFunction funcInt = AIFunctionFactory.Create(([DefaultValue(42)] int x) => x * 2);
+        schema = funcInt.JsonSchema.ToString();
+        Assert.DoesNotContain("\"required\"", schema);
+        Assert.Contains("\"default\":42", schema);
+
+        AssertExtensions.EqualFunctionCallResults(84, await funcInt.InvokeAsync());
+        AssertExtensions.EqualFunctionCallResults(10, await funcInt.InvokeAsync(new() { ["x"] = 5 }));
+
+        // Test that DefaultValue attribute takes precedence over C# default value
+        AIFunction funcBoth = AIFunctionFactory.Create(([DefaultValue(100)] int y = 50) => y);
+        schema = funcBoth.JsonSchema.ToString();
+        Assert.DoesNotContain("\"required\"", schema);
+        Assert.Contains("\"default\":100", schema); // DefaultValue should take precedence
+
+        AssertExtensions.EqualFunctionCallResults(100, await funcBoth.InvokeAsync()); // Should use DefaultValue, not C# default
     }
 
     [Fact]
@@ -233,6 +280,39 @@ public partial class AIFunctionFactoryTest
         Assert.Collection(func.UnderlyingMethod!.GetParameters(),
             p => Assert.Equal("This is A", p.GetCustomAttribute<DescriptionAttribute>()?.Description),
             p => Assert.Equal("This is B", p.GetCustomAttribute<DescriptionAttribute>()?.Description));
+    }
+
+    [Fact]
+    public void Metadata_DisplayNameAttribute()
+    {
+        // Test DisplayNameAttribute on a delegate method
+        Func<string> funcWithDisplayName = [DisplayName("get_user_id")] () => "test";
+        AIFunction func = AIFunctionFactory.Create(funcWithDisplayName);
+        Assert.Equal("get_user_id", func.Name);
+        Assert.Empty(func.Description);
+
+        // Test DisplayNameAttribute with DescriptionAttribute
+        Func<string> funcWithBoth = [DisplayName("my_function")][Description("A test function")] () => "test";
+        func = AIFunctionFactory.Create(funcWithBoth);
+        Assert.Equal("my_function", func.Name);
+        Assert.Equal("A test function", func.Description);
+
+        // Test that explicit name parameter takes precedence over DisplayNameAttribute
+        func = AIFunctionFactory.Create(funcWithDisplayName, name: "explicit_name");
+        Assert.Equal("explicit_name", func.Name);
+
+        // Test DisplayNameAttribute with options
+        func = AIFunctionFactory.Create(funcWithDisplayName, new AIFunctionFactoryOptions());
+        Assert.Equal("get_user_id", func.Name);
+
+        // Test that options.Name takes precedence over DisplayNameAttribute
+        func = AIFunctionFactory.Create(funcWithDisplayName, new AIFunctionFactoryOptions { Name = "options_name" });
+        Assert.Equal("options_name", func.Name);
+
+        // Test function without DisplayNameAttribute falls back to method name
+        Func<string> funcWithoutDisplayName = () => "test";
+        func = AIFunctionFactory.Create(funcWithoutDisplayName);
+        Assert.Contains("Metadata_DisplayNameAttribute", func.Name); // Will contain the lambda method name
     }
 
     [Fact]
@@ -845,6 +925,63 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
+    public async Task AIContentReturnType_NotSerializedByDefault()
+    {
+        await ValidateAsync<TextContent>(
+        [
+            AIFunctionFactory.Create(() => (AIContent)new TextContent("text")),
+            AIFunctionFactory.Create(async () => (AIContent)new TextContent("text")),
+            AIFunctionFactory.Create(async ValueTask<AIContent> () => (AIContent)new TextContent("text")),
+            AIFunctionFactory.Create(() => new TextContent("text")),
+            AIFunctionFactory.Create(async () => new TextContent("text")),
+            AIFunctionFactory.Create(async ValueTask<AIContent> () => new TextContent("text")),
+        ]);
+
+        await ValidateAsync<DataContent>(
+        [
+            AIFunctionFactory.Create(() => new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")),
+            AIFunctionFactory.Create(async () => new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")),
+            AIFunctionFactory.Create(async ValueTask<DataContent> () => new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")),
+        ]);
+
+        await ValidateAsync<IEnumerable<AIContent>>(
+        [
+            AIFunctionFactory.Create(() => (IEnumerable<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async () => (IEnumerable<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async ValueTask<IEnumerable<AIContent>> () => (IEnumerable<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+        ]);
+
+        await ValidateAsync<AIContent[]>(
+        [
+            AIFunctionFactory.Create(() => (AIContent[])[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async () => (AIContent[])[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async ValueTask<AIContent[]> () => (AIContent[])[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+        ]);
+
+        await ValidateAsync<List<AIContent>>(
+        [
+            AIFunctionFactory.Create(() => (List<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async () => (List<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async ValueTask<List<AIContent>> () => (List<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+        ]);
+
+        await ValidateAsync<IEnumerable<AIContent>>(
+        [
+            AIFunctionFactory.Create(() => (IList<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async () => (IList<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+            AIFunctionFactory.Create(async ValueTask<IList<AIContent>> () => (List<AIContent>)[new TextContent("text"), new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream")]),
+        ]);
+
+        static async Task ValidateAsync<T>(IEnumerable<AIFunction> functions)
+        {
+            foreach (var f in functions)
+            {
+                Assert.IsAssignableFrom<T>(await f.InvokeAsync());
+            }
+        }
+    }
+
+    [Fact]
     public async Task AIFunctionFactory_DefaultDefaultParameter()
     {
         Assert.NotEqual(new StructWithDefaultCtor().Value, default(StructWithDefaultCtor).Value);
@@ -1005,6 +1142,8 @@ public partial class AIFunctionFactoryTest
 
     private sealed class MyArgumentType;
 
+    private static int TestStaticMethod(int a, int b) => a + b;
+
     private class A;
     private class B : A;
     private sealed class C : B;
@@ -1038,6 +1177,143 @@ public partial class AIFunctionFactoryTest
                 return default;
             },
         };
+
+    [Fact]
+    public void LocalFunction_NameCleanup()
+    {
+        static void DoSomething()
+        {
+            // Empty local function for testing name cleanup
+        }
+
+        var tool = AIFunctionFactory.Create(DoSomething);
+
+        // The name should start with: ContainingMethodName_LocalFunctionName (followed by ordinal)
+        Assert.StartsWith("LocalFunction_NameCleanup_DoSomething_", tool.Name);
+    }
+
+    [Fact]
+    public void LocalFunction_MultipleInSameMethod()
+    {
+        static void FirstLocal()
+        {
+            // Empty local function for testing name cleanup
+        }
+
+        static void SecondLocal()
+        {
+            // Empty local function for testing name cleanup
+        }
+
+        var tool1 = AIFunctionFactory.Create(FirstLocal);
+        var tool2 = AIFunctionFactory.Create(SecondLocal);
+
+        // Each should have unique names based on the local function name (including ordinal)
+        Assert.StartsWith("LocalFunction_MultipleInSameMethod_FirstLocal_", tool1.Name);
+        Assert.StartsWith("LocalFunction_MultipleInSameMethod_SecondLocal_", tool2.Name);
+        Assert.NotEqual(tool1.Name, tool2.Name);
+    }
+
+    [Fact]
+    public void Lambda_NameCleanup()
+    {
+        Action lambda = () =>
+        {
+            // Empty lambda for testing name cleanup
+        };
+
+        var tool = AIFunctionFactory.Create(lambda);
+
+        // The name should be the containing method name with ordinal for uniqueness
+        Assert.StartsWith("Lambda_NameCleanup", tool.Name);
+    }
+
+    [Fact]
+    public void Lambda_MultipleInSameMethod()
+    {
+        Action lambda1 = () =>
+        {
+            // Empty lambda for testing name cleanup
+        };
+
+        Action lambda2 = () =>
+        {
+            // Empty lambda for testing name cleanup
+        };
+
+        var tool1 = AIFunctionFactory.Create(lambda1);
+        var tool2 = AIFunctionFactory.Create(lambda2);
+
+        // Each lambda should have a unique name based on its ordinal
+        // to allow the LLM to distinguish between them
+        Assert.StartsWith("Lambda_MultipleInSameMethod", tool1.Name);
+        Assert.StartsWith("Lambda_MultipleInSameMethod", tool2.Name);
+        Assert.NotEqual(tool1.Name, tool2.Name);
+    }
+
+    [Fact]
+    public void LocalFunction_WithParameters()
+    {
+        static int Add(int firstNumber, int secondNumber) => firstNumber + secondNumber;
+
+        var tool = AIFunctionFactory.Create(Add);
+
+        Assert.StartsWith("LocalFunction_WithParameters_Add_", tool.Name);
+        Assert.Contains("firstNumber", tool.JsonSchema.ToString());
+        Assert.Contains("secondNumber", tool.JsonSchema.ToString());
+    }
+
+    [Fact]
+    public async Task LocalFunction_AsyncFunction()
+    {
+        static async Task<string> FetchDataAsync()
+        {
+            await Task.Yield();
+            return "data";
+        }
+
+        var tool = AIFunctionFactory.Create(FetchDataAsync);
+
+        // Should strip "Async" suffix and include ordinal
+        Assert.StartsWith("LocalFunction_AsyncFunction_FetchData_", tool.Name);
+
+        var result = await tool.InvokeAsync();
+        AssertExtensions.EqualFunctionCallResults("data", result);
+    }
+
+    [Fact]
+    public void LocalFunction_ExplicitNameOverride()
+    {
+        static void DoSomething()
+        {
+            // Empty local function for testing name cleanup
+        }
+
+        var tool = AIFunctionFactory.Create(DoSomething, name: "CustomName");
+
+        Assert.Equal("CustomName", tool.Name);
+    }
+
+    [Fact]
+    public void LocalFunction_InsideTestMethod()
+    {
+        // Even local functions defined in test methods get cleaned up
+        var tool = AIFunctionFactory.Create(Add, serializerOptions: JsonContext.Default.Options);
+
+        Assert.StartsWith("LocalFunction_InsideTestMethod_Add_", tool.Name);
+
+        [return: Description("The summed result")]
+        static int Add(int a, int b) => a + b;
+    }
+
+    [Fact]
+    public void RegularStaticMethod_NameUnchanged()
+    {
+        // Test that actual static methods (not local functions) have names unchanged
+        var tool = AIFunctionFactory.Create(TestStaticMethod, null, serializerOptions: JsonContext.Default.Options);
+
+        Assert.Equal("TestStaticMethod", tool.Name);
+    }
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
     [JsonSerializable(typeof(int[]))]

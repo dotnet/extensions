@@ -88,7 +88,7 @@
         ]
       },
       {
-        "condition": "(!UseLocalVectorStore)",
+        "condition": "(!IsLocalVectorStore)",
         "exclude": [
           "ChatWithCustomData-CSharp.Web/Services/JsonVectorStore.cs"
         ]
@@ -185,6 +185,10 @@
       "defaultValue": "false",
       "description": "Create the project as a distributed application using Aspire."
     },
+    "IsManagedIdentity": {
+      "type": "computed",
+      "value": "(UseManagedIdentity)"
+    },
     "IsAspire": {
       "type": "computed",
       "value": "(UseAspire || VectorStore == \"qdrant\")"
@@ -209,21 +213,21 @@
       "type": "computed",
       "value": "(AiServiceProvider == \"azureaifoundry\")"
     },
-    "UseAzureAISearch": {
+    "IsAzureAISearch": {
       "type": "computed",
       "value": "(VectorStore == \"azureaisearch\")"
     },
-    "UseLocalVectorStore": {
+    "IsLocalVectorStore": {
       "type": "computed",
       "value": "(VectorStore == \"local\")"
     },
-    "UseQdrant": {
+    "IsQdrant": {
       "type": "computed",
       "value": "(VectorStore == \"qdrant\")"
     },
-    "UseAzure": {
+    "IsAzure": {
       "type": "computed",
-      "value": "(IsAzureOpenAI || IsAzureAiFoundry || UseAzureAISearch)"
+      "value": "(IsAzureOpenAI || IsAzureAIFoundry || IsAzureAISearch)"
     },
     "ChatModel": {
       "type": "parameter",

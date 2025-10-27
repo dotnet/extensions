@@ -54,8 +54,8 @@ public class SpeechToTextResponseUpdateExtensionsTests
         ];
 
         SpeechToTextResponse response = useAsync ?
-            updates.ToSpeechToTextResponse() :
-            await YieldAsync(updates).ToSpeechToTextResponseAsync();
+            await YieldAsync(updates).ToSpeechToTextResponseAsync() :
+            updates.ToSpeechToTextResponse();
 
         Assert.NotNull(response);
 

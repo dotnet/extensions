@@ -5,7 +5,7 @@ namespace ChatWithCustomData_CSharp.Web.Services.Ingestion;
 
 public class DataIngestor(
     ILogger<DataIngestor> logger,
-#if (UseQdrant)
+#if (IsQdrant)
     VectorStoreCollection<Guid, IngestedChunk> chunksCollection,
     VectorStoreCollection<Guid, IngestedDocument> documentsCollection)
 #else

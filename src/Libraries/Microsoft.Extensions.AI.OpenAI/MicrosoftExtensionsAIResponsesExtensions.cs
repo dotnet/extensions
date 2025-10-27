@@ -21,6 +21,17 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     public static FunctionTool AsOpenAIResponseTool(this AIFunctionDeclaration function) =>
         OpenAIResponsesChatClient.ToResponseTool(Throw.IfNull(function));
 
+    /// <summary>Creates an OpenAI <see cref="ResponseTool"/> from an <see cref="AITool"/>.</summary>
+    /// <param name="tool">The tool to convert.</param>
+    /// <returns>An OpenAI <see cref="ResponseTool"/> representing <paramref name="tool"/> or <see langword="null"/> if there is no mapping.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="tool"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// This method is only able to create <see cref="ResponseTool"/>s for <see cref="AITool"/> types
+    /// it's aware of, namely all of those available from the Microsoft.Extensions.AI.Abstractions library.
+    /// </remarks>
+    public static ResponseTool? AsOpenAIResponseTool(this AITool tool) =>
+        OpenAIResponsesChatClient.ToResponseTool(Throw.IfNull(tool));
+
     /// <summary>
     /// Creates an OpenAI <see cref="ResponseTextFormat"/> from a <see cref="ChatResponseFormat"/>.
     /// </summary>
@@ -64,7 +75,7 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <exception cref="ArgumentNullException"><paramref name="responseUpdates"/> is <see langword="null"/>.</exception>
     public static IAsyncEnumerable<ChatResponseUpdate> AsChatResponseUpdatesAsync(
         this IAsyncEnumerable<StreamingResponseUpdate> responseUpdates, ResponseCreationOptions? options = null, CancellationToken cancellationToken = default) =>
-        OpenAIResponsesChatClient.FromOpenAIStreamingResponseUpdatesAsync(Throw.IfNull(responseUpdates), options, cancellationToken);
+        OpenAIResponsesChatClient.FromOpenAIStreamingResponseUpdatesAsync(Throw.IfNull(responseUpdates), options, cancellationToken: cancellationToken);
 
     /// <summary>Creates an OpenAI <see cref="OpenAIResponse"/> from a <see cref="ChatResponse"/>.</summary>
     /// <param name="response">The response to convert.</param>
