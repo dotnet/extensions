@@ -169,7 +169,7 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                 for (int contentIndex = 0; contentIndex < message.Contents.Count; contentIndex++)
                 {
                     var content = message.Contents[contentIndex];
-                    if (content is DataContent dataContent && dataContent.MediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                    if (content is DataContent dataContent && dataContent.HasTopLevelMediaType("image"))
                     {
                         bool isGeneratedImage = dataContent.AdditionalProperties?.ContainsKey(ImageKey) == true;
                         if (_dataContentHandling == DataContentHandling.AllImages ||

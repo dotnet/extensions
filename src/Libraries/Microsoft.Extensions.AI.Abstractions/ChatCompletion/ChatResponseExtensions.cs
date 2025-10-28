@@ -173,7 +173,7 @@ public static class ChatResponseExtensions
     /// <summary>Applies <see cref="ChatResponseUpdate"/> instances to an existing <see cref="ChatResponse"/> asynchronously.</summary>
     /// <param name="response">The response to which the updates should be applied.</param>
     /// <param name="updates">The updates to apply to the response.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>rlto monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
@@ -224,14 +224,9 @@ public static class ChatResponseExtensions
         _ = Throw.IfNull(updates);
 
         ChatResponse response = new();
-
-        foreach (var update in updates)
-        {
-            ProcessUpdate(update, response);
-        }
-
-        FinalizeResponse(response);
-
+#pragma warning disable MEAI0001
+        response.ApplyUpdates(updates);
+#pragma warning restore MEAI0001
         return response;
     }
 
@@ -257,15 +252,46 @@ public static class ChatResponseExtensions
             IAsyncEnumerable<ChatResponseUpdate> updates, CancellationToken cancellationToken)
         {
             ChatResponse response = new();
-
-            await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                ProcessUpdate(update, response);
-            }
-
-            FinalizeResponse(response);
-
+#pragma warning disable MEAI0001
+            await response.ApplyUpdatesAsync(updates, cancellationToken).ConfigureAwait(false);
+#pragma warning restore MEAI0001
             return response;
+        }
+    }
+
+    internal static void CoalesceDataContent(IList<AIContent> contents)
+    {
+        Dictionary<string, int>? dataContentIndexByName = null;
+        bool hasRemovals = false;
+
+        for (int i = 0; i < contents.Count; i++)
+        {
+            if (contents[i] is DataContent dataContent && !string.IsNullOrEmpty(dataContent.Name))
+            {
+                // Check if there's an existing DataContent with the same name to replace
+                if (dataContentIndexByName is null)
+                {
+                    dataContentIndexByName = new(StringComparer.Ordinal);
+                }
+
+                if (dataContentIndexByName.TryGetValue(dataContent.Name!, out int existingIndex))
+                {
+                    // Replace the existing DataContent with the new one
+                    contents[existingIndex] = dataContent;
+                    contents[i] = null!; // Mark the current one for removal, then remove in single o(n) pass
+                    hasRemovals = true;
+                }
+                else
+                {
+                    dataContentIndexByName[dataContent.Name!] = i;
+                }
+            }
+        }
+
+        // Remove all of the null slots left over from the coalescing process.
+        if (hasRemovals)
+        {
+            RemoveNullContents(contents);
         }
     }
 
@@ -375,29 +401,35 @@ public static class ChatResponseExtensions
             }
 
             // Remove all of the null slots left over from the coalescing process.
-            if (contents is List<AIContent> contentsList)
-            {
-                _ = contentsList.RemoveAll(u => u is null);
-            }
-            else
-            {
-                int nextSlot = 0;
-                int contentsCount = contents.Count;
-                for (int i = 0; i < contentsCount; i++)
-                {
-                    if (contents[i] is { } content)
-                    {
-                        contents[nextSlot++] = content;
-                    }
-                }
+            RemoveNullContents(contents);
+        }
+    }
 
-                for (int i = contentsCount - 1; i >= nextSlot; i--)
+    private static void RemoveNullContents<T>(IList<T> contents)
+        where T : class
+    {
+        if (contents is List<AIContent> contentsList)
+        {
+            _ = contentsList.RemoveAll(u => u is null);
+        }
+        else
+        {
+            int nextSlot = 0;
+            int contentsCount = contents.Count;
+            for (int i = 0; i < contentsCount; i++)
+            {
+                if (contents[i] is { } content)
                 {
-                    contents.RemoveAt(i);
+                    contents[nextSlot++] = content;
                 }
-
-                Debug.Assert(nextSlot == contents.Count, "Expected final count to equal list length.");
             }
+
+            for (int i = contentsCount - 1; i >= nextSlot; i--)
+            {
+                contents.RemoveAt(i);
+            }
+
+            Debug.Assert(nextSlot == contents.Count, "Expected final count to equal list length.");
         }
     }
 
@@ -408,6 +440,7 @@ public static class ChatResponseExtensions
         for (int i = 0; i < count; i++)
         {
             CoalesceTextContent((List<AIContent>)response.Messages[i].Contents);
+            CoalesceDataContent((List<AIContent>)response.Messages[i].Contents);
         }
     }
 
@@ -474,29 +507,6 @@ public static class ChatResponseExtensions
                 // Usage content is treated specially and propagated to the response's Usage.
                 case UsageContent usage:
                     (response.Usage ??= new()).Add(usage.Details);
-                    break;
-
-                case DataContent dataContent when
-                    !string.IsNullOrEmpty(dataContent.Name):
-                    // Check if there's an existing DataContent with the same name to replace
-                    for (int i = 0; i < message.Contents.Count; i++)
-                    {
-                        if (message.Contents[i] is DataContent existingDataContent &&
-                            string.Equals(existingDataContent.Name, dataContent.Name, StringComparison.Ordinal))
-                        {
-                            // Replace the existing DataContent
-                            message.Contents[i] = dataContent;
-                            dataContent = null!;
-                            break;
-                        }
-                    }
-
-                    if (dataContent is not null)
-                    {
-                        // No existing DataContent with the same name, add it normally
-                        message.Contents.Add(dataContent);
-                    }
-
                     break;
 
                 default:
