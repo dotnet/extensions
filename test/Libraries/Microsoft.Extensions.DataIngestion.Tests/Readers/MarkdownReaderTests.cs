@@ -29,14 +29,6 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
         }
     }
 
-    public static new IEnumerable<object[]> Images
-    {
-        get
-        {
-            yield return new object[] { Path.Combine("TestFiles", "SampleWithImage.md") };
-        }
-    }
-
     [ConditionalFact]
     public override Task SupportsTables() => SupportsTablesCore(Path.Combine("TestFiles", "Sample.md"));
 
@@ -48,9 +40,8 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
     [MemberData(nameof(Files))]
     public override Task SupportsFiles(string filePath) => base.SupportsFiles(filePath);
 
-    [ConditionalTheory]
-    [MemberData(nameof(Images))]
-    public override Task SupportsImages(string filePath) => base.SupportsImages(filePath);
+    [ConditionalFact]
+    public override Task SupportsImages() => SupportsImagesCore(Path.Combine("TestFiles", "SampleWithImage.md"));
 
     public override async Task SupportsTablesWithImages()
     {

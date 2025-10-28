@@ -2,23 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 
+[MarkItDownCondition]
 public class MarkItDownReaderTests : DocumentReaderConformanceTests
 {
-    private static readonly Lazy<bool> _isInstalled = new(CanInvokeMarkItDown);
-
     protected override IngestionDocumentReader CreateDocumentReader(bool extractImages = false)
-        => _isInstalled.Value
+        => MarkItDownConditionAttribute.IsInstalled.Value
         ? new MarkItDownReader(extractImages: extractImages)
         : throw new SkipTestException("MarkItDown is not installed");
 
@@ -45,9 +41,11 @@ public class MarkItDownReaderTests : DocumentReaderConformanceTests
     // The original purpose of the MarkItDown library was to support text-only LLMs.
     // Source: https://github.com/microsoft/markitdown/issues/56#issuecomment-2546357264
     // It can extract images, but the support is limited to some formats like docx.
-    public override Task SupportsImages(string filePath)
-        => base.SupportsImages(Path.Combine("TestFiles", "SampleWithImage.docx"));
+    [ConditionalFact]
+    public override Task SupportsImages()
+        => SupportsImagesCore(Path.Combine("TestFiles", "SampleWithImage.docx"));
 
+    [ConditionalFact]
     public override async Task SupportsTablesWithImages()
     {
         var table = await SupportsTablesWithImagesCore(Path.Combine("TestFiles", "TableWithImage.docx"));
@@ -60,38 +58,5 @@ public class MarkItDownReaderTests : DocumentReaderConformanceTests
             Assert.NotNull(img.Content);
             Assert.False(img.Content.Value.IsEmpty);
         }
-    }
-
-    private static bool CanInvokeMarkItDown()
-    {
-        ProcessStartInfo startInfo = new()
-        {
-            FileName = "markitdown",
-            Arguments = "--help",
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            StandardOutputEncoding = Encoding.UTF8,
-        };
-
-        using Process process = new() { StartInfo = startInfo };
-        try
-        {
-            process.Start();
-        }
-        catch (Win32Exception)
-        {
-            return false;
-        }
-
-        while (process.StandardOutput.Peek() >= 0)
-        {
-            _ = process.StandardOutput.ReadLine();
-        }
-
-        process.WaitForExit();
-        Assert.Equal(0, process.ExitCode);
-
-        return true;
     }
 }
