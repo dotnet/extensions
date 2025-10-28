@@ -3,8 +3,6 @@
   <PropertyGroup>
     <!--  Multidimensional arrays should not be used -->
     <NoWarn>$(NoWarn);S3967</NoWarn>
-    <!--  Referenced assembly does not have a strong name -->
-    <NoWarn>$(NoWarn);CS8002</NoWarn>
     <!--  The member referenced by the MemberData attribute returns untyped data rows -->
     <NoWarn>$(NoWarn);xUnit1042</NoWarn>
 

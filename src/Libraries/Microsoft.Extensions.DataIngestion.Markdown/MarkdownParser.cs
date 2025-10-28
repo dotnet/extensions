@@ -36,9 +36,9 @@ internal static class MarkdownParser
         => cancellationToken.IsCancellationRequested ? System.Threading.Tasks.Task.FromCanceled<string>(cancellationToken) : reader.ReadToEndAsync();
 #endif
 
-    private static IngestionDocument Map(MarkdownDocument markdownDocument, string outputContent, string identifier)
+    private static IngestionDocument Map(MarkdownDocument markdownDocument, string documentMarkdown, string identifier)
     {
-        IngestionDocumentSection rootSection = new(outputContent);
+        IngestionDocumentSection rootSection = new(documentMarkdown);
         IngestionDocument result = new(identifier)
         {
             Sections = { rootSection }
@@ -64,7 +64,7 @@ internal static class MarkdownParser
                 continue;
             }
 
-            rootSection.Elements.Add(MapBlock(outputContent, previousWasBreak, block));
+            rootSection.Elements.Add(MapBlock(documentMarkdown, previousWasBreak, block));
             previousWasBreak = false;
         }
 
@@ -74,16 +74,16 @@ internal static class MarkdownParser
     private static bool IsEmptyBlock(Block block) // Block with no text. Sample: QuoteBlock the next block is a quote.
         => block is LeafBlock emptyLeafBlock && (emptyLeafBlock.Inline is null || emptyLeafBlock.Inline.FirstChild is null);
 
-    private static IngestionDocumentElement MapBlock(string outputContent, bool previousWasBreak, Block block)
+    private static IngestionDocumentElement MapBlock(string documentMarkdown, bool previousWasBreak, Block block)
     {
-        string elementMarkdown = outputContent.Substring(block.Span.Start, block.Span.Length);
+        string elementMarkdown = documentMarkdown.Substring(block.Span.Start, block.Span.Length);
 
         IngestionDocumentElement element = block switch
         {
             LeafBlock leafBlock => MapLeafBlockToElement(leafBlock, previousWasBreak, elementMarkdown),
-            ListBlock listBlock => MapListBlock(listBlock, previousWasBreak, outputContent, elementMarkdown),
-            QuoteBlock quoteBlock => MapQuoteBlock(quoteBlock, previousWasBreak, outputContent, elementMarkdown),
-            Table table => new IngestionDocumentTable(elementMarkdown, GetCells(table, outputContent)),
+            ListBlock listBlock => MapListBlock(listBlock, previousWasBreak, documentMarkdown, elementMarkdown),
+            QuoteBlock quoteBlock => MapQuoteBlock(quoteBlock, previousWasBreak, documentMarkdown, elementMarkdown),
+            Table table => new IngestionDocumentTable(elementMarkdown, GetCells(table, documentMarkdown)),
             _ => throw new NotSupportedException($"Block type '{block.GetType().Name}' is not supported.")
         };
 
@@ -102,17 +102,7 @@ internal static class MarkdownParser
             {
                 Text = GetText(footer.Inline),
             },
-            ParagraphBlock image when image.Inline!.Descendants<LinkInline>().FirstOrDefault() is LinkInline link && link.IsImage => new IngestionDocumentImage(elementMarkdown)
-            {
-                // ![Alt text](data:image/png;base64,...)
-                AlternativeText = link.FirstChild is LiteralInline literal ? literal.Content.ToString() : null,
-                Content = link.Url is not null && link.Url.StartsWith("data:image/png;base64,", StringComparison.Ordinal)
-                    ? Convert.FromBase64String(link.Url.Substring("data:image/png;base64,".Length))
-                    : null, // we may implement it in the future if needed
-                MediaType = link.Url is not null && link.Url.StartsWith("data:image/png;base64,", StringComparison.Ordinal)
-                    ? "image/png"
-                    : null // we may implement it in the future if needed
-            },
+            ParagraphBlock image when image.Inline!.Descendants<LinkInline>().FirstOrDefault() is LinkInline link && link.IsImage => MapImage(elementMarkdown, link),
             ParagraphBlock paragraph => new IngestionDocumentParagraph(elementMarkdown)
             {
                 Text = GetText(paragraph.Inline),
@@ -124,9 +114,27 @@ internal static class MarkdownParser
             _ => throw new NotSupportedException($"Block type '{block.GetType().Name}' is not supported.")
         };
 
-    private static IngestionDocumentSection MapListBlock(ListBlock listBlock, bool previousWasBreak, string outputContent, string listMarkdown)
+    private static IngestionDocumentImage MapImage(string elementMarkdown, LinkInline link)
     {
-        // So far Sections were only pages (LP) or sections for ADI. Now they can also represent lists.
+        IngestionDocumentImage result = new(elementMarkdown);
+
+        // ![Alt text](data:image/png;base64,...)
+        if (link.FirstChild is LiteralInline literal)
+        {
+            result.AlternativeText = literal.Content.ToString();
+        }
+
+        if (link.Url is not null && link.Url.StartsWith("data:image/png;base64,", StringComparison.Ordinal))
+        {
+            result.Content = Convert.FromBase64String(link.Url.Substring("data:image/png;base64,".Length));
+            result.MediaType = "image/png";
+        }
+
+        return result;
+    }
+
+    private static IngestionDocumentSection MapListBlock(ListBlock listBlock, bool previousWasBreak, string documentMarkdown, string listMarkdown)
+    {
         IngestionDocumentSection list = new(listMarkdown);
         foreach (Block? item in listBlock)
         {
@@ -142,7 +150,7 @@ internal static class MarkdownParser
                     continue; // Skip empty blocks in lists
                 }
 
-                string childMarkdown = outputContent.Substring(leafBlock.Span.Start, leafBlock.Span.Length);
+                string childMarkdown = documentMarkdown.Substring(leafBlock.Span.Start, leafBlock.Span.Length);
                 IngestionDocumentElement element = MapLeafBlockToElement(leafBlock, previousWasBreak, childMarkdown);
                 list.Elements.Add(element);
             }
@@ -151,9 +159,8 @@ internal static class MarkdownParser
         return list;
     }
 
-    private static IngestionDocumentSection MapQuoteBlock(QuoteBlock quoteBlock, bool previousWasBreak, string outputContent, string elementMarkdown)
+    private static IngestionDocumentSection MapQuoteBlock(QuoteBlock quoteBlock, bool previousWasBreak, string documentMarkdown, string elementMarkdown)
     {
-        // So far Sections were only pages (LP) or sections for ADI. Now they can also represent quotes.
         IngestionDocumentSection quote = new(elementMarkdown);
         foreach (Block child in quoteBlock)
         {
@@ -162,7 +169,7 @@ internal static class MarkdownParser
                 continue; // Skip empty blocks in quotes
             }
 
-            quote.Elements.Add(MapBlock(outputContent, previousWasBreak, child));
+            quote.Elements.Add(MapBlock(documentMarkdown, previousWasBreak, child));
         }
 
         return quote;
@@ -216,6 +223,8 @@ internal static class MarkdownParser
     private static IngestionDocumentElement?[,] GetCells(Table table, string outputContent)
     {
         int firstRowIndex = SkipFirstRow(table, outputContent) ? 1 : 0;
+
+        // For some reason, table.ColumnDefinitions.Count returns one extra column.
         var cells = new IngestionDocumentElement?[table.Count - firstRowIndex, table.ColumnDefinitions.Count - 1];
 
         for (int rowIndex = firstRowIndex; rowIndex < table.Count; rowIndex++)
@@ -234,7 +243,7 @@ internal static class MarkdownParser
 
                 for (int columnSpan = 0; columnSpan < tableCell.ColumnSpan; columnSpan++, columnIndex++)
                 {
-                    // We are not using tableCell.ColumnIndex here as it defaults to -1 ;)
+                    // tableCell.ColumnIndex defaults to -1, so it's not used here.
                     cells[rowIndex - firstRowIndex, columnIndex] = content;
                 }
             }
