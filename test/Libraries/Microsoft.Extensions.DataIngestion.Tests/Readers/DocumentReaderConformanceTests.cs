@@ -17,7 +17,7 @@ public abstract class DocumentReaderConformanceTests
 {
     protected abstract IngestionDocumentReader CreateDocumentReader(bool extractImages = false);
 
-    [Fact]
+    [ConditionalFact]
     public async Task ThrowsWhenIdentifierIsNotProvided()
     {
         var reader = CreateDocumentReader();
@@ -34,7 +34,7 @@ public abstract class DocumentReaderConformanceTests
         Assert.Equal("identifier", argEx.ParamName);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task ThrowsIfCancellationRequestedStream()
     {
         var reader = CreateDocumentReader();
@@ -45,7 +45,7 @@ public abstract class DocumentReaderConformanceTests
         await Assert.ThrowsAsync<TaskCanceledException>(async () => await reader.ReadAsync(stream, "id", "mediaType", cts.Token));
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task ThrowsIfCancellationRequestedFile()
     {
         string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName() + ".txt");
