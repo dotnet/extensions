@@ -40,12 +40,13 @@ public sealed class MarkdownReader : IngestionDocumentReader
 
     private static async Task<string> ReadToEndAsync(Stream source, CancellationToken cancellationToken)
     {
+        using StreamReader reader =
 #if NET
-        using StreamReader reader = new(source, leaveOpen: true);
-        return await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+            new(source, leaveOpen: true);
 #else
-        using StreamReader reader = new(source, encoding: null, detectEncodingFromByteOrderMarks: true, bufferSize: -1, leaveOpen: true);
-        return await reader.ReadToEndAsync().ConfigureAwait(false);
+            new(source, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true);
 #endif
+
+        return await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
     }
 }

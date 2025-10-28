@@ -10,6 +10,7 @@ using Markdig.Extensions.Tables;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Microsoft.Shared.Diagnostics;
+
 namespace Microsoft.Extensions.DataIngestion;
 
 internal static class MarkdownParser
@@ -29,6 +30,11 @@ internal static class MarkdownParser
         MarkdownDocument markdownDocument = Markdown.Parse(markdown, pipeline);
         return Map(markdownDocument, markdown, identifier);
     }
+
+#if !NET
+    internal static System.Threading.Tasks.Task<string> ReadToEndAsync(this System.IO.StreamReader reader, System.Threading.CancellationToken cancellationToken)
+        => cancellationToken.IsCancellationRequested ? System.Threading.Tasks.Task.FromCanceled<string>(cancellationToken) : reader.ReadToEndAsync();
+#endif
 
     private static IngestionDocument Map(MarkdownDocument markdownDocument, string outputContent, string identifier)
     {

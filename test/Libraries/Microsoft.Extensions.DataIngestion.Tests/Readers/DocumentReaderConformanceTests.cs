@@ -84,14 +84,34 @@ public abstract class DocumentReaderConformanceTests
     [MemberData(nameof(Links))]
     public virtual async Task SupportsStreams(string uri)
     {
-        using HttpClient httpClient = new();
-        using HttpResponseMessage response = await httpClient.GetAsync(new Uri(uri));
-        response.EnsureSuccessStatusCode();
-
         var reader = CreateDocumentReader();
-        var document = await reader.ReadAsync(
-            await response.Content.ReadAsStreamAsync(),
-            uri, mediaType: response.Content.Headers.ContentType?.MediaType!);
+        IngestionDocument? document;
+
+        using HttpClient httpClient = new();
+        HttpResponseMessage response = await httpClient.GetAsync(new Uri(uri));
+
+        try
+        {
+#if !NET
+            // .NET Framework HttpClient does not automatically follow 308 redirects.
+            if (response.StatusCode == (System.Net.HttpStatusCode)308) // permanent redirect
+            {
+                string? redirectUri = response.Headers.Location?.ToString();
+                Assert.False(string.IsNullOrEmpty(redirectUri), "Redirect URI is null or empty.");
+                response.Dispose();
+                response = await httpClient.GetAsync(new Uri(redirectUri!));
+            }
+#endif
+            Assert.True(response.IsSuccessStatusCode);
+
+            document = await reader.ReadAsync(
+                await response.Content.ReadAsStreamAsync(),
+                uri, mediaType: response.Content.Headers.ContentType?.MediaType!);
+        }
+        finally
+        {
+            response.Dispose();
+        }
 
         SimpleAsserts(document, uri, uri);
     }

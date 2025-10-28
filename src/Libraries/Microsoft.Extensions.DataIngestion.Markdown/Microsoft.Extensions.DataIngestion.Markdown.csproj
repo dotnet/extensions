@@ -4,9 +4,6 @@
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
 
-    <!-- Markdig is not signed -->
-    <SignAssembly>false</SignAssembly>
-
     <!-- we are not ready to publish yet -->
     <IsPackable>false</IsPackable>
     <Stage>preview</Stage>
@@ -18,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Markdig" />
+    <PackageReference Include="Markdig.Signed" />
   </ItemGroup>
 
 </Project>

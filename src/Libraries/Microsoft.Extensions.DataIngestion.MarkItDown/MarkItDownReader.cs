@@ -70,11 +70,10 @@ public class MarkItDownReader : IngestionDocumentReader
         {
             process.Start();
 
-#if NET
             outputContent = await process.StandardOutput.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+#if NET
             await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
 #else
-            outputContent = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
             process.WaitForExit();
 #endif
 
