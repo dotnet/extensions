@@ -21,13 +21,13 @@ For each `<test ai_status="pending">` in `output/AI_TODO.txt`: run the test proj
 * Start by creating an individual TODO for each pending test in `AI_TODO.txt`
 * Run each test as its own subagent
 * Don't run any commands other than variations of the ones listed below:
-* `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/Start-Project.ps1`
-* `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/Stop-Project.ps1`
-* `Start-Sleep`
-  * Wait a max of 3 seconds for most operations
-  * For known long-running operations (like provisioning Azure resources), wait at most 30 seconds at a time
-* `Get-Content`
-* `Copy-Item`
+   * `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/Start-Project.ps1`
+   * `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/Stop-Project.ps1`
+   * `Start-Sleep`
+     * Wait a max of 3 seconds for most operations
+     * For known long-running operations (like provisioning Azure resources), wait at most 30 seconds at a time
+   * `Get-Content`
+   * `Copy-Item`
 
 Using the Playwright tools when interacting with the browser. If these aren't available, end the testing procedure.
 
@@ -52,7 +52,7 @@ Follow these steps for one test. Keep outputs short and machine-parseable where 
    * Open the project's `README.md` (in the `<path>` folder) to learn how the project works. Assume pre-run configuration values have already been set.
 
 3. **Run the project**
-   * From the repo root, run the `Start-Project.ps1 script, passing the directory specified in `<path>`:
+   * From the repo root, run the `Start-Project.ps1` script, passing the directory specified in `<path>`:
 
      ```powershell
      .\test\ProjectTemplates\Microsoft.Extensions.AI.Templates.IntegrationTests\TemplateSandbox\Start-Project.ps1 -ProjectPath "<path-from-AI_TODO>"
