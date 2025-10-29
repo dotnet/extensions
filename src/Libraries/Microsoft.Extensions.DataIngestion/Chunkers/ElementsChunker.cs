@@ -76,68 +76,73 @@ internal sealed class ElementsChunker
             else if (element is IngestionDocumentTable table)
             {
                 ValueStringBuilder tableBuilder = new(initialCapacity: 8000);
-                AddMarkdownTableRow(table, rowIndex: 0, ref tableBuilder);
-                AddMarkdownTableSeparatorRow(columnCount: table.Cells.GetLength(1), ref tableBuilder);
 
-                int headerLength = tableBuilder.Length;
-                int headerTokenCount = CountTokens(tableBuilder.AsSpan());
-
-                // We can't respect the limit if context and header themselves use more tokens.
-                if (contextTokenCount + headerTokenCount >= _maxTokensPerChunk)
+                try
                 {
-                    tableBuilder.Dispose();
-                    ThrowTokenCountExceeded();
-                }
+                    AddMarkdownTableRow(table, rowIndex: 0, ref tableBuilder);
+                    AddMarkdownTableSeparatorRow(columnCount: table.Cells.GetLength(1), ref tableBuilder);
 
-                if (headerTokenCount + totalTokenCount >= _maxTokensPerChunk)
-                {
-                    // We can't add the header row, so commit what we have accumulated so far.
-                    Commit();
-                }
+                    int headerLength = tableBuilder.Length;
+                    int headerTokenCount = CountTokens(tableBuilder.AsSpan());
 
-                totalTokenCount += headerTokenCount;
-                int tableLength = headerLength;
-
-                int rowCount = table.Cells.GetLength(0);
-                for (int rowIndex = 1; rowIndex < rowCount; rowIndex++)
-                {
-                    AddMarkdownTableRow(table, rowIndex, ref tableBuilder);
-
-                    int lastRowTokens = CountTokens(tableBuilder.AsSpan(tableLength));
-
-                    // Appending this row would exceed the limit.
-                    if (totalTokenCount + lastRowTokens > _maxTokensPerChunk)
+                    // We can't respect the limit if context and header themselves use more tokens.
+                    if (contextTokenCount + headerTokenCount >= _maxTokensPerChunk)
                     {
-                        // We append the table as long as it's not just the header.
-                        if (rowIndex != 1)
-                        {
-                            AppendNewLineAndSpan(_currentChunk, tableBuilder.AsSpan(0, tableLength - Environment.NewLine.Length));
-                        }
-
-                        // And commit the table we built so far.
-                        Commit();
-
-                        // Erase previous rows and keep only the header.
-                        tableBuilder.Length = headerLength;
-                        tableLength = headerLength;
-                        totalTokenCount += headerTokenCount;
-
-                        if (totalTokenCount + lastRowTokens > _maxTokensPerChunk)
-                        {
-                            // This row is simply too big even for a fresh chunk:
-                            tableBuilder.Dispose();
-                            ThrowTokenCountExceeded();
-                        }
-
-                        AddMarkdownTableRow(table, rowIndex, ref tableBuilder);
+                        ThrowTokenCountExceeded();
                     }
 
-                    tableLength = tableBuilder.Length;
-                    totalTokenCount += lastRowTokens;
-                }
+                    if (headerTokenCount + totalTokenCount >= _maxTokensPerChunk)
+                    {
+                        // We can't add the header row, so commit what we have accumulated so far.
+                        Commit();
+                    }
 
-                AppendNewLineAndSpan(_currentChunk, tableBuilder.AsSpan(0, tableLength - Environment.NewLine.Length));
-                tableBuilder.Dispose();
+                    totalTokenCount += headerTokenCount;
+                    int tableLength = headerLength;
+
+                    int rowCount = table.Cells.GetLength(0);
+                    for (int rowIndex = 1; rowIndex < rowCount; rowIndex++)
+                    {
+                        AddMarkdownTableRow(table, rowIndex, ref tableBuilder);
+
+                        int lastRowTokens = CountTokens(tableBuilder.AsSpan(tableLength));
+
+                        // Appending this row would exceed the limit.
+                        if (totalTokenCount + lastRowTokens > _maxTokensPerChunk)
+                        {
+                            // We append the table as long as it's not just the header.
+                            if (rowIndex != 1)
+                            {
+                                AppendNewLineAndSpan(_currentChunk, tableBuilder.AsSpan(0, tableLength - Environment.NewLine.Length));
+                            }
+
+                            // And commit the table we built so far.
+                            Commit();
+
+                            // Erase previous rows and keep only the header.
+                            tableBuilder.Length = headerLength;
+                            tableLength = headerLength;
+                            totalTokenCount += headerTokenCount;
+
+                            if (totalTokenCount + lastRowTokens > _maxTokensPerChunk)
+                            {
+                                // This row is simply too big even for a fresh chunk:
+                                ThrowTokenCountExceeded();
+                            }
+
+                            AddMarkdownTableRow(table, rowIndex, ref tableBuilder);
+                        }
+
+                        tableLength = tableBuilder.Length;
+                        totalTokenCount += lastRowTokens;
+                    }
+
+                    AppendNewLineAndSpan(_currentChunk, tableBuilder.AsSpan(0, tableLength - Environment.NewLine.Length));
+                }
+                finally
+                {
+                    tableBuilder.Dispose();
+                }
             }
             else
             {
