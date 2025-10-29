@@ -128,7 +128,11 @@ public sealed class IngestionDocumentHeader : IngestionDocumentElement
     /// <summary>
     /// Gets or sets the level of the header.
     /// </summary>
-    public int? Level { get; set; }
+    public int? Level
+    {
+        get => field;
+        set => field = Throw.IfOutOfRange(value.GetValueOrDefault(), min: 0, max: 10, nameof(value));
+    }
 }
 
 /// <summary>

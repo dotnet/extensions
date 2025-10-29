@@ -39,17 +39,17 @@ public class HeaderChunkerTests
         IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
         Assert.Equal(5, chunks.Count);
-        string nl = Environment.NewLine;
+
         Assert.Equal("Header 1 Header 1_1", chunks[0].Context);
-        Assert.Equal($"Header 1 Header 1_1{nl}Paragraph 1_1_1", chunks[0].Content);
+        Assert.Equal($"Header 1 Header 1_1\nParagraph 1_1_1", chunks[0].Content, ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_1 Header 1_1_1", chunks[1].Context);
-        Assert.Equal($"Header 1 Header 1_1 Header 1_1_1{nl}Paragraph 1_1_1_1{nl}Paragraph 1_1_1_2", chunks[1].Content);
+        Assert.Equal($"Header 1 Header 1_1 Header 1_1_1\nParagraph 1_1_1_1\nParagraph 1_1_1_2", chunks[1].Content, ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_1 Header 1_1_2", chunks[2].Context);
-        Assert.Equal($"Header 1 Header 1_1 Header 1_1_2{nl}Paragraph 1_1_2_1{nl}Paragraph 1_1_2_2", chunks[2].Content);
+        Assert.Equal($"Header 1 Header 1_1 Header 1_1_2\nParagraph 1_1_2_1\nParagraph 1_1_2_2", chunks[2].Content, ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_2", chunks[3].Context);
-        Assert.Equal($"Header 1 Header 1_2{nl}Paragraph 1_2_1", chunks[3].Content);
+        Assert.Equal($"Header 1 Header 1_2\nParagraph 1_2_1", chunks[3].Content, ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_2 Header 1_2_1", chunks[4].Context);
-        Assert.Equal($"Header 1 Header 1_2 Header 1_2_1{nl}Paragraph 1_2_1_1", chunks[4].Content);
+        Assert.Equal($"Header 1 Header 1_2 Header 1_2_1\nParagraph 1_2_1_1", chunks[4].Content, ignoreLineEndingDifferences: true);
     }
 
     [Fact]

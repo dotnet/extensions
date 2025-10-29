@@ -69,4 +69,14 @@ public class IngestionDocumentTests
     [InlineData("")]
     public void EmptyParagraphDocumentCantBeCreated(string? input)
         => Assert.Throws<ArgumentNullException>(() => new IngestionDocumentParagraph(input!));
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(100)]
+    public void InvalidHeaderLevelThrows(int level)
+    {
+        IngestionDocumentHeader header = new("# header");
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => header.Level = level);
+    }
 }
