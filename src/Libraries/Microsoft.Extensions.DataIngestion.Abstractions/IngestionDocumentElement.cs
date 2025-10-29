@@ -135,7 +135,7 @@ public sealed class IngestionDocumentHeader : IngestionDocumentElement
         {
             if (value.HasValue)
             {
-                field = Throw.IfOutOfRange(value.Value, min: 0, max: 10, nameof(value));
+                field = Throw.IfOutOfRange(value.Value, min: 1, max: 10, nameof(value));
             }
             else
             {

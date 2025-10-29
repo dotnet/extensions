@@ -147,21 +147,23 @@ public class HeaderChunkerTests
 
         Assert.Equal(2, chunks.Count);
         Assert.All(chunks, chunk => Assert.Equal("Header A", chunk.Context));
-        Assert.Equal(
-@"Header A
-This is some text that describes why we need the following table.
-| one | two | three | four | five |
-| --- | --- | --- | --- | --- |
-| 0 | 1 | 2 | 3 | 4 |
-| 5 | 6 | 7 | 8 | 9 |
-| 10 | 11 | 12 | 13 | 14 |", chunks[0].Content, ignoreLineEndingDifferences: true);
-        Assert.Equal(
-@"Header A
-| one | two | three | four | five |
-| --- | --- | --- | --- | --- |
-| 15 | 16 | 17 | 18 | 19 |
-| 20 | 21 | 22 | 23 | 24 |
-And some follow up.", chunks[1].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal("""
+            Header A
+            This is some text that describes why we need the following table.
+            | one | two | three | four | five |
+            | --- | --- | --- | --- | --- |
+            | 0 | 1 | 2 | 3 | 4 |
+            | 5 | 6 | 7 | 8 | 9 |
+            | 10 | 11 | 12 | 13 | 14 |
+            """, chunks[0].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal("""
+            Header A
+            | one | two | three | four | five |
+            | --- | --- | --- | --- | --- |
+            | 15 | 16 | 17 | 18 | 19 |
+            | 20 | 21 | 22 | 23 | 24 |
+            And some follow up.
+            """, chunks[1].Content, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -177,48 +179,54 @@ And some follow up.", chunks[1].Content, ignoreLineEndingDifferences: true);
         Assert.All(chunks, chunk => Assert.Equal("Header A", chunk.Context));
         Assert.All(chunks, chunk => Assert.InRange(tokenizer.CountTokens(chunk.Content), 1, 50));
 
-        Assert.Equal(
-@"Header A
-This is some text that describes why we need the following table.", chunks[0].Content, ignoreLineEndingDifferences: true);
-        Assert.Equal(
-@"Header A
-| one | two | three | four | five |
-| --- | --- | --- | --- | --- |
-| 0 | 1 | 2 | 3 | 4 |", chunks[1].Content, ignoreLineEndingDifferences: true);
-        Assert.Equal(
-@"Header A
-| one | two | three | four | five |
-| --- | --- | --- | --- | --- |
-| 5 | 6 | 7 | 8 | 9 |", chunks[2].Content, ignoreLineEndingDifferences: true);
-        Assert.Equal(
-@"Header A
-| one | two | three | four | five |
-| --- | --- | --- | --- | --- |
-| 10 | 11 | 12 | 13 | 14 |", chunks[3].Content, ignoreLineEndingDifferences: true);
-        Assert.Equal(
-@"Header A
-| one | two | three | four | five |
-| --- | --- | --- | --- | --- |
-| 15 | 16 | 17 | 18 | 19 |", chunks[4].Content, ignoreLineEndingDifferences: true);
-        Assert.Equal(
-@"Header A
-| one | two | three | four | five |
-| --- | --- | --- | --- | --- |
-| 20 | 21 | 22 | 23 | 24 |
-And some follow up.", chunks[5].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal("""
+            Header A
+            This is some text that describes why we need the following table.
+            """, chunks[0].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal("""
+            Header A
+            | one | two | three | four | five |
+            | --- | --- | --- | --- | --- |
+            | 0 | 1 | 2 | 3 | 4 |
+            """, chunks[1].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal("""
+            Header A
+            | one | two | three | four | five |
+            | --- | --- | --- | --- | --- |
+            | 5 | 6 | 7 | 8 | 9 |
+            """, chunks[2].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal("""
+            Header A
+            | one | two | three | four | five |
+            | --- | --- | --- | --- | --- |
+            | 10 | 11 | 12 | 13 | 14 |
+            """, chunks[3].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal("""
+            Header A
+            | one | two | three | four | five |
+            | --- | --- | --- | --- | --- |
+            | 15 | 16 | 17 | 18 | 19 |
+            """, chunks[4].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal("""
+            Header A
+            | one | two | three | four | five |
+            | --- | --- | --- | --- | --- |
+            | 20 | 21 | 22 | 23 | 24 |
+            And some follow up.
+            """, chunks[5].Content, ignoreLineEndingDifferences: true);
     }
 
     private static IngestionDocument CreateDocumentWithLargeTable()
     {
-        IngestionDocumentTable table = new(
-@"| one | two | three | four | five |
-| --- | --- | --- | --- | --- |
-| 0 | 1 | 2 | 3 | 4 |
-| 5 | 6 | 7 | 8 | 9 |
-| 10 | 11 | 12 | 13 | 14 |
-| 15 | 16 | 17 | 18 | 19 |
-| 20 | 21 | 22 | 23 | 24 |",
-    CreateTableCells()
+        IngestionDocumentTable table = new("""
+            | one | two | three | four | five |
+            | --- | --- | --- | --- | --- |
+            | 0 | 1 | 2 | 3 | 4 |
+            | 5 | 6 | 7 | 8 | 9 |
+            | 10 | 11 | 12 | 13 | 14 |
+            | 15 | 16 | 17 | 18 | 19 |
+            | 20 | 21 | 22 | 23 | 24 |
+            """, CreateTableCells()
 );
 
         IngestionDocument doc = new("withNewLines");
