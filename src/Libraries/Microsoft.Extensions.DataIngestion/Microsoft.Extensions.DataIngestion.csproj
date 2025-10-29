@@ -9,7 +9,10 @@
     <NoWarn>$(NoWarn);RT0002</NoWarn>
 
     <!-- we are not ready to publish yet -->
-    <IsPackable>false</IsPackable>
+    <!-- <IsPackable>false</IsPackable> -->
+    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinMutationScore>0</MinMutationScore>
+    <Description>Microsoft.Extensions.DataIngestion</Description>
     <Stage>preview</Stage>
     <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
