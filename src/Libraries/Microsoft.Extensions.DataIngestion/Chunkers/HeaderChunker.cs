@@ -29,14 +29,12 @@ public sealed class HeaderChunker : IngestionChunker<string>
     }
 
     /// <inheritdoc/>
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IngestionDocument document,
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(document);
 
-        List<IngestionDocumentElement> elements = new(20);
+        List<IngestionDocumentElement> elements = [];
         string?[] headers = new string?[MaxHeaderLevel + 1];
 
         foreach (IngestionDocumentElement element in document.EnumerateContent())

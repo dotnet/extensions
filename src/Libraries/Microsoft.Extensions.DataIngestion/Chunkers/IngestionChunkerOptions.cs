@@ -72,7 +72,7 @@ public class IngestionChunkerOptions
         }
         set
         {
-            if (Throw.IfLessThanOrEqual(value, 0) >= MaxTokensPerChunk)
+            if (Throw.IfLessThan(value, 0) >= MaxTokensPerChunk)
             {
                 Throw.ArgumentOutOfRangeException(nameof(value), "Chunk overlap must be less than chunk size.");
             }

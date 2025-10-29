@@ -9,11 +9,13 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion.Chunkers;
 
+#pragma warning disable IDE0058 // Expression value is never used
+
 internal sealed class ElementsChunker
 {
     private readonly Tokenizer _tokenizer;
     private readonly int _maxTokensPerChunk;
-    private StringBuilder? _currentChunk;
+    private readonly StringBuilder _currentChunk;
 
     internal ElementsChunker(IngestionChunkerOptions options)
     {
@@ -21,6 +23,9 @@ internal sealed class ElementsChunker
 
         _tokenizer = options.Tokenizer;
         _maxTokensPerChunk = options.MaxTokensPerChunk;
+
+        // Token count != character count, but StringBuilder will grow as needed.
+        _currentChunk = new(capacity: _maxTokensPerChunk);
     }
 
     // Goals:
@@ -32,9 +37,6 @@ internal sealed class ElementsChunker
         // Not using yield return here as we use ref structs.
         List<IngestionChunk<string>> chunks = [];
 
-        // Token count != character count, but StringBuilder will grow as needed.
-        _currentChunk ??= new(capacity: _maxTokensPerChunk);
-
         int contextTokenCount = CountTokens(context.AsSpan());
         int totalTokenCount = contextTokenCount;
 
@@ -44,7 +46,7 @@ internal sealed class ElementsChunker
             ThrowTokenCountExceeded();
         }
 
-        _currentChunk = _currentChunk.Append(context);
+        _currentChunk.Append(context);
 
         for (int elementIndex = 0; elementIndex < elements.Count; elementIndex++)
         {
@@ -192,7 +194,7 @@ internal sealed class ElementsChunker
             chunks.Add(new(_currentChunk.ToString(), document, context));
         }
 
-        _currentChunk = _currentChunk.Clear();
+        _currentChunk.Clear();
 
         return chunks;
 
@@ -201,7 +203,7 @@ internal sealed class ElementsChunker
             chunks.Add(new(_currentChunk.ToString(), document, context));
 
             // We keep the context in the current chunk as it's the same for all elements.
-            _currentChunk = _currentChunk.Remove(
+            _currentChunk.Remove(
                 startIndex: context.Length,
                 length: _currentChunk.Length - context.Length);
             totalTokenCount = contextTokenCount;

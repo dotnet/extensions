@@ -110,9 +110,7 @@ public class HeaderChunkerTests
                 new IngestionDocumentHeader("Header A") { Level = 1 },
                     new IngestionDocumentHeader("Header B") { Level = 2 },
                         new IngestionDocumentHeader("Header C") { Level = 3 },
-                            new IngestionDocumentParagraph(
-@"This is a very long text. It's expressed with plenty of tokens. And it contains a new line.
-With some text after the new line."),
+                            new IngestionDocumentParagraph("This is a very long text. It's expressed with plenty of tokens. And it contains a new line.\nWith some text after the new line."),
                             new IngestionDocumentParagraph("And following paragraph.")
             }
         });

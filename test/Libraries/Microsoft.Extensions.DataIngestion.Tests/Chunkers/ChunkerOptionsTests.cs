@@ -14,7 +14,7 @@ public class ChunkerOptionsTests
     [Fact]
     public void TokenizerIsRequired()
     {
-        Assert.Throws<ArgumentNullException>(() => new IngestionChunkerOptions(null!));
+        Assert.Throws<ArgumentNullException>("tokenizer", () => new IngestionChunkerOptions(null!));
     }
 
     [Fact]
@@ -40,11 +40,22 @@ public class ChunkerOptionsTests
     {
         IngestionChunkerOptions options = new(_tokenizer);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.MaxTokensPerChunk = 0);
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.MaxTokensPerChunk = -1);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => options.MaxTokensPerChunk = 0);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => options.MaxTokensPerChunk = -1);
 
         // 0 is allowed for OverlapTokens
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.OverlapTokens = -1);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => options.OverlapTokens = -1);
+    }
+
+    [Fact]
+    public void OverlapTokensCanBeZero()
+    {
+        IngestionChunkerOptions options = new(_tokenizer)
+        {
+            OverlapTokens = 0
+        };
+
+        Assert.Equal(0, options.OverlapTokens);
     }
 
     [Fact]
@@ -52,8 +63,8 @@ public class ChunkerOptionsTests
     {
         IngestionChunkerOptions options = new(_tokenizer) { MaxTokensPerChunk = 1000 };
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.OverlapTokens = 1000);
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.OverlapTokens = 1500);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => options.OverlapTokens = 1000);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => options.OverlapTokens = 1500);
     }
 
     [Fact]
@@ -61,7 +72,7 @@ public class ChunkerOptionsTests
     {
         IngestionChunkerOptions options = new(_tokenizer) { OverlapTokens = 10 };
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.MaxTokensPerChunk = 10);
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.MaxTokensPerChunk = 5);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => options.MaxTokensPerChunk = 10);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => options.MaxTokensPerChunk = 5);
     }
 }

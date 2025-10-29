@@ -131,7 +131,17 @@ public sealed class IngestionDocumentHeader : IngestionDocumentElement
     public int? Level
     {
         get => field;
-        set => field = Throw.IfOutOfRange(value.GetValueOrDefault(), min: 0, max: 10, nameof(value));
+        set
+        {
+            if (value.HasValue)
+            {
+                field = Throw.IfOutOfRange(value.Value, min: 0, max: 10, nameof(value));
+            }
+            else
+            {
+                field = null;
+            }
+        }
     }
 }
 
