@@ -211,7 +211,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case CodeInterpreterCallResponseItem cicri:
-                    AddCodeInterpreterCallContent(cicri, message.Contents);
+                    AddCodeInterpreterContents(cicri, message.Contents);
                     break;
 
                 default:
@@ -390,7 +390,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is CodeInterpreterCallResponseItem cicri:
                     var codeUpdate = CreateUpdate();
-                    AddCodeInterpreterCallContent(cicri, codeUpdate.Contents);
+                    AddCodeInterpreterContents(cicri, codeUpdate.Contents);
                     yield return codeUpdate;
                     break;
 
@@ -1028,7 +1028,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="cicri"/> into <paramref name="contents"/>.</summary>
-    private static void AddCodeInterpreterCallContent(CodeInterpreterCallResponseItem cicri, IList<AIContent> contents)
+    private static void AddCodeInterpreterContents(CodeInterpreterCallResponseItem cicri, IList<AIContent> contents)
     {
         contents.Add(new CodeInterpreterToolCallContent
         {
@@ -1043,7 +1043,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         contents.Add(new CodeInterpreterToolResultContent
         {
             CallId = cicri.Id,
-            Output = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
+            Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
                 o switch
                 {
                     CodeInterpreterCallImageOutput cicio => new UriContent(cicio.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(cicio.ImageUri)) { RawRepresentation = cicio },

@@ -228,12 +228,12 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                         {
                             if (output.ImageFileId is not null)
                             {
-                                (hcitrc.Output ??= []).Add(new HostedFileContent(output.ImageFileId) { MediaType = "image/*" });
+                                (hcitrc.Outputs ??= []).Add(new HostedFileContent(output.ImageFileId) { MediaType = "image/*" });
                             }
 
                             if (output.Logs is string logs)
                             {
-                                (hcitrc.Output ??= []).Add(new TextContent(logs));
+                                (hcitrc.Outputs ??= []).Add(new TextContent(logs));
                             }
                         }
 

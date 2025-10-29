@@ -32,5 +32,5 @@ public sealed class CodeInterpreterToolResultContent : AIContent
     /// <see cref="DataContent"/> for binary data, <see cref="TextContent"/> for standard output text,
     /// or other <see cref="AIContent"/> types as supported by the service.
     /// </remarks>
-    public IList<AIContent>? Output { get; set; }
+    public IList<AIContent>? Outputs { get; set; }
 }

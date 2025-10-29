@@ -16,7 +16,7 @@ public class CodeInterpreterToolResultContentTests
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
         Assert.Null(c.CallId);
-        Assert.Null(c.Output);
+        Assert.Null(c.Outputs);
     }
 
     [Fact]
@@ -28,10 +28,10 @@ public class CodeInterpreterToolResultContentTests
         c.CallId = "call123";
         Assert.Equal("call123", c.CallId);
 
-        Assert.Null(c.Output);
+        Assert.Null(c.Outputs);
         IList<AIContent> output = [new TextContent("Hello, World!")];
-        c.Output = output;
-        Assert.Same(output, c.Output);
+        c.Outputs = output;
+        Assert.Same(output, c.Outputs);
 
         Assert.Null(c.RawRepresentation);
         object raw = new();
@@ -50,7 +50,7 @@ public class CodeInterpreterToolResultContentTests
         CodeInterpreterToolResultContent c = new()
         {
             CallId = "call789",
-            Output =
+            Outputs =
             [
                 new TextContent("Execution completed"),
                 new HostedFileContent("output.png"),
@@ -59,12 +59,12 @@ public class CodeInterpreterToolResultContentTests
             ]
         };
 
-        Assert.NotNull(c.Output);
-        Assert.Equal(4, c.Output.Count);
-        Assert.IsType<TextContent>(c.Output[0]);
-        Assert.IsType<HostedFileContent>(c.Output[1]);
-        Assert.IsType<DataContent>(c.Output[2]);
-        Assert.IsType<ErrorContent>(c.Output[3]);
+        Assert.NotNull(c.Outputs);
+        Assert.Equal(4, c.Outputs.Count);
+        Assert.IsType<TextContent>(c.Outputs[0]);
+        Assert.IsType<HostedFileContent>(c.Outputs[1]);
+        Assert.IsType<DataContent>(c.Outputs[2]);
+        Assert.IsType<ErrorContent>(c.Outputs[3]);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class CodeInterpreterToolResultContentTests
         CodeInterpreterToolResultContent content = new()
         {
             CallId = "call123",
-            Output =
+            Outputs =
             [
                 new TextContent("Hello, World!"),
                 new HostedFileContent("result.txt")
@@ -85,11 +85,11 @@ public class CodeInterpreterToolResultContentTests
 
         Assert.NotNull(deserializedSut);
         Assert.Equal("call123", deserializedSut.CallId);
-        Assert.NotNull(deserializedSut.Output);
-        Assert.Equal(2, deserializedSut.Output.Count);
-        Assert.IsType<TextContent>(deserializedSut.Output[0]);
-        Assert.Equal("Hello, World!", ((TextContent)deserializedSut.Output[0]).Text);
-        Assert.IsType<HostedFileContent>(deserializedSut.Output[1]);
-        Assert.Equal("result.txt", ((HostedFileContent)deserializedSut.Output[1]).FileId);
+        Assert.NotNull(deserializedSut.Outputs);
+        Assert.Equal(2, deserializedSut.Outputs.Count);
+        Assert.IsType<TextContent>(deserializedSut.Outputs[0]);
+        Assert.Equal("Hello, World!", ((TextContent)deserializedSut.Outputs[0]).Text);
+        Assert.IsType<HostedFileContent>(deserializedSut.Outputs[1]);
+        Assert.Equal("result.txt", ((HostedFileContent)deserializedSut.Outputs[1]).FileId);
     }
 }
