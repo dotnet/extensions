@@ -1,10 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.ML.Tokenizers;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.ML.Tokenizers;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion.Chunkers;
 
@@ -12,21 +13,14 @@ internal sealed class ElementsChunker
 {
     private readonly Tokenizer _tokenizer;
     private readonly int _maxTokensPerChunk;
-    private readonly int _overlapTokens;
-    private readonly bool _considerNormalization;
     private StringBuilder? _currentChunk;
 
     internal ElementsChunker(IngestionChunkerOptions options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        _ = Throw.IfNull(options);
 
         _tokenizer = options.Tokenizer;
         _maxTokensPerChunk = options.MaxTokensPerChunk;
-        _overlapTokens = options.OverlapTokens;
-        _considerNormalization = options.ConsiderNormalization;
     }
 
     // Goals:
@@ -37,17 +31,20 @@ internal sealed class ElementsChunker
     {
         // Not using yield return here as we use ref structs.
         List<IngestionChunk<string>> chunks = [];
+
         // Token count != character count, but StringBuilder will grow as needed.
         _currentChunk ??= new(capacity: _maxTokensPerChunk);
 
         int contextTokenCount = CountTokens(context.AsSpan());
         int totalTokenCount = contextTokenCount;
+
         // If the context itself exceeds the max tokens per chunk, we can't do anything.
         if (contextTokenCount >= _maxTokensPerChunk)
         {
             ThrowTokenCountExceeded();
         }
-        _currentChunk.Append(context);
+
+        _currentChunk = _currentChunk.Append(context);
 
         for (int elementIndex = 0; elementIndex < elements.Count; elementIndex++)
         {
@@ -63,7 +60,7 @@ internal sealed class ElementsChunker
                 _ => element.GetMarkdown()
             };
 
-            if(string.IsNullOrEmpty(semanticContent))
+            if (string.IsNullOrEmpty(semanticContent))
             {
                 continue; // An image can come with Markdown, but no AlternativeText or Text.
             }
@@ -117,6 +114,7 @@ internal sealed class ElementsChunker
 
                         // And commit the table we built so far.
                         Commit();
+
                         // Erase previous rows and keep only the header.
                         tableBuilder.Length = headerLength;
                         tableLength = headerLength;
@@ -152,7 +150,8 @@ internal sealed class ElementsChunker
                         out int tokenCount,
                         considerNormalization: false); // We don't normalize, just append as-is to keep original content.
 
-                    if (index > 0) // some tokens fit
+                    // some tokens fit
+                    if (index > 0)
                     {
                         // We could try to split by sentences or other delimiters, but it's complicated.
                         // For simplicity, we will just split at the last new line that fits.
@@ -192,7 +191,8 @@ internal sealed class ElementsChunker
         {
             chunks.Add(new(_currentChunk.ToString(), document, context));
         }
-        _currentChunk.Clear();
+
+        _currentChunk = _currentChunk.Clear();
 
         return chunks;
 
@@ -201,7 +201,7 @@ internal sealed class ElementsChunker
             chunks.Add(new(_currentChunk.ToString(), document, context));
 
             // We keep the context in the current chunk as it's the same for all elements.
-            _currentChunk.Remove(
+            _currentChunk = _currentChunk.Remove(
                 startIndex: context.Length,
                 length: _currentChunk.Length - context.Length);
             totalTokenCount = contextTokenCount;
@@ -211,9 +211,6 @@ internal sealed class ElementsChunker
             => throw new InvalidOperationException("Can't fit in the current chunk. Consider increasing max tokens per chunk.");
     }
 
-    private int CountTokens(ReadOnlySpan<char> input)
-        => _tokenizer.CountTokens(input, considerNormalization: _considerNormalization);
-
     private static void AppendNewLineAndSpan(StringBuilder stringBuilder, ReadOnlySpan<char> chars)
     {
         // Don't start an empty chunk (no context provided) with a new line.
@@ -222,11 +219,11 @@ internal sealed class ElementsChunker
             stringBuilder.AppendLine();
         }
 
-        stringBuilder.Append(chars
-#if NETSTANDARD2_0
-                                  .ToString()
+#if NET
+        stringBuilder.Append(chars);
+#else
+        stringBuilder.Append(chars.ToString());
 #endif
-        );
     }
 
     private static void AddMarkdownTableRow(IngestionDocumentTable table, int rowIndex, ref ValueStringBuilder vsb)
@@ -244,20 +241,26 @@ internal sealed class ElementsChunker
             vsb.Append(cellContent);
             vsb.Append(' ');
         }
+
         vsb.Append('|');
         vsb.Append(Environment.NewLine);
     }
 
     private static void AddMarkdownTableSeparatorRow(int columnCount, ref ValueStringBuilder vsb)
     {
+        const int DashCount = 3; // The dash count does not need to match the header length.
         for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
         {
             vsb.Append('|');
             vsb.Append(' ');
-            vsb.Append('-', 3);
+            vsb.Append('-', DashCount);
             vsb.Append(' ');
         }
+
         vsb.Append('|');
         vsb.Append(Environment.NewLine);
     }
+
+    private int CountTokens(ReadOnlySpan<char> input)
+        => _tokenizer.CountTokens(input, considerNormalization: false);
 }

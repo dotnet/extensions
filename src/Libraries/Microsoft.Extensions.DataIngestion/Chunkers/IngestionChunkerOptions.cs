@@ -1,47 +1,57 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.ML.Tokenizers;
 using System;
+using Microsoft.ML.Tokenizers;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
 
+/// <summary>
+/// Options for configuring the ingestion chunker.
+/// </summary>
 public class IngestionChunkerOptions
 {
     // Default values come from https://learn.microsoft.com/en-us/azure/search/vector-search-how-to-chunk-documents#text-split-skill-example
-    private int _maxTokensPerChunk = 2_000;
     private const int DefaultOverlapTokens = 500;
+    private const int DefaultTokensPerChunk = 2_000;
     private int? _overlapTokens;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IngestionChunkerOptions"/> class.
+    /// </summary>
+    /// <param name="tokenizer">The tokenizer to use for tokenizing input.</param>
     public IngestionChunkerOptions(Tokenizer tokenizer)
     {
-        Tokenizer = tokenizer ?? throw new ArgumentNullException(nameof(tokenizer));
+        Tokenizer = Throw.IfNull(tokenizer);
     }
 
+    /// <summary>
+    /// Gets the <see cref="Tokenizer"/> instance used to process and tokenize input data.
+    /// </summary>
     public Tokenizer Tokenizer { get; }
 
     /// <summary>
-    /// The maximum number of tokens allowed in each chunk. Default is 2000.
+    /// Gets or sets the maximum number of tokens allowed in each chunk. Default is 2000.
     /// </summary>
     public int MaxTokensPerChunk
     {
-        get => _maxTokensPerChunk;
+        get => field == default ? DefaultTokensPerChunk : field;
         set
         {
-            if (value <= 0)
+            _ = Throw.IfLessThanOrEqual(value, 0);
+
+            if (_overlapTokens.HasValue && value <= _overlapTokens.Value)
             {
-                throw new ArgumentOutOfRangeException(nameof(value), "Chunk size must be greater than zero.");
-            }
-            else if (_overlapTokens.HasValue && value <= _overlapTokens.Value)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), "Chunk size must be greater than chunk overlap.");
+                Throw.ArgumentOutOfRangeException(nameof(value), "Chunk size must be greater than chunk overlap.");
             }
 
-            _maxTokensPerChunk = value;
+            field = value;
         }
     }
+
     /// <summary>
-    /// The number of overlapping tokens between consecutive chunks. Default is 500.
+    /// Gets or sets the number of overlapping tokens between consecutive chunks. Default is 500.
     /// </summary>
     public int OverlapTokens
     {
@@ -51,7 +61,7 @@ public class IngestionChunkerOptions
             {
                 return _overlapTokens.Value;
             }
-            else if (_maxTokensPerChunk > DefaultOverlapTokens)
+            else if (MaxTokensPerChunk > DefaultOverlapTokens)
             {
                 return DefaultOverlapTokens;
             }
@@ -60,20 +70,14 @@ public class IngestionChunkerOptions
                 return 0;
             }
         }
-        set => _overlapTokens = value < 0
-            ? throw new ArgumentOutOfRangeException(nameof(value))
-            : value >= _maxTokensPerChunk
-                ? throw new ArgumentOutOfRangeException(nameof(value), "Chunk overlap must be less than chunk size.")
-                : value;
+        set
+        {
+            if (Throw.IfLessThanOrEqual(value, 0) >= MaxTokensPerChunk)
+            {
+                Throw.ArgumentOutOfRangeException(nameof(value), "Chunk overlap must be less than chunk size.");
+            }
+
+            _overlapTokens = value;
+        }
     }
-
-    /// <summary>
-    /// Indicate whether to consider pre-tokenization before tokenization.
-    /// </summary>
-    internal bool ConsiderPreTokenization { get; set; } = false;
-
-    /// <summary>
-    /// Indicate whether to consider normalization before tokenization.
-    /// </summary>
-    internal bool ConsiderNormalization { get; set; } = false;
 }

@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.DataIngestion.Chunkers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Microsoft.Extensions.DataIngestion.Chunkers;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
 
@@ -18,14 +19,23 @@ public sealed class HeaderChunker : IngestionChunker<string>
     private const int MaxHeaderLevel = 10;
     private readonly ElementsChunker _elementsChunker;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HeaderChunker"/> class.
+    /// </summary>
+    /// <param name="options">The options for the chunker.</param>
     public HeaderChunker(IngestionChunkerOptions options)
-        => _elementsChunker = new(options);
+    {
+        _elementsChunker = new(options);
+    }
 
+    /// <inheritdoc/>
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IngestionDocument document,
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(document);
+
         List<IngestionDocumentElement> elements = new(20);
         string?[] headers = new string?[MaxHeaderLevel + 1];
 

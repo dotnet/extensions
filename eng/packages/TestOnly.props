@@ -11,6 +11,7 @@
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.3" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="$(MicrosoftMLTokenizersVersion)" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="$(MicrosoftMLTokenizersVersion)" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="$(MicrosoftSemanticKernelConnectorsVersion)" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="$(MicrosoftSemanticKernelConnectorsVersion)" />
