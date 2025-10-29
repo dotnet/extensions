@@ -3,13 +3,14 @@
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
-    
+    <Workstream>AI</Workstream>
+
     <!-- we are not ready to publish yet -->
     <IsPackable>false</IsPackable>
     <!--  Convert abstract class into interface -->
     <NoWarn>$(NoWarn);S1694</NoWarn>
     <Stage>preview</Stage>
-    <EnablePackageValidation>false</EnablePackageValidation> 
+    <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
   <ItemGroup>
