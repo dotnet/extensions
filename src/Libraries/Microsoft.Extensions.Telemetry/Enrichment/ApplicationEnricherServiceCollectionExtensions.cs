@@ -59,7 +59,7 @@ public static class ApplicationEnricherServiceCollectionExtensions
     /// <summary>
     /// Adds an instance of the application enricher to the <see cref="IServiceCollection"/>.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add application enricher to.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the application enricher to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
