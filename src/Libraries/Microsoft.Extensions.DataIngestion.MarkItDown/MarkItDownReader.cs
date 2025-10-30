@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </summary>
 public class MarkItDownReader : IngestionDocumentReader
 {
-    private readonly string _exePath;
+    private readonly FileInfo? _exePath;
     private readonly bool _extractImages;
 
     /// <summary>
@@ -24,9 +24,9 @@ public class MarkItDownReader : IngestionDocumentReader
     /// </summary>
     /// <param name="exePath">The path to the MarkItDown executable. When not provided, "markitdown" needs to be added to PATH.</param>
     /// <param name="extractImages">A value indicating whether to extract images.</param>
-    public MarkItDownReader(string exePath = "markitdown", bool extractImages = false)
+    public MarkItDownReader(FileInfo? exePath = null, bool extractImages = false)
     {
-        _exePath = Throw.IfNullOrEmpty(exePath);
+        _exePath = exePath;
         _extractImages = extractImages;
     }
 
@@ -41,9 +41,15 @@ public class MarkItDownReader : IngestionDocumentReader
             throw new FileNotFoundException("The specified file does not exist.", source.FullName);
         }
 
+        // Manually set ProcessStartInfo.WorkingDirectory to a "safe location":
+        // - If exePath is provided, use its directory.
+        // - Otherwise, use AppContext.BaseDirectory (the directory of the running application).
+        string workingDirectory = _exePath?.Directory?.FullName ?? AppContext.BaseDirectory;
+
         ProcessStartInfo startInfo = new()
         {
-            FileName = _exePath,
+            FileName = _exePath?.FullName ?? "markitdown",
+            WorkingDirectory = workingDirectory,
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardOutput = true,
