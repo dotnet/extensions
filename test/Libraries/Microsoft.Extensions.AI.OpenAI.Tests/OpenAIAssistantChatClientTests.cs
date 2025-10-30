@@ -3,7 +3,6 @@
 
 using System;
 using System.ClientModel;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using OpenAI;
@@ -11,7 +10,6 @@ using OpenAI.Assistants;
 using Xunit;
 
 #pragma warning disable S103 // Lines should not be too long
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 namespace Microsoft.Extensions.AI;
 
@@ -21,19 +19,16 @@ public class OpenAIAssistantChatClientTests
     public void AsIChatClient_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("assistantClient", () => ((AssistantClient)null!).AsIChatClient("assistantId"));
-        Assert.Throws<ArgumentNullException>("assistantId", () => new AssistantClient("ignored").AsIChatClient(null!));
+        Assert.Throws<ArgumentNullException>("assistantId", () => new AssistantClient("ignored").AsIChatClient((string)null!));
+        Assert.Throws<ArgumentNullException>("assistant", () => new AssistantClient("ignored").AsIChatClient((Assistant)null!));
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AsIChatClient_OpenAIClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    [Fact]
+    public void AsIChatClient_OpenAIClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
 
-        var client = useAzureOpenAI ?
-            new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
-            new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
+        var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IChatClient[] clients =
         [

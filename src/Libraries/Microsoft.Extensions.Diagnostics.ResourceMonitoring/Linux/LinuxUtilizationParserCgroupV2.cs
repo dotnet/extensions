@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Microsoft.Extensions.ObjectPool;
@@ -131,7 +130,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         }
 
         // Extract the part after the last colon and cache it for future use
-        ReadOnlySpan<char> trimmedPath = fileContent.Slice(colonIndex + 1);
+        ReadOnlySpan<char> trimmedPath = fileContent[(colonIndex + 1)..];
         _cachedCgroupPath = "/sys/fs/cgroup" + trimmedPath.ToString().TrimEnd('/') + "/";
 
         return $"{_cachedCgroupPath}{filename}";
@@ -195,7 +194,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
                     $"'{_procStat}' should contain whitespace separated values according to POSIX. We've failed trying to get {i}th value. File content: '{new string(stat)}'.");
             }
 
-            stat = stat.Slice(next, stat.Length - next);
+            stat = stat.Slice(next);
         }
 
         return (long)(total / (double)_userHz * NanosecondsInSecond);
@@ -400,8 +399,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         return (ulong)memoryUsageTotal;
     }
 
-    [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used",
-        Justification = "Shifting bits left by number n is multiplying the value by 2 to the power of n.")]
     public ulong GetHostAvailableMemory()
     {
         // The value we are interested in starts with this. We just want to make sure it is true.
@@ -564,8 +561,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// <remarks>
     /// The input must contain only number. If there is something more than whitespace before the number, it will return failure (-1).
     /// </remarks>
-    [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used",
-        Justification = "We are adding another digit, so we need to multiply by ten.")]
     private static int GetNextNumber(ReadOnlySpan<char> buffer, out long number)
     {
         int numberStart = 0;
@@ -788,9 +783,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         // where y is the CPU pod weight (e.g. cpuPodWeight) and x is the CPU share of cgroup v1 (e.g. cpuUnits).
         // https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2
         // We invert the formula to calculate CPU share from CPU pod weight:
-#pragma warning disable S109 // Magic numbers should not be used - using the formula, forgive.
         cpuUnits = ((cpuPodWeight - 1) * 262142 / 9999) + 2;
-#pragma warning restore S109 // Magic numbers should not be used
 
         return true;
     }

@@ -16,6 +16,7 @@ public class Settings
     public string AzureSubscriptionId { get; }
     public string AzureResourceGroupName { get; }
     public string AzureAIProjectName { get; }
+    public string AzureAIProjectEndpoint { get; }
 
     public Settings(IConfiguration config)
     {
@@ -49,19 +50,14 @@ public class Settings
         AzureAIProjectName =
             config.GetValue<string>("AzureAIProjectName")
             ?? throw new ArgumentNullException(nameof(AzureAIProjectName));
+
+        AzureAIProjectEndpoint =
+            config.GetValue<string>("AzureAIProjectEndpoint")
+            ?? throw new ArgumentNullException(nameof(AzureAIProjectEndpoint));
 #pragma warning restore CA2208
     }
 
-    private static Settings? _currentSettings;
-
-    public static Settings Current
-    {
-        get
-        {
-            _currentSettings ??= GetCurrentSettings();
-            return _currentSettings;
-        }
-    }
+    public static Settings Current => field ??= GetCurrentSettings();
 
     private static Settings GetCurrentSettings()
     {

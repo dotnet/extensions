@@ -5,18 +5,18 @@ using System;
 #if NET
 using System.Buffers;
 using System.Buffers.Text;
+using System.ComponentModel;
 #endif
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 #if !NET
 using System.Runtime.InteropServices;
 #endif
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S3996 // URI properties should not be strings
-#pragma warning disable CA1054 // URI-like parameters should not be strings
-#pragma warning disable CA1056 // URI-like properties should not be strings
+#pragma warning disable IDE0032 // Use auto property
 #pragma warning disable CA1307 // Specify StringComparison for clarity
 
 namespace Microsoft.Extensions.AI;
@@ -116,6 +116,7 @@ public class DataContent : AIContent
     /// <param name="mediaType">The media type (also known as MIME type) represented by the content.</param>
     /// <exception cref="ArgumentNullException"><paramref name="mediaType"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="mediaType"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentException"><paramref name="mediaType"/> represents an invalid media type.</exception>
     public DataContent(ReadOnlyMemory<byte> data, string mediaType)
     {
         MediaType = DataUriParser.ThrowIfInvalidMediaType(mediaType);
@@ -142,6 +143,9 @@ public class DataContent : AIContent
     /// or from a <see cref="System.Uri"/>.
     /// </remarks>
     [StringSyntax(StringSyntaxAttribute.Uri)]
+#if NET
+    [Description("A data URI representing the content.")]
+#endif
     public string Uri
     {
         get
@@ -182,6 +186,13 @@ public class DataContent : AIContent
     /// </remarks>
     [JsonIgnore]
     public string MediaType { get; }
+
+    /// <summary>Gets or sets an optional name associated with the data.</summary>
+    /// <remarks>
+    /// A service might use this name as part of citations or to help infer the type of data
+    /// being represented based on a file extension.
+    /// </remarks>
+    public string? Name { get; set; }
 
     /// <summary>Gets the data represented by this instance.</summary>
     /// <remarks>
@@ -227,6 +238,16 @@ public class DataContent : AIContent
     {
         get
         {
+            if (HasTopLevelMediaType("text"))
+            {
+                return $"MediaType = {MediaType}, Text = \"{Encoding.UTF8.GetString(Data.ToArray())}\"";
+            }
+
+            if ("application/json".Equals(MediaType, StringComparison.OrdinalIgnoreCase))
+            {
+                return $"JSON = {Encoding.UTF8.GetString(Data.ToArray())}";
+            }
+
             const int MaxLength = 80;
 
             string uri = Uri;

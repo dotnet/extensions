@@ -7,8 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable EA0011 // Consider removing unnecessary conditional access operators
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an speech to text request.</summary>
@@ -47,10 +45,10 @@ public class SpeechToTextResponse
     /// <summary>Gets or sets the ID of the speech to text response.</summary>
     public string? ResponseId { get; set; }
 
-    /// <summary>Gets or sets the model ID used in the creation of the speech to text completion.</summary>
+    /// <summary>Gets or sets the model ID used in the creation of the speech to text response.</summary>
     public string? ModelId { get; set; }
 
-    /// <summary>Gets or sets the raw representation of the speech to text completion from an underlying implementation.</summary>
+    /// <summary>Gets or sets the raw representation of the speech to text response from an underlying implementation.</summary>
     /// <remarks>
     /// If a <see cref="SpeechToTextResponse"/> is created to represent some underlying object from another object
     /// model, this property can be used to store that original object. This can be useful for debugging or
@@ -59,7 +57,7 @@ public class SpeechToTextResponse
     [JsonIgnore]
     public object? RawRepresentation { get; set; }
 
-    /// <summary>Gets or sets any additional properties associated with the speech to text completion.</summary>
+    /// <summary>Gets or sets any additional properties associated with the speech to text response.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <summary>Gets the text of this speech to text response.</summary>
@@ -76,9 +74,15 @@ public class SpeechToTextResponse
     /// <returns>An array of <see cref="SpeechToTextResponseUpdate" /> instances that may be used to represent this <see cref="SpeechToTextResponse" />.</returns>
     public SpeechToTextResponseUpdate[] ToSpeechToTextResponseUpdates()
     {
-        SpeechToTextResponseUpdate update = new SpeechToTextResponseUpdate
+        IList<AIContent> contents = Contents;
+        if (Usage is { } usage)
         {
-            Contents = Contents,
+            contents = [.. contents, new UsageContent(usage)];
+        }
+
+        SpeechToTextResponseUpdate update = new()
+        {
+            Contents = contents,
             AdditionalProperties = AdditionalProperties,
             RawRepresentation = RawRepresentation,
             StartTime = StartTime,
@@ -98,4 +102,7 @@ public class SpeechToTextResponse
         get => _contents ??= [];
         set => _contents = value;
     }
+
+    /// <summary>Gets or sets usage details for the speech to text response.</summary>
+    public UsageDetails? Usage { get; set; }
 }

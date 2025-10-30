@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable S3604
-// S3604: Member initializer values should not be redundant.
-// We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
-// constructor syntax.
-
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -22,15 +17,13 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 internal sealed partial class ContentSafetyService(ContentSafetyServiceConfiguration serviceConfiguration)
 {
-    private static HttpClient? _sharedHttpClient;
-    private static HttpClient SharedHttpClient
-    {
-        get
-        {
-            _sharedHttpClient ??= new HttpClient();
-            return _sharedHttpClient;
-        }
-    }
+    private const string APIVersionForServiceDiscoveryInHubBasedProjects = "?api-version=2023-08-01-preview";
+    private const string APIVersionForNonHubBasedProjects = "?api-version=2025-05-15-preview";
+
+    private static HttpClient SharedHttpClient =>
+        field ??
+        Interlocked.CompareExchange(ref field, new(), null) ??
+        field;
 
     private static readonly ConcurrentDictionary<UrlCacheKey, string> _serviceUrlCache =
         new ConcurrentDictionary<UrlCacheKey, string>();
@@ -168,20 +161,27 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
             return _serviceUrl;
         }
 
-        string discoveryUrl =
-            await GetServiceDiscoveryUrlAsync(evaluatorName, cancellationToken).ConfigureAwait(false);
+        if (serviceConfiguration.IsHubBasedProject)
+        {
+            string discoveryUrl =
+                await GetServiceDiscoveryUrlAsync(evaluatorName, cancellationToken).ConfigureAwait(false);
 
-        serviceUrl =
-            $"{discoveryUrl}/raisvc/v1.0" +
-            $"/subscriptions/{serviceConfiguration.SubscriptionId}" +
-            $"/resourceGroups/{serviceConfiguration.ResourceGroupName}" +
-            $"/providers/Microsoft.MachineLearningServices/workspaces/{serviceConfiguration.ProjectName}";
+            serviceUrl =
+                $"{discoveryUrl}/raisvc/v1.0" +
+                $"/subscriptions/{serviceConfiguration.SubscriptionId}" +
+                $"/resourceGroups/{serviceConfiguration.ResourceGroupName}" +
+                $"/providers/Microsoft.MachineLearningServices/workspaces/{serviceConfiguration.ProjectName}";
+        }
+        else
+        {
+            serviceUrl = $"{serviceConfiguration.Endpoint.AbsoluteUri}/evaluations";
+        }
 
         await EnsureServiceAvailabilityAsync(
-            serviceUrl,
-            capability: annotationTask,
-            evaluatorName,
-            cancellationToken).ConfigureAwait(false);
+                serviceUrl,
+                capability: annotationTask,
+                evaluatorName,
+                cancellationToken).ConfigureAwait(false);
 
         _ = _serviceUrlCache.TryAdd(key, serviceUrl);
         _serviceUrl = serviceUrl;
@@ -196,7 +196,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
             $"https://management.azure.com/subscriptions/{serviceConfiguration.SubscriptionId}" +
             $"/resourceGroups/{serviceConfiguration.ResourceGroupName}" +
             $"/providers/Microsoft.MachineLearningServices/workspaces/{serviceConfiguration.ProjectName}" +
-            $"?api-version=2023-08-01-preview";
+            $"{APIVersionForServiceDiscoveryInHubBasedProjects}";
 
         HttpResponseMessage response =
             await GetResponseAsync(
@@ -244,7 +244,10 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         string evaluatorName,
         CancellationToken cancellationToken)
     {
-        string serviceAvailabilityUrl = $"{serviceUrl}/checkannotation";
+        string serviceAvailabilityUrl =
+            serviceConfiguration.IsHubBasedProject
+                ? $"{serviceUrl}/checkannotation"
+                : $"{serviceUrl}/checkannotation{APIVersionForNonHubBasedProjects}";
 
         HttpResponseMessage response =
             await GetResponseAsync(
@@ -297,7 +300,10 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         string evaluatorName,
         CancellationToken cancellationToken)
     {
-        string annotationUrl = $"{serviceUrl}/submitannotation";
+        string annotationUrl =
+            serviceConfiguration.IsHubBasedProject
+                ? $"{serviceUrl}/submitannotation"
+                : $"{serviceUrl}/submitannotation{APIVersionForNonHubBasedProjects}";
 
         HttpResponseMessage response =
             await GetResponseAsync(
@@ -376,9 +382,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
                     }
                     else
                     {
-#pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
                         await Task.Delay(InitialDelayInMilliseconds * attempts, cancellationToken).ConfigureAwait(false);
-#pragma warning restore EA0002
                     }
                 }
             }
@@ -426,16 +430,18 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
         httpRequestMessage.Headers.Add("User-Agent", userAgent);
 
+        TokenRequestContext context =
+            serviceConfiguration.IsHubBasedProject
+                ? new TokenRequestContext(scopes: ["https://management.azure.com/.default"])
+                : new TokenRequestContext(scopes: ["https://ai.azure.com/.default"]);
+
         AccessToken token =
-            await serviceConfiguration.Credential.GetTokenAsync(
-                new TokenRequestContext(scopes: ["https://management.azure.com/.default"]),
-                cancellationToken).ConfigureAwait(false);
+            await serviceConfiguration.Credential.GetTokenAsync(context, cancellationToken).ConfigureAwait(false);
 
         httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
 
-        if (httpRequestMessage.Content is not null)
-        {
-            httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        }
+#pragma warning disable IDE0058 // Temporary workaround for Roslyn analyzer issue (see https://github.com/dotnet/roslyn/issues/80499).
+        httpRequestMessage.Content?.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+#pragma warning restore IDE0058
     }
 }

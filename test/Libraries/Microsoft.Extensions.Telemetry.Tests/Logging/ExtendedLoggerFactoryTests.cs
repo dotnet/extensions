@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
@@ -534,6 +535,20 @@ public static class ExtendedLoggerFactoryTests
         factory.Dispose();
 
         Assert.True(disposed);
+    }
+
+    [Fact]
+    public static void NullLoggerByProviderIsIgnored()
+    {
+        using var factory = Utils.CreateLoggerFactory(builder =>
+        {
+            builder.AddProvider(NullLoggerProvider.Instance);
+            builder.AddProvider(new Provider());
+        });
+        var logger1 = (ExtendedLogger)factory.CreateLogger("C1");
+        Assert.Single(logger1.MessageLoggers);
+
+        logger1.LogInformation("This should not throw an exception.");
     }
 
     private class InternalScopeLoggerProvider : ILoggerProvider, ILogger

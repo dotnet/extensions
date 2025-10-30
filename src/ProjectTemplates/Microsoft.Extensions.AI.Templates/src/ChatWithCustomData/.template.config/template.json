@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": [ "Common", "AI", "Web", "Blazor", ".NET Aspire" ],
+  "classifications": [ "Common", "AI", "Web", "Blazor", "Aspire" ],
   "identity": "Microsoft.Extensions.AI.Templates.WebChat.CSharp",
   "name": "AI Chat Web App",
   "description": "A project template for creating an AI chat application, which uses retrieval-augmented generation (RAG) to chat with your own data.",
@@ -30,7 +30,7 @@
       "path": "./ChatWithCustomData-CSharp.csproj"
     },
     {
-      "condition": "(IsAspire && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
+      "condition": "(IsAspire && (hostIdentifier == \"dotnetcli\" || hostIdentifier == \"dotnetcli-preview\"))",
       "path": "./ChatWithCustomData-CSharp.sln"
     },
     {
@@ -65,6 +65,12 @@
         ]
       },
       {
+        "condition": "(!IsAspire || !IsOllama)",
+        "exclude": [
+          "ChatWithCustomData-CSharp.Web/OllamaResilienceHandlerExtensions.cs"
+        ]
+      },
+      {
         "condition": "(IsAspire)",
         "exclude": [
           "ChatWithCustomData-CSharp.Web/Program.cs",
@@ -76,7 +82,13 @@
         }
       },
       {
-        "condition": "(!UseLocalVectorStore)",
+        "condition": "(IsAspire && hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
+        "exclude": [
+          "*.sln"
+        ]
+      },
+      {
+        "condition": "(!IsLocalVectorStore)",
         "exclude": [
           "ChatWithCustomData-CSharp.Web/Services/JsonVectorStore.cs"
         ]
@@ -171,7 +183,11 @@
       "displayName": "Use Aspire orchestration",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Create the project as a distributed application using .NET Aspire."
+      "description": "Create the project as a distributed application using Aspire."
+    },
+    "IsManagedIdentity": {
+      "type": "computed",
+      "value": "(UseManagedIdentity)"
     },
     "IsAspire": {
       "type": "computed",
@@ -197,21 +213,21 @@
       "type": "computed",
       "value": "(AiServiceProvider == \"azureaifoundry\")"
     },
-    "UseAzureAISearch": {
+    "IsAzureAISearch": {
       "type": "computed",
       "value": "(VectorStore == \"azureaisearch\")"
     },
-    "UseLocalVectorStore": {
+    "IsLocalVectorStore": {
       "type": "computed",
       "value": "(VectorStore == \"local\")"
     },
-    "UseQdrant": {
+    "IsQdrant": {
       "type": "computed",
       "value": "(VectorStore == \"qdrant\")"
     },
-    "UseAzure": {
+    "IsAzure": {
       "type": "computed",
-      "value": "(IsAzureOpenAI || IsAzureAiFoundry || UseAzureAISearch)"
+      "value": "(IsAzureOpenAI || IsAzureAIFoundry || IsAzureAISearch)"
     },
     "ChatModel": {
       "type": "parameter",
@@ -493,6 +509,12 @@
       "valueTransform": "vectorStoreIndexNameTransform",
       "replaces": "data-ChatWithCustomData-CSharp.Web-"
     },
+    "aspireClassNameReplacer": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "aspireClassName_ReplaceInvalidChars",
+      "replaces": "ChatWithCustomData_CSharp_Web_AspireClassName"
+    },
     "webProjectNamespaceAdjuster": {
       "type": "generated",
       "generator": "switch",
@@ -518,6 +540,12 @@
     }
   },
   "forms": {
+    "aspireClassName_ReplaceInvalidChars": {
+      "identifier": "replace",
+      "pattern": "(((?<=\\.)|^)(?=\\d)|\\W)",
+      "replacement": "_",
+      "description": "Insert underscore before digits at start, or after a dot, or to replace non-word characters"
+    },
     "vectorStoreIndexNameTransform": {
       "identifier": "chain",
       "steps": [
@@ -558,7 +586,7 @@
     }
   },
   "postActions": [{
-    "condition": "(hostIdentifier != \"dotnetcli\")",
+    "condition": "(hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
     "description": "Opens README file in the editor",
     "manualInstructions": [ ],
     "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",

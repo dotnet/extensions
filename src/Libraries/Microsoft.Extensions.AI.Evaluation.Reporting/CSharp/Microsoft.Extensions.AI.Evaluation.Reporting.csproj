@@ -11,8 +11,6 @@
     <Description>A library that contains support for caching LLM responses, storing the results of evaluations and generating reports from that data.</Description>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation.Reporting</RootNamespace>
-    <!-- EA0002: Use System.TimeProvider to make the code easier to test. -->
-    <NoWarn>$(NoWarn);EA0002</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -22,6 +20,10 @@
     <MinCodeCoverage>n/a</MinCodeCoverage>
     <MinMutationScore>n/a</MinMutationScore>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Microsoft.Extensions.AI.Evaluation\Utilities\ModelInfo.cs" Link="Utilities\ModelInfo.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Condition="'$(EnableEvaluationReportBuild)'=='true'"

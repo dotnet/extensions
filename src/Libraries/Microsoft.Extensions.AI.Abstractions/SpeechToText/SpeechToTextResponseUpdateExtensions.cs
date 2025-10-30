@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -25,32 +24,13 @@ public static class SpeechToTextResponseUpdateExtensions
         _ = Throw.IfNull(updates);
 
         SpeechToTextResponse response = new();
-        List<AIContent> contents = [];
-        string? responseId = null;
-        string? modelId = null;
-        AdditionalPropertiesDictionary? additionalProperties = null;
 
-        TimeSpan? endTime = null;
         foreach (var update in updates)
         {
-            // Track the first start time provided by the updates
-            response.StartTime ??= update.StartTime;
-
-            // Track the last end time provided by the updates
-            if (update.EndTime is not null)
-            {
-                endTime = update.EndTime;
-            }
-
-            ProcessUpdate(update, contents, ref responseId, ref modelId, ref additionalProperties);
+            ProcessUpdate(update, response);
         }
 
-        ChatResponseExtensions.CoalesceTextContent(contents);
-        response.EndTime = endTime;
-        response.Contents = contents;
-        response.ResponseId = responseId;
-        response.ModelId = modelId;
-        response.AdditionalProperties = additionalProperties;
+        ChatResponseExtensions.CoalesceContent((List<AIContent>)response.Contents);
 
         return response;
     }
@@ -70,33 +50,13 @@ public static class SpeechToTextResponseUpdateExtensions
             IAsyncEnumerable<SpeechToTextResponseUpdate> updates, CancellationToken cancellationToken)
         {
             SpeechToTextResponse response = new();
-            List<AIContent> contents = [];
-            string? responseId = null;
-            string? modelId = null;
-            AdditionalPropertiesDictionary? additionalProperties = null;
 
-            TimeSpan? endTime = null;
             await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                // Track the first start time provided by the updates
-                response.StartTime ??= update.StartTime;
-
-                // Track the last end time provided by the updates
-                if (update.EndTime is not null)
-                {
-                    endTime = update.EndTime;
-                }
-
-                ProcessUpdate(update, contents, ref responseId, ref modelId, ref additionalProperties);
+                ProcessUpdate(update, response);
             }
 
-            ChatResponseExtensions.CoalesceTextContent(contents);
-
-            response.EndTime = endTime;
-            response.Contents = contents;
-            response.ResponseId = responseId;
-            response.ModelId = modelId;
-            response.AdditionalProperties = additionalProperties;
+            ChatResponseExtensions.CoalesceContent((List<AIContent>)response.Contents);
 
             return response;
         }
@@ -104,40 +64,59 @@ public static class SpeechToTextResponseUpdateExtensions
 
     /// <summary>Processes the <see cref="SpeechToTextResponseUpdate"/>, incorporating its contents and properties.</summary>
     /// <param name="update">The update to process.</param>
-    /// <param name="contents">The list of content items being accumulated.</param>
-    /// <param name="responseId">The response ID to update if the update has one.</param>
-    /// <param name="modelId">The model ID to update if the update has one.</param>
-    /// <param name="additionalProperties">The additional properties to update if the update has any.</param>
+    /// <param name="response">The <see cref="SpeechToTextResponse"/> object that should be updated based on <paramref name="update"/>.</param>
     private static void ProcessUpdate(
         SpeechToTextResponseUpdate update,
-        List<AIContent> contents,
-        ref string? responseId,
-        ref string? modelId,
-        ref AdditionalPropertiesDictionary? additionalProperties)
+        SpeechToTextResponse response)
     {
         if (update.ResponseId is not null)
         {
-            responseId = update.ResponseId;
+            response.ResponseId = update.ResponseId;
         }
 
         if (update.ModelId is not null)
         {
-            modelId = update.ModelId;
+            response.ModelId = update.ModelId;
         }
 
-        contents.AddRange(update.Contents);
+        if (response.StartTime is null || (update.StartTime is not null && update.StartTime < response.StartTime))
+        {
+            // Track the first start time provided by the updates
+            response.StartTime = update.StartTime;
+        }
+
+        if (response.EndTime is null || (update.EndTime is not null && update.EndTime > response.EndTime))
+        {
+            // Track the last end time provided by the updates
+            response.EndTime = update.EndTime;
+        }
+
+        foreach (var content in update.Contents)
+        {
+            switch (content)
+            {
+                // Usage content is treated specially and propagated to the response's Usage.
+                case UsageContent usage:
+                    (response.Usage ??= new()).Add(usage.Details);
+                    break;
+
+                default:
+                    response.Contents.Add(content);
+                    break;
+            }
+        }
 
         if (update.AdditionalProperties is not null)
         {
-            if (additionalProperties is null)
+            if (response.AdditionalProperties is null)
             {
-                additionalProperties = new(update.AdditionalProperties);
+                response.AdditionalProperties = new(update.AdditionalProperties);
             }
             else
             {
                 foreach (var entry in update.AdditionalProperties)
                 {
-                    additionalProperties[entry.Key] = entry.Value;
+                    response.AdditionalProperties[entry.Key] = entry.Value;
                 }
             }
         }

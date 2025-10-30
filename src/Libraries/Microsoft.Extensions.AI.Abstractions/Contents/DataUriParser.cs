@@ -148,9 +148,7 @@ internal static class DataUriParser
 #if NET8_0_OR_GREATER
         return Base64.IsValid(value) && !value.ContainsAny(" \t\r\n");
 #else
-#pragma warning disable S109 // Magic numbers should not be used
         if (value!.Length % 4 != 0)
-#pragma warning restore S109
         {
             return false;
         }
@@ -171,9 +169,7 @@ internal static class DataUriParser
         // Now traverse over characters
         for (var i = 0; i <= index; i++)
         {
-#pragma warning disable S1067 // Expressions should not be too complex
             bool validChar = value[i] is (>= 'A' and <= 'Z') or (>= 'a' and <= 'z') or (>= '0' and <= '9') or '+' or '/';
-#pragma warning restore S1067
             if (!validChar)
             {
                 return false;
@@ -187,13 +183,11 @@ internal static class DataUriParser
     /// <summary>Provides the parts of a parsed data URI.</summary>
     public sealed class DataUri(ReadOnlyMemory<char> data, bool isBase64, string? mediaType)
     {
-#pragma warning disable S3604 // False positive: Member initializer values should not be redundant
         public string? MediaType { get; } = mediaType;
 
         public ReadOnlyMemory<char> Data { get; } = data;
 
         public bool IsBase64 { get; } = isBase64;
-#pragma warning restore S3604
 
         public byte[] ToByteArray() => IsBase64 ?
             Convert.FromBase64String(Data.ToString()) :

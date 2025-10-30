@@ -11,6 +11,7 @@ using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Diagnostics.Buffering;
 #endif
 using Microsoft.Extensions.Diagnostics.Enrichment;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
@@ -36,7 +37,6 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private LoggerFilterOptions _filterOptions;
     private IExternalScopeProvider? _scopeProvider;
 
-#pragma warning disable S107 // Methods should not have too many parameters
     public ExtendedLoggerFactory(
         IEnumerable<ILoggerProvider> providers,
         IEnumerable<ILogEnricher> enrichers,
@@ -53,7 +53,6 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
 #else
         IRedactorProvider? redactorProvider = null)
 #endif
-#pragma warning restore S107 // Methods should not have too many parameters
     {
         _scopeProvider = scopeProvider;
 #if NET9_0_OR_GREATER
@@ -129,9 +128,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
                         registration.Provider.Dispose();
                     }
                 }
-#pragma warning disable CA1031
                 catch
-#pragma warning restore CA1031
                 {
                     // Swallow exceptions on dispose
                 }
@@ -223,13 +220,20 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
 
     private LoggerInformation[] CreateLoggers(string categoryName)
     {
-        var loggers = new LoggerInformation[_providerRegistrations.Count];
+        var loggers = new List<LoggerInformation>(_providerRegistrations.Count);
         for (int i = 0; i < _providerRegistrations.Count; i++)
         {
-            loggers[i] = new LoggerInformation(_providerRegistrations[i].Provider, categoryName);
+            var loggerInformation = new LoggerInformation(_providerRegistrations[i].Provider, categoryName);
+
+            // We do not need to check for NullLogger<T>.Instance as no provider would reasonably return it (the <T> handling is at
+            // outer loggers level, not inner level loggers in Logger/LoggerProvider).
+            if (loggerInformation.Logger != NullLogger.Instance)
+            {
+                loggers.Add(loggerInformation);
+            }
         }
 
-        return loggers;
+        return loggers.ToArray();
     }
 
     private (MessageLogger[] messageLoggers, ScopeLogger[] scopeLoggers) ApplyFilters(LoggerInformation[] loggers)

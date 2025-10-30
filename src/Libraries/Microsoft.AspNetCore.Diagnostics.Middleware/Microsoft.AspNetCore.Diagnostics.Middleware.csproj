@@ -4,13 +4,16 @@
     <Description>ASP.NET Core middleware for collecting high-quality telemetry.</Description>
     <PackageTags>$(PackageTags);aspnetcore</PackageTags>
     <Workstream>Telemetry</Workstream>
+    <!-- disable "Published symbols cannot be deleted to maintain compatibility" because we have different APIs for different TFMs -->
+    <NoWarn Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">$(NoWarn);LA0006</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    <!-- This is needed until we get a build with https://github.com/dotnet/sdk/pull/50662. .NET 10 RC2 should have the fix. -->
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsNamespaces>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDebugger>true</InjectSharedDebugger>
     <InjectSharedDataValidation>false</InjectSharedDataValidation>
     <InjectSharedPools>false</InjectSharedPools>
@@ -38,7 +41,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))" />
   </ItemGroup>

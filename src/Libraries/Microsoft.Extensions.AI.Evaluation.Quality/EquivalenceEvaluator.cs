@@ -52,7 +52,7 @@ public sealed class EquivalenceEvaluator : IEvaluator
         new ChatOptions
         {
             Temperature = 0.0f,
-            MaxOutputTokens = 1,
+            MaxOutputTokens = 16, // See https://github.com/dotnet/extensions/issues/6814 and https://github.com/dotnet/extensions/issues/6945.
             TopP = 1.0f,
             PresencePenalty = 0.0f,
             FrequencyPenalty = 0.0f,
@@ -72,6 +72,7 @@ public sealed class EquivalenceEvaluator : IEvaluator
 
         var metric = new NumericMetric(EquivalenceMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {
@@ -113,12 +114,10 @@ public sealed class EquivalenceEvaluator : IEvaluator
         ChatResponse modelResponse,
         EquivalenceEvaluatorContext context)
     {
-#pragma warning disable S103 // Lines should not be too long
         const string SystemPrompt =
             """
             You are an AI assistant. You will be given the definition of an evaluation metric for assessing the quality of an answer in a question-answering task. Your job is to compute an accurate evaluation score using the provided evaluation metric. You should return a single integer value between 1 to 5 representing the evaluation metric. You will include no other text or information.
             """;
-#pragma warning restore S103
 
         List<ChatMessage> evaluationInstructions = [new ChatMessage(ChatRole.System, SystemPrompt)];
 
@@ -126,7 +125,6 @@ public sealed class EquivalenceEvaluator : IEvaluator
         string renderedModelResponse = modelResponse.RenderText();
         string groundTruth = context.GroundTruth;
 
-#pragma warning disable S103 // Lines should not be too long
         string evaluationPrompt =
             $$"""
             Equivalence, as a metric, measures the similarity between the predicted answer and the correct answer. If the information and content in the predicted answer is similar or equivalent to the correct answer, then the value of the Equivalence metric should be high, else it should be low. Given the question, correct answer, and predicted answer, determine the value of Equivalence metric using the following rating scale:
@@ -170,7 +168,6 @@ public sealed class EquivalenceEvaluator : IEvaluator
             predicted answer: {{renderedModelResponse}}
             stars:
             """;
-#pragma warning restore S103
 
         evaluationInstructions.Add(new ChatMessage(ChatRole.User, evaluationPrompt));
 

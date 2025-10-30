@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// </para>
 /// <para>
 /// Note that at the moment, <see cref="TaskAdherenceEvaluator"/> only supports evaluating calls to tools that are
-/// defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions that are supplied via
+/// defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions that are supplied via
 /// <see cref="ToolDefinitions"/> will be ignored.
 /// </para>
 /// </remarks>
@@ -36,11 +37,11 @@ public sealed class TaskAdherenceEvaluatorContext : EvaluationContext
     /// </para>
     /// <para>
     /// Note that at the moment, <see cref="TaskAdherenceEvaluator"/> only supports evaluating calls to tools that
-    /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
+    /// are defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public TaskAdherenceEvaluatorContext(IEnumerable<AITool> toolDefinitions)
-        : base(name: TaskAdherenceContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
+    public TaskAdherenceEvaluatorContext(params AITool[] toolDefinitions)
+        : base(name: ToolDefinitionsContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
     {
         ToolDefinitions = [.. toolDefinitions];
     }
@@ -55,11 +56,11 @@ public sealed class TaskAdherenceEvaluatorContext : EvaluationContext
     /// </para>
     /// <para>
     /// Note that at the moment, <see cref="TaskAdherenceEvaluator"/> only supports evaluating calls to tools that
-    /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
+    /// are defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public TaskAdherenceEvaluatorContext(params AITool[] toolDefinitions)
-        : this(toolDefinitions as IEnumerable<AITool>)
+    public TaskAdherenceEvaluatorContext(IEnumerable<AITool> toolDefinitions)
+        : this(toolDefinitions.ToArray())
     {
     }
 
@@ -67,7 +68,7 @@ public sealed class TaskAdherenceEvaluatorContext : EvaluationContext
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
     /// <see cref="TaskAdherenceEvaluatorContext"/>.
     /// </summary>
-    public static string TaskAdherenceContextName => "Tool Definitions (Task Adherence)";
+    public static string ToolDefinitionsContextName => "Tool Definitions (Task Adherence)";
 
     /// <summary>
     /// Gets set of tool definitions (see <see cref="ChatOptions.Tools"/>) that were used when generating the model
@@ -82,7 +83,7 @@ public sealed class TaskAdherenceEvaluatorContext : EvaluationContext
     /// </para>
     /// <para>
     /// Note that at the moment, <see cref="TaskAdherenceEvaluator"/> only supports evaluating calls to tools that are
-    /// defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions that are supplied via
+    /// defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions that are supplied via
     /// <see cref="ToolDefinitions"/> will be ignored.
     /// </para>
     /// </remarks>

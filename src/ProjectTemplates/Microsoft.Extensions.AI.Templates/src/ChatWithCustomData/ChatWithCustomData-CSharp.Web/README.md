@@ -5,7 +5,7 @@ This project is an AI chat application that demonstrates how to chat with custom
 >[!NOTE]
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
 
-#### ---#if (UseAzure)
+#### ---#if (IsAzure)
 ### Prerequisites
 To use Azure OpenAI or Azure AI Search, you need an Azure account. If you don't already have one, [create an Azure account](https://azure.microsoft.com/free/).
 
@@ -104,7 +104,7 @@ To use Azure OpenAI, you will need an Azure account and an Azure OpenAI Service 
 ### 2. Deploy the Models
 Deploy the `gpt-4o-mini` and `text-embedding-3-small` models to your Azure OpenAI Service resource. When creating those deployments, give them the same names as the models (`gpt-4o-mini` and `text-embedding-3-small`). See the Azure OpenAI documentation to learn how to [Deploy a model](https://learn.microsoft.com/azure/ai-services/openai/how-to/create-resource?pivots=web-portal#deploy-a-model).
 
-#### ---#if (UseManagedIdentity)
+#### ---#if (IsManagedIdentity)
 ### 3. Configure Azure OpenAI for Keyless Authentication
 This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). In the Azure Portal, when viewing the Azure OpenAI resource you just created, view access control settings and assign yourself the `Azure AI Developer` role. [Learn more about configuring authentication for local development](https://learn.microsoft.com/azure/developer/ai/keyless-connections?tabs=csharp%2Cazure-cli#authenticate-for-local-development).
 
@@ -160,7 +160,7 @@ Make sure to replace `YOUR-AZURE-OPENAI-KEY` and `YOUR-AZURE-OPENAI-ENDPOINT` wi
 
 #### ---#endif
 #### ---#endif
-#### ---#if (UseAzureAISearch)
+#### ---#if (IsAzureAISearch)
 ## Configure Azure AI Search
 
 To use Azure AI Search, you will need an Azure account and an Azure AI Search resource. For detailed instructions, see the [Azure AI Search documentation](https://learn.microsoft.com/azure/search/search-create-service-portal).
@@ -170,7 +170,7 @@ Follow the instructions in the [Azure portal](https://portal.azure.com/) to crea
 
 Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `data-ChatWithCustomData-CSharp.Web-chunks` and `data-ChatWithCustomData-CSharp.Web-documents` indexes using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
 
-#### ---#if (UseManagedIdentity)
+#### ---#if (IsManagedIdentity)
 ### 2. Configure Azure AI Search for Keyless Authentication
 This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). Before continuing, you'll need to configure your Azure AI Search resource to support this. [Learn more](https://learn.microsoft.com/azure/search/keyless-connections).  After creation, ensure that you have selected Role-Based Access Control (RBAC) under Settings > Keys, as this is not the default. Assign yourself the roles called out for local development. [Learn more](https://learn.microsoft.com/azure/search/keyless-connections#roles-for-local-development).
 

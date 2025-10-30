@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
@@ -18,7 +19,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// </para>
 /// <para>
 /// Note that at the moment, <see cref="IntentResolutionEvaluator"/> only supports evaluating calls to tools that are
-/// defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions that are supplied via
+/// defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions that are supplied via
 /// <see cref="ToolDefinitions"/> will be ignored.
 /// </para>
 /// </remarks>
@@ -35,11 +36,11 @@ public sealed class IntentResolutionEvaluatorContext : EvaluationContext
     /// </para>
     /// <para>
     /// Note that at the moment, <see cref="IntentResolutionEvaluator"/> only supports evaluating calls to tools that
-    /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
+    /// are defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public IntentResolutionEvaluatorContext(IEnumerable<AITool> toolDefinitions)
-        : base(name: IntentResolutionContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
+    public IntentResolutionEvaluatorContext(params AITool[] toolDefinitions)
+        : base(name: ToolDefinitionsContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
     {
         ToolDefinitions = [.. toolDefinitions];
     }
@@ -54,11 +55,11 @@ public sealed class IntentResolutionEvaluatorContext : EvaluationContext
     /// </para>
     /// <para>
     /// Note that at the moment, <see cref="IntentResolutionEvaluator"/> only supports evaluating calls to tools that
-    /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
+    /// are defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public IntentResolutionEvaluatorContext(params AITool[] toolDefinitions)
-        : this(toolDefinitions as IEnumerable<AITool>)
+    public IntentResolutionEvaluatorContext(IEnumerable<AITool> toolDefinitions)
+        : this(toolDefinitions.ToArray())
     {
     }
 
@@ -66,7 +67,7 @@ public sealed class IntentResolutionEvaluatorContext : EvaluationContext
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
     /// <see cref="IntentResolutionEvaluatorContext"/>.
     /// </summary>
-    public static string IntentResolutionContextName => "Tool Definitions (Intent Resolution)";
+    public static string ToolDefinitionsContextName => "Tool Definitions (Intent Resolution)";
 
     /// <summary>
     /// Gets set of tool definitions (see <see cref="ChatOptions.Tools"/>) that were used when generating the model
@@ -80,7 +81,7 @@ public sealed class IntentResolutionEvaluatorContext : EvaluationContext
     /// </para>
     /// <para>
     /// Note that at the moment, <see cref="IntentResolutionEvaluator"/> only supports evaluating calls to tools that
-    /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions that are supplied via
+    /// are defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions that are supplied via
     /// <see cref="ToolDefinitions"/> will be ignored.
     /// </para>
     /// </remarks>

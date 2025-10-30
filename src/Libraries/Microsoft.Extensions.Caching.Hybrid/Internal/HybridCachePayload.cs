@@ -97,9 +97,7 @@ internal static class HybridCachePayload
             MaxVarint64Length + Encoding.GetMaxByteCount(charCount);
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Encoding details; clear in context")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "Not cryptographic")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Borderline")]
     public static int Write(byte[] destination,
         string key, long creationTime, TimeSpan duration, PayloadFlags flags, TagSet tags, ReadOnlySequence<byte> payload)
     {
@@ -172,9 +170,6 @@ internal static class HybridCachePayload
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.ReadabilityRules",
         "SA1122:Use string.Empty for empty strings", Justification = "Subjective, but; ugly")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1204:Static elements should appear before instance elements", Justification = "False positive?")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Encoding details; clear in context")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Borderline")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exposed for logging")]
     public static HybridCachePayloadParseResult TryParse(ArraySegment<byte> source, string key, TagSet knownTags, DefaultHybridCache cache,
         out ArraySegment<byte> payload, out TimeSpan remainingTime, out PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out Exception? fault)
     {

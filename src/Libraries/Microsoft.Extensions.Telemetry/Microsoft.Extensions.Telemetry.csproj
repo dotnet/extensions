@@ -1,9 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Diagnostics</RootNamespace>
+    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0;net462</TargetFrameworks>
     <Description>Provides canonical implementations of telemetry abstractions.</Description>
     <Workstream>Telemetry</Workstream>
-    <NoWarn Condition="'$(TargetFramework)' == 'net462'">$(NoWarn);CS0436</NoWarn>
+    <!-- disable "Published symbols cannot be deleted to maintain compatibility" because we have different APIs for different TFMs -->
+    <NoWarn Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">$(NoWarn);LA0006</NoWarn>
+    <NoWarn Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

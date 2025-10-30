@@ -83,7 +83,6 @@ public sealed class FunctionCallContent : AIContent
         IDictionary<string, object?>? arguments = null;
         Exception? parsingException = null;
 
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             arguments = argumentParser(encodedArguments);
@@ -92,7 +91,6 @@ public sealed class FunctionCallContent : AIContent
         {
             parsingException = new InvalidOperationException("Error parsing function call arguments.", ex);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
 
         return new FunctionCallContent(callId, name, arguments)
         {

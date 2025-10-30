@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Diagnostics;
@@ -151,7 +150,7 @@ internal sealed class LinuxUtilizationParserCgroupV1 : ILinuxUtilizationParser
                     $"'{_procStat}' should contain whitespace separated values according to POSIX. We've failed trying to get {i}th value. File content: '{new string(stat)}'.");
             }
 
-            stat = stat.Slice(next, stat.Length - next);
+            stat = stat.Slice(next);
         }
 
         return (long)(total / (double)_userHz * NanosecondsInSecond);
@@ -255,8 +254,6 @@ internal sealed class LinuxUtilizationParserCgroupV1 : ILinuxUtilizationParser
         return (ulong)memoryUsage;
     }
 
-    [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used",
-        Justification = "Shifting bits left by number n is multiplying the value by 2 to the power of n.")]
     public ulong GetHostAvailableMemory()
     {
         // The value we are interested in starts with this. We just want to make sure it is true.
@@ -374,8 +371,6 @@ internal sealed class LinuxUtilizationParserCgroupV1 : ILinuxUtilizationParser
     /// <remarks>
     /// The input must contain only number. If there is something more than whitespace before the number, it will return failure (-1).
     /// </remarks>
-    [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used",
-        Justification = "We are adding another digit, so we need to multiply by ten.")]
     private static int GetNextNumber(ReadOnlySpan<char> buffer, out long number)
     {
         int numberStart = 0;

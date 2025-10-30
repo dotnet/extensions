@@ -8,7 +8,6 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using OpenAI;
 using OpenAI.Audio;
@@ -26,17 +25,13 @@ public class OpenAISpeechToTextClientTests
         Assert.Throws<ArgumentNullException>("audioClient", () => ((AudioClient)null!).AsISpeechToTextClient());
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AsISpeechToTextClient_AudioClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    [Fact]
+    public void AsISpeechToTextClient_AudioClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
-        var client = useAzureOpenAI ?
-            new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
-            new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
+        var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         ISpeechToTextClient speechToTextClient = client.GetAudioClient(model).AsISpeechToTextClient();
         var metadata = speechToTextClient.GetService<SpeechToTextClientMetadata>();
@@ -73,7 +68,7 @@ public class OpenAISpeechToTextClientTests
     {
         string input = $$"""
                 {
-                    "model": "whisper-1",
+                    "model": "gpt-4o-transcribe",
                     "language": "{{speechLanguage}}"
                 }
                 """;
@@ -86,7 +81,7 @@ public class OpenAISpeechToTextClientTests
 
         using VerbatimMultiPartHttpHandler handler = new(input, Output) { ExpectedRequestUriContains = "audio/transcriptions" };
         using HttpClient httpClient = new(handler);
-        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "gpt-4o-transcribe");
 
         using var audioSpeechStream = GetAudioStream();
         var response = await client.GetTextAsync(audioSpeechStream, new SpeechToTextOptions
@@ -107,7 +102,7 @@ public class OpenAISpeechToTextClientTests
     public async Task GetTextAsync_Cancelled_Throws()
     {
         using HttpClient httpClient = new();
-        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "gpt-4o-transcribe");
 
         using var fileStream = GetAudioStream();
         using var cancellationTokenSource = new CancellationTokenSource();
@@ -121,7 +116,7 @@ public class OpenAISpeechToTextClientTests
     public async Task GetStreamingTextAsync_Cancelled_Throws()
     {
         using HttpClient httpClient = new();
-        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "gpt-4o-transcribe");
 
         using var fileStream = GetAudioStream();
         using var cancellationTokenSource = new CancellationTokenSource();
@@ -147,8 +142,9 @@ public class OpenAISpeechToTextClientTests
 
         string input = $$"""
                 {
-                    "model": "whisper-1",
-                    "language": "{{speechLanguage}}"
+                    "model": "gpt-4o-transcribe",
+                    "language": "{{speechLanguage}}",
+                    "stream":true
                 }
                 """;
 
@@ -160,7 +156,7 @@ public class OpenAISpeechToTextClientTests
 
         using VerbatimMultiPartHttpHandler handler = new(input, Output) { ExpectedRequestUriContains = "audio/transcriptions" };
         using HttpClient httpClient = new(handler);
-        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "gpt-4o-transcribe");
 
         using var audioSpeechStream = GetAudioStream();
         await foreach (var update in client.GetStreamingTextAsync(audioSpeechStream, new SpeechToTextOptions
@@ -171,7 +167,7 @@ public class OpenAISpeechToTextClientTests
         {
             Assert.Contains("I finally got back to the gym the other day", update.Text);
             Assert.NotNull(update.RawRepresentation);
-            Assert.IsType<OpenAI.Audio.AudioTranscription>(update.RawRepresentation);
+            Assert.IsType<AudioTranscription>(update.RawRepresentation);
         }
     }
 
@@ -183,7 +179,7 @@ public class OpenAISpeechToTextClientTests
         // There's no support for non english translations, so no language is passed to the API.
         const string Input = $$"""
                 {
-                    "model": "whisper-1"
+                    "model": "gpt-4o-transcribe"
                 }
                 """;
 
@@ -195,7 +191,7 @@ public class OpenAISpeechToTextClientTests
 
         using VerbatimMultiPartHttpHandler handler = new(Input, Output) { ExpectedRequestUriContains = "audio/translations" };
         using HttpClient httpClient = new(handler);
-        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "gpt-4o-transcribe");
 
         using var audioSpeechStream = GetAudioStream();
         await foreach (var update in client.GetStreamingTextAsync(audioSpeechStream, new SpeechToTextOptions
@@ -215,7 +211,7 @@ public class OpenAISpeechToTextClientTests
     {
         const string Input = """
                 {
-                    "model": "whisper-1",
+                    "model": "gpt-4o-transcribe",
                     "language": "pt",
                     "prompt":"Hide any bad words with ",
                     "temperature": 0.5,
@@ -232,7 +228,7 @@ public class OpenAISpeechToTextClientTests
 
         using VerbatimMultiPartHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "gpt-4o-transcribe");
 
         using var audioSpeechStream = GetAudioStream();
         Assert.NotNull(await client.GetTextAsync(audioSpeechStream, new()
@@ -255,7 +251,7 @@ public class OpenAISpeechToTextClientTests
     {
         const string Input = """
                 {
-                    "model": "whisper-1",
+                    "model": "gpt-4o-transcribe",
                     "prompt":"Hide any bad words with ",
                     "response_format": "vtt"
                 }
@@ -269,7 +265,7 @@ public class OpenAISpeechToTextClientTests
 
         using VerbatimMultiPartHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "gpt-4o-transcribe");
 
         using var audioSpeechStream = GetAudioStream();
         Assert.NotNull(await client.GetTextAsync(audioSpeechStream, new()

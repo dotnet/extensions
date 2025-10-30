@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable CA1822 // Mark members as static
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable S1135 // Track uses of "TODO" tags
@@ -13,6 +12,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.TestUtilities;
 using OpenAI.Assistants;
 using Xunit;
 
@@ -46,6 +46,59 @@ public class OpenAIAssistantChatClientIntegrationTests : ChatClientIntegrationTe
     public override Task MultiModal_DescribeImage() => Task.CompletedTask;
     public override Task MultiModal_DescribePdf() => Task.CompletedTask;
 
+    [ConditionalFact]
+    public async Task UseCodeInterpreter_ProducesCodeExecutionResults()
+    {
+        SkipIfNotEnabled();
+
+        var response = await ChatClient.GetResponseAsync("Use the code interpreter to calculate the square root of 42.", new()
+        {
+            Tools = [new HostedCodeInterpreterTool()],
+        });
+        Assert.NotNull(response);
+
+        ChatMessage message = Assert.Single(response.Messages);
+
+        Assert.NotEmpty(message.Text);
+
+        // Validate CodeInterpreterToolCallContent
+        var toolCallContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolCallContent>().SingleOrDefault();
+        Assert.NotNull(toolCallContent);
+        if (toolCallContent.CallId is not null)
+        {
+            Assert.NotEmpty(toolCallContent.CallId);
+        }
+
+        if (toolCallContent.Inputs is not null)
+        {
+            Assert.NotEmpty(toolCallContent.Inputs);
+            if (toolCallContent.Inputs.OfType<DataContent>().FirstOrDefault() is { } codeInput)
+            {
+                Assert.Equal("text/x-python", codeInput.MediaType);
+                Assert.NotEmpty(codeInput.Data.ToArray());
+            }
+        }
+
+        // Validate CodeInterpreterToolResultContent (when present)
+        var toolResultContents = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolResultContent>().ToList();
+        foreach (var toolResultContent in toolResultContents)
+        {
+            if (toolResultContent.CallId is not null)
+            {
+                Assert.NotEmpty(toolResultContent.CallId);
+            }
+
+            if (toolResultContent.Outputs is not null)
+            {
+                Assert.NotEmpty(toolResultContent.Outputs);
+                if (toolResultContent.Outputs.OfType<TextContent>().FirstOrDefault() is { } resultOutput)
+                {
+                    Assert.NotEmpty(resultOutput.Text);
+                }
+            }
+        }
+    }
+
     // [Fact] // uncomment and run to clear out _all_ threads in your OpenAI account
     public async Task DeleteAllThreads()
     {
@@ -62,7 +115,7 @@ public class OpenAIAssistantChatClientIntegrationTests : ChatClientIntegrationTe
         client.DefaultRequestHeaders.Add("openai-organization", "org-ENTERYOURORGID");
         client.DefaultRequestHeaders.Add("openai-project", "proj_ENTERYOURPROJECTID");
 
-        AssistantClient ac = new AssistantClient(Environment.GetEnvironmentVariable("AI:OpenAI:ApiKey")!);
+        AssistantClient ac = new(Environment.GetEnvironmentVariable("AI:OpenAI:ApiKey")!);
         while (true)
         {
             string listing = await client.GetStringAsync("https://api.openai.com/v1/threads?limit=100");

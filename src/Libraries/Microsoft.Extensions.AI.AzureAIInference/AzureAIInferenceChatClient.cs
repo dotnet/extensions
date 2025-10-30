@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using Azure.AI.Inference;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S1135 // Track uses of "TODO" tags
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
@@ -65,7 +64,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
         var providerUrl = typeof(ChatCompletionsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatCompletionsClient) as Uri;
 
-        _metadata = new ChatClientMetadata("az.ai.inference", providerUrl, defaultModelId);
+        _metadata = new ChatClientMetadata("azure.ai.inference", providerUrl, defaultModelId);
     }
 
     /// <inheritdoc />
@@ -95,6 +94,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
         // Create the return message.
         ChatMessage message = new(ToChatRole(response.Role), response.Content)
         {
+            CreatedAt = response.Created,
             MessageId = response.Id, // There is no per-message ID, but there's only one message per response, so use the response ID
             RawRepresentation = response,
         };
@@ -182,13 +182,6 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
             // Transfer over tool call updates.
             if (chatCompletionUpdate.ToolCallUpdate is { } toolCallUpdate)
             {
-                // TODO https://github.com/Azure/azure-sdk-for-net/issues/46830: Azure.AI.Inference
-                // has removed the Index property from ToolCallUpdate. It's now impossible via the
-                // exposed APIs to correctly handle multiple parallel tool calls, as the CallId is
-                // often null for anything other than the first update for a given call, and Index
-                // isn't available to correlate which updates are for which call. This is a temporary
-                // workaround to at least make a single tool call work and also make work multiple
-                // tool calls when their updates aren't interleaved.
                 if (toolCallUpdate.Id is not null)
                 {
                     lastCallId = toolCallUpdate.Id;
@@ -342,7 +335,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
         {
             foreach (AITool tool in tools)
             {
-                if (tool is AIFunction af)
+                if (tool is AIFunctionDeclaration af)
                 {
                     result.Tools.Add(ToAzureAIChatTool(af));
                 }
@@ -409,7 +402,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
     private static readonly BinaryData _falseString = BinaryData.FromString("false");
 
     /// <summary>Converts an Extensions function to an AzureAI chat tool.</summary>
-    private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
+    private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunctionDeclaration aiFunction)
     {
         // Map to an intermediate model so that redundant properties are skipped.
         var tool = JsonSerializer.Deserialize(SchemaTransformCache.GetOrCreateTransformedSchema(aiFunction), JsonContext.Default.AzureAIChatToolJson)!;
@@ -484,8 +477,6 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
             }
             else if (input.Role == ChatRole.Assistant)
             {
-                // TODO: ChatRequestAssistantMessage only enables text content currently.
-                // Update it with other content types when it supports that.
                 ChatRequestAssistantMessage message = new(string.Concat(input.Contents.Where(c => c is TextContent)));
 
                 foreach (var content in input.Contents)

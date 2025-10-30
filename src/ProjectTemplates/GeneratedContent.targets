@@ -10,42 +10,47 @@
     <_LocalChatTemplateVariant>aspire</_LocalChatTemplateVariant>
 
     <_ChatWithCustomDataContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\</_ChatWithCustomDataContentRoot>
+    <_McpServerContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\McpServer\</_McpServerContentRoot>
   </PropertyGroup>
+
+  <Target Name="ComputePackageVersionVariableReferences">
+    <!--
+      Specifies packages defined in this repo that get referenced in generated template content.
+      For each item specified below, a property will be generated whose name matches the format:
+      "TemplatePackageVersion_{PackageName}"
+      where {PackageName} is the package ID with '.' characters removed.
+      The value of each property will be the computed package version.
+    -->
+    <ItemGroup>
+      <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj"></PackageVersionVariableReference>
+      <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj"></PackageVersionVariableReference>
+      <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj"></PackageVersionVariableReference>
+    </ItemGroup>
+  </Target>
 
   <Target Name="ComputeGeneratedContentProperties">
     <!--
-      Packages built within this repository.
-        - Use `$(Version)` to reference just-built packages with the current dev/prerelease version label
-        - Use `$(VersionPrefix)` to reference the current version without a dev/prerelease version label
-        - Use specific version numbers to pin to already-released packages
-      -->
+      Specifies external packages that get referenced in generated template content.
+    -->
     <PropertyGroup>
-      <TemplatePackageVersion_MicrosoftExtensionsAI>$(Version)</TemplatePackageVersion_MicrosoftExtensionsAI>
-      <TemplatePackageVersion_MicrosoftExtensionsAI_Preview>$(Version)</TemplatePackageVersion_MicrosoftExtensionsAI_Preview>
-      <TemplatePackageVersion_MicrosoftExtensionsHttpResilience>$(Version)</TemplatePackageVersion_MicrosoftExtensionsHttpResilience>
-    </PropertyGroup>
-
-    <!-- External dependency packages -->
-    <PropertyGroup>
-      <TemplatePackageVersion_Aspire>9.3.0</TemplatePackageVersion_Aspire>
-      <TemplatePackageVersion_Aspire_Preview>9.3.0-preview.1.25265.20</TemplatePackageVersion_Aspire_Preview>
-      <TemplatePackageVersion_AzureAIOpenAI>2.2.0-beta.4</TemplatePackageVersion_AzureAIOpenAI>
-      <TemplatePackageVersion_AzureAIProjects>1.0.0-beta.9</TemplatePackageVersion_AzureAIProjects>
-      <TemplatePackageVersion_AzureIdentity>1.14.0</TemplatePackageVersion_AzureIdentity>
-      <TemplatePackageVersion_AzureSearchDocuments>11.6.0</TemplatePackageVersion_AzureSearchDocuments>
-      <TemplatePackageVersion_CommunityToolkitAspire>9.4.1-beta.291</TemplatePackageVersion_CommunityToolkitAspire>
-      <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>9.3.0</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
-      <TemplatePackageVersion_MicrosoftSemanticKernel>1.53.0</TemplatePackageVersion_MicrosoftSemanticKernel>
-      <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.53.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
-      <TemplatePackageVersion_OllamaSharp>5.1.18</TemplatePackageVersion_OllamaSharp>
-      <TemplatePackageVersion_OpenTelemetry>1.12.0</TemplatePackageVersion_OpenTelemetry>
-      <TemplatePackageVersion_PdfPig>0.1.10</TemplatePackageVersion_PdfPig>
-      <TemplatePackageVersion_SystemLinqAsync>6.0.1</TemplatePackageVersion_SystemLinqAsync>
+      <TemplatePackageVersion_Aspire>9.5.1</TemplatePackageVersion_Aspire>
+      <TemplatePackageVersion_Aspire_Preview>9.5.1-preview.1.25502.11</TemplatePackageVersion_Aspire_Preview>
+      <TemplatePackageVersion_AzureAIProjects>1.0.0</TemplatePackageVersion_AzureAIProjects>
+      <TemplatePackageVersion_AzureIdentity>1.17.0</TemplatePackageVersion_AzureIdentity>
+      <TemplatePackageVersion_AzureSearchDocuments>11.7.0</TemplatePackageVersion_AzureSearchDocuments>
+      <TemplatePackageVersion_CommunityToolkitAspire>9.8.1-beta.413</TemplatePackageVersion_CommunityToolkitAspire>
+      <TemplatePackageVersion_MicrosoftExtensionsHosting>10.0.0-rc.2.25502.107</TemplatePackageVersion_MicrosoftExtensionsHosting>
+      <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>9.5.1</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
+      <TemplatePackageVersion_MicrosoftSemanticKernel>1.66.0</TemplatePackageVersion_MicrosoftSemanticKernel>
+      <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.66.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
+      <TemplatePackageVersion_ModelContextProtocol>0.4.0-preview.1</TemplatePackageVersion_ModelContextProtocol>
+      <TemplatePackageVersion_OllamaSharp>5.4.8</TemplatePackageVersion_OllamaSharp>
+      <TemplatePackageVersion_OpenTelemetry>1.13.0</TemplatePackageVersion_OpenTelemetry>
+      <TemplatePackageVersion_PdfPig>0.1.11</TemplatePackageVersion_PdfPig>
+      <TemplatePackageVersion_SystemLinqAsync>6.0.3</TemplatePackageVersion_SystemLinqAsync>
     </PropertyGroup>
 
     <PropertyGroup>
-      <_TemplateUsingJustBuiltPackages Condition="'$(TemplatePackageVersion_MicrosoftExtensionsAI)' == '$(Version)' OR '$(TemplatePackageVersion_MicrosoftExtensionsAI_Preview)' == '$(Version)'">true</_TemplateUsingJustBuiltPackages>
-
       <!-- Specify package version variables used in template content. -->
       <GeneratedContentProperties>
         $(GeneratedContentProperties);
@@ -54,19 +59,17 @@
         ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir);
 
         <!-- Package version properties -->
-        TemplatePackageVersion_MicrosoftExtensionsAI=$(TemplatePackageVersion_MicrosoftExtensionsAI);
-        TemplatePackageVersion_MicrosoftExtensionsAI_Preview=$(TemplatePackageVersion_MicrosoftExtensionsAI_Preview);
-        TemplatePackageVersion_MicrosoftExtensionsHttpResilience=$(TemplatePackageVersion_MicrosoftExtensionsHttpResilience);
         TemplatePackageVersion_Aspire=$(TemplatePackageVersion_Aspire);
         TemplatePackageVersion_Aspire_Preview=$(TemplatePackageVersion_Aspire_Preview);
-        TemplatePackageVersion_AzureAIOpenAI=$(TemplatePackageVersion_AzureAIOpenAI);
         TemplatePackageVersion_AzureAIProjects=$(TemplatePackageVersion_AzureAIProjects);
         TemplatePackageVersion_AzureIdentity=$(TemplatePackageVersion_AzureIdentity);
         TemplatePackageVersion_AzureSearchDocuments=$(TemplatePackageVersion_AzureSearchDocuments);
         TemplatePackageVersion_CommunityToolkitAspire=$(TemplatePackageVersion_CommunityToolkitAspire);
+        TemplatePackageVersion_MicrosoftExtensionsHosting=$(TemplatePackageVersion_MicrosoftExtensionsHosting);
         TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery=$(TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery);
         TemplatePackageVersion_MicrosoftSemanticKernel=$(TemplatePackageVersion_MicrosoftSemanticKernel);
         TemplatePackageVersion_MicrosoftSemanticKernel_Preview=$(TemplatePackageVersion_MicrosoftSemanticKernel_Preview);
+        TemplatePackageVersion_ModelContextProtocol=$(TemplatePackageVersion_ModelContextProtocol);
         TemplatePackageVersion_OllamaSharp=$(TemplatePackageVersion_OllamaSharp);
         TemplatePackageVersion_OpenTelemetry=$(TemplatePackageVersion_OpenTelemetry);
         TemplatePackageVersion_PdfPig=$(TemplatePackageVersion_PdfPig);
@@ -74,7 +77,6 @@
 
         <!-- Other properties -->
         LocalChatTemplateVariant=$(_LocalChatTemplateVariant);
-        UsingJustBuiltPackages=$(_TemplateUsingJustBuiltPackages);
       </GeneratedContentProperties>
     </PropertyGroup>
 
@@ -100,18 +102,12 @@
       <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.ServiceDefaults\ChatWithCustomData-CSharp.ServiceDefaults.csproj.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.ServiceDefaults\ChatWithCustomData-CSharp.ServiceDefaults.csproj" />
-
-      <!-- The following content only gets generated when using just-built packages -->
-      <_GeneratedContentEnablingJustBuiltPackages
+      <GeneratedContent
+        Include="$(_McpServerContentRoot)McpServer-CSharp\McpServer-CSharp.csproj.in"
+        OutputPath="$(_McpServerContentRoot)McpServer-CSharp\McpServer-CSharp.csproj" />
+      <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)NuGet.config.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)NuGet.config" />
-
-      <GeneratedContent
-        Include="@(_GeneratedContentEnablingJustBuiltPackages)"
-        Condition="'$(_TemplateUsingJustBuiltPackages)' == 'true'" />
-      <GeneratedContentToDelete
-        Include="@(_GeneratedContentEnablingJustBuiltPackages)"
-        Condition="'$(_TemplateUsingJustBuiltPackages)' != 'true'" />
     </ItemGroup>
   </Target>
 

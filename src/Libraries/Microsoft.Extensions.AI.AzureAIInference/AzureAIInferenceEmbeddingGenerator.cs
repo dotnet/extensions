@@ -15,9 +15,7 @@ using System.Threading.Tasks;
 using Azure.AI.Inference;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning disable S109 // Magic numbers should not be used
 
 namespace Microsoft.Extensions.AI;
 
@@ -69,7 +67,7 @@ internal sealed class AzureAIInferenceEmbeddingGenerator :
         var providerUrl = typeof(EmbeddingsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(embeddingsClient) as Uri;
 
-        _metadata = new EmbeddingGeneratorMetadata("az.ai.inference", providerUrl, defaultModelId, defaultModelDimensions);
+        _metadata = new EmbeddingGeneratorMetadata("azure.ai.inference", providerUrl, defaultModelId, defaultModelDimensions);
     }
 
     /// <inheritdoc />

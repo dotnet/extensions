@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +12,6 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Audio;
 
-#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
@@ -23,8 +21,9 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 {
-    /// <summary>Default OpenAI endpoint.</summary>
-    private static readonly Uri _defaultOpenAIEndpoint = new("https://api.openai.com/v1");
+    /// <summary>Filename to use when audio lacks a name.</summary>
+    /// <remarks>This information internally is required but is only being used to create a header name in the multipart request.</remarks>
+    private const string Filename = "audio.mp3";
 
     /// <summary>Metadata about the client.</summary>
     private readonly SpeechToTextClientMetadata _metadata;
@@ -36,20 +35,9 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     /// <param name="audioClient">The underlying client.</param>
     public OpenAISpeechToTextClient(AudioClient audioClient)
     {
-        _ = Throw.IfNull(audioClient);
+        _audioClient = Throw.IfNull(audioClient);
 
-        _audioClient = audioClient;
-
-        // https://github.com/openai/openai-dotnet/issues/215
-        // The endpoint and model aren't currently exposed, so use reflection to get at them, temporarily. Once packages
-        // implement the abstractions directly rather than providing adapters on top of the public APIs,
-        // the package can provide such implementations separate from what's exposed in the public API.
-        Uri providerUrl = typeof(AudioClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(audioClient) as Uri ?? _defaultOpenAIEndpoint;
-        string? model = typeof(AudioClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(audioClient) as string;
-
-        _metadata = new("openai", providerUrl, model);
+        _metadata = new("openai", audioClient.Endpoint, _audioClient.Model);
     }
 
     /// <inheritdoc />
@@ -66,20 +54,6 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
-        Stream audioSpeechStream, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(audioSpeechStream);
-
-        var speechResponse = await GetTextAsync(audioSpeechStream, options, cancellationToken).ConfigureAwait(false);
-
-        foreach (var update in speechResponse.ToSpeechToTextResponseUpdates())
-        {
-            yield return update;
-        }
-    }
-
-    /// <inheritdoc />
     public async Task<SpeechToTextResponse> GetTextAsync(
         Stream audioSpeechStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
@@ -87,55 +61,97 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
         SpeechToTextResponse response = new();
 
-        // <summary>A translation is triggered when the target text language is specified and the source language is not provided or different.</summary>
-        static bool IsTranslationRequest(SpeechToTextOptions? options)
-             => options is not null && options.TextLanguage is not null
-                && (options.SpeechLanguage is null || options.SpeechLanguage != options.TextLanguage);
+        string filename = audioSpeechStream is FileStream fileStream ?
+            Path.GetFileName(fileStream.Name) : // Use the file name if we can get one from the stream.
+            Filename; // Otherwise, use a default name; this is only used to create a header name in the multipart request.
 
         if (IsTranslationRequest(options))
         {
-            _ = Throw.IfNull(options);
+            var translation = (await _audioClient.TranslateAudioAsync(audioSpeechStream, filename, ToOpenAITranslationOptions(options), cancellationToken).ConfigureAwait(false)).Value;
 
-            var openAIOptions = ToOpenAITranslationOptions(options);
-            AudioTranslation translationResult;
+            response.Contents = [new TextContent(translation.Text)];
+            response.RawRepresentation = translation;
 
-#if NET
-            await using (audioSpeechStream.ConfigureAwait(false))
-#else
-            using (audioSpeechStream)
-#endif
+            int segmentCount = translation.Segments.Count;
+            if (segmentCount > 0)
             {
-                translationResult = (await _audioClient.TranslateAudioAsync(
-                    audioSpeechStream,
-                    "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
-                    openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
+                response.StartTime = translation.Segments[0].StartTime;
+                response.EndTime = translation.Segments[segmentCount - 1].EndTime;
             }
-
-            UpdateResponseFromOpenAIAudioTranslation(response, translationResult);
         }
         else
         {
-            var openAIOptions = ToOpenAITranscriptionOptions(options);
+            var transcription = (await _audioClient.TranscribeAudioAsync(audioSpeechStream, filename, ToOpenAITranscriptionOptions(options), cancellationToken).ConfigureAwait(false)).Value;
 
-            // Transcription request
-            AudioTranscription transcriptionResult;
+            response.Contents = [new TextContent(transcription.Text)];
+            response.RawRepresentation = transcription;
 
-#if NET
-            await using (audioSpeechStream.ConfigureAwait(false))
-#else
-            using (audioSpeechStream)
-#endif
+            int segmentCount = transcription.Segments.Count;
+            if (segmentCount > 0)
             {
-                transcriptionResult = (await _audioClient.TranscribeAudioAsync(
-                    audioSpeechStream,
-                    "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
-                    openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
+                response.StartTime = transcription.Segments[0].StartTime;
+                response.EndTime = transcription.Segments[segmentCount - 1].EndTime;
             }
-
-            UpdateResponseFromOpenAIAudioTranscription(response, transcriptionResult);
+            else
+            {
+                int wordCount = transcription.Words.Count;
+                if (wordCount > 0)
+                {
+                    response.StartTime = transcription.Words[0].StartTime;
+                    response.EndTime = transcription.Words[wordCount - 1].EndTime;
+                }
+            }
         }
 
         return response;
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
+        Stream audioSpeechStream, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(audioSpeechStream);
+
+        string filename = audioSpeechStream is FileStream fileStream ?
+            Path.GetFileName(fileStream.Name) : // Use the file name if we can get one from the stream.
+            Filename; // Otherwise, use a default name; this is only used to create a header name in the multipart request.
+
+        if (IsTranslationRequest(options))
+        {
+            foreach (var update in (await GetTextAsync(audioSpeechStream, options, cancellationToken).ConfigureAwait(false)).ToSpeechToTextResponseUpdates())
+            {
+                yield return update;
+            }
+        }
+        else
+        {
+            await foreach (var update in _audioClient.TranscribeAudioStreamingAsync(
+                audioSpeechStream,
+                filename,
+                ToOpenAITranscriptionOptions(options),
+                cancellationToken).ConfigureAwait(false))
+            {
+                SpeechToTextResponseUpdate result = new()
+                {
+                    ModelId = options?.ModelId,
+                    RawRepresentation = update,
+                };
+
+                switch (update)
+                {
+                    case StreamingAudioTranscriptionTextDeltaUpdate deltaUpdate:
+                        result.Kind = SpeechToTextResponseUpdateKind.TextUpdated;
+                        result.Contents = [new TextContent(deltaUpdate.Delta)];
+                        break;
+
+                    case StreamingAudioTranscriptionTextDoneUpdate doneUpdate:
+                        result.Kind = SpeechToTextResponseUpdateKind.SessionClose;
+                        break;
+                }
+
+                yield return result;
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -144,83 +160,27 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         // Nothing to dispose. Implementation required for the IAudioTranscriptionClient interface.
     }
 
-    /// <summary>Updates a <see cref="SpeechToTextResponse"/> from an OpenAI <see cref="AudioTranscription"/>.</summary>
-    /// <param name="response">The response to update.</param>
-    /// <param name="audioTranscription">The OpenAI audio transcription.</param>
-    private static void UpdateResponseFromOpenAIAudioTranscription(SpeechToTextResponse response, AudioTranscription audioTranscription)
-    {
-        _ = Throw.IfNull(audioTranscription);
+    // <summary>A translation is triggered when the target text language is specified and the source language is not provided or different.</summary>
+    private static bool IsTranslationRequest(SpeechToTextOptions? options) =>
+        options is not null &&
+        options.TextLanguage is not null &&
+        (options.SpeechLanguage is null || options.SpeechLanguage != options.TextLanguage);
 
-        var segmentCount = audioTranscription.Segments.Count;
-        var wordCount = audioTranscription.Words.Count;
-
-        TimeSpan? endTime = null;
-        TimeSpan? startTime = null;
-        if (segmentCount > 0)
-        {
-            endTime = audioTranscription.Segments[segmentCount - 1].EndTime;
-            startTime = audioTranscription.Segments[0].StartTime;
-        }
-        else if (wordCount > 0)
-        {
-            endTime = audioTranscription.Words[wordCount - 1].EndTime;
-            startTime = audioTranscription.Words[0].StartTime;
-        }
-
-        // Update the response
-        response.RawRepresentation = audioTranscription;
-        response.Contents = [new TextContent(audioTranscription.Text)];
-        response.StartTime = startTime;
-        response.EndTime = endTime;
-        response.AdditionalProperties = new AdditionalPropertiesDictionary
-        {
-            [nameof(audioTranscription.Language)] = audioTranscription.Language,
-            [nameof(audioTranscription.Duration)] = audioTranscription.Duration
-        };
-    }
-
-    /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
+    /// <summary>Converts an extensions options instance to an OpenAI transcription options instance.</summary>
     private AudioTranscriptionOptions ToOpenAITranscriptionOptions(SpeechToTextOptions? options)
     {
-        if (options?.RawRepresentationFactory?.Invoke(this) is not AudioTranscriptionOptions result)
-        {
-            result = new AudioTranscriptionOptions();
-        }
+        AudioTranscriptionOptions result = options?.RawRepresentationFactory?.Invoke(this) as AudioTranscriptionOptions ?? new();
 
         result.Language ??= options?.SpeechLanguage;
+
         return result;
     }
 
-    /// <summary>Updates a <see cref="SpeechToTextResponse"/> from an OpenAI <see cref="AudioTranslation"/>.</summary>
-    /// <param name="response">The response to update.</param>
-    /// <param name="audioTranslation">The OpenAI audio translation.</param>
-    private static void UpdateResponseFromOpenAIAudioTranslation(SpeechToTextResponse response, AudioTranslation audioTranslation)
-    {
-        _ = Throw.IfNull(audioTranslation);
-
-        var segmentCount = audioTranslation.Segments.Count;
-
-        TimeSpan? endTime = null;
-        TimeSpan? startTime = null;
-        if (segmentCount > 0)
-        {
-            endTime = audioTranslation.Segments[segmentCount - 1].EndTime;
-            startTime = audioTranslation.Segments[0].StartTime;
-        }
-
-        // Update the response
-        response.RawRepresentation = audioTranslation;
-        response.Contents = [new TextContent(audioTranslation.Text)];
-        response.StartTime = startTime;
-        response.EndTime = endTime;
-        response.AdditionalProperties = new AdditionalPropertiesDictionary
-        {
-            [nameof(audioTranslation.Language)] = audioTranslation.Language,
-            [nameof(audioTranslation.Duration)] = audioTranslation.Duration
-        };
-    }
-
-    /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
+    /// <summary>Converts an extensions options instance to an OpenAI translation options instance.</summary>
     private AudioTranslationOptions ToOpenAITranslationOptions(SpeechToTextOptions? options)
-        => options?.RawRepresentationFactory?.Invoke(this) as AudioTranslationOptions ?? new AudioTranslationOptions();
+    {
+        AudioTranslationOptions result = options?.RawRepresentationFactory?.Invoke(this) as AudioTranslationOptions ?? new();
+
+        return result;
+    }
 }

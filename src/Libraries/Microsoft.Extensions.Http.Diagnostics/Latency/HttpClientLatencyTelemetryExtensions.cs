@@ -30,9 +30,12 @@ public static class HttpClientLatencyTelemetryExtensions
 
         _ = services.RegisterCheckpointNames(HttpCheckpoints.Checkpoints);
         _ = services.AddOptions<HttpClientLatencyTelemetryOptions>();
-        _ = services.AddActivatedSingleton<HttpRequestLatencyListener>();
-        _ = services.AddActivatedSingleton<HttpClientLatencyContext>();
+        _ = services.AddSingleton<HttpRequestLatencyListener>();
+        _ = services.AddSingleton<HttpClientLatencyContext>();
         _ = services.AddTransient<HttpLatencyTelemetryHandler>();
+        _ = services.AddSingleton<HttpLatencyMediator>();
+        _ = services.RegisterMeasureNames(HttpMeasures.Measures);
+        _ = services.RegisterTagNames(HttpTags.Tags);
         _ = services.AddHttpClientLogEnricher<HttpClientLatencyLogEnricher>();
 
         return services.ConfigureAll<HttpClientFactoryOptions>(

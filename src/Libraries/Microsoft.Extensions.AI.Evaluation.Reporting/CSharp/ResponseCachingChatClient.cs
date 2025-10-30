@@ -1,21 +1,21 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Evaluation.Utilities;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 
 internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
 {
-    private readonly IReadOnlyList<string> _cachingKeys;
     private readonly ChatDetails _chatDetails;
     private readonly ConcurrentDictionary<string, Stopwatch> _stopWatches;
+    private readonly ChatClientMetadata? _metadata;
 
     internal ResponseCachingChatClient(
         IChatClient originalChatClient,
@@ -24,9 +24,11 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
         ChatDetails chatDetails)
             : base(originalChatClient, cache)
     {
-        _cachingKeys = [.. cachingKeys];
+        CacheKeyAdditionalValues = [.. cachingKeys];
+
         _chatDetails = chatDetails;
         _stopWatches = new ConcurrentDictionary<string, Stopwatch>();
+        _metadata = this.GetService<ChatClientMetadata>();
     }
 
     protected override async Task<ChatResponse?> ReadCacheAsync(string key, CancellationToken cancellationToken)
@@ -43,10 +45,14 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
         {
             stopwatch.Stop();
 
+            string? model = response.ModelId;
+            string? modelProvider = ModelInfo.GetModelProvider(model, _metadata);
+
             _chatDetails.AddTurnDetails(
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
-                    model: response.ModelId,
+                    model,
+                    modelProvider,
                     usage: response.Usage,
                     cacheKey: key,
                     cacheHit: true));
@@ -73,10 +79,14 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
             stopwatch.Stop();
 
             ChatResponse response = updates.ToChatResponse();
+            string? model = response.ModelId;
+            string? modelProvider = ModelInfo.GetModelProvider(model, _metadata);
+
             _chatDetails.AddTurnDetails(
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
-                    model: response.ModelId,
+                    model,
+                    modelProvider,
                     usage: response.Usage,
                     cacheKey: key,
                     cacheHit: true));
@@ -93,10 +103,14 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
         {
             stopwatch.Stop();
 
+            string? model = value.ModelId;
+            string? modelProvider = ModelInfo.GetModelProvider(model, _metadata);
+
             _chatDetails.AddTurnDetails(
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
-                    model: value.ModelId,
+                    model,
+                    modelProvider,
                     usage: value.Usage,
                     cacheKey: key,
                     cacheHit: false));
@@ -115,16 +129,17 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
             stopwatch.Stop();
 
             ChatResponse response = value.ToChatResponse();
+            string? model = response.ModelId;
+            string? modelProvider = ModelInfo.GetModelProvider(model, _metadata);
+
             _chatDetails.AddTurnDetails(
                 new ChatTurnDetails(
                     latency: stopwatch.Elapsed,
-                    model: response.ModelId,
+                    model,
+                    modelProvider,
                     usage: response.Usage,
                     cacheKey: key,
                     cacheHit: false));
         }
     }
-
-    protected override string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues)
-        => base.GetCacheKey(messages, options, [.. additionalValues, .. _cachingKeys]);
 }

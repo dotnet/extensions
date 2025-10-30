@@ -311,6 +311,10 @@
       ],
       "Properties": [
         {
+          "Member": "System.Collections.Generic.IReadOnlyList<object>? Microsoft.Extensions.AI.DistributedCachingChatClient.CacheKeyAdditionalValues { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.DistributedCachingChatClient.JsonSerializerOptions { get; set; }",
           "Stage": "Stable"
         }
@@ -351,6 +355,10 @@
         }
       ],
       "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<object>? Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.CacheKeyAdditionalValues { get; set; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.JsonSerializerOptions { get; set; }",
           "Stage": "Stable"
@@ -508,6 +516,10 @@
       ],
       "Properties": [
         {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AITool>? Microsoft.Extensions.AI.FunctionInvokingChatClient.AdditionalTools { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "bool Microsoft.Extensions.AI.FunctionInvokingChatClient.AllowConcurrentInvocation { get; set; }",
           "Stage": "Stable"
         },
@@ -520,6 +532,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "System.Func<Microsoft.Extensions.AI.FunctionInvocationContext, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<object?>>? Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvoker { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "bool Microsoft.Extensions.AI.FunctionInvokingChatClient.IncludeDetailedErrors { get; set; }",
           "Stage": "Stable"
         },
@@ -529,6 +545,10 @@
         },
         {
           "Member": "int Microsoft.Extensions.AI.FunctionInvokingChatClient.MaximumIterationsPerRequest { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.FunctionInvokingChatClient.TerminateOnUnknownCalls { get; set; }",
           "Stage": "Stable"
         }
       ]

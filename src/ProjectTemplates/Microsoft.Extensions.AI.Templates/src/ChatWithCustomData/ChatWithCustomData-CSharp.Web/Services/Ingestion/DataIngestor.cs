@@ -5,7 +5,7 @@ namespace ChatWithCustomData_CSharp.Web.Services.Ingestion;
 
 public class DataIngestor(
     ILogger<DataIngestor> logger,
-#if (UseQdrant)
+#if (IsQdrant)
     VectorStoreCollection<Guid, IngestedChunk> chunksCollection,
     VectorStoreCollection<Guid, IngestedDocument> documentsCollection)
 #else
@@ -31,7 +31,7 @@ public class DataIngestor(
         var deletedDocuments = await source.GetDeletedDocumentsAsync(documentsForSource);
         foreach (var deletedDocument in deletedDocuments)
         {
-            logger.LogInformation("Removing ingested data for {documentId}", deletedDocument.DocumentId);
+            logger.LogInformation("Removing ingested data for {DocumentId}", deletedDocument.DocumentId);
             await DeleteChunksForDocumentAsync(deletedDocument);
             await documentsCollection.DeleteAsync(deletedDocument.Key);
         }
@@ -39,7 +39,7 @@ public class DataIngestor(
         var modifiedDocuments = await source.GetNewOrModifiedDocumentsAsync(documentsForSource);
         foreach (var modifiedDocument in modifiedDocuments)
         {
-            logger.LogInformation("Processing {documentId}", modifiedDocument.DocumentId);
+            logger.LogInformation("Processing {DocumentId}", modifiedDocument.DocumentId);
             await DeleteChunksForDocumentAsync(modifiedDocument);
 
             await documentsCollection.UpsertAsync(modifiedDocument);
@@ -54,7 +54,7 @@ public class DataIngestor(
         {
             var documentId = document.DocumentId;
             var chunksToDelete = await chunksCollection.GetAsync(record => record.DocumentId == documentId, int.MaxValue).ToListAsync();
-            if (chunksToDelete.Any())
+            if (chunksToDelete.Count != 0)
             {
                 await chunksCollection.DeleteAsync(chunksToDelete.Select(r => r.Key));
             }

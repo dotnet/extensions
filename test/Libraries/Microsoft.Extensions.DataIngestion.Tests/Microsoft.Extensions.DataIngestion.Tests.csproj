@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--  Multidimensional arrays should not be used -->
+    <NoWarn>$(NoWarn);S3967</NoWarn>
+    <!--  Implement IDisposable correctly -->
+    <NoWarn>$(NoWarn);CA1063</NoWarn>
+
+    <!-- https://github.com/dotnet/efcore/issues/33472#issuecomment-2042146335 -->
+    <PlatformTarget Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">x64</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
+    <!-- We don't run Sqlite tests on Full Framework due to some native dependency issues -->
+    <Compile Remove="SqliteVectorStoreWriterTests.cs" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+  </ItemGroup>
+
+</Project>

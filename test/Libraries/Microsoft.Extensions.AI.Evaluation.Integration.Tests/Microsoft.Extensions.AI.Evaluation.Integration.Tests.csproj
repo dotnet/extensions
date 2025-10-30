@@ -4,6 +4,7 @@
     <TargetFrameworks>$(LatestTargetFramework)</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Integration tests for Microsoft.Extensions.AI.Evaluation.</Description>
+    <NoWarn>$(NoWarn);OPENAI001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.AI.OpenAI" />
+    <PackageReference Include="Azure.Core" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="OpenAI" />
@@ -28,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.NLP\Microsoft.Extensions.AI.Evaluation.NLP.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Quality\Microsoft.Extensions.AI.Evaluation.Quality.csproj" />

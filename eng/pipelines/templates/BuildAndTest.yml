@@ -169,11 +169,12 @@ steps:
       displayName: Build Azure DevOps plugin
 
     - script: ${{ parameters.buildScript }}
+              -restore
               -sign $(_SignArgs)
               -publish $(_PublishArgs)
               -configuration ${{ parameters.buildConfig }}
               -warnAsError 1
               /bl:${{ parameters.repoLogPath }}/publish.binlog
-              /p:Restore=false /p:Build=false
+              /p:Build=false
               $(_OfficialBuildIdArgs)
       displayName: Sign and publish

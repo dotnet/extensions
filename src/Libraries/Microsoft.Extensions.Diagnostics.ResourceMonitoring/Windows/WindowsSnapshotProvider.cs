@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if !NET9_0_OR_GREATER
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
@@ -44,7 +45,6 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
     {
     }
 
-    [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Dependencies for testing")]
     internal WindowsSnapshotProvider(
         ILogger<WindowsSnapshotProvider>? logger,
         IMeterFactory meterFactory,
@@ -95,18 +95,31 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
 
     public Snapshot GetSnapshot()
     {
+#if NET9_0_OR_GREATER
+        var cpuUsage = Environment.CpuUsage;
+        return new Snapshot(
+            totalTimeSinceStart: TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
+            kernelTimeSinceStart: cpuUsage.PrivilegedTime,
+            userTimeSinceStart: cpuUsage.UserTime,
+            memoryUsageInBytes: (ulong)Environment.WorkingSet);
+#else
         using var process = Process.GetCurrentProcess();
-
-        return new Snapshot(totalTimeSinceStart: TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
+        return new Snapshot(
+            totalTimeSinceStart: TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
             kernelTimeSinceStart: process.PrivilegedProcessorTime,
             userTimeSinceStart: process.UserProcessorTime,
             memoryUsageInBytes: (ulong)Environment.WorkingSet);
+#endif
     }
 
     internal static long GetCpuTicks()
     {
+#if NET9_0_OR_GREATER
+        return Environment.CpuUsage.TotalTime.Ticks;
+#else
         using var process = Process.GetCurrentProcess();
         return process.TotalProcessorTime.Ticks;
+#endif
     }
 
     internal static int GetCpuUnits() => Environment.ProcessorCount;
@@ -144,7 +157,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
-            _logger.MemoryUsageData((ulong)currentMemoryUsage, _totalMemory, _memoryPercentage);
+            _logger.ProcessMemoryPercentageData((ulong)currentMemoryUsage, _totalMemory, _memoryPercentage);
 
             return _memoryPercentage;
         }

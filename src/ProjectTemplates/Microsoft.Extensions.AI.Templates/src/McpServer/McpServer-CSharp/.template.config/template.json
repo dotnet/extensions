@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Common",
+    "AI",
+    "MCP"
+  ],
+  "identity": "Microsoft.Extensions.AI.Templates.McpServer.CSharp",
+  "name": "Local MCP Server Console App",
+  "description": "A project template for creating a Model Context Protocol (MCP) server using C# and the ModelContextProtocol package.",
+  "shortName": "mcpserver",
+  "defaultName": "McpServer",
+  "sourceName": "McpServer-CSharp",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "symbols": {
+    "TargetFrameworkOverride": {
+      "type": "parameter",
+      "description": "Overrides the target framework",
+      "displayName": "Target framework override",
+      "replaces": "TargetFrameworkOverride",
+      "datatype": "string",
+      "defaultValue": ""
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "displayName": "Framework",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net10.0",
+          "description": ".NET 10"
+        },
+        {
+          "choice": "net9.0",
+          "description": ".NET 9"
+        },
+        {
+          "choice": "net8.0",
+          "description": ".NET 8"
+        }
+      ],
+      "replaces": "net9.0",
+      "defaultValue": "net9.0"
+    },
+    "hostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "NativeAot": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Enable _native AOT publish",
+      "description": "Whether to enable the MCP server for publishing as a native AOT application."
+    },
+    "SelfContained": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "displayName": "Enable _self-contained publish",
+      "description": "Whether to enable the MCP server for publishing as a self-contained application."
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "./README.md"
+    },
+    {
+      "path": "./McpServer-CSharp.csproj"
+    }
+  ],
+  "postActions": [
+    {
+      "condition": "(hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens README file in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ],
+  "SpecialCustomOperations": {
+    "**/*.md": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "#### ---#if" ],
+            "else": [ "#### ---#else" ],
+            "elseif": [ "#### ---#elseif", "#### ---#elif" ],
+            "endif": [ "#### ---#endif" ],
+            "trim": "true",
+            "wholeLine": "true",
+            "evaluator": "C++"
+          }
+        }
+      ]
+    }
+  }
+}

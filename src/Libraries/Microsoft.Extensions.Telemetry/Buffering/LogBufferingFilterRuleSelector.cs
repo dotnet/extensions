@@ -3,7 +3,6 @@
 #if NET9_0_OR_GREATER
 
 #pragma warning disable CA1307 // Specify StringComparison for clarity
-#pragma warning disable S1659 // Multiple variables should not be declared on the same line
 #pragma warning disable S2302 // "nameof" should be used
 
 using System;

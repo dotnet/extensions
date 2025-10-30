@@ -50,6 +50,8 @@ public class ChatOptionsTests
         Assert.Null(clone.Tools);
         Assert.Null(clone.AdditionalProperties);
         Assert.Null(clone.RawRepresentationFactory);
+        Assert.Null(clone.ContinuationToken);
+        Assert.Null(clone.AllowBackgroundResponses);
     }
 
     [Fact]
@@ -76,6 +78,8 @@ public class ChatOptionsTests
 
         Func<IChatClient, object?> rawRepresentationFactory = (c) => null;
 
+        ResponseContinuationToken continuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+
         options.ConversationId = "12345";
         options.Instructions = "Some instructions";
         options.Temperature = 0.1f;
@@ -93,6 +97,8 @@ public class ChatOptionsTests
         options.Tools = tools;
         options.RawRepresentationFactory = rawRepresentationFactory;
         options.AdditionalProperties = additionalProps;
+        options.ContinuationToken = continuationToken;
+        options.AllowBackgroundResponses = true;
 
         Assert.Equal("12345", options.ConversationId);
         Assert.Equal("Some instructions", options.Instructions);
@@ -111,6 +117,8 @@ public class ChatOptionsTests
         Assert.Same(tools, options.Tools);
         Assert.Same(rawRepresentationFactory, options.RawRepresentationFactory);
         Assert.Same(additionalProps, options.AdditionalProperties);
+        Assert.Same(continuationToken, options.ContinuationToken);
+        Assert.True(options.AllowBackgroundResponses);
 
         ChatOptions clone = options.Clone();
         Assert.Equal("12345", clone.ConversationId);
@@ -129,6 +137,8 @@ public class ChatOptionsTests
         Assert.Equal(tools, clone.Tools);
         Assert.Same(rawRepresentationFactory, clone.RawRepresentationFactory);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
+        Assert.Same(continuationToken, clone.ContinuationToken);
+        Assert.True(clone.AllowBackgroundResponses);
     }
 
     [Fact]
@@ -146,6 +156,8 @@ public class ChatOptionsTests
         {
             ["key"] = "value",
         };
+
+        ResponseContinuationToken continuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
 
         options.ConversationId = "12345";
         options.Instructions = "Some instructions";
@@ -168,6 +180,8 @@ public class ChatOptionsTests
         ];
         options.RawRepresentationFactory = (c) => null;
         options.AdditionalProperties = additionalProps;
+        options.ContinuationToken = continuationToken;
+        options.AllowBackgroundResponses = true;
 
         string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.ChatOptions);
 
@@ -197,5 +211,71 @@ public class ChatOptionsTests
         Assert.True(deserialized.AdditionalProperties.TryGetValue("key", out object? value));
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
+    }
+
+    [Fact]
+    public void CopyConstructors_EnableHierarchyCloning()
+    {
+        OptionsB b = new()
+        {
+            ModelId = "test",
+            A = 42,
+            B = 84,
+        };
+
+        ChatOptions clone = b.Clone();
+
+        Assert.Equal("test", clone.ModelId);
+        Assert.Equal(42, Assert.IsType<OptionsA>(clone, exactMatch: false).A);
+        Assert.Equal(84, Assert.IsType<OptionsB>(clone, exactMatch: true).B);
+    }
+
+    private class OptionsA : ChatOptions
+    {
+        public OptionsA()
+        {
+        }
+
+        protected OptionsA(OptionsA other)
+            : base(other)
+        {
+            A = other.A;
+        }
+
+        public int A { get; set; }
+
+        public override ChatOptions Clone() => new OptionsA(this);
+    }
+
+    private class OptionsB : OptionsA
+    {
+        public OptionsB()
+        {
+        }
+
+        protected OptionsB(OptionsB other)
+            : base(other)
+        {
+            B = other.B;
+        }
+
+        public int B { get; set; }
+
+        public override ChatOptions Clone() => new OptionsB(this);
+    }
+
+    [Fact]
+    public void CopyConstructor_Null_Valid()
+    {
+        PassedNullToBaseOptions options = new();
+        Assert.NotNull(options);
+    }
+
+    private class PassedNullToBaseOptions : ChatOptions
+    {
+        public PassedNullToBaseOptions()
+            : base(null)
+        {
+        }
     }
 }

@@ -39,7 +39,7 @@ public sealed class AIFunctionFactoryOptions
 
     /// <summary>Gets or sets the name to use for the function.</summary>
     /// <value>
-    /// The name to use for the function. The default value is a name derived from the method represented by the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
+    /// The name to use for the function. The default value is a name derived from the passed <see cref="Delegate"/> or <see cref="MethodInfo"/> (for example, via a <see cref="DisplayNameAttribute"/> on the method).
     /// </value>
     public string? Name { get; set; }
 
@@ -90,7 +90,7 @@ public sealed class AIFunctionFactoryOptions
     /// <see langword="void"/>-returning methods).
     /// </para>
     /// <para>
-    /// Methods strongly-typed to return types of <see cref="Task"/>, <see cref="Task{TResult}"/>, <see cref="ValueTask"/>,
+    /// Methods strongly typed to return types of <see cref="Task"/>, <see cref="Task{TResult}"/>, <see cref="ValueTask"/>,
     /// and <see cref="ValueTask{TResult}"/> are special-cased. For methods typed to return <see cref="Task"/> or <see cref="ValueTask"/>,
     /// <see cref="MarshalResult"/> will be invoked with the <see langword="null"/> value after the returned task has successfully completed.
     /// For methods typed to return <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the delegate will be invoked with the
@@ -105,6 +105,19 @@ public sealed class AIFunctionFactoryOptions
     /// </para>
     /// </remarks>
     public Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether a schema should be created for the function's result type, if possible, and included as <see cref="AIFunctionDeclaration.ReturnJsonSchema" />.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The default value is <see langword="false"/>.
+    /// </para>
+    /// <para>
+    /// When set to <see langword="true"/>, results in the produced <see cref="AIFunctionDeclaration.ReturnJsonSchema"/> to always be <see langword="null"/>.
+    /// </para>
+    /// </remarks>
+    public bool ExcludeResultSchema { get; set; }
 
     /// <summary>Provides configuration options produced by the <see cref="ConfigureParameterBinding"/> delegate.</summary>
     public readonly record struct ParameterBindingOptions

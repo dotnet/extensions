@@ -208,7 +208,7 @@ dotnet_code_quality.CA1030.api_surface = public
 # Title    : Do not catch general exception types
 # Category : Design
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1031
-dotnet_diagnostic.CA1031.severity = warning
+dotnet_diagnostic.CA1031.severity = suggestion
 
 # Title    : Implement standard exception constructors
 # Category : Design
@@ -223,7 +223,7 @@ dotnet_diagnostic.CA1033.severity = warning
 # Title    : Nested types should not be visible
 # Category : Design
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1034
-dotnet_diagnostic.CA1034.severity = warning
+dotnet_diagnostic.CA1034.severity = suggestion
 
 # Title    : Override methods on comparable types
 # Category : Design
@@ -293,19 +293,19 @@ dotnet_code_quality.CA1052.api_surface = all
 # Title    : URI-like parameters should not be strings
 # Category : Design
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1054
-dotnet_diagnostic.CA1054.severity = warning
+dotnet_diagnostic.CA1054.severity = suggestion
 dotnet_code_quality.CA1054.api_surface = public
 
 # Title    : URI-like return values should not be strings
 # Category : Design
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1055
-dotnet_diagnostic.CA1055.severity = warning
+dotnet_diagnostic.CA1055.severity = suggestion
 dotnet_code_quality.CA1055.api_surface = public
 
 # Title    : URI-like properties should not be strings
 # Category : Design
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1056
-dotnet_diagnostic.CA1056.severity = warning
+dotnet_diagnostic.CA1056.severity = suggestion
 dotnet_code_quality.CA1056.api_surface = public
 
 # Title    : Types should not extend certain base types
@@ -497,12 +497,7 @@ dotnet_diagnostic.CA1507.severity = warning
 # Title    : Avoid dead conditional code
 # Category : Maintainability
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508
-dotnet_diagnostic.CA1508.severity = warning
-
-# Title    : Avoid dead conditional code
-# Category : Maintainability
-# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508
-dotnet_diagnostic.CA1508.severity = warning
+dotnet_diagnostic.CA1508.severity = suggestion
 
 # Title    : Invalid entry in code metrics rule specification file
 # Category : Maintainability
@@ -578,7 +573,7 @@ dotnet_diagnostic.CA1715.severity = none
 # Title    : Identifiers should not match keywords
 # Category : Naming
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1716
-dotnet_diagnostic.CA1716.severity = warning
+dotnet_diagnostic.CA1716.severity = suggestion
 dotnet_code_quality.CA1716.api_surface = all
 dotnet_code_quality.CA1716.analyzed_symbol_kinds = all
 
@@ -1137,7 +1132,7 @@ dotnet_diagnostic.CA2226.severity = none
 # Title    : Collection properties should be read only
 # Category : Usage
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2227
-dotnet_diagnostic.CA2227.severity = warning
+dotnet_diagnostic.CA2227.severity = suggestion
 
 # Title    : Implement serialization constructors
 # Category : Usage
@@ -1783,7 +1778,7 @@ dotnet_diagnostic.EA0001.severity = warning
 # Title    : Use 'System.TimeProvider' to make the code easier to test
 # Category : Reliability
 # Help Link: https://aka.ms/dotnet-extensions-warnings/EA0002
-dotnet_diagnostic.EA0002.severity = warning
+dotnet_diagnostic.EA0002.severity = suggestion
 
 # Title    : Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
 # Category : Performance
@@ -1828,7 +1823,7 @@ dotnet_diagnostic.EA0010.severity = warning
 # Title    : Consider removing unnecessary conditional access operator (?)
 # Category : Performance
 # Help Link: https://aka.ms/dotnet-extensions-warnings/EA0011
-dotnet_diagnostic.EA0011.severity = warning
+dotnet_diagnostic.EA0011.severity = suggestion
 
 # Title    : Consider removing unnecessary null coalescing assignment (??=)
 # Category : Performance
@@ -2936,12 +2931,12 @@ dotnet_diagnostic.S101.severity = none
 # Title    : Lines should not be too long
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-103
-dotnet_diagnostic.S103.severity = warning
+dotnet_diagnostic.S103.severity = suggestion
 
 # Title    : Files should not have too many lines of code
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-104
-dotnet_diagnostic.S104.severity = warning
+dotnet_diagnostic.S104.severity = none
 
 # Title    : Finalizers should not throw exceptions
 # Category : Blocker Bug
@@ -2968,12 +2963,12 @@ dotnet_diagnostic.S1066.severity = none
 # Title    : Expressions should not be too complex
 # Category : Critical Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1067
-dotnet_diagnostic.S1067.severity = warning
+dotnet_diagnostic.S1067.severity = suggestion
 
 # Title    : Methods should not have too many parameters
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-107
-dotnet_diagnostic.S107.severity = warning
+dotnet_diagnostic.S107.severity = suggestion
 
 # Title    : URIs should not be hardcoded
 # Category : Minor Code Smell
@@ -2988,7 +2983,7 @@ dotnet_diagnostic.S108.severity = warning
 # Title    : Magic numbers should not be used
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-109
-dotnet_diagnostic.S109.severity = warning
+dotnet_diagnostic.S109.severity = suggestion
 
 # Title    : Inheritance tree of classes should not be too deep
 # Category : Major Code Smell
@@ -3039,7 +3034,7 @@ dotnet_diagnostic.S112.severity = none
 # Title    : Assignments should not be made from within sub-expressions
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1121
-dotnet_diagnostic.S1121.severity = warning
+dotnet_diagnostic.S1121.severity = suggestion
 
 # Title    : "Obsolete" attributes should include explanations
 # Category : Major Code Smell
@@ -3288,12 +3283,12 @@ dotnet_diagnostic.S1656.severity = warning
 # Title    : Multiple variables should not be declared on the same line
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1659
-dotnet_diagnostic.S1659.severity = warning
+dotnet_diagnostic.S1659.severity = suggestion
 
 # Title    : An abstract class should have both abstract and concrete methods
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1694
-dotnet_diagnostic.S1694.severity = warning
+dotnet_diagnostic.S1694.severity = suggestion
 
 # Title    : NullReferenceException should not be caught
 # Category : Major Code Smell
@@ -3380,7 +3375,7 @@ dotnet_diagnostic.S1944.severity = warning
 # Title    : "for" loop increment clauses should modify the loops' counters
 # Category : Critical Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1994
-dotnet_diagnostic.S1994.severity = warning
+dotnet_diagnostic.S1994.severity = suggestion
 
 # Title    : Hashes should include an unpredictable salt
 # Category : Critical Vulnerability
@@ -3617,7 +3612,7 @@ dotnet_diagnostic.S2330.severity = warning
 # Title    : Redundant modifiers should not be used
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2333
-dotnet_diagnostic.S2333.severity = warning
+dotnet_diagnostic.S2333.severity = suggestion
 
 # Title    : Public constant members should not be used
 # Category : Critical Code Smell
@@ -4021,7 +4016,7 @@ dotnet_diagnostic.S3251.severity = warning
 # Title    : Constructor and destructor declarations should not be redundant
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3253
-dotnet_diagnostic.S3253.severity = warning
+dotnet_diagnostic.S3253.severity = suggestion
 
 # Title    : Default parameter values should not be passed as arguments
 # Category : Minor Code Smell
@@ -4104,7 +4099,7 @@ dotnet_diagnostic.S3353.severity = warning
 # Title    : Ternary operators should not be nested
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3358
-dotnet_diagnostic.S3358.severity = warning
+dotnet_diagnostic.S3358.severity = suggestion
 
 # Title    : Date and time should not be used as a type for primary keys
 # Category : Minor Bug
@@ -4270,7 +4265,7 @@ dotnet_diagnostic.S3603.severity = warning
 # Title    : Member initializer values should not be redundant
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3604
-dotnet_diagnostic.S3604.severity = warning
+dotnet_diagnostic.S3604.severity = suggestion
 
 # Title    : Nullable type comparison should not be redundant
 # Category : Major Bug
@@ -4538,12 +4533,12 @@ dotnet_diagnostic.S3994.severity = none
 # Title    : URI return values should not be strings
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3995
-dotnet_diagnostic.S3995.severity = warning
+dotnet_diagnostic.S3995.severity = suggestion
 
 # Title    : URI properties should not be strings
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3996
-dotnet_diagnostic.S3996.severity = warning
+dotnet_diagnostic.S3996.severity = suggestion
 
 # Title    : String URI overloads should call "System.Uri" overloads
 # Category : Major Code Smell
@@ -5201,7 +5196,7 @@ dotnet_diagnostic.S881.severity = suggestion
 # Title    : "goto" statement should not be used
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-907
-dotnet_diagnostic.S907.severity = warning
+dotnet_diagnostic.S907.severity = suggestion
 
 # Title    : Parameter names should match base declaration and other partial definitions
 # Category : Critical Code Smell
@@ -5648,12 +5643,12 @@ dotnet_diagnostic.SA1201.severity = none
 # Title    : Elements should be ordered by access
 # Category : StyleCop.CSharp.OrderingRules
 # Help Link: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1202.md
-dotnet_diagnostic.SA1202.severity = warning
+dotnet_diagnostic.SA1202.severity = suggestion
 
 # Title    : Constants should appear before fields
 # Category : StyleCop.CSharp.OrderingRules
 # Help Link: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1203.md
-dotnet_diagnostic.SA1203.severity = warning
+dotnet_diagnostic.SA1203.severity = suggestion
 
 # Title    : Static elements should appear before instance elements
 # Category : StyleCop.CSharp.OrderingRules
@@ -5812,7 +5807,7 @@ dotnet_diagnostic.SA1314.severity = none
 # Title    : Tuple element names should use correct casing
 # Category : StyleCop.CSharp.NamingRules
 # Help Link: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1316.md
-dotnet_diagnostic.SA1316.severity = warning
+dotnet_diagnostic.SA1316.severity = suggestion
 
 # Title    : Access modifier should be declared
 # Category : StyleCop.CSharp.MaintainabilityRules
@@ -5894,7 +5889,7 @@ dotnet_diagnostic.SA1414.severity = warning
 # Title    : Braces for multi-line statements should not share line
 # Category : StyleCop.CSharp.LayoutRules
 # Help Link: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1500.md
-dotnet_diagnostic.SA1500.severity = warning
+dotnet_diagnostic.SA1500.severity = suggestion # rule does not work well with field-based property initializers
 
 # Title    : Statement should not be on a single line
 # Category : StyleCop.CSharp.LayoutRules
@@ -5962,7 +5957,7 @@ dotnet_diagnostic.SA1512.severity = none
 # Title    : Closing brace should be followed by blank line
 # Category : StyleCop.CSharp.LayoutRules
 # Help Link: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1513.md
-dotnet_diagnostic.SA1513.severity = warning
+dotnet_diagnostic.SA1513.severity = suggestion # rule does not work well with field-based property initializers
 
 # Title    : Element documentation header should be preceded by blank line
 # Category : StyleCop.CSharp.LayoutRules
@@ -6292,7 +6287,7 @@ dotnet_diagnostic.VSTHRD002.severity = warning
 # Title    : Avoid awaiting foreign Tasks
 # Category : Usage
 # Help Link: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD003.md
-dotnet_diagnostic.VSTHRD003.severity = warning
+dotnet_diagnostic.VSTHRD003.severity = suggestion
 
 # Title    : Await SwitchToMainThreadAsync
 # Category : Usage
@@ -6402,3 +6397,7 @@ dotnet_diagnostic.VSTHRD114.severity = error
 # Help Link: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD200.md
 dotnet_diagnostic.VSTHRD200.severity = warning
 
+# Title    : Async method lacks 'await' operators and will run synchronously
+# Category : Reliability
+# Help Link: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/cs1998
+dotnet_diagnostic.CS1998.severity = suggestion

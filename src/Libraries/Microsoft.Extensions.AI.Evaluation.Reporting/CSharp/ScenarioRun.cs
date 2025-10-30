@@ -100,7 +100,6 @@ public sealed class ScenarioRun : IAsyncDisposable
 
     private ScenarioRunResult? _result;
 
-#pragma warning disable S107 // Methods should not have too many parameters
     internal ScenarioRun(
         string scenarioName,
         string iterationName,
@@ -111,7 +110,6 @@ public sealed class ScenarioRun : IAsyncDisposable
         Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,
         ChatDetails? chatDetails = null,
         IEnumerable<string>? tags = null)
-#pragma warning restore
     {
         ScenarioName = scenarioName;
         IterationName = iterationName;
@@ -150,10 +148,8 @@ public sealed class ScenarioRun : IAsyncDisposable
     {
         if (_result is not null)
         {
-#pragma warning disable S103 // Lines should not be too long
             throw new InvalidOperationException(
                 $"The {nameof(ScenarioRun)} with {nameof(ScenarioName)}: {ScenarioName}, {nameof(IterationName)}: {IterationName} and {nameof(ExecutionName)}: {ExecutionName} has already been evaluated. Do not call {nameof(EvaluateAsync)} more than once on a given {nameof(ScenarioRun)}.");
-#pragma warning restore S103
         }
 
         EvaluationResult evaluationResult =

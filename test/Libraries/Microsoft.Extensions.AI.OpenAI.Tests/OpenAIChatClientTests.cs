@@ -8,10 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using OpenAI;
@@ -30,17 +27,13 @@ public class OpenAIChatClientTests
         Assert.Throws<ArgumentNullException>("chatClient", () => ((ChatClient)null!).AsIChatClient());
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AsIChatClient_OpenAIClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    [Fact]
+    public void AsIChatClient_OpenAIClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
-        var client = useAzureOpenAI ?
-            new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
-            new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
+        var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IChatClient chatClient = client.GetChatClient(model).AsIChatClient();
         var metadata = chatClient.GetService<ChatClientMetadata>();
@@ -159,6 +152,7 @@ public class OpenAIChatClientTests
 
         var response = await client.GetResponseAsync("hello", new()
         {
+            AllowMultipleToolCalls = false,
             MaxOutputTokens = 10,
             Temperature = 0.5f,
         });
@@ -277,6 +271,74 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
+    public async Task ChatOptions_StrictRespected()
+    {
+        const string Input = """
+            {
+                "tools": [
+                    {
+                        "function": {
+                            "description": "Gets the age of the specified person.",
+                            "name": "GetPersonAge",
+                            "strict": true,
+                            "parameters": {
+                                "type": "object",
+                                "required": [],
+                                "properties": {},
+                                "additionalProperties": false
+                            }
+                        },
+                        "type": "function"
+                    }
+                ],
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "hello"
+                    }
+                ],
+                "model": "gpt-4o-mini",
+                "tool_choice": "auto"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "object": "chat.completion",
+              "created": 1727888631,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?",
+                    "refusal": null
+                  },
+                  "logprobs": null,
+                  "finish_reason": "stop"
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            Tools = [AIFunctionFactory.Create(() => 42, "GetPersonAge", "Gets the age of the specified person.")],
+            AdditionalProperties = new()
+            {
+                ["strictJsonSchema"] = true,
+            },
+        });
+        Assert.NotNull(response);
+    }
+
+    [Fact]
     public async Task ChatOptions_DoNotOverwrite_NotNullPropertiesInRawRepresentation_NonStreaming()
     {
         const string Input = """
@@ -330,14 +392,12 @@ public class OpenAIChatClientTests
                     TopP = 0.5f,
                     PresencePenalty = 0.5f,
                     Temperature = 0.5f,
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                     Seed = 42,
-#pragma warning restore OPENAI001
                     ToolChoice = ChatToolChoice.CreateAutoChoice(),
                     ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
                 };
                 openAIOptions.StopSequences.Add("hello");
-                openAIOptions.Tools.Add(ToOpenAIChatTool(tool));
+                openAIOptions.Tools.Add(tool.AsOpenAIChatTool());
                 return openAIOptions;
             },
             ModelId = null,
@@ -409,14 +469,12 @@ public class OpenAIChatClientTests
                     TopP = 0.5f,
                     PresencePenalty = 0.5f,
                     Temperature = 0.5f,
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                     Seed = 42,
-#pragma warning restore OPENAI001
                     ToolChoice = ChatToolChoice.CreateAutoChoice(),
                     ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
                 };
                 openAIOptions.StopSequences.Add("hello");
-                openAIOptions.Tools.Add(ToOpenAIChatTool(tool));
+                openAIOptions.Tools.Add(tool.AsOpenAIChatTool());
                 return openAIOptions;
             },
             ModelId = null, // has no effect, you cannot change the model of an OpenAI's ChatClient.
@@ -493,9 +551,7 @@ public class OpenAIChatClientTests
                 Assert.Null(openAIOptions.TopP);
                 Assert.Null(openAIOptions.PresencePenalty);
                 Assert.Null(openAIOptions.Temperature);
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                 Assert.Null(openAIOptions.Seed);
-#pragma warning restore OPENAI001
                 Assert.Empty(openAIOptions.StopSequences);
                 Assert.Empty(openAIOptions.Tools);
                 Assert.Null(openAIOptions.ToolChoice);
@@ -569,9 +625,7 @@ public class OpenAIChatClientTests
                 Assert.Null(openAIOptions.TopP);
                 Assert.Null(openAIOptions.PresencePenalty);
                 Assert.Null(openAIOptions.Temperature);
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                 Assert.Null(openAIOptions.Seed);
-#pragma warning restore OPENAI001
                 Assert.Empty(openAIOptions.StopSequences);
                 Assert.Empty(openAIOptions.Tools);
                 Assert.Null(openAIOptions.ToolChoice);
@@ -600,50 +654,51 @@ public class OpenAIChatClientTests
         Assert.Equal("Hello! How can I assist you today?", responseText);
     }
 
-    /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
-    private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
-    {
-        bool? strict =
-            aiFunction.AdditionalProperties.TryGetValue("strictJsonSchema", out object? strictObj) &&
-            strictObj is bool strictValue ?
-            strictValue : null;
-
-        // Map to an intermediate model so that redundant properties are skipped.
-        var tool = JsonSerializer.Deserialize<ChatToolJson>(aiFunction.JsonSchema)!;
-        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool));
-        return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict);
-    }
-
-    /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
-    internal sealed class ChatToolJson
-    {
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "object";
-
-        [JsonPropertyName("required")]
-        public HashSet<string> Required { get; set; } = [];
-
-        [JsonPropertyName("properties")]
-        public Dictionary<string, JsonElement> Properties { get; set; } = [];
-
-        [JsonPropertyName("additionalProperties")]
-        public bool AdditionalProperties { get; set; }
-    }
-
     [Fact]
     public async Task StronglyTypedOptions_AllSent()
     {
         const string Input = """
             {
-                "messages":[{"role":"user","content":"hello"}],
-                "model":"gpt-4o-mini",
-                "logprobs":true,
-                "top_logprobs":42,
-                "logit_bias":{"12":34},
-                "parallel_tool_calls":false,
-                "user":"12345",
-                "metadata":{"something":"else"},
-                "store":true
+                "metadata": {
+                    "something": "else"
+                },
+                "user": "12345",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "hello"
+                    }
+                ],
+                "model": "gpt-4o-mini",
+                "top_logprobs": 42,
+                "store": true,
+                "logit_bias": {
+                    "12": 34
+                },
+                "logprobs": true,
+                "tools": [
+                    {
+                        "type": "function",
+                        "function": {
+                            "description": "",
+                            "name": "GetPersonAge",
+                            "parameters": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                ],
+                "tool_choice": "auto",
+                "parallel_tool_calls": false
             }
             """;
 
@@ -671,6 +726,7 @@ public class OpenAIChatClientTests
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             AllowMultipleToolCalls = false,
+            Tools = [AIFunctionFactory.Create((string name) => 42, "GetPersonAge")],
             RawRepresentationFactory = (c) =>
             {
                 var openAIOptions = new ChatCompletionOptions
@@ -1327,26 +1383,26 @@ public class OpenAIChatClientTests
                         "tool_calls": [
                             {
                                 "id": "12345",
+                                "type": "function",
                                 "function": {
                                     "name": "SayHello",
                                     "arguments": "null"
-                                },
-                                "type": "function"
+                                }
                             },
                             {
                                 "id": "12346",
+                                "type": "function",
                                 "function": {
                                     "name": "SayHi",
                                     "arguments": "null"
-                                },
-                                "type": "function"
+                                }
                             }
                         ]
                     },
                     {
                         "role": "tool",
                         "tool_call_id": "12345",
-                        "content": "Said hello"
+                        "content": "{ \"$type\": \"text\", \"text\": \"Said hello\" }"
                     },
                     {
                         "role":"tool",
@@ -1415,7 +1471,7 @@ public class OpenAIChatClientTests
             ]),
             new (ChatRole.Tool,
             [
-                new FunctionResultContent("12345", "Said hello"),
+                new FunctionResultContent("12345", new TextContent("Said hello")),
                 new FunctionResultContent("12346", "Said hi"),
             ]),
             new(ChatRole.Assistant, "You are great."),
@@ -1561,6 +1617,19 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
+    }
+
+    [Fact]
+    public async Task RequestHeaders_UserAgent_ContainsMEAI()
+    {
+        using var handler = new ThrowUserAgentExceptionHandler();
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        InvalidOperationException e = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetResponseAsync("hello"));
+
+        Assert.StartsWith("User-Agent header: OpenAI", e.Message);
+        Assert.Contains("MEAI", e.Message);
     }
 
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>

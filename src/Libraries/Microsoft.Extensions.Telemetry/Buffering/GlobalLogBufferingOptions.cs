@@ -5,16 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Data.Validation;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
 /// The options for global log buffering.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public class GlobalLogBufferingOptions
 {
     private const int DefaultMaxBufferSizeInBytes = 500 * 1024 * 1024; // 500 MB.
@@ -60,7 +57,6 @@ public class GlobalLogBufferingOptions
     [Range(MinimumBufferSizeInBytes, MaximumBufferSizeInBytes)]
     public int MaxBufferSizeInBytes { get; set; } = DefaultMaxBufferSizeInBytes;
 
-#pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern.
     /// <summary>
     /// Gets or sets the collection of <see cref="LogBufferingFilterRule"/> used for filtering log messages for the purpose of further buffering.
     /// </summary>
@@ -72,7 +68,6 @@ public class GlobalLogBufferingOptions
     /// </remarks>
     [Required]
     public IList<LogBufferingFilterRule> Rules { get; set; } = [];
-#pragma warning restore CA2227
 }
 
 #endif

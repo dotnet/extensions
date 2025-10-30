@@ -4,10 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Time.Testing;
@@ -21,7 +19,6 @@ public class FakeTimeProvider : TimeProvider
     private DateTimeOffset _now = new(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
     private TimeZoneInfo _localTimeZone = TimeZoneInfo.Utc;
     private volatile int _wakeWaitersGate;
-    private TimeSpan _autoAdvanceAmount;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FakeTimeProvider"/> class.
@@ -64,11 +61,11 @@ public class FakeTimeProvider : TimeProvider
     /// <exception cref="ArgumentOutOfRangeException">The time value is less than <see cref="TimeSpan.Zero"/>.</exception>
     public TimeSpan AutoAdvanceAmount
     {
-        get => _autoAdvanceAmount;
+        get;
         set
         {
             _ = Throw.IfLessThan(value.Ticks, 0);
-            _autoAdvanceAmount = value;
+            field = value;
         }
     }
 
@@ -80,7 +77,7 @@ public class FakeTimeProvider : TimeProvider
         lock (Waiters)
         {
             result = _now;
-            _now += _autoAdvanceAmount;
+            _now += AutoAdvanceAmount;
         }
 
         WakeWaiters();
@@ -137,7 +134,7 @@ public class FakeTimeProvider : TimeProvider
     }
 
     /// <summary>
-    /// Advances the date and time in the UTC time zone.
+    /// Sets the date and time in the UTC time zone.
     /// </summary>
     /// <param name="value">The date and time in the UTC time zone.</param>
     /// <remarks>
@@ -145,7 +142,6 @@ public class FakeTimeProvider : TimeProvider
     /// timers. This is similar to what happens in a real system when the system's
     /// time is changed.
     /// </remarks>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.TimeProvider, UrlFormat = DiagnosticIds.UrlFormat)]
     public void AdjustTime(DateTimeOffset value)
     {
         lock (Waiters)

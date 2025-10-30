@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI.Evaluation.Reporting, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI.Evaluation.Reporting, Version=9.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetails",
@@ -40,14 +40,15 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to remove primary constructor portion
-      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
-      // See: https://github.com/icsharpcode/ILSpy/issues/829
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails",
       "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails.ChatTurnDetails(System.TimeSpan latency, string? model = null, Microsoft.Extensions.AI.UsageDetails? usage = null, string? cacheKey = null, bool? cacheHit = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails.ChatTurnDetails(System.TimeSpan latency, string? model, string? modelProvider, Microsoft.Extensions.AI.UsageDetails? usage = null, string? cacheKey = null, bool? cacheHit = null);",
           "Stage": "Stable"
         }
       ],
@@ -66,6 +67,10 @@
         },
         {
           "Member": "string? Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails.Model { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails.ModelProvider { get; set; }",
           "Stage": "Stable"
         },
         {

@@ -8,9 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S2302 // "nameof" should be used
-#pragma warning disable S4136 // Method overloads should be grouped together
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides a collection of static methods for extending <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/> instances.</summary>

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Xunit;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.Extensions.AI;
 
@@ -18,6 +17,7 @@ public class ChatMessageTests
         ChatMessage message = new();
         Assert.Null(message.AuthorName);
         Assert.Empty(message.Contents);
+        Assert.Null(message.CreatedAt);
         Assert.Equal(ChatRole.User, message.Role);
         Assert.Empty(message.Text);
         Assert.NotNull(message.Contents);
@@ -50,6 +50,7 @@ public class ChatMessageTests
         }
 
         Assert.Null(message.AuthorName);
+        Assert.Null(message.CreatedAt);
         Assert.Null(message.RawRepresentation);
         Assert.Null(message.AdditionalProperties);
         Assert.Equal(text ?? string.Empty, message.ToString());
@@ -113,6 +114,7 @@ public class ChatMessageTests
         }
 
         Assert.Null(message.AuthorName);
+        Assert.Null(message.CreatedAt);
         Assert.Null(message.RawRepresentation);
         Assert.Null(message.AdditionalProperties);
     }
@@ -228,6 +230,20 @@ public class ChatMessageTests
 
         message.AdditionalProperties = props;
         Assert.Same(props, message.AdditionalProperties);
+    }
+
+    [Fact]
+    public void CreatedAt_Roundtrips()
+    {
+        ChatMessage message = new();
+        Assert.Null(message.CreatedAt);
+
+        DateTimeOffset now = DateTimeOffset.Now;
+        message.CreatedAt = now;
+        Assert.Equal(now, message.CreatedAt);
+
+        message.CreatedAt = null;
+        Assert.Null(message.CreatedAt);
     }
 
     [Fact]

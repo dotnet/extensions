@@ -40,8 +40,18 @@ public class ApplicationMetadataExtensionsTests
         Assert.Throws<ArgumentNullException>(() => serviceCollection.AddApplicationMetadata((Action<ApplicationMetadata>)null!));
         Assert.Throws<ArgumentNullException>(() => serviceCollection.AddApplicationMetadata((IConfigurationSection)null!));
         Assert.Throws<ArgumentNullException>(() => ((IHostBuilder)null!).UseApplicationMetadata(_fixture.Create<string>()));
+        Assert.Throws<ArgumentNullException>(() => ((IHostApplicationBuilder)null!).UseApplicationMetadata(_fixture.Create<string>()));
         Assert.Throws<ArgumentNullException>(() => new ConfigurationBuilder().AddApplicationMetadata(null!));
         Assert.Throws<ArgumentNullException>(() => ((IConfigurationBuilder)null!).AddApplicationMetadata(null!));
+    }
+
+    [Fact]
+    public void ApplicationMetadataExtensions_GivenEmptyAction_DoesNotThrow()
+    {
+        var serviceCollection = new ServiceCollection();
+        var config = new ConfigurationBuilder().Build();
+
+        Assert.Null(Record.Exception(() => serviceCollection.AddApplicationMetadata(_ => { })));
     }
 
     [Theory]
@@ -63,6 +73,17 @@ public class ApplicationMetadataExtensionsTests
     public void UseApplicationMetadata_InvalidSectionName_Throws(string? sectionName)
     {
         var act = () => FakeHost.CreateBuilder().UseApplicationMetadata(sectionName!);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("  ")]
+    public void UseApplicationMetadata_HostApplicationBuilder_InvalidSectionName_Throws(string? sectionName)
+    {
+        var act = () => Host.CreateEmptyApplicationBuilder(new()).UseApplicationMetadata(sectionName!);
         act.Should().Throw<ArgumentException>();
     }
 

@@ -74,7 +74,6 @@ internal static class ContentSafetyServicePayloadUtilities
                 _ => throw new NotSupportedException($"The payload kind '{payloadFormat}' is not supported."),
             };
 
-#pragma warning disable S107 // Methods should not have too many parameters
     private static (string payload, IReadOnlyList<EvaluationDiagnostic>? diagnostics)
         GetUserTextListPayloadWithEmbeddedXml(
             IEnumerable<ChatMessage> conversation,
@@ -87,7 +86,6 @@ internal static class ContentSafetyServicePayloadUtilities
             string contextElementName = "Context",
             ContentSafetyServicePayloadStrategy strategy = ContentSafetyServicePayloadStrategy.AnnotateConversation,
             CancellationToken cancellationToken = default)
-#pragma warning restore S107
     {
         List<Dictionary<string, ChatMessage>> turns;
         List<string?>? normalizedPerTurnContext;
@@ -162,7 +160,6 @@ internal static class ContentSafetyServicePayloadUtilities
         return (payload.ToJsonString(), diagnostics);
     }
 
-#pragma warning disable S107 // Methods should not have too many parameters
     private static (string payload, IReadOnlyList<EvaluationDiagnostic>? diagnostics)
         GetUserTextListPayloadWithEmbeddedJson(
             IEnumerable<ChatMessage> conversation,
@@ -175,7 +172,6 @@ internal static class ContentSafetyServicePayloadUtilities
             string contextPropertyName = "context",
             ContentSafetyServicePayloadStrategy strategy = ContentSafetyServicePayloadStrategy.AnnotateLastTurn,
             CancellationToken cancellationToken = default)
-#pragma warning restore S107
     {
         if (strategy is ContentSafetyServicePayloadStrategy.AnnotateConversation)
         {
