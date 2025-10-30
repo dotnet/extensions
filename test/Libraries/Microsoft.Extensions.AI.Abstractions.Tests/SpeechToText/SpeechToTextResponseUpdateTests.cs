@@ -38,8 +38,7 @@ public class SpeechToTextResponseUpdateTests
         Assert.Empty(update.Text);
 
         // Contents: assigning a new list then resetting to null should yield an empty list.
-        List<AIContent> newList = new();
-        newList.Add(new TextContent("content1"));
+        List<AIContent> newList = [new TextContent("content1")];
         update.Contents = newList;
         Assert.Same(newList, update.Contents);
         update.Contents = null;
@@ -89,11 +88,11 @@ public class SpeechToTextResponseUpdateTests
             ResponseId = "id123",
             StartTime = TimeSpan.FromSeconds(5),
             EndTime = TimeSpan.FromSeconds(10),
-            Contents = new List<AIContent>
-            {
+            Contents =
+            [
                 new TextContent("text-1"),
                 new DataContent("data:audio/wav;base64,AQIDBA==", "application/octet-stream")
-            }
+            ]
         };
 
         string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.SpeechToTextResponseUpdate);

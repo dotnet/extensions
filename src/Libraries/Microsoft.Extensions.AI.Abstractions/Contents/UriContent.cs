@@ -67,6 +67,7 @@ public class UriContent : AIContent
     }
 
     /// <summary>Gets or sets the media type (also known as MIME type) for this content.</summary>
+    /// <exception cref="ArgumentException"><paramref name="value"/> represents an invalid media type.</exception>
     public string MediaType
     {
         get => _mediaType;
