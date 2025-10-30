@@ -98,7 +98,9 @@ public class MarkItDownReader : IngestionDocumentReader
         // Even the sample command line does not work with stdin: "cat example.pdf | markitdown"
         // I can be doing something wrong, but for now, let's write to a temporary file.
         string inputFilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        using (FileStream inputFile = new(inputFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize: 1, FileOptions.Asynchronous))
+        FileStream inputFile = new(inputFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize: 1, FileOptions.Asynchronous);
+
+        try
         {
             await source
 #if NET
@@ -106,15 +108,19 @@ public class MarkItDownReader : IngestionDocumentReader
 #else
                 .CopyToAsync(inputFile)
 #endif
-            .ConfigureAwait(false);
-        }
+                .ConfigureAwait(false);
 
-        try
-        {
+            inputFile.Close();
+
             return await ReadAsync(new FileInfo(inputFilePath), identifier, mediaType, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
+#if NET
+            await inputFile.DisposeAsync().ConfigureAwait(false);
+#else
+            inputFile.Dispose();
+#endif
             File.Delete(inputFilePath);
         }
     }

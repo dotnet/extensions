@@ -118,16 +118,36 @@ internal static class MarkdownParser
     {
         IngestionDocumentImage result = new(elementMarkdown);
 
-        // ![Alt text](data:image/png;base64,...)
+        // ![Alt text](data:image/type;base64,...)
         if (link.FirstChild is LiteralInline literal)
         {
             result.AlternativeText = literal.Content.ToString();
         }
 
-        if (link.Url is not null && link.Url.StartsWith("data:image/png;base64,", StringComparison.Ordinal))
+        if (link.Url is not null && link.Url.StartsWith("data:image/", StringComparison.Ordinal))
         {
-            result.Content = Convert.FromBase64String(link.Url.Substring("data:image/png;base64,".Length));
-            result.MediaType = "image/png";
+            // Parse the data URL format: data:image/{type};base64,{data}
+            ReadOnlySpan<char> url = link.Url.AsSpan("data:".Length);
+
+            // Find the semicolon that separates media type from encoding
+            int semicolonIndex = url.IndexOf(';');
+            if (semicolonIndex > 0)
+            {
+                ReadOnlySpan<char> mediaType = url.Slice(0, semicolonIndex);
+
+                // Find the comma that separates encoding from data
+                int commaIndex = url.IndexOf(',');
+                if (commaIndex > semicolonIndex)
+                {
+                    // Check if it's base64 encoded
+                    ReadOnlySpan<char> encoding = url.Slice(semicolonIndex + 1, commaIndex - semicolonIndex - 1);
+                    if (encoding.SequenceEqual("base64".AsSpan()))
+                    {
+                        result.Content = Convert.FromBase64String(url.Slice(commaIndex + 1).ToString());
+                        result.MediaType = mediaType.ToString();
+                    }
+                }
+            }
         }
 
         return result;

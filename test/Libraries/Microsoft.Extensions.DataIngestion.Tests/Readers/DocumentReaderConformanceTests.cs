@@ -22,16 +22,12 @@ public abstract class DocumentReaderConformanceTests
     {
         var reader = CreateDocumentReader();
 
-        var nullEx = await Assert.ThrowsAsync<ArgumentNullException>(async () => await reader.ReadAsync(new FileInfo("fileName.txt"), identifier: null!));
-        Assert.Equal("identifier", nullEx.ParamName);
-        var argEx = await Assert.ThrowsAsync<ArgumentException>(async () => await reader.ReadAsync(new FileInfo("fileName.txt"), identifier: string.Empty));
-        Assert.Equal("identifier", argEx.ParamName);
+        await Assert.ThrowsAsync<ArgumentNullException>("identifier", async () => await reader.ReadAsync(new FileInfo("fileName.txt"), identifier: null!));
+        await Assert.ThrowsAsync<ArgumentException>("identifier", async () => await reader.ReadAsync(new FileInfo("fileName.txt"), identifier: string.Empty));
 
         using MemoryStream stream = new();
-        nullEx = await Assert.ThrowsAsync<ArgumentNullException>(async () => await reader.ReadAsync(stream, identifier: null!, mediaType: "some"));
-        Assert.Equal("identifier", nullEx.ParamName);
-        argEx = await Assert.ThrowsAsync<ArgumentException>(async () => await reader.ReadAsync(stream, identifier: string.Empty, mediaType: "some"));
-        Assert.Equal("identifier", argEx.ParamName);
+        await Assert.ThrowsAsync<ArgumentNullException>("identifier", async () => await reader.ReadAsync(stream, identifier: null!, mediaType: "some"));
+        await Assert.ThrowsAsync<ArgumentException>("identifier", async () => await reader.ReadAsync(stream, identifier: string.Empty, mediaType: "some"));
     }
 
     [ConditionalFact]
