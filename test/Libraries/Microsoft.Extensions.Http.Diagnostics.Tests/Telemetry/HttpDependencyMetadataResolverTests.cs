@@ -9,12 +9,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Telemetry;
 
-public class DownstreamDependencyMetadataManagerTests : IDisposable
+public class HttpDependencyMetadataResolverTests : IDisposable
 {
     private readonly HttpDependencyMetadataResolver _metadataResolver;
     private readonly ServiceProvider _sp;
 
-    public DownstreamDependencyMetadataManagerTests()
+    public HttpDependencyMetadataResolverTests()
     {
         _sp = new ServiceCollection()
             .AddDownstreamDependencyMetadata(new BackslashDownstreamDependencyMetadata())
