@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -186,6 +187,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     message.Contents.Add(fcc);
                     break;
 
+                case FunctionCallOutputResponseItem functionCallOutputItem:
+                    message.Contents.Add(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
+                    break;
+
                 case McpToolCallItem mtci:
                     AddMcpToolCallContent(mtci, message.Contents);
                     break;
@@ -205,8 +210,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     message.Contents.Add(new McpServerToolApprovalResponseContent(mtcari.ApprovalRequestId, mtcari.Approved) { RawRepresentation = mtcari });
                     break;
 
-                case FunctionCallOutputResponseItem functionCallOutputItem:
-                    message.Contents.Add(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
+                case CodeInterpreterCallResponseItem cicri:
+                    AddCodeInterpreterContents(cicri, message.Contents);
                     break;
 
                 case ImageGenerationCallResponseItem imageGenItem:
@@ -413,6 +418,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     {
                         RawRepresentation = mtcari,
                     });
+                    break;
+
+                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is CodeInterpreterCallResponseItem cicri:
+                    var codeUpdate = CreateUpdate();
+                    AddCodeInterpreterContents(cicri, codeUpdate.Contents);
+                    yield return codeUpdate;
                     break;
 
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when
@@ -996,11 +1007,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case ResponseContentPartKind.InputFile:
                     if (!string.IsNullOrWhiteSpace(part.InputImageFileId))
                     {
-                        results.Add(new HostedFileContent(part.InputImageFileId) { RawRepresentation = part });
+                        results.Add(new HostedFileContent(part.InputImageFileId) { MediaType = "image/*", RawRepresentation = part });
                     }
                     else if (!string.IsNullOrWhiteSpace(part.InputFileId))
                     {
-                        results.Add(new HostedFileContent(part.InputFileId) { RawRepresentation = part });
+                        results.Add(new HostedFileContent(part.InputFileId) { Name = part.InputFilename, RawRepresentation = part });
                     }
                     else if (part.InputFileBytes is not null)
                     {
@@ -1092,6 +1103,33 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             filter.ToolNames.Add(toolName);
         }
+    }
+
+    /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="cicri"/> into <paramref name="contents"/>.</summary>
+    private static void AddCodeInterpreterContents(CodeInterpreterCallResponseItem cicri, IList<AIContent> contents)
+    {
+        contents.Add(new CodeInterpreterToolCallContent
+        {
+            CallId = cicri.Id,
+            Inputs = !string.IsNullOrWhiteSpace(cicri.Code) ? [new DataContent(Encoding.UTF8.GetBytes(cicri.Code), "text/x-python")] : null,
+
+            // We purposefully do not set the RawRepresentation on the HostedCodeInterpreterToolCallContent, only on the HostedCodeInterpreterToolResultContent, to avoid
+            // the same CodeInterpreterCallResponseItem being included on two different AIContent instances. When these are roundtripped, we want only one
+            // CodeInterpreterCallResponseItem sent back for the pair.
+        });
+
+        contents.Add(new CodeInterpreterToolResultContent
+        {
+            CallId = cicri.Id,
+            Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
+                o switch
+                {
+                    CodeInterpreterCallImageOutput cicio => new UriContent(cicio.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(cicio.ImageUri)) { RawRepresentation = cicio },
+                    CodeInterpreterCallLogsOutput ciclo => new TextContent(ciclo.Logs) { RawRepresentation = ciclo },
+                    _ => null,
+                }).OfType<AIContent>().ToList() : null,
+            RawRepresentation = cicri,
+        });
     }
 
     private static OpenAIResponsesContinuationToken? CreateContinuationToken(OpenAIResponse openAIResponse)
