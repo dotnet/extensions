@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Microsoft.Extensions.Http.Diagnostics;
 
 /// <summary>
-/// Interface for passing dependency metadata.
+/// (Obsolete) Use <see cref="HttpDependencyMetadataResolver"/>.
 /// </summary>
 public interface IDownstreamDependencyMetadata
 {

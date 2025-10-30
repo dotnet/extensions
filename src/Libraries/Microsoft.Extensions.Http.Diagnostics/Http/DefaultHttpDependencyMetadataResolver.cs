@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Http.Diagnostics;
 /// trie-based lookup algorithm.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class DefaultHttpDependencyMetadataResolver : HttpDependencyMetadataResolver
+internal sealed class DefaultHttpDependencyMetadataResolver : HttpDependencyMetadataResolver
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultHttpDependencyMetadataResolver"/> class.

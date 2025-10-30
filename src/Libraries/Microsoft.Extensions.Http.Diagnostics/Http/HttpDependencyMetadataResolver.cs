@@ -55,7 +55,7 @@ public abstract class HttpDependencyMetadataResolver
     }
 
     /// <summary>
-    /// Gets request metadata for the specified HTTP request message.
+    /// Gets request metadata for the specified instance of <see cref="HttpRequestMessage"/>
     /// </summary>
     /// <param name="requestMessage">The HTTP request message.</param>
     /// <returns>The resolved <see cref="RequestMetadata"/> if found; otherwise, <see langword="null"/>.</returns>
@@ -449,5 +449,7 @@ public abstract class HttpDependencyMetadataResolver
         return trieCurrent.RequestMetadataEntryIndex == -1 ?
             hostMetadata.RequestMetadata : // Return the default request metadata for this host if no matching route is found.
             routeMetadataTrieRoot.RequestMetadatas[trieCurrent.RequestMetadataEntryIndex];
+    }
+}ataTrieRoot.RequestMetadatas[trieCurrent.RequestMetadataEntryIndex];
     }
 }

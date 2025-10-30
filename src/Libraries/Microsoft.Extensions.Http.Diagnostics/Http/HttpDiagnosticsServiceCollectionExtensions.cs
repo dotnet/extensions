@@ -43,16 +43,4 @@ public static class HttpDiagnosticsServiceCollectionExtensions
         _ = services.AddSingleton<IDownstreamDependencyMetadata, T>();
         return services;
     }
-
-    /// <summary>
-    /// Adds services required for HTTP dependency metadata resolution.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-    public static IServiceCollection AddStandardHttpDependencyMetadataResolver(this IServiceCollection services)
-    {
-        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
-        return services;
-    }
 }
