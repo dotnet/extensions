@@ -22,8 +22,9 @@ namespace Microsoft.Extensions.DataIngestion;
 public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
 {
     private readonly IChatClient _chatClient;
-    private readonly ChatOptions _chatOptions;
+    private readonly ChatOptions? _chatOptions;
     private readonly FrozenSet<string> _predefinedClasses;
+    private readonly ChatMessage _systemPrompt;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClassificationEnricher"/> class.
@@ -36,13 +37,14 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
         ChatOptions? chatOptions = null, string? fallbackClass = null)
     {
         _chatClient = Throw.IfNull(chatClient);
+        _chatOptions = chatOptions;
         if (string.IsNullOrWhiteSpace(fallbackClass))
         {
             fallbackClass = "Unknown";
         }
 
         _predefinedClasses = CreatePredefinedSet(predefinedClasses, fallbackClass!);
-        _chatOptions = CreateChatOptions(predefinedClasses, chatOptions, fallbackClass!);
+        _systemPrompt = CreateSystemPrompt(predefinedClasses, fallbackClass!);
     }
 
     /// <summary>
@@ -60,6 +62,7 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
         {
             var response = await _chatClient.GetResponseAsync(
             [
+                _systemPrompt,
                 new(ChatRole.User, chunk.Content)
             ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -104,12 +107,14 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
         return predefinedClassesSet.ToFrozenSet();
     }
 
-    private static ChatOptions CreateChatOptions(ReadOnlySpan<string> predefinedClasses, ChatOptions? userProvided, string fallbackClass)
+    private static ChatMessage CreateSystemPrompt(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
     {
-        StringBuilder sb = new("You are a classification expert. Analyze the given text and assign a single, most relevant class. ");
+        StringBuilder sb = new("You are a classification expert. Analyze the given text and assign a single, most relevant class. Use only the following predefined classes: ");
 
+#if NET9_0_OR_GREATER
+        sb.AppendJoin(", ", predefinedClasses!);
+#else
 #pragma warning disable IDE0058 // Expression value is never used
-        sb.Append("Use only the following predefined classes: ");
         for (int i = 0; i < predefinedClasses.Length; i++)
         {
             sb.Append(predefinedClasses[i]);
@@ -118,12 +123,10 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
                 sb.Append(", ");
             }
         }
-
+#endif
         sb.Append(" and return ").Append(fallbackClass).Append(" when unable to classify.");
 #pragma warning restore IDE0058 // Expression value is never used
 
-        ChatOptions result = userProvided?.Clone() ?? new();
-        result.Instructions = sb.ToString();
-        return result;
+        return new(ChatRole.System, sb.ToString());
     }
 }

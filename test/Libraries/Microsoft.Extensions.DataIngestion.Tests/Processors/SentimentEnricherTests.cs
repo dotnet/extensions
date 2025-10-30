@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Xunit;
@@ -15,15 +16,16 @@ public class SentimentEnricherTests
 
     [Fact]
     public void ThrowsOnNullChatClient()
-        => Assert.Throws<ArgumentNullException>(() => new SentimentEnricher(null!));
+    {
+        Assert.Throws<ArgumentNullException>("chatClient", () => new SentimentEnricher(null!));
+    }
 
     [Theory]
     [InlineData(-0.1)]
     [InlineData(1.1)]
     public void ThrowsOnInvalidThreshold(double threshold)
     {
-        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new SentimentEnricher(new TestChatClient(), confidenceThreshold: threshold));
-        Assert.Equal("confidenceThreshold", ex.ParamName);
+        Assert.Throws<ArgumentOutOfRangeException>("confidenceThreshold", () => new SentimentEnricher(new TestChatClient(), confidenceThreshold: threshold));
     }
 
     [Fact]
@@ -32,7 +34,7 @@ public class SentimentEnricherTests
         using TestChatClient chatClient = new();
         SentimentEnricher sut = new(chatClient);
 
-        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        await Assert.ThrowsAsync<ArgumentNullException>("chunks", async () =>
         {
             await foreach (var _ in sut.ProcessAsync(null!))
             {
@@ -50,6 +52,12 @@ public class SentimentEnricherTests
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
+                var materializedMessages = messages.ToArray();
+
+                Assert.Equal(2, materializedMessages.Length);
+                Assert.Equal(ChatRole.System, materializedMessages[0].Role);
+                Assert.Equal(ChatRole.User, materializedMessages[1].Role);
+
                 return Task.FromResult(new ChatResponse(new[]
                 {
                     new ChatMessage(ChatRole.Assistant, sentiments[counter++])

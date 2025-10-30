@@ -20,7 +20,8 @@ namespace Microsoft.Extensions.DataIngestion;
 public sealed class SummaryEnricher : IngestionChunkProcessor<string>
 {
     private readonly IChatClient _chatClient;
-    private readonly ChatOptions _chatOptions;
+    private readonly ChatOptions? _chatOptions;
+    private readonly ChatMessage _systemPrompt;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SummaryEnricher"/> class.
@@ -31,10 +32,10 @@ public sealed class SummaryEnricher : IngestionChunkProcessor<string>
     public SummaryEnricher(IChatClient chatClient, ChatOptions? chatOptions = null, int? maxWordCount = null)
     {
         _chatClient = Throw.IfNull(chatClient);
+        _chatOptions = chatOptions;
 
         int wordCount = maxWordCount.HasValue ? Throw.IfLessThanOrEqual(maxWordCount.Value, 0, nameof(maxWordCount)) : 100;
-        _chatOptions = chatOptions?.Clone() ?? new();
-        _chatOptions.Instructions = $"Write a summary text for this text with no more than {wordCount} words. Return just the summary.";
+        _systemPrompt = new(ChatRole.System, $"Write a summary text for this text with no more than {wordCount} words. Return just the summary.");
     }
 
     /// <summary>
@@ -52,6 +53,7 @@ public sealed class SummaryEnricher : IngestionChunkProcessor<string>
         {
             var response = await _chatClient.GetResponseAsync(
             [
+                _systemPrompt,
                 new(ChatRole.User, chunk.Content)
             ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 

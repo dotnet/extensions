@@ -28,8 +28,9 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
     private static readonly char[] _illegalCharacters = [';', ','];
 #endif
     private readonly IChatClient _chatClient;
-    private readonly ChatOptions _chatOptions;
+    private readonly ChatOptions? _chatOptions;
     private readonly FrozenSet<string>? _predefinedKeywords;
+    private readonly ChatMessage _systemPrompt;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KeywordEnricher"/> class.
@@ -46,16 +47,17 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
     public KeywordEnricher(IChatClient chatClient, ReadOnlySpan<string> predefinedKeywords,
         ChatOptions? chatOptions = null, int? maxKeywords = null, double? confidenceThreshold = null)
     {
+        _chatClient = Throw.IfNull(chatClient);
+        _chatOptions = chatOptions;
+        _predefinedKeywords = CreatePredfinedKeywords(predefinedKeywords);
+
         double threshold = confidenceThreshold.HasValue
             ? Throw.IfOutOfRange(confidenceThreshold.Value, 0.0, 1.0, nameof(confidenceThreshold))
             : 0.7;
         int keywordsCount = maxKeywords.HasValue
             ? Throw.IfLessThanOrEqual(maxKeywords.Value, 0, nameof(maxKeywords))
             : DefaultMaxKeywords;
-
-        _chatClient = Throw.IfNull(chatClient);
-        _predefinedKeywords = CreatePredfinedKeywords(predefinedKeywords);
-        _chatOptions = CreateChatOptions(keywordsCount, predefinedKeywords, threshold, chatOptions);
+        _systemPrompt = CreateSystemPrompt(keywordsCount, predefinedKeywords, threshold);
     }
 
     /// <summary>
@@ -74,6 +76,7 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
             // Structured response is not used here because it's not part of Microsoft.Extensions.AI.Abstractions.
             var response = await _chatClient.GetResponseAsync(
             [
+                _systemPrompt,
                 new(ChatRole.User, chunk.Content)
             ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -124,7 +127,7 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
         return result.ToFrozenSet(StringComparer.Ordinal);
     }
 
-    private static ChatOptions CreateChatOptions(int maxKeywords, ReadOnlySpan<string> predefinedKeywords, double confidenceThreshold, ChatOptions? userProvided)
+    private static ChatMessage CreateSystemPrompt(int maxKeywords, ReadOnlySpan<string> predefinedKeywords, double confidenceThreshold)
     {
         StringBuilder sb = new($"You are a keyword extraction expert. Analyze the given text and extract up to {maxKeywords} most relevant keywords. ");
 
@@ -132,6 +135,9 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
         {
 #pragma warning disable IDE0058 // Expression value is never used
             sb.Append("Focus on extracting keywords from the following predefined list: ");
+#if NET9_0_OR_GREATER
+            sb.AppendJoin(", ", predefinedKeywords!);
+#else
             for (int i = 0; i < predefinedKeywords.Length; i++)
             {
                 sb.Append(predefinedKeywords[i]);
@@ -140,6 +146,7 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
                     sb.Append(", ");
                 }
             }
+#endif
 
             sb.Append(". ");
         }
@@ -148,8 +155,6 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
         sb.Append(" Return just the keywords separated with ';'.");
 #pragma warning restore IDE0058 // Expression value is never used
 
-        ChatOptions result = userProvided?.Clone() ?? new();
-        result.Instructions = sb.ToString();
-        return result;
+        return new(ChatRole.System, sb.ToString());
     }
 }

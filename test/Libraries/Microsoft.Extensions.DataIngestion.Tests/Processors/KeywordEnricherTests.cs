@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Xunit;
@@ -15,15 +16,16 @@ public class KeywordEnricherTests
 
     [Fact]
     public void ThrowsOnNullChatClient()
-        => Assert.Throws<ArgumentNullException>(() => new KeywordEnricher(null!, predefinedKeywords: null, confidenceThreshold: 0.5));
+    {
+        Assert.Throws<ArgumentNullException>("chatClient", () => new KeywordEnricher(null!, predefinedKeywords: null, confidenceThreshold: 0.5));
+    }
 
     [Theory]
     [InlineData(-0.1)]
     [InlineData(1.1)]
     public void ThrowsOnInvalidThreshold(double threshold)
     {
-        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KeywordEnricher(new TestChatClient(), predefinedKeywords: null, confidenceThreshold: threshold));
-        Assert.Equal("confidenceThreshold", ex.ParamName);
+        Assert.Throws<ArgumentOutOfRangeException>("confidenceThreshold", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: null, confidenceThreshold: threshold));
     }
 
     [Theory]
@@ -31,15 +33,13 @@ public class KeywordEnricherTests
     [InlineData(-1)]
     public void ThrowsOnInvalidMaxKeywords(int keywordCount)
     {
-        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KeywordEnricher(new TestChatClient(), predefinedKeywords: null, maxKeywords: keywordCount));
-        Assert.Equal("maxKeywords", ex.ParamName);
+        Assert.Throws<ArgumentOutOfRangeException>("maxKeywords", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: null, maxKeywords: keywordCount));
     }
 
     [Fact]
     public void ThrowsOnDuplicateKeywords()
     {
-        var ex = Assert.Throws<ArgumentException>(() => new KeywordEnricher(new TestChatClient(), predefinedKeywords: ["same", "same"], confidenceThreshold: 0.5));
-        Assert.Equal("predefinedKeywords", ex.ParamName);
+        Assert.Throws<ArgumentException>("predefinedKeywords", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: ["same", "same"], confidenceThreshold: 0.5));
     }
 
     [Theory]
@@ -47,8 +47,7 @@ public class KeywordEnricherTests
     [InlineData(';')]
     public void ThrowsOnIllegalCharacters(char illegal)
     {
-        var ex = Assert.Throws<ArgumentException>(() => new KeywordEnricher(new TestChatClient(), predefinedKeywords: [$"n{illegal}t"]));
-        Assert.Equal("predefinedKeywords", ex.ParamName);
+        Assert.Throws<ArgumentException>("predefinedKeywords", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: [$"n{illegal}t"]));
     }
 
     [Fact]
@@ -57,7 +56,7 @@ public class KeywordEnricherTests
         using TestChatClient chatClient = new();
         KeywordEnricher sut = new(chatClient, predefinedKeywords: null, confidenceThreshold: 0.5);
 
-        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        await Assert.ThrowsAsync<ArgumentNullException>("chunks", async () =>
         {
             await foreach (var _ in sut.ProcessAsync(null!))
             {
@@ -77,6 +76,12 @@ public class KeywordEnricherTests
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
+                var materializedMessages = messages.ToArray();
+
+                Assert.Equal(2, materializedMessages.Length);
+                Assert.Equal(ChatRole.System, materializedMessages[0].Role);
+                Assert.Equal(ChatRole.User, materializedMessages[1].Role);
+
                 return Task.FromResult(new ChatResponse(new[]
                 {
                     new ChatMessage(ChatRole.Assistant, keywords[counter++])

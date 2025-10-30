@@ -21,13 +21,14 @@ namespace Microsoft.Extensions.DataIngestion;
 public sealed class SentimentEnricher : IngestionChunkProcessor<string>
 {
     private readonly IChatClient _chatClient;
-    private readonly ChatOptions _chatOptions;
+    private readonly ChatOptions? _chatOptions;
     private readonly FrozenSet<string> _validSentiments =
 #if NET9_0_OR_GREATER
         FrozenSet.Create(StringComparer.Ordinal, "Positive", "Negative", "Neutral", "Unknown");
 #else
         new string[] { "Positive", "Negative", "Neutral", "Unknown" }.ToFrozenSet(StringComparer.Ordinal);
 #endif
+    private readonly ChatMessage _systemPrompt;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SentimentEnricher"/> class.
@@ -38,11 +39,15 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
     public SentimentEnricher(IChatClient chatClient, ChatOptions? chatOptions = null, double? confidenceThreshold = null)
     {
         _chatClient = Throw.IfNull(chatClient);
+        _chatOptions = chatOptions;
 
         double threshold = confidenceThreshold.HasValue ? Throw.IfOutOfRange(confidenceThreshold.Value, 0.0, 1.0, nameof(confidenceThreshold)) : 0.7;
-        _chatOptions = chatOptions?.Clone() ?? new();
-        _chatOptions.Instructions = "You are a sentiment analysis expert. Analyze the sentiment of the given text and return Positive/Negative/Neutral or" +
-            $" Unknown when confidence score is below {threshold}. Return just the value of the sentiment.";
+
+        string prompt = $"""
+        You are a sentiment analysis expert. Analyze the sentiment of the given text and return Positive/Negative/Neutral or
+        Unknown when confidence score is below {threshold}. Return just the value of the sentiment.
+        """;
+        _systemPrompt = new(ChatRole.System, prompt);
     }
 
     /// <summary>
@@ -60,6 +65,7 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
         {
             var response = await _chatClient.GetResponseAsync(
             [
+                _systemPrompt,
                 new(ChatRole.User, chunk.Content)
             ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 

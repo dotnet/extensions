@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Xunit;
@@ -12,7 +13,9 @@ public class AlternativeTextEnricherTests
 {
     [Fact]
     public void ThrowsOnNullChatClient()
-        => Assert.Throws<ArgumentNullException>(() => new ImageAlternativeTextEnricher(null!));
+    {
+        Assert.Throws<ArgumentNullException>("chatClient", () => new ImageAlternativeTextEnricher(null!));
+    }
 
     [Fact]
     public async Task ThrowsOnNullDocument()
@@ -21,7 +24,7 @@ public class AlternativeTextEnricherTests
 
         ImageAlternativeTextEnricher sut = new(chatClient);
 
-        await Assert.ThrowsAsync<ArgumentNullException>(async () => await sut.ProcessAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>("document", async () => await sut.ProcessAsync(null!));
     }
 
     [Fact]
@@ -36,8 +39,12 @@ public class AlternativeTextEnricherTests
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                var message = Assert.Single(messages);
-                var content = Assert.Single(message.Contents);
+                var materializedMessages = messages.ToArray();
+
+                Assert.Equal(2, materializedMessages.Length);
+                Assert.Equal(ChatRole.System, materializedMessages[0].Role);
+                Assert.Equal(ChatRole.User, materializedMessages[1].Role);
+                var content = Assert.Single(materializedMessages[1].Contents);
                 DataContent dataContent = Assert.IsType<DataContent>(content);
                 Assert.Equal("image/png", dataContent.MediaType);
                 Assert.Equal(imageContent.ToArray(), dataContent.Data.ToArray());

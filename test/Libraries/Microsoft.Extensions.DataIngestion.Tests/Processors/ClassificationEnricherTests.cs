@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Xunit;
@@ -16,43 +17,37 @@ public class ClassificationEnricherTests
     [Fact]
     public void ThrowsOnNullChatClient()
     {
-        var ex = Assert.Throws<ArgumentNullException>(() => new ClassificationEnricher(null!, predefinedClasses: ["some"]));
-        Assert.Equal("chatClient", ex.ParamName);
+        Assert.Throws<ArgumentNullException>("chatClient", () => new ClassificationEnricher(null!, predefinedClasses: ["some"]));
     }
 
     [Fact]
     public void ThrowsOnEmptyPredefinedClasses()
     {
-        var ex = Assert.Throws<ArgumentException>(() => new ClassificationEnricher(new TestChatClient(), predefinedClasses: []));
-        Assert.Equal("predefinedClasses", ex.ParamName);
+        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new TestChatClient(), predefinedClasses: []));
     }
 
     [Fact]
     public void ThrowsOnDuplicatePredefinedClasses()
     {
-        var ex = Assert.Throws<ArgumentException>(() => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["same", "same"]));
-        Assert.Equal("predefinedClasses", ex.ParamName);
+        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["same", "same"]));
     }
 
     [Fact]
     public void ThrowsOnPredefinedClassesContainingFallback()
     {
-        var ex = Assert.Throws<ArgumentException>(() => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["same", "Unknown"]));
-        Assert.Equal("predefinedClasses", ex.ParamName);
+        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["same", "Unknown"]));
     }
 
     [Fact]
     public void ThrowsOnFallbackInPredefinedClasses()
     {
-        var ex = Assert.Throws<ArgumentException>(() => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["some"], fallbackClass: "some"));
-        Assert.Equal("predefinedClasses", ex.ParamName);
+        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["some"], fallbackClass: "some"));
     }
 
     [Fact]
     public void ThrowsOnPredefinedClassesContainingComma()
     {
-        var ex = Assert.Throws<ArgumentException>(() => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["n,t"]));
-        Assert.Equal("predefinedClasses", ex.ParamName);
+        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["n,t"]));
     }
 
     [Fact]
@@ -61,7 +56,7 @@ public class ClassificationEnricherTests
         using TestChatClient chatClient = new();
         ClassificationEnricher sut = new(chatClient, predefinedClasses: ["some"]);
 
-        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        await Assert.ThrowsAsync<ArgumentNullException>("chunks", async () =>
         {
             await foreach (var _ in sut.ProcessAsync(null!))
             {
@@ -79,6 +74,12 @@ public class ClassificationEnricherTests
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
+                var materializedMessages = messages.ToArray();
+
+                Assert.Equal(2, materializedMessages.Length);
+                Assert.Equal(ChatRole.System, materializedMessages[0].Role);
+                Assert.Equal(ChatRole.User, materializedMessages[1].Role);
+
                 return Task.FromResult(new ChatResponse(new[]
                 {
                     new ChatMessage(ChatRole.Assistant, classes[counter++])
