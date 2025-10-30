@@ -5,8 +5,6 @@
     <NoWarn>$(NoWarn);S3967</NoWarn>
     <!--  Implement IDisposable correctly -->
     <NoWarn>$(NoWarn);CA1063</NoWarn>
-    <!--  The member referenced by the MemberData attribute returns untyped data rows -->
-    <NoWarn>$(NoWarn);xUnit1042</NoWarn>
 
     <!-- https://github.com/dotnet/efcore/issues/33472#issuecomment-2042146335 -->
     <PlatformTarget Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">x64</PlatformTarget>
@@ -20,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" />
   </ItemGroup>
@@ -28,12 +27,6 @@
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
     <!-- We don't run Sqlite tests on Full Framework due to some native dependency issues -->
     <Compile Remove="SqliteVectorStoreWriterTests.cs" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="TestFiles\*.*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,52 +14,53 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
 {
     protected override IngestionDocumentReader CreateDocumentReader(bool extractImages = false) => new MarkdownReader();
 
-    public static new IEnumerable<object[]> Links
-    {
-        get
-        {
-            yield return new object[] { "https://raw.githubusercontent.com/microsoft/markitdown/main/README.md" };
-        }
-    }
-
-    public static new IEnumerable<object[]> Files
-    {
-        get
-        {
-            yield return new object[] { Path.Combine("TestFiles", "Sample.md") };
-        }
-    }
-
-    [ConditionalFact]
-    public override Task SupportsTables() => SupportsTablesCore(Path.Combine("TestFiles", "Sample.md"));
+    public static new TheoryData<string> Links =>
+    [
+        "https://raw.githubusercontent.com/microsoft/markitdown/main/README.md"
+    ];
 
     [ConditionalTheory]
     [MemberData(nameof(Links))]
-    public override Task SupportsStreams(string uri) => base.SupportsStreams(uri);
+    public override Task SupportsStreams(string source) => base.SupportsStreams(source);
 
     [ConditionalTheory]
-    [MemberData(nameof(Files))]
-    public override Task SupportsFiles(string filePath) => base.SupportsFiles(filePath);
+    [MemberData(nameof(Links))]
+    public override Task SupportsFiles(string source) => base.SupportsFiles(source);
 
     [ConditionalFact]
-    public override Task SupportsImages() => SupportsImagesCore(Path.Combine("TestFiles", "SampleWithImage.md"));
-
-    public override async Task SupportsTablesWithImages()
+    public override async Task SupportsTables()
     {
-        var table = await SupportsTablesWithImagesCore(Path.Combine("TestFiles", "TableWithImage.md"));
+        string markdownContent = """
+        # Key Milestones
 
-        for (int rowIndex = 1; rowIndex < table.Cells.GetLength(0); rowIndex++)
+        | **Milestone** | **Target Date** | **Department** | **Indicator** |
+        | --- | --- | --- | --- |
+        | Environmental Audit | Mar 2025 | Environmental | Audit Complete |
+        | Renewable Energy Launch | Jul 2025 | Facilities | Install Operational |
+        | Staff Workshop | Sep 2025 | HR | Workshop Held |
+        | Emissions Review | Dec 2029 | All | 25% Emissions Cut |
+        """;
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        IngestionDocumentTable documentTable = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentTable>());
+        Assert.Equal(5, documentTable.Cells.GetLength(0));
+        Assert.Equal(4, documentTable.Cells.GetLength(1));
+
+        string[,] expected =
         {
-            IngestionDocumentImage img = Assert.IsType<IngestionDocumentImage>(table.Cells[rowIndex, 1]);
+            { "**Milestone**", "**Target Date**", "**Department**", "**Indicator**" },
+            { "Environmental Audit", "Mar 2025", "Environmental", "Audit Complete" },
+            { "Renewable Energy Launch", "Jul 2025", "Facilities", "Install Operational" },
+            { "Staff Workshop", "Sep 2025", "HR", "Workshop Held" },
+            { "Emissions Review", "Dec 2029", "All", "25% Emissions Cut" }
+        };
 
-            Assert.Equal("image/png", img.MediaType);
-            Assert.NotNull(img.Content);
-            Assert.False(img.Content.Value.IsEmpty);
-        }
+        Assert.Equal(expected, documentTable.Cells.Map(element => element!.GetMarkdown().Trim()));
     }
 
-    [Fact]
-    public async Task CanParseVariousContentTypes()
+    [ConditionalFact]
+    public override async Task SupportsImages()
     {
         string contentType1 = "image/png";
         byte[] imageBytes1 = Enumerable.Range(0, 55).Select(i => (byte)i).ToArray();
@@ -85,9 +85,7 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
         ![Three](data:{contentType3};base64,{Convert.ToBase64String(imageBytes3)})
         """;
 
-        using MemoryStream stream = new(System.Text.Encoding.UTF8.GetBytes(markdownContent));
-
-        IngestionDocument document = await CreateDocumentReader().ReadAsync(stream, "doc1", "text/markdown");
+        IngestionDocument document = await ReadAsync(markdownContent);
 
         Assert.NotNull(document);
         var images = document.EnumerateContent().OfType<IngestionDocumentImage>().ToArray();
@@ -101,5 +99,43 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
         Assert.Equal(contentType3, images[2].MediaType);
         Assert.Equal(imageBytes3, images[2].Content?.ToArray());
         Assert.Equal("Three", images[2].AlternativeText);
+    }
+
+    [ConditionalFact]
+    public async Task SupportsTablesWithImages()
+    {
+        byte[] imageBytes = Enumerable.Range(55, 111).Select(i => (byte)i).ToArray();
+        string markdownContent = $"""
+        # Table with Images
+
+        | **Years** | **Logo** |
+        | --- | --- |
+        | 2020-2025 | ![Latest logo](data:image/png;base64,{Convert.ToBase64String(imageBytes)}) |
+        """;
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        var table = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentTable>());
+        Assert.Equal(2, table.Cells.GetLength(0));
+        Assert.Equal(2, table.Cells.GetLength(1));
+
+        // Each reader properly recognizes the text from the first column.
+        // When it comes to the images, MarkItDown extracts them as images, while
+        // other readers return nothing or ORCed text.
+        Assert.Equal("**Years**", table.Cells[0, 0]!.GetMarkdown().Trim());
+        Assert.Equal("**Logo**", table.Cells[0, 1]!.GetMarkdown().Trim());
+        Assert.Equal("2020-2025", table.Cells[1, 0]!.GetMarkdown().Trim());
+
+        IngestionDocumentImage img = Assert.IsType<IngestionDocumentImage>(table.Cells[1, 1]);
+        Assert.Equal("image/png", img.MediaType);
+        Assert.NotNull(img.Content);
+        Assert.False(img.Content.Value.IsEmpty);
+        Assert.Equal("Latest logo", img.AlternativeText);
+    }
+
+    private async Task<IngestionDocument> ReadAsync(string content)
+    {
+        using MemoryStream stream = new(System.Text.Encoding.UTF8.GetBytes(content));
+        return await CreateDocumentReader().ReadAsync(stream, "id", "text/markdown");
     }
 }

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TestUtilities;
@@ -42,21 +41,6 @@ public class MarkItDownReaderTests : DocumentReaderConformanceTests
     // Source: https://github.com/microsoft/markitdown/issues/56#issuecomment-2546357264
     // It can extract images, but the support is limited to some formats like docx.
     [ConditionalFact]
-    public override Task SupportsImages()
-        => SupportsImagesCore(Path.Combine("TestFiles", "SampleWithImage.docx"));
-
-    [ConditionalFact]
-    public override async Task SupportsTablesWithImages()
-    {
-        var table = await SupportsTablesWithImagesCore(Path.Combine("TestFiles", "TableWithImage.docx"));
-
-        for (int rowIndex = 1; rowIndex < table.Cells.GetLength(0); rowIndex++)
-        {
-            IngestionDocumentImage img = Assert.IsType<IngestionDocumentImage>(table.Cells[rowIndex, 1]);
-
-            Assert.Equal("image/png", img.MediaType);
-            Assert.NotNull(img.Content);
-            Assert.False(img.Content.Value.IsEmpty);
-        }
-    }
+    public override Task SupportsImages() => SupportsImagesCore(
+        new("https://winprotocoldocs-bhdugrdyduf5h2e4.b02.azurefd.net/MC-SQLR/%5bMC-SQLR%5d-240423.docx")); // SQL Server Resolution Protocol.
 }
