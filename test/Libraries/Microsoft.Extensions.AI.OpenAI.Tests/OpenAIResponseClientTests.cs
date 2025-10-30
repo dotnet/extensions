@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -3287,6 +3288,73 @@ public class OpenAIResponseClientTests
             Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ResponseId);
             Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ConversationId);
         }
+    }
+
+    [Fact]
+    public async Task ConversationId_RawRepresentationConversationIdTakesPrecedence_NonStreaming()
+    {
+        const string Input = """
+        {
+            "temperature":0.5,
+            "model":"gpt-4o-mini",
+            "conversation":"conv_12345",
+            "input": [{
+                "type":"message",
+                "role":"user",
+                "content":[{"type":"input_text","text":"hello"}]
+            }],
+            "max_output_tokens":20
+        }
+        """;
+
+        const string Output = """
+        {
+            "id": "resp_67890",
+            "object": "response",
+            "created_at": 1741891428,
+            "status": "completed",
+            "model": "gpt-4o-mini-2024-07-18",
+            "output": [
+            {
+                "type": "message",
+                "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                "status": "completed",
+                "role": "assistant",
+                "content": [
+                {
+                    "type": "output_text",
+                    "text": "Hello! How can I assist you today?",
+                    "annotations": []
+                }
+                ]
+            }
+            ]
+        }
+        """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var rcoJsonModel = (IJsonModel<ResponseCreationOptions>)new ResponseCreationOptions();
+        BinaryData rcoJsonBinaryData = rcoJsonModel.Write(ModelReaderWriterOptions.Json);
+        JsonObject rcoJsonObject = Assert.IsType<JsonObject>(JsonNode.Parse(rcoJsonBinaryData.ToMemory().Span));
+        Assert.Null(rcoJsonObject["conversation"]);
+        rcoJsonObject["conversation"] = "conv_12345";
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ConversationId = "conv_ignored",
+            RawRepresentationFactory = (c) => rcoJsonModel.Create(
+                new BinaryData(JsonSerializer.SerializeToUtf8Bytes(rcoJsonObject)),
+                ModelReaderWriterOptions.Json)
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_67890", response.ResponseId);
+        Assert.Equal("conv_12345", response.ConversationId);
     }
 
     private static IChatClient CreateResponseClient(HttpClient httpClient, string modelId) =>

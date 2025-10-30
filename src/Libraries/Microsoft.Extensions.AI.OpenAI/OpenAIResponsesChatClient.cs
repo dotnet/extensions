@@ -268,14 +268,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         bool anyFunctions = false;
         ResponseStatus? latestResponseStatus = null;
 
-        if (options?.StoredOutputEnabled is false)
-        {
-            conversationId = null;
-        }
-        else
-        {
-            conversationId ??= resumeResponseId;
-        }
+        UpdateConversationId(resumeResponseId);
 
         await foreach (var streamingUpdate in streamingResponseUpdates.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
@@ -301,7 +294,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case StreamingResponseCreatedUpdate createdUpdate:
                     createdAt = createdUpdate.Response.CreatedAt;
                     responseId = createdUpdate.Response.Id;
-                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
+                    UpdateConversationId(responseId);
                     modelId = createdUpdate.Response.Model;
                     latestResponseStatus = createdUpdate.Response.Status;
                     goto default;
@@ -309,7 +302,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case StreamingResponseQueuedUpdate queuedUpdate:
                     createdAt = queuedUpdate.Response.CreatedAt;
                     responseId = queuedUpdate.Response.Id;
-                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
+                    UpdateConversationId(responseId);
                     modelId = queuedUpdate.Response.Model;
                     latestResponseStatus = queuedUpdate.Response.Status;
                     goto default;
@@ -317,7 +310,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case StreamingResponseInProgressUpdate inProgressUpdate:
                     createdAt = inProgressUpdate.Response.CreatedAt;
                     responseId = inProgressUpdate.Response.Id;
-                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
+                    UpdateConversationId(responseId);
                     modelId = inProgressUpdate.Response.Model;
                     latestResponseStatus = inProgressUpdate.Response.Status;
                     goto default;
@@ -325,7 +318,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case StreamingResponseIncompleteUpdate incompleteUpdate:
                     createdAt = incompleteUpdate.Response.CreatedAt;
                     responseId = incompleteUpdate.Response.Id;
-                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
+                    UpdateConversationId(responseId);
                     modelId = incompleteUpdate.Response.Model;
                     latestResponseStatus = incompleteUpdate.Response.Status;
                     goto default;
@@ -333,7 +326,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case StreamingResponseFailedUpdate failedUpdate:
                     createdAt = failedUpdate.Response.CreatedAt;
                     responseId = failedUpdate.Response.Id;
-                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
+                    UpdateConversationId(responseId);
                     modelId = failedUpdate.Response.Model;
                     latestResponseStatus = failedUpdate.Response.Status;
                     goto default;
@@ -342,7 +335,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 {
                     createdAt = completedUpdate.Response.CreatedAt;
                     responseId = completedUpdate.Response.Id;
-                    conversationId ??= options?.StoredOutputEnabled is false ? null : responseId;
+                    UpdateConversationId(responseId);
                     modelId = completedUpdate.Response.Model;
                     latestResponseStatus = completedUpdate.Response?.Status;
                     var update = CreateUpdate(ToUsageDetails(completedUpdate.Response) is { } usage ? new UsageContent(usage) : null);
@@ -443,6 +436,18 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 default:
                     yield return CreateUpdate();
                     break;
+            }
+        }
+
+        void UpdateConversationId(string? id)
+        {
+            if (options?.StoredOutputEnabled is false)
+            {
+                conversationId = null;
+            }
+            else
+            {
+                conversationId ??= id;
             }
         }
     }
