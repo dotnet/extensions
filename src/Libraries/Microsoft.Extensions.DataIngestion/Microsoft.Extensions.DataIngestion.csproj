@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
     <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
   </ItemGroup>
 

@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -186,6 +187,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     message.Contents.Add(fcc);
                     break;
 
+                case FunctionCallOutputResponseItem functionCallOutputItem:
+                    message.Contents.Add(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
+                    break;
+
                 case McpToolCallItem mtci:
                     AddMcpToolCallContent(mtci, message.Contents);
                     break;
@@ -205,8 +210,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     message.Contents.Add(new McpServerToolApprovalResponseContent(mtcari.ApprovalRequestId, mtcari.Approved) { RawRepresentation = mtcari });
                     break;
 
-                case FunctionCallOutputResponseItem functionCallOutputItem:
-                    message.Contents.Add(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
+                case CodeInterpreterCallResponseItem cicri:
+                    AddCodeInterpreterContents(cicri, message.Contents);
                     break;
 
                 default:
@@ -383,6 +388,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     });
                     break;
 
+                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is CodeInterpreterCallResponseItem cicri:
+                    var codeUpdate = CreateUpdate();
+                    AddCodeInterpreterContents(cicri, codeUpdate.Contents);
+                    yield return codeUpdate;
+                    break;
+
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when
                         outputItemDoneUpdate.Item is MessageResponseItem mri &&
                         mri.Content is { Count: > 0 } content &&
@@ -429,6 +440,97 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     void IDisposable.Dispose()
     {
         // Nothing to dispose. Implementation required for the IChatClient interface.
+    }
+
+    internal static ResponseTool? ToResponseTool(AITool tool, ChatOptions? options = null)
+    {
+        switch (tool)
+        {
+            case ResponseToolAITool rtat:
+                return rtat.Tool;
+
+            case AIFunctionDeclaration aiFunction:
+                return ToResponseTool(aiFunction, options);
+
+            case HostedWebSearchTool webSearchTool:
+                WebSearchToolLocation? location = null;
+                if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchToolLocation), out object? objLocation))
+                {
+                    location = objLocation as WebSearchToolLocation;
+                }
+
+                WebSearchToolContextSize? size = null;
+                if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchToolContextSize), out object? objSize) &&
+                    objSize is WebSearchToolContextSize)
+                {
+                    size = (WebSearchToolContextSize)objSize;
+                }
+
+                return ResponseTool.CreateWebSearchTool(location, size);
+
+            case HostedFileSearchTool fileSearchTool:
+                return ResponseTool.CreateFileSearchTool(
+                    fileSearchTool.Inputs?.OfType<HostedVectorStoreContent>().Select(c => c.VectorStoreId) ?? [],
+                    fileSearchTool.MaximumResultCount);
+
+            case HostedCodeInterpreterTool codeTool:
+                return ResponseTool.CreateCodeInterpreterTool(
+                    new CodeInterpreterToolContainer(codeTool.Inputs?.OfType<HostedFileContent>().Select(f => f.FileId).ToList() is { Count: > 0 } ids ?
+                        CodeInterpreterToolContainerConfiguration.CreateAutomaticContainerConfiguration(ids) :
+                        new()));
+
+            case HostedMcpServerTool mcpTool:
+                McpTool responsesMcpTool = Uri.TryCreate(mcpTool.ServerAddress, UriKind.Absolute, out Uri? url) ?
+                    ResponseTool.CreateMcpTool(
+                        mcpTool.ServerName,
+                        url,
+                        mcpTool.AuthorizationToken,
+                        mcpTool.ServerDescription) :
+                    ResponseTool.CreateMcpTool(
+                        mcpTool.ServerName,
+                        new McpToolConnectorId(mcpTool.ServerAddress),
+                        mcpTool.AuthorizationToken,
+                        mcpTool.ServerDescription);
+
+                if (mcpTool.AllowedTools is not null)
+                {
+                    responsesMcpTool.AllowedTools = new();
+                    AddAllMcpFilters(mcpTool.AllowedTools, responsesMcpTool.AllowedTools);
+                }
+
+                switch (mcpTool.ApprovalMode)
+                {
+                    case HostedMcpServerToolAlwaysRequireApprovalMode:
+                        responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.AlwaysRequireApproval);
+                        break;
+
+                    case HostedMcpServerToolNeverRequireApprovalMode:
+                        responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval);
+                        break;
+
+                    case HostedMcpServerToolRequireSpecificApprovalMode specificMode:
+                        responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(new CustomMcpToolCallApprovalPolicy());
+
+                        if (specificMode.AlwaysRequireApprovalToolNames is { Count: > 0 } alwaysRequireToolNames)
+                        {
+                            responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval = new();
+                            AddAllMcpFilters(alwaysRequireToolNames, responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval);
+                        }
+
+                        if (specificMode.NeverRequireApprovalToolNames is { Count: > 0 } neverRequireToolNames)
+                        {
+                            responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval = new();
+                            AddAllMcpFilters(neverRequireToolNames, responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval);
+                        }
+
+                        break;
+                }
+
+                return responsesMcpTool;
+
+            default:
+                return null;
+        }
     }
 
     internal static FunctionTool ToResponseTool(AIFunctionDeclaration aiFunction, ChatOptions? options = null)
@@ -492,96 +594,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             foreach (AITool tool in tools)
             {
-                switch (tool)
+                if (ToResponseTool(tool, options) is { } responseTool)
                 {
-                    case ResponseToolAITool rtat:
-                        result.Tools.Add(rtat.Tool);
-                        break;
-
-                    case AIFunctionDeclaration aiFunction:
-                        result.Tools.Add(ToResponseTool(aiFunction, options));
-                        break;
-
-                    case HostedWebSearchTool webSearchTool:
-                        WebSearchToolLocation? location = null;
-                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchToolLocation), out object? objLocation))
-                        {
-                            location = objLocation as WebSearchToolLocation;
-                        }
-
-                        WebSearchToolContextSize? size = null;
-                        if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchToolContextSize), out object? objSize) &&
-                            objSize is WebSearchToolContextSize)
-                        {
-                            size = (WebSearchToolContextSize)objSize;
-                        }
-
-                        result.Tools.Add(ResponseTool.CreateWebSearchTool(location, size));
-                        break;
-
-                    case HostedFileSearchTool fileSearchTool:
-                        result.Tools.Add(ResponseTool.CreateFileSearchTool(
-                            fileSearchTool.Inputs?.OfType<HostedVectorStoreContent>().Select(c => c.VectorStoreId) ?? [],
-                            fileSearchTool.MaximumResultCount));
-                        break;
-
-                    case HostedCodeInterpreterTool codeTool:
-                        result.Tools.Add(
-                            ResponseTool.CreateCodeInterpreterTool(
-                                new CodeInterpreterToolContainer(codeTool.Inputs?.OfType<HostedFileContent>().Select(f => f.FileId).ToList() is { Count: > 0 } ids ?
-                                    CodeInterpreterToolContainerConfiguration.CreateAutomaticContainerConfiguration(ids) :
-                                    new())));
-                        break;
-
-                    case HostedMcpServerTool mcpTool:
-                        McpTool responsesMcpTool = Uri.TryCreate(mcpTool.ServerAddress, UriKind.Absolute, out Uri? url) ?
-                            ResponseTool.CreateMcpTool(
-                                mcpTool.ServerName,
-                                url,
-                                mcpTool.AuthorizationToken,
-                                mcpTool.ServerDescription) :
-                            ResponseTool.CreateMcpTool(
-                                mcpTool.ServerName,
-                                new McpToolConnectorId(mcpTool.ServerAddress),
-                                mcpTool.AuthorizationToken,
-                                mcpTool.ServerDescription);
-
-                        if (mcpTool.AllowedTools is not null)
-                        {
-                            responsesMcpTool.AllowedTools = new();
-                            AddAllMcpFilters(mcpTool.AllowedTools, responsesMcpTool.AllowedTools);
-                        }
-
-                        switch (mcpTool.ApprovalMode)
-                        {
-                            case HostedMcpServerToolAlwaysRequireApprovalMode:
-                                responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.AlwaysRequireApproval);
-                                break;
-
-                            case HostedMcpServerToolNeverRequireApprovalMode:
-                                responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval);
-                                break;
-
-                            case HostedMcpServerToolRequireSpecificApprovalMode specificMode:
-                                responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(new CustomMcpToolCallApprovalPolicy());
-
-                                if (specificMode.AlwaysRequireApprovalToolNames is { Count: > 0 } alwaysRequireToolNames)
-                                {
-                                    responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval = new();
-                                    AddAllMcpFilters(alwaysRequireToolNames, responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval);
-                                }
-
-                                if (specificMode.NeverRequireApprovalToolNames is { Count: > 0 } neverRequireToolNames)
-                                {
-                                    responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval = new();
-                                    AddAllMcpFilters(neverRequireToolNames, responsesMcpTool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval);
-                                }
-
-                                break;
-                        }
-
-                        result.Tools.Add(responsesMcpTool);
-                        break;
+                    result.Tools.Add(responseTool);
                 }
             }
 
@@ -914,11 +929,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case ResponseContentPartKind.InputFile:
                     if (!string.IsNullOrWhiteSpace(part.InputImageFileId))
                     {
-                        results.Add(new HostedFileContent(part.InputImageFileId) { RawRepresentation = part });
+                        results.Add(new HostedFileContent(part.InputImageFileId) { MediaType = "image/*", RawRepresentation = part });
                     }
                     else if (!string.IsNullOrWhiteSpace(part.InputFileId))
                     {
-                        results.Add(new HostedFileContent(part.InputFileId) { RawRepresentation = part });
+                        results.Add(new HostedFileContent(part.InputFileId) { Name = part.InputFilename, RawRepresentation = part });
                     }
                     else if (part.InputFileBytes is not null)
                     {
@@ -1010,6 +1025,33 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             filter.ToolNames.Add(toolName);
         }
+    }
+
+    /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="cicri"/> into <paramref name="contents"/>.</summary>
+    private static void AddCodeInterpreterContents(CodeInterpreterCallResponseItem cicri, IList<AIContent> contents)
+    {
+        contents.Add(new CodeInterpreterToolCallContent
+        {
+            CallId = cicri.Id,
+            Inputs = !string.IsNullOrWhiteSpace(cicri.Code) ? [new DataContent(Encoding.UTF8.GetBytes(cicri.Code), "text/x-python")] : null,
+
+            // We purposefully do not set the RawRepresentation on the HostedCodeInterpreterToolCallContent, only on the HostedCodeInterpreterToolResultContent, to avoid
+            // the same CodeInterpreterCallResponseItem being included on two different AIContent instances. When these are roundtripped, we want only one
+            // CodeInterpreterCallResponseItem sent back for the pair.
+        });
+
+        contents.Add(new CodeInterpreterToolResultContent
+        {
+            CallId = cicri.Id,
+            Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
+                o switch
+                {
+                    CodeInterpreterCallImageOutput cicio => new UriContent(cicio.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(cicio.ImageUri)) { RawRepresentation = cicio },
+                    CodeInterpreterCallLogsOutput ciclo => new TextContent(ciclo.Logs) { RawRepresentation = ciclo },
+                    _ => null,
+                }).OfType<AIContent>().ToList() : null,
+            RawRepresentation = cicri,
+        });
     }
 
     private static OpenAIResponsesContinuationToken? CreateContinuationToken(OpenAIResponse openAIResponse)

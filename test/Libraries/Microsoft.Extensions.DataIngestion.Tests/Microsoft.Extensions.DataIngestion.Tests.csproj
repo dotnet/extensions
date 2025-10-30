@@ -3,6 +3,8 @@
   <PropertyGroup>
     <!--  Multidimensional arrays should not be used -->
     <NoWarn>$(NoWarn);S3967</NoWarn>
+    <!--  Implement IDisposable correctly -->
+    <NoWarn>$(NoWarn);CA1063</NoWarn>
     <!--  The member referenced by the MemberData attribute returns untyped data rows -->
     <NoWarn>$(NoWarn);xUnit1042</NoWarn>
 
@@ -23,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
     <!-- We don't run Sqlite tests on Full Framework due to some native dependency issues -->
     <Compile Remove="SqliteVectorStoreWriterTests.cs" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
   </ItemGroup>
