@@ -133,7 +133,6 @@ stages:
               repoTestResultsPath: $(Build.Arcade.TestResultsPath)
               skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
               isWindows: true
-              warnAsError: 0
               runAsPublic: true
 
       # ----------------------------------------------------------------
@@ -165,7 +164,6 @@ stages:
               repoTestResultsPath: $(Build.Arcade.TestResultsPath)
               skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
               isWindows: false
-              warnAsError: 0
               runAsPublic: true
 
 
