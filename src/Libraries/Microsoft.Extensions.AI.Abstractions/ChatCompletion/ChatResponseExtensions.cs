@@ -339,6 +339,8 @@ public static class ChatResponseExtensions
                 return content;
             });
 
+        CoalesceImageDataContent(contents);
+
         Coalesce<DataContent>(
             contents,
             mergeSingle: false,

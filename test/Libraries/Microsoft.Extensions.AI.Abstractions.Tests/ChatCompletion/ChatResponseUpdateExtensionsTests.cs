@@ -67,13 +67,13 @@ public class ChatResponseUpdateExtensionsTests
     {
         // Arrange
         var response = new ChatResponse();
-        var existingDataContent = new DataContent("data:text/plain;base64,aGVsbG8=")
+        var existingDataContent = new DataContent("data:image/png;base64,aGVsbG8=")
         {
             Name = "test-data"
         };
         response.Messages.Add(new ChatMessage(ChatRole.Assistant, [existingDataContent]));
 
-        var newDataContent = new DataContent("data:text/plain;base64,d29ybGQ=")
+        var newDataContent = new DataContent("data:image/png;base64,d29ybGQ=")
         {
             Name = "test-data"  // Same name as existing
         };
@@ -88,7 +88,7 @@ public class ChatResponseUpdateExtensionsTests
         // Assert
         var message = Assert.Single(response.Messages);
         var dataContent = Assert.Single(message.Contents.OfType<DataContent>());
-        Assert.Equal("data:text/plain;base64,d29ybGQ=", dataContent.Uri);
+        Assert.Equal("data:image/png;base64,d29ybGQ=", dataContent.Uri);
         Assert.Equal("test-data", dataContent.Name);
     }
 
