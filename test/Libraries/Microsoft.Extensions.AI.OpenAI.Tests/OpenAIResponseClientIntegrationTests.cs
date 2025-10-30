@@ -36,6 +36,34 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         ChatMessage message = Assert.Single(response.Messages);
 
         Assert.Equal("6", message.Text);
+
+        // Validate CodeInterpreterToolCallContent
+        var toolCallContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolCallContent>().SingleOrDefault();
+        Assert.NotNull(toolCallContent);
+        Assert.NotNull(toolCallContent.CallId);
+        Assert.NotEmpty(toolCallContent.CallId);
+        Assert.NotNull(toolCallContent.Inputs);
+        Assert.NotEmpty(toolCallContent.Inputs);
+
+        var codeInput = toolCallContent.Inputs.OfType<DataContent>().FirstOrDefault();
+        Assert.NotNull(codeInput);
+        Assert.Equal("text/x-python", codeInput.MediaType);
+        Assert.NotEmpty(codeInput.Data.ToArray());
+
+        // Validate CodeInterpreterToolResultContent
+        var toolResultContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolResultContent>().FirstOrDefault();
+        Assert.NotNull(toolResultContent);
+        Assert.NotNull(toolResultContent.CallId);
+        Assert.NotEmpty(toolResultContent.CallId);
+
+        if (toolResultContent.Outputs is not null)
+        {
+            Assert.NotEmpty(toolResultContent.Outputs);
+            if (toolResultContent.Outputs.OfType<TextContent>().FirstOrDefault() is { } resultOutput)
+            {
+                Assert.NotEmpty(resultOutput.Text);
+            }
+        }
     }
 
     [ConditionalFact]

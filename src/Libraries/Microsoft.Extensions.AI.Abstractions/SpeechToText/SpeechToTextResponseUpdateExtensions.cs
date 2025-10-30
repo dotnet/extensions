@@ -30,7 +30,7 @@ public static class SpeechToTextResponseUpdateExtensions
             ProcessUpdate(update, response);
         }
 
-        ChatResponseExtensions.CoalesceTextContent((List<AIContent>)response.Contents);
+        ChatResponseExtensions.CoalesceContent((List<AIContent>)response.Contents);
 
         return response;
     }
@@ -56,7 +56,7 @@ public static class SpeechToTextResponseUpdateExtensions
                 ProcessUpdate(update, response);
             }
 
-            ChatResponseExtensions.CoalesceTextContent((List<AIContent>)response.Contents);
+            ChatResponseExtensions.CoalesceContent((List<AIContent>)response.Contents);
 
             return response;
         }
