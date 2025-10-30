@@ -168,5 +168,8 @@
       Starting with 3.0.0, xunit.runner.visualstudio only supports net472, but we target net462
      -->
     <XUnitRunnerVisualStudioVersion>2.8.2</XUnitRunnerVisualStudioVersion>
+    <!-- MEVD is still part of the Semantic Kernel repo -->
+    <MicrosoftExtensionsVectorDataAbstractionsVersion>9.7.0</MicrosoftExtensionsVectorDataAbstractionsVersion>
+    <MicrosoftSemanticKernelConnectorsVersion>1.66.0-preview</MicrosoftSemanticKernelConnectorsVersion>
   </PropertyGroup>
 </Project>

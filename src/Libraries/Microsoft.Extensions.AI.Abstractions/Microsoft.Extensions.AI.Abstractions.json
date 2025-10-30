@@ -2012,6 +2012,14 @@
         {
           "Member": "string Microsoft.Extensions.AI.HostedFileContent.FileId { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileContent.MediaType { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileContent.Name { get; set; }",
+          "Stage": "Stable"
         }
       ]
     },

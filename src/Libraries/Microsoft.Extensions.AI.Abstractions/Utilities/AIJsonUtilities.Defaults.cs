@@ -57,6 +57,8 @@ public static partial class AIJsonUtilities
         AddAIContentType(options, typeof(McpServerToolResultContent), typeDiscriminatorId: "mcpServerToolResult", checkBuiltIn: false);
         AddAIContentType(options, typeof(McpServerToolApprovalRequestContent), typeDiscriminatorId: "mcpServerToolApprovalRequest", checkBuiltIn: false);
         AddAIContentType(options, typeof(McpServerToolApprovalResponseContent), typeDiscriminatorId: "mcpServerToolApprovalResponse", checkBuiltIn: false);
+        AddAIContentType(options, typeof(CodeInterpreterToolCallContent), typeDiscriminatorId: "codeInterpreterToolCall", checkBuiltIn: false);
+        AddAIContentType(options, typeof(CodeInterpreterToolResultContent), typeDiscriminatorId: "codeInterpreterToolResult", checkBuiltIn: false);
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
@@ -121,12 +123,16 @@ public static partial class AIJsonUtilities
 
     // Temporary workaround: These should be implicitly added in once they're no longer [Experimental]
     // and are included via [JsonDerivedType] on AIContent.
+    [JsonSerializable(typeof(UserInputRequestContent))]
+    [JsonSerializable(typeof(UserInputResponseContent))]
     [JsonSerializable(typeof(FunctionApprovalRequestContent))]
     [JsonSerializable(typeof(FunctionApprovalResponseContent))]
     [JsonSerializable(typeof(McpServerToolCallContent))]
     [JsonSerializable(typeof(McpServerToolResultContent))]
     [JsonSerializable(typeof(McpServerToolApprovalRequestContent))]
     [JsonSerializable(typeof(McpServerToolApprovalResponseContent))]
+    [JsonSerializable(typeof(CodeInterpreterToolCallContent))]
+    [JsonSerializable(typeof(CodeInterpreterToolResultContent))]
     [JsonSerializable(typeof(ResponseContinuationToken))]
 
     // IEmbeddingGenerator
