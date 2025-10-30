@@ -1,5 +1,11 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Updated the `IChatClient` for the OpenAI Responses API to allow either conversation or response ID for `ChatOptions.ConversationId`.
+- Added an `AITool` to `ResponseTool` conversion utility.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.10.1-preview.1.25521.4
 
 - Updated the `IChatClient` for the OpenAI Responses API to support connectors with `HostedMcpServerTool`.
