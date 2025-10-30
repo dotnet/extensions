@@ -93,7 +93,7 @@ public static class ApplicationEnricherServiceCollectionExtensions
     /// Adds an instance of the application enricher to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the application enricher to.</param>
-    /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ApplicationLogEnricherOptions"/> in the service enricher.</param>
+    /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ApplicationLogEnricherOptions"/> in the application enricher.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
