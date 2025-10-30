@@ -10,7 +10,7 @@
     <!-- we are not ready to publish yet -->
     <IsPackable>false</IsPackable>
     <Stage>preview</Stage>
-    <EnablePackageValidation>false</EnablePackageValidation> 
+    <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +21,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
+    <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
