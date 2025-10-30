@@ -450,6 +450,4 @@ public abstract class HttpDependencyMetadataResolver
             hostMetadata.RequestMetadata : // Return the default request metadata for this host if no matching route is found.
             routeMetadataTrieRoot.RequestMetadatas[trieCurrent.RequestMetadataEntryIndex];
     }
-}ataTrieRoot.RequestMetadatas[trieCurrent.RequestMetadataEntryIndex];
-    }
 }
