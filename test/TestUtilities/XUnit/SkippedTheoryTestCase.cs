@@ -21,10 +21,10 @@ public class SkippedTheoryTestCase : XunitTestCase
     }
 
     public SkippedTheoryTestCase(
-        IMessageSink diagnosticMessageSink, 
-        TestMethodDisplay defaultMethodDisplay, 
+        IMessageSink diagnosticMessageSink,
+        TestMethodDisplay defaultMethodDisplay,
         TestMethodDisplayOptions defaultMethodDisplayOptions,
-        ITestMethod testMethod, 
+        ITestMethod testMethod,
         object[]? testMethodArguments = null)
         : base(diagnosticMessageSink, defaultMethodDisplay, defaultMethodDisplayOptions, testMethod, testMethodArguments)
     {
