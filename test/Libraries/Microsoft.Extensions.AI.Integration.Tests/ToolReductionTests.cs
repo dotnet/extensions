@@ -490,12 +490,10 @@ public class ToolReductionTests
     private static List<AITool> CreateTools(params string[] names) =>
         names.Select(n => (AITool)new SimpleTool(n, $"Description about {n}")).ToList();
 
-#pragma warning disable CS1998
     private static async IAsyncEnumerable<T> EmptyAsyncEnumerable<T>()
     {
         yield break;
     }
-#pragma warning restore CS1998
 
     private sealed class SimpleTool : AITool
     {

@@ -20,7 +20,6 @@ using Xunit;
 #pragma warning disable S2760 // Sequential tests should not check the same condition
 #pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable S5034 // "ValueTask" should be consumed correctly
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 namespace Microsoft.Extensions.AI;
 
