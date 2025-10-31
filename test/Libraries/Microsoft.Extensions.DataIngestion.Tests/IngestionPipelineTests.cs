@@ -1,30 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Azure;
-using Azure.AI.DocumentIntelligence;
-using LlamaParse;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DataIngestion.Chunkers;
-using Microsoft.ML.Tokenizers;
-using Microsoft.SemanticKernel.Connectors.InMemory;
-using OpenTelemetry;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
+using Microsoft.ML.Tokenizers;
+using Microsoft.SemanticKernel.Connectors.InMemory;
+using OpenTelemetry;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Tests;
 
-public class DocumentPipelineTests
+public class IngestionPipelineTests
 {
     public static TheoryData<FileInfo[], IngestionDocumentReader, IngestionChunker<string>> FilesAndReaders
     {
@@ -78,20 +72,17 @@ public class DocumentPipelineTests
         using InMemoryVectorStore testVectorStore = new(options);
         using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
 
-        using IngestionPipeline<string> pipeline = new(reader, chunker, vectorStoreWriter)
-        {
-            DocumentProcessors = { RemovalProcessor.Footers, RemovalProcessor.EmptySections }
-        };
+        using IngestionPipeline<string> pipeline = new(reader, chunker, vectorStoreWriter);
         await pipeline.ProcessAsync(files);
 
         Assert.True(embeddingGenerator.WasCalled, "Embedding generator should have been called.");
 
-        Dictionary<string, object?>[] retrieved = await vectorStoreWriter.VectorStoreCollection
+        var retrieved = await vectorStoreWriter.VectorStoreCollection
             .GetAsync(record => files.Any(info => info.FullName == (string)record["documentid"]!), top: 1000)
-            .ToArrayAsync();
+            .ToListAsync();
 
         Assert.NotEmpty(retrieved);
-        for (int i = 0; i < retrieved.Length; i++)
+        for (int i = 0; i < retrieved.Count; i++)
         {
             Assert.NotEmpty((string)retrieved[i]["key"]!);
             Assert.NotEmpty((string)retrieved[i]["content"]!);
@@ -119,10 +110,7 @@ public class DocumentPipelineTests
         using InMemoryVectorStore testVectorStore = new(options);
         using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
 
-        using IngestionPipeline<string> pipeline = new(reader, documentChunker, vectorStoreWriter)
-        {
-            DocumentProcessors = { RemovalProcessor.Footers, RemovalProcessor.EmptySections }
-        };
+        using IngestionPipeline<string> pipeline = new(reader, documentChunker, vectorStoreWriter);
 
         DirectoryInfo directory = new("TestFiles");
         string searchPattern = reader switch
@@ -134,12 +122,12 @@ public class DocumentPipelineTests
 
         Assert.True(embeddingGenerator.WasCalled, "Embedding generator should have been called.");
 
-        Dictionary<string, object?>[] retrieved = await vectorStoreWriter.VectorStoreCollection
+        var retrieved = await vectorStoreWriter.VectorStoreCollection
             .GetAsync(record => ((string)record["documentid"]!).StartsWith(directory.FullName), top: 1000)
-            .ToArrayAsync();
+            .ToListAsync();
 
         Assert.NotEmpty(retrieved);
-        for (int i = 0; i < retrieved.Length; i++)
+        for (int i = 0; i < retrieved.Count; i++)
         {
             Assert.NotEmpty((string)retrieved[i]["key"]!);
             Assert.NotEmpty((string)retrieved[i]["content"]!);
@@ -166,13 +154,13 @@ public class DocumentPipelineTests
         Assert.False(embeddingGenerator.WasCalled);
         await pipeline.ProcessAsync([new FileInfo(Path.Combine("TestFiles", "SampleWithImage.md"))]);
 
-        Dictionary<string, object?>[] retrieved = await vectorStoreWriter.VectorStoreCollection
+        var retrieved = await vectorStoreWriter.VectorStoreCollection
             .GetAsync(record => ((string)record["documentid"]!).EndsWith("SampleWithImage.md"), top: 100)
-            .ToArrayAsync();
+            .ToListAsync();
 
         Assert.True(embeddingGenerator.WasCalled);
         Assert.NotEmpty(retrieved);
-        for (int i = 0; i < retrieved.Length; i++)
+        for (int i = 0; i < retrieved.Count; i++)
         {
             Assert.NotEmpty((string)retrieved[i]["key"]!);
             Assert.EndsWith("SampleWithImage.md", (string)retrieved[i]["documentid"]!);
@@ -184,11 +172,9 @@ public class DocumentPipelineTests
         public override IAsyncEnumerable<IngestionChunk<DataContent>> ProcessAsync(IngestionDocument document, CancellationToken cancellationToken = default)
             => document.EnumerateContent()
                     .OfType<IngestionDocumentImage>()
-                    .Select(image => new IngestionChunk<DataContent>
-                    (
+                    .Select(image => new IngestionChunk<DataContent>(
                         content: new(image.Content.GetValueOrDefault(), image.MediaType!),
-                        document: document
-                    ))
+                        document: document))
                     .ToAsyncEnumerable();
     }
 
@@ -198,7 +184,7 @@ public class DocumentPipelineTests
         List<Activity> activities = [];
         using TracerProvider tracerProvider = CreateTraceProvider(activities);
 
-        IngestionChunker<string> documentChunker = new SectionChunker(new(CreateTokenizer()));
+        IngestionChunker<string> documentChunker = new HeaderChunker(new(CreateTokenizer()));
         TestEmbeddingGenerator<string> embeddingGenerator = new();
         InMemoryVectorStoreOptions options = new()
         {
@@ -226,37 +212,13 @@ public class DocumentPipelineTests
             new MarkItDownReader(),
         };
 
-#if RELEASE // running these takes a lot of time (and costs money), so only do it in release builds as using the 2 above is usually sufficient to detect bugs.
-        if (Environment.GetEnvironmentVariable("LLAMACLOUD_API_KEY") is string llamaKey && !string.IsNullOrEmpty(llamaKey))
-        {
-            LlamaParse.Configuration configuration = new()
-            {
-                ApiKey = llamaKey,
-                ItemsToExtract = ItemType.Table,
-            };
-
-            readers.Add(new LlamaParseReader(new LlamaParseClient(new HttpClient(), configuration)));
-        }
-
-        if (Environment.GetEnvironmentVariable("AZURE_DOCUMENT_INT_KEY") is string adiKey && !string.IsNullOrEmpty(adiKey)
-            && Environment.GetEnvironmentVariable("AZURE_DOCUMENT_INT_ENDPOINT") is string endpoint && !string.IsNullOrEmpty(endpoint))
-        {
-            AzureKeyCredential credential = new(adiKey);
-            DocumentIntelligenceClient client = new(new Uri(endpoint), credential);
-
-            readers.Add(new DocumentIntelligenceReader(client));
-        }
-#endif
-
         return readers;
     }
 
     private static Tokenizer CreateTokenizer() => TiktokenTokenizer.CreateForModel("gpt-4");
 
     private static List<IngestionChunker<string>> CreateChunkers() => [
-        // Chunk size comes from https://learn.microsoft.com/en-us/azure/search/vector-search-how-to-chunk-documents#text-split-skill-example
         new HeaderChunker(new(CreateTokenizer())),
-        new SectionChunker(new(CreateTokenizer()))
     ];
 
     private static TracerProvider CreateTraceProvider(List<Activity> activities)
@@ -297,6 +259,9 @@ public class DocumentPipelineTests
     {
         internal const string ExceptionMessage = "An expected exception occurred.";
 
-        public ExpectedException() : base(ExceptionMessage) { }
+        public ExpectedException()
+            : base(ExceptionMessage)
+        {
+        }
     }
 }

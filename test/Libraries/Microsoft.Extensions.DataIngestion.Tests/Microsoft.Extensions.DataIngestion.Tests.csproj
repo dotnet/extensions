@@ -18,6 +18,7 @@
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
