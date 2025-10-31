@@ -123,7 +123,11 @@ internal static class DiagnosticIds
     internal static class Obsoletions
     {
         internal const string NonObservableResourceMonitoringApiDiagId = "EXTOBS0001";
-        internal const string NonObservableResourceMonitoringApiMessage = "This API is obsolete and will be removed in a future version. Consider using Resource Monitoring observable instruments.";
+        internal const string ObsoleteTelemetryApiDiagId = "EXTOBS0002";
+        internal const string NonObservableResourceMonitoringApiMessage =
+            "This API is obsolete and will be removed in a future version. Consider using Resource Monitoring observable instruments.";
+        internal const string ObsoleteTelemetryApiMessage =
+            "This API is obsolete and will be removed in a future version. Instead of the AddServiceLogEnricher() methods, consider using the respective AddApplicationLogEnricher() methods.";
     }
 }
 

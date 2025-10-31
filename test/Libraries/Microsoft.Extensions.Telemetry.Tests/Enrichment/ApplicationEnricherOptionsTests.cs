@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Diagnostics.Enrichment.Test;
 public class ApplicationEnricherOptionsTests
 {
     [Fact]
-    public void ServiceLogEnricherOptions_EnsureDefaultValues()
+    public void ApplicationLogEnricherOptions_EnsureDefaultValues()
     {
         var options = new ApplicationLogEnricherOptions();
         options.EnvironmentName.Should().BeTrue();
