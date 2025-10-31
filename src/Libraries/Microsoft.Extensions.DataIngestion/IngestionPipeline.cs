@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.DataIngestion;
 
 #pragma warning disable IDE0058 // Expression value is never used
 #pragma warning disable IDE0063 // Use simple 'using' statement
+#pragma warning disable CA1031 // Do not catch general exception types
 
 /// <summary>
 /// Represents a pipeline for ingesting data from documents and processing it into chunks.
@@ -25,6 +26,7 @@ public sealed class IngestionPipeline<T> : IDisposable
     private readonly IngestionDocumentReader _reader;
     private readonly IngestionChunker<T> _chunker;
     private readonly IngestionChunkWriter<T> _writer;
+    private readonly IngestionPipelineOptions _options;
     private readonly ActivitySource _activitySource;
     private readonly ILogger? _logger;
 
@@ -46,7 +48,8 @@ public sealed class IngestionPipeline<T> : IDisposable
         _reader = Throw.IfNull(reader);
         _chunker = Throw.IfNull(chunker);
         _writer = Throw.IfNull(writer);
-        _activitySource = new((options ?? new()).ActivitySourceName);
+        _options = options?.Clone() ?? new();
+        _activitySource = new(_options.ActivitySourceName);
         _logger = loggerFactory?.CreateLogger<IngestionPipeline<T>>();
     }
 
@@ -88,17 +91,7 @@ public sealed class IngestionPipeline<T> : IDisposable
             rootActivity?.SetTag(ProcessDirectory.SearchOptionTagName, searchOption.ToString());
             _logger?.ProcessingDirectory(directory.FullName, searchPattern, searchOption);
 
-            try
-            {
-                await ProcessAsync(directory.EnumerateFiles(searchPattern, searchOption), cancellationToken, rootActivity).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                TraceException(rootActivity, ex);
-                _logger?.DirectoryError(ex, directory.FullName);
-
-                throw;
-            }
+            await ProcessAsync(directory.EnumerateFiles(searchPattern, searchOption), rootActivity, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -114,57 +107,11 @@ public sealed class IngestionPipeline<T> : IDisposable
 
         using (Activity? rootActivity = StartActivity(ProcessFiles.ActivityName, ActivityKind.Internal))
         {
-            try
-            {
-                await ProcessAsync(files, cancellationToken, rootActivity).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                TraceException(rootActivity, ex);
-                _logger?.ProcessingError(ex);
-
-                throw;
-            }
+            await ProcessAsync(files, rootActivity, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private static string GetShortName(object any)
-    {
-        Type type = any.GetType();
-
-        return type.IsConstructedGenericType
-            ? type.ToString()
-            : type.Name;
-    }
-
-    private static async Task<TResult> TryAsync<TResult>(Func<CancellationToken, Task<TResult>> func, Activity? activity, CancellationToken cancellationToken, Activity? parentActivity = default)
-    {
-        try
-        {
-            return await func(cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            TraceException(activity, ex);
-            TraceException(parentActivity, ex);
-
-            throw;
-        }
-    }
-
-    private static async Task TryAsync(Func<CancellationToken, Task> func, Activity? activity, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await func(cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            TraceException(activity, ex);
-
-            throw;
-        }
-    }
+    private static string GetShortName(object any) => any.GetType().Name;
 
     private static void TraceException(Activity? activity, Exception ex)
     {
@@ -172,7 +119,7 @@ public sealed class IngestionPipeline<T> : IDisposable
         activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
     }
 
-    private async Task ProcessAsync(IEnumerable<FileInfo> files, CancellationToken cancellationToken, Activity? rootActivity = default)
+    private async Task ProcessAsync(IEnumerable<FileInfo> files, Activity? rootActivity, CancellationToken cancellationToken)
     {
         if (files is IReadOnlyList<FileInfo> materialized)
         {
@@ -180,44 +127,68 @@ public sealed class IngestionPipeline<T> : IDisposable
             _logger?.LogFileCount(materialized.Count);
         }
 
+        List<Exception>? exceptions = null;
+        int fileCount = 0;
         foreach (FileInfo fileInfo in files)
         {
+            fileCount++;
             using (Activity? processFileActivity = StartActivity(ProcessFile.ActivityName, ActivityKind.Internal, parent: rootActivity))
             {
                 processFileActivity?.SetTag(ProcessFile.FilePathTagName, fileInfo.FullName);
+                _logger?.ReadingFile(fileInfo.FullName, GetShortName(_reader));
+
                 IngestionDocument? document = null;
-
-                using (Activity? readerActivity = StartActivity(ReadDocument.ActivityName, ActivityKind.Client, processFileActivity))
+                try
                 {
-                    readerActivity?.SetTag(ReadDocument.ReaderTagName, GetShortName(_reader));
-                    _logger?.ReadingFile(fileInfo.FullName, GetShortName(_reader));
-
-                    document = await TryAsync(ct => _reader.ReadAsync(fileInfo, ct), readerActivity, cancellationToken, processFileActivity).ConfigureAwait(false);
+                    document = await _reader.ReadAsync(fileInfo, cancellationToken).ConfigureAwait(false);
 
                     processFileActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
                     _logger?.ReadDocument(document.Identifier);
-                }
 
-                await TryAsync(ct => ProcessAsync(document, processFileActivity, ct), processFileActivity, cancellationToken).ConfigureAwait(false);
+                    await IngestAsync(document, processFileActivity, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    TraceException(processFileActivity, ex);
+                    _logger?.IngestingFailed(ex, document?.Identifier ?? fileInfo.FullName);
+
+                    exceptions ??= [];
+                    exceptions.Add(ex);
+
+                    if (exceptions.Count >= _options.MaximumErrorsPerProcessing)
+                    {
+                        TraceException(rootActivity, ex);
+
+                        if (exceptions.Count == 1)
+                        {
+                            throw;
+                        }
+
+                        throw new AggregateException(exceptions);
+                    }
+
+                    continue;
+                }
             }
+        }
+
+        // When all ingestions throw, the method has to throw no matter how MaximumErrorsPerProcessing was configured.
+        if (exceptions is not null && exceptions.Count == fileCount)
+        {
+            TraceException(rootActivity, exceptions[exceptions.Count - 1]);
+
+            throw new AggregateException(exceptions);
         }
     }
 
-    private async Task ProcessAsync(IngestionDocument document, Activity? parentActivity, CancellationToken cancellationToken)
+    private async Task IngestAsync(IngestionDocument document, Activity? parentActivity, CancellationToken cancellationToken)
     {
         foreach (IngestionDocumentProcessor processor in DocumentProcessors)
         {
-            using (Activity? processorActivity = StartActivity(ProcessDocument.ActivityName, ActivityKind.Internal, parent: parentActivity))
-            {
-                processorActivity?.SetTag(ProcessDocument.ProcessorTagName, GetShortName(processor));
-                _logger?.ProcessingDocument(document.Identifier, GetShortName(processor));
+            document = await processor.ProcessAsync(document, cancellationToken).ConfigureAwait(false);
 
-                document = await TryAsync(ct => processor.ProcessAsync(document, ct), processorActivity, cancellationToken).ConfigureAwait(false);
-
-                // A DocumentProcessor might change the document identifier (for example by extracting it from its content), so update the ID tag.
-                parentActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
-                _logger?.ProcessedDocument(document.Identifier);
-            }
+            // A DocumentProcessor might change the document identifier (for example by extracting it from its content), so update the ID tag.
+            parentActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
         }
 
         IAsyncEnumerable<IngestionChunk<T>> chunks = _chunker.ProcessAsync(document, cancellationToken);
@@ -226,7 +197,9 @@ public sealed class IngestionPipeline<T> : IDisposable
             chunks = processor.ProcessAsync(chunks, cancellationToken);
         }
 
+        _logger?.WritingChunks(GetShortName(_writer));
         await _writer.WriteAsync(chunks, cancellationToken).ConfigureAwait(false);
+        _logger?.WroteChunks(document.Identifier);
     }
 
     private Activity? StartActivity(string name, ActivityKind activityKind, Activity? parent = default)

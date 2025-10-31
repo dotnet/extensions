@@ -25,24 +25,11 @@ internal static class DiagnosticsConstants
     internal static class ProcessSource
     {
         internal const string DocumentIdTagName = "di.document.id";
-        internal const string ChunkCountTagName = "di.chunk.count";
     }
 
     internal static class ProcessFile
     {
         internal const string ActivityName = "ProcessFile";
         internal const string FilePathTagName = "di.file.path";
-    }
-
-    internal static class ReadDocument
-    {
-        internal const string ActivityName = "ReadDocument";
-        internal const string ReaderTagName = "di.reader.name";
-    }
-
-    internal static class ProcessDocument
-    {
-        internal const string ActivityName = "ProcessDocument";
-        internal const string ProcessorTagName = "di.processor.name";
     }
 }
