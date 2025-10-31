@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.IO;
+#if !NET10_0
 using System.Linq;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;

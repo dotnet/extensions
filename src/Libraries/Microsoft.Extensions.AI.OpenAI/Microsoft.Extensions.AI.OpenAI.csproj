@@ -27,7 +27,7 @@
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
-    <InjectSharedServerSentEvents>true</InjectSharedServerSentEvents>
+    <InjectSharedServerSentEvents Condition="'$(TargetFramework)' != 'net10.0'">true</InjectSharedServerSentEvents>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
   </PropertyGroup>
 

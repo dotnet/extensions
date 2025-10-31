@@ -78,7 +78,7 @@ public abstract class JsonSchemaExporterTests
         Assert.Equal(expectedType, (string)value!);
     }
 
-#if !NET9_0 // Disable until https://github.com/dotnet/runtime/pull/108764 gets backported
+#if !NET9_0_OR_GREATER // Disable until https://github.com/dotnet/runtime/pull/108764 gets backported
     [Fact]
     public void CanGenerateXElementSchema()
     {
@@ -87,7 +87,7 @@ public abstract class JsonSchemaExporterTests
     }
 #endif
 
-#if !NET9_0 // Disable until https://github.com/dotnet/runtime/pull/109954 gets backported
+#if !NET9_0_OR_GREATER // Disable until https://github.com/dotnet/runtime/pull/109954 gets backported
     [Fact]
     public void TransformSchemaNode_PropertiesWithCustomConverters()
     {
