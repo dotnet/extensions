@@ -78,7 +78,7 @@ variables:
   # Enable extraction of published outputs for analysis
   - name: GDN_EXTRACT_TOOLS
     value: 'binskim,bandit,roslynanalyzers'
-  
+
   - name: GDN_EXTRACT_FILTER
     value: 'f|**/*.zip;f|**/*.nupkg;f|**/*.vsix;f|**/*.cspkg;f|**/*.sfpkg;f|**/*.package'
 
@@ -163,7 +163,6 @@ extends:
         parameters:
           artifacts:
             publish:
-              artifacts: true
               logs: true
               manifests: true
           enableMicrobuild: true
@@ -198,9 +197,16 @@ extends:
               outputs:
               - output: pipelineArtifact
                 displayName: 'Publish Azure DevOps extension artifacts'
-                condition: succeeded()
                 targetPath: '$(Build.Arcade.VSIXOutputPath)'
                 artifactName: 'VSIXArtifacts'
+                condition: always()
+                continueOnError: true
+              - output: pipelineArtifact
+                displayName: 'Publish Packages'
+                targetPath: '$(Build.ArtifactStagingDirectory)/artifacts/packages'
+                artifactName: 'PackageArtifacts_Windows'
+                condition: always()
+                continueOnError: true
 
             preSteps:
             - checkout: self
