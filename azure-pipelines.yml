@@ -161,18 +161,20 @@ extends:
       jobs:
       - template: /eng/common/templates-official/jobs/jobs.yml@self
         parameters:
+          artifacts:
+            publish:
+              artifacts: true
+              logs: true
+              manifests: true
           enableMicrobuild: true
           enableTelemetry: true
           enableSourceIndex: ${{ variables['enableSourceIndex'] }}
           runAsPublic: ${{ variables['runAsPublic'] }}
-          # Publish build logs
-          enablePublishBuildArtifacts: true
           # Publish test logs
           enablePublishTestResults: true
           # Publish NuGet packages using v3
           # https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Publishing.md#basic-onboarding-scenario-for-new-repositories-to-the-current-publishing-version-v3
           enablePublishUsingPipelines: true
-          enablePublishBuildAssets: true
           workspace:
             clean: all
 
