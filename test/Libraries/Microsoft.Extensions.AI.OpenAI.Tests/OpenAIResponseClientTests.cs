@@ -4120,6 +4120,526 @@ public class OpenAIResponseClientTests
         Assert.Equal("Hosted file processed", response.Text);
     }
 
+    [Fact]
+    public async Task ResponseWithEndUserId_IncludesInAdditionalProperties()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}],
+              "user":"user_123"
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("test");
+
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Equal("user_123", response.AdditionalProperties["EndUserId"]);
+    }
+
+    [Fact]
+    public async Task ResponseWithError_IncludesInAdditionalPropertiesAndMessage()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"failed",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Processing","annotations":[]}]}],
+              "error":{"code":"rate_limit_exceeded","message":"Rate limit exceeded"}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("test");
+
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.NotNull(response.AdditionalProperties["Error"]);
+
+        var lastMessage = response.Messages.Last();
+        var errorContent = lastMessage.Contents.OfType<ErrorContent>().FirstOrDefault();
+        Assert.NotNull(errorContent);
+        Assert.Equal("Rate limit exceeded", errorContent.Message);
+        Assert.Equal("rate_limit_exceeded", errorContent.ErrorCode);
+    }
+
+    [Fact]
+    public async Task ResponseWithUsageDetails_ParsesTokenCounts()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}],
+              "usage":{
+                "input_tokens":50,
+                "input_tokens_details":{"cached_tokens":10},
+                "output_tokens":25,
+                "output_tokens_details":{"reasoning_tokens":5},
+                "total_tokens":75
+              }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("test");
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(50, response.Usage.InputTokenCount);
+        Assert.Equal(25, response.Usage.OutputTokenCount);
+        Assert.Equal(75, response.Usage.TotalTokenCount);
+        Assert.NotNull(response.Usage.AdditionalCounts);
+        Assert.Equal(10, response.Usage.AdditionalCounts["InputTokenDetails.CachedTokenCount"]);
+        Assert.Equal(5, response.Usage.AdditionalCounts["OutputTokenDetails.ReasoningTokenCount"]);
+    }
+
+    [Fact]
+    public async Task UserMessageWithVariousContentTypes_ConvertsCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[
+                            {"type":"input_text","text":"Check this image: "},
+                            {"type":"input_image","image_url":"https://example.com/image.png"},
+                            {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgo="},
+                            {"type":"input_file","file_data":"data:application/pdf;base64,cGRmZGF0YQ==","filename":"doc.pdf"},
+                            {"type":"input_file","file_id":"file-123"},
+                            {"type":"refusal","refusal":"I cannot process this"}
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var imageData = Convert.FromBase64String("iVBORw0KGgo=");
+        var pdfData = Convert.FromBase64String("cGRmZGF0YQ==");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, [
+                new TextContent("Check this image: "),
+                new UriContent(new Uri("https://example.com/image.png"), "image/png"),
+                new DataContent(imageData, "image/png"),
+                new DataContent(pdfData, "application/pdf") { Name = "doc.pdf" },
+                new HostedFileContent("file-123"),
+                new ErrorContent("I cannot process this") { ErrorCode = "Refusal" }
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Done", response.Text);
+    }
+
+    [Fact]
+    public async Task NonStreamingResponseWithIncompleteReason_MapsFinishReason()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"incomplete",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Partial","annotations":[]}]}],
+              "incomplete_details":{"reason":"max_output_tokens"}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("test");
+
+        Assert.NotNull(response);
+        Assert.Equal("Partial", response.Text);
+        Assert.Equal(ChatFinishReason.Length, response.FinishReason);
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithQueuedUpdate_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.queued
+            data: {"type":"response.queued","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"queued","model":"gpt-4o-mini","output":[]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}]}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 3);
+        Assert.All(updates, u => Assert.Equal("resp_001", u.ResponseId));
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithFailedUpdate_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.failed
+            data: {"type":"response.failed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[],"error":{"code":"internal_error","message":"Internal error"}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 2);
+        Assert.All(updates, u => Assert.Equal("resp_001", u.ResponseId));
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithIncompleteUpdate_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.incomplete
+            data: {"type":"response.incomplete","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"incomplete","model":"gpt-4o-mini","output":[],"incomplete_details":{"reason":"max_output_tokens"}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 2);
+        Assert.All(updates, u => Assert.Equal("resp_001", u.ResponseId));
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithInProgressUpdate_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}]}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 3);
+        Assert.All(updates, u => Assert.Equal("resp_001", u.ResponseId));
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithRefusalUpdate_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.refusal.done
+            data: {"type":"response.refusal.done","refusal":"I cannot provide that information"}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[]}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        var refusalUpdate = updates.FirstOrDefault(u => u.Contents.Any(c => c is ErrorContent ec && ec.ErrorCode == "Refusal"));
+        Assert.NotNull(refusalUpdate);
+
+        var errorContent = refusalUpdate.Contents.OfType<ErrorContent>().First();
+        Assert.Equal("I cannot provide that information", errorContent.Message);
+        Assert.Equal("Refusal", errorContent.ErrorCode);
+    }
+
+    [Fact]
+    public async Task GetContinuationToken_WithMessages_ThrowsException()
+    {
+        using HttpClient httpClient = new();
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var token = new TestOpenAIResponsesContinuationToken("resp_123");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await client.GetResponseAsync(
+                [new ChatMessage(ChatRole.User, "test")],
+                new ChatOptions { ContinuationToken = token });
+        });
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithAnnotations_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","response_id":"resp_001","output_index":0,"item":{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Annotated text","annotations":[{"type":"file_citation","file_id":"file_123","start_index":0,"end_index":14}]}]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Annotated text","annotations":[{"type":"file_citation","file_id":"file_123","start_index":0,"end_index":14}]}]}]}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        var annotatedUpdate = updates.FirstOrDefault(u => u.Contents.Any(c => c.Annotations?.Count > 0));
+        Assert.NotNull(annotatedUpdate);
+        Assert.NotEmpty(annotatedUpdate.Contents.First().Annotations!);
+    }
+
+    [Fact]
+    public async Task UserMessageWithEmptyText_CreatesEmptyInputPart()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":""}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Ok","annotations":[]}]}]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "")]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Ok", response.Text);
+    }
+
+    [Fact]
+    public async Task ResponseWithRefusalContent_ParsesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"harmful request"}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_001",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[
+                    {"type":"refusal","refusal":"I cannot help with that request"}
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("harmful request");
+
+        Assert.NotNull(response);
+        var errorContent = response.Messages.Last().Contents.OfType<ErrorContent>().FirstOrDefault();
+        Assert.NotNull(errorContent);
+        Assert.Equal("I cannot help with that request", errorContent.Message);
+        Assert.Equal("Refusal", errorContent.ErrorCode);
+    }
+
     private static IChatClient CreateResponseClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(
             new ApiKeyCredential("apikey"),
