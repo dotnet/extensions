@@ -5,14 +5,23 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Telemetry.Internal;
+using Microsoft.Shared.DiagnosticIds;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Diagnostics;
 
-internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependencyMetadataManager
+/// <summary>
+/// Resolves metadata for HTTP requests based on hostname, path, and method patterns.
+/// </summary>
+/// <remarks>
+/// This class provides a high-performance way to identify HTTP requests by mapping them to previously
+/// configured metadata using specialized trie-based data structures. This enables efficient lookup
+/// of service information, operation names, and other metadata for telemetry and policy application.
+/// </remarks>
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+public abstract class HttpDependencyMetadataResolver
 {
     internal readonly struct ProcessedMetadata
     {
@@ -27,22 +36,34 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
     private readonly HostSuffixTrieNode _hostSuffixTrieRoot = new();
     private readonly FrozenDictionary<string, ProcessedMetadata> _frozenProcessedMetadataMap;
 
-    public DownstreamDependencyMetadataManager(IEnumerable<IDownstreamDependencyMetadata> downstreamDependencyMetadata)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpDependencyMetadataResolver"/> class.
+    /// </summary>
+    /// <param name="dependencyMetadata">A collection of HTTP dependency metadata used for request resolution.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="dependencyMetadata"/> is <see langword="null"/>.</exception>
+    protected HttpDependencyMetadataResolver(IEnumerable<IDownstreamDependencyMetadata> dependencyMetadata)
     {
+        _ = Throw.IfNull(dependencyMetadata);
+
         Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap = [];
-        foreach (var dependency in downstreamDependencyMetadata)
+        foreach (var dependency in dependencyMetadata)
         {
             AddDependency(dependency, dependencyTrieMap);
         }
 
-        _frozenProcessedMetadataMap = ProcessDownstreamDependencyMetadata(dependencyTrieMap).ToFrozenDictionary(StringComparer.Ordinal);
+        _frozenProcessedMetadataMap = ProcessDependencyMetadata(dependencyTrieMap).ToFrozenDictionary(StringComparer.Ordinal);
     }
 
-    public RequestMetadata? GetRequestMetadata(HttpRequestMessage requestMessage)
+    /// <summary>
+    /// Gets request metadata for the specified instance of <see cref="HttpRequestMessage"/>.
+    /// </summary>
+    /// <param name="requestMessage">The HTTP request message.</param>
+    /// <returns>The resolved <see cref="RequestMetadata"/> if found; otherwise, <see langword="null"/>.</returns>
+    public virtual RequestMetadata? GetRequestMetadata(HttpRequestMessage requestMessage)
     {
         try
         {
-            if (requestMessage.RequestUri == null)
+            if (requestMessage?.RequestUri == null)
             {
                 return null;
             }
@@ -56,26 +77,10 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
             return null;
         }
     }
-
-    public RequestMetadata? GetRequestMetadata(HttpWebRequest requestMessage)
-    {
-        try
-        {
-            var hostMetadata = GetHostMetadata(requestMessage.RequestUri.Host);
-            return GetRequestMetadataInternal(requestMessage.Method, requestMessage.RequestUri.AbsolutePath, hostMetadata);
-        }
-        catch (Exception)
-        {
-            // Catch exceptions here to avoid impacting services if a bug ever gets introduced in this path.
-            return null;
-        }
-    }
-
     private static char[] MakeToUpperArray()
     {
         // Initialize the _toUpper array for quick conversion of any ascii char to upper
         // without incurring cost of checking whether the character requires conversion.
-
         var a = new char[Constants.ASCIICharCount];
         for (int i = 0; i < Constants.ASCIICharCount; i++)
         {
@@ -173,12 +178,12 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
         trieCurrent.RequestMetadata = routeMetadata;
     }
 
-    private static Dictionary<string, ProcessedMetadata> ProcessDownstreamDependencyMetadata(Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap)
+    private static Dictionary<string, ProcessedMetadata> ProcessDependencyMetadata(Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap)
     {
         Dictionary<string, ProcessedMetadata> finalArrayDict = [];
         foreach (var dep in dependencyTrieMap)
         {
-            var finalArray = ProcessDownstreamDependencyMetadataInternal(dep.Value);
+            var finalArray = ProcessDependencyMetadataInternal(dep.Value);
             finalArrayDict.Add(dep.Key, finalArray);
         }
 
@@ -190,7 +195,7 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
     // remove the ExlcudeCodeCoverage attribute and ensure it's covered fully using local runs and enable it back before
     // pushing the change to PR.
     [ExcludeFromCodeCoverage]
-    private static ProcessedMetadata ProcessDownstreamDependencyMetadataInternal(RequestMetadataTrieNode requestMetadataTrieRoot)
+    private static ProcessedMetadata ProcessDependencyMetadataInternal(RequestMetadataTrieNode requestMetadataTrieRoot)
     {
         Queue<RequestMetadataTrieNode> queue = new();
         queue.Enqueue(requestMetadataTrieRoot);
@@ -278,17 +283,17 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
         return null;
     }
 
-    private void AddDependency(IDownstreamDependencyMetadata downstreamDependencyMetadata, Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap)
+    private void AddDependency(IDownstreamDependencyMetadata dependencyMetadata, Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap)
     {
-        foreach (var hostNameSuffix in downstreamDependencyMetadata.UniqueHostNameSuffixes)
+        foreach (var hostNameSuffix in dependencyMetadata.UniqueHostNameSuffixes)
         {
             // Add hostname to hostname suffix trie
-            AddHostnameToTrie(hostNameSuffix, downstreamDependencyMetadata.DependencyName);
+            AddHostnameToTrie(hostNameSuffix, dependencyMetadata.DependencyName);
         }
 
-        foreach (var routeMetadata in downstreamDependencyMetadata.RequestMetadata)
+        foreach (var routeMetadata in dependencyMetadata.RequestMetadata)
         {
-            routeMetadata.DependencyName = downstreamDependencyMetadata.DependencyName;
+            routeMetadata.DependencyName = dependencyMetadata.DependencyName;
 
             // Add route metadata to the route per dependency trie
             AddRouteToTrie(routeMetadata, dependencyTrieMap);
