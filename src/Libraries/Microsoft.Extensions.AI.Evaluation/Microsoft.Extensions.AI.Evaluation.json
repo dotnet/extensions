@@ -260,6 +260,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationMetricExtensions.AddOrUpdateDurationMetadata(this Microsoft.Extensions.AI.Evaluation.EvaluationMetric metric, System.TimeSpan duration);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationMetricExtensions.AddOrUpdateMetadata(this Microsoft.Extensions.AI.Evaluation.EvaluationMetric metric, string name, string value);",
           "Stage": "Stable"
         },
@@ -401,6 +405,10 @@
         },
         {
           "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions.AddOrUpdateContextInAllMetrics(this Microsoft.Extensions.AI.Evaluation.EvaluationResult result, params Microsoft.Extensions.AI.Evaluation.EvaluationContext[] context);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions.AddOrUpdateDurationMetadataInAllMetrics(this Microsoft.Extensions.AI.Evaluation.EvaluationResult result, System.TimeSpan duration);",
           "Stage": "Stable"
         },
         {
