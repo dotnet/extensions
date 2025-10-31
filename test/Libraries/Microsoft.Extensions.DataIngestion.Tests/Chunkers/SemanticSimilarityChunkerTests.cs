@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.ML.Tokenizers;
@@ -17,6 +18,11 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
 #pragma warning disable CA2000 // Dispose objects before losing scope
             TestEmbeddingGenerator embeddingClient = new();
 #pragma warning restore CA2000 // Dispose objects before losing scope
+            return CreateSemanticSimilarityChunker(embeddingClient, maxTokensPerChunk, overlapTokens);
+        }
+
+        private static IngestionChunker<string> CreateSemanticSimilarityChunker(TestEmbeddingGenerator embeddingClient, int maxTokensPerChunk = 2_000, int overlapTokens = 500)
+        {
             Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
             return new SemanticSimilarityChunker(embeddingClient,
                 new(tokenizer) { MaxTokensPerChunk = maxTokensPerChunk, OverlapTokens = overlapTokens });
@@ -36,7 +42,18 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                     new IngestionDocumentParagraph(text)
                 }
             });
-            IngestionChunker<string> chunker = CreateDocumentChunker();
+            using var customGenerator = new TestEmbeddingGenerator
+            {
+                GenerateAsyncCallback = static async (values, options, ct) =>
+                {
+                    var embeddings = values.Select(v =>
+                        new Embedding<float>(new float[] { 1.0f, 2.0f, 3.0f, 4.0f }))
+                        .ToArray();
+
+                    return [.. embeddings];
+                }
+            };
+            IngestionChunker<string> chunker = CreateSemanticSimilarityChunker(customGenerator);
             IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Single(chunks);
             Assert.Equal(text, chunks[0].Content);
@@ -60,7 +77,26 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            IngestionChunker<string> chunker = CreateDocumentChunker();
+            using var customGenerator = new TestEmbeddingGenerator
+            {
+                GenerateAsyncCallback = async (values, options, ct) =>
+                {
+                    var embeddings = values.Select((_, index) =>
+                    {
+                        return index switch
+                        {
+                            0 => new Embedding<float>(new float[] { 1.0f, 1.0f, 1.0f, 1.0f }),
+                            1 => new Embedding<float>(new float[] { 1.0f, 1.0f, 1.0f, 1.0f }),
+                            2 => new Embedding<float>(new float[] { -1.0f, -1.0f, -1.0f, -1.0f }),
+                            _ => throw new InvalidOperationException("Unexpected call count")
+                        };
+                    }).ToArray();
+
+                    return [.. embeddings];
+                }
+            };
+
+            IngestionChunker<string> chunker = CreateSemanticSimilarityChunker(customGenerator);
             IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Equal(2, chunks.Count);
             Assert.Equal(text1 + Environment.NewLine + text2, chunks[0].Content);
@@ -114,7 +150,25 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 200, overlapTokens: 0);
+            using var customGenerator = new TestEmbeddingGenerator
+            {
+                GenerateAsyncCallback = async (values, options, ct) =>
+                {
+                    var embeddings = values.Select((_, index) =>
+                    {
+                        return index switch
+                        {
+                            <= 3 => new Embedding<float>(new float[] { 1.0f, 1.0f, 1.0f, 1.0f }),
+                            >= 4 and <= 7 => new Embedding<float>(new float[] { -1.0f, -1.0f, -1.0f, -1.0f }),
+                            _ => throw new InvalidOperationException($"Unexpected index: {index}")
+                        };
+                    }).ToArray();
+
+                    return [.. embeddings];
+                }
+            };
+
+            IngestionChunker<string> chunker = CreateSemanticSimilarityChunker(customGenerator, 200, 0);
             IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
             Assert.Equal(3, chunks.Count);
