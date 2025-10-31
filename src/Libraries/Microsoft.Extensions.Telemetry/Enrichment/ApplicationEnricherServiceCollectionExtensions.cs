@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Shared.DiagnosticIds;
@@ -62,7 +61,6 @@ public static class ApplicationEnricherServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the application enricher to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IServiceCollection AddApplicationLogEnricher(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
@@ -78,7 +76,6 @@ public static class ApplicationEnricherServiceCollectionExtensions
     /// <param name="configure">The <see cref="ApplicationLogEnricherOptions"/> configuration delegate.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IServiceCollection AddApplicationLogEnricher(this IServiceCollection services, Action<ApplicationLogEnricherOptions> configure)
     {
         _ = Throw.IfNull(services);
@@ -96,7 +93,6 @@ public static class ApplicationEnricherServiceCollectionExtensions
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ApplicationLogEnricherOptions"/> in the application enricher.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IServiceCollection AddApplicationLogEnricher(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(services);
