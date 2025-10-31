@@ -157,8 +157,8 @@ public abstract class DocumentReaderConformanceTests
             HttpResponseMessage response = await _httpClient.GetAsync(uri);
 
 #if !NET
-            // .NET Framework HttpClient does not automatically follow 308 redirects.
-            if (response.StatusCode == (System.Net.HttpStatusCode)308) // permanent redirect
+            // .NET Framework HttpClient does not automatically follow permanent redirects.
+            if (response.StatusCode == (System.Net.HttpStatusCode)308)
             {
                 string? redirectUri = response.Headers.Location?.ToString();
                 Assert.False(string.IsNullOrEmpty(redirectUri), "Redirect URI is null or empty.");
