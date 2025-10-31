@@ -30,17 +30,17 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
     public SemanticSimilarityChunker(
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         IngestionChunkerOptions options,
-        float? thresholdPercentile = null)
+        float thresholdPercentile = 95.0f)
     {
         _embeddingGenerator = Throw.IfNull(embeddingGenerator);
         _elementsChunker = new(options);
 
-        if (thresholdPercentile.HasValue && (thresholdPercentile < 0f || thresholdPercentile > 100f))
+        if (thresholdPercentile < 0f || thresholdPercentile > 100f)
         {
             Throw.ArgumentOutOfRangeException(nameof(thresholdPercentile), "Threshold percentile must be between 0 and 100.");
         }
 
-        _thresholdPercentile = thresholdPercentile ?? 95.0f;
+        _thresholdPercentile = thresholdPercentile;
     }
 
     /// <inheritdoc/>
