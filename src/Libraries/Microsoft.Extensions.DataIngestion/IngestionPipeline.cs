@@ -155,7 +155,7 @@ public sealed class IngestionPipeline<T> : IDisposable
                     exceptions ??= [];
                     exceptions.Add(ex);
 
-                    if (exceptions.Count >= _options.MaximumErrorsPerProcessing)
+                    if (exceptions.Count > _options.MaximumErrorsPerProcessing)
                     {
                         TraceException(rootActivity, ex);
 
