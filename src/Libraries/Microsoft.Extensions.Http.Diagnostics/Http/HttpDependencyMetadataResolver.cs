@@ -55,7 +55,7 @@ public abstract class HttpDependencyMetadataResolver
     }
 
     /// <summary>
-    /// Gets request metadata for the specified instance of <see cref="HttpRequestMessage"/>
+    /// Gets request metadata for the specified instance of <see cref="HttpRequestMessage"/>.
     /// </summary>
     /// <param name="requestMessage">The HTTP request message.</param>
     /// <returns>The resolved <see cref="RequestMetadata"/> if found; otherwise, <see langword="null"/>.</returns>
