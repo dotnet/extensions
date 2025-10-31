@@ -7,6 +7,7 @@
     <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.5" />
     <PackageVersion Include="DnsClient" Version="1.8.0" />
     <PackageVersion Include="ICSharpCode.Decompiler" Version="9.1.0.7988" />
+    <PackageVersion Include="Markdig.Signed" Version="$(MarkdigSignedVersion)" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisVersion)" />
