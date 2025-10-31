@@ -88,6 +88,7 @@ public static partial class AIJsonUtilities
 
     // Primitives
     [JsonSerializable(typeof(string))]
+    [JsonSerializable(typeof(string[]))]
     [JsonSerializable(typeof(char))]
     [JsonSerializable(typeof(short))]
     [JsonSerializable(typeof(ushort))]
