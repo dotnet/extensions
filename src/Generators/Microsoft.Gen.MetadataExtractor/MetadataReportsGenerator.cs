@@ -5,8 +5,6 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.Gen.ComplianceReports;
-using Microsoft.Gen.MetricsReports;
 using Microsoft.Gen.Shared;
 using Microsoft.Shared.DiagnosticIds;
 
@@ -23,22 +21,31 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
     private const string RootNamespace = "build_property.rootnamespace";
     private const string FallbackFileName = "MetadataReport.json";
     private readonly string _fileName;
+    private string? _directory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataReportsGenerator"/> class.
     /// </summary>
     public MetadataReportsGenerator()
-    : this(FallbackFileName)
+    : this(filePath: null)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataReportsGenerator"/> class.
     /// </summary>
-    /// <param name="reportFileName">The report file name.</param>
-    public MetadataReportsGenerator(string reportFileName)
+    /// <param name="filePath">The report path and name.</param>
+    public MetadataReportsGenerator(string? filePath)
     {
-        _fileName = reportFileName;
+        if (filePath is not null)
+        {
+            _directory = Path.GetDirectoryName(filePath);
+            _fileName = Path.GetFileName(filePath);
+        }
+        else
+        {
+            _fileName = FallbackFileName;
+        }
     }
 
     /// <summary>
@@ -62,20 +69,16 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
             ((TypeDeclarationSyntaxReceiver)context.SyntaxReceiver).TypeDeclarations.Count == 0 ||
             !GeneratorUtilities.ShouldGenerateReport(context, GenerateMetadataMSBuildProperty))
         {
-            return;
-        }
-
-        if ((context.SyntaxReceiver is not TypeDeclarationSyntaxReceiver || ((TypeDeclarationSyntaxReceiver)context.SyntaxReceiver).TypeDeclarations.Count == 0))
-        {
             // nothing to do yet
             return;
         }
 
         var options = context.AnalyzerConfigOptions.GlobalOptions;
-        var path = GeneratorUtilities.TryRetrieveOptionsValue(options, ReportOutputPathMSBuildProperty, out var reportOutputPath)
+        _directory ??= GeneratorUtilities.TryRetrieveOptionsValue(options, ReportOutputPathMSBuildProperty, out var reportOutputPath)
             ? reportOutputPath!
             : GeneratorUtilities.GetDefaultReportOutputPath(options);
-        if (string.IsNullOrWhiteSpace(path))
+
+        if (string.IsNullOrWhiteSpace(_directory))
         {
             // Report diagnostic:
             var diagnostic = new DiagnosticDescriptor(
@@ -91,74 +94,13 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
             return;
         }
 
-        (string metricReport, string complianceReport) metadataReport = (string.Empty, string.Empty);
-        metadataReport.metricReport = HandleMetricReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
-        metadataReport.complianceReport = HandleComplianceReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
-
-        StringBuilder reportStringBuilder = new StringBuilder()
-            .Append("{ \"Name\": \"")
-            .Append(context.Compilation.AssemblyName!)
-            .Append("\", \"ComplianceReport\": ")
-            .Append((string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport))
-            .Append(" ,")
-            .Append(" \"MetricReport\": ")
-            .Append((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport) + " }");
+        MetadataEmitter emitter = new MetadataEmitter(RootNamespace);
 
 #pragma warning disable RS1035 // Do not use APIs banned for analyzers
-        _ = Directory.CreateDirectory(path);
+        _ = Directory.CreateDirectory(_directory);
 
-        File.WriteAllText(Path.Combine(path, _fileName), reportStringBuilder.ToString(), Encoding.UTF8);
+        File.WriteAllText(Path.Combine(_directory, _fileName), emitter.Emit(context), Encoding.UTF8);
 #pragma warning restore RS1035 // Do not use APIs banned for analyzers
 
-    }
-
-    /// <summary>
-    /// used to generate the report for metrics annotations.
-    /// </summary>
-    /// <param name="context">The generator execution context.</param>
-    /// <param name="receiver">The typeDeclaration syntax receiver.</param>
-    /// <returns>string report as json or String.Empty.</returns>
-    private static string HandleMetricReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
-    {
-        var meteringParser = new Metrics.Parser(context.Compilation, context.ReportDiagnostic, context.CancellationToken);
-        var meteringClasses = meteringParser.GetMetricClasses(receiver.TypeDeclarations);
-
-        if (meteringClasses.Count == 0)
-        {
-            return string.Empty;
-        }
-
-        _ = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(RootNamespace, out var rootNamespace);
-        var reportedMetrics = MetricsReportsHelpers.MapToCommonModel(meteringClasses, rootNamespace);
-        var emitter = new MetricDefinitionEmitter();
-        var report = emitter.GenerateReport(reportedMetrics, context.CancellationToken);
-        return report;
-    }
-
-    /// <summary>
-    /// used to generate the report for compliance annotations.
-    /// </summary>
-    /// <param name="context">The generator execution context.</param>
-    /// <param name="receiver">The type declaration syntax receiver.</param>
-    /// <returns>string report as json or String.Empty.</returns>
-    private static string HandleComplianceReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
-    {
-        if (!SymbolLoader.TryLoad(context.Compilation, out var symbolHolder))
-        {
-            return string.Empty;
-        }
-
-        var parser = new Parser(context.Compilation, symbolHolder!, context.CancellationToken);
-        var classifiedTypes = parser.GetClassifiedTypes(receiver.TypeDeclarations);
-        if (classifiedTypes.Count == 0)
-        {
-            // nothing to do
-            return string.Empty;
-        }
-
-        var emitter = new Emitter();
-        string report = emitter.Emit(classifiedTypes, context.Compilation.AssemblyName!, false);
-
-        return report;
     }
 }
