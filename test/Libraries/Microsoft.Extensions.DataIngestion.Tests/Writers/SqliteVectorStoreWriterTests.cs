@@ -6,7 +6,7 @@ using System.IO;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqliteVec;
 
-namespace Microsoft.Extensions.DataIngestion.Tests;
+namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
 public sealed class SqliteVectorStoreWriterTests : VectorStoreWriterTests, IDisposable
 {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Xunit;
 
-namespace Microsoft.Extensions.DataIngestion.Tests;
+namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
 public abstract class VectorStoreWriterTests
 {

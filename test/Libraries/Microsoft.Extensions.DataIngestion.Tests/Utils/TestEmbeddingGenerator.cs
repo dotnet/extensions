@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 
-namespace Microsoft.Extensions.DataIngestion.Tests;
+namespace Microsoft.Extensions.DataIngestion;
 
 public sealed class TestEmbeddingGenerator<T> : IEmbeddingGenerator<T, Embedding<float>>
 {
