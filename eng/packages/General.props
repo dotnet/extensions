@@ -17,7 +17,7 @@
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="$(MicrosoftMLTokenizersVersion)" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="OllamaSharp" Version="5.1.9" />
-    <PackageVersion Include="OpenAI" Version="2.5.0" />
+    <PackageVersion Include="OpenAI" Version="2.6.0" />
     <PackageVersion Include="Polly" Version="8.4.2" />
     <PackageVersion Include="Polly.Core" Version="8.4.2" />
     <PackageVersion Include="Polly.Extensions" Version="8.4.2" />

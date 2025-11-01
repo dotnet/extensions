@@ -5,6 +5,7 @@
 - Updated `AIFunctionFactory` to respect `[DisplayName(...)]` on functions as a way to override the function name.
 - Updated `AIFunctionFactory` to respect `[DefaultValue(...)]` on function parameters as a way to specify default values.
 - Added `CodeInterpreterToolCallContent`/`CodeInterpreterToolResultContent` for representing code interpreter tool calls and results.
+- Added `Name`, `MediaType`, and `HasTopLevelMediaType` to `HostedFileContent`.
 - Fixed the serialization/deserialization of variables typed as `UserInputRequestContent`/`UserInputResponseContent`.
 
 ## 9.10.1

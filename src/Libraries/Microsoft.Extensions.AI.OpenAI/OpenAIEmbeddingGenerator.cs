@@ -107,10 +107,12 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     {
         if (options?.RawRepresentationFactory?.Invoke(this) is not OpenAI.Embeddings.EmbeddingGenerationOptions result)
         {
-            result = new OpenAI.Embeddings.EmbeddingGenerationOptions();
+            result = new();
         }
 
         result.Dimensions ??= options?.Dimensions ?? _dimensions;
+        OpenAIClientExtensions.PatchModelIfNotSet(ref result.Patch, options?.ModelId);
+
         return result;
     }
 }
