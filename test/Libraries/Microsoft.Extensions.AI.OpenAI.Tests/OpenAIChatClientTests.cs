@@ -1739,4 +1739,81 @@ public class OpenAIChatClientTests
         new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
         .GetChatClient(modelId)
         .AsIChatClient();
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_SystemMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new SystemChatMessage("You are a helpful assistant")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.System, extMessages[0].Role);
+        Assert.Equal("You are a helpful assistant", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_UserMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new UserChatMessage("Hello")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.User, extMessages[0].Role);
+        Assert.Equal("Hello", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_AssistantMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new AssistantChatMessage("Hi there!")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.Assistant, extMessages[0].Role);
+        Assert.Equal("Hi there!", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_DeveloperMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new DeveloperChatMessage("Developer instructions")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.System, extMessages[0].Role);
+        Assert.Equal("Developer instructions", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_ToolMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new ToolChatMessage("tool-123", "Result")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.Tool, extMessages[0].Role);
+        var frc = Assert.IsType<FunctionResultContent>(Assert.Single(extMessages[0].Contents));
+        Assert.Equal("tool-123", frc.CallId);
+        Assert.Equal("Result", frc.Result);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_MultipleMessages()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages =
+        [
+            new SystemChatMessage("System prompt"),
+            new UserChatMessage("User message"),
+            new AssistantChatMessage("Assistant response"),
+            new DeveloperChatMessage("Developer note")
+        ];
+
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Equal(4, extMessages.Count);
+        Assert.Equal(ChatRole.System, extMessages[0].Role);
+        Assert.Equal(ChatRole.User, extMessages[1].Role);
+        Assert.Equal(ChatRole.Assistant, extMessages[2].Role);
+        Assert.Equal(ChatRole.System, extMessages[3].Role);
+    }
 }
