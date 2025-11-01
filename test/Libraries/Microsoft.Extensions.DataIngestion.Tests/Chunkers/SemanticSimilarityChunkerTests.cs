@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
         }
 
         [Fact]
-        public async Task SingleParagph()
+        public async Task SingleParagraph()
         {
             string text = ".NET is a free, cross-platform, open-source developer platform for building many " +
                 "kinds of applications. It can run programs written in multiple languages, with C# being the most popular. " +
