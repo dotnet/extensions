@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
         }
 
         [Fact]
-        public async Task NoheaderDocument()
+        public async Task NoHeaderDocument()
         {
             IngestionDocument noHeaerDoc = new IngestionDocument("noHeaderDoc");
             noHeaerDoc.Sections.Add(new IngestionDocumentSection
