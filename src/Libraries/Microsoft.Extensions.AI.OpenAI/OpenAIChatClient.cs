@@ -554,12 +554,12 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         if (options is null)
         {
-            return new ChatCompletionOptions();
+            return new();
         }
 
         if (options.RawRepresentationFactory?.Invoke(this) is not ChatCompletionOptions result)
         {
-            result = new ChatCompletionOptions();
+            result = new();
         }
 
         result.FrequencyPenalty ??= options.FrequencyPenalty;
@@ -568,6 +568,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         result.PresencePenalty ??= options.PresencePenalty;
         result.Temperature ??= options.Temperature;
         result.Seed ??= options.Seed;
+        OpenAIClientExtensions.PatchModelIfNotSet(ref result.Patch, options.ModelId);
 
         if (options.StopSequences is { Count: > 0 } stopSequences)
         {
