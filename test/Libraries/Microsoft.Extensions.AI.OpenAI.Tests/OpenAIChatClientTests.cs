@@ -1632,8 +1632,188 @@ public class OpenAIChatClientTests
         Assert.Contains("MEAI", e.Message);
     }
 
+    [Fact]
+    public async Task ChatOptions_ModelId_OverridesClientModel_NonStreaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "messages":[{"role":"user","content":"hello"}],
+                "model":"gpt-4o",
+                "max_completion_tokens":10
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "object": "chat.completion",
+              "created": 1727888631,
+              "model": "gpt-4o-2024-08-06",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?",
+                    "refusal": null
+                  },
+                  "logprobs": null,
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 8,
+                "completion_tokens": 9,
+                "total_tokens": 17
+              }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 10,
+            Temperature = 0.5f,
+            ModelId = "gpt-4o",
+        });
+        Assert.NotNull(response);
+
+        Assert.Equal("chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI", response.ResponseId);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+        Assert.Equal("gpt-4o-2024-08-06", response.ModelId);
+    }
+
+    [Fact]
+    public async Task ChatOptions_ModelId_OverridesClientModel_Streaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "messages":[{"role":"user","content":"hello"}],
+                "model":"gpt-4o",
+                "stream":true,
+                "stream_options":{"include_usage":true},
+                "max_completion_tokens":20
+            }
+            """;
+
+        const string Output = """
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"role":"assistant","content":"","refusal":null},"logprobs":null,"finish_reason":null}],"usage":null}
+
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":"Hello"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":"!"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}],"usage":null}
+
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_f85bea6784","choices":[],"usage":{"prompt_tokens":8,"completion_tokens":9,"total_tokens":17}}
+
+            data: [DONE]
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ModelId = "gpt-4o",
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Hello!", string.Concat(updates.Select(u => u.Text)));
+        Assert.All(updates, u => Assert.Equal("gpt-4o-2024-08-06", u.ModelId));
+    }
+
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
         .GetChatClient(modelId)
         .AsIChatClient();
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_SystemMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new SystemChatMessage("You are a helpful assistant")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.System, extMessages[0].Role);
+        Assert.Equal("You are a helpful assistant", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_UserMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new UserChatMessage("Hello")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.User, extMessages[0].Role);
+        Assert.Equal("Hello", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_AssistantMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new AssistantChatMessage("Hi there!")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.Assistant, extMessages[0].Role);
+        Assert.Equal("Hi there!", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_DeveloperMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new DeveloperChatMessage("Developer instructions")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.System, extMessages[0].Role);
+        Assert.Equal("Developer instructions", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_ToolMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new ToolChatMessage("tool-123", "Result")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.Tool, extMessages[0].Role);
+        var frc = Assert.IsType<FunctionResultContent>(Assert.Single(extMessages[0].Contents));
+        Assert.Equal("tool-123", frc.CallId);
+        Assert.Equal("Result", frc.Result);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_MultipleMessages()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages =
+        [
+            new SystemChatMessage("System prompt"),
+            new UserChatMessage("User message"),
+            new AssistantChatMessage("Assistant response"),
+            new DeveloperChatMessage("Developer note")
+        ];
+
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Equal(4, extMessages.Count);
+        Assert.Equal(ChatRole.System, extMessages[0].Role);
+        Assert.Equal(ChatRole.User, extMessages[1].Role);
+        Assert.Equal(ChatRole.Assistant, extMessages[2].Role);
+        Assert.Equal(ChatRole.System, extMessages[3].Role);
+    }
 }
