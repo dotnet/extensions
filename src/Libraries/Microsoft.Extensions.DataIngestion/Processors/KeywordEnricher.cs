@@ -35,20 +35,19 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
     /// <summary>
     /// Initializes a new instance of the <see cref="KeywordEnricher"/> class.
     /// </summary>
-    /// <param name="chatClient">The chat client used for keyword extraction.</param>
+    /// <param name="options">The options for generating keywords.</param>
     /// <param name="predefinedKeywords">The set of predefined keywords for extraction.</param>
-    /// <param name="chatOptions">Options for the chat client.</param>
     /// <param name="maxKeywords">The maximum number of keywords to extract. When not provided, it defaults to 5.</param>
     /// <param name="confidenceThreshold">The confidence threshold for keyword inclusion. When not provided, it defaults to 0.7.</param>
     /// <remarks>
     /// If no predefined keywords are provided, the model will extract keywords based on the content alone.
     /// Such results may vary more significantly between different AI models.
     /// </remarks>
-    public KeywordEnricher(IChatClient chatClient, ReadOnlySpan<string> predefinedKeywords,
-        ChatOptions? chatOptions = null, int? maxKeywords = null, double? confidenceThreshold = null)
+    public KeywordEnricher(EnricherOptions options, ReadOnlySpan<string> predefinedKeywords,
+        int? maxKeywords = null, double? confidenceThreshold = null)
     {
-        _chatClient = Throw.IfNull(chatClient);
-        _chatOptions = chatOptions;
+        _chatClient = Throw.IfNull(options).ChatClient;
+        _chatOptions = options.ChatOptions;
         _predefinedKeywords = CreatePredfinedKeywords(predefinedKeywords);
 
         double threshold = confidenceThreshold.HasValue

@@ -15,46 +15,46 @@ public class ClassificationEnricherTests
     private static readonly IngestionDocument _document = new("test");
 
     [Fact]
-    public void ThrowsOnNullChatClient()
+    public void ThrowsOnNullOptions()
     {
-        Assert.Throws<ArgumentNullException>("chatClient", () => new ClassificationEnricher(null!, predefinedClasses: ["some"]));
+        Assert.Throws<ArgumentNullException>("options", () => new ClassificationEnricher(null!, predefinedClasses: ["some"]));
     }
 
     [Fact]
     public void ThrowsOnEmptyPredefinedClasses()
     {
-        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new TestChatClient(), predefinedClasses: []));
+        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new(new TestChatClient()), predefinedClasses: []));
     }
 
     [Fact]
     public void ThrowsOnDuplicatePredefinedClasses()
     {
-        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["same", "same"]));
+        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new(new TestChatClient()), predefinedClasses: ["same", "same"]));
     }
 
     [Fact]
     public void ThrowsOnPredefinedClassesContainingFallback()
     {
-        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["same", "Unknown"]));
+        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new(new TestChatClient()), predefinedClasses: ["same", "Unknown"]));
     }
 
     [Fact]
     public void ThrowsOnFallbackInPredefinedClasses()
     {
-        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["some"], fallbackClass: "some"));
+        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new(new TestChatClient()), predefinedClasses: ["some"], fallbackClass: "some"));
     }
 
     [Fact]
     public void ThrowsOnPredefinedClassesContainingComma()
     {
-        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new TestChatClient(), predefinedClasses: ["n,t"]));
+        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new(new TestChatClient()), predefinedClasses: ["n,t"]));
     }
 
     [Fact]
     public async Task ThrowsOnNullChunks()
     {
         using TestChatClient chatClient = new();
-        ClassificationEnricher sut = new(chatClient, predefinedClasses: ["some"]);
+        ClassificationEnricher sut = new(new(chatClient), predefinedClasses: ["some"]);
 
         await Assert.ThrowsAsync<ArgumentNullException>("chunks", async () =>
         {
@@ -86,7 +86,7 @@ public class ClassificationEnricherTests
                 }));
             }
         };
-        ClassificationEnricher sut = new(chatClient, ["AI", "Animals", "Sports"], fallbackClass: "UFO");
+        ClassificationEnricher sut = new(new(chatClient), ["AI", "Animals", "Sports"], fallbackClass: "UFO");
 
         IReadOnlyList<IngestionChunk<string>> got = await sut.ProcessAsync(CreateChunks().ToAsyncEnumerable()).ToListAsync();
 
@@ -110,7 +110,7 @@ public class ClassificationEnricherTests
             }
         };
 
-        ClassificationEnricher sut = new(chatClient, ["AI", "Animals", "Sports"]);
+        ClassificationEnricher sut = new(new(chatClient), ["AI", "Animals", "Sports"]);
         var input = CreateChunks().ToAsyncEnumerable();
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>

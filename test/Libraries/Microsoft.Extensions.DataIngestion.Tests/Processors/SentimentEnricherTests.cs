@@ -15,9 +15,9 @@ public class SentimentEnricherTests
     private static readonly IngestionDocument _document = new("test");
 
     [Fact]
-    public void ThrowsOnNullChatClient()
+    public void ThrowsOnNullOptions()
     {
-        Assert.Throws<ArgumentNullException>("chatClient", () => new SentimentEnricher(null!));
+        Assert.Throws<ArgumentNullException>("options", () => new SentimentEnricher(null!));
     }
 
     [Theory]
@@ -25,14 +25,14 @@ public class SentimentEnricherTests
     [InlineData(1.1)]
     public void ThrowsOnInvalidThreshold(double threshold)
     {
-        Assert.Throws<ArgumentOutOfRangeException>("confidenceThreshold", () => new SentimentEnricher(new TestChatClient(), confidenceThreshold: threshold));
+        Assert.Throws<ArgumentOutOfRangeException>("confidenceThreshold", () => new SentimentEnricher(new(new TestChatClient()), confidenceThreshold: threshold));
     }
 
     [Fact]
     public async Task ThrowsOnNullChunks()
     {
         using TestChatClient chatClient = new();
-        SentimentEnricher sut = new(chatClient);
+        SentimentEnricher sut = new(new(chatClient));
 
         await Assert.ThrowsAsync<ArgumentNullException>("chunks", async () =>
         {
@@ -64,7 +64,7 @@ public class SentimentEnricherTests
                 }));
             }
         };
-        SentimentEnricher sut = new(chatClient);
+        SentimentEnricher sut = new(new(chatClient));
         var input = CreateChunks().ToAsyncEnumerable();
 
         var chunks = await sut.ProcessAsync(input).ToListAsync();
@@ -91,7 +91,7 @@ public class SentimentEnricherTests
             }
         };
 
-        SentimentEnricher sut = new(chatClient);
+        SentimentEnricher sut = new(new(chatClient));
         var input = CreateChunks().ToAsyncEnumerable();
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>

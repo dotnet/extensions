@@ -22,12 +22,11 @@ public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageAlternativeTextEnricher"/> class.
     /// </summary>
-    /// <param name="chatClient">The chat client used to get responses for generating alternative text.</param>
-    /// <param name="chatOptions">Options for the chat client.</param>
-    public ImageAlternativeTextEnricher(IChatClient chatClient, ChatOptions? chatOptions = null)
+    /// <param name="options">The options for generating alternative text.</param>
+    public ImageAlternativeTextEnricher(EnricherOptions options)
     {
-        _chatClient = Throw.IfNull(chatClient);
-        _chatOptions = chatOptions;
+        _chatClient = Throw.IfNull(options).ChatClient;
+        _chatOptions = options.ChatOptions;
         _systemPrompt = new(ChatRole.System, "Write a detailed alternative text for this image with less than 50 words.");
     }
 

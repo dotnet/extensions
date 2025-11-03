@@ -12,9 +12,9 @@ namespace Microsoft.Extensions.DataIngestion.Processors.Tests;
 public class AlternativeTextEnricherTests
 {
     [Fact]
-    public void ThrowsOnNullChatClient()
+    public void ThrowsOnNullOptions()
     {
-        Assert.Throws<ArgumentNullException>("chatClient", () => new ImageAlternativeTextEnricher(null!));
+        Assert.Throws<ArgumentNullException>("options", () => new ImageAlternativeTextEnricher(null!));
     }
 
     [Fact]
@@ -22,7 +22,7 @@ public class AlternativeTextEnricherTests
     {
         using TestChatClient chatClient = new();
 
-        ImageAlternativeTextEnricher sut = new(chatClient);
+        ImageAlternativeTextEnricher sut = new(new(chatClient));
 
         await Assert.ThrowsAsync<ArgumentNullException>("document", async () => await sut.ProcessAsync(null!));
     }
@@ -55,7 +55,7 @@ public class AlternativeTextEnricherTests
                 }));
             }
         };
-        ImageAlternativeTextEnricher sut = new(chatClient);
+        ImageAlternativeTextEnricher sut = new(new(chatClient));
 
         IngestionDocumentImage documentImage = new($"![](nonExisting.png)")
         {

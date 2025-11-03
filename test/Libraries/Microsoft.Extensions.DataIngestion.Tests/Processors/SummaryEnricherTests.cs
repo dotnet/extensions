@@ -15,9 +15,9 @@ public class SummaryEnricherTests
     private static readonly IngestionDocument _document = new("test");
 
     [Fact]
-    public void ThrowsOnNullChatClient()
+    public void ThrowsOnNullOptions()
     {
-        Assert.Throws<ArgumentNullException>("chatClient", () => new SummaryEnricher(null!));
+        Assert.Throws<ArgumentNullException>("options", () => new SummaryEnricher(null!));
     }
 
     [Theory]
@@ -25,14 +25,14 @@ public class SummaryEnricherTests
     [InlineData(-1)]
     public void ThrowsOnInvalidMaxKeywords(int wordCount)
     {
-        Assert.Throws<ArgumentOutOfRangeException>("maxWordCount", () => new SummaryEnricher(new TestChatClient(), maxWordCount: wordCount));
+        Assert.Throws<ArgumentOutOfRangeException>("maxWordCount", () => new SummaryEnricher(new(new TestChatClient()), maxWordCount: wordCount));
     }
 
     [Fact]
     public async Task ThrowsOnNullChunks()
     {
         using TestChatClient chatClient = new();
-        SummaryEnricher sut = new(chatClient);
+        SummaryEnricher sut = new(new(chatClient));
 
         await Assert.ThrowsAsync<ArgumentNullException>("chunks", async () =>
         {
@@ -64,7 +64,7 @@ public class SummaryEnricherTests
                 }));
             }
         };
-        SummaryEnricher sut = new(chatClient);
+        SummaryEnricher sut = new(new(chatClient));
         var input = CreateChunks().ToAsyncEnumerable();
 
         var chunks = await sut.ProcessAsync(input).ToListAsync();

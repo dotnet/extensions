@@ -15,9 +15,9 @@ public class KeywordEnricherTests
     private static readonly IngestionDocument _document = new("test");
 
     [Fact]
-    public void ThrowsOnNullChatClient()
+    public void ThrowsOnNullOptions()
     {
-        Assert.Throws<ArgumentNullException>("chatClient", () => new KeywordEnricher(null!, predefinedKeywords: null, confidenceThreshold: 0.5));
+        Assert.Throws<ArgumentNullException>("options", () => new KeywordEnricher(null!, predefinedKeywords: null, confidenceThreshold: 0.5));
     }
 
     [Theory]
@@ -25,7 +25,7 @@ public class KeywordEnricherTests
     [InlineData(1.1)]
     public void ThrowsOnInvalidThreshold(double threshold)
     {
-        Assert.Throws<ArgumentOutOfRangeException>("confidenceThreshold", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: null, confidenceThreshold: threshold));
+        Assert.Throws<ArgumentOutOfRangeException>("confidenceThreshold", () => new KeywordEnricher(new(new TestChatClient()), predefinedKeywords: null, confidenceThreshold: threshold));
     }
 
     [Theory]
@@ -33,13 +33,13 @@ public class KeywordEnricherTests
     [InlineData(-1)]
     public void ThrowsOnInvalidMaxKeywords(int keywordCount)
     {
-        Assert.Throws<ArgumentOutOfRangeException>("maxKeywords", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: null, maxKeywords: keywordCount));
+        Assert.Throws<ArgumentOutOfRangeException>("maxKeywords", () => new KeywordEnricher(new(new TestChatClient()), predefinedKeywords: null, maxKeywords: keywordCount));
     }
 
     [Fact]
     public void ThrowsOnDuplicateKeywords()
     {
-        Assert.Throws<ArgumentException>("predefinedKeywords", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: ["same", "same"], confidenceThreshold: 0.5));
+        Assert.Throws<ArgumentException>("predefinedKeywords", () => new KeywordEnricher(new(new TestChatClient()), predefinedKeywords: ["same", "same"], confidenceThreshold: 0.5));
     }
 
     [Theory]
@@ -47,14 +47,14 @@ public class KeywordEnricherTests
     [InlineData(';')]
     public void ThrowsOnIllegalCharacters(char illegal)
     {
-        Assert.Throws<ArgumentException>("predefinedKeywords", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: [$"n{illegal}t"]));
+        Assert.Throws<ArgumentException>("predefinedKeywords", () => new KeywordEnricher(new(new TestChatClient()), predefinedKeywords: [$"n{illegal}t"]));
     }
 
     [Fact]
     public async Task ThrowsOnNullChunks()
     {
         using TestChatClient chatClient = new();
-        KeywordEnricher sut = new(chatClient, predefinedKeywords: null, confidenceThreshold: 0.5);
+        KeywordEnricher sut = new(new(chatClient), predefinedKeywords: null, confidenceThreshold: 0.5);
 
         await Assert.ThrowsAsync<ArgumentNullException>("chunks", async () =>
         {
@@ -89,7 +89,7 @@ public class KeywordEnricherTests
             }
         };
 
-        KeywordEnricher sut = new(chatClient, predefinedKeywords: predefined, confidenceThreshold: 0.5);
+        KeywordEnricher sut = new(new(chatClient), predefinedKeywords: predefined, confidenceThreshold: 0.5);
         var chunks = CreateChunks().ToAsyncEnumerable();
 
         IReadOnlyList<IngestionChunk<string>> got = await sut.ProcessAsync(chunks).ToListAsync();
@@ -112,7 +112,7 @@ public class KeywordEnricherTests
             }
         };
 
-        KeywordEnricher sut = new(chatClient, ["some"]);
+        KeywordEnricher sut = new(new(chatClient), ["some"]);
         var input = CreateChunks().ToAsyncEnumerable();
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
