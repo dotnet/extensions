@@ -222,7 +222,12 @@ public sealed class ResourceMonitoringServiceTests
         Assert.Equal(0, numberOfSnapshots);
     }
 
+#if NET10_0_OR_GREATER
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Flaky on Windows + .NET 10.0, see https://github.com/dotnet/extensions/issues/7009")]
+#else
     [Fact]
+#endif
     public async Task RunTrackerAsync_IfProviderThrows_LogsError()
     {
         var clock = new FakeTimeProvider();
