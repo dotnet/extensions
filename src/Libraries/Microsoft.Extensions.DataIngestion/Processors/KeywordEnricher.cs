@@ -77,6 +77,11 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
                 new(ChatRole.User, contents)
             ], _options.ChatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
+            if (response.Result.Length != contents.Count)
+            {
+                throw new InvalidOperationException($"The AI chat service returned {response.Result.Length} instead of {contents.Count} results.");
+            }
+
             for (int i = 0; i < response.Result.Length; i++)
             {
                 if (_predefinedKeywords is not null)

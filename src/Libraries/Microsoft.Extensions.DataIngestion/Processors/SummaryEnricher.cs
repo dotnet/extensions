@@ -32,7 +32,7 @@ public sealed class SummaryEnricher : IngestionChunkProcessor<string>
         _options = Throw.IfNull(options).Clone();
 
         int wordCount = maxWordCount.HasValue ? Throw.IfLessThanOrEqual(maxWordCount.Value, 0, nameof(maxWordCount)) : 100;
-        _systemPrompt = new(ChatRole.System, $"For each of following texts, write a summary text with no more than {wordCount} words.");
+        _systemPrompt = new(ChatRole.System, $"For each of the following texts, write a summary text with no more than {wordCount} words.");
     }
 
     /// <summary>
@@ -59,6 +59,11 @@ public sealed class SummaryEnricher : IngestionChunkProcessor<string>
                 _systemPrompt,
                 new(ChatRole.User, contents)
             ], _options.ChatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            if (response.Result.Length != contents.Count)
+            {
+                throw new InvalidOperationException($"The AI chat service returned {response.Result.Length} instead of {contents.Count} results.");
+            }
 
             for (int i = 0; i < response.Result.Length; i++)
             {

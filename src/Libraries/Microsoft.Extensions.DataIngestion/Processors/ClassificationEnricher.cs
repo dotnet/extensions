@@ -69,6 +69,11 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
                 new(ChatRole.User, contents)
             ], _options.ChatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
+            if (response.Result.Length != contents.Count)
+            {
+                throw new InvalidOperationException($"The AI chat service returned {response.Result.Length} instead of {contents.Count} results.");
+            }
+
             for (int i = 0; i < response.Result.Length; i++)
             {
                 batch[i].Metadata[MetadataKey] = _predefinedClasses.Contains(response.Result[i])

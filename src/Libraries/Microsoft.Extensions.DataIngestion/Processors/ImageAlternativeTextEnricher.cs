@@ -26,7 +26,7 @@ public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
     public ImageAlternativeTextEnricher(EnricherOptions options)
     {
         _options = Throw.IfNull(options).Clone();
-        _systemPrompt = new(ChatRole.System, "Write a detailed alternative text for the following images with less than 50 words.");
+        _systemPrompt = new(ChatRole.System, "For each of the following images, write a detailed alternative text with fewer than 50 words.");
     }
 
     /// <inheritdoc/>
@@ -94,6 +94,11 @@ public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
             [_systemPrompt, new(ChatRole.User, contents)],
             _options.ChatOptions,
             cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        if (response.Result.Length != contents.Count)
+        {
+            throw new InvalidOperationException($"The AI chat service returned {response.Result.Length} instead of {contents.Count} results.");
+        }
 
         for (int i = 0; i < response.Result.Length; i++)
         {
