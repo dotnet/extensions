@@ -84,11 +84,11 @@ public sealed class IngestionPipeline<T> : IDisposable
         Throw.IfNullOrEmpty(searchPattern);
         Throw.IfOutOfRange((int)searchOption, (int)SearchOption.TopDirectoryOnly, (int)SearchOption.AllDirectories);
 
-        using (Activity? rootActivity = StartActivity(ProcessDirectory.ActivityName, ActivityKind.Internal))
+        using (Activity? rootActivity = _activitySource.StartActivity(ProcessDirectory.ActivityName))
         {
-            rootActivity?.SetTag(ProcessDirectory.DirectoryPathTagName, directory.FullName);
-            rootActivity?.SetTag(ProcessDirectory.SearchPatternTagName, searchPattern);
-            rootActivity?.SetTag(ProcessDirectory.SearchOptionTagName, searchOption.ToString());
+            rootActivity?.SetTag(ProcessDirectory.DirectoryPathTagName, directory.FullName)
+                         .SetTag(ProcessDirectory.SearchPatternTagName, searchPattern)
+                         .SetTag(ProcessDirectory.SearchOptionTagName, searchOption.ToString());
             _logger?.ProcessingDirectory(directory.FullName, searchPattern, searchOption);
 
             await ProcessAsync(directory.EnumerateFiles(searchPattern, searchOption), rootActivity, cancellationToken).ConfigureAwait(false);
@@ -105,7 +105,7 @@ public sealed class IngestionPipeline<T> : IDisposable
     {
         Throw.IfNull(files);
 
-        using (Activity? rootActivity = StartActivity(ProcessFiles.ActivityName, ActivityKind.Internal))
+        using (Activity? rootActivity = _activitySource.StartActivity(ProcessFiles.ActivityName))
         {
             await ProcessAsync(files, rootActivity, cancellationToken).ConfigureAwait(false);
         }
@@ -115,8 +115,8 @@ public sealed class IngestionPipeline<T> : IDisposable
 
     private static void TraceException(Activity? activity, Exception ex)
     {
-        activity?.SetTag(ErrorTypeTagName, ex.GetType().FullName);
-        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+        activity?.SetTag(ErrorTypeTagName, ex.GetType().FullName)
+                 .SetStatus(ActivityStatusCode.Error, ex.Message);
     }
 
     private async Task ProcessAsync(IEnumerable<FileInfo> files, Activity? rootActivity, CancellationToken cancellationToken)
@@ -132,7 +132,7 @@ public sealed class IngestionPipeline<T> : IDisposable
         foreach (FileInfo fileInfo in files)
         {
             fileCount++;
-            using (Activity? processFileActivity = StartActivity(ProcessFile.ActivityName, ActivityKind.Internal, parent: rootActivity))
+            using (Activity? processFileActivity = _activitySource.StartActivity(ProcessFile.ActivityName, ActivityKind.Internal, parentContext: rootActivity?.Context ?? default))
             {
                 processFileActivity?.SetTag(ProcessFile.FilePathTagName, fileInfo.FullName);
                 _logger?.ReadingFile(fileInfo.FullName, GetShortName(_reader));
@@ -200,19 +200,5 @@ public sealed class IngestionPipeline<T> : IDisposable
         _logger?.WritingChunks(GetShortName(_writer));
         await _writer.WriteAsync(chunks, cancellationToken).ConfigureAwait(false);
         _logger?.WroteChunks(document.Identifier);
-    }
-
-    private Activity? StartActivity(string name, ActivityKind activityKind, Activity? parent = default)
-    {
-        if (!_activitySource.HasListeners())
-        {
-            return null;
-        }
-        else if (parent is null)
-        {
-            return _activitySource.StartActivity(name, activityKind);
-        }
-
-        return _activitySource.StartActivity(name, activityKind, parent.Context);
     }
 }
