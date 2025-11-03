@@ -255,11 +255,20 @@ public sealed class ResourceMonitoringServiceTests
         // Now, allow the faulted provider to throw.
         provider.ShouldThrow = true;
 
-        clock.Advance(TimeSpan.FromMilliseconds(1));
-        clock.Advance(TimeSpan.FromMilliseconds(1));
+        // Use polling pattern with FakeTimeProvider to ensure the async ExecuteAsync loop completes.
+        // The ExecuteAsync method waits on _timeProvider.Delay(), which requires repeated Advance() calls
+        // to trigger in FakeTimeProvider. We can't assume exactly when the delay is "armed" and ready to
+        // respond to time advancement, especially across different .NET runtime versions where task scheduling
+        // may differ. This polling approach (advance time + short wait) ensures the test works reliably
+        // regardless of when the Delay starts waiting, avoiding the indefinite hang that occurred in net10.0.
+        var maxAttempts = 100; // Prevent infinite loop
+        var attempts = 0;
+        while (!e.Wait(10) && attempts++ < maxAttempts)
+        {
+            clock.Advance(TimeSpan.FromMilliseconds(1));
+        }
 
-        e.Wait();
-
+        Assert.True(attempts < maxAttempts, "Timeout waiting for publisher to be called");
         Assert.Contains(ProviderUnableToGatherData, logger.Collector.LatestRecord.Message, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -367,10 +376,19 @@ public sealed class ResourceMonitoringServiceTests
         // Start running the tracker.
         await tracker.StartAsync(CancellationToken.None);
 
-        clock.Advance(TimeSpan.FromMilliseconds(TimerPeriod));
+        // Use polling pattern to ensure the ExecuteAsync loop runs and logs snapshot information.
+        // We need to wait until at least one log record appears before stopping the service.
+        var maxAttempts = 100;
+        var attempts = 0;
+        while (logger.Collector.Count == 0 && attempts++ < maxAttempts)
+        {
+            clock.Advance(TimeSpan.FromMilliseconds(TimerPeriod));
+            await Task.Delay(10); // Give the async loop time to process
+        }
 
         await tracker.StopAsync(CancellationToken.None);
 
+        Assert.True(logger.Collector.Count > 0, "No logs were recorded");
         await Verifier.Verify(logger.Collector.LatestRecord).UseDirectory("Verified");
     }
 
