@@ -27,8 +27,7 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
 #else
     private static readonly char[] _illegalCharacters = [';', ','];
 #endif
-    private readonly IChatClient _chatClient;
-    private readonly ChatOptions? _chatOptions;
+    private readonly EnricherOptions _options;
     private readonly FrozenSet<string>? _predefinedKeywords;
     private readonly ChatMessage _systemPrompt;
 
@@ -46,8 +45,7 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
     public KeywordEnricher(EnricherOptions options, ReadOnlySpan<string> predefinedKeywords,
         int? maxKeywords = null, double? confidenceThreshold = null)
     {
-        _chatClient = Throw.IfNull(options).ChatClient;
-        _chatOptions = options.ChatOptions;
+        _options = Throw.IfNull(options).Clone();
         _predefinedKeywords = CreatePredfinedKeywords(predefinedKeywords);
 
         double threshold = confidenceThreshold.HasValue
@@ -70,31 +68,40 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
     {
         _ = Throw.IfNull(chunks);
 
-        await foreach (IngestionChunk<string> chunk in chunks.WithCancellation(cancellationToken))
+        await foreach (var batch in chunks.BufferAsync(_options.BatchSize).WithCancellation(cancellationToken))
         {
-            // Structured response is not used here because it's not part of Microsoft.Extensions.AI.Abstractions.
-            var response = await _chatClient.GetResponseAsync(
-            [
-                _systemPrompt,
-                new(ChatRole.User, chunk.Content)
-            ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-#pragma warning disable EA0009 // Use 'System.MemoryExtensions.Split' for improved performance
-            string[] keywords = response.Text.Split(';');
-            if (_predefinedKeywords is not null)
+            List<AIContent> contents = new(batch.Count);
+            foreach (var chunk in batch)
             {
-                foreach (var keyword in keywords)
-                {
-                    if (!_predefinedKeywords.Contains(keyword))
-                    {
-                        throw new InvalidOperationException($"The extracted keyword '{keyword}' is not in the predefined keywords list.");
-                    }
-                }
+                contents.Add(new TextContent(chunk.Content));
             }
 
-            chunk.Metadata[MetadataKey] = keywords;
+            var response = await _options.ChatClient.GetResponseAsync<string[][]>(
+            [
+                _systemPrompt,
+                new(ChatRole.User, contents)
+            ], _options.ChatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            yield return chunk;
+            for (int i = 0; i < response.Result.Length; i++)
+            {
+                if (_predefinedKeywords is not null)
+                {
+                    foreach (string keyword in response.Result[i])
+                    {
+                        if (!_predefinedKeywords.Contains(keyword))
+                        {
+                            throw new InvalidOperationException($"The extracted keyword '{keyword}' is not in the predefined keywords list.");
+                        }
+                    }
+                }
+
+                batch[i].Metadata[MetadataKey] = response.Result[i];
+            }
+
+            foreach (var chunk in batch)
+            {
+                yield return chunk;
+            }
         }
     }
 
@@ -128,7 +135,7 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
 
     private static ChatMessage CreateSystemPrompt(int maxKeywords, ReadOnlySpan<string> predefinedKeywords, double confidenceThreshold)
     {
-        StringBuilder sb = new($"You are a keyword extraction expert. Analyze the given text and extract up to {maxKeywords} most relevant keywords. ");
+        StringBuilder sb = new($"You are a keyword extraction expert. For each of the following texts, extract up to {maxKeywords} most relevant keywords. ");
 
         if (predefinedKeywords.Length > 0)
         {
@@ -151,7 +158,6 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
         }
 
         sb.Append("Exclude keywords with confidence score below ").Append(confidenceThreshold).Append('.');
-        sb.Append(" Return just the keywords separated with ';'.");
 #pragma warning restore IDE0058 // Expression value is never used
 
         return new(ChatRole.System, sb.ToString());

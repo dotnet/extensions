@@ -19,8 +19,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </remarks>
 public sealed class SummaryEnricher : IngestionChunkProcessor<string>
 {
-    private readonly IChatClient _chatClient;
-    private readonly ChatOptions? _chatOptions;
+    private readonly EnricherOptions _options;
     private readonly ChatMessage _systemPrompt;
 
     /// <summary>
@@ -30,11 +29,10 @@ public sealed class SummaryEnricher : IngestionChunkProcessor<string>
     /// <param name="maxWordCount">The maximum number of words for the summary. When not provided, it defaults to 100.</param>
     public SummaryEnricher(EnricherOptions options, int? maxWordCount = null)
     {
-        _chatClient = Throw.IfNull(options).ChatClient;
-        _chatOptions = options.ChatOptions;
+        _options = Throw.IfNull(options).Clone();
 
         int wordCount = maxWordCount.HasValue ? Throw.IfLessThanOrEqual(maxWordCount.Value, 0, nameof(maxWordCount)) : 100;
-        _systemPrompt = new(ChatRole.System, $"Write a summary text for this text with no more than {wordCount} words. Return just the summary.");
+        _systemPrompt = new(ChatRole.System, $"For each of following texts, write a summary text with no more than {wordCount} words.");
     }
 
     /// <summary>
@@ -48,17 +46,29 @@ public sealed class SummaryEnricher : IngestionChunkProcessor<string>
     {
         _ = Throw.IfNull(chunks);
 
-        await foreach (var chunk in chunks.WithCancellation(cancellationToken))
+        await foreach (var batch in chunks.BufferAsync(_options.BatchSize).WithCancellation(cancellationToken))
         {
-            var response = await _chatClient.GetResponseAsync(
+            List<AIContent> contents = new(batch.Count);
+            foreach (var chunk in batch)
+            {
+                contents.Add(new TextContent(chunk.Content));
+            }
+
+            var response = await _options.ChatClient.GetResponseAsync<string[]>(
             [
                 _systemPrompt,
-                new(ChatRole.User, chunk.Content)
-            ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
+                new(ChatRole.User, contents)
+            ], _options.ChatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            chunk.Metadata[MetadataKey] = response.Text;
+            for (int i = 0; i < response.Result.Length; i++)
+            {
+                batch[i].Metadata[MetadataKey] = response.Result[i];
+            }
 
-            yield return chunk;
+            foreach (var chunk in batch)
+            {
+                yield return chunk;
+            }
         }
     }
 }

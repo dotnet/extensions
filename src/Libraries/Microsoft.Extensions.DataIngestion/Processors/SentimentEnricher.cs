@@ -20,8 +20,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </remarks>
 public sealed class SentimentEnricher : IngestionChunkProcessor<string>
 {
-    private readonly IChatClient _chatClient;
-    private readonly ChatOptions? _chatOptions;
+    private readonly EnricherOptions _options;
     private readonly FrozenSet<string> _validSentiments =
 #if NET9_0_OR_GREATER
         FrozenSet.Create(StringComparer.Ordinal, "Positive", "Negative", "Neutral", "Unknown");
@@ -37,14 +36,13 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
     /// <param name="confidenceThreshold">The confidence threshold for sentiment determination. When not provided, it defaults to 0.7.</param>
     public SentimentEnricher(EnricherOptions options, double? confidenceThreshold = null)
     {
-        _chatClient = Throw.IfNull(options).ChatClient;
-        _chatOptions = options.ChatOptions;
+        _options = Throw.IfNull(options).Clone();
 
         double threshold = confidenceThreshold.HasValue ? Throw.IfOutOfRange(confidenceThreshold.Value, 0.0, 1.0, nameof(confidenceThreshold)) : 0.7;
 
         string prompt = $"""
-        You are a sentiment analysis expert. Analyze the sentiment of the given text and return Positive/Negative/Neutral or
-        Unknown when confidence score is below {threshold}. Return just the value of the sentiment.
+        You are a sentiment analysis expert. For each of the following texts, analyze the sentiment and return Positive/Negative/Neutral or
+        Unknown when confidence score is below {threshold}.
         """;
         _systemPrompt = new(ChatRole.System, prompt);
     }
@@ -60,22 +58,31 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
     {
         _ = Throw.IfNull(chunks);
 
-        await foreach (var chunk in chunks.WithCancellation(cancellationToken))
+        await foreach (var batch in chunks.BufferAsync(_options.BatchSize).WithCancellation(cancellationToken))
         {
-            var response = await _chatClient.GetResponseAsync(
-            [
-                _systemPrompt,
-                new(ChatRole.User, chunk.Content)
-            ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            if (!_validSentiments.Contains(response.Text))
+            List<AIContent> contents = new(batch.Count);
+            foreach (var chunk in batch)
             {
-                throw new InvalidOperationException($"Invalid sentiment response: '{response.Text}'.");
+                contents.Add(new TextContent(chunk.Content));
             }
 
-            chunk.Metadata[MetadataKey] = response.Text;
+            var response = await _options.ChatClient.GetResponseAsync<string[]>(
+            [
+                _systemPrompt,
+                new(ChatRole.User, contents)
+            ], _options.ChatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            yield return chunk;
+            for (int i = 0; i < response.Result.Length; i++)
+            {
+                batch[i].Metadata[MetadataKey] = _validSentiments.Contains(response.Result[i])
+                    ? response.Result[i]
+                    : throw new InvalidOperationException($"Invalid sentiment response: '{response.Result[i]}'.");
+            }
+
+            foreach (var chunk in batch)
+            {
+                yield return chunk;
+            }
         }
     }
 }

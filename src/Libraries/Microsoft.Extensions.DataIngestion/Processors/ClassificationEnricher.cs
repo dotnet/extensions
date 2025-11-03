@@ -21,8 +21,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// an optional fallback class for cases where no suitable classification can be determined.</remarks>
 public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
 {
-    private readonly IChatClient _chatClient;
-    private readonly ChatOptions? _chatOptions;
+    private readonly EnricherOptions _options;
     private readonly FrozenSet<string> _predefinedClasses;
     private readonly ChatMessage _systemPrompt;
 
@@ -35,8 +34,7 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
     public ClassificationEnricher(EnricherOptions options, ReadOnlySpan<string> predefinedClasses,
         string? fallbackClass = null)
     {
-        _chatClient = Throw.IfNull(options).ChatClient;
-        _chatOptions = options.ChatOptions;
+        _options = Throw.IfNull(options).Clone();
         if (string.IsNullOrWhiteSpace(fallbackClass))
         {
             fallbackClass = "Unknown";
@@ -57,19 +55,31 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
     {
         _ = Throw.IfNull(chunks);
 
-        await foreach (IngestionChunk<string> chunk in chunks.WithCancellation(cancellationToken))
+        await foreach (var batch in chunks.BufferAsync(_options.BatchSize).WithCancellation(cancellationToken))
         {
-            var response = await _chatClient.GetResponseAsync(
+            List<AIContent> contents = new(batch.Count);
+            foreach (var chunk in batch)
+            {
+                contents.Add(new TextContent(chunk.Content));
+            }
+
+            var response = await _options.ChatClient.GetResponseAsync<string[]>(
             [
                 _systemPrompt,
-                new(ChatRole.User, chunk.Content)
-            ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
+                new(ChatRole.User, contents)
+            ], _options.ChatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            chunk.Metadata[MetadataKey] = _predefinedClasses.Contains(response.Text)
-                ? response.Text
-                : throw new InvalidOperationException($"Classification returned an unexpected class: '{response.Text}'.");
+            for (int i = 0; i < response.Result.Length; i++)
+            {
+                batch[i].Metadata[MetadataKey] = _predefinedClasses.Contains(response.Result[i])
+                    ? response.Result[i]
+                    : throw new InvalidOperationException($"Classification returned an unexpected class: '{response.Result[i]}'.");
+            }
 
-            yield return chunk;
+            foreach (var chunk in batch)
+            {
+                yield return chunk;
+            }
         }
     }
 
@@ -108,7 +118,7 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
 
     private static ChatMessage CreateSystemPrompt(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
     {
-        StringBuilder sb = new("You are a classification expert. Analyze the given text and assign a single, most relevant class. Use only the following predefined classes: ");
+        StringBuilder sb = new("You are a classification expert. For each of the following texts, assign a single, most relevant class. Use only the following predefined classes: ");
 
 #if NET9_0_OR_GREATER
         sb.AppendJoin(", ", predefinedClasses!);

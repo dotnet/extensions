@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Xunit;
@@ -52,15 +53,17 @@ public class SummaryEnricherTests
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
+                Assert.Equal(0, counter++);
                 var materializedMessages = messages.ToArray();
 
                 Assert.Equal(2, materializedMessages.Length);
                 Assert.Equal(ChatRole.System, materializedMessages[0].Role);
                 Assert.Equal(ChatRole.User, materializedMessages[1].Role);
 
+                string response = JsonSerializer.Serialize(new Envelope<string[]> { data = summaries });
                 return Task.FromResult(new ChatResponse(new[]
                 {
-                    new ChatMessage(ChatRole.Assistant, summaries[counter++])
+                    new ChatMessage(ChatRole.Assistant, response)
                 }));
             }
         };

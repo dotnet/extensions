@@ -29,4 +29,15 @@ public class EnricherOptions
     /// Gets or sets the options for the <see cref="ChatClient"/>.
     /// </summary>
     public ChatOptions? ChatOptions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the batch size for processing chunks. Default is 20.
+    /// </summary>
+    public int BatchSize { get; set => field = Throw.IfLessThanOrEqual(value, 0); } = 20;
+
+    internal EnricherOptions Clone() => new(ChatClient)
+    {
+        ChatOptions = ChatOptions?.Clone(),
+        BatchSize = BatchSize
+    };
 }
