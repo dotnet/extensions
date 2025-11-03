@@ -16,7 +16,7 @@ public class ToolReductionTests
     public void EmbeddingToolReductionStrategy_Constructor_ThrowsWhenToolLimitIsLessThanOrEqualToZero()
     {
         using var gen = new DeterministicTestEmbeddingGenerator();
-        Assert.Throws<ArgumentOutOfRangeException>(() => new EmbeddingToolReductionStrategy(gen, toolLimit: 0));
+        Assert.Throws<ArgumentOutOfRangeException>("toolLimit", () => new EmbeddingToolReductionStrategy(gen, toolLimit: 0));
     }
 
     [Fact]

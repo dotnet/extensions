@@ -17,7 +17,7 @@ public class SummarizingChatReducerTests
     [Fact]
     public void Constructor_ThrowsOnNullChatClient()
     {
-        Assert.Throws<ArgumentNullException>(() => new SummarizingChatReducer(null!, targetCount: 5, threshold: 2));
+        Assert.Throws<ArgumentNullException>("chatClient", () => new SummarizingChatReducer(null!, targetCount: 5, threshold: 2));
     }
 
     [Theory]
@@ -27,7 +27,7 @@ public class SummarizingChatReducerTests
     public void Constructor_ThrowsOnInvalidTargetCount(int targetCount)
     {
         using var chatClient = new TestChatClient();
-        Assert.Throws<ArgumentOutOfRangeException>(() => new SummarizingChatReducer(chatClient, targetCount, threshold: 2));
+        Assert.Throws<ArgumentOutOfRangeException>("targetCount", () => new SummarizingChatReducer(chatClient, targetCount, threshold: 2));
     }
 
     [Theory]
@@ -36,7 +36,7 @@ public class SummarizingChatReducerTests
     public void Constructor_ThrowsOnInvalidThresholdCount(int thresholdCount)
     {
         using var chatClient = new TestChatClient();
-        Assert.Throws<ArgumentOutOfRangeException>(() => new SummarizingChatReducer(chatClient, targetCount: 5, thresholdCount));
+        Assert.Throws<ArgumentOutOfRangeException>("threshold", () => new SummarizingChatReducer(chatClient, targetCount: 5, thresholdCount));
     }
 
     [Fact]
