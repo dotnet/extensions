@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -41,6 +41,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             nameof(OpenAIResponseClient.CreateResponseAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
             null, [typeof(IEnumerable<ResponseItem>), typeof(ResponseCreationOptions), typeof(RequestOptions)], null)
         ?.CreateDelegate(typeof(Func<OpenAIResponseClient, IEnumerable<ResponseItem>, ResponseCreationOptions, RequestOptions, Task<ClientResult<OpenAIResponse>>>));
+
     private static readonly Func<OpenAIResponseClient, IEnumerable<ResponseItem>, ResponseCreationOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>?
         _createResponseStreamingAsync =
         (Func<OpenAIResponseClient, IEnumerable<ResponseItem>, ResponseCreationOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>?)
@@ -48,6 +49,22 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             nameof(OpenAIResponseClient.CreateResponseStreamingAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
             null, [typeof(IEnumerable<ResponseItem>), typeof(ResponseCreationOptions), typeof(RequestOptions)], null)
         ?.CreateDelegate(typeof(Func<OpenAIResponseClient, IEnumerable<ResponseItem>, ResponseCreationOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>));
+
+    private static readonly Func<OpenAIResponseClient, string, RequestOptions, Task<ClientResult<OpenAIResponse>>>?
+        _getResponseAsync =
+        (Func<OpenAIResponseClient, string, RequestOptions, Task<ClientResult<OpenAIResponse>>>?)
+        typeof(OpenAIResponseClient).GetMethod(
+            nameof(OpenAIResponseClient.GetResponseAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+            null, [typeof(string), typeof(RequestOptions)], null)
+        ?.CreateDelegate(typeof(Func<OpenAIResponseClient, string, RequestOptions, Task<ClientResult<OpenAIResponse>>>));
+
+    private static readonly Func<OpenAIResponseClient, string, RequestOptions, int?, AsyncCollectionResult<StreamingResponseUpdate>>?
+        _getResponseStreamingAsync =
+        (Func<OpenAIResponseClient, string, RequestOptions, int?, AsyncCollectionResult<StreamingResponseUpdate>>?)
+        typeof(OpenAIResponseClient).GetMethod(
+            nameof(OpenAIResponseClient.GetResponseStreamingAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+            null, [typeof(string), typeof(RequestOptions), typeof(int?)], null)
+        ?.CreateDelegate(typeof(Func<OpenAIResponseClient, string, RequestOptions, int?, AsyncCollectionResult<StreamingResponseUpdate>>));
 
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
@@ -92,7 +109,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Provided continuation token signals that an existing background response should be fetched.
         if (GetContinuationToken(messages, options) is { } token)
         {
-            var response = await _responseClient.GetResponseAsync(token.ResponseId, cancellationToken).ConfigureAwait(false);
+            var getTask = _getResponseAsync is not null ?
+                _getResponseAsync(_responseClient, token.ResponseId, cancellationToken.ToRequestOptions(streaming: false)) :
+                _responseClient.GetResponseAsync(token.ResponseId, cancellationToken);
+            var response = (await getTask.ConfigureAwait(false)).Value;
 
             return FromOpenAIResponse(response, openAIOptions, openAIConversationId);
         }
@@ -100,10 +120,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var openAIResponseItems = ToOpenAIResponseItems(messages, options);
 
         // Make the call to the OpenAIResponseClient.
-        var task = _createResponseAsync is not null ?
+        var createTask = _createResponseAsync is not null ?
             _createResponseAsync(_responseClient, openAIResponseItems, openAIOptions, cancellationToken.ToRequestOptions(streaming: false)) :
             _responseClient.CreateResponseAsync(openAIResponseItems, openAIOptions, cancellationToken);
-        var openAIResponse = (await task.ConfigureAwait(false)).Value;
+        var openAIResponse = (await createTask.ConfigureAwait(false)).Value;
 
         // Convert the response to a ChatResponse.
         return FromOpenAIResponse(openAIResponse, openAIOptions, openAIConversationId);
@@ -239,18 +259,20 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Provided continuation token signals that an existing background response should be fetched.
         if (GetContinuationToken(messages, options) is { } token)
         {
-            IAsyncEnumerable<StreamingResponseUpdate> updates = _responseClient.GetResponseStreamingAsync(token.ResponseId, token.SequenceNumber, cancellationToken);
+            IAsyncEnumerable<StreamingResponseUpdate> getUpdates = _getResponseStreamingAsync is not null ?
+                _getResponseStreamingAsync(_responseClient, token.ResponseId, cancellationToken.ToRequestOptions(streaming: true), token.SequenceNumber) :
+                _responseClient.GetResponseStreamingAsync(token.ResponseId, token.SequenceNumber, cancellationToken);
 
-            return FromOpenAIStreamingResponseUpdatesAsync(updates, openAIOptions, openAIConversationId, token.ResponseId, cancellationToken);
+            return FromOpenAIStreamingResponseUpdatesAsync(getUpdates, openAIOptions, openAIConversationId, token.ResponseId, cancellationToken);
         }
 
         var openAIResponseItems = ToOpenAIResponseItems(messages, options);
 
-        var streamingUpdates = _createResponseStreamingAsync is not null ?
+        var createUpdates = _createResponseStreamingAsync is not null ?
             _createResponseStreamingAsync(_responseClient, openAIResponseItems, openAIOptions, cancellationToken.ToRequestOptions(streaming: true)) :
             _responseClient.CreateResponseStreamingAsync(openAIResponseItems, openAIOptions, cancellationToken);
 
-        return FromOpenAIStreamingResponseUpdatesAsync(streamingUpdates, openAIOptions, openAIConversationId, cancellationToken: cancellationToken);
+        return FromOpenAIStreamingResponseUpdatesAsync(createUpdates, openAIOptions, openAIConversationId, cancellationToken: cancellationToken);
     }
 
     internal static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingResponseUpdatesAsync(
@@ -585,7 +607,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         if (options is null)
         {
-            return new ResponseCreationOptions();
+            return new();
         }
 
         bool hasRawRco = false;
@@ -595,13 +617,14 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
         else
         {
-            result = new ResponseCreationOptions();
+            result = new();
         }
 
         result.MaxOutputTokenCount ??= options.MaxOutputTokens;
         result.Temperature ??= options.Temperature;
         result.TopP ??= options.TopP;
         result.BackgroundModeEnabled ??= options.AllowBackgroundResponses;
+        OpenAIClientExtensions.PatchModelIfNotSet(ref result.Patch, options.ModelId);
 
         // If the ResponseCreationOptions.PreviousResponseId is already set (likely rare), then we don't need to do
         // anything with regards to Conversation, because they're mutually exclusive and we would want to ignore
@@ -618,55 +641,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             if (hasRawRco || chatOptionsHasOpenAIConversationId)
             {
-                const string ConversationPropertyName = "conversation";
-                try
+                _ = result.Patch.TryGetValue("$.conversation"u8, out openAIConversationId);
+                if (openAIConversationId is null && chatOptionsHasOpenAIConversationId)
                 {
-                    // ResponseCreationOptions currently doesn't expose either Conversation nor JSON Path for accessing
-                    // arbitrary properties publicly. Until it does, we need to serialize the RCO and examine
-                    // and possibly mutate/deserialize the resulting JSON.
-                    var rcoJsonModel = (IJsonModel<ResponseCreationOptions>)result;
-                    var rcoJsonBinaryData = rcoJsonModel.Write(ModelReaderWriterOptions.Json);
-                    if (JsonNode.Parse(rcoJsonBinaryData.ToMemory().Span) is JsonObject rcoJsonObject)
-                    {
-                        // Check if a conversation ID is already set on the RCO. If one is, store it for later.
-                        if (rcoJsonObject.TryGetPropertyValue(ConversationPropertyName, out JsonNode? existingConversationNode))
-                        {
-                            switch (existingConversationNode?.GetValueKind())
-                            {
-                                case JsonValueKind.String:
-                                    openAIConversationId = existingConversationNode.GetValue<string>();
-                                    break;
-
-                                case JsonValueKind.Object:
-                                    openAIConversationId =
-                                        existingConversationNode.AsObject().TryGetPropertyValue("id", out JsonNode? idNode) && idNode?.GetValueKind() == JsonValueKind.String ?
-                                            idNode.GetValue<string>() :
-                                            null;
-                                    break;
-                            }
-                        }
-
-                        // If one isn't set, and ChatOptions.ConversationId is set to a conversation ID, set it now.
-                        if (openAIConversationId is null && chatOptionsHasOpenAIConversationId)
-                        {
-                            rcoJsonObject[ConversationPropertyName] = JsonValue.Create(chatOptionsConversationId);
-                            rcoJsonBinaryData = new(JsonSerializer.SerializeToUtf8Bytes(rcoJsonObject, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonNode))));
-                            if (rcoJsonModel.Create(rcoJsonBinaryData, ModelReaderWriterOptions.Json) is ResponseCreationOptions newRco)
-                            {
-                                result = newRco;
-                                openAIConversationId = chatOptionsConversationId;
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // Ignore any JSON formatting / parsing failures
+                    result.Patch.Set("$.conversation"u8, chatOptionsConversationId!);
+                    openAIConversationId = chatOptionsConversationId;
                 }
             }
 
-            // If after all that we still don't have a conversation ID, and ChatOptions.ConversationId is set,
-            // treat it as a response ID.
+            // If we still don't have a conversation ID, and ChatOptions.ConversationId is set, treat it as a response ID.
             if (openAIConversationId is null && options.ConversationId is { } previousResponseId)
             {
                 result.PreviousResponseId = previousResponseId;
@@ -865,19 +848,105 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case FunctionResultContent resultContent:
-                            string? result = resultContent.Result as string;
-                            if (result is null && resultContent.Result is { } resultObj)
+                            static FunctionCallOutputResponseItem SerializeAIContent(string callId, IEnumerable<AIContent> contents)
                             {
-                                switch (resultObj)
-                                {
-                                    // https://github.com/openai/openai-dotnet/issues/759
-                                    // Once OpenAI supports other forms of tool call outputs, special-case various AIContent types here, e.g.
-                                    // case DataContent
-                                    // case HostedFileContent
-                                    // case IEnumerable<AIContent>
-                                    // etc.
+                                List<FunctionToolCallOutputElement> elements = [];
 
-                                    default:
+                                foreach (var content in contents)
+                                {
+                                    switch (content)
+                                    {
+                                        case TextContent tc:
+                                            elements.Add(new()
+                                            {
+                                                Type = "input_text",
+                                                Text = tc.Text
+                                            });
+                                            break;
+
+                                        case DataContent dc when dc.HasTopLevelMediaType("image"):
+                                            elements.Add(new()
+                                            {
+                                                Type = "input_image",
+                                                ImageUrl = dc.Uri
+                                            });
+                                            break;
+
+                                        case DataContent dc:
+                                            elements.Add(new()
+                                            {
+                                                Type = "input_file",
+                                                FileData = dc.Uri, // contrary to the docs, file_data is expected to be a data URI, not just the base64 portion
+                                                FileName = dc.Name ?? $"file_{Guid.NewGuid():N}", // contrary to the docs, file_name is required
+                                            });
+                                            break;
+
+                                        case UriContent uc when uc.HasTopLevelMediaType("image"):
+                                            elements.Add(new()
+                                            {
+                                                Type = "input_image",
+                                                ImageUrl = uc.Uri.AbsoluteUri,
+                                            });
+                                            break;
+
+                                        case UriContent uc:
+                                            elements.Add(new()
+                                            {
+                                                Type = "input_file",
+                                                FileUrl = uc.Uri.AbsoluteUri,
+                                            });
+                                            break;
+
+                                        case HostedFileContent fc:
+                                            elements.Add(new()
+                                            {
+                                                Type = fc.HasTopLevelMediaType("image") ? "input_image" : "input_file",
+                                                FileId = fc.FileId,
+                                                FileName = fc.Name,
+                                            });
+                                            break;
+
+                                        default:
+                                            // Fallback to serializing and storing the resulting JSON as text.
+                                            try
+                                            {
+                                                elements.Add(new()
+                                                {
+                                                    Type = "input_text",
+                                                    Text = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object))),
+                                                });
+                                            }
+                                            catch (NotSupportedException)
+                                            {
+                                                // If the type can't be serialized, skip it.
+                                            }
+                                            break;
+                                    }
+                                }
+
+                                FunctionCallOutputResponseItem outputItem = new(callId, string.Empty);
+                                if (elements.Count > 0)
+                                {
+                                    outputItem.Patch.Set("$.output"u8, JsonSerializer.SerializeToUtf8Bytes(elements, OpenAIJsonContext.Default.ListFunctionToolCallOutputElement).AsSpan());
+                                }
+
+                                return outputItem;
+                            }
+
+                            switch (resultContent.Result)
+                            {
+                                case AIContent ac:
+                                    yield return SerializeAIContent(resultContent.CallId, [ac]);
+                                    break;
+
+                                case IEnumerable<AIContent> items:
+                                    yield return SerializeAIContent(resultContent.CallId, items);
+                                    break;
+
+                                default:
+                                    string? result = resultContent.Result as string;
+                                    if (result is null && resultContent.Result is { } resultObj)
+                                    {
                                         try
                                         {
                                             result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
@@ -886,11 +955,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                         {
                                             // If the type can't be serialized, skip it.
                                         }
-                                        break;
-                                }
-                            }
+                                    }
 
-                            yield return ResponseItem.CreateFunctionCallOutputItem(resultContent.CallId, result ?? string.Empty);
+                                    yield return ResponseItem.CreateFunctionCallOutputItem(resultContent.CallId, result ?? string.Empty);
+                                    break;
+                            }
                             break;
 
                         case McpServerToolApprovalResponseContent mcpApprovalResponseContent:
@@ -1068,10 +1137,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 switch (ota)
                 {
-                    case UriCitationMessageAnnotation ucma:
-                        ca.AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = ucma.StartIndex, EndIndex = ucma.EndIndex }];
-                        ca.Title = ucma.Title;
-                        ca.Url = ucma.Uri;
+                    case ContainerFileCitationMessageAnnotation cfcma:
+                        ca.AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = cfcma.StartIndex, EndIndex = cfcma.EndIndex }];
+                        ca.FileId = cfcma.FileId;
+                        ca.Title = cfcma.Filename;
                         break;
 
                     case FilePathMessageAnnotation fpma:
@@ -1080,6 +1149,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                     case FileCitationMessageAnnotation fcma:
                         ca.FileId = fcma.FileId;
+                        break;
+
+                    case UriCitationMessageAnnotation ucma:
+                        ca.AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = ucma.StartIndex, EndIndex = ucma.EndIndex }];
+                        ca.Url = ucma.Uri;
+                        ca.Title = ucma.Title;
                         break;
                 }
 
@@ -1213,5 +1288,30 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 serviceKey is null && serviceType.IsInstanceOfType(Tool) ? Tool :
                 base.GetService(serviceType, serviceKey);
         }
+    }
+
+    /// <summary>DTO for an array element in OpenAI Responses' "Function tool call output".</summary>
+    internal sealed class FunctionToolCallOutputElement
+    {
+        [JsonPropertyName("type")]
+        public string? Type { get; set; } // input_text, input_image, or input_file
+
+        [JsonPropertyName("text")]
+        public string? Text { get; set; }
+
+        [JsonPropertyName("image_url")]
+        public string? ImageUrl { get; set; }
+
+        [JsonPropertyName("file_id")]
+        public string? FileId { get; set; }
+
+        [JsonPropertyName("file_data")]
+        public string? FileData { get; set; }
+
+        [JsonPropertyName("file_url")]
+        public string? FileUrl { get; set; }
+
+        [JsonPropertyName("filename")]
+        public string? FileName { get; set; }
     }
 }

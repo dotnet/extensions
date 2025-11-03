@@ -1,12 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable AIEVAL001
+// AIEVAL001: Some of the below APIs are experimental and subject to change or removal in future updates.
+
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
-
-#pragma warning disable AIEVAL001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 public class GLEUEvaluatorTests
 {
@@ -107,5 +108,4 @@ public class GLEUEvaluatorTests
         Assert.NotNull(metric.Diagnostics);
         Assert.Contains(metric.Diagnostics, d => d.Severity == EvaluationDiagnosticSeverity.Error);
     }
-
 }

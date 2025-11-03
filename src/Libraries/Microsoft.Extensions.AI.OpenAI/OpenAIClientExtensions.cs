@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -226,6 +227,19 @@ public static class OpenAIClientExtensions
             absoluteUri.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ? "image/bmp" :
             absoluteUri.EndsWith(".webp", StringComparison.OrdinalIgnoreCase) ? "image/webp" :
             "image/*";
+    }
+
+    /// <summary>Sets $.model in <paramref name="patch"/> to <paramref name="modelId"/> if not already set.</summary>
+    internal static void PatchModelIfNotSet(ref JsonPatch patch, string? modelId)
+    {
+        if (modelId is not null)
+        {
+            _ = patch.TryGetValue("$.model"u8, out string? existingModel);
+            if (existingModel is null)
+            {
+                patch.Set("$.model"u8, modelId);
+            }
+        }
     }
 
     /// <summary>Used to create the JSON payload for an OpenAI tool description.</summary>

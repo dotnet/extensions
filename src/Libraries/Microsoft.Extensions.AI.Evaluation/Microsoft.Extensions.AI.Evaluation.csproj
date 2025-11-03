@@ -14,6 +14,10 @@
     <MinMutationScore>n/a</MinMutationScore>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />
   </ItemGroup>
