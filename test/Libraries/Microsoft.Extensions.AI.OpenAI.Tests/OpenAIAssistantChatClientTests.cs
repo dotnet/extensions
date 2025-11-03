@@ -19,7 +19,8 @@ public class OpenAIAssistantChatClientTests
     public void AsIChatClient_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("assistantClient", () => ((AssistantClient)null!).AsIChatClient("assistantId"));
-        Assert.Throws<ArgumentNullException>("assistantId", () => new AssistantClient("ignored").AsIChatClient(null!));
+        Assert.Throws<ArgumentNullException>("assistantId", () => new AssistantClient("ignored").AsIChatClient((string)null!));
+        Assert.Throws<ArgumentNullException>("assistant", () => new AssistantClient("ignored").AsIChatClient((Assistant)null!));
     }
 
     [Fact]

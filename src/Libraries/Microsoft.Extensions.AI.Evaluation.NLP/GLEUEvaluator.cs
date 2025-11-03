@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,6 +49,7 @@ public sealed class GLEUEvaluator : IEvaluator
 
         var metric = new NumericMetric(GLEUMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {
@@ -78,16 +78,20 @@ public sealed class GLEUEvaluator : IEvaluator
             return new ValueTask<EvaluationResult>(result);
         }
 
-        (double score, TimeSpan duration) = TimingHelper.ExecuteWithTiming(() =>
-        {
-            string[][] references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference).ToArray()).ToArray();
-            string[] hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
-            return GLEUAlgorithm.SentenceGLEU(references, hypothesis);
-        });
+        (double score, TimeSpan duration) =
+            TimingHelper.ExecuteWithTiming(() =>
+            {
+                string[][] references = context.References.Select(
+                    reference => SimpleWordTokenizer.WordTokenize(reference).ToArray()).ToArray();
+
+                string[] hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
+
+                double score = GLEUAlgorithm.SentenceGLEU(references, hypothesis);
+                return score;
+            });
 
         metric.Value = score;
-        string durationText = $"{duration.TotalSeconds.ToString("F4", CultureInfo.InvariantCulture)} s";
-        metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
+        metric.AddOrUpdateDurationMetadata(duration);
         metric.AddOrUpdateContext(context);
         metric.Interpretation = metric.Interpret();
 

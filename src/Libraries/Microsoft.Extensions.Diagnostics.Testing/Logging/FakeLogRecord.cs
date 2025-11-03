@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging.Testing;
@@ -25,9 +24,7 @@ public class FakeLogRecord
     /// <param name="category">The optional category for this record, which corresponds to the T in <see cref="ILogger{T}"/>.</param>
     /// <param name="enabled">Whether the log level was enabled or not when the <see cref="FakeLogger.Log"/> method was called.</param>
     /// <param name="timestamp">The time at which the log record was created.</param>
-#pragma warning disable S107 // Methods should not have too many parameters
     public FakeLogRecord(LogLevel level, EventId id, object? state, Exception? exception, string message, IReadOnlyList<object?> scopes, string? category, bool enabled, DateTimeOffset timestamp)
-#pragma warning restore S107 // Methods should not have too many parameters
     {
         Level = level;
         Id = id;

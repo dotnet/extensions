@@ -7,16 +7,19 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsAspireHost>true</IsAspireHost>
     <UserSecretsId>b2f4f5e9-1083-472c-8c3b-f055ac67ba54</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="${TemplatePackageVersion_Aspire}" />
-<!--#if (UseQdrant)
+<!--#if (IsQdrant)
     <PackageReference Include="Aspire.Hosting.Qdrant" Version="${TemplatePackageVersion_Aspire}" />
+#elif (IsAzureAISearch)
+    <PackageReference Include="Aspire.Hosting.Azure.Search" Version="${TemplatePackageVersion_Aspire}" />
 #endif -->
-<!--#if (IsOllama)
+<!--#if (IsAzureOpenAI) -->
+    <PackageReference Include="Aspire.Hosting.Azure.CognitiveServices" Version="${TemplatePackageVersion_Aspire}" />
+<!--#elif (IsOllama)
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="${TemplatePackageVersion_CommunityToolkitAspire}" />
 #endif -->
   </ItemGroup>

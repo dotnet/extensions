@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods that take it.
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -43,8 +40,8 @@ public class QualityEvaluatorTests
             string date = $"Date: {DateTime.UtcNow:dddd, dd MMMM yyyy}";
             string projectName = $"Project: Integration Tests";
             string testClass = $"Test Class: {nameof(QualityEvaluatorTests)}";
-            string provider = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
             string model = $"Model: {clientMetadata?.DefaultModelId ?? "Unknown"}";
+            string provider = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
             string temperature = $"Temperature: {_chatOptions.Temperature}";
             string usesContext = $"Feature: Context";
 
@@ -60,7 +57,7 @@ public class QualityEvaluatorTests
                     evaluators: [rtcEvaluator, coherenceEvaluator, fluencyEvaluator, relevanceEvaluator],
                     chatConfiguration: chatConfiguration,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature,]);
+                    tags: [version, date, projectName, testClass, model, provider, temperature]);
 
             IEvaluator groundednessEvaluator = new GroundednessEvaluator();
             IEvaluator equivalenceEvaluator = new EquivalenceEvaluator();
@@ -73,7 +70,7 @@ public class QualityEvaluatorTests
                     evaluators: [groundednessEvaluator, equivalenceEvaluator, completenessEvaluator, retrievalEvaluator],
                     chatConfiguration: chatConfiguration,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature, usesContext]);
+                    tags: [version, date, projectName, testClass, model, provider, temperature, usesContext]);
         }
     }
 
@@ -116,7 +113,7 @@ public class QualityEvaluatorTests
         SkipIfNotConfigured();
 
 #if NET
-        await Parallel.ForAsync(1, 6, async (i, _) =>
+        await Parallel.ForAsync(1, 6, async (i, cancellationToken) =>
 #else
         for (int i = 1; i < 6; i++)
 #endif
@@ -124,7 +121,8 @@ public class QualityEvaluatorTests
             await using ScenarioRun scenarioRun =
                 await _qualityReportingConfiguration.CreateScenarioRunAsync(
                     scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(QualityEvaluatorTests)}.{nameof(SampleMultipleResponses)}",
-                    iterationName: i.ToString());
+                    iterationName: i.ToString(),
+                    cancellationToken: cancellationToken);
 
             IChatClient chatClient = scenarioRun.ChatConfiguration!.ChatClient;
 
@@ -132,9 +130,10 @@ public class QualityEvaluatorTests
             string prompt = @"How far in miles is the planet Venus from the Earth at its closest and furthest points?";
             messages.Add(prompt.ToUserMessage());
 
-            ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
+            ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions, cancellationToken);
 
-            EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response);
+            EvaluationResult result =
+                await scenarioRun.EvaluateAsync(messages, response, cancellationToken: cancellationToken);
 
             Assert.False(
                 result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),

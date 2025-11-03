@@ -35,6 +35,9 @@
 
     <!-- Legacy targets do not support attributes for a nullable context thus suppressing null check warnings -->
     <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
+
+    <!-- Async method lacks 'await' operators and will run synchronously (The C# compiler has already removed it) -->
+    <NoWarn>$(NoWarn);CS1998</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition="('$(Stage)' == 'normal' OR '$(Stage)' == 'obsolete') AND '$(OutputType)' != 'Exe' AND '$(IsPackable)' == 'true' AND '$(Api)' != 'false'">
@@ -56,6 +59,13 @@
       <_Parameter1>$(StageDevDiagnosticId)</_Parameter1>
       <_Parameter2>UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}"</_Parameter2>
       <_Parameter2_IsLiteral>true</_Parameter2_IsLiteral>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RepoOriginalSourceRevisionId)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>OriginalRepoCommitHash</_Parameter1>
+      <_Parameter2>$(RepoOriginalSourceRevisionId)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 

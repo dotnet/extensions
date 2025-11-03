@@ -31,6 +31,7 @@ steps:
 
   - script: ${{ parameters.buildScript }}
             -restore
+            -warnAsError ${{ parameters.warnAsError }}
             /bl:${{ parameters.repoLogPath }}/restore.binlog
     displayName: Restore
 
@@ -40,6 +41,7 @@ steps:
 
   - script: ${{ parameters.buildScript }}
             -restore
+            -warnAsError ${{ parameters.warnAsError }}
             /bl:${{ parameters.repoLogPath }}/restore2.binlog
     displayName: Restore solution
 
@@ -61,7 +63,7 @@ steps:
   - script: ${{ parameters.buildScript }}
             -pack
             -configuration ${{ parameters.buildConfig }}
-            -warnAsError 1
+            -warnAsError ${{ parameters.warnAsError }}
             /bl:${{ parameters.repoLogPath }}/pack.binlog
             /p:Restore=false /p:Build=false
             $(_OfficialBuildIdArgs)
@@ -71,7 +73,7 @@ steps:
     - script: ${{ parameters.buildScript }}
               -integrationTest
               -configuration ${{ parameters.buildConfig }}
-              -warnAsError 1
+              -warnAsError ${{ parameters.warnAsError }}
               /bl:${{ parameters.repoLogPath }}/integration_tests.binlog
               $(_OfficialBuildIdArgs)
       displayName: Run integration tests
@@ -158,6 +160,7 @@ steps:
     # Publishing will happen in a subsequent step
     - script: ${{ parameters.buildScript }}
               -projects $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj
+              -warnAsError ${{ parameters.warnAsError }}
               -pack
               -configuration ${{ parameters.buildConfig }}
               /bl:${{ parameters.repoLogPath }}/transport.binlog
@@ -169,11 +172,12 @@ steps:
       displayName: Build Azure DevOps plugin
 
     - script: ${{ parameters.buildScript }}
+              -restore
               -sign $(_SignArgs)
               -publish $(_PublishArgs)
               -configuration ${{ parameters.buildConfig }}
-              -warnAsError 1
+              -warnAsError ${{ parameters.warnAsError }}
               /bl:${{ parameters.repoLogPath }}/publish.binlog
-              /p:Restore=false /p:Build=false
+              /p:Build=false
               $(_OfficialBuildIdArgs)
       displayName: Sign and publish

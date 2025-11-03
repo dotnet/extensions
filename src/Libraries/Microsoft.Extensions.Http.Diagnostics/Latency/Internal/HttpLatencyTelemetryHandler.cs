@@ -8,7 +8,6 @@ using Microsoft.Extensions.AmbientMetadata;
 using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Latency.Internal;
 
@@ -22,19 +21,22 @@ internal sealed class HttpLatencyTelemetryHandler : DelegatingHandler
     private readonly ILatencyContextProvider _latencyContextProvider;
     private readonly CheckpointToken _handlerStart;
     private readonly string _applicationName;
+#if NET
+    private readonly HttpLatencyMediator _latencyMediator;
+#endif
 
     public HttpLatencyTelemetryHandler(HttpRequestLatencyListener latencyListener, ILatencyContextTokenIssuer tokenIssuer, ILatencyContextProvider latencyContextProvider,
-        IOptions<HttpClientLatencyTelemetryOptions> options, IOptions<ApplicationMetadata> appMetdata)
+        IOptions<HttpClientLatencyTelemetryOptions> options, IOptions<ApplicationMetadata> appMetadata, HttpLatencyMediator latencyTelemetryMediator)
     {
-        var appMetadata = Throw.IfMemberNull(appMetdata, appMetdata.Value);
-        var telemetryOptions = Throw.IfMemberNull(options, options.Value);
-
         _latencyListener = latencyListener;
         _latencyContextProvider = latencyContextProvider;
         _handlerStart = tokenIssuer.GetCheckpointToken(HttpCheckpoints.HandlerRequestStart);
-        _applicationName = appMetdata.Value.ApplicationName;
+        _applicationName = appMetadata.Value.ApplicationName;
+#if NET
+        _latencyMediator = latencyTelemetryMediator;
+#endif
 
-        if (telemetryOptions.EnableDetailedLatencyBreakdown)
+        if (options.Value.EnableDetailedLatencyBreakdown)
         {
             _latencyListener.Enable();
         }
@@ -46,12 +48,12 @@ internal sealed class HttpLatencyTelemetryHandler : DelegatingHandler
         context.AddCheckpoint(_handlerStart);
         _latencyListener.LatencyContext.Set(context);
 
-        request.Headers.Add(TelemetryConstants.ClientApplicationNameHeader, _applicationName);
+#if NET
+        _latencyMediator.RecordStart(context);
+#endif
 
-        var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        _ = request.Headers.TryAddWithoutValidation(TelemetryConstants.ClientApplicationNameHeader, _applicationName);
 
-        _latencyListener.LatencyContext.Unset();
-
-        return response;
+        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 }

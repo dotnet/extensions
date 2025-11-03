@@ -3,7 +3,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Throw = Microsoft.Shared.Diagnostics.Throw;
 
 #pragma warning disable CA1716
 namespace Microsoft.Shared.Diagnostics;

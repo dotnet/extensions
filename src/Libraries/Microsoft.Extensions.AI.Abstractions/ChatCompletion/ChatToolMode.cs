@@ -55,8 +55,7 @@ public class ChatToolMode
 
     /// <summary>
     /// Instantiates a <see cref="ChatToolMode"/> indicating that tool usage is required,
-    /// and that the specified <see cref="AIFunction"/> must be selected. The function name
-    /// must match an entry in <see cref="ChatOptions.Tools"/>.
+    /// and that the specified function name must be selected.
     /// </summary>
     /// <param name="functionName">The name of the required function.</param>
     /// <returns>An instance of <see cref="RequiredChatToolMode"/> for the specified function name.</returns>

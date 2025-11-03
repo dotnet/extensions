@@ -3,6 +3,7 @@
     <RootNamespace>Microsoft.Extensions.Diagnostics.ExceptionSummarization</RootNamespace>
     <Description>Lets you retrieve exception summary information.</Description>
     <Workstream>Telemetry</Workstream>
+    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0;net462</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>

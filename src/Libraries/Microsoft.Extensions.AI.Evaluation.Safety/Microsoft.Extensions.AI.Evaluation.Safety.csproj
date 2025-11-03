@@ -17,6 +17,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\BuiltInMetricUtilities.cs" Link="Utilities\BuiltInMetricUtilities.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\ModelInfo.cs" Link="Utilities\ModelInfo.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\TimingHelper.cs" Link="Utilities\TimingHelper.cs" />
   </ItemGroup>
   

@@ -20,6 +20,8 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(SpeechToTextResponseUpdate))]
 [JsonSerializable(typeof(SpeechToTextResponseUpdateKind))]
 [JsonSerializable(typeof(SpeechToTextOptions))]
+[JsonSerializable(typeof(ImageGenerationResponse))]
+[JsonSerializable(typeof(ImageGenerationOptions))]
 [JsonSerializable(typeof(ChatOptions))]
 [JsonSerializable(typeof(EmbeddingGenerationOptions))]
 [JsonSerializable(typeof(Dictionary<string, object?>))]
@@ -33,4 +35,10 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(DayOfWeek[]))] // Used in Content tests
 [JsonSerializable(typeof(Guid))] // Used in Content tests
 [JsonSerializable(typeof(decimal))] // Used in Content tests
+[JsonSerializable(typeof(HostedMcpServerToolApprovalMode))]
+[JsonSerializable(typeof(ChatResponseFormatTests.SomeType))]
+[JsonSerializable(typeof(ChatResponseFormatTests.TypeWithDisplayName))]
+[JsonSerializable(typeof(ResponseContinuationToken))]
+[JsonSerializable(typeof(UserInputRequestContent[]))]
+[JsonSerializable(typeof(UserInputResponseContent[]))]
 internal sealed partial class TestJsonSerializerContext : JsonSerializerContext;

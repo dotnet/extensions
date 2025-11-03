@@ -4,7 +4,6 @@
 using System;
 using System.Net.Http;
 using System.Threading;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Http.Resilience.Hedging.Internals;

@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Logging;
 using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Logging;
@@ -14,7 +12,6 @@ namespace Microsoft.Extensions.Logging;
 /// </summary>
 /// <seealso cref="LoggerMessageAttribute"/>
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
-[Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class LogPropertiesAttribute : Attribute
 {
     /// <summary>

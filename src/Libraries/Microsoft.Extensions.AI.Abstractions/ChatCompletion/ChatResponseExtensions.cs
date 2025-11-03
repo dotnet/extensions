@@ -3,14 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+#if !NET
+using System.Runtime.InteropServices;
+#endif
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
-
-#pragma warning disable S109 // Magic numbers should not be used
-#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 
 namespace Microsoft.Extensions.AI;
 
@@ -84,9 +87,10 @@ public static class ChatResponseExtensions
         var contentsList = filter is null ? update.Contents : update.Contents.Where(filter).ToList();
         if (contentsList.Count > 0)
         {
-            list.Add(new ChatMessage(update.Role ?? ChatRole.Assistant, contentsList)
+            list.Add(new(update.Role ?? ChatRole.Assistant, contentsList)
             {
                 AuthorName = update.AuthorName,
+                CreatedAt = update.CreatedAt,
                 RawRepresentation = update.RawRepresentation,
                 AdditionalProperties = update.AdditionalProperties,
             });
@@ -181,58 +185,238 @@ public static class ChatResponseExtensions
     }
 
     /// <summary>Coalesces sequential <see cref="AIContent"/> content elements.</summary>
-    internal static void CoalesceTextContent(List<AIContent> contents)
+    internal static void CoalesceContent(IList<AIContent> contents)
     {
-        Coalesce<TextContent>(contents, static text => new(text));
-        Coalesce<TextReasoningContent>(contents, static text => new(text));
+        Coalesce<TextContent>(
+            contents,
+            mergeSingle: false,
+            canMerge: null,
+            static (contents, start, end) => new(MergeText(contents, start, end)) { AdditionalProperties = contents[start].AdditionalProperties?.Clone() });
 
-        // This implementation relies on TContent's ToString returning its exact text.
-        static void Coalesce<TContent>(List<AIContent> contents, Func<string, TContent> fromText)
+        Coalesce<TextReasoningContent>(
+            contents,
+            mergeSingle: false,
+            canMerge: static (r1, r2) => string.IsNullOrEmpty(r1.ProtectedData), // we allow merging if the first item has no ProtectedData, even if the second does
+            static (contents, start, end) =>
+            {
+                TextReasoningContent content = new(MergeText(contents, start, end))
+                {
+                    AdditionalProperties = contents[start].AdditionalProperties?.Clone()
+                };
+
+#if DEBUG
+                for (int i = start; i < end - 1; i++)
+                {
+                    Debug.Assert(contents[i] is TextReasoningContent { ProtectedData: null }, "Expected all but the last to have a null ProtectedData");
+                }
+#endif
+
+                if (((TextReasoningContent)contents[end - 1]).ProtectedData is { } protectedData)
+                {
+                    content.ProtectedData = protectedData;
+                }
+
+                return content;
+            });
+
+        Coalesce<DataContent>(
+            contents,
+            mergeSingle: false,
+            canMerge: static (r1, r2) => r1.MediaType == r2.MediaType && r1.HasTopLevelMediaType("text") && r1.Name == r2.Name,
+            static (contents, start, end) =>
+            {
+                Debug.Assert(end - start > 1, "Expected multiple contents to merge");
+
+                MemoryStream ms = new();
+                for (int i = start; i < end; i++)
+                {
+                    var current = (DataContent)contents[i];
+#if NET
+                    ms.Write(current.Data.Span);
+#else
+                    if (!MemoryMarshal.TryGetArray(current.Data, out var segment))
+                    {
+                        segment = new(current.Data.ToArray());
+                    }
+
+                    ms.Write(segment.Array!, segment.Offset, segment.Count);
+#endif
+                }
+
+                var first = (DataContent)contents[start];
+                return new DataContent(new ReadOnlyMemory<byte>(ms.GetBuffer(), 0, (int)ms.Length), first.MediaType) { Name = first.Name };
+            });
+
+        Coalesce<CodeInterpreterToolCallContent>(
+            contents,
+            mergeSingle: true,
+            canMerge: static (r1, r2) => r1.CallId == r2.CallId,
+            static (contents, start, end) =>
+            {
+                var firstContent = (CodeInterpreterToolCallContent)contents[start];
+
+                if (start == end - 1)
+                {
+                    if (firstContent.Inputs is not null)
+                    {
+                        CoalesceContent(firstContent.Inputs);
+                    }
+
+                    return firstContent;
+                }
+
+                List<AIContent>? inputs = null;
+
+                for (int i = start; i < end; i++)
+                {
+                    (inputs ??= []).AddRange(((CodeInterpreterToolCallContent)contents[i]).Inputs ?? []);
+                }
+
+                if (inputs is not null)
+                {
+                    CoalesceContent(inputs);
+                }
+
+                return new()
+                {
+                    CallId = firstContent.CallId,
+                    Inputs = inputs,
+                    AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
+                };
+            });
+
+        Coalesce<CodeInterpreterToolResultContent>(
+            contents,
+            mergeSingle: true,
+            canMerge: static (r1, r2) => r1.CallId is not null && r2.CallId is not null && r1.CallId == r2.CallId,
+            static (contents, start, end) =>
+            {
+                var firstContent = (CodeInterpreterToolResultContent)contents[start];
+
+                if (start == end - 1)
+                {
+                    if (firstContent.Outputs is not null)
+                    {
+                        CoalesceContent(firstContent.Outputs);
+                    }
+
+                    return firstContent;
+                }
+
+                List<AIContent>? output = null;
+
+                for (int i = start; i < end; i++)
+                {
+                    (output ??= []).AddRange(((CodeInterpreterToolResultContent)contents[i]).Outputs ?? []);
+                }
+
+                if (output is not null)
+                {
+                    CoalesceContent(output);
+                }
+
+                return new()
+                {
+                    CallId = firstContent.CallId,
+                    Outputs = output,
+                    AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
+                };
+            });
+
+        static string MergeText(IList<AIContent> contents, int start, int end)
+        {
+            Debug.Assert(end - start > 1, "Expected multiple contents to merge");
+
+            StringBuilder sb = new();
+            for (int i = start; i < end; i++)
+            {
+                _ = sb.Append(contents[i]);
+            }
+
+            return sb.ToString();
+        }
+
+        static void Coalesce<TContent>(
+            IList<AIContent> contents,
+            bool mergeSingle,
+            Func<TContent, TContent, bool>? canMerge,
+            Func<IList<AIContent>, int, int, TContent> merge)
             where TContent : AIContent
         {
-            StringBuilder? coalescedText = null;
-
             // Iterate through all of the items in the list looking for contiguous items that can be coalesced.
             int start = 0;
-            while (start < contents.Count - 1)
+            while (start < contents.Count)
             {
-                // We need at least two TextContents in a row to be able to coalesce.
-                if (contents[start] is not TContent firstText)
+                if (!TryAsCoalescable(contents[start], out var firstContent))
                 {
                     start++;
                     continue;
                 }
 
-                if (contents[start + 1] is not TContent secondText)
+                // Iterate until we find a non-coalescable item.
+                int i = start + 1;
+                TContent prev = firstContent;
+                while (i < contents.Count && TryAsCoalescable(contents[i], out TContent? next) && (canMerge is null || canMerge(prev, next)))
                 {
-                    start += 2;
+                    i++;
+                    prev = next;
+                }
+
+                // If there's only one item in the run, and we don't want to merge single items, skip it.
+                if (start == i - 1 && !mergeSingle)
+                {
+                    start++;
                     continue;
                 }
 
-                // Append the text from those nodes and continue appending subsequent TextContents until we run out.
-                // We null out nodes as their text is appended so that we can later remove them all in one O(N) operation.
-                coalescedText ??= new();
-                _ = coalescedText.Clear().Append(firstText).Append(secondText);
-                contents[start + 1] = null!;
-                int i = start + 2;
-                for (; i < contents.Count && contents[i] is TContent next; i++)
+                // Store the replacement node and null out all of the nodes that we coalesced.
+                // We can then remove all coalesced nodes in one O(N) operation via RemoveAll.
+                // Leave start positioned at the start of the next run.
+                contents[start] = merge(contents, start, i);
+
+                start++;
+                while (start < i)
                 {
-                    _ = coalescedText.Append(next);
-                    contents[i] = null!;
+                    contents[start++] = null!;
                 }
 
-                // Store the replacement node. We inherit the properties of the first text node. We don't
-                // currently propagate additional properties from the subsequent nodes. If we ever need to,
-                // we can add that here.
-                var newContent = fromText(coalescedText.ToString());
-                contents[start] = newContent;
-                newContent.AdditionalProperties = firstText.AdditionalProperties?.Clone();
+                static bool TryAsCoalescable(AIContent content, [NotNullWhen(true)] out TContent? coalescable)
+                {
+                    if (content is TContent tmp && tmp.Annotations is not { Count: > 0 })
+                    {
+                        coalescable = tmp;
+                        return true;
+                    }
 
-                start = i;
+                    coalescable = null;
+                    return false;
+                }
             }
 
             // Remove all of the null slots left over from the coalescing process.
-            _ = contents.RemoveAll(u => u is null);
+            if (contents is List<AIContent> contentsList)
+            {
+                _ = contentsList.RemoveAll(u => u is null);
+            }
+            else
+            {
+                int nextSlot = 0;
+                int contentsCount = contents.Count;
+                for (int i = 0; i < contentsCount; i++)
+                {
+                    if (contents[i] is { } content)
+                    {
+                        contents[nextSlot++] = content;
+                    }
+                }
+
+                for (int i = contentsCount - 1; i >= nextSlot; i--)
+                {
+                    contents.RemoveAt(i);
+                }
+
+                Debug.Assert(nextSlot == contents.Count, "Expected final count to equal list length.");
+            }
         }
     }
 
@@ -242,7 +426,7 @@ public static class ChatResponseExtensions
         int count = response.Messages.Count;
         for (int i = 0; i < count; i++)
         {
-            CoalesceTextContent((List<AIContent>)response.Messages[i].Contents);
+            CoalesceContent((List<AIContent>)response.Messages[i].Contents);
         }
     }
 
@@ -252,23 +436,22 @@ public static class ChatResponseExtensions
     private static void ProcessUpdate(ChatResponseUpdate update, ChatResponse response)
     {
         // If there is no message created yet, or if the last update we saw had a different
-        // message ID than the newest update, create a new message.
-        ChatMessage message;
-        var isNewMessage = false;
-        if (response.Messages.Count == 0)
+        // identifying parts, create a new message.
+        bool isNewMessage = true;
+        if (response.Messages.Count != 0)
         {
-            isNewMessage = true;
-        }
-        else if (update.MessageId is { Length: > 0 } updateMessageId
-            && response.Messages[response.Messages.Count - 1].MessageId is string lastMessageId
-            && updateMessageId != lastMessageId)
-        {
-            isNewMessage = true;
+            var lastMessage = response.Messages[response.Messages.Count - 1];
+            isNewMessage =
+                NotEmptyOrEqual(update.AuthorName, lastMessage.AuthorName) ||
+                NotEmptyOrEqual(update.MessageId, lastMessage.MessageId) ||
+                NotNullOrEqual(update.Role, lastMessage.Role);
         }
 
+        // Get the message to target, either a new one or the last ones.
+        ChatMessage message;
         if (isNewMessage)
         {
-            message = new ChatMessage(ChatRole.Assistant, []);
+            message = new(ChatRole.Assistant, []);
             response.Messages.Add(message);
         }
         else
@@ -280,9 +463,15 @@ public static class ChatResponseExtensions
         // Incorporate those into the latest message; in cases where the message
         // stores a single value, prefer the latest update's value over anything
         // stored in the message.
+
         if (update.AuthorName is not null)
         {
             message.AuthorName = update.AuthorName;
+        }
+
+        if (message.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > message.CreatedAt))
+        {
+            message.CreatedAt = update.CreatedAt;
         }
 
         if (update.Role is ChatRole role)
@@ -325,7 +514,7 @@ public static class ChatResponseExtensions
             response.ConversationId = update.ConversationId;
         }
 
-        if (update.CreatedAt is not null)
+        if (response.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > response.CreatedAt))
         {
             response.CreatedAt = update.CreatedAt;
         }
@@ -352,4 +541,12 @@ public static class ChatResponseExtensions
             }
         }
     }
+
+    /// <summary>Gets whether both strings are not null/empty and not the same as each other.</summary>
+    private static bool NotEmptyOrEqual(string? s1, string? s2) =>
+        s1 is { Length: > 0 } str1 && s2 is { Length: > 0 } str2 && str1 != str2;
+
+    /// <summary>Gets whether two roles are not null and not the same as each other.</summary>
+    private static bool NotNullOrEqual(ChatRole? r1, ChatRole? r2) =>
+        r1.HasValue && r2.HasValue && r1.Value != r2.Value;
 }

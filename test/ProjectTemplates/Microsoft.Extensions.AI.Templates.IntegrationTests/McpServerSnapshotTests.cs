@@ -1,12 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI.Templates.Tests;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
@@ -39,6 +37,24 @@ public class McpServerSnapshotTests
     public async Task BasicTest()
     {
         await TestTemplateCoreAsync(scenarioName: "Basic");
+    }
+
+    [Fact]
+    public async Task SelfContainedFalse()
+    {
+        await TestTemplateCoreAsync(scenarioName: "SelfContainedFalse", templateArgs: ["--self-contained", bool.FalseString]);
+    }
+
+    [Fact]
+    public async Task AotTrue()
+    {
+        await TestTemplateCoreAsync(scenarioName: "AotTrue", templateArgs: ["--aot", bool.TrueString]);
+    }
+
+    [Fact]
+    public async Task Net10()
+    {
+        await TestTemplateCoreAsync(scenarioName: "net10", templateArgs: ["--framework", "net10.0"]);
     }
 
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)

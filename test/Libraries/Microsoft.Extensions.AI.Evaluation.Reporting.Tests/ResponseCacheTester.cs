@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
@@ -45,10 +44,12 @@ public abstract class ResponseCacheTester
         Assert.Null(cache.Get(_keyB));
 
         await cache.SetAsync(_keyA, _responseA);
-        Assert.True(_responseA.SequenceEqual(await cache.GetAsync(_keyA) ?? []));
+        byte[] cached = await cache.GetAsync(_keyA) ?? [];
+        Assert.True(_responseA.SequenceEqual(cached));
 
         cache.Set(_keyB, _responseB);
-        Assert.True(_responseB.SequenceEqual(cache.Get(_keyB) ?? []));
+        cached = cache.Get(_keyB) ?? [];
+        Assert.True(_responseB.SequenceEqual(cached));
     }
 
     [ConditionalFact]
@@ -63,10 +64,12 @@ public abstract class ResponseCacheTester
         Assert.NotNull(cache);
 
         await cache.SetAsync(_keyA, _responseA);
-        Assert.True(_responseA.SequenceEqual(await cache.GetAsync(_keyA) ?? []));
+        byte[] cached = await cache.GetAsync(_keyA) ?? [];
+        Assert.True(_responseA.SequenceEqual(cached));
 
         cache.Set(_keyB, _responseB);
-        Assert.True(_responseB.SequenceEqual(cache.Get(_keyB) ?? []));
+        cached = cache.Get(_keyB) ?? [];
+        Assert.True(_responseB.SequenceEqual(cached));
 
         await cache.RemoveAsync(_keyA);
         Assert.Null(await cache.GetAsync(_keyA));
@@ -90,10 +93,12 @@ public abstract class ResponseCacheTester
         Assert.NotNull(cache);
 
         await cache.SetAsync(_keyA, _responseA);
-        Assert.True(_responseA.SequenceEqual(await cache.GetAsync(_keyA) ?? []));
+        byte[] cached = await cache.GetAsync(_keyA) ?? [];
+        Assert.True(_responseA.SequenceEqual(cached));
 
         cache.Set(_keyB, _responseB);
-        Assert.True(_responseB.SequenceEqual(cache.Get(_keyB) ?? []));
+        cached = cache.Get(_keyB) ?? [];
+        Assert.True(_responseB.SequenceEqual(cached));
 
         now = DateTime.UtcNow + Defaults.DefaultTimeToLiveForCacheEntries;
 
@@ -138,10 +143,12 @@ public abstract class ResponseCacheTester
         Assert.NotNull(cache);
 
         await cache.SetAsync(_keyA, _responseA);
-        Assert.True(_responseA.SequenceEqual(await cache.GetAsync(_keyA) ?? []));
+        byte[] cached = await cache.GetAsync(_keyA) ?? [];
+        Assert.True(_responseA.SequenceEqual(cached));
 
         cache.Set(_keyB, _responseB);
-        Assert.True(_responseB.SequenceEqual(cache.Get(_keyB) ?? []));
+        cached = cache.Get(_keyB) ?? [];
+        Assert.True(_responseB.SequenceEqual(cached));
 
         now = DateTime.UtcNow + Defaults.DefaultTimeToLiveForCacheEntries;
 
@@ -168,10 +175,12 @@ public abstract class ResponseCacheTester
         Assert.NotNull(cache);
 
         await cache.SetAsync(_keyA, _responseA);
-        Assert.True(_responseA.SequenceEqual(await cache.GetAsync(_keyA) ?? []));
+        byte[] cached = await cache.GetAsync(_keyA) ?? [];
+        Assert.True(_responseA.SequenceEqual(cached));
 
         cache.Set(_keyB, _responseB);
-        Assert.True(_responseB.SequenceEqual(cache.Get(_keyB) ?? []));
+        cached = cache.Get(_keyB) ?? [];
+        Assert.True(_responseB.SequenceEqual(cached));
 
         await provider.ResetAsync();
 

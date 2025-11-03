@@ -12,15 +12,13 @@ namespace Microsoft.Extensions.AI;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class TextContent : AIContent
 {
-    private string? _text;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="TextContent"/> class.
     /// </summary>
     /// <param name="text">The text content.</param>
     public TextContent(string? text)
     {
-        _text = text;
+        Text = text;
     }
 
     /// <summary>
@@ -29,8 +27,8 @@ public sealed class TextContent : AIContent
     [AllowNull]
     public string Text
     {
-        get => _text ?? string.Empty;
-        set => _text = value;
+        get => field ?? string.Empty;
+        set;
     }
 
     /// <inheritdoc/>

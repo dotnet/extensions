@@ -19,9 +19,4 @@ internal sealed class HttpClientLatencyContext
     {
         _latencyContext.Value = context;
     }
-
-    public void Unset()
-    {
-        _latencyContext.Value = null;
-    }
 }

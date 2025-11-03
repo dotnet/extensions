@@ -171,6 +171,21 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateJsonSchema_TrivialArray_GeneratesExpectedJsonSchema()
+    {
+        JsonElement expected = JsonDocument.Parse("""
+            {
+                "type": "array",
+                "items": {}
+            }
+            """).RootElement;
+
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(object[]), serializerOptions: JsonContext.Default.Options);
+
+        AssertDeepEquals(expected, actual);
+    }
+
+    [Fact]
     public static void CreateJsonSchema_OverriddenParameters_GeneratesExpectedJsonSchema()
     {
         JsonElement expected = JsonDocument.Parse("""
@@ -354,13 +369,21 @@ public static partial class AIJsonUtilitiesTests
         int i = 0;
         foreach (JsonProperty property in schemaParameters.EnumerateObject())
         {
-            string numericType = Type.GetTypeCode(parameters[i].ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
-                ? "number"
-                : "integer";
+            bool isNullable = false;
+            Type type = parameters[i].ParameterType;
+            if (Nullable.GetUnderlyingType(type) is { } elementType)
+            {
+                type = elementType;
+                isNullable = true;
+            }
+
+            string numericType = Type.GetTypeCode(type) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
+                ? "\"number\""
+                : "\"integer\"";
 
             JsonElement expected = JsonDocument.Parse($$"""
                 {
-                  "type": "{{numericType}}"
+                  "type": {{(isNullable ? $"[{numericType}, \"null\"]" : numericType)}}
                 }
                 """).RootElement;
 
@@ -378,6 +401,63 @@ public static partial class AIJsonUtilitiesTests
     {
         A = 1,
         B = 2
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_ReadsParameterDataAnnotationAttributes()
+    {
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
+        AIFunction func = AIFunctionFactory.Create(([Range(1, 10)] int num, [StringLength(100, MinimumLength = 1)] string str) => num + str.Length, serializerOptions: options);
+
+        using JsonDocument expectedSchema = JsonDocument.Parse("""
+            {
+                "type":"object",
+                "properties": {
+                    "num": { "type":"integer", "minimum": 1, "maximum": 10 },
+                    "str": { "type":"string", "minLength": 1, "maxLength": 100 }
+                },
+                "required":["num","str"]
+            }
+            """);
+
+        AssertDeepEquals(expectedSchema.RootElement, func.JsonSchema);
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_DisplayNameAttribute_UsedForTitle()
+    {
+        [DisplayName("custom_method_name")]
+        [Description("Method description")]
+        static void TestMethod(int x, int y)
+        {
+            // Test method for schema generation
+        }
+
+        var method = ((Action<int, int>)TestMethod).Method;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method);
+
+        using JsonDocument doc = JsonDocument.Parse(schema.GetRawText());
+        Assert.True(doc.RootElement.TryGetProperty("title", out JsonElement titleElement));
+        Assert.Equal("custom_method_name", titleElement.GetString());
+        Assert.True(doc.RootElement.TryGetProperty("description", out JsonElement descElement));
+        Assert.Equal("Method description", descElement.GetString());
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_DisplayNameAttribute_CanBeOverridden()
+    {
+        [DisplayName("custom_method_name")]
+        static void TestMethod()
+        {
+            // Test method for schema generation
+        }
+
+        var method = ((Action)TestMethod).Method;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method, title: "override_title");
+
+        using JsonDocument doc = JsonDocument.Parse(schema.GetRawText());
+        Assert.True(doc.RootElement.TryGetProperty("title", out JsonElement titleElement));
+        Assert.Equal("override_title", titleElement.GetString());
     }
 
     [Fact]
@@ -627,22 +707,22 @@ public static partial class AIJsonUtilitiesTests
                             "string",
                             "null"
                         ],
-                        "minItems": 5
+                        "minLength": 5
                     },
                     "MaxLengthProp": {
                         "type": [
                             "string",
                             "null"
                         ],
-                        "maxItems": 50
+                        "maxLength": 50
                     },
                     "LengthProp": {
                         "type": [
                             "string",
                             "null"
                         ],
-                        "minItems": 3,
-                        "maxItems": 10
+                        "minLength": 3,
+                        "maxLength": 10
                     },
                     "MinLengthArrayProp": {
                         "type": [
@@ -805,14 +885,14 @@ public static partial class AIJsonUtilitiesTests
                             "string",
                             "null"
                         ],
-                        "minItems": 5
+                        "minLength": 5
                     },
                     "MaxLengthProp": {
                         "type": [
                             "string",
                             "null"
                         ],
-                        "maxItems": 50
+                        "maxLength": 50
                     },
                     "MinLengthArrayProp": {
                         "type": [
@@ -930,18 +1010,46 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void ClassWithNullableMaxLengthProperty_ReturnsExpectedSchema()
+    {
+        JsonElement expectedSchema = JsonDocument.Parse("""
+        {
+            "type": "object",
+            "properties": {
+                "Value": {
+                    "type": ["string", "null"],
+                    "maxLength": 24,
+                    "minLength": 10
+                }
+            }
+        }
+        """).RootElement;
+
+        JsonElement actualSchema = AIJsonUtilities.CreateJsonSchema(typeof(ClassWithNullableMaxLengthProperty), serializerOptions: JsonContext.Default.Options);
+        AssertDeepEquals(expectedSchema, actualSchema);
+    }
+
+    public class ClassWithNullableMaxLengthProperty
+    {
+        [MinLength(10)]
+        [MaxLength(24)]
+        public string? Value { get; set; }
+    }
+
+    [Fact]
     public static void AddAIContentType_DerivedAIContent()
     {
         JsonSerializerOptions options = new()
         {
             TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
         options.AddAIContentType<DerivedAIContent>("derivativeContent");
 
         AIContent c = new DerivedAIContent { DerivedValue = 42 };
         string json = JsonSerializer.Serialize(c, options);
-        Assert.Equal("""{"$type":"derivativeContent","DerivedValue":42,"AdditionalProperties":null}""", json);
+        Assert.Equal("""{"$type":"derivativeContent","DerivedValue":42}""", json);
 
         AIContent? deserialized = JsonSerializer.Deserialize<AIContent>(json, options);
         Assert.IsType<DerivedAIContent>(deserialized);
@@ -1317,6 +1425,8 @@ public static partial class AIJsonUtilitiesTests
     [JsonSerializable(typeof(DerivedAIContent))]
     [JsonSerializable(typeof(MyPoco))]
     [JsonSerializable(typeof(MyEnumValue?))]
+    [JsonSerializable(typeof(object[]))]
+    [JsonSerializable(typeof(ClassWithNullableMaxLengthProperty))]
     private partial class JsonContext : JsonSerializerContext;
 
     private static bool DeepEquals(JsonElement element1, JsonElement element2)

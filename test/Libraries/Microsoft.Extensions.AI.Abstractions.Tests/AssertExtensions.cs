@@ -13,6 +13,44 @@ namespace Microsoft.Extensions.AI;
 internal static class AssertExtensions
 {
     /// <summary>
+    /// Asserts that the two message lists are equal.
+    /// </summary>
+    public static void EqualMessageLists(List<ChatMessage> expectedMessages, List<ChatMessage> actualMessages)
+    {
+        Assert.Equal(expectedMessages.Count, actualMessages.Count);
+        for (int i = 0; i < expectedMessages.Count; i++)
+        {
+            var expectedMessage = expectedMessages[i];
+            var chatMessage = actualMessages[i];
+
+            Assert.Equal(expectedMessage.Role, chatMessage.Role);
+            Assert.Equal(expectedMessage.Text, chatMessage.Text);
+            Assert.Equal(expectedMessage.GetType(), chatMessage.GetType());
+
+            Assert.Equal(expectedMessage.Contents.Count, chatMessage.Contents.Count);
+            for (int j = 0; j < expectedMessage.Contents.Count; j++)
+            {
+                var expectedItem = expectedMessage.Contents[j];
+                var chatItem = chatMessage.Contents[j];
+
+                Assert.Equal(expectedItem.GetType(), chatItem.GetType());
+                Assert.Equal(expectedItem.ToString(), chatItem.ToString());
+                if (expectedItem is FunctionCallContent expectedFunctionCall)
+                {
+                    var chatFunctionCall = (FunctionCallContent)chatItem;
+                    Assert.Equal(expectedFunctionCall.Name, chatFunctionCall.Name);
+                    AssertExtensions.EqualFunctionCallParameters(expectedFunctionCall.Arguments, chatFunctionCall.Arguments);
+                }
+                else if (expectedItem is FunctionResultContent expectedFunctionResult)
+                {
+                    var chatFunctionResult = (FunctionResultContent)chatItem;
+                    AssertExtensions.EqualFunctionCallResults(expectedFunctionResult.Result, chatFunctionResult.Result);
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Asserts that the two function call parameters are equal, up to JSON equivalence.
     /// </summary>
     public static void EqualFunctionCallParameters(
@@ -53,21 +91,29 @@ internal static class AssertExtensions
     public static void EqualFunctionCallResults(object? expected, object? actual, JsonSerializerOptions? options = null)
         => AreJsonEquivalentValues(expected, actual, options);
 
+    /// <summary>
+    /// Asserts that the two JSON values are equal.
+    /// </summary>
+    public static void EqualJsonValues(JsonElement expectedJson, JsonElement actualJson, string? propertyName = null)
+    {
+        if (!JsonNode.DeepEquals(
+            JsonSerializer.SerializeToNode(expectedJson, AIJsonUtilities.DefaultOptions),
+            JsonSerializer.SerializeToNode(actualJson, AIJsonUtilities.DefaultOptions)))
+        {
+            string message = propertyName is null
+                ? $"JSON result does not match expected JSON.\r\nExpected: {expectedJson.GetRawText()}\r\nActual:   {actualJson.GetRawText()}"
+                : $"Parameter '{propertyName}' does not match expected JSON.\r\nExpected: {expectedJson.GetRawText()}\r\nActual:   {actualJson.GetRawText()}";
+
+            throw new XunitException(message);
+        }
+    }
+
     private static void AreJsonEquivalentValues(object? expected, object? actual, JsonSerializerOptions? options, string? propertyName = null)
     {
         options ??= AIJsonUtilities.DefaultOptions;
         JsonElement expectedElement = NormalizeToElement(expected, options);
         JsonElement actualElement = NormalizeToElement(actual, options);
-        if (!JsonNode.DeepEquals(
-            JsonSerializer.SerializeToNode(expectedElement, AIJsonUtilities.DefaultOptions),
-            JsonSerializer.SerializeToNode(actualElement, AIJsonUtilities.DefaultOptions)))
-        {
-            string message = propertyName is null
-                ? $"Function result does not match expected JSON.\r\nExpected: {expectedElement.GetRawText()}\r\nActual:   {actualElement.GetRawText()}"
-                : $"Parameter '{propertyName}' does not match expected JSON.\r\nExpected: {expectedElement.GetRawText()}\r\nActual:   {actualElement.GetRawText()}";
-
-            throw new XunitException(message);
-        }
+        EqualJsonValues(expectedElement, actualElement, propertyName);
 
         static JsonElement NormalizeToElement(object? value, JsonSerializerOptions options)
             => value is JsonElement e ? e : JsonSerializer.SerializeToElement(value, options);

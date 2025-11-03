@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// </para>
 /// <para>
 /// Note that at the moment, <see cref="TaskAdherenceEvaluator"/> only supports evaluating calls to tools that are
-/// defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions that are supplied via
+/// defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions that are supplied via
 /// <see cref="TaskAdherenceEvaluatorContext.ToolDefinitions"/> will be ignored.
 /// </para>
 /// <para>
@@ -83,6 +83,7 @@ public sealed class TaskAdherenceEvaluator : IEvaluator
 
         var metric = new NumericMetric(TaskAdherenceMetricName);
         var result = new EvaluationResult(metric);
+        metric.MarkAsBuiltIn();
 
         if (!messages.Any())
         {
@@ -165,7 +166,6 @@ public sealed class TaskAdherenceEvaluator : IEvaluator
         string renderedModelResponse = modelResponse.RenderAsJson();
         string? renderedToolDefinitions = context?.ToolDefinitions.RenderAsJson();
 
-#pragma warning disable S103 // Lines should not be too long
         string systemPrompt =
             $$"""
             # Instruction
@@ -260,7 +260,6 @@ public sealed class TaskAdherenceEvaluator : IEvaluator
             ## Please provide your answers between the tags: <S0>your chain of thoughts</S0>, <S1>your explanation</S1>, <S2>your score</S2>.
             # Output
             """;
-#pragma warning restore S103
 
         List<ChatMessage> evaluationInstructions = [new ChatMessage(ChatRole.System, systemPrompt)];
         return evaluationInstructions;

@@ -19,4 +19,12 @@ internal interface IHttpHeadersRedactor
     /// <param name="classification">Data classification which is used to get an appropriate redactor <see cref="Redactor"/> to redact headers.</param>
     /// <returns>Returns text and parameter segments of route.</returns>
     string Redact(IEnumerable<string> headerValues, DataClassification classification);
+
+    /// <summary>
+    /// Redacts HTTP header value which results into a <see cref="string"/>.
+    /// </summary>
+    /// <param name="headerValue">HTTP header value.</param>
+    /// <param name="classification">Data classification which is used to get an appropriate redactor <see cref="Redactor"/> to redact header.</param>
+    /// <returns>Returns text and parameter segments of route.</returns>
+    string Redact(string headerValue, DataClassification classification);
 }

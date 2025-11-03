@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -65,7 +64,6 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         _pathParametersRedactionSkipped = options.RequestPathParameterRedactionMode == HttpRouteParameterRedactionMode.None;
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "The logger shouldn't throw")]
     public async ValueTask<object?> LogRequestStartAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
         var logRecord = _logRecordPool.Get();
@@ -109,22 +107,22 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         }
     }
 
-    public async ValueTask LogRequestStopAsync(
+    public ValueTask LogRequestStopAsync(
         object? context,
         HttpRequestMessage request,
         HttpResponseMessage response,
         TimeSpan elapsed,
         CancellationToken cancellationToken = default)
-            => await LogResponseAsync(context, request, response, null, elapsed, cancellationToken).ConfigureAwait(false);
+            => LogResponseAsync(context, request, response, null, elapsed, cancellationToken);
 
-    public async ValueTask LogRequestFailedAsync(
+    public ValueTask LogRequestFailedAsync(
         object? context,
         HttpRequestMessage request,
         HttpResponseMessage? response,
         Exception exception,
         TimeSpan elapsed,
         CancellationToken cancellationToken = default)
-            => await LogResponseAsync(context, request, response, exception, elapsed, cancellationToken).ConfigureAwait(false);
+            => LogResponseAsync(context, request, response, exception, elapsed, cancellationToken);
 
     public object? LogRequestStart(HttpRequestMessage request)
         => throw new NotSupportedException(SyncLoggingExceptionMessage);
@@ -149,7 +147,6 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         return LogLevel.Information;
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "The logger shouldn't throw")]
     private async ValueTask LogResponseAsync(
         object? context,
         HttpRequestMessage request,
@@ -217,8 +214,6 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         }
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types",
-        Justification = "We intentionally catch all exception types to make Telemetry code resilient to failures.")]
     private void FillLogRecord(
         LogRecord logRecord, LoggerMessageState loggerMessageState, in TimeSpan elapsed,
         HttpRequestMessage request, HttpResponseMessage? response, Exception? exception)

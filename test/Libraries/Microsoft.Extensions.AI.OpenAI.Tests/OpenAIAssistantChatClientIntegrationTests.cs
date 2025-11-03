@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.TestUtilities;
 using OpenAI.Assistants;
 using Xunit;
 
@@ -44,6 +45,59 @@ public class OpenAIAssistantChatClientIntegrationTests : ChatClientIntegrationTe
     // Assistants doesn't support data URIs.
     public override Task MultiModal_DescribeImage() => Task.CompletedTask;
     public override Task MultiModal_DescribePdf() => Task.CompletedTask;
+
+    [ConditionalFact]
+    public async Task UseCodeInterpreter_ProducesCodeExecutionResults()
+    {
+        SkipIfNotEnabled();
+
+        var response = await ChatClient.GetResponseAsync("Use the code interpreter to calculate the square root of 42.", new()
+        {
+            Tools = [new HostedCodeInterpreterTool()],
+        });
+        Assert.NotNull(response);
+
+        ChatMessage message = Assert.Single(response.Messages);
+
+        Assert.NotEmpty(message.Text);
+
+        // Validate CodeInterpreterToolCallContent
+        var toolCallContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolCallContent>().SingleOrDefault();
+        Assert.NotNull(toolCallContent);
+        if (toolCallContent.CallId is not null)
+        {
+            Assert.NotEmpty(toolCallContent.CallId);
+        }
+
+        if (toolCallContent.Inputs is not null)
+        {
+            Assert.NotEmpty(toolCallContent.Inputs);
+            if (toolCallContent.Inputs.OfType<DataContent>().FirstOrDefault() is { } codeInput)
+            {
+                Assert.Equal("text/x-python", codeInput.MediaType);
+                Assert.NotEmpty(codeInput.Data.ToArray());
+            }
+        }
+
+        // Validate CodeInterpreterToolResultContent (when present)
+        var toolResultContents = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolResultContent>().ToList();
+        foreach (var toolResultContent in toolResultContents)
+        {
+            if (toolResultContent.CallId is not null)
+            {
+                Assert.NotEmpty(toolResultContent.CallId);
+            }
+
+            if (toolResultContent.Outputs is not null)
+            {
+                Assert.NotEmpty(toolResultContent.Outputs);
+                if (toolResultContent.Outputs.OfType<TextContent>().FirstOrDefault() is { } resultOutput)
+                {
+                    Assert.NotEmpty(resultOutput.Text);
+                }
+            }
+        }
+    }
 
     // [Fact] // uncomment and run to clear out _all_ threads in your OpenAI account
     public async Task DeleteAllThreads()

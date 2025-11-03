@@ -12,6 +12,7 @@ using Microsoft.Extensions.AI.Evaluation.Reporting;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 using Microsoft.Extensions.AI.Evaluation.Safety;
 using Microsoft.Extensions.AI.Evaluation.Tests;
+using Microsoft.Extensions.AI.Evaluation.Utilities;
 using Microsoft.TestUtilities;
 using Xunit;
 
@@ -24,6 +25,7 @@ public class SafetyEvaluatorTests
     private static readonly ReportingConfiguration? _imageContentSafetyReportingConfiguration;
     private static readonly ReportingConfiguration? _codeVulnerabilityReportingConfiguration;
     private static readonly ReportingConfiguration? _mixedQualityAndSafetyReportingConfiguration;
+    private static readonly ReportingConfiguration? _hubBasedContentSafetyReportingConfiguration;
 
     static SafetyEvaluatorTests()
     {
@@ -37,14 +39,11 @@ public class SafetyEvaluatorTests
                 };
 
             ChatConfiguration llmChatConfiguration = Setup.CreateChatConfiguration();
-            ChatClientMetadata? clientMetadata = llmChatConfiguration.ChatClient.GetService<ChatClientMetadata>();
 
             string version = $"Product Version: {Constants.Version}";
             string date = $"Date: {DateTime.UtcNow:dddd, dd MMMM yyyy}";
             string projectName = $"Project: Integration Tests";
             string testClass = $"Test Class: {nameof(SafetyEvaluatorTests)}";
-            string provider = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
-            string model = $"Model: {clientMetadata?.DefaultModelId ?? "Unknown"}";
             string temperature = $"Temperature: {_chatOptions.Temperature}";
             string usesContext = $"Feature: Context";
 
@@ -52,12 +51,18 @@ public class SafetyEvaluatorTests
             var contentSafetyServiceConfiguration =
                 new ContentSafetyServiceConfiguration(
                     credential,
-                    subscriptionId: Settings.Current.AzureSubscriptionId,
-                    resourceGroupName: Settings.Current.AzureResourceGroupName,
-                    projectName: Settings.Current.AzureAIProjectName);
+                    endpointUrl: Settings.Current.AzureAIProjectEndpoint);
 
             ChatConfiguration contentSafetyChatConfiguration =
                 contentSafetyServiceConfiguration.ToChatConfiguration(llmChatConfiguration);
+
+            ChatClientMetadata? clientMetadata =
+                contentSafetyChatConfiguration.ChatClient.GetService<ChatClientMetadata>();
+
+            const string Model = $"Model: {ModelInfo.KnownModels.AzureAIFoundryEvaluation}";
+            const string Provider = $"Model Provider: {ModelInfo.KnownModelProviders.AzureAIFoundry}";
+            string model2 = $"Model: {clientMetadata?.DefaultModelId ?? "Unknown"}";
+            string provider2 = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
 
             IEvaluator hateAndUnfairnessEvaluator = new HateAndUnfairnessEvaluator();
             IEvaluator selfHarmEvaluator = new SelfHarmEvaluator();
@@ -80,7 +85,7 @@ public class SafetyEvaluatorTests
                         indirectAttackEvaluator],
                     chatConfiguration: contentSafetyChatConfiguration,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature, usesContext]);
+                    tags: [version, date, projectName, testClass, Model, Provider, model2, provider2, temperature, usesContext]);
 
             ChatConfiguration contentSafetyChatConfigurationWithoutLLM =
                 contentSafetyServiceConfiguration.ToChatConfiguration();
@@ -95,7 +100,7 @@ public class SafetyEvaluatorTests
                         indirectAttackEvaluator],
                     chatConfiguration: contentSafetyChatConfigurationWithoutLLM,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature]);
+                    tags: [version, date, projectName, testClass, Model, Provider, model2, provider2, temperature]);
 
             IEvaluator codeVulnerabilityEvaluator = new CodeVulnerabilityEvaluator();
 
@@ -105,7 +110,7 @@ public class SafetyEvaluatorTests
                     evaluators: [codeVulnerabilityEvaluator],
                     chatConfiguration: contentSafetyChatConfigurationWithoutLLM,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature]);
+                    tags: [version, date, projectName, testClass, Model, Provider, model2, provider2, temperature]);
 
             IEvaluator fluencyEvaluator = new FluencyEvaluator();
             IEvaluator contentHarmEvaluator = new ContentHarmEvaluator();
@@ -116,21 +121,66 @@ public class SafetyEvaluatorTests
                     evaluators: [fluencyEvaluator, contentHarmEvaluator],
                     chatConfiguration: contentSafetyChatConfiguration,
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass, provider, model, temperature]);
+                    tags: [version, date, projectName, testClass, Model, Provider, model2, provider2, temperature]);
+
+            var hubBasedContentSafetyServiceConfiguration =
+                new ContentSafetyServiceConfiguration(
+                    credential,
+                    subscriptionId: Settings.Current.AzureSubscriptionId,
+                    resourceGroupName: Settings.Current.AzureResourceGroupName,
+                    projectName: Settings.Current.AzureAIProjectName);
+
+            ChatConfiguration hubBasedContentSafetyChatConfiguration =
+                hubBasedContentSafetyServiceConfiguration.ToChatConfiguration(llmChatConfiguration);
+
+            clientMetadata = hubBasedContentSafetyChatConfiguration.ChatClient.GetService<ChatClientMetadata>();
+
+            model2 = $"Model: {clientMetadata?.DefaultModelId ?? "Unknown"}";
+            provider2 = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
+
+            _hubBasedContentSafetyReportingConfiguration =
+                DiskBasedReportingConfiguration.Create(
+                    storageRootPath: Settings.Current.StorageRootPath,
+                    evaluators: [
+                        selfHarmEvaluator,
+                        sexualEvaluator,
+                        protectedMaterialEvaluator,
+                        groundednessProEvaluator,
+                        ungroundedAttributesEvaluator,
+                        indirectAttackEvaluator],
+                    chatConfiguration: hubBasedContentSafetyChatConfiguration,
+                    executionName: Constants.Version,
+                    tags: [version, date, projectName, testClass, Model, Provider, model2, provider2, temperature, usesContext]);
         }
     }
 
     [ConditionalFact]
-    public async Task EvaluateConversationWithSingleTurn()
+    public async Task EvaluateConversationWithSingleTurn_HubBasedProject()
+    {
+        SkipIfNotConfigured();
+
+        await using ScenarioRun scenarioRun =
+            await _hubBasedContentSafetyReportingConfiguration.CreateScenarioRunAsync(
+                scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateConversationWithSingleTurn_HubBasedProject)}");
+
+        await EvaluateConversationWithSingleTurn(scenarioRun);
+    }
+
+    [ConditionalFact]
+    public async Task EvaluateConversationWithSingleTurn_NonHubBasedProject()
     {
         SkipIfNotConfigured();
 
         await using ScenarioRun scenarioRun =
             await _contentSafetyReportingConfiguration.CreateScenarioRunAsync(
-                scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateConversationWithSingleTurn)}");
+                scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateConversationWithSingleTurn_NonHubBasedProject)}");
 
+        await EvaluateConversationWithSingleTurn(scenarioRun);
+    }
+
+    private static async Task EvaluateConversationWithSingleTurn(ScenarioRun scenarioRun)
+    {
         IChatClient chatClient = scenarioRun.ChatConfiguration!.ChatClient;
-
         var messages = new List<ChatMessage>();
 
         string systemPrompt =
@@ -183,16 +233,32 @@ public class SafetyEvaluatorTests
     }
 
     [ConditionalFact]
-    public async Task EvaluateConversationWithMultipleTurns()
+    public async Task EvaluateConversationWithMultipleTurns_HubBasedProject()
+    {
+        SkipIfNotConfigured();
+
+        await using ScenarioRun scenarioRun =
+            await _hubBasedContentSafetyReportingConfiguration.CreateScenarioRunAsync(
+                scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateConversationWithMultipleTurns_HubBasedProject)}");
+
+        await EvaluateConversationWithMultipleTurns(scenarioRun);
+    }
+
+    [ConditionalFact]
+    public async Task EvaluateConversationWithMultipleTurns_NonHubBasedProject()
     {
         SkipIfNotConfigured();
 
         await using ScenarioRun scenarioRun =
             await _contentSafetyReportingConfiguration.CreateScenarioRunAsync(
-                scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateConversationWithMultipleTurns)}");
+                scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateConversationWithMultipleTurns_NonHubBasedProject)}");
 
+        await EvaluateConversationWithMultipleTurns(scenarioRun);
+    }
+
+    private static async Task EvaluateConversationWithMultipleTurns(ScenarioRun scenarioRun)
+    {
         IChatClient chatClient = scenarioRun.ChatConfiguration!.ChatClient;
-
         var messages = new List<ChatMessage>();
 
         string systemPrompt =
@@ -553,6 +619,7 @@ public class SafetyEvaluatorTests
     [MemberNotNull(nameof(_imageContentSafetyReportingConfiguration))]
     [MemberNotNull(nameof(_codeVulnerabilityReportingConfiguration))]
     [MemberNotNull(nameof(_mixedQualityAndSafetyReportingConfiguration))]
+    [MemberNotNull(nameof(_hubBasedContentSafetyReportingConfiguration))]
     private static void SkipIfNotConfigured()
     {
         if (!Settings.Current.Configured)
@@ -565,5 +632,6 @@ public class SafetyEvaluatorTests
         Assert.NotNull(_codeVulnerabilityReportingConfiguration);
         Assert.NotNull(_imageContentSafetyReportingConfiguration);
         Assert.NotNull(_mixedQualityAndSafetyReportingConfiguration);
+        Assert.NotNull(_hubBasedContentSafetyReportingConfiguration);
     }
 }
