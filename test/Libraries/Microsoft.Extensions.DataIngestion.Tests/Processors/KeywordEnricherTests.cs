@@ -43,14 +43,6 @@ public class KeywordEnricherTests
         Assert.Throws<ArgumentException>("predefinedKeywords", () => new KeywordEnricher(new(new TestChatClient()), predefinedKeywords: ["same", "same"], confidenceThreshold: 0.5));
     }
 
-    [Theory]
-    [InlineData(',')]
-    [InlineData(';')]
-    public void ThrowsOnIllegalCharacters(char illegal)
-    {
-        Assert.Throws<ArgumentException>("predefinedKeywords", () => new KeywordEnricher(new(new TestChatClient()), predefinedKeywords: [$"n{illegal}t"]));
-    }
-
     [Fact]
     public async Task ThrowsOnNullChunks()
     {

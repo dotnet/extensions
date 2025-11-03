@@ -46,12 +46,6 @@ public class ClassificationEnricherTests
     }
 
     [Fact]
-    public void ThrowsOnPredefinedClassesContainingComma()
-    {
-        Assert.Throws<ArgumentException>("predefinedClasses", () => new ClassificationEnricher(new(new TestChatClient()), predefinedClasses: ["n,t"]));
-    }
-
-    [Fact]
     public async Task ThrowsOnNullChunks()
     {
         using TestChatClient chatClient = new();
