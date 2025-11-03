@@ -201,42 +201,38 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
     /// <summary>Creates an activity for a speech-to-text request, or returns <see langword="null"/> if not enabled.</summary>
     private Activity? CreateAndConfigureActivity(SpeechToTextOptions? options)
     {
-        Activity? activity = null;
-        if (_activitySource.HasListeners())
+        string? modelId = options?.ModelId ?? _defaultModelId;
+
+        Activity? activity = _activitySource.StartActivity(
+            string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.GenerateContentName : $"{OpenTelemetryConsts.GenAI.GenerateContentName} {modelId}",
+            ActivityKind.Client);
+
+        if (activity is { IsAllDataRequested: true })
         {
-            string? modelId = options?.ModelId ?? _defaultModelId;
+            _ = activity
+                .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContentName)
+                .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
+                .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName)
+                .AddTag(OpenTelemetryConsts.GenAI.Output.Type, OpenTelemetryConsts.TypeText);
 
-            activity = _activitySource.StartActivity(
-                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.GenerateContentName : $"{OpenTelemetryConsts.GenAI.GenerateContentName} {modelId}",
-                ActivityKind.Client);
-
-            if (activity is { IsAllDataRequested: true })
+            if (_serverAddress is not null)
             {
                 _ = activity
-                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContentName)
-                    .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
-                    .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName)
-                    .AddTag(OpenTelemetryConsts.GenAI.Output.Type, OpenTelemetryConsts.TypeText);
+                    .AddTag(OpenTelemetryConsts.Server.Address, _serverAddress)
+                    .AddTag(OpenTelemetryConsts.Server.Port, _serverPort);
+            }
 
-                if (_serverAddress is not null)
+            if (options is not null)
+            {
+                if (EnableSensitiveData)
                 {
-                    _ = activity
-                        .AddTag(OpenTelemetryConsts.Server.Address, _serverAddress)
-                        .AddTag(OpenTelemetryConsts.Server.Port, _serverPort);
-                }
-
-                if (options is not null)
-                {
-                    if (EnableSensitiveData)
+                    // Log all additional request options as raw values on the span.
+                    // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
+                    if (options.AdditionalProperties is { } props)
                     {
-                        // Log all additional request options as raw values on the span.
-                        // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
-                        if (options.AdditionalProperties is { } props)
+                        foreach (KeyValuePair<string, object?> prop in props)
                         {
-                            foreach (KeyValuePair<string, object?> prop in props)
-                            {
-                                _ = activity.AddTag(prop.Key, prop.Value);
-                            }
+                            _ = activity.AddTag(prop.Key, prop.Value);
                         }
                     }
                 }

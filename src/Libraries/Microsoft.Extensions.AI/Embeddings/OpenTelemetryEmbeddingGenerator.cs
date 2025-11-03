@@ -148,43 +148,39 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     /// <summary>Creates an activity for an embedding generation request, or returns <see langword="null"/> if not enabled.</summary>
     private Activity? CreateAndConfigureActivity(EmbeddingGenerationOptions? options)
     {
-        Activity? activity = null;
-        if (_activitySource.HasListeners())
+        string? modelId = options?.ModelId ?? _defaultModelId;
+
+        Activity? activity = _activitySource.StartActivity(
+            string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.EmbeddingsName : $"{OpenTelemetryConsts.GenAI.EmbeddingsName} {modelId}",
+            ActivityKind.Client,
+            default(ActivityContext),
+            [
+                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.EmbeddingsName),
+                new(OpenTelemetryConsts.GenAI.Request.Model, modelId),
+                new(OpenTelemetryConsts.GenAI.Provider.Name, _providerName),
+            ]);
+
+        if (activity is not null)
         {
-            string? modelId = options?.ModelId ?? _defaultModelId;
-
-            activity = _activitySource.StartActivity(
-                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.EmbeddingsName : $"{OpenTelemetryConsts.GenAI.EmbeddingsName} {modelId}",
-                ActivityKind.Client,
-                default(ActivityContext),
-                [
-                    new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.EmbeddingsName),
-                    new(OpenTelemetryConsts.GenAI.Request.Model, modelId),
-                    new(OpenTelemetryConsts.GenAI.Provider.Name, _providerName),
-                ]);
-
-            if (activity is not null)
+            if (_endpointAddress is not null)
             {
-                if (_endpointAddress is not null)
-                {
-                    _ = activity
-                        .AddTag(OpenTelemetryConsts.Server.Address, _endpointAddress)
-                        .AddTag(OpenTelemetryConsts.Server.Port, _endpointPort);
-                }
+                _ = activity
+                    .AddTag(OpenTelemetryConsts.Server.Address, _endpointAddress)
+                    .AddTag(OpenTelemetryConsts.Server.Port, _endpointPort);
+            }
 
-                if ((options?.Dimensions ?? _defaultModelDimensions) is int dimensionsValue)
-                {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Embeddings.Dimension.Count, dimensionsValue);
-                }
+            if ((options?.Dimensions ?? _defaultModelDimensions) is int dimensionsValue)
+            {
+                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Embeddings.Dimension.Count, dimensionsValue);
+            }
 
-                // Log all additional request options as raw values on the span.
-                // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
-                if (EnableSensitiveData && options?.AdditionalProperties is { } props)
+            // Log all additional request options as raw values on the span.
+            // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
+            if (EnableSensitiveData && options?.AdditionalProperties is { } props)
+            {
+                foreach (KeyValuePair<string, object?> prop in props)
                 {
-                    foreach (KeyValuePair<string, object?> prop in props)
-                    {
-                        _ = activity.AddTag(prop.Key, prop.Value);
-                    }
+                    _ = activity.AddTag(prop.Key, prop.Value);
                 }
             }
         }

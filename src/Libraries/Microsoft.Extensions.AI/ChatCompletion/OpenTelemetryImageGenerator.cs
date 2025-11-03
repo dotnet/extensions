@@ -143,70 +143,66 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
     /// <summary>Creates an activity for an image generation request, or returns <see langword="null"/> if not enabled.</summary>
     private Activity? CreateAndConfigureActivity(ImageGenerationRequest request, ImageGenerationOptions? options)
     {
-        Activity? activity = null;
-        if (_activitySource.HasListeners())
+        string? modelId = options?.ModelId ?? _defaultModelId;
+
+        Activity? activity = _activitySource.StartActivity(
+            string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.GenerateContentName : $"{OpenTelemetryConsts.GenAI.GenerateContentName} {modelId}",
+            ActivityKind.Client);
+
+        if (activity is { IsAllDataRequested: true })
         {
-            string? modelId = options?.ModelId ?? _defaultModelId;
+            _ = activity
+                .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContentName)
+                .AddTag(OpenTelemetryConsts.GenAI.Output.Type, OpenTelemetryConsts.TypeImage)
+                .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
+                .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
 
-            activity = _activitySource.StartActivity(
-                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.GenerateContentName : $"{OpenTelemetryConsts.GenAI.GenerateContentName} {modelId}",
-                ActivityKind.Client);
-
-            if (activity is { IsAllDataRequested: true })
+            if (_serverAddress is not null)
             {
                 _ = activity
-                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContentName)
-                    .AddTag(OpenTelemetryConsts.GenAI.Output.Type, OpenTelemetryConsts.TypeImage)
-                    .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
-                    .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
+                    .AddTag(OpenTelemetryConsts.Server.Address, _serverAddress)
+                    .AddTag(OpenTelemetryConsts.Server.Port, _serverPort);
+            }
 
-                if (_serverAddress is not null)
+            if (options is not null)
+            {
+                if (options.Count is int count)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.ChoiceCount, count);
+                }
+
+                // Otel hasn't yet standardized tags for image generation parameters; these are based on other systems.
+                if (options.ImageSize is Size size)
                 {
                     _ = activity
-                        .AddTag(OpenTelemetryConsts.Server.Address, _serverAddress)
-                        .AddTag(OpenTelemetryConsts.Server.Port, _serverPort);
+                        .AddTag("gen_ai.request.image.width", size.Width)
+                        .AddTag("gen_ai.request.image.height", size.Height);
+                }
+            }
+
+            if (EnableSensitiveData)
+            {
+                List<AIContent> content = [];
+
+                if (request.Prompt is not null)
+                {
+                    content.Add(new TextContent(request.Prompt));
                 }
 
-                if (options is not null)
+                if (request.OriginalImages is not null)
                 {
-                    if (options.Count is int count)
-                    {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.ChoiceCount, count);
-                    }
-
-                    // Otel hasn't yet standardized tags for image generation parameters; these are based on other systems.
-                    if (options.ImageSize is Size size)
-                    {
-                        _ = activity
-                            .AddTag("gen_ai.request.image.width", size.Width)
-                            .AddTag("gen_ai.request.image.height", size.Height);
-                    }
+                    content.AddRange(request.OriginalImages);
                 }
 
-                if (EnableSensitiveData)
+                _ = activity.AddTag(
+                    OpenTelemetryConsts.GenAI.Input.Messages,
+                    OpenTelemetryChatClient.SerializeChatMessages([new(ChatRole.User, content)]));
+
+                if (options?.AdditionalProperties is { } props)
                 {
-                    List<AIContent> content = [];
-
-                    if (request.Prompt is not null)
+                    foreach (KeyValuePair<string, object?> prop in props)
                     {
-                        content.Add(new TextContent(request.Prompt));
-                    }
-
-                    if (request.OriginalImages is not null)
-                    {
-                        content.AddRange(request.OriginalImages);
-                    }
-
-                    _ = activity.AddTag(
-                        OpenTelemetryConsts.GenAI.Input.Messages,
-                        OpenTelemetryChatClient.SerializeChatMessages([new(ChatRole.User, content)]));
-
-                    if (options?.AdditionalProperties is { } props)
-                    {
-                        foreach (KeyValuePair<string, object?> prop in props)
-                        {
-                            _ = activity.AddTag(prop.Key, prop.Value);
-                        }
+                        _ = activity.AddTag(prop.Key, prop.Value);
                     }
                 }
             }

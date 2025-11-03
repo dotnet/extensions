@@ -368,115 +368,111 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// <summary>Creates an activity for a chat request, or returns <see langword="null"/> if not enabled.</summary>
     private Activity? CreateAndConfigureActivity(ChatOptions? options)
     {
-        Activity? activity = null;
-        if (_activitySource.HasListeners())
+        string? modelId = options?.ModelId ?? _defaultModelId;
+
+        Activity? activity = _activitySource.StartActivity(
+            string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.ChatName : $"{OpenTelemetryConsts.GenAI.ChatName} {modelId}",
+            ActivityKind.Client);
+
+        if (activity is { IsAllDataRequested: true })
         {
-            string? modelId = options?.ModelId ?? _defaultModelId;
+            _ = activity
+                .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName)
+                .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
+                .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
 
-            activity = _activitySource.StartActivity(
-                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.ChatName : $"{OpenTelemetryConsts.GenAI.ChatName} {modelId}",
-                ActivityKind.Client);
-
-            if (activity is { IsAllDataRequested: true })
+            if (_serverAddress is not null)
             {
                 _ = activity
-                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName)
-                    .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
-                    .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
+                    .AddTag(OpenTelemetryConsts.Server.Address, _serverAddress)
+                    .AddTag(OpenTelemetryConsts.Server.Port, _serverPort);
+            }
 
-                if (_serverAddress is not null)
+            if (options is not null)
+            {
+                if (options.ConversationId is string conversationId)
                 {
-                    _ = activity
-                        .AddTag(OpenTelemetryConsts.Server.Address, _serverAddress)
-                        .AddTag(OpenTelemetryConsts.Server.Port, _serverPort);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Conversation.Id, conversationId);
                 }
 
-                if (options is not null)
+                if (options.FrequencyPenalty is float frequencyPenalty)
                 {
-                    if (options.ConversationId is string conversationId)
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.FrequencyPenalty, frequencyPenalty);
+                }
+
+                if (options.MaxOutputTokens is int maxTokens)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.MaxTokens, maxTokens);
+                }
+
+                if (options.PresencePenalty is float presencePenalty)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PresencePenalty, presencePenalty);
+                }
+
+                if (options.Seed is long seed)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.Seed, seed);
+                }
+
+                if (options.StopSequences is IList<string> { Count: > 0 } stopSequences)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.StopSequences, $"[{string.Join(", ", stopSequences.Select(s => $"\"{s}\""))}]");
+                }
+
+                if (options.Temperature is float temperature)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.Temperature, temperature);
+                }
+
+                if (options.TopK is int topK)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.TopK, topK);
+                }
+
+                if (options.TopP is float top_p)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.TopP, top_p);
+                }
+
+                if (options.ResponseFormat is not null)
+                {
+                    switch (options.ResponseFormat)
                     {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Conversation.Id, conversationId);
+                        case ChatResponseFormatText:
+                            _ = activity.AddTag(OpenTelemetryConsts.GenAI.Output.Type, OpenTelemetryConsts.TypeText);
+                            break;
+                        case ChatResponseFormatJson:
+                            _ = activity.AddTag(OpenTelemetryConsts.GenAI.Output.Type, OpenTelemetryConsts.TypeJson);
+                            break;
                     }
+                }
 
-                    if (options.FrequencyPenalty is float frequencyPenalty)
+                if (EnableSensitiveData)
+                {
+                    if (options.Tools is { Count: > 0 })
                     {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.FrequencyPenalty, frequencyPenalty);
-                    }
-
-                    if (options.MaxOutputTokens is int maxTokens)
-                    {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.MaxTokens, maxTokens);
-                    }
-
-                    if (options.PresencePenalty is float presencePenalty)
-                    {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PresencePenalty, presencePenalty);
-                    }
-
-                    if (options.Seed is long seed)
-                    {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.Seed, seed);
-                    }
-
-                    if (options.StopSequences is IList<string> { Count: > 0 } stopSequences)
-                    {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.StopSequences, $"[{string.Join(", ", stopSequences.Select(s => $"\"{s}\""))}]");
-                    }
-
-                    if (options.Temperature is float temperature)
-                    {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.Temperature, temperature);
-                    }
-
-                    if (options.TopK is int topK)
-                    {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.TopK, topK);
-                    }
-
-                    if (options.TopP is float top_p)
-                    {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.TopP, top_p);
-                    }
-
-                    if (options.ResponseFormat is not null)
-                    {
-                        switch (options.ResponseFormat)
-                        {
-                            case ChatResponseFormatText:
-                                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Output.Type, OpenTelemetryConsts.TypeText);
-                                break;
-                            case ChatResponseFormatJson:
-                                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Output.Type, OpenTelemetryConsts.TypeJson);
-                                break;
-                        }
-                    }
-
-                    if (EnableSensitiveData)
-                    {
-                        if (options.Tools is { Count: > 0 })
-                        {
-                            _ = activity.AddTag(
-                                OpenTelemetryConsts.GenAI.Tool.Definitions,
-                                JsonSerializer.Serialize(options.Tools.Select(t => t switch
-                                {
-                                    _ when t.GetService<AIFunctionDeclaration>() is { } af => new OtelFunction
-                                    {
-                                        Name = af.Name,
-                                        Description = af.Description,
-                                        Parameters = af.JsonSchema,
-                                    },
-                                    _ => new OtelFunction { Type = t.Name },
-                                }), OtelContext.Default.IEnumerableOtelFunction));
-                        }
-
-                        // Log all additional request options as raw values on the span.
-                        // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
-                        if (options.AdditionalProperties is { } props)
-                        {
-                            foreach (KeyValuePair<string, object?> prop in props)
+                        _ = activity.AddTag(
+                            OpenTelemetryConsts.GenAI.Tool.Definitions,
+                            JsonSerializer.Serialize(options.Tools.Select(t => t switch
                             {
-                                _ = activity.AddTag(prop.Key, prop.Value);
-                            }
+                                _ when t.GetService<AIFunctionDeclaration>() is { } af => new OtelFunction
+                                {
+                                    Name = af.Name,
+                                    Description = af.Description,
+                                    Parameters = af.JsonSchema,
+                                },
+                                _ => new OtelFunction { Type = t.Name },
+                            }), OtelContext.Default.IEnumerableOtelFunction));
+                    }
+
+                    // Log all additional request options as raw values on the span.
+                    // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
+                    if (options.AdditionalProperties is { } props)
+                    {
+                        foreach (KeyValuePair<string, object?> prop in props)
+                        {
+                            _ = activity.AddTag(prop.Key, prop.Value);
                         }
                     }
                 }
