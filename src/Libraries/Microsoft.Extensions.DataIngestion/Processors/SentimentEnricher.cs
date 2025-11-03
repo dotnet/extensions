@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -21,12 +20,6 @@ namespace Microsoft.Extensions.DataIngestion;
 public sealed class SentimentEnricher : IngestionChunkProcessor<string>
 {
     private readonly EnricherOptions _options;
-    private readonly FrozenSet<string> _validSentiments =
-#if NET9_0_OR_GREATER
-        FrozenSet.Create(StringComparer.Ordinal, "Positive", "Negative", "Neutral", "Unknown");
-#else
-        new string[] { "Positive", "Negative", "Neutral", "Unknown" }.ToFrozenSet(StringComparer.Ordinal);
-#endif
     private readonly ChatMessage _systemPrompt;
 
     /// <summary>
@@ -79,14 +72,8 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
 
             for (int i = 0; i < response.Result.Length; i++)
             {
-                batch[i].Metadata[MetadataKey] = _validSentiments.Contains(response.Result[i])
-                    ? response.Result[i]
-                    : throw new InvalidOperationException($"Invalid sentiment response: '{response.Result[i]}'.");
-            }
-
-            foreach (var chunk in batch)
-            {
-                yield return chunk;
+                batch[i].Metadata[MetadataKey] = response.Result[i];
+                yield return batch[i];
             }
         }
     }

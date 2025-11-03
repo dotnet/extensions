@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -23,7 +22,6 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
 {
     private const int DefaultMaxKeywords = 5;
     private readonly EnricherOptions _options;
-    private readonly FrozenSet<string>? _predefinedKeywords;
     private readonly ChatMessage _systemPrompt;
 
     /// <summary>
@@ -41,7 +39,7 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
         int? maxKeywords = null, double? confidenceThreshold = null)
     {
         _options = Throw.IfNull(options).Clone();
-        _predefinedKeywords = CreatePredfinedKeywords(predefinedKeywords);
+        Validate(predefinedKeywords);
 
         double threshold = confidenceThreshold.HasValue
             ? Throw.IfOutOfRange(confidenceThreshold.Value, 0.0, 1.0, nameof(confidenceThreshold))
@@ -84,32 +82,17 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
 
             for (int i = 0; i < response.Result.Length; i++)
             {
-                if (_predefinedKeywords is not null)
-                {
-                    foreach (string keyword in response.Result[i])
-                    {
-                        if (!_predefinedKeywords.Contains(keyword))
-                        {
-                            throw new InvalidOperationException($"The extracted keyword '{keyword}' is not in the predefined keywords list.");
-                        }
-                    }
-                }
-
                 batch[i].Metadata[MetadataKey] = response.Result[i];
-            }
-
-            foreach (var chunk in batch)
-            {
-                yield return chunk;
+                yield return batch[i];
             }
         }
     }
 
-    private static FrozenSet<string>? CreatePredfinedKeywords(ReadOnlySpan<string> predefinedKeywords)
+    private static void Validate(ReadOnlySpan<string> predefinedKeywords)
     {
         if (predefinedKeywords.Length == 0)
         {
-            return null;
+            return;
         }
 
         HashSet<string> result = new(StringComparer.Ordinal);
@@ -120,8 +103,6 @@ public sealed class KeywordEnricher : IngestionChunkProcessor<string>
                 Throw.ArgumentException(nameof(predefinedKeywords), $"Duplicate keyword found: '{keyword}'");
             }
         }
-
-        return result.ToFrozenSet(StringComparer.Ordinal);
     }
 
     private static ChatMessage CreateSystemPrompt(int maxKeywords, ReadOnlySpan<string> predefinedKeywords, double confidenceThreshold)

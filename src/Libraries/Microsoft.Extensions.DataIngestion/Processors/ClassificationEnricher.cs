@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -22,7 +21,6 @@ namespace Microsoft.Extensions.DataIngestion;
 public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
 {
     private readonly EnricherOptions _options;
-    private readonly FrozenSet<string> _predefinedClasses;
     private readonly ChatMessage _systemPrompt;
 
     /// <summary>
@@ -40,7 +38,7 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
             fallbackClass = "Unknown";
         }
 
-        _predefinedClasses = CreatePredefinedSet(predefinedClasses, fallbackClass!);
+        Validate(predefinedClasses, fallbackClass!);
         _systemPrompt = CreateSystemPrompt(predefinedClasses, fallbackClass!);
     }
 
@@ -76,19 +74,13 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
 
             for (int i = 0; i < response.Result.Length; i++)
             {
-                batch[i].Metadata[MetadataKey] = _predefinedClasses.Contains(response.Result[i])
-                    ? response.Result[i]
-                    : throw new InvalidOperationException($"Classification returned an unexpected class: '{response.Result[i]}'.");
-            }
-
-            foreach (var chunk in batch)
-            {
-                yield return chunk;
+                batch[i].Metadata[MetadataKey] = response.Result[i];
+                yield return batch[i];
             }
         }
     }
 
-    private static FrozenSet<string> CreatePredefinedSet(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
+    private static void Validate(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
     {
         if (predefinedClasses.Length == 0)
         {
@@ -108,8 +100,6 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
                 Throw.ArgumentException(nameof(predefinedClasses), $"Duplicate class found: '{predefinedClass}'.");
             }
         }
-
-        return predefinedClassesSet.ToFrozenSet();
     }
 
     private static ChatMessage CreateSystemPrompt(ReadOnlySpan<string> predefinedClasses, string fallbackClass)

@@ -93,33 +93,6 @@ public class KeywordEnricherTests
         Assert.Equal(["Animals", "Rabbits"], (string[])got[1].Metadata[KeywordEnricher.MetadataKey]);
     }
 
-    [Fact]
-    public async Task ThrowsOnInvalidResponse()
-    {
-        using TestChatClient chatClient = new()
-        {
-            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
-            {
-                string response = JsonSerializer.Serialize(new Envelope<string[][]> { data = [["Unexpected result!"]] });
-                return Task.FromResult(new ChatResponse(new[]
-                {
-                    new ChatMessage(ChatRole.Assistant, response)
-                }));
-            }
-        };
-
-        KeywordEnricher sut = new(new(chatClient), ["some"]);
-        var input = CreateChunks().ToAsyncEnumerable();
-
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            await foreach (var _ in sut.ProcessAsync(input))
-            {
-                // No-op
-            }
-        });
-    }
-
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
         new("The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components", _document),

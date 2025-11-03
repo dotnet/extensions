@@ -80,33 +80,6 @@ public class SentimentEnricherTests
         Assert.Equal("Unknown", chunks[3].Metadata[SentimentEnricher.MetadataKey]);
     }
 
-    [Fact]
-    public async Task ThrowsOnInvalidResponse()
-    {
-        using TestChatClient chatClient = new()
-        {
-            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
-            {
-                string response = JsonSerializer.Serialize(new Envelope<string[]> { data = ["Unexpected result!"] });
-                return Task.FromResult(new ChatResponse(new[]
-                {
-                    new ChatMessage(ChatRole.Assistant, response)
-                }));
-            }
-        };
-
-        SentimentEnricher sut = new(new(chatClient));
-        var input = CreateChunks().ToAsyncEnumerable();
-
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            await foreach (var _ in sut.ProcessAsync(input))
-            {
-                // No-op
-            }
-        });
-    }
-
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
         new("I love programming! It's so much fun and rewarding.", _document),

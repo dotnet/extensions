@@ -93,33 +93,6 @@ public class ClassificationEnricherTests
         Assert.Equal("UFO", got[2].Metadata[ClassificationEnricher.MetadataKey]);
     }
 
-    [Fact]
-    public async Task ThrowsOnInvalidResponse()
-    {
-        using TestChatClient chatClient = new()
-        {
-            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
-            {
-                string response = JsonSerializer.Serialize(new Envelope<string[]> { data = ["Unexpected result!"] });
-                return Task.FromResult(new ChatResponse(new[]
-                {
-                    new ChatMessage(ChatRole.Assistant, response)
-                }));
-            }
-        };
-
-        ClassificationEnricher sut = new(new(chatClient), ["AI", "Animals", "Sports"]);
-        var input = CreateChunks().ToAsyncEnumerable();
-
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            await foreach (var _ in sut.ProcessAsync(input))
-            {
-                // No-op
-            }
-        });
-    }
-
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
         new(".NET developers need to integrate and interact with a growing variety of artificial intelligence (AI) services in their apps. " +

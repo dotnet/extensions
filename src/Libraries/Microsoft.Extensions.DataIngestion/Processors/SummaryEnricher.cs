@@ -68,11 +68,7 @@ public sealed class SummaryEnricher : IngestionChunkProcessor<string>
             for (int i = 0; i < response.Result.Length; i++)
             {
                 batch[i].Metadata[MetadataKey] = response.Result[i];
-            }
-
-            foreach (var chunk in batch)
-            {
-                yield return chunk;
+                yield return batch[i];
             }
         }
     }
