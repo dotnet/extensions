@@ -16,7 +16,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CA1063</NoWarn>
-    <NoWarn>$(NoWarn);OPENAI001;OPENAI002;MEAI001</NoWarn>
+    <NoWarn>$(NoWarn);OPENAI001;OPENAI002;MEAI001;SCME0001</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -26,7 +26,6 @@
     <InjectCompilerFeatureRequiredOnLegacy>true</InjectCompilerFeatureRequiredOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
-    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
   </PropertyGroup>
 

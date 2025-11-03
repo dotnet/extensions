@@ -35,6 +35,9 @@
 
     <!-- Legacy targets do not support attributes for a nullable context thus suppressing null check warnings -->
     <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
+
+    <!-- Async method lacks 'await' operators and will run synchronously (The C# compiler has already removed it) -->
+    <NoWarn>$(NoWarn);CS1998</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition="('$(Stage)' == 'normal' OR '$(Stage)' == 'obsolete') AND '$(OutputType)' != 'Exe' AND '$(IsPackable)' == 'true' AND '$(Api)' != 'false'">

@@ -20,4 +20,5 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(IEnumerable<string>))]
 [JsonSerializable(typeof(JsonElement))]
 [JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(List<OpenAIResponsesChatClient.FunctionToolCallOutputElement>))]
 internal sealed partial class OpenAIJsonContext : JsonSerializerContext;

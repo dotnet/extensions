@@ -117,6 +117,8 @@ variables:
   - ${{ if and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
     - name: enableSourceIndex
       value: true
+    - name: sourceIndexBuildCommand
+      value: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
   - ${{ else }}:
     - name: enableSourceIndex
       value: false
@@ -206,7 +208,6 @@ extends:
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
                 isWindows: true
-                warnAsError: 0
 
           # ----------------------------------------------------------------
           # This job build and run tests on Ubuntu
@@ -237,7 +238,6 @@ extends:
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
                 isWindows: false
-                warnAsError: 0
 
     # ----------------------------------------------------------------
     # This stage performs quality gates enforcements

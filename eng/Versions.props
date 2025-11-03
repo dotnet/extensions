@@ -171,5 +171,6 @@
     <!-- MEVD is still part of the Semantic Kernel repo -->
     <MicrosoftExtensionsVectorDataAbstractionsVersion>9.7.0</MicrosoftExtensionsVectorDataAbstractionsVersion>
     <MicrosoftSemanticKernelConnectorsVersion>1.66.0-preview</MicrosoftSemanticKernelConnectorsVersion>
+    <MarkdigSignedVersion>0.43.0</MarkdigSignedVersion>
   </PropertyGroup>
 </Project>

@@ -2006,6 +2006,10 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedFileContent.HostedFileContent(string fileId);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.HostedFileContent.HasTopLevelMediaType(string topLevelType);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
