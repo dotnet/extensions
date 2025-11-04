@@ -121,10 +121,14 @@ public sealed class IngestionPipeline<T> : IDisposable
 
     private async Task ProcessAsync(IEnumerable<FileInfo> files, Activity? rootActivity, CancellationToken cancellationToken)
     {
-        if (files is IReadOnlyList<FileInfo> materialized)
+#if NET
+        if (System.Linq.Enumerable.TryGetNonEnumeratedCount(files, out int count))
+#else
+        if (files is IReadOnlyCollection<FileInfo> { Count: int count })
+#endif
         {
-            rootActivity?.SetTag(ProcessFiles.FileCountTagName, materialized.Count);
-            _logger?.LogFileCount(materialized.Count);
+            rootActivity?.SetTag(ProcessFiles.FileCountTagName, count);
+            _logger?.LogFileCount(count);
         }
 
         List<Exception>? exceptions = null;

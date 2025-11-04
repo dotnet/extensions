@@ -11,25 +11,25 @@ internal static class DiagnosticsConstants
     internal static class ProcessDirectory
     {
         internal const string ActivityName = "ProcessDirectory";
-        internal const string DirectoryPathTagName = "di.directory.path";
-        internal const string SearchPatternTagName = "di.directory.search.pattern";
-        internal const string SearchOptionTagName = "di.directory.search.option";
+        internal const string DirectoryPathTagName = "rag.directory.path";
+        internal const string SearchPatternTagName = "rag.directory.search.pattern";
+        internal const string SearchOptionTagName = "rag.directory.search.option";
     }
 
     internal static class ProcessFiles
     {
         internal const string ActivityName = "ProcessFiles";
-        internal const string FileCountTagName = "di.file.count";
+        internal const string FileCountTagName = "rag.file.count";
     }
 
     internal static class ProcessSource
     {
-        internal const string DocumentIdTagName = "di.document.id";
+        internal const string DocumentIdTagName = "rag.document.id";
     }
 
     internal static class ProcessFile
     {
         internal const string ActivityName = "ProcessFile";
-        internal const string FilePathTagName = "di.file.path";
+        internal const string FilePathTagName = "rag.file.path";
     }
 }
