@@ -17,23 +17,10 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
     /// </summary>
     /// <remarks>This class uses a tokenizer to convert the document's content into tokens and then splits the
     /// tokens into chunks of a specified size, with a configurable overlap between consecutive chunks. The resulting
-    /// chunks are returned as a list of <see cref="IngestionChunk{T}"/> objects.</remarks>
+    /// chunks are returned as a list of <see cref="IngestionChunk{T}"/> objects. It does not pay any attention to
+    /// the structure of the input and thus will split at any point where it reaches token limit specified.</remarks>
     public sealed class DocumentTokenChunker : IngestionChunker<string>
     {
-        private static string GetDocumentMarkdown(IngestionDocument document)
-        {
-            StringBuilder sb = new();
-            for (int i = 0; i < document.Sections.Count; i++)
-            {
-                _ = sb.Append(document.Sections[i].GetMarkdown());
-                if (i != document.Sections.Count - 1)
-                {
-                    _ = sb.AppendLine();
-                }
-            }
-            return sb.ToString();
-        }
-
         private readonly Tokenizer _tokenizer;
         private readonly int _maxTokensPerChunk;
         private readonly int _chunkOverlap;
@@ -57,7 +44,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
             _ = Throw.IfNull(document);
 
             string documentMarkdown = GetDocumentMarkdown(document);
-            int[] tokens = _tokenizer.EncodeToIds(documentMarkdown).ToArray();
+            int[] tokens = _tokenizer.EncodeToIds(documentMarkdown, considerNormalization: false).ToArray();
             List<ArraySegment<int>> tokenGroups = CreateGroups(tokens);
 
             var chunks = tokenGroups.Select(g => GroupToChunk(document, g));
@@ -65,6 +52,19 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
             {
                 yield return chunk;
             }
+        }
+        private static string GetDocumentMarkdown(IngestionDocument document)
+        {
+            StringBuilder sb = new();
+            for (int i = 0; i < document.Sections.Count; i++)
+            {
+                _ = sb.Append(document.Sections[i].GetMarkdown());
+                if (i != document.Sections.Count - 1)
+                {
+                    _ = sb.AppendLine();
+                }
+            }
+            return sb.ToString();
         }
 
         private List<ArraySegment<int>> CreateGroups(int[] tokens)
