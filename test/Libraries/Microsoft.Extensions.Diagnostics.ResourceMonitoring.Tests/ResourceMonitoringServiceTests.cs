@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.TestUtilities;
 using Moq;
 using VerifyXunit;
 using Xunit;
@@ -222,7 +223,7 @@ public sealed class ResourceMonitoringServiceTests
         Assert.Equal(0, numberOfSnapshots);
     }
 
-#if NET10_0_OR_GREATER
+#if NET10_0
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Flaky on Windows + .NET 10.0, see https://github.com/dotnet/extensions/issues/7009")]
 #else
