@@ -18,7 +18,7 @@ public class MessageCountingChatReducerTests
     [InlineData(-10)]
     public void Constructor_ThrowsOnInvalidTargetCount(int targetCount)
     {
-        Assert.Throws<ArgumentOutOfRangeException>("targetCount", () => new MessageCountingChatReducer(targetCount));
+        Assert.Throws<ArgumentOutOfRangeException>(nameof(targetCount), () => new MessageCountingChatReducer(targetCount));
     }
 
     [Fact]

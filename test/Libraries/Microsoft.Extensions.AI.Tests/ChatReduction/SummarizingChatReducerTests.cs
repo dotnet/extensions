@@ -27,7 +27,7 @@ public class SummarizingChatReducerTests
     public void Constructor_ThrowsOnInvalidTargetCount(int targetCount)
     {
         using var chatClient = new TestChatClient();
-        Assert.Throws<ArgumentOutOfRangeException>("targetCount", () => new SummarizingChatReducer(chatClient, targetCount, threshold: 2));
+        Assert.Throws<ArgumentOutOfRangeException>(nameof(targetCount), () => new SummarizingChatReducer(chatClient, targetCount, threshold: 2));
     }
 
     [Theory]
