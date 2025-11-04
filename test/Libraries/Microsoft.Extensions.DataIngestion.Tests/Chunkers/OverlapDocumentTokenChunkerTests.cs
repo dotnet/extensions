@@ -22,11 +22,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
         public async Task TokenChunking_WithOverlap()
         {
             string text = "The quick brown fox jumps over the lazy dog";
-            var tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
-            int chunkSize = 4;  // Small chunk size to demonstrate overlap
-            int chunkOverlap = 1;
-
-            var chunker = new DocumentTokenChunker(new(tokenizer) { MaxTokensPerChunk = chunkSize, OverlapTokens = chunkOverlap });
+            var chunker = CreateDocumentChunker(maxTokensPerChunk: 4, chunkOverlap: 1);
             IngestionDocument doc = new IngestionDocument("overlapExample");
             doc.Sections.Add(new IngestionDocumentSection
             {

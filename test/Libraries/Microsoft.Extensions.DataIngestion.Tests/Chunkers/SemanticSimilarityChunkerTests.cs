@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                     new IngestionDocumentParagraph(text)
                 }
             });
-            using var customGenerator = new TestEmbeddingGenerator
+            using TestEmbeddingGenerator customGenerator = new()
             {
                 GenerateAsyncCallback = static async (values, options, ct) =>
                 {
@@ -106,16 +106,18 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
         [Fact]
         public async Task TwoSeparateTopicsWithAllKindsOfElements()
         {
-            string dotNetTableMarkdown = @"| Language | Type | Status |
-| --- | --- | --- |
-| C# | Object-oriented | Primary |
-| F# | Functional | Official |
-| Visual Basic | Object-oriented | Official |
-| PowerShell | Scripting | Supported |
-| IronPython | Dynamic | Community |
-| IronRuby | Dynamic | Community |
-| Boo | Object-oriented | Community |
-| Nemerle | Functional/OOP | Community |";
+            string dotNetTableMarkdown = """
+            | Language | Type | Status |
+            | --- | --- | --- |
+            | C# | Object-oriented | Primary |
+            | F# | Functional | Official |
+            | Visual Basic | Object-oriented | Official |
+            | PowerShell | Scripting | Supported |
+            | IronPython | Dynamic | Community |
+            | IronRuby | Dynamic | Community |
+            | Boo | Object-oriented | Community |
+            | Nemerle | Functional/OOP | Community |
+            """;
 
             string godsTableMarkdown = @"| God | Domain | Symbol | Roman Name |
 | --- | --- | --- | --- |
