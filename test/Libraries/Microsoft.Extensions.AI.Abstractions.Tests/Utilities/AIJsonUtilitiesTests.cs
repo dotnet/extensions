@@ -1081,7 +1081,10 @@ public static partial class AIJsonUtilitiesTests
     [Fact]
     public static void AddAIContentType_ConflictingIdentifier_ThrowsInvalidOperationException()
     {
-        JsonSerializerOptions options = new();
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
+        };
         options.AddAIContentType<DerivedAIContent>("text");
         options.AddAIContentType<DerivedAIContent>("audio");
 
