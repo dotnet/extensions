@@ -486,6 +486,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             bool hasApprovalRequiringFcc = false;
             int lastApprovalCheckedFCCIndex = 0;
             int lastYieldedUpdateIndex = 0;
+            HashSet<string>? functionResultCallIds = null;
 
             await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken))
             {
@@ -496,12 +497,21 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 updates.Add(update);
 
-                _ = CopyFunctionCalls(update.Contents, ref functionCallContents);
+                // Collect FunctionResultContent CallIds to filter out FunctionCallContent that already have results
+                IList<AIContent> contents = update.Contents;
+                int contentsCount = contents.Count;
+                for (int i = 0; i < contentsCount; i++)
+                {
+                    if (contents[i] is FunctionResultContent frc)
+                    {
+                        _ = (functionResultCallIds ??= new(StringComparer.Ordinal)).Add(frc.CallId);
+                    }
+                }
+
+                _ = CopyFunctionCalls(update.Contents, ref functionCallContents, functionResultCallIds);
 
                 if (totalUsage is not null)
                 {
-                    IList<AIContent> contents = update.Contents;
-                    int contentsCount = contents.Count;
                     for (int i = 0; i < contentsCount; i++)
                     {
                         if (contents[i] is UsageContent uc)
@@ -754,11 +764,27 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     private static bool CopyFunctionCalls(
         IList<ChatMessage> messages, [NotNullWhen(true)] ref List<FunctionCallContent>? functionCalls)
     {
-        bool any = false;
+        // First, collect all FunctionResultContent CallIds to filter out FunctionCallContent that already have results
+        HashSet<string>? functionResultCallIds = null;
         int count = messages.Count;
         for (int i = 0; i < count; i++)
         {
-            any |= CopyFunctionCalls(messages[i].Contents, ref functionCalls);
+            IList<AIContent> contents = messages[i].Contents;
+            int contentsCount = contents.Count;
+            for (int j = 0; j < contentsCount; j++)
+            {
+                if (contents[j] is FunctionResultContent frc)
+                {
+                    _ = (functionResultCallIds ??= new(StringComparer.Ordinal)).Add(frc.CallId);
+                }
+            }
+        }
+
+        // Now collect FunctionCallContent, excluding those that already have results
+        bool any = false;
+        for (int i = 0; i < count; i++)
+        {
+            any |= CopyFunctionCalls(messages[i].Contents, ref functionCalls, functionResultCallIds);
         }
 
         return any;
@@ -766,7 +792,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="content"/> to <paramref name="functionCalls"/>.</summary>
     private static bool CopyFunctionCalls(
-        IList<AIContent> content, [NotNullWhen(true)] ref List<FunctionCallContent>? functionCalls)
+        IList<AIContent> content, [NotNullWhen(true)] ref List<FunctionCallContent>? functionCalls, HashSet<string>? functionResultCallIds = null)
     {
         bool any = false;
         int count = content.Count;
@@ -774,8 +800,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             if (content[i] is FunctionCallContent functionCall)
             {
-                (functionCalls ??= []).Add(functionCall);
-                any = true;
+                // Only add the FunctionCallContent if there isn't already a FunctionResultContent for it
+                if (functionResultCallIds is null || !functionResultCallIds.Contains(functionCall.CallId))
+                {
+                    (functionCalls ??= []).Add(functionCall);
+                    any = true;
+                }
             }
         }
 
