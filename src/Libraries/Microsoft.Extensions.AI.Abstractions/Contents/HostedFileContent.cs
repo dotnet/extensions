@@ -25,7 +25,7 @@ public sealed class HostedFileContent : AIContent
     /// <exception cref="ArgumentException"><paramref name="fileId"/> is empty or composed entirely of whitespace.</exception>
     public HostedFileContent(string fileId)
     {
-        FileId = fileId;
+        FileId = Throw.IfNullOrWhitespace(fileId);
     }
 
     /// <summary>

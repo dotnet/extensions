@@ -1074,8 +1074,8 @@ public static partial class AIJsonUtilitiesTests
     public static void AddAIContentType_BuiltInAIContent_ThrowsArgumentException()
     {
         JsonSerializerOptions options = new();
-        Assert.Throws<ArgumentException>(() => options.AddAIContentType<AIContent>("discriminator"));
-        Assert.Throws<ArgumentException>(() => options.AddAIContentType<TextContent>("discriminator"));
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType<AIContent>("discriminator"));
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType<TextContent>("discriminator"));
     }
 
     [Fact]
@@ -1398,8 +1398,8 @@ public static partial class AIJsonUtilitiesTests
     public static void TransformJsonSchema_InvalidOptions_ThrowsArgumentException()
     {
         JsonElement schema = JsonDocument.Parse("{}").RootElement;
-        Assert.Throws<ArgumentNullException>(() => AIJsonUtilities.TransformSchema(schema, transformOptions: null!));
-        Assert.Throws<ArgumentException>(() => AIJsonUtilities.TransformSchema(schema, transformOptions: new()));
+        Assert.Throws<ArgumentNullException>("transformOptions", () => AIJsonUtilities.TransformSchema(schema, transformOptions: null!));
+        Assert.Throws<ArgumentException>("transformOptions", () => AIJsonUtilities.TransformSchema(schema, transformOptions: new()));
     }
 
     [Theory]
@@ -1412,7 +1412,7 @@ public static partial class AIJsonUtilitiesTests
     {
         JsonElement schema = JsonDocument.Parse(invalidSchema).RootElement;
         AIJsonSchemaTransformOptions transformOptions = new() { ConvertBooleanSchemas = true };
-        Assert.Throws<ArgumentException>(() => AIJsonUtilities.TransformSchema(schema, transformOptions));
+        Assert.Throws<ArgumentException>("schema", () => AIJsonUtilities.TransformSchema(schema, transformOptions));
     }
 
     private class DerivedAIContent : AIContent
