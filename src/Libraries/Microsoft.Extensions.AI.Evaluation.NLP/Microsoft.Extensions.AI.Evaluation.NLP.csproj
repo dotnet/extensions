@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\BuiltInEvaluatorUtilities.cs" Link="Utilities\BuiltInEvaluatorUtilities.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\BuiltInMetricUtilities.cs" Link="Utilities\BuiltInMetricUtilities.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\TimingHelper.cs" Link="Utilities\TimingHelper.cs" />
   </ItemGroup>
 
