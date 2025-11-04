@@ -203,7 +203,7 @@ extends:
                 continueOnError: true
               - output: pipelineArtifact
                 displayName: 'Publish Packages'
-                targetPath: '$(Build.ArtifactStagingDirectory)/artifacts/packages'
+                targetPath: '$(Build.Arcade.ArtifactsPath)packages'
                 artifactName: 'PackageArtifacts_Windows'
                 condition: always()
                 continueOnError: true
