@@ -171,13 +171,12 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                     var content = message.Contents[contentIndex];
                     if (content is DataContent dataContent && dataContent.HasTopLevelMediaType("image"))
                     {
-                        bool isGeneratedImage = dataContent.AdditionalProperties?.ContainsKey(ImageKey) == true;
-                        if (_dataContentHandling == DataContentHandling.AllImages ||
-                            (_dataContentHandling == DataContentHandling.GeneratedImages && isGeneratedImage))
+                        // Store the image to make available for edit
+                        var imageId = StoreImage(dataContent);
+
+                        if (_dataContentHandling == DataContentHandling.AllImages)
                         {
                             // Replace image with a placeholder text content
-                            var imageId = StoreImage(dataContent);
-
                             newContents ??= CopyList(message.Contents, contentIndex);
                             newContents.Add(new TextContent($"[{ImageKey}:{imageId}] available for edit.")
                             {
@@ -185,6 +184,36 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                                 AdditionalProperties = dataContent.AdditionalProperties
                             });
                             continue; // Skip adding the original content
+                        }
+                    }
+                    else if (content is ImageGenerationToolResultContent toolResultContent)
+                    {
+                        foreach (var output in toolResultContent.Outputs ?? [])
+                        {
+                            if (output is DataContent generatedDataContent && generatedDataContent.HasTopLevelMediaType("image"))
+                            {
+                                // Store the image to make available for edit
+                                var imageId = StoreImage(generatedDataContent, isGenerated: true);
+
+                                if (_dataContentHandling == DataContentHandling.AllImages ||
+                                    _dataContentHandling == DataContentHandling.GeneratedImages)
+                                {
+                                    // Replace generated images with a placeholder text content
+                                    newContents ??= CopyList(message.Contents, contentIndex);
+                                    newContents.Add(new TextContent($"[{ImageKey}:{imageId}] available for edit.")
+                                    {
+                                        Annotations = generatedDataContent.Annotations,
+                                        AdditionalProperties = generatedDataContent.AdditionalProperties
+                                    });
+                                }
+                            }
+                        }
+
+                        if (_dataContentHandling == DataContentHandling.AllImages ||
+                            _dataContentHandling == DataContentHandling.GeneratedImages)
+                        {
+                            // skip adding the generated content
+                            continue;
                         }
                     }
 
@@ -277,18 +306,27 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                     // create a new list and omit the FunctionCallContent
                     newContents ??= CopyList(contents, i);
 
-                    // add a placeholder text content to avoid empty contents which could cause the client to drop the message
-                    newContents.Add(new TextContent(string.Empty));
+                    if (functionCall.Name != nameof(GetImagesForEdit))
+                    {
+                        newContents.Add(new ImageGenerationToolCallContent
+                        {
+                            ImageId = functionCall.CallId,
+                        });
+                    }
                 }
                 else if (content is FunctionResultContent functionResult &&
                     _imageContentByCallId.TryGetValue(functionResult.CallId, out var imageContents))
                 {
                     newContents ??= CopyList(contents, i, imageContents.Count - 1);
 
-                    // Insert generated image content in its place, do not preserve the FunctionResultContent
-                    foreach (var imageContent in imageContents)
+                    if (imageContents.Any())
                     {
-                        newContents.Add(imageContent);
+                        // Insert generated image content in its place, do not preserve the FunctionResultContent
+                        newContents.Add(new ImageGenerationToolResultContent
+                        {
+                            ImageId = functionResult.CallId,
+                            Outputs = imageContents
+                        });
                     }
 
                     // Remove the mapping as it's no longer needed

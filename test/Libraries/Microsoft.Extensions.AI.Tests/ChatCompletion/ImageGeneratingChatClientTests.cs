@@ -303,4 +303,84 @@ public class ImageGeneratingChatClientTests
 #pragma warning restore CA1508
         Assert.Empty(capturedOptions.Tools);
     }
+
+    [Fact]
+    public async Task GetResponseAsync_WithFunctionCallContent_ReplacesWithImageGenerationToolCallContent()
+    {
+        // Arrange
+        var callId = "test-call-id";
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                var responseMessage = new ChatMessage(ChatRole.Assistant,
+                    [new FunctionCallContent(callId, "GenerateImage", new Dictionary<string, object?> { ["prompt"] = "a cat" })]);
+                return Task.FromResult(new ChatResponse(responseMessage));
+            },
+        };
+
+        using var imageGenerator = new TestImageGenerator();
+        using var client = new ImageGeneratingChatClient(innerClient, imageGenerator);
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [new HostedImageGenerationTool()]
+        };
+
+        // Act
+        var response = await client.GetResponseAsync([new(ChatRole.User, "test")], chatOptions);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response.Messages);
+        var message = response.Messages[0];
+        Assert.Single(message.Contents);
+
+        var imageToolCallContent = Assert.IsType<ImageGenerationToolCallContent>(message.Contents[0]);
+        Assert.Equal(callId, imageToolCallContent.ImageId);
+    }
+
+    [Fact]
+    public async Task GetStreamingResponseAsync_WithFunctionCallContent_ReplacesWithImageGenerationToolCallContent()
+    {
+        // Arrange
+        var callId = "test-call-id";
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                return GetUpdatesAsync();
+            }
+        };
+
+        async IAsyncEnumerable<ChatResponseUpdate> GetUpdatesAsync()
+        {
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant,
+                [new FunctionCallContent(callId, "GenerateImage", new Dictionary<string, object?> { ["prompt"] = "a cat" })]);
+        }
+
+        using var imageGenerator = new TestImageGenerator();
+        using var client = new ImageGeneratingChatClient(innerClient, imageGenerator);
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [new HostedImageGenerationTool()]
+        };
+
+        // Act
+        var updates = new List<ChatResponseUpdate>();
+        await foreach (var responseUpdate in client.GetStreamingResponseAsync([new(ChatRole.User, "test")], chatOptions))
+        {
+            updates.Add(responseUpdate);
+        }
+
+        // Assert
+        Assert.Single(updates);
+        var update = updates[0];
+        Assert.Single(update.Contents);
+
+        var imageToolCallContent = Assert.IsType<ImageGenerationToolCallContent>(update.Contents[0]);
+        Assert.Equal(callId, imageToolCallContent.ImageId);
+    }
 }

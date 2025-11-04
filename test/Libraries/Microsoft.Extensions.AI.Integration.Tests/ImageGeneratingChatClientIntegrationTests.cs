@@ -85,11 +85,16 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
             var contents = response.Messages.SelectMany(m => m.Contents).ToArray();
 
             List<string> imageIds = [];
-            foreach (var dataContent in contents.OfType<DataContent>())
+            foreach (var toolResult in contents.OfType<ImageGenerationToolResultContent>())
             {
-                var imageId = dataContent.AdditionalProperties?[ImageKey] as string;
-                Assert.NotNull(imageId);
-                imageIds.Add(imageId);
+                Assert.NotNull(toolResult.Outputs);
+
+                foreach (var dataContent in toolResult.Outputs.OfType<DataContent>())
+                {
+                    var imageId = dataContent.AdditionalProperties?[ImageKey] as string;
+                    Assert.NotNull(imageId);
+                    imageIds.Add(imageId);
+                }
             }
 
             foreach (var textContent in contents.OfType<TextContent>())
@@ -130,12 +135,14 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.Contains("cat", request.Prompt, StringComparison.OrdinalIgnoreCase);
         Assert.Null(request.OriginalImages); // Generation, not editing
 
-        // Verify that we get DataContent back in the response
-        var dataContents = response.Messages
+        // Verify that we get ImageGenerationToolResultContent back in the response
+        var imageResults = response.Messages
             .SelectMany(m => m.Contents)
-            .OfType<DataContent>();
+            .OfType<ImageGenerationToolResultContent>();
 
-        var imageContent = Assert.Single(dataContents);
+        var imageResult = Assert.Single(imageResults);
+        Assert.NotNull(imageResult.Outputs);
+        var imageContent = Assert.Single(imageResult.Outputs.OfType<DataContent>());
         Assert.Equal("image/png", imageContent.MediaType);
         Assert.False(imageContent.Data.IsEmpty);
     }
@@ -203,11 +210,15 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         // First call should be generation (no original images)
         var (firstRequest, _) = imageGenerator.GenerateCalls[0];
         Assert.Null(firstRequest.OriginalImages);
-        var firstContent = Assert.Single(firstResponse.Messages.SelectMany(m => m.Contents).OfType<DataContent>());
+
+        // Extract the DataContent from the ImageGenerationToolResultContent
+        var firstToolResultContent = Assert.Single(firstResponse.Messages.SelectMany(m => m.Contents).OfType<ImageGenerationToolResultContent>());
+        Assert.NotNull(firstToolResultContent.Outputs);
+        var firstContent = Assert.Single(firstToolResultContent.Outputs.OfType<DataContent>());
 
         // Second call should be editing (with original images)
         var (secondRequest, _) = imageGenerator.GenerateCalls[1];
-        Assert.Single(secondResponse.Messages.SelectMany(m => m.Contents).OfType<DataContent>());
+        Assert.Single(secondResponse.Messages.SelectMany(m => m.Contents).OfType<ImageGenerationToolResultContent>().SelectMany(t => t.Outputs!.OfType<DataContent>()));
         Assert.NotNull(secondRequest.OriginalImages);
         var editContent = Assert.Single(secondRequest.OriginalImages);
         Assert.Equal(firstContent, editContent); // Should be the same image as generated in first call
@@ -254,7 +265,10 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         // Third call should edit the second generated image (from first edit), not the original
         var (thirdRequest, _) = imageGenerator.GenerateCalls[2];
         Assert.NotNull(thirdRequest.OriginalImages);
-        var secondImage = Assert.Single(secondResponse.Messages.SelectMany(m => m.Contents).OfType<DataContent>());
+
+        // Extract the DataContent from the second response's ImageGenerationToolResultContent
+        var secondToolResultContent = Assert.Single(secondResponse.Messages.SelectMany(m => m.Contents).OfType<ImageGenerationToolResultContent>());
+        var secondImage = Assert.Single(secondToolResultContent.Outputs!.OfType<DataContent>());
         var lastImageToEdit = Assert.Single(thirdRequest.OriginalImages.OfType<DataContent>());
         Assert.Equal(secondImage, lastImageToEdit);
     }
@@ -296,7 +310,10 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         // Third call should edit the original generated image (not from edit)
         var (thirdRequest, _) = imageGenerator.GenerateCalls[2];
         Assert.NotNull(thirdRequest.OriginalImages);
-        var firstGeneratedImage = Assert.Single(firstResponse.Messages.SelectMany(m => m.Contents).OfType<DataContent>());
+
+        // Extract the DataContent from the first response's ImageGenerationToolResultContent
+        var firstToolResultContent = Assert.Single(firstResponse.Messages.SelectMany(m => m.Contents).OfType<ImageGenerationToolResultContent>());
+        var firstGeneratedImage = Assert.Single(firstToolResultContent.Outputs!.OfType<DataContent>());
         var lastImageToEdit = Assert.IsType<DataContent>(thirdRequest.OriginalImages.First());
         Assert.Equal(firstGeneratedImage, lastImageToEdit);
     }
