@@ -1329,7 +1329,7 @@ public class FunctionInvokingChatClientTests
             GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
             {
                 await Task.Yield();
-                
+
                 // Simulate a server that performs function calling internally and returns both FCC and FRC
                 return new ChatResponse(new ChatMessage(ChatRole.Assistant,
                 [
@@ -1356,7 +1356,7 @@ public class FunctionInvokingChatClientTests
 
         // Non-streaming test
         var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
-        
+
         // The function should not be invoked since there's already a result
         Assert.Equal(0, funcInvoked);
         Assert.Contains("The server called a function:", response.Text);
@@ -1365,7 +1365,7 @@ public class FunctionInvokingChatClientTests
         // Streaming test
         funcInvoked = 0;
         response = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync();
-        
+
         Assert.Equal(0, funcInvoked);
         Assert.Contains("The server called a function:", response.Text);
         Assert.Contains("and here's the answer.", response.Text);
@@ -1429,6 +1429,277 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(0, func1Invoked); // Should not be invoked - always has result
         Assert.Equal(1, func2Invoked); // Should be invoked once in first iteration
         Assert.Equal(1, func3Invoked); // Should be invoked once in first iteration
+    }
+
+    [Fact]
+    public async Task FunctionResultInSeparateMessageFromInnerClient()
+    {
+        var funcInvoked = 0;
+        var func = AIFunctionFactory.Create(() => { funcInvoked++; return "Result"; }, "Func1");
+        var options = new ChatOptions { Tools = [func] };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+
+                // Return multiple messages: Assistant with FCC, then Tool with FRC
+                var response = new ChatResponse
+                {
+                    Messages =
+                    [
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+                        new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Server result")]),
+                    ]
+                };
+                return response;
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+
+        // Function should not be invoked - FRC came from inner client in same response
+        Assert.Equal(0, funcInvoked);
+        Assert.Equal(2, response.Messages.Count);
+    }
+
+    [Fact]
+    public async Task FunctionResultInSeparateUpdate()
+    {
+        var funcInvoked = 0;
+        var func = AIFunctionFactory.Create(() => { funcInvoked++; return "Result"; }, "Func1");
+        var options = new ChatOptions { Tools = [func] };
+
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                // Send FunctionCallContent and FunctionResultContent in separate updates
+                return YieldAsync(
+                    new ChatResponseUpdate { Contents = [new FunctionCallContent("callId1", "Func1")] },
+                    new ChatResponseUpdate { Contents = [new FunctionResultContent("callId1", result: "Result from server")] });
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+        var response = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync();
+
+        Assert.Equal(0, funcInvoked); // Should not be invoked - FRC came in separate update
+    }
+
+    [Fact]
+    public async Task MultipleFunctionsPartialResults()
+    {
+        var func1Invoked = 0;
+        var func2Invoked = 0;
+        var func3Invoked = 0;
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => { func1Invoked++; return "Result 1"; }, "Func1"),
+                AIFunctionFactory.Create(() => { func2Invoked++; return "Result 2"; }, "Func2"),
+                AIFunctionFactory.Create(() => { func3Invoked++; return "Result 3"; }, "Func3"),
+            ]
+        };
+
+        // Func1 has result, Func2 and Func3 don't
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func1"),
+                new FunctionResultContent("callId1", result: "Result 1 from server"),
+                new FunctionCallContent("callId2", "Func2"),
+                new FunctionCallContent("callId3", "Func3"),
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId2", result: "Result 2"),
+                new FunctionResultContent("callId3", result: "Result 3"),
+            ]),
+            new ChatMessage(ChatRole.Assistant, "done"),
+        ];
+
+        await InvokeAndAssertAsync(options, plan);
+        Assert.Equal(0, func1Invoked); // Has server result
+        Assert.Equal(1, func2Invoked); // Needs invocation
+        Assert.Equal(1, func3Invoked); // Needs invocation
+
+        func1Invoked = 0;
+        func2Invoked = 0;
+        func3Invoked = 0;
+        await InvokeAndAssertStreamingAsync(options, plan);
+        Assert.Equal(0, func1Invoked);
+        Assert.Equal(1, func2Invoked);
+        Assert.Equal(1, func3Invoked);
+    }
+
+    [Fact]
+    public async Task LayeredClientsWithSameFunctionInvokeOnlyOnce()
+    {
+        var funcInvoked = 0;
+
+        var func = AIFunctionFactory.Create(() => { funcInvoked++; return "Result"; }, "SharedFunc");
+
+        using var testClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+
+                var functionResults = messages.SelectMany(m => m.Contents).OfType<FunctionResultContent>().ToList();
+                if (functionResults.Count == 0)
+                {
+                    return new ChatResponse(new ChatMessage(ChatRole.Assistant,
+                    [
+                        new FunctionCallContent("callId1", "SharedFunc"),
+                    ]));
+                }
+
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "done"));
+            },
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                var functionResults = messages.SelectMany(m => m.Contents).OfType<FunctionResultContent>().ToList();
+                if (functionResults.Count == 0)
+                {
+                    return YieldAsync(new ChatResponseUpdate { Contents = [new FunctionCallContent("callId1", "SharedFunc")] });
+                }
+
+                return YieldAsync(new ChatResponseUpdate { Contents = [new TextContent("done")] });
+            }
+        };
+
+        // Create layered FunctionInvokingChatClients with the same function
+        using var innerClient = new FunctionInvokingChatClient(testClient);
+        innerClient.AdditionalTools = [func];
+
+        using var outerClient = new FunctionInvokingChatClient(innerClient);
+        outerClient.AdditionalTools = [func];
+
+        // Non-streaming: innerClient handles the function and returns FCC+FRC
+        // outerClient should see the FRC and not re-invoke the function
+        var response = await outerClient.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], null);
+
+        // Function should be invoked exactly once by innerClient, not again by outerClient
+        Assert.Equal(1, funcInvoked);
+        Assert.Equal("done", response.Text);
+
+        // Reset for streaming test
+        funcInvoked = 0;
+
+        response = await outerClient.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], null).ToChatResponseAsync();
+
+        // Function should be invoked exactly once
+        Assert.Equal(1, funcInvoked);
+        Assert.Equal("done", response.Text);
+    }
+
+    [Fact]
+    public async Task ThreeLayeredClientsWithSameFunctionInvokeOnlyOnce()
+    {
+        var funcInvoked = 0;
+
+        var func = AIFunctionFactory.Create(() => { funcInvoked++; return "Result"; }, "SharedFunc");
+
+        using var testClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+
+                var functionResults = messages.SelectMany(m => m.Contents).OfType<FunctionResultContent>().ToList();
+                if (functionResults.Count == 0)
+                {
+                    return new ChatResponse(new ChatMessage(ChatRole.Assistant,
+                    [
+                        new FunctionCallContent("callId1", "SharedFunc"),
+                    ]));
+                }
+
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "done"));
+            },
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                var functionResults = messages.SelectMany(m => m.Contents).OfType<FunctionResultContent>().ToList();
+                if (functionResults.Count == 0)
+                {
+                    return YieldAsync(new ChatResponseUpdate { Contents = [new FunctionCallContent("callId1", "SharedFunc")] });
+                }
+
+                return YieldAsync(new ChatResponseUpdate { Contents = [new TextContent("done")] });
+            }
+        };
+
+        // Create three layered clients with the same function
+        using var client1 = new FunctionInvokingChatClient(testClient);
+        client1.AdditionalTools = [func];
+
+        using var client2 = new FunctionInvokingChatClient(client1);
+        client2.AdditionalTools = [func];
+
+        using var client3 = new FunctionInvokingChatClient(client2);
+        client3.AdditionalTools = [func];
+
+        // Non-streaming
+        var response = await client3.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], null);
+
+        // Function should be invoked exactly once by the innermost client, not once per layer
+        Assert.Equal(1, funcInvoked);
+        Assert.Equal("done", response.Text);
+
+        // Reset for streaming
+        funcInvoked = 0;
+
+        response = await client3.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], null).ToChatResponseAsync();
+
+        Assert.Equal(1, funcInvoked);
+        Assert.Equal("done", response.Text);
+    }
+
+    [Fact]
+    public async Task StreamingMultipleUpdatesWithMixedContent()
+    {
+        var func1Invoked = 0;
+        var func2Invoked = 0;
+
+        var func1 = AIFunctionFactory.Create(() => { func1Invoked++; return "Result 1"; }, "Func1");
+        var func2 = AIFunctionFactory.Create(() => { func2Invoked++; return "Result 2"; }, "Func2");
+
+        var options = new ChatOptions { Tools = [func1, func2] };
+
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                // First call: Stream FCC for Func1, then FRC for Func1, then FCC for Func2 in separate updates
+                var hasFunc2Result = messages.SelectMany(m => m.Contents).OfType<FunctionResultContent>().Any(frc => frc.CallId == "callId2");
+                if (!hasFunc2Result)
+                {
+                    return YieldAsync(
+                        new ChatResponseUpdate { Contents = [new TextContent("Starting: ")] },
+                        new ChatResponseUpdate { Contents = [new FunctionCallContent("callId1", "Func1")] },
+                        new ChatResponseUpdate { Contents = [new FunctionResultContent("callId1", result: "Server result 1")] },
+                        new ChatResponseUpdate { Contents = [new FunctionCallContent("callId2", "Func2")] },
+                        new ChatResponseUpdate { Contents = [new TextContent(" ending")] });
+                }
+
+                // After Func2 is invoked, return final response
+                return YieldAsync(new ChatResponseUpdate { Contents = [new TextContent("done")] });
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+        var response = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync();
+
+        // Func1 should not be invoked (has server result), Func2 should be invoked
+        Assert.Equal(0, func1Invoked);
+        Assert.Equal(1, func2Invoked);
     }
 
     private sealed class CustomSynchronizationContext : SynchronizationContext

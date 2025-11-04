@@ -497,21 +497,18 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 updates.Add(update);
 
-                // Collect FunctionResultContent CallIds to filter out FunctionCallContent that already have results
-                IList<AIContent> contents = update.Contents;
-                int contentsCount = contents.Count;
-                for (int i = 0; i < contentsCount; i++)
-                {
-                    if (contents[i] is FunctionResultContent frc)
-                    {
-                        _ = (functionResultCallIds ??= new(StringComparer.Ordinal)).Add(frc.CallId);
-                    }
-                }
+                _ = CopyFunctionCalls(update.Contents, ref functionCallContents, ref functionResultCallIds);
 
-                _ = CopyFunctionCalls(update.Contents, ref functionCallContents, functionResultCallIds);
+                // Remove any FunctionCallContent that now have matching FunctionResultContent
+                if (functionCallContents is { Count: > 0 } && functionResultCallIds is { Count: > 0 })
+                {
+                    _ = functionCallContents.RemoveAll(fcc => functionResultCallIds.Contains(fcc.CallId));
+                }
 
                 if (totalUsage is not null)
                 {
+                    IList<AIContent> contents = update.Contents;
+                    int contentsCount = contents.Count;
                     for (int i = 0; i < contentsCount; i++)
                     {
                         if (contents[i] is UsageContent uc)
@@ -791,6 +788,47 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="content"/> to <paramref name="functionCalls"/>.</summary>
+    /// <remarks>
+    /// This overload is used for streaming scenarios where FunctionResultContent CallIds are tracked incrementally.
+    /// It first collects all FunctionResultContent CallIds, then copies FunctionCallContent that don't have results.
+    /// </remarks>
+    private static bool CopyFunctionCalls(
+        IList<AIContent> content,
+        [NotNullWhen(true)] ref List<FunctionCallContent>? functionCalls,
+        ref HashSet<string>? functionResultCallIds)
+    {
+        // First pass: collect all FunctionResultContent CallIds
+        int count = content.Count;
+        for (int i = 0; i < count; i++)
+        {
+            if (content[i] is FunctionResultContent frc)
+            {
+                _ = (functionResultCallIds ??= new(StringComparer.Ordinal)).Add(frc.CallId);
+            }
+        }
+
+        // Second pass: copy FunctionCallContent that don't have results
+        bool any = false;
+        for (int i = 0; i < count; i++)
+        {
+            if (content[i] is FunctionCallContent functionCall)
+            {
+                // Only add the FunctionCallContent if there isn't already a FunctionResultContent for it
+                if (functionResultCallIds is null || !functionResultCallIds.Contains(functionCall.CallId))
+                {
+                    (functionCalls ??= []).Add(functionCall);
+                    any = true;
+                }
+            }
+        }
+
+        return any;
+    }
+
+    /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="content"/> to <paramref name="functionCalls"/>.</summary>
+    /// <remarks>
+    /// This overload is used for non-streaming scenarios where all FunctionResultContent CallIds are already known.
+    /// </remarks>
     private static bool CopyFunctionCalls(
         IList<AIContent> content, [NotNullWhen(true)] ref List<FunctionCallContent>? functionCalls, HashSet<string>? functionResultCallIds = null)
     {
