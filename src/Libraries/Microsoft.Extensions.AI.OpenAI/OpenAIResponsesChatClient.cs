@@ -252,30 +252,42 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
     }
 
-    private static DataContent GetContentFromImageGen(ImageGenerationCallResponseItem outputItem, ResponseCreationOptions? options)
+    private static ImageGenerationToolResultContent GetContentFromImageGen(ImageGenerationCallResponseItem outputItem, ResponseCreationOptions? options)
     {
         var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
         string outputFormat = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
-        return new DataContent(outputItem.GeneratedImageBytes, $"image/{outputFormat}")
+        return new ImageGenerationToolResultContent
         {
-            RawRepresentation = outputItem
+            ImageId = outputItem.Id,
+            RawRepresentation = outputItem,
+            Outputs = new List<AIContent>
+            {
+                new DataContent(outputItem.ImageResultBytes, $"image/{outputFormat}")
+            }
         };
     }
 
-    private static DataContent GetContentFromImageGenPartialImageEvent(StreamingResponseImageGenerationCallPartialImageUpdate update, ResponseCreationOptions? options)
+    private static ImageGenerationToolResultContent GetContentFromImageGenPartialImageEvent(StreamingResponseImageGenerationCallPartialImageUpdate update, ResponseCreationOptions? options)
     {
         var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
         var outputType = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
-        return new DataContent(update.PartialImageBytes, $"image/{outputType}")
+        return new ImageGenerationToolResultContent
         {
+            ImageId = update.ItemId,
             RawRepresentation = update,
-            AdditionalProperties = new()
+            Outputs = new List<AIContent>
             {
-                [nameof(update.ItemId)] = update.ItemId,
-                [nameof(update.OutputIndex)] = update.OutputIndex,
-                [nameof(update.PartialImageIndex)] = update.PartialImageIndex
+                new DataContent(update.PartialImageBytes, $"image/{outputType}")
+                {
+                    AdditionalProperties = new()
+                    {
+                        [nameof(update.ItemId)] = update.ItemId,
+                        [nameof(update.OutputIndex)] = update.OutputIndex,
+                        [nameof(update.PartialImageIndex)] = update.PartialImageIndex
+                    }
+                }
             }
         };
     }
@@ -625,30 +637,22 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
     internal static ImageGenerationTool ToImageResponseTool(HostedImageGenerationTool imageGenerationTool)
     {
+        ImageGenerationTool result = new();
         ImageGenerationOptions? imageGenerationOptions = imageGenerationTool.Options;
 
-        // Not every option is available on ImageGenerationOptions, so we allow the tool to define a factory for 
-        // the OpenAi ImageGenerationTool.  This is important to set partial_images, input_image_mask, etc.
-        var result = imageGenerationTool.RawRepresentationFactory?.Invoke(null) as ImageGenerationTool ?? new();
-
         // Model: Image generation model
-        if (imageGenerationOptions?.ModelId is not null && result.Model is null)
-        {
-            result.Model = imageGenerationOptions.ModelId;
-        }
+        result.Model = imageGenerationOptions?.ModelId;
 
         // Size: Image dimensions (e.g., 1024x1024, 1024x1536)
-        if (imageGenerationOptions?.ImageSize is not null && result.Size is null)
+        if (imageGenerationOptions?.ImageSize is not null)
         {
-            // Use a custom type to ensure the size is formatted correctly.
-            // This is a workaround for OpenAI's specific size format requirements.
             result.Size = new ImageGenerationToolSize(
                 imageGenerationOptions.ImageSize.Value.Width,
                 imageGenerationOptions.ImageSize.Value.Height);
         }
 
-        // Format: File output format
-        if (imageGenerationOptions?.MediaType is not null && result.OutputFileFormat is null)
+        // OutputFileFormat: File output format
+        if (imageGenerationOptions?.MediaType is not null)
         {
             result.OutputFileFormat = imageGenerationOptions.MediaType switch
             {
@@ -658,6 +662,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 _ => null,
             };
         }
+
+        // PartialImageCount: Whether to return partial images during generation
+        result.PartialImageCount ??= imageGenerationOptions?.StreamingCount;
 
         return result;
     }

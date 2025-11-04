@@ -342,7 +342,7 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
         }
 
         [Description("Lists the identifiers of all images available for edit.")]
-        public string[] GetImagesForEdit()
+        public IEnumerable<string> GetImagesForEdit()
         {
             // Get the call ID from the current function invocation context
             var callId = FunctionInvokingChatClient.CurrentContext?.CallContent.CallId;
@@ -353,7 +353,7 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
 
             _imageContentByCallId[callId] = [];
 
-            return _imageContentById.Keys.ToArray();
+            return _imageContentById.Keys.AsEnumerable();
         }
 
         [Description("Edits an existing image based on a text description.")]

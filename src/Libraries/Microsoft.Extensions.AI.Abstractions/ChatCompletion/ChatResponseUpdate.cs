@@ -65,7 +65,6 @@ public class ChatResponseUpdate
     /// objects as the original. Use this method to duplicate the response update for further modification without
     /// affecting the original instance.</remarks>
     /// <returns>A new ChatResponseUpdate object with the same property values as the current instance.</returns>
-    [Experimental("MEAI001")]
     public ChatResponseUpdate Clone() =>
         new()
         {

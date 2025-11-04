@@ -14,11 +14,9 @@ namespace Microsoft.Extensions.AI;
     WriteIndented = true)]
 [JsonSerializable(typeof(OpenAIClientExtensions.ToolJson))]
 [JsonSerializable(typeof(IDictionary<string, object?>))]
-[JsonSerializable(typeof(IDictionary<string, string?>))]
 [JsonSerializable(typeof(IReadOnlyDictionary<string, object?>))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(IEnumerable<string>))]
 [JsonSerializable(typeof(JsonElement))]
-[JsonSerializable(typeof(int))]
 [JsonSerializable(typeof(List<OpenAIResponsesChatClient.FunctionToolCallOutputElement>))]
 internal sealed partial class OpenAIJsonContext : JsonSerializerContext;
