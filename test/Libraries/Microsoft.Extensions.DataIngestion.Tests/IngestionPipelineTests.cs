@@ -87,7 +87,10 @@ public sealed class IngestionPipelineTests : IDisposable
         using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
 
         using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
-        await pipeline.ProcessAsync(_sampleFiles);
+        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(_sampleFiles).ToListAsync();
+
+        Assert.Equal(_sampleFiles.Count, ingestionResults.Count);
+        AssertAllIngestionsSucceeded(ingestionResults);
 
         Assert.True(embeddingGenerator.WasCalled, "Embedding generator should have been called.");
 
@@ -119,7 +122,9 @@ public sealed class IngestionPipelineTests : IDisposable
         using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
 
         DirectoryInfo directory = new("TestFiles");
-        await pipeline.ProcessAsync(directory, "*.md");
+        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(directory, "*.md").ToListAsync();
+        Assert.Equal(directory.EnumerateFiles("*.md").Count(), ingestionResults.Count);
+        AssertAllIngestionsSucceeded(ingestionResults);
 
         Assert.True(embeddingGenerator.WasCalled, "Embedding generator should have been called.");
 
@@ -150,7 +155,8 @@ public sealed class IngestionPipelineTests : IDisposable
         using IngestionPipeline<DataContent> pipeline = new(CreateReader(), new ImageChunker(), vectorStoreWriter);
 
         Assert.False(embeddingGenerator.WasCalled);
-        await pipeline.ProcessAsync(_sampleFiles);
+        var ingestionResults = await pipeline.ProcessAsync(_sampleFiles).ToListAsync();
+        AssertAllIngestionsSucceeded(ingestionResults);
 
         var retrieved = await vectorStoreWriter.VectorStoreCollection
             .GetAsync(record => ((string)record["documentid"]!).EndsWith(_withImage.Name), top: 100)
@@ -197,95 +203,22 @@ public sealed class IngestionPipelineTests : IDisposable
 
         using IngestionPipeline<string> pipeline = new(failingForFirstReader, CreateChunker(), vectorStoreWriter);
 
-        await pipeline.ProcessAsync(_sampleFiles);
-        AssertErrorActivities(activities, expectedFailedActivitiesCount: 1);
-        activities.Clear();
-        failed = 0;
+        await Verify(pipeline.ProcessAsync(_sampleFiles));
+        await Verify(pipeline.ProcessAsync(_sampleDirectory));
 
-        await pipeline.ProcessAsync(_sampleDirectory);
-        AssertErrorActivities(activities, expectedFailedActivitiesCount: 1);
-    }
-
-    [Fact]
-    public async Task MaximumErrorsPerProcessingSetToZeroMeansStopOnFirstFailure()
-    {
-        TestReader alwaysFailingReader = new((_, __, ___, ____) => Task.FromException<IngestionDocument>(new ExpectedException()));
-
-        List<Activity> activities = [];
-        using TracerProvider tracerProvider = CreateTraceProvider(activities);
-
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
-        using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
-        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
-
-        IngestionPipelineOptions options = new()
+        async Task Verify(IAsyncEnumerable<IngestionResult> results)
         {
-            MaximumErrorsPerProcessing = 0
-        };
-        using IngestionPipeline<string> pipeline = new(alwaysFailingReader, CreateChunker(), vectorStoreWriter, options);
+            List<IngestionResult> ingestionResults = await results.ToListAsync();
 
-        await Assert.ThrowsAsync<ExpectedException>(() => pipeline.ProcessAsync(_sampleFiles));
-        AssertErrorActivities(activities, expectedFailedActivitiesCount: 2); // files + file
-        activities.Clear();
+            Assert.Equal(_sampleFiles.Count, ingestionResults.Count);
+            Assert.All(ingestionResults, result => Assert.NotNull(result.Source));
+            IngestionResult ingestionResult = Assert.Single(ingestionResults.Where(result => !result.Succeeded));
+            Assert.IsType<ExpectedException>(ingestionResult.Exception);
+            AssertErrorActivities(activities, expectedFailedActivitiesCount: 1);
 
-        await Assert.ThrowsAsync<ExpectedException>(() => pipeline.ProcessAsync(_sampleDirectory));
-        AssertErrorActivities(activities, expectedFailedActivitiesCount: 2); // directory + file
-    }
-
-    [Fact]
-    public async Task WhenAllIngestionsFailAnExceptionIsAlwaysThrown()
-    {
-        TestReader alwaysFailingReader = new((_, __, ___, ____) => Task.FromException<IngestionDocument>(new ExpectedException()));
-
-        List<Activity> activities = [];
-        using TracerProvider tracerProvider = CreateTraceProvider(activities);
-
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
-        using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
-        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
-
-        IngestionPipelineOptions options = new()
-        {
-            MaximumErrorsPerProcessing = _sampleFiles.Count + 1
-        };
-        using IngestionPipeline<string> pipeline = new(alwaysFailingReader, CreateChunker(), vectorStoreWriter, options);
-
-        await Assert.ThrowsAsync<AggregateException>(() => pipeline.ProcessAsync(_sampleFiles));
-        AssertErrorActivities(activities, expectedFailedActivitiesCount: 1 + _sampleFiles.Count);
-        activities.Clear();
-
-        await Assert.ThrowsAsync<AggregateException>(() => pipeline.ProcessAsync(_sampleDirectory));
-        AssertErrorActivities(activities, expectedFailedActivitiesCount: 1 + _sampleFiles.Count);
-    }
-
-    [Fact]
-    public async Task AggregateExceptionIsThrownWhenThereAreMultipleFailures()
-    {
-        TestReader alwaysFailingReader = new((_, __, ___, ____) => Task.FromException<IngestionDocument>(new ExpectedException()));
-
-        List<Activity> activities = [];
-        using TracerProvider tracerProvider = CreateTraceProvider(activities);
-
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
-        using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
-        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
-
-        IngestionPipelineOptions options = new()
-        {
-            MaximumErrorsPerProcessing = _sampleFiles.Count
-        };
-        using IngestionPipeline<string> pipeline = new(alwaysFailingReader, CreateChunker(), vectorStoreWriter, options);
-
-        var ex = await Assert.ThrowsAsync<AggregateException>(() => pipeline.ProcessAsync(_sampleFiles));
-        Assert.Equal(_sampleFiles.Count, ex.InnerExceptions.Count);
-        Assert.All(ex.InnerExceptions, inner => Assert.IsType<ExpectedException>(inner));
-        AssertErrorActivities(activities, expectedFailedActivitiesCount: 1 + _sampleFiles.Count);
-        activities.Clear();
-
-        ex = await Assert.ThrowsAsync<AggregateException>(() => pipeline.ProcessAsync(_sampleDirectory));
-        Assert.Equal(_sampleFiles.Count, ex.InnerExceptions.Count);
-        Assert.All(ex.InnerExceptions, inner => Assert.IsType<ExpectedException>(inner));
-        AssertErrorActivities(activities, expectedFailedActivitiesCount: 1 + _sampleFiles.Count);
+            activities.Clear();
+            failed = 0;
+        }
     }
 
     private class ExpectedException : Exception
@@ -308,6 +241,15 @@ public sealed class IngestionPipelineTests : IDisposable
             .ConfigureResource(r => r.AddService("inmemory-test"))
             .AddInMemoryExporter(activities)
             .Build();
+
+    private static void AssertAllIngestionsSucceeded(List<IngestionResult> ingestionResults)
+    {
+        Assert.NotEmpty(ingestionResults);
+        Assert.All(ingestionResults, result => Assert.True(result.Succeeded));
+        Assert.All(ingestionResults, result => Assert.NotNull(result.Source));
+        Assert.All(ingestionResults, result => Assert.NotNull(result.Document));
+        Assert.All(ingestionResults, result => Assert.Null(result.Exception));
+    }
 
     private static void AssertActivities(List<Activity> activities, string rootActivityName)
     {

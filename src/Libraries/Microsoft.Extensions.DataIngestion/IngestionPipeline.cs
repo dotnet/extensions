@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -26,7 +27,6 @@ public sealed class IngestionPipeline<T> : IDisposable
     private readonly IngestionDocumentReader _reader;
     private readonly IngestionChunker<T> _chunker;
     private readonly IngestionChunkWriter<T> _writer;
-    private readonly IngestionPipelineOptions _options;
     private readonly ActivitySource _activitySource;
     private readonly ILogger? _logger;
 
@@ -48,8 +48,7 @@ public sealed class IngestionPipeline<T> : IDisposable
         _reader = Throw.IfNull(reader);
         _chunker = Throw.IfNull(chunker);
         _writer = Throw.IfNull(writer);
-        _options = options?.Clone() ?? new();
-        _activitySource = new(_options.ActivitySourceName);
+        _activitySource = new((options ?? new()).ActivitySourceName);
         _logger = loggerFactory?.CreateLogger<IngestionPipeline<T>>();
     }
 
@@ -78,7 +77,8 @@ public sealed class IngestionPipeline<T> : IDisposable
     /// <param name="searchOption">The search option for directory traversal.</param>
     /// <param name="cancellationToken">The cancellation token for the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task ProcessAsync(DirectoryInfo directory, string searchPattern = "*.*", SearchOption searchOption = SearchOption.TopDirectoryOnly, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<IngestionResult> ProcessAsync(DirectoryInfo directory, string searchPattern = "*.*",
+        SearchOption searchOption = SearchOption.TopDirectoryOnly, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Throw.IfNull(directory);
         Throw.IfNullOrEmpty(searchPattern);
@@ -91,7 +91,10 @@ public sealed class IngestionPipeline<T> : IDisposable
                          .SetTag(ProcessDirectory.SearchOptionTagName, searchOption.ToString());
             _logger?.ProcessingDirectory(directory.FullName, searchPattern, searchOption);
 
-            await ProcessAsync(directory.EnumerateFiles(searchPattern, searchOption), rootActivity, cancellationToken).ConfigureAwait(false);
+            await foreach (var ingestionResult in ProcessAsync(directory.EnumerateFiles(searchPattern, searchOption), rootActivity, cancellationToken).ConfigureAwait(false))
+            {
+                yield return ingestionResult;
+            }
         }
     }
 
@@ -101,13 +104,16 @@ public sealed class IngestionPipeline<T> : IDisposable
     /// <param name="files">The collection of files to process.</param>
     /// <param name="cancellationToken">The cancellation token for the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task ProcessAsync(IEnumerable<FileInfo> files, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<IngestionResult> ProcessAsync(IEnumerable<FileInfo> files, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Throw.IfNull(files);
 
         using (Activity? rootActivity = _activitySource.StartActivity(ProcessFiles.ActivityName))
         {
-            await ProcessAsync(files, rootActivity, cancellationToken).ConfigureAwait(false);
+            await foreach (var ingestionResult in ProcessAsync(files, rootActivity, cancellationToken).ConfigureAwait(false))
+            {
+                yield return ingestionResult;
+            }
         }
     }
 
@@ -119,7 +125,8 @@ public sealed class IngestionPipeline<T> : IDisposable
                  .SetStatus(ActivityStatusCode.Error, ex.Message);
     }
 
-    private async Task ProcessAsync(IEnumerable<FileInfo> files, Activity? rootActivity, CancellationToken cancellationToken)
+    private async IAsyncEnumerable<IngestionResult> ProcessAsync(IEnumerable<FileInfo> files, Activity? rootActivity,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
 #if NET
         if (System.Linq.Enumerable.TryGetNonEnumeratedCount(files, out int count))
@@ -131,17 +138,15 @@ public sealed class IngestionPipeline<T> : IDisposable
             _logger?.LogFileCount(count);
         }
 
-        List<Exception>? exceptions = null;
-        int fileCount = 0;
         foreach (FileInfo fileInfo in files)
         {
-            fileCount++;
             using (Activity? processFileActivity = _activitySource.StartActivity(ProcessFile.ActivityName, ActivityKind.Internal, parentContext: rootActivity?.Context ?? default))
             {
                 processFileActivity?.SetTag(ProcessFile.FilePathTagName, fileInfo.FullName);
                 _logger?.ReadingFile(fileInfo.FullName, GetShortName(_reader));
 
                 IngestionDocument? document = null;
+                Exception? failure = null;
                 try
                 {
                     document = await _reader.ReadAsync(fileInfo, cancellationToken).ConfigureAwait(false);
@@ -156,32 +161,11 @@ public sealed class IngestionPipeline<T> : IDisposable
                     TraceException(processFileActivity, ex);
                     _logger?.IngestingFailed(ex, document?.Identifier ?? fileInfo.FullName);
 
-                    exceptions ??= [];
-                    exceptions.Add(ex);
-
-                    if (exceptions.Count > _options.MaximumErrorsPerProcessing)
-                    {
-                        TraceException(rootActivity, ex);
-
-                        if (exceptions.Count == 1)
-                        {
-                            throw;
-                        }
-
-                        throw new AggregateException(exceptions);
-                    }
-
-                    continue;
+                    failure = ex;
                 }
+
+                yield return new IngestionResult(fileInfo, document, failure);
             }
-        }
-
-        // When all ingestions throw, the method has to throw no matter how MaximumErrorsPerProcessing was configured.
-        if (exceptions is not null && exceptions.Count == fileCount)
-        {
-            TraceException(rootActivity, exceptions[exceptions.Count - 1]);
-
-            throw new AggregateException(exceptions);
         }
     }
 
