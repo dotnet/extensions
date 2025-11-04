@@ -98,7 +98,7 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.NotEmpty(retrieved);
         for (int i = 0; i < retrieved.Count; i++)
         {
-            Assert.NotEmpty((string)retrieved[i]["key"]!);
+            Assert.NotEqual(Guid.Empty, (Guid)retrieved[i]["key"]!);
             Assert.NotEmpty((string)retrieved[i]["content"]!);
             Assert.Contains((string)retrieved[i]["documentid"]!, _sampleFiles.Select(info => info.FullName));
         }
@@ -130,7 +130,7 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.NotEmpty(retrieved);
         for (int i = 0; i < retrieved.Count; i++)
         {
-            Assert.NotEmpty((string)retrieved[i]["key"]!);
+            Assert.NotEqual(Guid.Empty, (Guid)retrieved[i]["key"]!);
             Assert.NotEmpty((string)retrieved[i]["content"]!);
             Assert.StartsWith(directory.FullName, (string)retrieved[i]["documentid"]!);
         }
@@ -160,7 +160,7 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.NotEmpty(retrieved);
         for (int i = 0; i < retrieved.Count; i++)
         {
-            Assert.NotEmpty((string)retrieved[i]["key"]!);
+            Assert.NotEqual(Guid.Empty, (Guid)retrieved[i]["key"]!);
             Assert.EndsWith(_withImage.Name, (string)retrieved[i]["documentid"]!);
         }
 
