@@ -47,7 +47,6 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
     public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IngestionDocument document,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
 
         _ = Throw.IfNull(document);
 
