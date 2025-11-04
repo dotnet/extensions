@@ -17,8 +17,8 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
         [Fact]
         public async Task NoHeaderDocument()
         {
-            IngestionDocument noHeaerDoc = new IngestionDocument("noHeaderDoc");
-            noHeaerDoc.Sections.Add(new IngestionDocumentSection
+            IngestionDocument noHeaderDoc = new IngestionDocument("noHeaderDoc");
+            noHeaderDoc.Sections.Add(new IngestionDocumentSection
             {
                 Elements =
                 {
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             });
 
             IngestionChunker<string> chunker = CreateDocumentChunker();
-            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(noHeaerDoc).ToListAsync();
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(noHeaderDoc).ToListAsync();
 
             IngestionChunk<string> chunk = Assert.Single(chunks);
             ChunkAssertions.ContextEquals(string.Empty, chunk);

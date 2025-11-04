@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
     {
         private readonly int _headerLevelToSplitOn;
         private readonly bool _stripHeaders;
-        private static string StringyfyContext(string? context, string? lastHeader)
+        private static string StringifyContext(string? context, string? lastHeader)
         {
             return string.Join(";", new[] { context, lastHeader }.Where(x => x is not null));
         }
@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
                     }
                     else
                     {
-                        string newContext = StringyfyContext(context, lastHeader);
+                        string newContext = StringifyContext(context, lastHeader);
                         chunks.AddRange(ParseLevel(document, lines, markdownHeaderLevel + 1, newContext, element.GetMarkdown()));
                     }
 
@@ -105,7 +105,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
 
         private IngestionChunk<string>? CreateChunk(IngestionDocument document, StringBuilder content, string? context, string? header)
         {
-            context = StringyfyContext(context, header);
+            context = StringifyContext(context, header);
             if (!_stripHeaders)
             {
                 _ = content.Insert(0, context);
