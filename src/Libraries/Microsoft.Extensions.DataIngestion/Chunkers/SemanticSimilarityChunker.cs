@@ -26,7 +26,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
     /// </summary>
     /// <param name="embeddingGenerator">Embedding generator.</param>
     /// <param name="options">The options for the chunker.</param>
-    /// <param name="thresholdPercentile">Threshold percentile to consider the chunks to be sufficiently similar.</param>
+    /// <param name="thresholdPercentile">Threshold percentile to consider the chunks to be sufficiently similar. 95th percentile will be used if not specified</param>
     public SemanticSimilarityChunker(
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         IngestionChunkerOptions options,
