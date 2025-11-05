@@ -66,13 +66,10 @@ public class WebApiAgentsTemplateExecutionTests : TemplateExecutionTestBase<WebA
                 continue;
             }
 
-            if (HasOption("--managed-identity", "true"))
+            if (HasOption("--managed-identity", "true") && !HasOption("--provider", "azureopenai"))
             {
-                if (!HasOption("--provider", "azureopenai"))
-                {
-                    // The managed identity option is only valid for Azure OpenAI.
-                    continue;
-                }
+                // The managed identity option is only valid for Azure OpenAI.
+                continue;
             }
 
             yield return options;
