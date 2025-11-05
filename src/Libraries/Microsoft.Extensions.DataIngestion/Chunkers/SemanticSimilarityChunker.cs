@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.DataIngestion;
+namespace Microsoft.Extensions.DataIngestion.Chunkers;
 
 /// <summary>
 /// Splits a <see cref="IngestionDocument"/> into chunks based on semantic similarity between its elements based on cosine distance of their embeddings.
@@ -98,25 +98,19 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
         float distanceThreshold = Percentile(elementDistances);
 
         List<IngestionDocumentElement> elementAccumulator = [];
-        string context = string.Empty; // we could implement some simple heuristic
-        foreach (var (element, distance) in elementDistances)
+        string context = string.Empty;
+        for (int i = 0; i < elementDistances.Count; i++)
         {
+            var (element, distance) = elementDistances[i];
+
             elementAccumulator.Add(element);
-            if (distance > distanceThreshold)
+            if (distance > distanceThreshold || i == elementDistances.Count - 1)
             {
                 foreach (var chunk in _elementsChunker.Process(document, context, elementAccumulator))
                 {
                     yield return chunk;
                 }
                 elementAccumulator.Clear();
-            }
-        }
-
-        if (elementAccumulator.Count > 0)
-        {
-            foreach (var chunk in _elementsChunker.Process(document, context, elementAccumulator))
-            {
-                yield return chunk;
             }
         }
     }
