@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+#if NET10_0_OR_GREATER
+using System.Linq;
+#endif
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,9 +27,9 @@ internal static class Batching
     {
         _ = Throw.IfNull(chunks);
 
-        await foreach (var batch in chunks.BufferAsync(options.BatchSize).WithCancellation(cancellationToken))
+        await foreach (var batch in chunks.Chunk(options.BatchSize).WithCancellation(cancellationToken))
         {
-            List<AIContent> contents = new(batch.Count);
+            List<AIContent> contents = new(batch.Length);
             foreach (var chunk in batch)
             {
                 contents.Add(new TextContent(chunk.Content));
@@ -67,35 +70,39 @@ internal static class Batching
         }
     }
 
-    // Code copied from https://github.com/dotnet/reactive/blob/ddf18469a0d9e02fcabe9f606104c81c5822839b/Ix.NET/Source/System.Interactive.Async/System/Linq/Operators/Buffer.cs#L14
-    private static IAsyncEnumerable<IList<TSource>> BufferAsync<TSource>(this IAsyncEnumerable<TSource> source, int count)
+#if !NET10_0_OR_GREATER
+#pragma warning disable VSTHRD200 // Use "Async" suffix for async methods
+    private static IAsyncEnumerable<TSource[]> Chunk<TSource>(this IAsyncEnumerable<TSource> source, int count)
+#pragma warning restore VSTHRD200 // Use "Async" suffix for async methods
     {
         _ = Throw.IfNull(source);
         _ = Throw.IfLessThanOrEqual(count, 0);
 
         return CoreAsync(source, count);
 
-        static async IAsyncEnumerable<IList<TSource>> CoreAsync(IAsyncEnumerable<TSource> source, int count,
+        static async IAsyncEnumerable<TSource[]> CoreAsync(IAsyncEnumerable<TSource> source, int count,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            List<TSource> buffer = new(count);
+            var buffer = new TSource[count];
+            int index = 0;
 
             await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                buffer.Add(item);
+                buffer[index++] = item;
 
-                if (buffer.Count == count)
+                if (index == count)
                 {
+                    index = 0;
                     yield return buffer;
-
-                    buffer = new List<TSource>(count);
                 }
             }
 
-            if (buffer.Count > 0)
+            if (index > 0)
             {
+                Array.Resize(ref buffer, index);
                 yield return buffer;
             }
         }
     }
+#endif
 }
