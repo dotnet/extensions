@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -11,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.DataIngestion.Chunkers;
+namespace Microsoft.Extensions.DataIngestion;
 
 /// <summary>
 /// Splits a <see cref="IngestionDocument"/> into chunks based on semantic similarity between its elements based on cosine distance of their embeddings.

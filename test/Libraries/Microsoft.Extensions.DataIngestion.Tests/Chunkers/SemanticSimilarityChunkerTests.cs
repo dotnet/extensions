@@ -119,20 +119,22 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             | Nemerle | Functional/OOP | Community |
             """;
 
-            string godsTableMarkdown = @"| God | Domain | Symbol | Roman Name |
-| --- | --- | --- | --- |
-| Zeus | Sky & Thunder | Lightning Bolt | Jupiter |
-| Hera | Marriage & Family | Peacock | Juno |
-| Poseidon | Sea & Earthquakes | Trident | Neptune |
-| Athena | Wisdom & War | Owl | Minerva |
-| Apollo | Sun & Music | Lyre | Apollo |
-| Artemis | Hunt & Moon | Silver Bow | Diana |
-| Aphrodite | Love & Beauty | Dove | Venus |
-| Ares | War & Courage | Spear | Mars |
-| Hephaestus | Fire & Forge | Hammer | Vulcan |
-| Demeter | Harvest & Nature | Wheat | Ceres |
-| Dionysus | Wine & Festivity | Grapes | Bacchus |
-| Hermes | Messages & Trade | Caduceus | Mercury |";
+            string godsTableMarkdown = """
+            | God | Domain | Symbol | Roman Name |
+            | --- | --- | --- | --- |
+            | Zeus | Sky & Thunder | Lightning Bolt | Jupiter |
+            | Hera | Marriage & Family | Peacock | Juno |
+            | Poseidon | Sea & Earthquakes | Trident | Neptune |
+            | Athena | Wisdom & War | Owl | Minerva |
+            | Apollo | Sun & Music | Lyre | Apollo |
+            | Artemis | Hunt & Moon | Silver Bow | Diana |
+            | Aphrodite | Love & Beauty | Dove | Venus |
+            | Ares | War & Courage | Spear | Mars |
+            | Hephaestus | Fire & Forge | Hammer | Vulcan |
+            | Demeter | Harvest & Nature | Wheat | Ceres |
+            | Dionysus | Wine & Festivity | Grapes | Bacchus |
+            | Hermes | Messages & Trade | Caduceus | Mercury |
+            """;
 
             IngestionDocument doc = new("dotnet-languages");
             doc.Sections.Add(new IngestionDocumentSection
@@ -196,11 +198,12 @@ The twelve Olympian gods were the principal deities of the Greek pantheon:
 | Demeter | Harvest & Nature | Wheat | Ceres |
 | Dionysus | Wine & Festivity | Grapes | Bacchus |",
             chunks[1].Content, ignoreLineEndingDifferences: true);
-            Assert.Equal($@"| God | Domain | Symbol | Roman Name |
-| --- | --- | --- | --- |
-| Hermes | Messages & Trade | Caduceus | Mercury |
-These gods resided on Mount Olympus and ruled over different aspects of mortal and divine life.",
-            chunks[2].Content, ignoreLineEndingDifferences: true);
+            Assert.Equal("""
+            | God | Domain | Symbol | Roman Name |
+            | --- | --- | --- | --- |
+            | Hermes | Messages & Trade | Caduceus | Mercury |
+            These gods resided on Mount Olympus and ruled over different aspects of mortal and divine life.
+            """, chunks[2].Content, ignoreLineEndingDifferences: true);
 
             static string[,] CreateGreekGodsTableCells() => new string[,]
                 {
