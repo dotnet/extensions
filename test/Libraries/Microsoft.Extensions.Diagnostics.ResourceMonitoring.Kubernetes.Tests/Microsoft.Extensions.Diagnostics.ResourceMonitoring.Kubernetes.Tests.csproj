@@ -3,6 +3,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes.</Description>
+    <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
   <ItemGroup>

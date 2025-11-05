@@ -22,16 +22,16 @@ internal class LinuxResourceQuotaProvider : ResourceQuotaProvider
         if (_useLinuxCalculationV2)
         {
             resourceQuota.MaxCpuInCores = _parser.GetCgroupLimitV2();
-            resourceQuota.GuaranteedCpuInCores = _parser.GetCgroupRequestCpuV2();
+            resourceQuota.BaselineCpuInCores = _parser.GetCgroupRequestCpuV2();
         }
         else
         {
             resourceQuota.MaxCpuInCores = _parser.GetCgroupLimitedCpus();
-            resourceQuota.GuaranteedCpuInCores = _parser.GetCgroupRequestCpu();
+            resourceQuota.BaselineCpuInCores = _parser.GetCgroupRequestCpu();
         }
 
         resourceQuota.MaxMemoryInBytes = _parser.GetAvailableMemoryInBytes();
-        resourceQuota.GuaranteedMemoryInBytes = resourceQuota.MaxMemoryInBytes; // TODO: use real value
+        resourceQuota.BaselineMemoryInBytes = resourceQuota.MaxMemoryInBytes; // TODO: use real value
 
         return resourceQuota;
     }

@@ -71,8 +71,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var quota = resourceQuotaProvider.GetResourceQuota();
         _memoryLimit = quota.MaxMemoryInBytes;
         _cpuLimit = quota.MaxCpuInCores;
-        _cpuRequest = quota.GuaranteedCpuInCores;
-        _memoryRequest = quota.GuaranteedMemoryInBytes;
+        _cpuRequest = quota.BaselineCpuInCores;
+        _memoryRequest = quota.BaselineMemoryInBytes;
 
         float hostCpus = _parser.GetHostCpuCount();
         double scaleRelativeToCpuLimit = hostCpus / _cpuLimit;

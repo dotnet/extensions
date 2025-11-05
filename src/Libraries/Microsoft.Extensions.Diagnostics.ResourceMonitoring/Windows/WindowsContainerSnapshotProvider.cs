@@ -92,8 +92,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         var quota = resourceQuotaProvider.GetResourceQuota();
         _cpuLimit = quota.MaxCpuInCores;
         _memoryLimit = quota.MaxMemoryInBytes;
-        _cpuRequest = quota.GuaranteedCpuInCores;
-        _memoryRequest = quota.GuaranteedMemoryInBytes;
+        _cpuRequest = quota.BaselineCpuInCores;
+        _memoryRequest = quota.BaselineMemoryInBytes;
 
         ulong memoryLimitRounded = (ulong)Math.Round(_memoryLimit);
         Resources = new SystemResources(_cpuRequest, _cpuLimit, _memoryRequest, memoryLimitRounded);

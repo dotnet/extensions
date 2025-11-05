@@ -41,8 +41,8 @@ internal class WindowsContainerResourceQuotaProvider : ResourceQuotaProvider
 
         // CPU guaranteed (aka minimum CPU units) is not supported on Windows, so we set it to the same value as CPU maximum (aka limit CPU units).
         // Memory guaranteed (aka minimum memory) is not supported on Windows, so we set it to the same value as memory maximum (aka limit memory).
-        resourceQuota.GuaranteedCpuInCores = resourceQuota.MaxCpuInCores;
-        resourceQuota.GuaranteedMemoryInBytes = resourceQuota.MaxMemoryInBytes;
+        resourceQuota.BaselineCpuInCores = resourceQuota.MaxCpuInCores;
+        resourceQuota.BaselineMemoryInBytes = resourceQuota.MaxMemoryInBytes;
 
         return resourceQuota;
     }
