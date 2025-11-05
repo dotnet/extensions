@@ -237,7 +237,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case ImageGenerationCallResponseItem imageGenItem:
-                    message.Contents.Add(GetContentFromImageGen(imageGenItem, options));
+                    AddImageGenerationContents(imageGenItem, options, message.Contents);
                     break;
 
                 default:
@@ -250,59 +250,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             yield return message;
         }
-    }
-
-    private static ImageGenerationToolResultContent GetContentFromImageGen(ImageGenerationCallResponseItem outputItem, ResponseCreationOptions? options)
-    {
-        var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
-        string outputFormat = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
-
-        return new ImageGenerationToolResultContent
-        {
-            ImageId = outputItem.Id,
-            RawRepresentation = outputItem,
-            Outputs = new List<AIContent>
-            {
-                new DataContent(outputItem.ImageResultBytes, $"image/{outputFormat}")
-            }
-        };
-    }
-
-    private static ImageGenerationToolResultContent GetContentFromImageGenPartialImageEvent(StreamingResponseImageGenerationCallPartialImageUpdate update, ResponseCreationOptions? options)
-    {
-        var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
-        var outputType = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
-
-        var bytes = update.PartialImageBytes;
-
-        if (bytes is null || bytes.Length == 0)
-        {
-            // workaround https://github.com/openai/openai-dotnet/issues/809
-            if (update.Patch.TryGetJson("$.partial_image_b64"u8, out var jsonBytes))
-            {
-                Utf8JsonReader reader = new(jsonBytes.Span);
-                _ = reader.Read();
-                bytes = BinaryData.FromBytes(reader.GetBytesFromBase64());
-            }
-        }
-
-        return new ImageGenerationToolResultContent
-        {
-            ImageId = update.ItemId,
-            RawRepresentation = update,
-            Outputs = new List<AIContent>
-            {
-                new DataContent(bytes, $"image/{outputType}")
-                {
-                    AdditionalProperties = new()
-                    {
-                        [nameof(update.ItemId)] = update.ItemId,
-                        [nameof(update.OutputIndex)] = update.OutputIndex,
-                        [nameof(update.PartialImageIndex)] = update.PartialImageIndex
-                    }
-                }
-            }
-        };
     }
 
     /// <inheritdoc />
@@ -512,8 +459,17 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     yield return CreateUpdate(new TextReasoningContent(delta));
                     break;
 
+                case StreamingResponseImageGenerationCallInProgressUpdate imageGenInProgress:
+                    yield return CreateUpdate(new ImageGenerationToolCallContent
+                    {
+                        ImageId = imageGenInProgress.ItemId,
+                        RawRepresentation = imageGenInProgress,
+
+                    });
+                    goto default;
+
                 case StreamingResponseImageGenerationCallPartialImageUpdate streamingImageGenUpdate:
-                    yield return CreateUpdate(GetContentFromImageGenPartialImageEvent(streamingImageGenUpdate, options));
+                    yield return CreateUpdate(GetImageGenerationResult(streamingImageGenUpdate, options));
                     break;
 
                 default:
@@ -1316,6 +1272,64 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 }).OfType<AIContent>().ToList() : null,
             RawRepresentation = cicri,
         });
+    }
+
+    private static void AddImageGenerationContents(ImageGenerationCallResponseItem outputItem, ResponseCreationOptions? options, IList<AIContent> contents)
+    {
+        var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
+        string outputFormat = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
+
+        contents.Add(new ImageGenerationToolCallContent
+        {
+            ImageId = outputItem.Id,
+        });
+
+        contents.Add(new ImageGenerationToolResultContent
+        {
+            ImageId = outputItem.Id,
+            RawRepresentation = outputItem,
+            Outputs = new List<AIContent>
+            {
+                new DataContent(outputItem.ImageResultBytes, $"image/{outputFormat}")
+            }
+        });
+    }
+
+    private static ImageGenerationToolResultContent GetImageGenerationResult(StreamingResponseImageGenerationCallPartialImageUpdate update, ResponseCreationOptions? options)
+    {
+        var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
+        var outputType = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
+
+        var bytes = update.PartialImageBytes;
+
+        if (bytes is null || bytes.Length == 0)
+        {
+            // workaround https://github.com/openai/openai-dotnet/issues/809
+            if (update.Patch.TryGetJson("$.partial_image_b64"u8, out var jsonBytes))
+            {
+                Utf8JsonReader reader = new(jsonBytes.Span);
+                _ = reader.Read();
+                bytes = BinaryData.FromBytes(reader.GetBytesFromBase64());
+            }
+        }
+
+        return new ImageGenerationToolResultContent
+        {
+            ImageId = update.ItemId,
+            RawRepresentation = update,
+            Outputs = new List<AIContent>
+            {
+                new DataContent(bytes, $"image/{outputType}")
+                {
+                    AdditionalProperties = new()
+                    {
+                        [nameof(update.ItemId)] = update.ItemId,
+                        [nameof(update.OutputIndex)] = update.OutputIndex,
+                        [nameof(update.PartialImageIndex)] = update.PartialImageIndex
+                    }
+                }
+            }
+        };
     }
 
     private static OpenAIResponsesContinuationToken? CreateContinuationToken(OpenAIResponse openAIResponse)
