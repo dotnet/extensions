@@ -13,7 +13,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.DataIngestion.Chunkers;
 
 /// <summary>
-/// Splits a <see cref="IngestionDocument"/> into chunks based on semantic similarity between its elements based on consine distance of their embeddings.
+/// Splits a <see cref="IngestionDocument"/> into chunks based on semantic similarity between its elements based on cosine distance of their embeddings.
 /// </summary>
 public sealed class SemanticSimilarityChunker : IngestionChunker<string>
 {
