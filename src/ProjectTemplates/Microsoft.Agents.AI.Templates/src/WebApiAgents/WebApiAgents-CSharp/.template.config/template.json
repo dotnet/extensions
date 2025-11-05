@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "Common", "AI", "Web", "WebAPI", "Agents" ],
+  "identity": "Microsoft.Agents.AI.Templates.WebApiAgents.CSharp",
+  "name": "AI Agents Web API",
+  "description": "A project template for creating an AI Agents Web API application.",
+  "shortName": "webapi-agents",
+  "defaultName": "WebApiAgents",
+  "sourceName": "WebApiAgents-CSharp",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "guids": [
+    "d5681fae-b21b-4114-b781-48180f08c0c4"
+  ],
+  "primaryOutputs": [
+    {
+      "path": "./WebApiAgents-CSharp.csproj"
+    }
+  ],
+  "sources": [
+    {
+      "source": "./",
+      "target": "./"
+    }
+  ],
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net10.0",
+          "description": "Target net10.0"
+        }
+      ],
+      "replaces": "net10.0",
+      "defaultValue": "net10.0",
+      "displayName": "Framework"
+    },
+    "hostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "httpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+    },
+    "httpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 5000,
+        "high": 5300
+      }
+    },
+    "httpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "httpPort",
+        "fallbackVariableName": "httpPortGenerated"
+      },
+      "replaces": "5056",
+      "onlyIf": [
+        {
+          "after": "localhost:"
+        }
+      ]
+    },
+    "httpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json."
+    },
+    "httpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 7000,
+        "high": 7300
+      }
+    },
+    "httpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "httpsPort",
+        "fallbackVariableName": "httpsPortGenerated"
+      },
+      "replaces": "7041",
+      "onlyIf": [
+        {
+          "after": "localhost:"
+        }
+      ]
+    }
+  },
+  "postActions": [
+    {
+      "condition": "(hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens README file in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ]
+}

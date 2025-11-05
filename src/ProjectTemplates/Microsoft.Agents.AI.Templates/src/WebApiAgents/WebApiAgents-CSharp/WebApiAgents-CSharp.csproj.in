@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>d5681fae-b21b-4114-b781-48180f08c0c4</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.AI" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="${TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI}" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
+    <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
+  </ItemGroup>
+
+</Project>

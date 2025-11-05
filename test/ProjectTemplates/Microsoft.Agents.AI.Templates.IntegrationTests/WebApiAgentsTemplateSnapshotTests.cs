@@ -16,13 +16,12 @@ namespace Microsoft.Agents.AI.Templates.Tests;
 
 public class WebApiAgentsTemplateSnapshotTests
 {
-    // Exclude patterns will be defined here when actual template content is added.
+    // Keep the exclude patterns below in sync with those in Microsoft.Agents.AI.Templates.csproj.
     private static readonly string[] _verificationExcludePatterns = [
         "**/bin/**",
         "**/obj/**",
         "**/.vs/**",
         "**/*.user",
-        "**/*.in",
         "**/NuGet.config",
         "**/Directory.Build.targets",
         "**/Directory.Build.props",
@@ -37,8 +36,7 @@ public class WebApiAgentsTemplateSnapshotTests
 #pragma warning restore CA2000 // Dispose objects before losing scope
     }
 
-    // Placeholder test - actual template tests will be added when template content is implemented
-    [Fact(Skip = "Template content not yet implemented")]
+    [Fact]
     public async Task BasicTest()
     {
         await TestTemplateCoreAsync(scenarioName: "Basic");
@@ -47,64 +45,64 @@ public class WebApiAgentsTemplateSnapshotTests
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
     {
         string workingDir = TestUtils.CreateTemporaryFolder();
-        string templateShortName = "agentapp"; // Placeholder - will be updated with actual template short name
+        string templateShortName = "webapi-agents";
 
-        // Get the template location - will be updated when actual template is implemented
-        string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Agents.AI.Templates", "src", "PlaceholderTemplate");
+        // Get the template location
+        string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Agents.AI.Templates", "src", "WebApiAgents");
 
         var verificationExcludePatterns = Path.DirectorySeparatorChar is '/'
-            ? _verificationExcludePatterns
+          ? _verificationExcludePatterns
             : _verificationExcludePatterns.Select(p => p.Replace('/', Path.DirectorySeparatorChar)).ToArray();
 
-        TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
-        {
-            TemplatePath = templateLocation,
-            TemplateSpecificArgs = templateArgs,
+   TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
+   {
+ TemplatePath = templateLocation,
+   TemplateSpecificArgs = templateArgs,
             SnapshotsDirectory = "Snapshots",
-            OutputDirectory = workingDir,
-            DoNotPrependCallerMethodNameToScenarioName = true,
+          OutputDirectory = workingDir,
+    DoNotPrependCallerMethodNameToScenarioName = true,
             DoNotAppendTemplateArgsToScenarioName = true,
-            ScenarioName = scenarioName,
+        ScenarioName = scenarioName,
             VerificationExcludePatterns = verificationExcludePatterns,
         }
         .WithCustomScrubbers(
-            ScrubbersDefinition.Empty.AddScrubber((path, content) =>
-            {
-                string filePath = path.UnixifyDirSeparators();
-                if (filePath.EndsWith(".sln"))
-                {
-                    // Scrub .sln file GUIDs.
-                    content.ScrubByRegex(pattern: @"\{.{36}\}", replacement: "{00000000-0000-0000-0000-000000000000}");
-                }
+          ScrubbersDefinition.Empty.AddScrubber((path, content) =>
+      {
+           string filePath = path.UnixifyDirSeparators();
+         if (filePath.EndsWith(".sln"))
+     {
+      // Scrub .sln file GUIDs.
+      content.ScrubByRegex(pattern: @"\{.{36}\}", replacement: "{00000000-0000-0000-0000-000000000000}");
+     }
 
-                if (filePath.EndsWith(".csproj"))
-                {
-                    content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
+         if (filePath.EndsWith(".csproj"))
+              {
+    content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
 
-                    // Scrub references to just-built packages and remove the suffix, if it exists.
-                    // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
-                    var pattern = @"(?<=<PackageReference\s+Include=""Microsoft\.(Agents|Extensions)\..*""\s+Version="")(\d+\.\d+\.\d+)(?:-[^""]*)?(?=""\s*/>)";
-                    content.ScrubByRegex(pattern, replacement: "$1");
-                }
+            // Scrub references to just-built packages and remove the suffix, if it exists.
+   // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
+      var pattern = @"(?<=<PackageReference\s+Include=""Microsoft\.(Agents|Extensions)\..*""\s+Version="")(\d+\.\d+\.\d+)(?:-[^""]*)?(?=""\s*/>)";
+    content.ScrubByRegex(pattern, replacement: "$1");
+   }
 
                 if (filePath.EndsWith("launchSettings.json"))
-                {
-                    content.ScrubByRegex("(http(s?):\\/\\/localhost)\\:(\\d*)", "$1:9999");
-                }
-            }));
+  {
+    content.ScrubByRegex("(http(s?):\\/\\/localhost)\\:(\\d*)", "$1:9999");
+        }
+      }));
 
         VerificationEngine engine = new VerificationEngine(_log);
         await engine.Execute(options);
 
 #pragma warning disable CA1031 // Do not catch general exception types
         try
-        {
+ {
             Directory.Delete(workingDir, recursive: true);
-        }
+      }
         catch
-        {
-            /* don't care */
+    {
+ /* don't care */
         }
 #pragma warning restore CA1031 // Do not catch general exception types
-    }
+ }
 }

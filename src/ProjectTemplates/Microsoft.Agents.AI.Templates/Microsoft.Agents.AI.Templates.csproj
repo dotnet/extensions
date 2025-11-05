@@ -37,17 +37,17 @@
   <ItemGroup>
     <!-- Keep the exclude patterns below in sync with those in WebApiAgentsTemplateSnapshotTests.cs -->
     <Content
-      Include="src\**\*"
+      Include="src\WebApiAgents\**\*"
       Exclude="
         **\bin\**;
         **\obj\**;
         **\.vs\**;
         **\*.user;
-        **\*.in;
         **\NuGet.config;
         **\Directory.Build.targets;
         **\Directory.Build.props;" />
-
+    
+    <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
     <Compile Remove="**\*" />
   </ItemGroup>
 

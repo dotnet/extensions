@@ -1,10 +1,10 @@
 # Microsoft.Agents.AI.Templates Project Structure
 
-This document describes the newly created `Microsoft.Agents.AI.Templates` project structure and infrastructure.
+This document describes the Microsoft.Agents.AI.Templates project structure.
 
 ## Project Overview
 
-The `Microsoft.Agents.AI.Templates` project is a .NET project template package designed to provide project templates for Microsoft.Agents.AI applications. It follows the same structure and infrastructure as `Microsoft.Extensions.AI.Templates`.
+The `Microsoft.Agents.AI.Templates` project is a .NET project template package that provides project templates for Microsoft.Agents.AI applications. It follows the same structure and infrastructure as `Microsoft.Extensions.AI.Templates`.
 
 ## Project Structure
 
@@ -13,7 +13,7 @@ The `Microsoft.Agents.AI.Templates` project is a .NET project template package d
 
 **Key Files**:
 - `Microsoft.Agents.AI.Templates.csproj` - The template package project file
-- `THIRD-PARTY-NOTICES.TXT` - Third-party license notices (currently a placeholder)
+- `THIRD-PARTY-NOTICES.TXT` - Third-party license notices
 
 **Configuration**:
 - Package type: `Template`
@@ -27,9 +27,49 @@ The `Microsoft.Agents.AI.Templates` project is a .NET project template package d
 **Project References**:
 - References `GenerateTemplateContent` project to ensure template content is generated before building
 
-**Content Items**:
-- Template content will be added to the `<Content>` ItemGroup once actual templates are implemented
-- Currently includes only `THIRD-PARTY-NOTICES.TXT`
+**Template Content**:
+
+#### WebApiAgents Template (`webapi-agents`)
+**Location**: `src/ProjectTemplates/Microsoft.Agents.AI.Templates/src/WebApiAgents/`
+
+A simple ASP.NET Core Web API template that demonstrates the AI Agents framework with:
+- **Writer Agent**: Writes short stories (300 words or less) about specified topics
+- **Editor Agent**: Edits stories to improve grammar and style
+- **Publisher Workflow**: A sequential workflow combining writer and editor agents
+- OpenAI-compatible API endpoints via `MapOpenAIResponses()`
+
+**Template Files**:
+- `.template.config/template.json` - Template definition
+  - Short name: `webapi-agents`
+  - Default name: `AgentsApp`
+  - Source name: `WebApiAgents-CSharp`
+  - Target framework: net10.0
+  - Configurable HTTP/HTTPS ports via template parameters
+- `WebApiAgents-CSharp.csproj` - Project file with Microsoft.Agents.AI package references
+- `Program.cs` - Application entry point with AI agent configuration
+- `Properties/launchSettings.json` - Launch profiles with port configurations
+- `appsettings.json` - Application configuration
+- `README.md` - Comprehensive getting started guide with:
+  - GitHub Models token configuration instructions
+  - Multiple configuration methods (user secrets, environment variables, appsettings)
+  - Example API usage with curl
+- Troubleshooting guidance
+- `.gitignore` - Git ignore file to prevent committing sensitive data
+
+**Package References**:
+- `Microsoft.Agents.AI` (1.0.0-preview.251104.1)
+- `Microsoft.Agents.AI.Hosting` (1.0.0-preview.251104.1)
+- `Microsoft.Agents.AI.Hosting.OpenAI` (1.0.0-alpha.251104.1)
+- `Microsoft.Agents.AI.OpenAI` (1.0.0-preview.251104.1)
+- `Microsoft.Agents.AI.Workflows` (1.0.0-preview.251104.1)
+
+**Template Features**:
+- Uses GitHub Models (gpt-4o-mini) via Azure AI Inference endpoint
+- Demonstrates sequential workflow pattern
+- Exposes agents via OpenAI-compatible REST API
+- Includes comprehensive README with setup instructions
+- Configured for HTTPS by default
+- Minimal API design pattern
 
 ### Test Project
 **Location**: `test/ProjectTemplates/Microsoft.Agents.AI.Templates.IntegrationTests/`
@@ -37,16 +77,9 @@ The `Microsoft.Agents.AI.Templates` project is a .NET project template package d
 **Key Files**:
 - `Microsoft.Agents.AI.Templates.Tests.csproj` - The integration test project
 - `README.md` - Documentation for running and updating template tests
-- `AgentTemplateSnapshotTests.cs` - Placeholder snapshot test class (test is skipped until template content is added)
+- `WebApiAgentsTemplateSnapshotTests.cs` - Snapshot tests for webapi-agents template
 - `ProjectRootHelper.cs` - Helper to locate the test project root
 - `VerifyScrubbers.cs` - Utilities for scrubbing variable content from test snapshots
-
-**Infrastructure Files** (in `Infrastructure/` subdirectory):
-- `WellKnownPaths.cs` - Constants for important paths (repo root, template feed location, sandbox paths, etc.)
-- `TestCommand.cs` - Base class for executing commands during tests
-- `DotNetCommand.cs` - Specialized command for executing dotnet CLI commands
-- `TestCommandResult.cs` - Result data from command execution
-- `ProcessExtensions.cs` - Extension methods for working with processes
 
 **Test Support Directories**:
 
@@ -58,7 +91,7 @@ The `Microsoft.Agents.AI.Templates` project is a .NET project template package d
 
 2. **Snapshots/** - For verified template output snapshots
    - `README.md` - Documentation about snapshot testing
-   - Subdirectories for each test scenario will be added when templates are implemented
+   - Subdirectories for each test scenario (created after first test run)
 
 **Configuration**:
 - Project type: Integration Test (`IsIntegrationTestProject = true`)
@@ -69,37 +102,93 @@ The `Microsoft.Agents.AI.Templates` project is a .NET project template package d
 - `Microsoft.TemplateEngine.TestHelper` - For template testing utilities
 
 **Project References**:
-- `TestUtilities` - Common test utilities
+- `TestUtilities` - Shared test utilities (uses ProjectTemplates utilities from test/Shared/ProjectTemplates)
 
-## Next Steps
+**Test Infrastructure**:
+The test project uses shared infrastructure from `test/Shared/ProjectTemplates` including:
+- `WellKnownPaths` - Path management
+- `DotNetCommand` / `DotNetNewCommand` - Command execution
+- `VerifyScrubbers` - Content scrubbing for consistent snapshots
+- Template verification and execution test bases
 
-When actual template content is ready to be added:
+## Template Usage
 
-1. **Create Template Directory Structure**:
-   - Create template directories under `src/ProjectTemplates/Microsoft.Agents.AI.Templates/src/`
-   - Each template should have a `.template.config/` directory with a `template.json` file
+### Installing the Template
 
-2. **Update Source Project**:
-   - Add `<Content>` items to the `.csproj` file for the new template directories
-   - Define exclusion patterns to match the template structure
-   - Update `THIRD-PARTY-NOTICES.TXT` if the templates use third-party libraries
+```bash
+# From the repository root after building
+dotnet new install artifacts/packages/Debug/Shipping/Microsoft.Agents.AI.Templates.*.nupkg
+```
 
-3. **Add Template Tests**:
-   - Remove the `Skip` attribute from tests in `AgentTemplateSnapshotTests.cs`
-   - Add new test methods for different template configurations
-   - Update the `_verificationExcludePatterns` array to match template output patterns
-   - Update the template location and short name in test methods
+### Creating a New Project
 
-4. **Generate Snapshots**:
-   - Run the tests to generate initial snapshots
- - Use `DiffEngineTray` to review and accept the generated snapshots
+```bash
+# Basic usage
+dotnet new webapi-agents -n MyAgentsApp
 
-5. **Add Execution Tests** (optional):
-   - Create an `AgentTemplateExecutionTests.cs` file similar to `AIChatWebExecutionTests.cs` if you want to test that generated templates compile and run
+# With custom ports
+dotnet new webapi-agents -n MyAgentsApp --httpPort 5100 --httpsPort 7100
+```
+
+### Configuring the Project
+
+After creating a project, configure the GitHub Models token:
+
+```bash
+cd MyAgentsApp
+dotnet user-secrets set "GitHubModels:Token" "your-token-here"
+```
+
+### Running the Project
+
+```bash
+dotnet run
+```
+
+The application exposes OpenAI-compatible endpoints at:
+- `POST /v1/chat/completions` - Chat with AI agents
+- Model options: `writer`, `editor`, `publisher` (workflow)
+
+## Testing the Template
+
+### Running Snapshot Tests
+
+```bash
+cd test/ProjectTemplates/Microsoft.Agents.AI.Templates.IntegrationTests
+dotnet test
+```
+
+### Updating Snapshots
+
+1. Install `DiffEngineTray` following [these instructions](https://github.com/VerifyTests/DiffEngine/blob/main/docs/tray.md)
+2. Run the snapshot tests
+3. Use `DiffEngineTray` to review and accept changes
+
+### Manual Testing
+
+```bash
+cd test/ProjectTemplates/Microsoft.Agents.AI.Templates.IntegrationTests/TemplateSandbox
+. ./activate.ps1
+
+# Install template locally
+dotnet new install ../../src/ProjectTemplates/Microsoft.Agents.AI.Templates/src/WebApiAgents
+
+# Create test project
+mkdir output/test1
+cd output/test1
+dotnet new webapi-agents
+
+# Configure and test
+dotnet user-secrets set "GitHubModels:Token" "your-token"
+dotnet run
+
+# Cleanup
+dotnet new uninstall ../../src/ProjectTemplates/Microsoft.Agents.AI.Templates/src/WebApiAgents
+```
 
 ## Integration with Build System
 
-The project uses the `GenerateTemplateContent` approach for generating template content, which is consistent with other template projects in the repository.
+The project uses the `GenerateTemplateContent` approach for template content management, consistent with other template projects in the repository.
 
 The test infrastructure is designed to:
 - Use the locally built .NET SDK from the repository
@@ -107,10 +196,20 @@ The test infrastructure is designed to:
 - Support debugging through the TemplateSandbox directory
 - Verify template output matches expected snapshots
 
-## Validation
+## Package Version Scrubbing
 
-All created files have been validated:
-- Projects compile successfully
-- No build errors or warnings
-- Infrastructure follows repository conventions
-- Namespace consistency (`Microsoft.Agents.AI.Templates.Tests`)
+The snapshot tests include scrubbers to normalize package versions:
+- Removes pre-release suffixes from Microsoft.Agents.* and Microsoft.Extensions.* package references
+- Normalizes localhost ports in launchSettings.json
+- Scrubs UserSecretsId values from project files
+- Normalizes solution GUIDs
+
+This ensures snapshots remain consistent across different build environments (local, public CI, internal CI).
+
+## Future Enhancements
+
+Potential areas for expansion:
+- Additional agent workflow patterns (parallel, conditional)
+- Multiple AI provider options (Azure OpenAI, Ollama)
+- Aspire orchestration support
+- Additional template variations (minimal, with authentication, with Swagger)
