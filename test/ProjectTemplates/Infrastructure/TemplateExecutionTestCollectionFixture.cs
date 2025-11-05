@@ -29,7 +29,7 @@ public sealed class TemplateExecutionTestCollectionFixture
         // Then we copy the template sandbox infrastructure to the output location for use during tests.
         Directory.CreateDirectory(WellKnownPaths.TemplateSandboxOutputRoot);
 
-        foreach (var filePath in Directory.EnumerateFiles(WellKnownPaths.TemplateSandboxRoot))
+        foreach (var filePath in Directory.EnumerateFiles(WellKnownPaths.TemplateSandboxSource))
         {
             var fileName = Path.GetFileName(filePath);
             var destFilePath = Path.Combine(WellKnownPaths.TemplateSandboxOutputRoot, fileName);

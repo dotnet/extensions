@@ -14,7 +14,7 @@ internal static class WellKnownPaths
     public static readonly string ThisProjectRoot;
 
     public static readonly string TemplateFeedLocation;
-    public static readonly string TemplateSandboxRoot;
+    public static readonly string TemplateSandboxSource;
     public static readonly string TemplateSandboxOutputRoot;
     public static readonly string TemplateInstallNuGetConfigPath;
     public static readonly string TemplateTestNuGetConfigPath;
@@ -28,10 +28,10 @@ internal static class WellKnownPaths
         ThisProjectRoot = ProjectRootHelper.GetThisProjectRoot();
 
         TemplateFeedLocation = Path.Combine(RepoRoot, "src", "ProjectTemplates");
-        TemplateSandboxRoot = Path.Combine(RepoRoot, "test", "ProjectTemplates", "Infrastructure", "TemplateSandbox");
-        TemplateSandboxOutputRoot = Path.Combine(ThisProjectRoot, "TemplateSandboxOutput");
-        TemplateInstallNuGetConfigPath = Path.Combine(TemplateSandboxRoot, "nuget.template_install.config");
-        TemplateTestNuGetConfigPath = Path.Combine(TemplateSandboxRoot, "nuget.template_test.config");
+        TemplateSandboxSource = Path.Combine(RepoRoot, "test", "ProjectTemplates", "Infrastructure", "TemplateSandbox");
+        TemplateSandboxOutputRoot = Path.Combine(ThisProjectRoot, "ExecutionTestSandbox");
+        TemplateInstallNuGetConfigPath = Path.Combine(TemplateSandboxSource, "nuget.template_install.config");
+        TemplateTestNuGetConfigPath = Path.Combine(TemplateSandboxSource, "nuget.template_test.config");
 
         const string BuildConfigurationFolder =
 #if DEBUG
