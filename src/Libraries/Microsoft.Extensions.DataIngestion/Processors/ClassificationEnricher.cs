@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -22,6 +21,7 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
 {
     private readonly EnricherOptions _options;
     private readonly ChatMessage _systemPrompt;
+    private readonly ILogger? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClassificationEnricher"/> class.
@@ -40,6 +40,7 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
 
         Validate(predefinedClasses, fallbackClass!);
         _systemPrompt = CreateSystemPrompt(predefinedClasses, fallbackClass!);
+        _logger = _options.LoggerFactory?.CreateLogger<ClassificationEnricher>();
     }
 
     /// <summary>
@@ -48,37 +49,8 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
     public static string MetadataKey => "classification";
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IAsyncEnumerable<IngestionChunk<string>> chunks,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(chunks);
-
-        await foreach (var batch in chunks.BufferAsync(_options.BatchSize).WithCancellation(cancellationToken))
-        {
-            List<AIContent> contents = new(batch.Count);
-            foreach (var chunk in batch)
-            {
-                contents.Add(new TextContent(chunk.Content));
-            }
-
-            var response = await _options.ChatClient.GetResponseAsync<string[]>(
-            [
-                _systemPrompt,
-                new(ChatRole.User, contents)
-            ], _options.ChatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            if (response.Result.Length != contents.Count)
-            {
-                throw new InvalidOperationException($"The AI chat service returned {response.Result.Length} instead of {contents.Count} results.");
-            }
-
-            for (int i = 0; i < response.Result.Length; i++)
-            {
-                batch[i].Metadata[MetadataKey] = response.Result[i];
-                yield return batch[i];
-            }
-        }
-    }
+    public override IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IAsyncEnumerable<IngestionChunk<string>> chunks, CancellationToken cancellationToken = default)
+        => Batching.ProcessAsync<string>(chunks, _options, MetadataKey, _systemPrompt, _logger, cancellationToken);
 
     private static void Validate(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
     {

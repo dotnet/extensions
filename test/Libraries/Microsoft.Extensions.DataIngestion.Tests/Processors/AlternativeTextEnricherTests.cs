@@ -6,12 +6,16 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Processors.Tests;
 
 public class AlternativeTextEnricherTests
 {
+    private readonly ReadOnlyMemory<byte> _imageContent = new byte[256];
+
     [Fact]
     public void ThrowsOnNullOptions()
     {
@@ -32,7 +36,6 @@ public class AlternativeTextEnricherTests
     public async Task CanGenerateImageAltText()
     {
         const string PreExistingAltText = "Pre-existing alt text";
-        ReadOnlyMemory<byte> imageContent = new byte[256];
 
         string[] descriptions = { "First alt text", "Second alt text" };
         using TestChatClient chatClient = new()
@@ -50,7 +53,7 @@ public class AlternativeTextEnricherTests
                 {
                     DataContent dataContent = Assert.IsType<DataContent>(content);
                     Assert.Equal("image/png", dataContent.MediaType);
-                    Assert.Equal(imageContent.ToArray(), dataContent.Data.ToArray());
+                    Assert.Equal(_imageContent.ToArray(), dataContent.Data.ToArray());
                 });
 
                 return Task.FromResult(new ChatResponse(new[]
@@ -64,21 +67,21 @@ public class AlternativeTextEnricherTests
         IngestionDocumentImage documentImage = new($"![](nonExisting.png)")
         {
             AlternativeText = null,
-            Content = imageContent,
+            Content = _imageContent,
             MediaType = "image/png"
         };
 
         IngestionDocumentImage tableCell = new($"![](another.png)")
         {
             AlternativeText = null,
-            Content = imageContent,
+            Content = _imageContent,
             MediaType = "image/png"
         };
 
         IngestionDocumentImage imageWithAltText = new($"![](noChangesNeeded.png)")
         {
             AlternativeText = PreExistingAltText,
-            Content = imageContent,
+            Content = _imageContent,
             MediaType = "image/png"
         };
 
@@ -118,8 +121,6 @@ public class AlternativeTextEnricherTests
     [InlineData(15, 3)]
     public async Task SendsOneRequestPerBatchSize(int batchSize, int batchCount)
     {
-        ReadOnlyMemory<byte> imageContent = new byte[256];
-
         int callsCount = 0;
         using TestChatClient chatClient = new()
         {
@@ -139,7 +140,7 @@ public class AlternativeTextEnricherTests
                 {
                     DataContent dataContent = Assert.IsType<DataContent>(content);
                     Assert.Equal("image/png", dataContent.MediaType);
-                    Assert.Equal(imageContent.ToArray(), dataContent.Data.ToArray());
+                    Assert.Equal(_imageContent.ToArray(), dataContent.Data.ToArray());
                 });
 
                 Envelope<string[]> data = new() { data = Enumerable.Range(0, batchSize).Select(i => i.ToString()).ToArray() };
@@ -149,6 +150,39 @@ public class AlternativeTextEnricherTests
 
         ImageAlternativeTextEnricher sut = new(new(chatClient) { BatchSize = batchSize });
 
+        IngestionDocument document = CreateDocument(batchSize, batchCount, _imageContent);
+
+        await sut.ProcessAsync(document);
+        Assert.Equal(batchCount, callsCount);
+    }
+
+    [Fact]
+    public async Task FailureDoesNotStopTheProcessing()
+    {
+        FakeLogCollector collector = new();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+        using TestChatClient chatClient = new()
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromException<ChatResponse>(new ExpectedException())
+        };
+
+        EnricherOptions options = new(chatClient) { LoggerFactory = loggerFactory };
+        ImageAlternativeTextEnricher sut = new(options);
+
+        const int BatchCount = 2;
+        IngestionDocument document = CreateDocument(options.BatchSize, BatchCount, _imageContent);
+        IngestionDocument got = await sut.ProcessAsync(document);
+
+        Assert.Equal(BatchCount, collector.Count);
+        Assert.All(collector.GetSnapshot(), record =>
+        {
+            Assert.Equal(LogLevel.Error, record.Level);
+            Assert.IsType<ExpectedException>(record.Exception);
+        });
+    }
+
+    private static IngestionDocument CreateDocument(int batchSize, int batchCount, ReadOnlyMemory<byte> imageContent)
+    {
         IngestionDocumentSection rootSection = new();
         for (int i = 0; i < batchSize * batchCount; i++)
         {
@@ -162,12 +196,9 @@ public class AlternativeTextEnricherTests
             rootSection.Elements.Add(image);
         }
 
-        IngestionDocument document = new("batchTest")
+        return new("batchTest")
         {
             Sections = { rootSection }
         };
-
-        await sut.ProcessAsync(document);
-        Assert.Equal(batchCount, callsCount);
     }
 }

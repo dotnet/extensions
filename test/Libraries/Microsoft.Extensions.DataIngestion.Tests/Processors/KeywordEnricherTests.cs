@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Processors.Tests;
@@ -91,6 +93,28 @@ public class KeywordEnricherTests
 
         Assert.Equal(["AI", "MEAI"], (string[])got[0].Metadata[KeywordEnricher.MetadataKey]);
         Assert.Equal(["Animals", "Rabbits"], (string[])got[1].Metadata[KeywordEnricher.MetadataKey]);
+    }
+
+    [Fact]
+    public async Task FailureDoesNotStopTheProcessing()
+    {
+        FakeLogCollector collector = new();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+        using TestChatClient chatClient = new()
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromException<ChatResponse>(new ExpectedException())
+        };
+
+        KeywordEnricher sut = new(new(chatClient) { LoggerFactory = loggerFactory }, ["AI", "Other"]);
+        List<IngestionChunk<string>> chunks = CreateChunks();
+
+        IReadOnlyList<IngestionChunk<string>> got = await sut.ProcessAsync(chunks.ToAsyncEnumerable()).ToListAsync();
+
+        Assert.Equal(chunks.Count, got.Count);
+        Assert.All(chunks, chunk => Assert.False(chunk.HasMetadata));
+        Assert.Equal(1, collector.Count); // with batching, only one log entry is expected
+        Assert.Equal(LogLevel.Error, collector.LatestRecord.Level);
+        Assert.IsType<ExpectedException>(collector.LatestRecord.Exception);
     }
 
     private static List<IngestionChunk<string>> CreateChunks() =>

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -31,6 +32,15 @@ public class EnricherOptions
     public ChatOptions? ChatOptions { get; set; }
 
     /// <summary>
+    /// Gets or sets the logger factory to be used for logging.
+    /// </summary>
+    /// <remarks>
+    /// Enricher failures should not fail the whole ingestion pipeline, as they are best-effort enhancements.
+    /// This logger factory can be used to create loggers to log such failures.
+    /// </remarks>
+    public ILoggerFactory? LoggerFactory { get; set; }
+
+    /// <summary>
     /// Gets or sets the batch size for processing chunks. Default is 20.
     /// </summary>
     public int BatchSize { get; set => field = Throw.IfLessThanOrEqual(value, 0); } = 20;
@@ -38,6 +48,7 @@ public class EnricherOptions
     internal EnricherOptions Clone() => new(ChatClient)
     {
         ChatOptions = ChatOptions?.Clone(),
+        LoggerFactory = LoggerFactory,
         BatchSize = BatchSize
     };
 }

@@ -221,16 +221,6 @@ public sealed class IngestionPipelineTests : IDisposable
         }
     }
 
-    private class ExpectedException : Exception
-    {
-        internal const string ExceptionMessage = "An expected exception occurred.";
-
-        public ExpectedException()
-            : base(ExceptionMessage)
-        {
-        }
-    }
-
     private static IngestionDocumentReader CreateReader() => new MarkdownReader();
 
     private static IngestionChunker<string> CreateChunker() => new HeaderChunker(new(TiktokenTokenizer.CreateForModel("gpt-4")));

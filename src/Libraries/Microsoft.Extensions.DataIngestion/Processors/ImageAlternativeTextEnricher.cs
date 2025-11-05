@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -18,6 +19,7 @@ public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
 {
     private readonly EnricherOptions _options;
     private readonly ChatMessage _systemPrompt;
+    private readonly ILogger? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageAlternativeTextEnricher"/> class.
@@ -27,6 +29,7 @@ public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
     {
         _options = Throw.IfNull(options).Clone();
         _systemPrompt = new(ChatRole.System, "For each of the following images, write a detailed alternative text with fewer than 50 words.");
+        _logger = _options.LoggerFactory?.CreateLogger<ImageAlternativeTextEnricher>();
     }
 
     /// <inheritdoc/>
@@ -90,19 +93,30 @@ public sealed class ImageAlternativeTextEnricher : IngestionDocumentProcessor
             contents.Add(new DataContent(image.Content!.Value, image.MediaType!));
         }
 
-        var response = await _options.ChatClient.GetResponseAsync<string[]>(
-            [_systemPrompt, new(ChatRole.User, contents)],
-            _options.ChatOptions,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        if (response.Result.Length != contents.Count)
+        try
         {
-            throw new InvalidOperationException($"The AI chat service returned {response.Result.Length} instead of {contents.Count} results.");
+            ChatResponse<string[]> response = await _options.ChatClient.GetResponseAsync<string[]>(
+                [_systemPrompt, new(ChatRole.User, contents)],
+                _options.ChatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            if (response.Result.Length == contents.Count)
+            {
+                for (int i = 0; i < response.Result.Length; i++)
+                {
+                    batch[i].AlternativeText = response.Result[i];
+                }
+            }
+            else
+            {
+                _logger?.UnexpectedResultsCount(response.Result.Length, contents.Count);
+            }
         }
-
-        for (int i = 0; i < response.Result.Length; i++)
+#pragma warning disable CA1031 // Do not catch general exception types
+        catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
         {
-            batch[i].AlternativeText = response.Result[i];
+            // Enricher failures should not fail the whole ingestion pipeline, as they are best-effort enhancements.
+            _logger?.UnexpectedEnricherFailure(ex);
         }
     }
 }
