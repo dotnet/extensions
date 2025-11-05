@@ -137,7 +137,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             Assert.Equal("# Section title ## Subsection title ### Subsubsection title\nThis is a paragraph in subsubsection 1.1.1.\nThis is another paragraph in subsubsection 1.1.1.",
                 chunks[2].Content, ignoreLineEndingDifferences: true);
             Assert.Equal("# Section title ## Subsection title", chunks[3].Context);
-            Assert.Equal("# Section title ## Subsection title\nThis is last paragraph in subsection 1.2.", chunks[3].Content, ignoreLineEndingDifferences: true);
+            Assert.Equal("# Section title ## Subsection title\nThis is the last paragraph in subsection 1.2.", chunks[3].Content, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
