@@ -16,15 +16,19 @@ namespace Microsoft.Agents.AI.Templates.Tests;
 
 public class WebApiAgentsTemplateSnapshotTests
 {
-    // Keep the exclude patterns below in sync with those in Microsoft.Agents.AI.Templates.csproj.
     private static readonly string[] _verificationExcludePatterns = [
+
+        // Exclude any templated content files
+        "**/*.in",
+
+        // Keep the exclude patterns below in sync with those in Microsoft.Agents.AI.Templates.csproj.
         "**/bin/**",
         "**/obj/**",
         "**/.vs/**",
         "**/*.user",
         "**/NuGet.config",
         "**/Directory.Build.targets",
-        "**/Directory.Build.props",
+        "**/Directory.Build.props"
     ];
 
     private readonly ILogger _log;
@@ -37,9 +41,39 @@ public class WebApiAgentsTemplateSnapshotTests
     }
 
     [Fact]
-    public async Task BasicTest()
+    public async Task DefaultParameters()
     {
-        await TestTemplateCoreAsync(scenarioName: "Basic");
+        await TestTemplateCoreAsync(scenarioName: nameof(DefaultParameters));
+    }
+
+    [Fact]
+    public async Task GitHubModels()
+    {
+        await TestTemplateCoreAsync(scenarioName: nameof(GitHubModels), templateArgs: ["--provider", "githubmodels"]);
+    }
+
+    [Fact]
+    public async Task OpenAI()
+    {
+        await TestTemplateCoreAsync(scenarioName: nameof(OpenAI), templateArgs: ["--provider", "openai"]);
+    }
+
+    [Fact]
+    public async Task AzureOpenAI_ManagedIdentity()
+    {
+        await TestTemplateCoreAsync(scenarioName: nameof(AzureOpenAI_ManagedIdentity), templateArgs: ["--provider", "azureopenai"]);
+    }
+
+    [Fact]
+    public async Task AzureOpenAI_ApiKey()
+    {
+        await TestTemplateCoreAsync(scenarioName: nameof(AzureOpenAI_ApiKey), templateArgs: ["--provider", "azureopenai", "--managed-identity", "false"]);
+    }
+
+    [Fact]
+    public async Task Ollama()
+    {
+        await TestTemplateCoreAsync(scenarioName: nameof(Ollama), templateArgs: ["--provider", "ollama"]);
     }
 
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
@@ -51,58 +85,58 @@ public class WebApiAgentsTemplateSnapshotTests
         string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Agents.AI.Templates", "src", "WebApiAgents");
 
         var verificationExcludePatterns = Path.DirectorySeparatorChar is '/'
-          ? _verificationExcludePatterns
+            ? _verificationExcludePatterns
             : _verificationExcludePatterns.Select(p => p.Replace('/', Path.DirectorySeparatorChar)).ToArray();
 
-   TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
-   {
- TemplatePath = templateLocation,
-   TemplateSpecificArgs = templateArgs,
+        TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
+        {
+            TemplatePath = templateLocation,
+            TemplateSpecificArgs = templateArgs,
             SnapshotsDirectory = "Snapshots",
-          OutputDirectory = workingDir,
-    DoNotPrependCallerMethodNameToScenarioName = true,
+            OutputDirectory = workingDir,
+            DoNotPrependCallerMethodNameToScenarioName = true,
             DoNotAppendTemplateArgsToScenarioName = true,
-        ScenarioName = scenarioName,
+            ScenarioName = scenarioName,
             VerificationExcludePatterns = verificationExcludePatterns,
         }
         .WithCustomScrubbers(
-          ScrubbersDefinition.Empty.AddScrubber((path, content) =>
-      {
-           string filePath = path.UnixifyDirSeparators();
-         if (filePath.EndsWith(".sln"))
-     {
-      // Scrub .sln file GUIDs.
-      content.ScrubByRegex(pattern: @"\{.{36}\}", replacement: "{00000000-0000-0000-0000-000000000000}");
-     }
+            ScrubbersDefinition.Empty.AddScrubber((path, content) =>
+            {
+                string filePath = path.UnixifyDirSeparators();
+                if (filePath.EndsWith(".sln"))
+                {
+                    // Scrub .sln file GUIDs.
+                    content.ScrubByRegex(pattern: @"\{.{36}\}", replacement: "{00000000-0000-0000-0000-000000000000}");
+                }
 
-         if (filePath.EndsWith(".csproj"))
-              {
-    content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
+                if (filePath.EndsWith(".csproj"))
+                {
+                    content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
 
-            // Scrub references to just-built packages and remove the suffix, if it exists.
-   // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
-      var pattern = @"(?<=<PackageReference\s+Include=""Microsoft\.(Agents|Extensions)\..*""\s+Version="")(\d+\.\d+\.\d+)(?:-[^""]*)?(?=""\s*/>)";
-    content.ScrubByRegex(pattern, replacement: "$1");
-   }
+                    // Scrub references to just-built packages and remove the suffix, if it exists.
+                    // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
+                    var pattern = @"(?<=<PackageReference\s+Include=""Microsoft\.(Agents|Extensions)\..*""\s+Version="")(\d+\.\d+\.\d+)(?:-[^""]*)?(?=""\s*/>)";
+                    content.ScrubByRegex(pattern, replacement: "$2");
+                }
 
-                if (filePath.EndsWith("launchSettings.json"))
-  {
-    content.ScrubByRegex("(http(s?):\\/\\/localhost)\\:(\\d*)", "$1:9999");
-        }
-      }));
+                if (filePath.EndsWith("launchSettings.json") || filePath.EndsWith("README.md"))
+                {
+                    content.ScrubByRegex("(http(s?):\\/\\/localhost)\\:(\\d*)", "$1:9999");
+                }
+            }));
 
         VerificationEngine engine = new VerificationEngine(_log);
         await engine.Execute(options);
 
 #pragma warning disable CA1031 // Do not catch general exception types
         try
- {
+        {
             Directory.Delete(workingDir, recursive: true);
-      }
+        }
         catch
-    {
- /* don't care */
+        {
+            /* don't care */
         }
 #pragma warning restore CA1031 // Do not catch general exception types
- }
+    }
 }
