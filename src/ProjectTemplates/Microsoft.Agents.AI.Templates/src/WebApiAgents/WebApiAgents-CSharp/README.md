@@ -22,7 +22,7 @@ This is an AI Agents Web API application created from the `aiagents-webapi` temp
 <!--#if (IsGHModels) -->
 #### GitHub Models Configuration
 
-This application uses GitHub Models for AI functionality. You'll need to configure your GitHub Models API token:
+This application uses GitHub Models (model: gpt-4o-mini) for AI functionality. You'll need to configure your GitHub Models API token:
 
 **Option A: Using User Secrets (Recommended for Development)**
 
@@ -55,7 +55,7 @@ Set the `GitHubModels__Token` environment variable:
 <!--#elif (IsOpenAI) -->
 #### OpenAI Configuration
 
-This application uses the OpenAI Platform. You'll need to configure your OpenAI API key:
+This application uses the OpenAI Platform (model: gpt-4o-mini). You'll need to configure your OpenAI API key:
 
 **Using User Secrets (Recommended for Development)**
 
@@ -88,7 +88,7 @@ Set the `OpenAI__Key` environment variable:
 <!--#elif (IsAzureOpenAI) -->
 #### Azure OpenAI Configuration
 
-This application uses Azure OpenAI service. You'll need to configure your Azure OpenAI endpoint<!--#if (!IsManagedIdentity) --> and API key<!--#endif -->:
+This application uses Azure OpenAI service (model: gpt-4o-mini). You'll need to configure your Azure OpenAI endpoint<!--#if (!IsManagedIdentity) --> and API key<!--#endif -->:
 
 **Using User Secrets (Recommended for Development)**
 
@@ -139,7 +139,7 @@ For local development, ensure you're signed in to Azure CLI or have configured D
 <!--#elif (IsOllama) -->
 #### Ollama Configuration
 
-This application uses Ollama running locally. You'll need to have Ollama installed and the llama3.2 model downloaded:
+This application uses Ollama running locally (model: llama3.2). You'll need to have Ollama installed and the llama3.2 model downloaded:
 
 1. Visit [Ollama](https://ollama.com) and follow the installation instructions for your platform
 2. Once installed, download the llama3.2 model:
@@ -191,6 +191,42 @@ This application demonstrates the AI Agents framework with:
 3. **Publisher Workflow**: A sequential workflow that combines the writer and editor agents
 
 The agents are exposed through OpenAI-compatible API endpoints, making them easy to integrate with existing tools and applications.
+
+## Template Parameters
+
+When creating a new project, you can customize it using template parameters:
+
+```bash
+# Specify AI service provider
+dotnet new aiagents-webapi --provider azureopenai
+
+# Specify a custom chat model
+dotnet new aiagents-webapi --ChatModel gpt-4o
+
+# Use API key authentication for Azure OpenAI
+dotnet new aiagents-webapi --provider azureopenai --UseManagedIdentity false
+
+# Use Ollama with a different model
+dotnet new aiagents-webapi --provider ollama --ChatModel llama3.1
+```
+
+### Available Parameters
+
+- **`--provider`**: Choose the AI service provider
+  - `githubmodels` (default) - GitHub Models
+  - `azureopenai` - Azure OpenAI
+  - `openai` - OpenAI Platform
+  - `ollama` - Ollama (local development)
+
+- **`--ChatModel`**: Specify the chat model/deployment name
+  - Default for OpenAI/Azure OpenAI/GitHub Models: `gpt-4o-mini`
+  - Default for Ollama: `llama3.2`
+
+- **`--UseManagedIdentity`**: Use managed identity for Azure services (default: `true`)
+  - Only applicable when `--AiServiceProvider azureopenai`
+
+- **`--Framework`**: Target framework (default: `net10.0`)
+  - Options: `net10.0`, `net9.0`, `net8.0`
 
 ## Project Structure
 

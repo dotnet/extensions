@@ -90,6 +90,11 @@
       "isEnabled": "(AiServiceProvider == \"azureopenai\")",
       "description": "Use managed identity to access Azure services"
     },
+    "ChatModel": {
+      "type": "parameter",
+      "displayName": "Model/deployment for chat completions. Example: gpt-4o-mini",
+      "description": "Model/deployment for chat completions. Example: gpt-4o-mini"
+    },
     "IsManagedIdentity": {
       "type": "computed",
       "value": "(UseManagedIdentity)"
@@ -109,6 +114,38 @@
     "IsOllama": {
       "type": "computed",
       "value": "(AiServiceProvider == \"ollama\")"
+    },
+    "OpenAiChatModelDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "gpt-4o-mini"
+      }
+    },
+    "OpenAiChatModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "ChatModel",
+        "fallbackVariableName": "OpenAiChatModelDefault"
+      },
+      "replaces": "gpt-4o-mini"
+    },
+    "OllamaChatModelDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "llama3.2"
+      }
+    },
+    "OllamaChatModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "ChatModel",
+        "fallbackVariableName": "OllamaChatModelDefault"
+      },
+      "replaces": "llama3.2"
     },
     "httpPort": {
       "type": "parameter",

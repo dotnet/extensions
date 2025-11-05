@@ -30,7 +30,7 @@ The `Microsoft.Agents.AI.Templates` project is a .NET project template package t
 **Template Content**:
 
 #### WebApiAgents Template (`aiagents-webapi`)
-**Location**: `src/ProjectTemplates/Microsoft.Agents.AI.Templates/src/WebApiAgents/`
+**Location**: `src/ProjectTemplates/Microsoft.Agents.AI.Templates/src/WebApiAgents/WebApiAgents-CSharp/`
 
 A simple ASP.NET Core Web API template that demonstrates the AI Agents framework with:
 - **Writer Agent**: Writes short stories (300 words or less) about specified topics
@@ -41,34 +41,55 @@ A simple ASP.NET Core Web API template that demonstrates the AI Agents framework
 **Template Files**:
 - `.template.config/template.json` - Template definition
   - Short name: `aiagents-webapi`
-  - Default name: `AgentsApp`
+  - Default name: `WebApiAgents`
   - Source name: `WebApiAgents-CSharp`
-  - Target framework: net10.0
+  - Target frameworks: net10.0 (default), net9.0, net8.0
   - Configurable HTTP/HTTPS ports via template parameters
-- `WebApiAgents-CSharp.csproj` - Project file with Microsoft.Agents.AI package references
-- `Program.cs` - Application entry point with AI agent configuration
+  - **AI Service Provider Parameter** (`--provider`):
+    - `githubmodels` (default) - GitHub Models
+    - `azureopenai` - Azure OpenAI
+    - `openai` - OpenAI Platform
+    - `ollama` - Ollama (local development)
+  - **Chat Model Parameter** (`--ChatModel`):
+    - Default for OpenAI/Azure OpenAI/GitHub Models: `gpt-4o-mini`
+    - Default for Ollama: `llama3.2`
+  - **Use Managed Identity Parameter** (`--UseManagedIdentity`):
+    - Default: `true` (when using Azure OpenAI)
+    - Enables keyless authentication for Azure services
+- `WebApiAgents-CSharp.csproj.in` - Project file template with conditional package references
+- `WebApiAgents-CSharp.csproj` - Static project file (for development/testing)
+- `Program.cs` - Application entry point with conditional AI service configuration
 - `Properties/launchSettings.json` - Launch profiles with port configurations
 - `appsettings.json` - Application configuration
 - `README.md` - Comprehensive getting started guide with:
-  - GitHub Models token configuration instructions
-  - Multiple configuration methods (user secrets, environment variables, appsettings)
+  - Provider-specific configuration instructions
+  - Multiple configuration methods (user secrets, environment variables)
+  - Template parameter documentation
   - Example API usage with curl
-- Troubleshooting guidance
+  - Troubleshooting guidance
 - `.gitignore` - Git ignore file to prevent committing sensitive data
 
-**Package References**:
-- `Microsoft.Agents.AI` (1.0.0-preview.251104.1)
-- `Microsoft.Agents.AI.Hosting` (1.0.0-preview.251104.1)
-- `Microsoft.Agents.AI.Hosting.OpenAI` (1.0.0-alpha.251104.1)
-- `Microsoft.Agents.AI.OpenAI` (1.0.0-preview.251104.1)
-- `Microsoft.Agents.AI.Workflows` (1.0.0-preview.251104.1)
+**Conditional Package References** (based on AI Service Provider):
+- **All providers**:
+  - `Microsoft.Agents.AI` (1.0.0-preview.251104.1)
+  - `Microsoft.Agents.AI.Hosting` (1.0.0-preview.251104.1)
+  - `Microsoft.Agents.AI.Workflows` (1.0.0-preview.251104.1)
+- **OpenAI/Azure OpenAI/GitHub Models**:
+  - `Microsoft.Agents.AI.Hosting.OpenAI` (1.0.0-alpha.251104.1)
+  - `Microsoft.Agents.AI.OpenAI` (1.0.0-preview.251104.1)
+- **Ollama**:
+  - `OllamaSharp` (4.1.2)
+- **Azure OpenAI with Managed Identity**:
+  - `Azure.Identity` (1.13.1)
 
 **Template Features**:
-- Uses GitHub Models (gpt-4o-mini) via Azure AI Inference endpoint
-- Demonstrates sequential workflow pattern
-- Exposes agents via OpenAI-compatible REST API
-- Includes comprehensive README with setup instructions
-- Configured for HTTPS by default
+- Multi-provider support (GitHub Models, OpenAI, Azure OpenAI, Ollama)
+- Configurable chat models with provider-specific defaults
+- Managed identity support for Azure OpenAI
+- Sequential workflow pattern demonstration
+- OpenAI-compatible REST API endpoints
+- Comprehensive documentation with provider-specific guidance
+- HTTPS configured by default
 - Minimal API design pattern
 
 ### Test Project
@@ -123,20 +144,48 @@ dotnet new install artifacts/packages/Debug/Shipping/Microsoft.Agents.AI.Templat
 ### Creating a New Project
 
 ```bash
-# Basic usage
+# Basic usage (GitHub Models with gpt-4o-mini)
 dotnet new aiagents-webapi -n MyAgentsApp
 
 # With custom ports
 dotnet new aiagents-webapi -n MyAgentsApp --httpPort 5100 --httpsPort 7100
+
+# Using Azure OpenAI with managed identity
+dotnet new aiagents-webapi -n MyAgentsApp --provider azureopenai
+
+# Using Azure OpenAI with API key
+dotnet new aiagents-webapi -n MyAgentsApp --provider azureopenai --UseManagedIdentity false
+
+# Using OpenAI Platform with custom model
+dotnet new aiagents-webapi -n MyAgentsApp --provider openai --ChatModel gpt-4o
+
+# Using Ollama with custom model
+dotnet new aiagents-webapi -n MyAgentsApp --provider ollama --ChatModel llama3.1
+
+# Target specific framework
+dotnet new aiagents-webapi -n MyAgentsApp --Framework net9.0
 ```
 
 ### Configuring the Project
 
-After creating a project, configure the GitHub Models token:
+After creating a project, configure the appropriate credentials:
 
 ```bash
 cd MyAgentsApp
+
+# For GitHub Models
 dotnet user-secrets set "GitHubModels:Token" "your-token-here"
+
+# For OpenAI Platform
+dotnet user-secrets set "OpenAI:Key" "your-api-key-here"
+
+# For Azure OpenAI (with API key)
+dotnet user-secrets set "AzureOpenAI:Endpoint" "https://your-resource.openai.azure.com"
+dotnet user-secrets set "AzureOpenAI:Key" "your-api-key-here"
+
+# For Azure OpenAI (with managed identity)
+dotnet user-secrets set "AzureOpenAI:Endpoint" "https://your-resource.openai.azure.com"
+# Ensure you're signed in: az login
 ```
 
 ### Running the Project
@@ -147,7 +196,7 @@ dotnet run
 
 The application exposes OpenAI-compatible endpoints at:
 - `POST /v1/chat/completions` - Chat with AI agents
-- Model options: `writer`, `editor`, `publisher` (workflow)
+- Available agents: `writer`, `editor`, `publisher` (workflow)
 
 ## Testing the Template
 
@@ -173,13 +222,21 @@ cd test/ProjectTemplates/Microsoft.Agents.AI.Templates.IntegrationTests/Template
 # Install template locally
 dotnet new install ../../src/ProjectTemplates/Microsoft.Agents.AI.Templates/src/WebApiAgents
 
-# Create test project
-mkdir output/test1
-cd output/test1
+# Create test project with different configurations
+mkdir output/test-github-models
+cd output/test-github-models
 dotnet new aiagents-webapi
 
+mkdir ../test-azure-openai
+cd ../test-azure-openai
+dotnet new aiagents-webapi --provider azureopenai
+
+mkdir ../test-ollama
+cd ../test-ollama
+dotnet new aiagents-webapi --provider ollama
+
 # Configure and test
-dotnet user-secrets set "GitHubModels:Token" "your-token"
+dotnet user-secrets set "GitHubModels:Token" "your-token"  # or appropriate config
 dotnet run
 
 # Cleanup
@@ -210,6 +267,6 @@ This ensures snapshots remain consistent across different build environments (lo
 
 Potential areas for expansion:
 - Additional agent workflow patterns (parallel, conditional)
-- Multiple AI provider options (Azure OpenAI, Ollama)
-- Aspire orchestration support
 - Additional template variations (minimal, with authentication, with Swagger)
+- Aspire orchestration support
+- More AI service provider options
