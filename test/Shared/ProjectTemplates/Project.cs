@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 public sealed class Project(string rootPath, string name)
 {

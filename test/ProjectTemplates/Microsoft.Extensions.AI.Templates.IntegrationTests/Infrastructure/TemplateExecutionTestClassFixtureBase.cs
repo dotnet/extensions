@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Shared.ProjectTemplates.Tests;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 internal static class WellKnownPaths
 {

@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 public sealed class DotNetNewCommand : DotNetCommand
 {

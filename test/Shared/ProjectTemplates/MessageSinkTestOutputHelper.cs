@@ -4,7 +4,7 @@
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 public sealed class MessageSinkTestOutputHelper : ITestOutputHelper
 {

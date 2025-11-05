@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 public class DotNetCommand : TestCommand
 {

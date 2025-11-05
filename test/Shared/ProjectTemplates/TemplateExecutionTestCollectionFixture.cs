@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
+using Microsoft.Shared.ProjectTemplates.Tests;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 /// <summary>
 /// Provides functionality scoped to the lifetime of all tests defined in
