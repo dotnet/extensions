@@ -273,13 +273,27 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
         var outputType = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
+        var bytes = update.PartialImageBytes;
+
+        if (bytes is null || bytes.Length == 0)
+        {
+            // workaround https://github.com/openai/openai-dotnet/issues/809
+            var jsonPath = Encoding.UTF8.GetBytes("$.partial_image_b64");
+            if (update.Patch.TryGetJson(jsonPath, out var jsonBytes))
+            {
+                Utf8JsonReader reader = new(jsonBytes.Span);
+                _ = reader.Read();
+                bytes = BinaryData.FromBytes(reader.GetBytesFromBase64());
+            }
+        }
+
         return new ImageGenerationToolResultContent
         {
             ImageId = update.ItemId,
             RawRepresentation = update,
             Outputs = new List<AIContent>
             {
-                new DataContent(update.PartialImageBytes, $"image/{outputType}")
+                new DataContent(bytes, $"image/{outputType}")
                 {
                     AdditionalProperties = new()
                     {
