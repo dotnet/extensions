@@ -278,8 +278,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         if (bytes is null || bytes.Length == 0)
         {
             // workaround https://github.com/openai/openai-dotnet/issues/809
-            var jsonPath = Encoding.UTF8.GetBytes("$.partial_image_b64");
-            if (update.Patch.TryGetJson(jsonPath, out var jsonBytes))
+            if (update.Patch.TryGetJson("$.partial_image_b64"u8, out var jsonBytes))
             {
                 Utf8JsonReader reader = new(jsonBytes.Span);
                 _ = reader.Read();
