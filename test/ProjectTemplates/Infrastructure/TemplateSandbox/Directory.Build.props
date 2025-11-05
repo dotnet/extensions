@@ -1,0 +1,11 @@
+<Project>
+  <!--
+    This file exists to detach generated projects from other Directory.Build.props
+    files in this repo.
+  -->
+
+  <PropertyGroup>
+    <!-- Restore/build warnings are treated as errors to be easily detectable by test code. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -28,8 +28,8 @@ internal static class WellKnownPaths
         ThisProjectRoot = ProjectRootHelper.GetThisProjectRoot();
 
         TemplateFeedLocation = Path.Combine(RepoRoot, "src", "ProjectTemplates");
-        TemplateSandboxRoot = Path.Combine(RepoRoot, "test", "Shared", "ProjectTemplates", "TemplateSandbox");
-        TemplateSandboxOutputRoot = Path.Combine(ThisProjectRoot, "TemplateSandbox", "output");
+        TemplateSandboxRoot = Path.Combine(RepoRoot, "test", "ProjectTemplates", "Infrastructure", "TemplateSandbox");
+        TemplateSandboxOutputRoot = Path.Combine(ThisProjectRoot, "TemplateSandboxOutput");
         TemplateInstallNuGetConfigPath = Path.Combine(TemplateSandboxRoot, "nuget.template_install.config");
         TemplateTestNuGetConfigPath = Path.Combine(TemplateSandboxRoot, "nuget.template_test.config");
 
