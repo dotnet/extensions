@@ -115,7 +115,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                                             new IngestionDocumentParagraph("This is another paragraph in subsubsection 1.1.1.")
                                         }
                                     },
-                                    new IngestionDocumentParagraph("This is last paragraph in subsection 1.2."),
+                                    new IngestionDocumentParagraph("This is the last paragraph in subsection 1.2."),
                                 }
                             }
                         }
