@@ -31,6 +31,7 @@
 <!--#endif -->
     <PackageReference Include="Microsoft.Extensions.AI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI}" />
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${TemplatePackageVersion_MicrosoftSemanticKernel}" />
+    <PackageReference Include="PdfPig" Version="${TemplatePackageVersion_PdfPig}" />
     <PackageReference Include="System.Linq.Async" Version="${TemplatePackageVersion_SystemLinqAsync}" />
 <!--#if (IsAzureAISearch && IsAspire)
     <PackageReference Include="Aspire.Azure.Search.Documents" Version="${TemplatePackageVersion_Aspire}" />
