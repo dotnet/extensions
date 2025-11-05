@@ -10,8 +10,16 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Agents.AI" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
     <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
+<!--#if (IsOpenAI || IsAzureOpenAI || IsGHModels) -->
     <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="${TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI}" />
     <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
+<!--#endif -->
+<!--#if (IsOllama) -->
+    <PackageReference Include="OllamaSharp" Version="4.1.2" />
+<!--#endif -->
+<!--#if (IsAzureOpenAI && IsManagedIdentity) -->
+    <PackageReference Include="Azure.Identity" Version="1.13.1" />
+<!--#endif -->
     <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
   </ItemGroup>
 

@@ -36,6 +36,14 @@
         {
           "choice": "net10.0",
           "description": "Target net10.0"
+        },
+        {
+          "choice": "net9.0",
+          "description": "Target net9.0"
+        },
+        {
+          "choice": "net8.0",
+          "description": "Target net8.0"
         }
       ],
       "replaces": "net10.0",
@@ -45,6 +53,62 @@
     "hostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
+    },
+    "AiServiceProvider": {
+      "type": "parameter",
+      "displayName": "_AI service provider",
+      "datatype": "choice",
+      "defaultValue": "githubmodels",
+      "choices": [
+        {
+          "choice": "azureopenai",
+          "displayName": "Azure OpenAI",
+          "description": "Uses Azure OpenAI service"
+        },
+        {
+          "choice": "githubmodels",
+          "displayName": "GitHub Models",
+          "description": "Uses GitHub Models"
+        },
+        {
+          "choice": "ollama",
+          "displayName": "Ollama (for local development)",
+          "description": "Uses Ollama with the llama3.2 model"
+        },
+        {
+          "choice": "openai",
+          "displayName": "OpenAI Platform",
+          "description": "Uses the OpenAI Platform"
+        }
+      ]
+    },
+    "UseManagedIdentity": {
+      "type": "parameter",
+      "displayName": "Use keyless authentication for Azure services",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "isEnabled": "(AiServiceProvider == \"azureopenai\")",
+      "description": "Use managed identity to access Azure services"
+    },
+    "IsManagedIdentity": {
+      "type": "computed",
+      "value": "(UseManagedIdentity)"
+    },
+    "IsAzureOpenAI": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"azureopenai\")"
+    },
+    "IsOpenAI": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"openai\")"
+    },
+    "IsGHModels": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"githubmodels\")"
+    },
+    "IsOllama": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"ollama\")"
     },
     "httpPort": {
       "type": "parameter",

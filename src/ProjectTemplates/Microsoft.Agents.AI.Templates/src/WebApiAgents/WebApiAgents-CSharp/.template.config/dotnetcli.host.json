@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "AiServiceProvider": {
+      "longName": "provider",
+      "shortName": ""
+    },
+    "UseManagedIdentity": {
+      "longName": "managed-identity",
+      "shortName": ""
+    }
+  },
+  "usageExamples": [
+    ""
+  ]
+}
