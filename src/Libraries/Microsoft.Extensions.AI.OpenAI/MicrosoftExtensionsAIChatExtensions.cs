@@ -183,6 +183,7 @@ public static class MicrosoftExtensionsAIChatExtensions
             switch (message)
             {
                 case AssistantChatMessage acm:
+                    resultMessage.Role = ChatRole.Assistant;
                     resultMessage.AuthorName = acm.ParticipantName;
                     OpenAIChatClient.ConvertContentParts(acm.Content, resultMessage.Contents);
                     foreach (var toolCall in acm.ToolCalls)
@@ -195,21 +196,25 @@ public static class MicrosoftExtensionsAIChatExtensions
                     break;
 
                 case UserChatMessage ucm:
+                    resultMessage.Role = ChatRole.User;
                     resultMessage.AuthorName = ucm.ParticipantName;
                     OpenAIChatClient.ConvertContentParts(ucm.Content, resultMessage.Contents);
                     break;
 
                 case DeveloperChatMessage dcm:
+                    resultMessage.Role = ChatRole.System;
                     resultMessage.AuthorName = dcm.ParticipantName;
                     OpenAIChatClient.ConvertContentParts(dcm.Content, resultMessage.Contents);
                     break;
 
                 case SystemChatMessage scm:
+                    resultMessage.Role = ChatRole.System;
                     resultMessage.AuthorName = scm.ParticipantName;
                     OpenAIChatClient.ConvertContentParts(scm.Content, resultMessage.Contents);
                     break;
 
                 case ToolChatMessage tcm:
+                    resultMessage.Role = ChatRole.Tool;
                     resultMessage.Contents.Add(new FunctionResultContent(tcm.ToolCallId, ToToolResult(tcm.Content))
                     {
                         RawRepresentation = tcm,

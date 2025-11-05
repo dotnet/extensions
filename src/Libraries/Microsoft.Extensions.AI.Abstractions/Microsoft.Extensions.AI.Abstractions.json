@@ -984,6 +984,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "Microsoft.Extensions.AI.ChatOptions.ChatOptions(Microsoft.Extensions.AI.ChatOptions? other);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "virtual Microsoft.Extensions.AI.ChatOptions Microsoft.Extensions.AI.ChatOptions.Clone();",
           "Stage": "Stable"
         }
@@ -1694,6 +1698,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "Microsoft.Extensions.AI.EmbeddingGenerationOptions.EmbeddingGenerationOptions(Microsoft.Extensions.AI.EmbeddingGenerationOptions? other);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "virtual Microsoft.Extensions.AI.EmbeddingGenerationOptions Microsoft.Extensions.AI.EmbeddingGenerationOptions.Clone();",
           "Stage": "Stable"
         }
@@ -1944,6 +1952,10 @@
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedCodeInterpreterTool.Inputs { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedCodeInterpreterTool.Name { get; }",
+          "Stage": "Stable"
         }
       ]
     },
@@ -1964,6 +1976,10 @@
         {
           "Member": "int? Microsoft.Extensions.AI.HostedFileSearchTool.MaximumResultCount { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedFileSearchTool.Name { get; }",
+          "Stage": "Stable"
         }
       ]
     },
@@ -1975,6 +1991,12 @@
           "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool();",
           "Stage": "Stable"
         }
+      ],
+      "Properties": [
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedWebSearchTool.Name { get; }",
+          "Stage": "Stable"
+        }
       ]
     },
     {
@@ -1984,11 +2006,23 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedFileContent.HostedFileContent(string fileId);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.HostedFileContent.HasTopLevelMediaType(string topLevelType);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.AI.HostedFileContent.FileId { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileContent.MediaType { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileContent.Name { get; set; }",
           "Stage": "Stable"
         }
       ]

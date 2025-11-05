@@ -424,6 +424,43 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateFunctionJsonSchema_DisplayNameAttribute_UsedForTitle()
+    {
+        [DisplayName("custom_method_name")]
+        [Description("Method description")]
+        static void TestMethod(int x, int y)
+        {
+            // Test method for schema generation
+        }
+
+        var method = ((Action<int, int>)TestMethod).Method;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method);
+
+        using JsonDocument doc = JsonDocument.Parse(schema.GetRawText());
+        Assert.True(doc.RootElement.TryGetProperty("title", out JsonElement titleElement));
+        Assert.Equal("custom_method_name", titleElement.GetString());
+        Assert.True(doc.RootElement.TryGetProperty("description", out JsonElement descElement));
+        Assert.Equal("Method description", descElement.GetString());
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_DisplayNameAttribute_CanBeOverridden()
+    {
+        [DisplayName("custom_method_name")]
+        static void TestMethod()
+        {
+            // Test method for schema generation
+        }
+
+        var method = ((Action)TestMethod).Method;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method, title: "override_title");
+
+        using JsonDocument doc = JsonDocument.Parse(schema.GetRawText());
+        Assert.True(doc.RootElement.TryGetProperty("title", out JsonElement titleElement));
+        Assert.Equal("override_title", titleElement.GetString());
+    }
+
+    [Fact]
     public static void CreateJsonSchema_CanBeBoolean()
     {
         JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(object));
@@ -1037,14 +1074,17 @@ public static partial class AIJsonUtilitiesTests
     public static void AddAIContentType_BuiltInAIContent_ThrowsArgumentException()
     {
         JsonSerializerOptions options = new();
-        Assert.Throws<ArgumentException>(() => options.AddAIContentType<AIContent>("discriminator"));
-        Assert.Throws<ArgumentException>(() => options.AddAIContentType<TextContent>("discriminator"));
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType<AIContent>("discriminator"));
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType<TextContent>("discriminator"));
     }
 
     [Fact]
     public static void AddAIContentType_ConflictingIdentifier_ThrowsInvalidOperationException()
     {
-        JsonSerializerOptions options = new();
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
+        };
         options.AddAIContentType<DerivedAIContent>("text");
         options.AddAIContentType<DerivedAIContent>("audio");
 
@@ -1361,8 +1401,8 @@ public static partial class AIJsonUtilitiesTests
     public static void TransformJsonSchema_InvalidOptions_ThrowsArgumentException()
     {
         JsonElement schema = JsonDocument.Parse("{}").RootElement;
-        Assert.Throws<ArgumentNullException>(() => AIJsonUtilities.TransformSchema(schema, transformOptions: null!));
-        Assert.Throws<ArgumentException>(() => AIJsonUtilities.TransformSchema(schema, transformOptions: new()));
+        Assert.Throws<ArgumentNullException>("transformOptions", () => AIJsonUtilities.TransformSchema(schema, transformOptions: null!));
+        Assert.Throws<ArgumentException>("transformOptions", () => AIJsonUtilities.TransformSchema(schema, transformOptions: new()));
     }
 
     [Theory]
@@ -1375,7 +1415,7 @@ public static partial class AIJsonUtilitiesTests
     {
         JsonElement schema = JsonDocument.Parse(invalidSchema).RootElement;
         AIJsonSchemaTransformOptions transformOptions = new() { ConvertBooleanSchemas = true };
-        Assert.Throws<ArgumentException>(() => AIJsonUtilities.TransformSchema(schema, transformOptions));
+        Assert.Throws<ArgumentException>("schema", () => AIJsonUtilities.TransformSchema(schema, transformOptions));
     }
 
     private class DerivedAIContent : AIContent

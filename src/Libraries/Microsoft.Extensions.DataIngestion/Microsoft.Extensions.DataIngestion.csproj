@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
+
+    <!--  Project reference can be removed -->
+    <NoWarn>$(NoWarn);RT0002</NoWarn>
+
+    <!-- we are not ready to publish yet -->
+    <IsPackable>false</IsPackable>
+    <Stage>preview</Stage>
+    <EnablePackageValidation>false</EnablePackageValidation> 
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.DataIngestion.Abstractions\Microsoft.Extensions.DataIngestion.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+    <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
+    <PackageReference Include="Microsoft.ML.Tokenizers" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <!-- Workaround https://github.com/microsoft/semantic-kernel/issues/13316 -->
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonVersion)" />
+  </ItemGroup>
+
+</Project>
