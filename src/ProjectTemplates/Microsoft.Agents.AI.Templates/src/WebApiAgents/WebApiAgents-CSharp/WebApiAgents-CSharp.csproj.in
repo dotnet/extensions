@@ -4,21 +4,21 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>d5681fae-b21b-4114-b781-48180f08c0c4</UserSecretsId>
+    <UserSecretsId>c7e8f3d2-1a4b-5c6d-8e9f-0a1b2c3d4e5f</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Agents.AI" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
     <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
-<!--#if (IsOpenAI || IsAzureOpenAI || IsGHModels) -->
     <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="${TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI}" />
+<!--#if (IsOpenAI || IsAzureOpenAI || IsGHModels) -->
     <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
 <!--#endif -->
 <!--#if (IsOllama) -->
-    <PackageReference Include="OllamaSharp" Version="4.1.2" />
+    <PackageReference Include="OllamaSharp" Version="${TemplatePackageVersion_OllamaSharp}" />
 <!--#endif -->
 <!--#if (IsAzureOpenAI && IsManagedIdentity) -->
-    <PackageReference Include="Azure.Identity" Version="1.13.1" />
+    <PackageReference Include="Azure.Identity" Version="${TemplatePackageVersion_AzureIdentity}" />
 <!--#endif -->
     <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
   </ItemGroup>

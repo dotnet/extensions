@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": [ "Common", "AI", "Agents", "API", "Web", "Web API", "WebAPI", "Service" ],
+  "classifications": [ "Common", "AI", "API", "Web", "Web API", "WebAPI", "Service" ],
   "identity": "Microsoft.Agents.AI.Templates.WebApiAgents.CSharp",
   "name": "AI Agents Web API",
   "description": "A project template for creating an AI Agents Web API application.",
@@ -14,9 +14,12 @@
     "type": "project"
   },
   "guids": [
-    "d5681fae-b21b-4114-b781-48180f08c0c4"
+    "c7e8f3d2-1a4b-5c6d-8e9f-0a1b2c3d4e5f"
   ],
   "primaryOutputs": [
+    {
+      "path": "./README.md"
+    },
     {
       "path": "./WebApiAgents-CSharp.csproj"
     }
@@ -202,16 +205,14 @@
       ]
     }
   },
-  "postActions": [
-    {
-      "condition": "(hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
-      "description": "Opens README file in the editor",
-      "manualInstructions": [],
-      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
-      "args": {
-        "files": "0"
-      },
-      "continueOnError": true
-    }
-  ]
+  "postActions": [{
+    "condition": "(hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
+    "description": "Opens README file in the editor",
+    "manualInstructions": [ ],
+    "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+    "args": {
+      "files": "0"
+    },
+    "continueOnError": true
+  }]
 }

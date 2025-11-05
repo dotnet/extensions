@@ -53,7 +53,7 @@ A simple ASP.NET Core Web API template that demonstrates the AI Agents framework
   - **Chat Model Parameter** (`--ChatModel`):
     - Default for OpenAI/Azure OpenAI/GitHub Models: `gpt-4o-mini`
     - Default for Ollama: `llama3.2`
-  - **Use Managed Identity Parameter** (`--UseManagedIdentity`):
+  - **Use Managed Identity Parameter** (`--managed-identity`):
     - Default: `true` (when using Azure OpenAI)
     - Enables keyless authentication for Azure services
 - `WebApiAgents-CSharp.csproj.in` - Project file template with conditional package references
@@ -154,7 +154,7 @@ dotnet new aiagents-webapi -n MyAgentsApp --httpPort 5100 --httpsPort 7100
 dotnet new aiagents-webapi -n MyAgentsApp --provider azureopenai
 
 # Using Azure OpenAI with API key
-dotnet new aiagents-webapi -n MyAgentsApp --provider azureopenai --UseManagedIdentity false
+dotnet new aiagents-webapi -n MyAgentsApp --provider azureopenai --managed-identity false
 
 # Using OpenAI Platform with custom model
 dotnet new aiagents-webapi -n MyAgentsApp --provider openai --ChatModel gpt-4o

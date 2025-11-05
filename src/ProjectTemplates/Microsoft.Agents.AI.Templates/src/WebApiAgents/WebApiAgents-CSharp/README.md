@@ -4,7 +4,6 @@ This is an AI Agents Web API application created from the `aiagents-webapi` temp
 
 ## Prerequisites
 
-- .NET 10.0 SDK or later
 <!--#if (IsGHModels) -->
 - A GitHub Models API token (free to get started)
 <!--#elif (IsOpenAI) -->
@@ -155,7 +154,7 @@ The application is configured to connect to Ollama at `http://localhost:11434`.
 ### 2. Run the Application
 
 ```bash
-dotnet run
+dotnet run -lp https
 ```
 
 The application will start and listen on:
@@ -166,29 +165,13 @@ The application will start and listen on:
 
 The application exposes OpenAI-compatible API endpoints. You can interact with the AI agents using any OpenAI-compatible client or tools.
 
-Example using `curl`:
-
-```bash
-curl -X POST https://localhost:7041/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "publisher",
-    "messages": [
-      {
-        "role": "user",
-        "content": "Write a story about a robot learning to paint."
-      }
-    ]
-  }'
-```
-
 ## How It Works
 
 This application demonstrates the AI Agents framework with:
 
 1. **Writer Agent**: Writes short stories (300 words or less) about specified topics
 2. **Editor Agent**: Edits stories to improve grammar and style, ensuring they stay under 300 words
-3. **Publisher Workflow**: A sequential workflow that combines the writer and editor agents
+3. **Publisher Workflow Agent**: A sequential workflow agent that combines the writer and editor agents
 
 The agents are exposed through OpenAI-compatible API endpoints, making them easy to integrate with existing tools and applications.
 
@@ -204,7 +187,7 @@ dotnet new aiagents-webapi --provider azureopenai
 dotnet new aiagents-webapi --ChatModel gpt-4o
 
 # Use API key authentication for Azure OpenAI
-dotnet new aiagents-webapi --provider azureopenai --UseManagedIdentity false
+dotnet new aiagents-webapi --provider azureopenai --managed-identity false
 
 # Use Ollama with a different model
 dotnet new aiagents-webapi --provider ollama --ChatModel llama3.1
@@ -222,8 +205,8 @@ dotnet new aiagents-webapi --provider ollama --ChatModel llama3.1
   - Default for OpenAI/Azure OpenAI/GitHub Models: `gpt-4o-mini`
   - Default for Ollama: `llama3.2`
 
-- **`--UseManagedIdentity`**: Use managed identity for Azure services (default: `true`)
-  - Only applicable when `--AiServiceProvider azureopenai`
+- **`--managed-identity`**: Use managed identity for Azure services (default: `true`)
+  - Only applicable when `--provider azureopenai`
 
 - **`--Framework`**: Target framework (default: `net10.0`)
   - Options: `net10.0`, `net9.0`, `net8.0`
