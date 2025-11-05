@@ -1,6 +1,6 @@
 # AI Agents Web API
 
-This is an AI Agents Web API application created from the `webapi-agents` template.
+This is an AI Agents Web API application created from the `aiagents-webapi` template.
 
 ## Prerequisites
 

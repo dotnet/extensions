@@ -45,7 +45,7 @@ public class WebApiAgentsTemplateSnapshotTests
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
     {
         string workingDir = TestUtils.CreateTemporaryFolder();
-        string templateShortName = "webapi-agents";
+        string templateShortName = "aiagents-webapi";
 
         // Get the template location
         string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Agents.AI.Templates", "src", "WebApiAgents");

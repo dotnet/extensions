@@ -29,7 +29,7 @@ The `Microsoft.Agents.AI.Templates` project is a .NET project template package t
 
 **Template Content**:
 
-#### WebApiAgents Template (`webapi-agents`)
+#### WebApiAgents Template (`aiagents-webapi`)
 **Location**: `src/ProjectTemplates/Microsoft.Agents.AI.Templates/src/WebApiAgents/`
 
 A simple ASP.NET Core Web API template that demonstrates the AI Agents framework with:
@@ -40,7 +40,7 @@ A simple ASP.NET Core Web API template that demonstrates the AI Agents framework
 
 **Template Files**:
 - `.template.config/template.json` - Template definition
-  - Short name: `webapi-agents`
+  - Short name: `aiagents-webapi`
   - Default name: `AgentsApp`
   - Source name: `WebApiAgents-CSharp`
   - Target framework: net10.0
@@ -77,7 +77,7 @@ A simple ASP.NET Core Web API template that demonstrates the AI Agents framework
 **Key Files**:
 - `Microsoft.Agents.AI.Templates.Tests.csproj` - The integration test project
 - `README.md` - Documentation for running and updating template tests
-- `WebApiAgentsTemplateSnapshotTests.cs` - Snapshot tests for webapi-agents template
+- `WebApiAgentsTemplateSnapshotTests.cs` - Snapshot tests for aiagents-webapi template
 - `ProjectRootHelper.cs` - Helper to locate the test project root
 - `VerifyScrubbers.cs` - Utilities for scrubbing variable content from test snapshots
 
@@ -124,10 +124,10 @@ dotnet new install artifacts/packages/Debug/Shipping/Microsoft.Agents.AI.Templat
 
 ```bash
 # Basic usage
-dotnet new webapi-agents -n MyAgentsApp
+dotnet new aiagents-webapi -n MyAgentsApp
 
 # With custom ports
-dotnet new webapi-agents -n MyAgentsApp --httpPort 5100 --httpsPort 7100
+dotnet new aiagents-webapi -n MyAgentsApp --httpPort 5100 --httpsPort 7100
 ```
 
 ### Configuring the Project
@@ -176,7 +176,7 @@ dotnet new install ../../src/ProjectTemplates/Microsoft.Agents.AI.Templates/src/
 # Create test project
 mkdir output/test1
 cd output/test1
-dotnet new webapi-agents
+dotnet new aiagents-webapi
 
 # Configure and test
 dotnet user-secrets set "GitHubModels:Token" "your-token"
