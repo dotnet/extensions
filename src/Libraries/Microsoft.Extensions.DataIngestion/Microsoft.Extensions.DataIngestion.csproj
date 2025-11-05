@@ -3,14 +3,14 @@
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
-
+    <Description>Data Ingestion utilities for RAG.</Description>
+    <Workstream>RAG</Workstream>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
-
-    <!-- we are not ready to publish yet -->
-    <IsPackable>false</IsPackable>
     <Stage>preview</Stage>
-    <EnablePackageValidation>false</EnablePackageValidation> 
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>75</MinMutationScore>
   </PropertyGroup>
 
   <ItemGroup>
