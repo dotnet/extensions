@@ -13,7 +13,7 @@ public class DotNetCommand : TestCommand
 
         foreach (var arg in args)
         {
-           Arguments.Add(arg);
+            Arguments.Add(arg);
         }
     }
 }

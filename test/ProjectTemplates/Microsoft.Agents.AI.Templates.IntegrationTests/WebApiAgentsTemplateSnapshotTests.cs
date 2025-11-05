@@ -13,15 +13,15 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Agents.AI.Templates.Tests;
 
-public class AgentTemplateSnapshotTests
+public class WebApiAgentsTemplateSnapshotTests
 {
     // Exclude patterns will be defined here when actual template content is added.
     private static readonly string[] _verificationExcludePatterns = [
         "**/bin/**",
         "**/obj/**",
         "**/.vs/**",
-        "**/node_modules/**",
         "**/*.user",
+        "**/*.in",
         "**/NuGet.config",
         "**/Directory.Build.targets",
         "**/Directory.Build.props",
@@ -29,7 +29,7 @@ public class AgentTemplateSnapshotTests
 
     private readonly ILogger _log;
 
-    public AgentTemplateSnapshotTests(ITestOutputHelper log)
+    public WebApiAgentsTemplateSnapshotTests(ITestOutputHelper log)
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
         _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
@@ -52,8 +52,8 @@ public class AgentTemplateSnapshotTests
         string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Agents.AI.Templates", "src", "PlaceholderTemplate");
 
         var verificationExcludePatterns = Path.DirectorySeparatorChar is '/'
-              ? _verificationExcludePatterns
-              : _verificationExcludePatterns.Select(p => p.Replace('/', Path.DirectorySeparatorChar)).ToArray();
+            ? _verificationExcludePatterns
+            : _verificationExcludePatterns.Select(p => p.Replace('/', Path.DirectorySeparatorChar)).ToArray();
 
         TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
         {
@@ -68,28 +68,29 @@ public class AgentTemplateSnapshotTests
         }
         .WithCustomScrubbers(
             ScrubbersDefinition.Empty.AddScrubber((path, content) =>
-      {
-          string filePath = path.UnixifyDirSeparators();
-          if (filePath.EndsWith(".sln"))
-          {
-              // Scrub .sln file GUIDs.
-              content.ScrubByRegex(pattern: @"\{.{36}\}", replacement: "{00000000-0000-0000-0000-000000000000}");
-          }
+            {
+                string filePath = path.UnixifyDirSeparators();
+                if (filePath.EndsWith(".sln"))
+                {
+                    // Scrub .sln file GUIDs.
+                    content.ScrubByRegex(pattern: @"\{.{36}\}", replacement: "{00000000-0000-0000-0000-000000000000}");
+                }
 
-          if (filePath.EndsWith(".csproj"))
-          {
-              content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
+                if (filePath.EndsWith(".csproj"))
+                {
+                    content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
 
-              // Scrub references to just-built packages and remove the suffix, if it exists.
-              var pattern = @"(?<=<PackageReference\s+Include=""Microsoft\..*""\s+Version="")(\d+\.\d+\.\d+)(?:-[^""]*)?(?=""\s*/>)";
-              content.ScrubByRegex(pattern, replacement: "$1");
-          }
+                    // Scrub references to just-built packages and remove the suffix, if it exists.
+                    // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
+                    var pattern = @"(?<=<PackageReference\s+Include=""Microsoft\.(Agents|Extensions)\..*""\s+Version="")(\d+\.\d+\.\d+)(?:-[^""]*)?(?=""\s*/>)";
+                    content.ScrubByRegex(pattern, replacement: "$1");
+                }
 
-          if (filePath.EndsWith("launchSettings.json"))
-          {
-              content.ScrubByRegex("(http(s?):\\/\\/localhost)\\:(\\d*)", "$1:9999");
-          }
-      }));
+                if (filePath.EndsWith("launchSettings.json"))
+                {
+                    content.ScrubByRegex("(http(s?):\\/\\/localhost)\\:(\\d*)", "$1:9999");
+                }
+            }));
 
         VerificationEngine engine = new VerificationEngine(_log);
         await engine.Execute(options);

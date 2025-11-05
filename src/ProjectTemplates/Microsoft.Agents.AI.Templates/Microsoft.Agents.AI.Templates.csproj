@@ -26,7 +26,7 @@
   <ItemGroup>
     <!--
       Reference the GenerateTemplateContent project so that template content gets generated prior
-   to building this project.
+      to building this project.
     -->
     <ProjectReference
       Include="..\GenerateTemplateContent\GenerateTemplateContent.csproj"
@@ -35,8 +35,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Template content will be added here once actual templates are implemented -->
-    <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
+    <!-- Keep the exclude patterns below in sync with those in WebApiAgentsTemplateSnapshotTests.cs -->
+    <Content
+      Include="src\**\*"
+      Exclude="
+        **\bin\**;
+        **\obj\**;
+        **\.vs\**;
+        **\*.user;
+        **\*.in;
+        **\NuGet.config;
+        **\Directory.Build.targets;
+        **\Directory.Build.props;" />
+
     <Compile Remove="**\*" />
   </ItemGroup>
 
