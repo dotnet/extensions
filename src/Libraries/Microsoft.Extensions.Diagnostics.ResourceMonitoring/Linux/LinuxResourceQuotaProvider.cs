@@ -31,7 +31,12 @@ internal class LinuxResourceQuotaProvider : ResourceQuotaProvider
         }
 
         resourceQuota.MaxMemoryInBytes = _parser.GetAvailableMemoryInBytes();
-        resourceQuota.BaselineMemoryInBytes = resourceQuota.MaxMemoryInBytes; // TODO: use real value
+        resourceQuota.BaselineMemoryInBytes = _parser.GetMinMemoryInBytes();
+
+        if (resourceQuota.BaselineMemoryInBytes == 0)
+        {
+            resourceQuota.BaselineMemoryInBytes = resourceQuota.MaxMemoryInBytes;
+        }
 
         return resourceQuota;
     }
