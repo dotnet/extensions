@@ -74,13 +74,13 @@ When creating a new project, you can customize it using template parameters:
 dotnet new aiagents-webapi --provider azureopenai
 
 # Specify a custom chat model
-dotnet new aiagents-webapi --ChatModel gpt-4o
+dotnet new aiagents-webapi --chat-model gpt-4o
 
 # Use API key authentication for Azure OpenAI
 dotnet new aiagents-webapi --provider azureopenai --managed-identity false
 
 # Use Ollama with a different model
-dotnet new aiagents-webapi --provider ollama --ChatModel llama3.1
+dotnet new aiagents-webapi --provider ollama --chat-model llama3.1
 ```
 
 ### Available Parameters
@@ -91,14 +91,14 @@ dotnet new aiagents-webapi --provider ollama --ChatModel llama3.1
   - `openai` - OpenAI Platform
   - `ollama` - Ollama (local development)
 
-- **`--ChatModel`**: Specify the chat model/deployment name
+- **`--chat-model`**: Specify the chat model/deployment name
   - Default for OpenAI/Azure OpenAI/GitHub Models: `gpt-4o-mini`
   - Default for Ollama: `llama3.2`
 
 - **`--managed-identity`**: Use managed identity for Azure services (default: `true`)
   - Only applicable when `--provider azureopenai`
 
-- **`--Framework`**: Target framework (default: `net10.0`)
+- **`--framework`**: Target framework (default: `net10.0`)
   - Options: `net10.0`, `net9.0`, `net8.0`
 
 ## Project Structure

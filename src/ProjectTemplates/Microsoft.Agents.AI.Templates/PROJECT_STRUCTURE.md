@@ -50,7 +50,7 @@ A simple ASP.NET Core Web API template that demonstrates the AI Agents framework
     - `azureopenai` - Azure OpenAI
     - `openai` - OpenAI Platform
     - `ollama` - Ollama (local development)
-  - **Chat Model Parameter** (`--ChatModel`):
+  - **Chat Model Parameter** (`--chat-model`):
     - Default for OpenAI/Azure OpenAI/GitHub Models: `gpt-4o-mini`
     - Default for Ollama: `llama3.2`
   - **Use Managed Identity Parameter** (`--managed-identity`):
@@ -157,13 +157,13 @@ dotnet new aiagents-webapi -n MyAgentsApp --provider azureopenai
 dotnet new aiagents-webapi -n MyAgentsApp --provider azureopenai --managed-identity false
 
 # Using OpenAI Platform with custom model
-dotnet new aiagents-webapi -n MyAgentsApp --provider openai --ChatModel gpt-4o
+dotnet new aiagents-webapi -n MyAgentsApp --provider openai --chat-model gpt-4o
 
 # Using Ollama with custom model
-dotnet new aiagents-webapi -n MyAgentsApp --provider ollama --ChatModel llama3.1
+dotnet new aiagents-webapi -n MyAgentsApp --provider ollama --chat-model llama3.1
 
 # Target specific framework
-dotnet new aiagents-webapi -n MyAgentsApp --Framework net9.0
+dotnet new aiagents-webapi -n MyAgentsApp --framework net9.0
 ```
 
 ### Configuring the Project
