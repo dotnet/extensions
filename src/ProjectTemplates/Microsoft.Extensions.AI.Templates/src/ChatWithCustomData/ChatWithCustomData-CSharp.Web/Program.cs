@@ -130,12 +130,12 @@ app.UseStaticFiles();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// By default, we ingest PDF files from the /wwwroot/Data directory. You can ingest from
+// By default, we ingest Markdown files from the /wwwroot/Data directory. You can ingest from
 // other sources by implementing IIngestionSource.
 // Important: ensure that any content you ingest is trusted, as it may be reflected back
 // to users or could be a source of prompt injection risk.
 await DataIngestor.IngestDataAsync(
     app.Services,
-    new PDFDirectorySource(Path.Combine(builder.Environment.WebRootPath, "Data")));
+    new MarkdownDirectorySource(Path.Combine(builder.Environment.WebRootPath, "Data")));
 
 app.Run();
