@@ -6,7 +6,7 @@ using Microsoft.Shared.ProjectTemplates.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 /// <summary>
 /// Represents a test that executes a project template (create, restore, build, and run).

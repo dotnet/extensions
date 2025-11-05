@@ -4,7 +4,7 @@
 using Microsoft.Shared.ProjectTemplates.Tests;
 using Xunit;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 [CollectionDefinition(name: Name)]
 public sealed class TemplateExecutionTestCollection : ICollectionFixture<TemplateExecutionTestCollectionFixture>

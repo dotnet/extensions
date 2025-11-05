@@ -26,5 +26,15 @@ public sealed class TemplateExecutionTestCollectionFixture
         {
             Directory.Delete(WellKnownPaths.TemplateSandboxOutputRoot, recursive: true);
         }
+
+        // Then we copy the template sandbox infrastructure to the output location for use during tests.
+        Directory.CreateDirectory(WellKnownPaths.TemplateSandboxOutputRoot);
+
+        foreach (var filePath in Directory.EnumerateFiles(WellKnownPaths.TemplateSandboxRoot))
+        {
+            var fileName = Path.GetFileName(filePath);
+            var destFilePath = Path.Combine(WellKnownPaths.TemplateSandboxOutputRoot, fileName);
+            File.Copy(filePath, destFilePath);
+        }
     }
 }

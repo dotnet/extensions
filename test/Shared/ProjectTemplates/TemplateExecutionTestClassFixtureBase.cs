@@ -8,7 +8,7 @@ using Microsoft.Shared.ProjectTemplates.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 /// <summary>
 /// Provides functionality scoped to the duration of all the tests in a single test class
