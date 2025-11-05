@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <Description>Project templates for Microsoft.Agents.AI.</Description>
+    <PackageTags>dotnet-new;templates;agents;ai</PackageTags>
+
+    <Stage>preview</Stage>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+    <Workstream>AI</Workstream>
+    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinMutationScore>0</MinMutationScore>
+
+    <IsPackable>true</IsPackable>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Reference the GenerateTemplateContent project so that template content gets generated prior
+   to building this project.
+    -->
+    <ProjectReference
+      Include="..\GenerateTemplateContent\GenerateTemplateContent.csproj"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Template content will be added here once actual templates are implemented -->
+    <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+</Project>
