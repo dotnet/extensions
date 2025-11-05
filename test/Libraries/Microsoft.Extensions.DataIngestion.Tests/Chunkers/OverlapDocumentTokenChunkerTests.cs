@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
 
             foreach (var chunk in chunks)
             {
-                Assert.True(tokenizer.CountTokens(chunks.Last().Content) <= chunkSize);
+                Assert.True(tokenizer.CountTokens(chunk.Content) <= chunkSize);
             }
 
             for (int i = 0; i < chunks.Count - 1; i++)

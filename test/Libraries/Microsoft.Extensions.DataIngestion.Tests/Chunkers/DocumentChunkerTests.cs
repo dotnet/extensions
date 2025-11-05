@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
         public async Task ProcessAsync_ThrowsArgumentNullException_WhenDocumentIsNull()
         {
             var chunker = CreateDocumentChunker();
-            await Assert.ThrowsAsync<ArgumentNullException>("chunks", async () => await chunker.ProcessAsync(null!).ToListAsync());
+            await Assert.ThrowsAsync<ArgumentNullException>("document", async () => await chunker.ProcessAsync(null!).ToListAsync());
         }
 
         [Fact]
