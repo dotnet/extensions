@@ -1,6 +1,6 @@
-# AI Agents Web API
+# AI Agent Web API
 
-This is an AI Agents Web API application created from the `aiagents-webapi` template.
+This is an AI Agent Web API application created from the `aiagent-webapi` template.
 
 ## Prerequisites
 
@@ -167,7 +167,7 @@ The application exposes OpenAI-compatible API endpoints. You can interact with t
 
 ## How It Works
 
-This application demonstrates the AI Agents framework with:
+This application demonstrates Agent Framework with:
 
 1. **Writer Agent**: Writes short stories (300 words or less) about specified topics
 2. **Editor Agent**: Edits stories to improve grammar and style, ensuring they stay under 300 words
@@ -181,16 +181,16 @@ When creating a new project, you can customize it using template parameters:
 
 ```bash
 # Specify AI service provider
-dotnet new aiagents-webapi --provider azureopenai
+dotnet new aiagent-webapi --provider azureopenai
 
 # Specify a custom chat model
-dotnet new aiagents-webapi --chat-model gpt-4o
+dotnet new aiagent-webapi --chat-model gpt-4o
 
 # Use API key authentication for Azure OpenAI
-dotnet new aiagents-webapi --provider azureopenai --managed-identity false
+dotnet new aiagent-webapi --provider azureopenai --managed-identity false
 
 # Use Ollama with a different model
-dotnet new aiagents-webapi --provider ollama --chat-model llama3.1
+dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 ```
 
 ### Available Parameters
@@ -219,7 +219,8 @@ dotnet new aiagents-webapi --provider ollama --chat-model llama3.1
 
 ## Learn More
 
-- [Microsoft.Agents.AI Documentation](https://learn.microsoft.com/dotnet/ai/agents)
+- [AI apps for .NET developers](https://learn.microsoft.com/dotnet/ai)
+- [Microsoft Agent Framework Documentation](https://aka.ms/dotnet/agent-framework/docs)
 <!--#if (IsGHModels) -->
 - [GitHub Models](https://github.com/marketplace/models)
 <!--#elif (IsOpenAI) -->
@@ -229,7 +230,6 @@ dotnet new aiagents-webapi --provider ollama --chat-model llama3.1
 <!--#elif (IsOllama) -->
 - [Ollama](https://ollama.com)
 <!--#endif -->
-- [.NET AI Libraries](https://learn.microsoft.com/dotnet/ai/)
 
 ## Troubleshooting
 

@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 namespace Microsoft.Agents.AI.Templates.Tests;
 
 /// <summary>
-/// Contains execution tests for the "AI Agents Web API" template.
+/// Contains execution tests for the "AI Agent Web API" template.
 /// </summary>
 /// <remarks>
 /// In addition to validating that the templates build and restore correctly,
@@ -21,9 +21,9 @@ namespace Microsoft.Agents.AI.Templates.Tests;
 /// Therefore, it's *critical* that these tests remain in a working state,
 /// as disabling them will also disable CG reporting.
 /// </remarks>
-public class WebApiAgentsTemplateExecutionTests : TemplateExecutionTestBase<WebApiAgentsTemplateExecutionTests>, ITemplateExecutionTestConfigurationProvider
+public class WebApiAgentTemplateExecutionTests : TemplateExecutionTestBase<WebApiAgentTemplateExecutionTests>, ITemplateExecutionTestConfigurationProvider
 {
-    public WebApiAgentsTemplateExecutionTests(TemplateExecutionTestFixture fixture, ITestOutputHelper outputHelper)
+    public WebApiAgentTemplateExecutionTests(TemplateExecutionTestFixture fixture, ITestOutputHelper outputHelper)
         : base(fixture, outputHelper)
     {
     }
@@ -31,7 +31,7 @@ public class WebApiAgentsTemplateExecutionTests : TemplateExecutionTestBase<WebA
     public static TemplateExecutionTestConfiguration Configuration { get; } = new()
     {
         TemplatePackageName = "Microsoft.Agents.AI.Templates",
-        TestOutputFolderPrefix = "WebApiAgents"
+        TestOutputFolderPrefix = "WebApiAgent"
     };
 
     public static IEnumerable<object[]> GetTemplateOptions()
@@ -42,9 +42,9 @@ public class WebApiAgentsTemplateExecutionTests : TemplateExecutionTestBase<WebA
     [MemberData(nameof(GetTemplateOptions))]
     public async Task CreateRestoreAndBuild(params string[] args)
     {
-        const string ProjectName = "WebApiAgentsApp";
+        const string ProjectName = "WebApiAgentApp";
         var project = await Fixture.CreateProjectAsync(
-            templateName: "aiagents-webapi",
+            templateName: "aiagent-webapi",
             projectName: ProjectName,
             args);
 

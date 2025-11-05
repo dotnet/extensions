@@ -4,7 +4,7 @@
     <PackageType>Template</PackageType>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
     <Description>Project templates for Microsoft.Agents.AI.</Description>
-    <PackageTags>dotnet-new;templates;agents;ai</PackageTags>
+    <PackageTags>dotnet-new;templates;ai;agent</PackageTags>
 
     <Stage>preview</Stage>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
@@ -35,9 +35,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Keep the exclude patterns below in sync with those in WebApiAgentsTemplateSnapshotTests.cs -->
+    <!-- Keep the exclude patterns below in sync with those in WebApiAgentTemplateSnapshotTests.cs -->
     <Content
-      Include="src\WebApiAgents\**\*"
+      Include="src\WebApiAgent\**\*"
       Exclude="
         **\bin\**;
         **\obj\**;

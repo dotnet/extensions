@@ -1,46 +1,46 @@
-﻿# AI Agents Web API
+﻿# AI Agent Web API
 
-This is an AI Agents Web API application created from the `aiagents-webapi` template.
+This is an AI Agent Web API application created from the `aiagent-webapi` template.
 
 ## Prerequisites
 
-- An OpenAI API key
+- A GitHub Models API token (free to get started)
 
 ## Getting Started
 
 ### 1. Configure Your AI Service
 
-#### OpenAI Configuration
+#### GitHub Models Configuration
 
-This application uses the OpenAI Platform (model: gpt-4o-mini). You'll need to configure your OpenAI API key:
+This application uses GitHub Models (model: gpt-4o-mini) for AI functionality. You'll need to configure your GitHub Models API token:
 
-**Using User Secrets (Recommended for Development)**
+**Option A: Using User Secrets (Recommended for Development)**
 
 ```bash
-dotnet user-secrets set "OpenAI:Key" "your-openai-api-key-here"
+dotnet user-secrets set "GitHubModels:Token" "your-github-models-token-here"
 ```
 
-**Using Environment Variables**
+**Option B: Using Environment Variables**
 
-Set the `OpenAI__Key` environment variable:
+Set the `GitHubModels__Token` environment variable:
 
 - **Windows (PowerShell)**:
   ```powershell
-  $env:OpenAI__Key = "your-openai-api-key-here"
+  $env:GitHubModels__Token = "your-github-models-token-here"
   ```
 
 - **Linux/macOS**:
   ```bash
-  export OpenAI__Key="your-openai-api-key-here"
+  export GitHubModels__Token="your-github-models-token-here"
   ```
 
-#### Get an OpenAI API Key
+#### Get a GitHub Models Token
 
-1. Visit [OpenAI Platform](https://platform.openai.com)
-2. Sign in or create an account
-3. Navigate to API Keys
-4. Create a new API key
-5. Copy your API key
+1. Visit [GitHub Models](https://github.com/marketplace/models)
+2. Sign in with your GitHub account
+3. Select a model (e.g., gpt-4o-mini)
+4. Click "Get API Key" or follow the authentication instructions
+5. Copy your personal access token
 
 
 ### 2. Run the Application
@@ -59,7 +59,7 @@ The application exposes OpenAI-compatible API endpoints. You can interact with t
 
 ## How It Works
 
-This application demonstrates the AI Agents framework with:
+This application demonstrates Agent Framework with:
 
 1. **Writer Agent**: Writes short stories (300 words or less) about specified topics
 2. **Editor Agent**: Edits stories to improve grammar and style, ensuring they stay under 300 words
@@ -73,16 +73,16 @@ When creating a new project, you can customize it using template parameters:
 
 ```bash
 # Specify AI service provider
-dotnet new aiagents-webapi --provider azureopenai
+dotnet new aiagent-webapi --provider azureopenai
 
 # Specify a custom chat model
-dotnet new aiagents-webapi --chat-model gpt-4o
+dotnet new aiagent-webapi --chat-model gpt-4o
 
 # Use API key authentication for Azure OpenAI
-dotnet new aiagents-webapi --provider azureopenai --managed-identity false
+dotnet new aiagent-webapi --provider azureopenai --managed-identity false
 
 # Use Ollama with a different model
-dotnet new aiagents-webapi --provider ollama --chat-model llama3.1
+dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 ```
 
 ### Available Parameters
@@ -111,17 +111,17 @@ dotnet new aiagents-webapi --provider ollama --chat-model llama3.1
 
 ## Learn More
 
-- [Microsoft.Agents.AI Documentation](https://learn.microsoft.com/dotnet/ai/agents)
-- [OpenAI Platform](https://platform.openai.com)
-- [.NET AI Libraries](https://learn.microsoft.com/dotnet/ai/)
+- [AI apps for .NET developers](https://learn.microsoft.com/dotnet/ai)
+- [Microsoft Agent Framework Documentation](https://aka.ms/dotnet/agent-framework/docs)
+- [GitHub Models](https://github.com/marketplace/models)
 
 ## Troubleshooting
 
-**Problem**: Application fails with "Missing configuration: OpenAI:Key"
+**Problem**: Application fails with "Missing configuration: GitHubModels:Token"
 
-**Solution**: Make sure you've configured your OpenAI API key using one of the methods described above.
+**Solution**: Make sure you've configured your GitHub Models API token using one of the methods described above.
 
 **Problem**: API requests fail with authentication errors
 
-**Solution**: Verify your OpenAI API key is valid. Check your usage limits and billing status on the OpenAI Platform.
+**Solution**: Verify your GitHub Models token is valid and hasn't expired. You may need to regenerate it from the GitHub Models website.
 

@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Agents.AI.Templates.Tests;
 
-public class WebApiAgentsTemplateSnapshotTests
+public class WebApiAgentTemplateSnapshotTests
 {
     private static readonly string[] _verificationExcludePatterns = [
 
@@ -33,7 +33,7 @@ public class WebApiAgentsTemplateSnapshotTests
 
     private readonly ILogger _log;
 
-    public WebApiAgentsTemplateSnapshotTests(ITestOutputHelper log)
+    public WebApiAgentTemplateSnapshotTests(ITestOutputHelper log)
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
         _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
@@ -79,10 +79,10 @@ public class WebApiAgentsTemplateSnapshotTests
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
     {
         string workingDir = TestUtils.CreateTemporaryFolder();
-        string templateShortName = "aiagents-webapi";
+        string templateShortName = "aiagent-webapi";
 
         // Get the template location
-        string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Agents.AI.Templates", "src", "WebApiAgents");
+        string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Agents.AI.Templates", "src", "WebApiAgent");
 
         var verificationExcludePatterns = Path.DirectorySeparatorChar is '/'
             ? _verificationExcludePatterns

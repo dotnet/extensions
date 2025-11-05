@@ -9,7 +9,7 @@
     -->
     <_LocalChatTemplateVariant>aspire</_LocalChatTemplateVariant>
 
-    <_WebApiAgentsRoot>$(MSBuildThisFileDirectory)Microsoft.Agents.AI.Templates\src\WebApiAgents\</_WebApiAgentsRoot>
+    <_WebApiAgentRoot>$(MSBuildThisFileDirectory)Microsoft.Agents.AI.Templates\src\WebApiAgent\</_WebApiAgentRoot>
     <_ChatWithCustomDataContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\</_ChatWithCustomDataContentRoot>
     <_McpServerContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\McpServer\</_McpServerContentRoot>
   </PropertyGroup>
@@ -96,8 +96,8 @@
         Include="$(_ChatWithCustomDataContentRoot)Directory.Build.props.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)Directory.Build.props" />
       <GeneratedContent
-        Include="$(_WebApiAgentsRoot)WebApiAgents-CSharp\WebApiAgents-CSharp.csproj.in"
-        OutputPath="$(_WebApiAgentsRoot)WebApiAgents-CSharp\WebApiAgents-CSharp.csproj" />
+        Include="$(_WebApiAgentRoot)WebApiAgent-CSharp\WebApiAgent-CSharp.csproj.in"
+        OutputPath="$(_WebApiAgentRoot)WebApiAgent-CSharp\WebApiAgent-CSharp.csproj" />
       <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj" />
