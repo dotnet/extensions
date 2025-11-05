@@ -42,11 +42,6 @@ public sealed class SectionChunker : IngestionChunker<string>
             }
             chunks.Clear();
         }
-
-        foreach (var chunk in chunks)
-        {
-            yield return chunk;
-        }
     }
 
     private void Process(IngestionDocument document, IngestionDocumentSection section, List<IngestionChunk<string>> chunks, string? parentContext = null)
