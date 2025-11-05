@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Shared\ProjectTemplates\*.cs" Link="Shared\%(Filename)%(Extension)" />
+    <Compile Include="..\Infrastructure\*.cs" Link="Infrastructure\%(Filename)%(Extension)" />
 
     <Compile Remove="Snapshots\**\*.*" />
     <None Include="Snapshots\**\*.*" />
