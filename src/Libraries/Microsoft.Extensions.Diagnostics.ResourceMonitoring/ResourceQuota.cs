@@ -4,8 +4,9 @@
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 /// <summary>
-/// Represents resource quota information for a process or container, including CPU and memory constraints.
-/// Maximum values define the upper limits of resource usage, while guaranteed values specify 
+/// Represents resource quota information for a process or container, including CPU and memory constraints,
+/// that are used as denominators in CPU and memory utilization calculations.
+/// Maximum values define the upper limits of resource usage, while baseline values specify 
 /// the minimum assured resource allocations.
 /// </summary>
 public sealed class ResourceQuota
@@ -21,12 +22,12 @@ public sealed class ResourceQuota
     public double MaxCpuInCores { get; set; }
 
     /// <summary>
-    /// Gets or sets the guaranteed (minimum) memory allocation in bytes.
+    /// Gets or sets the baseline memory allocation in bytes.
     /// </summary>
-    public ulong GuaranteedMemoryInBytes { get; set; }
+    public ulong BaselineMemoryInBytes { get; set; }
 
     /// <summary>
-    /// Gets or sets the guaranteed (minimum) CPU allocation in cores.
+    /// Gets or sets the baseline CPU allocation in cores.
     /// </summary>
-    public double GuaranteedCpuInCores { get; set; }
+    public double BaselineCpuInCores { get; set; }
 }

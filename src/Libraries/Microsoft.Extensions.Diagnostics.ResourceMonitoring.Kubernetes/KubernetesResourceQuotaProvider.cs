@@ -17,9 +17,9 @@ internal class KubernetesResourceQuotaProvider : ResourceQuotaProvider
     {
         return new ResourceQuota
         {
-            GuaranteedCpuInCores = ConvertMillicoreToCpuUnit(_kubernetesMetadata.RequestsCpu),
+            BaselineCpuInCores = ConvertMillicoreToCpuUnit(_kubernetesMetadata.RequestsCpu),
             MaxCpuInCores = ConvertMillicoreToCpuUnit(_kubernetesMetadata.LimitsCpu),
-            GuaranteedMemoryInBytes = _kubernetesMetadata.RequestsMemory,
+            BaselineMemoryInBytes = _kubernetesMetadata.RequestsMemory,
             MaxMemoryInBytes = _kubernetesMetadata.LimitsMemory,
         };
     }
