@@ -30,9 +30,9 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
     public SemanticSimilarityChunker(
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         IngestionChunkerOptions options,
-        float thresholdPercentile = 95.0f)
+        float? thresholdPercentile = null)
     {
-        _embeddingGenerator = Throw.IfNull(embeddingGenerator);
+        _embeddingGenerator = embeddingGenerator;
         _elementsChunker = new(options);
 
         if (thresholdPercentile < 0f || thresholdPercentile > 100f)
@@ -40,7 +40,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
             Throw.ArgumentOutOfRangeException(nameof(thresholdPercentile), "Threshold percentile must be between 0 and 100.");
         }
 
-        _thresholdPercentile = thresholdPercentile;
+        _thresholdPercentile = thresholdPercentile ?? 95.0f;
     }
 
     /// <inheritdoc/>
@@ -58,7 +58,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
 
     private async Task<List<(IngestionDocumentElement element, float distance)>> CalculateDistancesAsync(IngestionDocument documents, CancellationToken cancellationToken)
     {
-        List<(IngestionDocumentElement element, float distance)> elementDistance = [];
+        List<(IngestionDocumentElement element, float distance)> elementDistances = [];
         List<string> semanticContents = [];
 
         foreach (IngestionDocumentElement element in documents.EnumerateContent())
@@ -69,23 +69,28 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
 
             if (!string.IsNullOrEmpty(semanticContent))
             {
-                elementDistance.Add((element, default));
+                elementDistances.Add((element, default));
                 semanticContents.Add(semanticContent!);
             }
         }
 
-        if (elementDistance.Count > 0)
+        if (elementDistances.Count > 0)
         {
             var embeddings = await _embeddingGenerator.GenerateAsync(semanticContents, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            for (int i = 0; i < elementDistance.Count - 1; i++)
+            if (embeddings.Count != elementDistances.Count)
+            {
+                Throw.InvalidOperationException("The number of embeddings returned does not match the number of document elements.");
+            }
+
+            for (int i = 0; i < elementDistances.Count - 1; i++)
             {
                 float distance = 1 - TensorPrimitives.CosineSimilarity(embeddings[i].Vector.Span, embeddings[i + 1].Vector.Span);
-                elementDistance[i] = (elementDistance[i].element, distance);
+                elementDistances[i] = (elementDistances[i].element, distance);
             }
         }
 
-        return elementDistance;
+        return elementDistances;
     }
 
     private IEnumerable<IngestionChunk<string>> MakeChunks(IngestionDocument document, List<(IngestionDocumentElement element, float distance)> elementDistances)
