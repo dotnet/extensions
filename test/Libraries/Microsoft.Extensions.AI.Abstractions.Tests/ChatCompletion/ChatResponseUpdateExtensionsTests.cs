@@ -21,199 +21,6 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Throws<ArgumentNullException>("updates", () => ((List<ChatResponseUpdate>)null!).ToChatResponse());
     }
 
-    [Fact]
-    public void ApplyUpdate_InvalidArgs_Throws()
-    {
-        var response = new ChatResponse();
-        var update = new ChatResponseUpdate();
-
-        Assert.Throws<ArgumentNullException>("response", () => ((ChatResponse)null!).ApplyUpdate(update));
-        Assert.Throws<ArgumentNullException>("update", () => response.ApplyUpdate(null!));
-    }
-
-    [Fact]
-    public void ApplyUpdate_UpdatesResponse()
-    {
-        // Arrange
-        var response = new ChatResponse();
-        var update = new ChatResponseUpdate(ChatRole.Assistant, "Hello, world!")
-        {
-            ResponseId = "resp123",
-            MessageId = "msg456",
-            CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero),
-            ModelId = "model789",
-            ConversationId = "conv101112",
-            FinishReason = ChatFinishReason.Stop
-        };
-
-        // Act
-        response.ApplyUpdate(update);
-
-        // Assert
-        Assert.Equal("resp123", response.ResponseId);
-        Assert.Equal("model789", response.ModelId);
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero), response.CreatedAt);
-        Assert.Equal("conv101112", response.ConversationId);
-        Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
-
-        var message = Assert.Single(response.Messages);
-        Assert.Equal("msg456", message.MessageId);
-        Assert.Equal(ChatRole.Assistant, message.Role);
-        Assert.Equal("Hello, world!", message.Text);
-    }
-
-    [Fact]
-    public void ApplyUpdate_WithOptions_UsesCoalescingOptions()
-    {
-        // Arrange
-        var response = new ChatResponse();
-        var existingDataContent = new DataContent("data:image/png;base64,aGVsbG8=")
-        {
-            Name = "test-data"
-        };
-        response.Messages.Add(new ChatMessage(ChatRole.Assistant, [existingDataContent]));
-
-        var newDataContent = new DataContent("data:image/png;base64,d29ybGQ=")
-        {
-            Name = "test-data"  // Same name as existing
-        };
-        var update = new ChatResponseUpdate
-        {
-            Contents = [newDataContent]
-        };
-
-        // Act
-        response.ApplyUpdate(update);
-
-        // Assert
-        var message = Assert.Single(response.Messages);
-        var dataContent = Assert.Single(message.Contents.OfType<DataContent>());
-        Assert.Equal("data:image/png;base64,d29ybGQ=", dataContent.Uri);
-        Assert.Equal("test-data", dataContent.Name);
-    }
-
-    [Fact]
-    public void ApplyUpdates_InvalidArgs_Throws()
-    {
-        var response = new ChatResponse();
-        var updates = new List<ChatResponseUpdate>();
-
-        Assert.Throws<ArgumentNullException>("response", () => ((ChatResponse)null!).ApplyUpdates(updates));
-        Assert.Throws<ArgumentNullException>("updates", () => response.ApplyUpdates(null!));
-    }
-
-    [Fact]
-    public void ApplyUpdates_UpdatesResponse()
-    {
-        // Arrange
-        var response = new ChatResponse();
-        var updates = new List<ChatResponseUpdate>
-        {
-            new(ChatRole.Assistant, "Hello") { MessageId = "msg1", ResponseId = "resp1" },
-            new(null, ", ") { MessageId = "msg1" },
-            new(null, "world!") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero) },
-            new() { Contents = [new UsageContent(new() { InputTokenCount = 10, OutputTokenCount = 5 })] }
-        };
-
-        // Act
-        response.ApplyUpdates(updates);
-
-        // Assert
-        Assert.Equal("resp1", response.ResponseId);
-        Assert.NotNull(response.Usage);
-        Assert.Equal(10, response.Usage.InputTokenCount);
-        Assert.Equal(5, response.Usage.OutputTokenCount);
-
-        var message = Assert.Single(response.Messages);
-        Assert.Equal("msg1", message.MessageId);
-        Assert.Equal("Hello, world!", message.Text);
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero), message.CreatedAt);
-    }
-
-    [Fact]
-    public void ApplyUpdates_WithEmptyCollection_DoesNothing()
-    {
-        // Arrange
-        var response = new ChatResponse();
-        var updates = new List<ChatResponseUpdate>();
-
-        // Act
-        response.ApplyUpdates(updates);
-
-        // Assert
-        Assert.Empty(response.Messages);
-    }
-
-    [Fact]
-    public async Task ApplyUpdatesAsync_InvalidArgs_Throws()
-    {
-        var response = new ChatResponse();
-        var updates = YieldAsync(new List<ChatResponseUpdate>());
-
-        await Assert.ThrowsAsync<ArgumentNullException>("response", () => ((ChatResponse)null!).ApplyUpdatesAsync(updates));
-        await Assert.ThrowsAsync<ArgumentNullException>("updates", () => response.ApplyUpdatesAsync(null!));
-    }
-
-    [Fact]
-    public async Task ApplyUpdatesAsync_UpdatesResponse()
-    {
-        // Arrange
-        var response = new ChatResponse();
-        var updates = new List<ChatResponseUpdate>
-        {
-            new(ChatRole.Assistant, "Hello") { MessageId = "msg1", ResponseId = "resp1" },
-            new(null, " async") { MessageId = "msg1" },
-            new(null, " world!") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 11, 0, 0, TimeSpan.Zero) },
-            new() { Contents = [new UsageContent(new() { InputTokenCount = 15, OutputTokenCount = 8 })] }
-        };
-
-        // Act
-        await response.ApplyUpdatesAsync(YieldAsync(updates));
-
-        // Assert
-        Assert.Equal("resp1", response.ResponseId);
-        Assert.NotNull(response.Usage);
-        Assert.Equal(15, response.Usage.InputTokenCount);
-        Assert.Equal(8, response.Usage.OutputTokenCount);
-
-        var message = Assert.Single(response.Messages);
-        Assert.Equal("msg1", message.MessageId);
-        Assert.Equal("Hello async world!", message.Text);
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 11, 0, 0, TimeSpan.Zero), message.CreatedAt);
-    }
-
-    [Fact]
-    public async Task ApplyUpdatesAsync_MultipleMessages_ProcessedCorrectly()
-    {
-        // Arrange
-        var response = new ChatResponse();
-        var updates = new List<ChatResponseUpdate>
-        {
-            new(ChatRole.Assistant, "First") { MessageId = "msg1" },
-            new(null, " message") { MessageId = "msg1" },
-            new(ChatRole.User, "Second") { MessageId = "msg2" },
-            new(null, " message") { MessageId = "msg2" },
-            new(ChatRole.Assistant, "Third message") { MessageId = "msg3" }
-        };
-
-        // Act
-        await response.ApplyUpdatesAsync(YieldAsync(updates));
-
-        // Assert
-        Assert.Equal(3, response.Messages.Count);
-        Assert.Equal("First message", response.Messages[0].Text);
-        Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
-        Assert.Equal("msg1", response.Messages[0].MessageId);
-
-        Assert.Equal("Second message", response.Messages[1].Text);
-        Assert.Equal(ChatRole.User, response.Messages[1].Role);
-        Assert.Equal("msg2", response.Messages[1].MessageId);
-
-        Assert.Equal("Third message", response.Messages[2].Text);
-        Assert.Equal(ChatRole.Assistant, response.Messages[2].Role);
-        Assert.Equal("msg3", response.Messages[2].MessageId);
-    }
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -644,7 +451,7 @@ public class ChatResponseUpdateExtensionsTests
     {
         ChatResponseUpdate[] updates =
         [
-            
+
             // First message - ID "msg1", AuthorName "Assistant"
             new(null, "Hi! ") { CreatedAt = new DateTimeOffset(2023, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
             new(ChatRole.Assistant, "Hello") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
@@ -1014,6 +821,99 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("ab", response.Messages[0].Text);
         Assert.Equal(expected, response.Messages[0].CreatedAt);
         Assert.Equal(expected, response.CreatedAt);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_CoalescesImageGenerationToolResultContent(bool useAsync)
+    {
+        // Create test image content with actual byte arrays
+        var image1 = new DataContent((byte[])[1, 2, 3, 4], "image/png") { Name = "image1.png" };
+        var image2 = new DataContent((byte[])[5, 6, 7, 8], "image/jpeg") { Name = "image2.jpg" };
+        var image3 = new DataContent((byte[])[9, 10, 11, 12], "image/png") { Name = "image3.png" };
+        var image4 = new DataContent((byte[])[13, 14, 15, 16], "image/gif") { Name = "image4.gif" };
+
+        ChatResponseUpdate[] updates =
+        {
+            new(null, "Let's generate"),
+            new(null, " some images"),
+
+            // Initial ImageGenerationToolResultContent with ID "img1"
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img1", Outputs = [image1] }] },
+
+            // Another ImageGenerationToolResultContent with different ID "img2" 
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img2", Outputs = [image2] }] },
+
+            // Another ImageGenerationToolResultContent with same ID "img1" - should replace the first one
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img1", Outputs = [image3] }] },
+
+            // ImageGenerationToolResultContent with same ID "img2" - should replace the second one
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img2", Outputs = [image4] }] },
+
+            // Final text
+            new(null, "Here are those generated images"),
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        // Should have 4 content items: 1 text (coalesced) + 2 image results (coalesced) + 1 text
+        Assert.Equal(4, message.Contents.Count);
+
+        // Verify text content was coalesced properly
+        Assert.Equal("Let's generate some images",
+                     Assert.IsType<TextContent>(message.Contents[0]).Text);
+
+        // Get the image result contents
+        var imageResults = message.Contents.OfType<ImageGenerationToolResultContent>().ToArray();
+        Assert.Equal(2, imageResults.Length);
+
+        // Verify the first image result (ID "img1") has the latest content (image3)
+        var firstImageResult = imageResults.First(ir => ir.ImageId == "img1");
+        Assert.NotNull(firstImageResult.Outputs);
+        var firstOutput = Assert.Single(firstImageResult.Outputs);
+        Assert.Same(image3, firstOutput); // Should be the later image, not image1
+
+        // Verify the second image result (ID "img2") has the latest content (image4)
+        var secondImageResult = imageResults.First(ir => ir.ImageId == "img2");
+        Assert.NotNull(secondImageResult.Outputs);
+        var secondOutput = Assert.Single(secondImageResult.Outputs);
+        Assert.Same(image4, secondOutput); // Should be the later image, not image2
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_ImageGenerationToolResultContentWithNullOrEmptyImageId_DoesNotCoalesce(bool useAsync)
+    {
+        var image1 = new DataContent((byte[])[1, 2, 3, 4], "image/png") { Name = "image1.png" };
+        var image2 = new DataContent((byte[])[5, 6, 7, 8], "image/jpeg") { Name = "image2.jpg" };
+        var image3 = new DataContent((byte[])[9, 10, 11, 12], "image/png") { Name = "image3.png" };
+
+        ChatResponseUpdate[] updates =
+        {
+            // ImageGenerationToolResultContent with null ImageId - should not coalesce
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = null, Outputs = [image1] }] },
+
+            // ImageGenerationToolResultContent with empty ImageId - should not coalesce
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "", Outputs = [image2] }] },
+
+            // Another with null ImageId - should not coalesce with the first
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = null, Outputs = [image3] }] },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        // Should have all 3 image result contents since they can't be coalesced
+        var imageResults = message.Contents.OfType<ImageGenerationToolResultContent>().ToArray();
+        Assert.Equal(3, imageResults.Length);
+
+        // Verify each has its original content
+        Assert.Same(image1, imageResults[0].Outputs![0]);
+        Assert.Same(image2, imageResults[1].Outputs![0]);
+        Assert.Same(image3, imageResults[2].Outputs![0]);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)

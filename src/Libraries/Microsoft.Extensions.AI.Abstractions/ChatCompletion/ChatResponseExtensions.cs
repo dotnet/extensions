@@ -123,95 +123,6 @@ public static class ChatResponseExtensions
             list.AddMessages(await updates.ToChatResponseAsync(cancellationToken).ConfigureAwait(false));
     }
 
-    /// <summary>Applies a <see cref="ChatResponseUpdate"/> to an existing <see cref="ChatResponse"/>.</summary>
-    /// <param name="response">The response to which the update should be applied.</param>
-    /// <param name="update">The update to apply to the response.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="update"/> is <see langword="null"/>.</exception>
-    /// <remarks>
-    /// This method modifies the existing <paramref name="response"/> by incorporating the content and metadata
-    /// from the <paramref name="update"/>. This includes using <see cref="ChatResponseUpdate.MessageId"/> to determine
-    /// message boundaries, as well as coalescing contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
-    /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
-    /// </remarks>
-    [Experimental("MEAI0001")]
-    public static void ApplyUpdate(this ChatResponse response, ChatResponseUpdate update)
-    {
-        _ = Throw.IfNull(response);
-        _ = Throw.IfNull(update);
-
-        ProcessUpdate(update, response);
-        FinalizeResponse(response);
-    }
-
-    /// <summary>Applies <see cref="ChatResponseUpdate"/> instances to an existing <see cref="ChatResponse"/>.</summary>
-    /// <param name="response">The response to which the updates should be applied.</param>
-    /// <param name="updates">The updates to apply to the response.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
-    /// <remarks>
-    /// This method modifies the existing <paramref name="response"/> by incorporating the content and metadata
-    /// from the <paramref name="updates"/>. This includes using <see cref="ChatResponseUpdate.MessageId"/> to determine
-    /// message boundaries, as well as coalescing contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
-    /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
-    /// </remarks>
-    [Experimental("MEAI0001")]
-    public static void ApplyUpdates(this ChatResponse response, IEnumerable<ChatResponseUpdate> updates)
-    {
-        _ = Throw.IfNull(response);
-        _ = Throw.IfNull(updates);
-
-        if (updates is ICollection<ChatResponseUpdate> { Count: 0 })
-        {
-            return;
-        }
-
-        foreach (var update in updates)
-        {
-            ProcessUpdate(update, response);
-        }
-
-        FinalizeResponse(response);
-    }
-
-    /// <summary>Applies <see cref="ChatResponseUpdate"/> instances to an existing <see cref="ChatResponse"/> asynchronously.</summary>
-    /// <param name="response">The response to which the updates should be applied.</param>
-    /// <param name="updates">The updates to apply to the response.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/>rlto monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
-    /// <remarks>
-    /// This method modifies the existing <paramref name="response"/> by incorporating the content and metadata
-    /// from the <paramref name="updates"/>. This includes using <see cref="ChatResponseUpdate.MessageId"/> to determine
-    /// message boundaries, as well as coalescing contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
-    /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
-    /// </remarks>
-    [Experimental("MEAI0001")]
-    public static Task ApplyUpdatesAsync(
-        this ChatResponse response,
-        IAsyncEnumerable<ChatResponseUpdate> updates,
-        CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(response);
-        _ = Throw.IfNull(updates);
-
-        return ApplyUpdatesAsync(response, updates, cancellationToken);
-
-        static async Task ApplyUpdatesAsync(
-            ChatResponse response,
-            IAsyncEnumerable<ChatResponseUpdate> updates,
-            CancellationToken cancellationToken)
-        {
-            await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                ProcessUpdate(update, response);
-            }
-
-            FinalizeResponse(response);
-        }
-    }
-
     /// <summary>Combines <see cref="ChatResponseUpdate"/> instances into a single <see cref="ChatResponse"/>.</summary>
     /// <param name="updates">The updates to be combined.</param>
     /// <returns>The combined <see cref="ChatResponse"/>.</returns>
@@ -228,9 +139,14 @@ public static class ChatResponseExtensions
         _ = Throw.IfNull(updates);
 
         ChatResponse response = new();
-#pragma warning disable MEAI0001
-        response.ApplyUpdates(updates);
-#pragma warning restore MEAI0001
+
+        foreach (var update in updates)
+        {
+            ProcessUpdate(update, response);
+        }
+
+        FinalizeResponse(response);
+
         return response;
     }
 
@@ -256,43 +172,48 @@ public static class ChatResponseExtensions
             IAsyncEnumerable<ChatResponseUpdate> updates, CancellationToken cancellationToken)
         {
             ChatResponse response = new();
-#pragma warning disable MEAI0001
-            await response.ApplyUpdatesAsync(updates, cancellationToken).ConfigureAwait(false);
-#pragma warning restore MEAI0001
+
+            await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                ProcessUpdate(update, response);
+            }
+
+            FinalizeResponse(response);
+
             return response;
         }
     }
 
     /// <summary>
-    /// Coalesces image data content elements in the provided list of <see cref="AIContent"/> items.
+    /// Coalesces image result content elements in the provided list of <see cref="AIContent"/> items.
     /// Unlike other content coalescing methods, this will coalesce non-sequential items based on their Name property, 
     /// and it will replace earlier items with later ones when duplicates are found.
     /// </summary>
-    internal static void CoalesceImageDataContent(IList<AIContent> contents)
+    private static void CoalesceImageResultContent(IList<AIContent> contents)
     {
-        Dictionary<string, int>? dataContentIndexByName = null;
+        Dictionary<string, int>? imageResultIndexById = null;
         bool hasRemovals = false;
 
         for (int i = 0; i < contents.Count; i++)
         {
-            if (contents[i] is DataContent dataContent && dataContent.HasTopLevelMediaType("image") && !string.IsNullOrEmpty(dataContent.Name))
+            if (contents[i] is ImageGenerationToolResultContent imageResult && !string.IsNullOrEmpty(imageResult.ImageId))
             {
-                // Check if there's an existing DataContent with the same name to replace
-                if (dataContentIndexByName is null)
+                // Check if there's an existing ImageGenerationToolResultContent with the same ImageId to replace
+                if (imageResultIndexById is null)
                 {
-                    dataContentIndexByName = new(StringComparer.Ordinal);
+                    imageResultIndexById = new(StringComparer.Ordinal);
                 }
 
-                if (dataContentIndexByName.TryGetValue(dataContent.Name!, out int existingIndex))
+                if (imageResultIndexById.TryGetValue(imageResult.ImageId!, out int existingIndex))
                 {
-                    // Replace the existing DataContent with the new one
-                    contents[existingIndex] = dataContent;
+                    // Replace the existing imageResult with the new one
+                    contents[existingIndex] = imageResult;
                     contents[i] = null!; // Mark the current one for removal, then remove in single o(n) pass
                     hasRemovals = true;
                 }
                 else
                 {
-                    dataContentIndexByName[dataContent.Name!] = i;
+                    imageResultIndexById[imageResult.ImageId!] = i;
                 }
             }
         }
@@ -339,7 +260,7 @@ public static class ChatResponseExtensions
                 return content;
             });
 
-        CoalesceImageDataContent(contents);
+        CoalesceImageResultContent(contents);
 
         Coalesce<DataContent>(
             contents,
