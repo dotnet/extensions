@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -49,11 +50,6 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
     {
         _ = Throw.IfNull(document);
 
-        if (document.Sections.Count == 0)
-        {
-            yield break;
-        }
-
         List<(IngestionDocumentElement, float)> distances = await CalculateDistancesAsync(document, cancellationToken).ConfigureAwait(false);
         foreach (var chunk in MakeChunks(document, distances))
         {
@@ -79,12 +75,15 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
             }
         }
 
-        var embeddings = await _embeddingGenerator.GenerateAsync(semanticContents, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        for (int i = 0; i < elementDistance.Count - 1; i++)
+        if (elementDistance.Count > 0)
         {
-            float distance = 1 - TensorPrimitives.CosineSimilarity(embeddings[i].Vector.Span, embeddings[i + 1].Vector.Span);
-            elementDistance[i] = (elementDistance[i].element, distance);
+            var embeddings = await _embeddingGenerator.GenerateAsync(semanticContents, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            for (int i = 0; i < elementDistance.Count - 1; i++)
+            {
+                float distance = 1 - TensorPrimitives.CosineSimilarity(embeddings[i].Vector.Span, embeddings[i + 1].Vector.Span);
+                elementDistance[i] = (elementDistance[i].element, distance);
+            }
         }
 
         return elementDistance;
