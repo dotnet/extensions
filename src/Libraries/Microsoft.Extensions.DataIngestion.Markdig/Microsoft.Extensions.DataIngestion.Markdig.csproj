@@ -3,11 +3,12 @@
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
-
-    <!-- we are not ready to publish yet -->
-    <IsPackable>false</IsPackable>
+    <Description>Implementation of IngestionDocumentReader abstraction for Markdown.</Description>
+    <Workstream>RAG</Workstream>
     <Stage>preview</Stage>
     <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>75</MinMutationScore>
   </PropertyGroup>
 
   <ItemGroup>
