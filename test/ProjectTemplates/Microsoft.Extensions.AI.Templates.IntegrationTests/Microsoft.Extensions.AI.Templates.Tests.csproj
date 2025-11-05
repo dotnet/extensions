@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <NoWarn>$(NoWarn);CA1063;CA1861;CA2201;VSTHRD003;S104;S125;S2699</NoWarn>
+    <NoWarn>$(NoWarn);CA1063;CA1716;CA1861;CA2201;VSTHRD003;S104;S125;S2699</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
