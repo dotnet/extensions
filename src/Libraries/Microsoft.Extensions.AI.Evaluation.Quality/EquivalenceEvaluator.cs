@@ -48,11 +48,13 @@ public sealed class EquivalenceEvaluator : IEvaluator
     /// <inheritdoc/>
     public IReadOnlyCollection<string> EvaluationMetricNames { get; } = [EquivalenceMetricName];
 
+    // Note: We intentionally don't set MaxOutputTokens below.
+    // See https://github.com/dotnet/extensions/issues/6814, https://github.com/dotnet/extensions/issues/6945
+    // and https://github.com/dotnet/extensions/issues/7002.
     private static readonly ChatOptions _chatOptions =
         new ChatOptions
         {
             Temperature = 0.0f,
-            MaxOutputTokens = 16, // See https://github.com/dotnet/extensions/issues/6814 and https://github.com/dotnet/extensions/issues/6945.
             TopP = 1.0f,
             PresencePenalty = 0.0f,
             FrequencyPenalty = 0.0f,

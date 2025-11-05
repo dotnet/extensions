@@ -12,9 +12,9 @@ public class HostedFileContentTests
     [Fact]
     public void Constructor_InvalidInput_Throws()
     {
-        Assert.Throws<ArgumentNullException>(() => new HostedFileContent(null!));
-        Assert.Throws<ArgumentException>(() => new HostedFileContent(string.Empty));
-        Assert.Throws<ArgumentException>(() => new HostedFileContent(" "));
+        Assert.Throws<ArgumentNullException>("fileId", () => new HostedFileContent(null!));
+        Assert.Throws<ArgumentException>("fileId", () => new HostedFileContent(string.Empty));
+        Assert.Throws<ArgumentException>("fileId", () => new HostedFileContent(" "));
     }
 
     [Fact]
@@ -36,9 +36,9 @@ public class HostedFileContentTests
         c.FileId = "id456";
         Assert.Equal("id456", c.FileId);
 
-        Assert.Throws<ArgumentNullException>(() => c.FileId = null!);
-        Assert.Throws<ArgumentException>(() => c.FileId = string.Empty);
-        Assert.Throws<ArgumentException>(() => c.FileId = " ");
+        Assert.Throws<ArgumentNullException>("value", () => c.FileId = null!);
+        Assert.Throws<ArgumentException>("value", () => c.FileId = string.Empty);
+        Assert.Throws<ArgumentException>("value", () => c.FileId = " ");
 
         Assert.Null(c.RawRepresentation);
         object raw = new();
@@ -89,7 +89,7 @@ public class HostedFileContentTests
     public void MediaType_InvalidValue_Throws(string invalidMediaType)
     {
         HostedFileContent c = new("id123");
-        Assert.Throws<ArgumentException>(() => c.MediaType = invalidMediaType);
+        Assert.Throws<ArgumentException>("value", () => c.MediaType = invalidMediaType);
     }
 
     [Theory]

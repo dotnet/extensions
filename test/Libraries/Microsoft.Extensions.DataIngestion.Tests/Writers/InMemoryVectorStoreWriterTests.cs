@@ -4,7 +4,7 @@
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 
-namespace Microsoft.Extensions.DataIngestion.Tests;
+namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
 public class InMemoryVectorStoreWriterTests : VectorStoreWriterTests
 {
