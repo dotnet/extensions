@@ -26,6 +26,7 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
     private readonly VectorStore _vectorStore;
     private readonly int _dimensionCount;
     private readonly VectorStoreWriterOptions _options;
+    private readonly bool _keysAreStrings;
 
     private VectorStoreCollection<object, Dictionary<string, object?>>? _vectorStoreCollection;
 
@@ -42,6 +43,12 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
         _vectorStore = Throw.IfNull(vectorStore);
         _dimensionCount = Throw.IfLessThanOrEqual(dimensionCount, 0);
         _options = options ?? new VectorStoreWriterOptions();
+
+        // Not all vector store support string as the key type, examples:
+        // Qdrant: https://github.com/microsoft/semantic-kernel/blob/28ea2f4df872e8fd03ef0792ebc9e1989b4be0ee/dotnet/src/VectorData/Qdrant/QdrantCollection.cs#L104
+        // When https://github.com/microsoft/semantic-kernel/issues/13141 gets released,
+        // we need to remove this workaround.
+        _keysAreStrings = vectorStore.GetType().Name != "QdrantVectorStore";
     }
 
     /// <summary>
@@ -78,7 +85,7 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
             var key = Guid.NewGuid();
             Dictionary<string, object?> record = new()
             {
-                [KeyName] = key,
+                [KeyName] = _keysAreStrings ? key.ToString() : key,
                 [ContentName] = chunk.Content,
                 [EmbeddingName] = chunk.Content,
                 [ContextName] = chunk.Context,
@@ -122,7 +129,7 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
         {
             Properties =
             {
-                new VectorStoreKeyProperty(KeyName, typeof(Guid)),
+                new VectorStoreKeyProperty(KeyName, _keysAreStrings ? typeof(string) : typeof(Guid)),
 
                 // By using T as the type here we allow the vector store
                 // to handle the conversion from T to the actual vector type it supports.
