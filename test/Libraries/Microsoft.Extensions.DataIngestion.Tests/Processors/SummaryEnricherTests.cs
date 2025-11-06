@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Processors.Tests;
@@ -15,9 +18,9 @@ public class SummaryEnricherTests
     private static readonly IngestionDocument _document = new("test");
 
     [Fact]
-    public void ThrowsOnNullChatClient()
+    public void ThrowsOnNullOptions()
     {
-        Assert.Throws<ArgumentNullException>("chatClient", () => new SummaryEnricher(null!));
+        Assert.Throws<ArgumentNullException>("options", () => new SummaryEnricher(null!));
     }
 
     [Theory]
@@ -25,14 +28,14 @@ public class SummaryEnricherTests
     [InlineData(-1)]
     public void ThrowsOnInvalidMaxKeywords(int wordCount)
     {
-        Assert.Throws<ArgumentOutOfRangeException>("maxWordCount", () => new SummaryEnricher(new TestChatClient(), maxWordCount: wordCount));
+        Assert.Throws<ArgumentOutOfRangeException>("maxWordCount", () => new SummaryEnricher(new(new TestChatClient()), maxWordCount: wordCount));
     }
 
     [Fact]
     public async Task ThrowsOnNullChunks()
     {
         using TestChatClient chatClient = new();
-        SummaryEnricher sut = new(chatClient);
+        SummaryEnricher sut = new(new(chatClient));
 
         await Assert.ThrowsAsync<ArgumentNullException>("chunks", async () =>
         {
@@ -52,19 +55,21 @@ public class SummaryEnricherTests
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
+                Assert.Equal(0, counter++);
                 var materializedMessages = messages.ToArray();
 
                 Assert.Equal(2, materializedMessages.Length);
                 Assert.Equal(ChatRole.System, materializedMessages[0].Role);
                 Assert.Equal(ChatRole.User, materializedMessages[1].Role);
 
+                string response = JsonSerializer.Serialize(new Envelope<string[]> { data = summaries });
                 return Task.FromResult(new ChatResponse(new[]
                 {
-                    new ChatMessage(ChatRole.Assistant, summaries[counter++])
+                    new ChatMessage(ChatRole.Assistant, response)
                 }));
             }
         };
-        SummaryEnricher sut = new(chatClient);
+        SummaryEnricher sut = new(new(chatClient));
         var input = CreateChunks().ToAsyncEnumerable();
 
         var chunks = await sut.ProcessAsync(input).ToListAsync();
@@ -72,6 +77,28 @@ public class SummaryEnricherTests
         Assert.Equal(2, chunks.Count);
         Assert.Equal(summaries[0], (string)chunks[0].Metadata[SummaryEnricher.MetadataKey]!);
         Assert.Equal(summaries[1], (string)chunks[1].Metadata[SummaryEnricher.MetadataKey]!);
+    }
+
+    [Fact]
+    public async Task FailureDoesNotStopTheProcessing()
+    {
+        FakeLogCollector collector = new();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+        using TestChatClient chatClient = new()
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromException<ChatResponse>(new ExpectedException())
+        };
+
+        SummaryEnricher sut = new(new(chatClient) { LoggerFactory = loggerFactory });
+        List<IngestionChunk<string>> chunks = CreateChunks();
+
+        IReadOnlyList<IngestionChunk<string>> got = await sut.ProcessAsync(chunks.ToAsyncEnumerable()).ToListAsync();
+
+        Assert.Equal(chunks.Count, got.Count);
+        Assert.All(chunks, chunk => Assert.False(chunk.HasMetadata));
+        Assert.Equal(1, collector.Count); // with batching, only one log entry is expected
+        Assert.Equal(LogLevel.Error, collector.LatestRecord.Level);
+        Assert.IsType<ExpectedException>(collector.LatestRecord.Exception);
     }
 
     private static List<IngestionChunk<string>> CreateChunks() =>
