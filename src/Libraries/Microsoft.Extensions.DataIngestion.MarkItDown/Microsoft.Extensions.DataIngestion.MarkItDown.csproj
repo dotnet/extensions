@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
+    <Description>Implementation of IngestionDocumentReader abstraction for MarkItDown.</Description>
+    <Workstream>RAG</Workstream>
+    <Stage>preview</Stage>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>75</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.DataIngestion.Markdig\MarkdownParser.cs" Link="MarkdownParser.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.DataIngestion.Abstractions\Microsoft.Extensions.DataIngestion.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig.Signed" />
+  </ItemGroup>
+
+</Project>

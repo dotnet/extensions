@@ -3,14 +3,14 @@
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
-
-    <!--  Project reference can be removed -->
-    <NoWarn>$(NoWarn);RT0002</NoWarn>
-
-    <!-- we are not ready to publish yet -->
-    <IsPackable>false</IsPackable>
+    <Description>Data Ingestion utilities for RAG.</Description>
+    <Workstream>RAG</Workstream>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
     <Stage>preview</Stage>
-    <EnablePackageValidation>false</EnablePackageValidation> 
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>75</MinMutationScore>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,8 +18,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
+    <PackageReference Include="Microsoft.ML.Tokenizers" />
+    <PackageReference Include="System.Numerics.Tensors" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+    <PackageReference Include="System.Collections.Immutable" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <!-- Workaround https://github.com/microsoft/semantic-kernel/issues/13316 -->
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonVersion)" />
   </ItemGroup>
 
 </Project>

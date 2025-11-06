@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods that take it.
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;

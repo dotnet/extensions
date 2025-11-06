@@ -3,13 +3,14 @@
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
-    
-    <!-- we are not ready to publish yet -->
-    <IsPackable>false</IsPackable>
+    <Description>Abstractions representing Data Ingestion components for RAG.</Description>
+    <Workstream>RAG</Workstream>
+    <Stage>preview</Stage>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>75</MinMutationScore>
     <!--  Convert abstract class into interface -->
     <NoWarn>$(NoWarn);S1694</NoWarn>
-    <Stage>preview</Stage>
-    <EnablePackageValidation>false</EnablePackageValidation> 
   </PropertyGroup>
 
   <ItemGroup>

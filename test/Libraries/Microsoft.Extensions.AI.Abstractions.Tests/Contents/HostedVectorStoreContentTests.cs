@@ -12,9 +12,9 @@ public class HostedVectorStoreContentTests
     [Fact]
     public void Constructor_InvalidInput_Throws()
     {
-        Assert.Throws<ArgumentNullException>(() => new HostedVectorStoreContent(null!));
-        Assert.Throws<ArgumentException>(() => new HostedVectorStoreContent(string.Empty));
-        Assert.Throws<ArgumentException>(() => new HostedVectorStoreContent(" "));
+        Assert.Throws<ArgumentNullException>("vectorStoreId", () => new HostedVectorStoreContent(null!));
+        Assert.Throws<ArgumentException>("vectorStoreId", () => new HostedVectorStoreContent(string.Empty));
+        Assert.Throws<ArgumentException>("vectorStoreId", () => new HostedVectorStoreContent(" "));
     }
 
     [Fact]
@@ -35,9 +35,9 @@ public class HostedVectorStoreContentTests
         c.VectorStoreId = "id456";
         Assert.Equal("id456", c.VectorStoreId);
 
-        Assert.Throws<ArgumentNullException>(() => c.VectorStoreId = null!);
-        Assert.Throws<ArgumentException>(() => c.VectorStoreId = string.Empty);
-        Assert.Throws<ArgumentException>(() => c.VectorStoreId = " ");
+        Assert.Throws<ArgumentNullException>("value", () => c.VectorStoreId = null!);
+        Assert.Throws<ArgumentException>("value", () => c.VectorStoreId = string.Empty);
+        Assert.Throws<ArgumentException>("value", () => c.VectorStoreId = " ");
         Assert.Equal("id456", c.VectorStoreId);
 
         Assert.Null(c.RawRepresentation);
