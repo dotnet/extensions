@@ -4773,10 +4773,13 @@ public class OpenAIResponseClientTests
             data: {"type":"response.in_progress","response":{"id":"resp_def456","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-2024-11-20","output":[]}}
 
             event: response.output_item.added
-            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"image_generation_call","id":"img_call_def456"}}
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"image_generation_call","id":"img_call_def456","status":"in_progress"}}
 
             event: response.image_generation_call.in_progress
             data: {"type":"response.image_generation_call.in_progress","item_id":"img_call_def456","output_index":0}
+
+            event: response.image_generation_call.generating
+            data: {"type":"response.image_generation_call.generating","item_id":"img_call_def456","output_index":0}
 
             event: response.image_generation_call.partial_image
             data: {"type":"response.image_generation_call.partial_image","item_id":"img_call_def456","output_index":0,"partial_image_index":0,"partial_image_b64":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}
@@ -4812,9 +4815,9 @@ public class OpenAIResponseClientTests
             updates.Add(update);
         }
 
-        Assert.True(updates.Count >= 5);
+        Assert.True(updates.Count >= 6);
 
-        // Should have updates for: created, in_progress, tool call start, partial image, completion
+        // Should have updates for: created, in_progress, tool call start, generating, partial image, completion
         var createdUpdate = updates.First(u => u.CreatedAt.HasValue);
         Assert.Equal("resp_def456", createdUpdate.ResponseId);
         Assert.Equal("gpt-4o-2024-11-20", createdUpdate.ModelId);
