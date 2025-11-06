@@ -1,5 +1,8 @@
 ﻿using System.ClientModel;
+using System.ComponentModel;
+using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
+using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using OpenAI;
 
@@ -20,10 +23,20 @@ var chatClient = azureOpenAI.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClien
 
 builder.Services.AddChatClient(chatClient);
 
-var writer = builder.AddAIAgent("writer", "You write short stories (300 words or less) about the specified topic.");
-var editor = builder.AddAIAgent("editor", "You edit short stories to improve grammar and style. You ensure the stories are less than 300 words.");
+builder.AddAIAgent("writer", "You write short stories (300 words or less) about the specified topic.");
 
-builder.AddSequentialWorkflow("publisher", [writer, editor]).AddAsAIAgent();
+builder.AddAIAgent("editor", (sp, key) => new ChatClientAgent(
+    chatClient,
+    name: key,
+    instructions: "You edit short stories to improve grammar and style. You ensure the stories are less than 300 words.",
+    tools: [ AIFunctionFactory.Create(FormatStory) ]
+));
+
+builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequential(
+    workflowName: key,
+    sp.GetRequiredKeyedService<AIAgent>("writer"),
+    sp.GetRequiredKeyedService<AIAgent>("editor")
+)).AddAsAIAgent();
 
 var app = builder.Build();
 
@@ -31,3 +44,11 @@ app.UseHttpsRedirection();
 app.MapOpenAIResponses();
 
 app.Run();
+
+[Description("Formats the story for display.")]
+string FormatStory(string title, string story) => $"""
+    **Title**: {title}
+    **Date**: {DateTime.Today.ToShortDateString()}
+
+    {story}
+    """;

@@ -2,9 +2,14 @@
 using System.ClientModel;
 #elif (IsAzureOpenAI && IsManagedIdentity)
 using System.ClientModel.Primitives;
+#endif
+using System.ComponentModel;
+#if (IsAzureOpenAI && IsManagedIdentity)
 using Azure.Identity;
 #endif
+using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
+using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 #if (IsOllama)
 using OllamaSharp;
@@ -22,16 +27,12 @@ var builder = WebApplication.CreateBuilder(args);
 var credential = new ApiKeyCredential(builder.Configuration["GitHubModels:Token"] ?? throw new InvalidOperationException("Missing configuration: GitHubModels:Token. See README for details."));
 var openAIOptions = new OpenAIClientOptions { Endpoint = new Uri("https://models.inference.ai.azure.com") };
 
-var ghModelsClient = new OpenAIClient(credential, openAIOptions)
+var chatClient = new OpenAIClient(credential, openAIOptions)
     .GetChatClient("gpt-4o-mini").AsIChatClient();
-
-builder.Services.AddChatClient(ghModelsClient);
 #elif (IsOllama)
 // You will need to have Ollama running locally with the llama3.2 model installed
 // Visit https://ollama.com for installation instructions
-IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
-
-builder.Services.AddChatClient(chatClient);
+var chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
 #elif (IsOpenAI)
 // You will need to set the API key to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
@@ -43,8 +44,6 @@ var openAIClient = new OpenAIClient(
 #pragma warning disable OPENAI001 // GetOpenAIResponseClient(string) is experimental and subject to change or removal in future updates.
 var chatClient = openAIClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
 #pragma warning restore OPENAI001
-
-builder.Services.AddChatClient(chatClient);
 #elif (IsAzureOpenAI)
 // You will need to set the endpoint to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
@@ -68,14 +67,24 @@ var azureOpenAI = new OpenAIClient(new ApiKeyCredential(builder.Configuration["A
 #endif
 var chatClient = azureOpenAI.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
 #pragma warning restore OPENAI001
-
-builder.Services.AddChatClient(chatClient);
 #endif
 
-var writer = builder.AddAIAgent("writer", "You write short stories (300 words or less) about the specified topic.");
-var editor = builder.AddAIAgent("editor", "You edit short stories to improve grammar and style. You ensure the stories are less than 300 words.");
+builder.Services.AddChatClient(chatClient);
 
-builder.AddSequentialWorkflow("publisher", [writer, editor]).AddAsAIAgent();
+builder.AddAIAgent("writer", "You write short stories (300 words or less) about the specified topic.");
+
+builder.AddAIAgent("editor", (sp, key) => new ChatClientAgent(
+    chatClient,
+    name: key,
+    instructions: "You edit short stories to improve grammar and style. You ensure the stories are less than 300 words.",
+    tools: [ AIFunctionFactory.Create(FormatStory) ]
+));
+
+builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequential(
+    workflowName: key,
+    sp.GetRequiredKeyedService<AIAgent>("writer"),
+    sp.GetRequiredKeyedService<AIAgent>("editor")
+)).AddAsAIAgent();
 
 var app = builder.Build();
 
@@ -83,3 +92,11 @@ app.UseHttpsRedirection();
 app.MapOpenAIResponses();
 
 app.Run();
+
+[Description("Formats the story for display.")]
+string FormatStory(string title, string story) => $"""
+    **Title**: {title}
+    **Date**: {DateTime.Today.ToShortDateString()}
+
+    {story}
+    """;
