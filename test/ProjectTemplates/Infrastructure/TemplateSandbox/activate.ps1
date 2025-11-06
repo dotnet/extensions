@@ -84,7 +84,7 @@ $env:DOTNET_MULTILEVEL_LOOKUP = 0
 # Put dotnet first on PATH
 $env:PATH = "${env:DOTNET_ROOT};${env:PATH}"
 # Set NUGET_PACKAGES and LOCAL_SHIPPING_PATH
-$env:NUGET_PACKAGES = "$PSScriptRoot\output\packages"
+$env:NUGET_PACKAGES = "$PSScriptRoot\packages"
 $env:LOCAL_SHIPPING_PATH = "$repoRoot\artifacts\packages\$configuration\Shipping\"
 
 # Set the shell prompt
