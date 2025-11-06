@@ -16,16 +16,13 @@ namespace Microsoft.Agents.AI.Templates.Tests;
 
 public class WebApiAgentTemplateSnapshotTests
 {
+    // Keep the exclude patterns below in sync with those in Microsoft.Agents.AI.Templates.csproj.
     private static readonly string[] _verificationExcludePatterns = [
-
-        // Exclude any templated content files
-        "**/*.in",
-
-        // Keep the exclude patterns below in sync with those in Microsoft.Agents.AI.Templates.csproj.
         "**/bin/**",
         "**/obj/**",
         "**/.vs/**",
         "**/*.user",
+        "**/*.in",
         "**/NuGet.config",
         "**/Directory.Build.targets",
         "**/Directory.Build.props"

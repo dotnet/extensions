@@ -43,6 +43,7 @@
         **\obj\**;
         **\.vs\**;
         **\*.user;
+        **\*.in;
         **\NuGet.config;
         **\Directory.Build.targets;
         **\Directory.Build.props;" />
