@@ -11,7 +11,6 @@ namespace Microsoft.Extensions.Http.Diagnostics;
 /// Default implementation of <see cref="HttpDependencyMetadataResolver"/> that uses the base
 /// trie-based lookup algorithm.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 internal sealed class DefaultHttpDependencyMetadataResolver : HttpDependencyMetadataResolver
 {
     /// <summary>
