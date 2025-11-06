@@ -4,23 +4,23 @@
 using System;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Telemetry.Internal;
+using Microsoft.Extensions.Http.Diagnostics;
 using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Telemetry;
 
-public class DownstreamDependencyMetadataManagerTests : IDisposable
+public class HttpDependencyMetadataResolverTests : IDisposable
 {
-    private readonly IDownstreamDependencyMetadataManager _depMetadataManager;
+    private readonly HttpDependencyMetadataResolver _metadataResolver;
     private readonly ServiceProvider _sp;
 
-    public DownstreamDependencyMetadataManagerTests()
+    public HttpDependencyMetadataResolverTests()
     {
         _sp = new ServiceCollection()
             .AddDownstreamDependencyMetadata(new BackslashDownstreamDependencyMetadata())
             .AddDownstreamDependencyMetadata(new EmptyRouteDependencyMetadata())
             .BuildServiceProvider();
-        _depMetadataManager = _sp.GetRequiredService<IDownstreamDependencyMetadataManager>();
+        _metadataResolver = _sp.GetRequiredService<HttpDependencyMetadataResolver>();
     }
 
     [Theory]
@@ -51,7 +51,7 @@ public class DownstreamDependencyMetadataManagerTests : IDisposable
             RequestUri = new Uri(uriString: urlString)
         };
 
-        var requestMetadata = _depMetadataManager.GetRequestMetadata(requestMessage);
+        var requestMetadata = _metadataResolver.GetRequestMetadata(requestMessage);
         Assert.NotNull(requestMetadata);
         Assert.Equal(new BackslashDownstreamDependencyMetadata().DependencyName, requestMetadata.DependencyName);
         Assert.Equal(expectedRequestName, requestMetadata.RequestName);
@@ -71,7 +71,7 @@ public class DownstreamDependencyMetadataManagerTests : IDisposable
             RequestUri = new Uri(uriString: urlString)
         };
 
-        var requestMetadata = _depMetadataManager.GetRequestMetadata(requestMessage);
+        var requestMetadata = _metadataResolver.GetRequestMetadata(requestMessage);
 
         Assert.NotNull(requestMetadata);
         Assert.Equal("EmptyRouteService", requestMetadata.DependencyName);
