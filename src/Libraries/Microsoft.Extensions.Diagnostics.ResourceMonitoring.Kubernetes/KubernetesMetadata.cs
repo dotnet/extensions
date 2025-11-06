@@ -38,21 +38,23 @@ internal class KubernetesMetadata
     /// <summary>
     /// Fills the object with data loaded from environment variables.
     /// </summary>
-    public void Build()
+    /// <returns>Self</returns>
+    public KubernetesMetadata Build()
     {
         LimitsMemory = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}LIMITS_MEMORY");
         LimitsCpu = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}LIMITS_CPU");
         RequestsMemory = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}REQUESTS_MEMORY");
         RequestsCpu = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}REQUESTS_CPU");
+
+        return this;
     }
 
     private static ulong GetEnvironmentVariableAsUInt64(string variableName)
     {
         var value = Environment.GetEnvironmentVariable(variableName);
-
-        if (string.IsNullOrEmpty(value))
+        if (string.IsNullOrWhiteSpace(value))
         {
-            throw new InvalidOperationException($"Environment variable '{variableName}' is not set or is empty.");
+            return 0;
         }
 
         if (!ulong.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out ulong result))

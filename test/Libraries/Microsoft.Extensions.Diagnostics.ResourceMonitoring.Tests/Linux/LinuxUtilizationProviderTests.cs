@@ -175,7 +175,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
     }
 
-    [Fact]
+    [ConditionalFact]
     public Task Provider_EmitsLogRecord()
     {
         var meterName = Guid.NewGuid().ToString();

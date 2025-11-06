@@ -36,9 +36,7 @@ public static class KubernetesResourceQuotaServiceCollectionExtensions
         services.TryAddSingleton<KubernetesMetadata>(serviceProvider =>
         {
             var metadata = new KubernetesMetadata(environmentVariablePrefix ?? string.Empty);
-            metadata.Build();
-
-            return metadata;
+            return metadata.Build();
         });
         services.TryAddSingleton<ResourceQuotaProvider, KubernetesResourceQuotaProvider>();
 
