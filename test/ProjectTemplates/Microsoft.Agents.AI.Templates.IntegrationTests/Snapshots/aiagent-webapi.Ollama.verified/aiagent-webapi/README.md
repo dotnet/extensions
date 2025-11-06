@@ -1,6 +1,6 @@
 ﻿# AI Agent Web API
 
-This is an AI Agent Web API application created from the `aiagent-webapi` template.
+This is an AI Agent Web API application created from the `aiagent-webapi` template. This template is currently in a preview stage. If you have feedback, please take a [brief survey](https://aka.ms/dotnet/aiagent-webapi/preview1/survey).
 
 ## Prerequisites
 
