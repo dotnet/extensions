@@ -41,8 +41,9 @@
       <TemplatePackageVersion_CommunityToolkitAspire>9.8.1-beta.413</TemplatePackageVersion_CommunityToolkitAspire>
       <TemplatePackageVersion_MicrosoftExtensionsHosting>10.0.0-rc.2.25502.107</TemplatePackageVersion_MicrosoftExtensionsHosting>
       <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>9.5.1</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
-      <TemplatePackageVersion_MicrosoftSemanticKernel>1.66.0</TemplatePackageVersion_MicrosoftSemanticKernel>
-      <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.66.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
+      <TemplatePackageVersion_MicrosoftMLTokenizers>2.0.0-preview.25503.2</TemplatePackageVersion_MicrosoftMLTokenizers>
+      <TemplatePackageVersion_MicrosoftSemanticKernel>1.67.0</TemplatePackageVersion_MicrosoftSemanticKernel>
+      <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.67.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
       <TemplatePackageVersion_ModelContextProtocol>0.4.0-preview.1</TemplatePackageVersion_ModelContextProtocol>
       <TemplatePackageVersion_OllamaSharp>5.4.8</TemplatePackageVersion_OllamaSharp>
       <TemplatePackageVersion_OpenTelemetry>1.13.0</TemplatePackageVersion_OpenTelemetry>
@@ -67,6 +68,7 @@
         TemplatePackageVersion_CommunityToolkitAspire=$(TemplatePackageVersion_CommunityToolkitAspire);
         TemplatePackageVersion_MicrosoftExtensionsHosting=$(TemplatePackageVersion_MicrosoftExtensionsHosting);
         TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery=$(TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery);
+        TemplatePackageVersion_MicrosoftMLTokenizers=$(TemplatePackageVersion_MicrosoftMLTokenizers);
         TemplatePackageVersion_MicrosoftSemanticKernel=$(TemplatePackageVersion_MicrosoftSemanticKernel);
         TemplatePackageVersion_MicrosoftSemanticKernel_Preview=$(TemplatePackageVersion_MicrosoftSemanticKernel_Preview);
         TemplatePackageVersion_ModelContextProtocol=$(TemplatePackageVersion_ModelContextProtocol);
