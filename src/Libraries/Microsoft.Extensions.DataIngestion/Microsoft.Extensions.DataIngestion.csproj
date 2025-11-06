@@ -5,6 +5,7 @@
     <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
     <Description>Data Ingestion utilities for RAG.</Description>
     <Workstream>RAG</Workstream>
+    <PackageTags>RAG;ingestion;documents</PackageTags>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
     <Stage>preview</Stage>
