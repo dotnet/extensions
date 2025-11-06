@@ -29,4 +29,9 @@
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <!-- Workaround https://github.com/microsoft/semantic-kernel/issues/13316 -->
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonVersion)" />
+  </ItemGroup>
+
 </Project>
