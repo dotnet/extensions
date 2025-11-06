@@ -22,7 +22,7 @@ public class DataIngestor(
         });
 
         using var pipeline = new IngestionPipeline<string>(
-            reader: new DocumentReader(),
+            reader: new DocumentReader(directory),
             chunker: new SemanticSimilarityChunker(embeddingGenerator, new(TiktokenTokenizer.CreateForModel("gpt-4o"))),
             writer: writer,
             loggerFactory: loggerFactory);

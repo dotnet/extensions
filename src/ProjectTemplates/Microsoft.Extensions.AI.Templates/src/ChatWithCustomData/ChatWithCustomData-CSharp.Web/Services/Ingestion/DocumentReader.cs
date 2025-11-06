@@ -2,13 +2,22 @@ using Microsoft.Extensions.DataIngestion;
 
 namespace ChatWithCustomData_CSharp.Web.Services.Ingestion;
 
-internal sealed class DocumentReader : IngestionDocumentReader
+internal sealed class DocumentReader(DirectoryInfo rootDirectory) : IngestionDocumentReader
 {
     private readonly MarkdownReader _markdownReader = new();
     private readonly MarkItDownReader _markItDownReader = new();
 
     public override Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
-        => base.ReadAsync(source, identifier, mediaType: GetCustomMediaType(source) ?? mediaType, cancellationToken);
+    {
+        if (Path.IsPathFullyQualified(identifier))
+        {
+            // Normalize the identifier to its relative path
+            identifier = Path.GetRelativePath(rootDirectory.FullName, identifier);
+        }
+
+        mediaType = GetCustomMediaType(source) ?? mediaType;
+        return base.ReadAsync(source, identifier, mediaType, cancellationToken);
+    }
 
     public override Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default)
         => mediaType switch
