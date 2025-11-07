@@ -29,10 +29,7 @@ public class DataIngestor(
 
         await foreach (var result in pipeline.ProcessAsync(directory, searchPattern))
         {
-            if (!result.Succeeded)
-            {
-                logger.LogError("Exception occurred during ingestion: {exception}", result.Exception);
-            }
+            logger.LogInformation("Completed processing '{id}'. Succeeded: '{succeeded}'.", result.DocumentId, result.Succeeded);
         }
     }
 }
