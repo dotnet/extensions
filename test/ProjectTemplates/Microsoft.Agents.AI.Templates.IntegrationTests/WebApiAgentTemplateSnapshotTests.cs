@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -12,30 +12,25 @@ using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Agents.AI.Templates.Tests;
 
-public class AIChatWebSnapshotTests
+public class WebApiAgentTemplateSnapshotTests
 {
-    // Keep the exclude patterns below in sync with those in Microsoft.Extensions.AI.Templates.csproj.
+    // Keep the exclude patterns below in sync with those in Microsoft.Agents.AI.Templates.csproj.
     private static readonly string[] _verificationExcludePatterns = [
         "**/bin/**",
         "**/obj/**",
         "**/.vs/**",
-        "**/node_modules/**",
         "**/*.user",
         "**/*.in",
-        "**/*.out.js",
-        "**/*.generated.css",
-        "**/package-lock.json",
-        "**/ingestioncache.*",
         "**/NuGet.config",
         "**/Directory.Build.targets",
-        "**/Directory.Build.props",
+        "**/Directory.Build.props"
     ];
 
     private readonly ILogger _log;
 
-    public AIChatWebSnapshotTests(ITestOutputHelper log)
+    public WebApiAgentTemplateSnapshotTests(ITestOutputHelper log)
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
         _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
@@ -43,42 +38,48 @@ public class AIChatWebSnapshotTests
     }
 
     [Fact]
-    public async Task BasicTest()
+    public async Task DefaultParameters()
     {
-        await TestTemplateCoreAsync(scenarioName: "Basic");
+        await TestTemplateCoreAsync(scenarioName: nameof(DefaultParameters));
     }
 
     [Fact]
-    public async Task Ollama_Qdrant()
+    public async Task GitHubModels()
     {
-        await TestTemplateCoreAsync(scenarioName: "Ollama_Qdrant", templateArgs: ["--provider", "ollama", "--vector-store", "qdrant"]);
+        await TestTemplateCoreAsync(scenarioName: nameof(GitHubModels), templateArgs: ["--provider", "githubmodels"]);
     }
 
     [Fact]
-    public async Task OpenAI_AzureAISearch()
+    public async Task OpenAI()
     {
-        await TestTemplateCoreAsync(scenarioName: "OpenAI_AzureAISearch", templateArgs: ["--provider", "openai", "--vector-store", "azureaisearch"]);
+        await TestTemplateCoreAsync(scenarioName: nameof(OpenAI), templateArgs: ["--provider", "openai"]);
     }
 
     [Fact]
-    public async Task BasicAspireTest()
+    public async Task AzureOpenAI_ManagedIdentity()
     {
-        await TestTemplateCoreAsync(scenarioName: "BasicAspire", templateArgs: ["--aspire"]);
+        await TestTemplateCoreAsync(scenarioName: nameof(AzureOpenAI_ManagedIdentity), templateArgs: ["--provider", "azureopenai"]);
     }
 
     [Fact]
-    public async Task AzureOpenAI_AzureAISearch_Aspire()
+    public async Task AzureOpenAI_ApiKey()
     {
-        await TestTemplateCoreAsync(scenarioName: "AzureOpenAI_Qdrant_Aspire", templateArgs: ["--provider", "azureopenai", "--vector-store", "azureaisearch", "--aspire"]);
+        await TestTemplateCoreAsync(scenarioName: nameof(AzureOpenAI_ApiKey), templateArgs: ["--provider", "azureopenai", "--managed-identity", "false"]);
+    }
+
+    [Fact]
+    public async Task Ollama()
+    {
+        await TestTemplateCoreAsync(scenarioName: nameof(Ollama), templateArgs: ["--provider", "ollama"]);
     }
 
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
     {
         string workingDir = TestUtils.CreateTemporaryFolder();
-        string templateShortName = "aichatweb";
+        string templateShortName = "aiagent-webapi";
 
         // Get the template location
-        string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Extensions.AI.Templates", "src", "ChatWithCustomData");
+        string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Agents.AI.Templates", "src", "WebApiAgent");
 
         var verificationExcludePatterns = Path.DirectorySeparatorChar is '/'
             ? _verificationExcludePatterns
@@ -111,11 +112,11 @@ public class AIChatWebSnapshotTests
 
                     // Scrub references to just-built packages and remove the suffix, if it exists.
                     // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
-                    var pattern = @"(?<=<PackageReference\s+Include=""Microsoft\.Extensions\..*""\s+Version="")(\d+\.\d+\.\d+)(?:-[^""]*)?(?=""\s*/>)";
-                    content.ScrubByRegex(pattern, replacement: "$1");
+                    var pattern = @"(?<=<PackageReference\s+Include=""Microsoft\.(Agents|Extensions)\..*""\s+Version="")(\d+\.\d+\.\d+)(?:-[^""]*)?(?=""\s*/>)";
+                    content.ScrubByRegex(pattern, replacement: "$2");
                 }
 
-                if (filePath.EndsWith("launchSettings.json"))
+                if (filePath.EndsWith("launchSettings.json") || filePath.EndsWith("README.md"))
                 {
                     content.ScrubByRegex("(http(s?):\\/\\/localhost)\\:(\\d*)", "$1:9999");
                 }
