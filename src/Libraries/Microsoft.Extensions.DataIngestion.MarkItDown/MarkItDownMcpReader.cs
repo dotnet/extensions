@@ -50,7 +50,7 @@ public class MarkItDownMcpReader : IngestionDocumentReader
         ReadOnlyMemory<byte> fileBytes;
         using (FileStream fs = new(source.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1, FileOptions.Asynchronous))
         {
-            using MemoryStream ms = new((int)fs.Length);
+            using MemoryStream ms = new((int)Math.Min(int.MaxValue, fs.Length));
             await fs.CopyToAsync(ms).ConfigureAwait(false);
             fileBytes = ms.GetBuffer().AsMemory(0, (int)ms.Length);
         }
@@ -71,7 +71,7 @@ public class MarkItDownMcpReader : IngestionDocumentReader
         _ = Throw.IfNullOrEmpty(identifier);
 
         // Read stream content and create data URI using DataContent
-        using MemoryStream ms = source.CanSeek ? new((int)source.Length) : new();
+        using MemoryStream ms = source.CanSeek ? new((int)Math.Min(int.MaxValue, source.Length)) : new();
 #if NET
         await source.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
 #else
