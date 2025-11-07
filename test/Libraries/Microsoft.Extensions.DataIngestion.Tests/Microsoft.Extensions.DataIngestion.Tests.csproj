@@ -25,6 +25,8 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" />
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+    <!-- Required by ModelContextProtocol.Core to avoid package downgrade -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFramework)' == 'net10.0'" VersionOverride="$(MicrosoftBclAsyncInterfacesNet10Version)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
