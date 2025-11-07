@@ -51,6 +51,10 @@ var vectorDB = builder.AddQdrant("vectordb")
 #else // IsLocalVectorStore
 #endif
 
+var markitdown = builder.AddContainer("markitdown", "mcp/markitdown")
+    .WithArgs("--http", "--host", "0.0.0.0", "--port", "3001")
+    .WithHttpEndpoint(targetPort: 3001, name: "http");
+
 var webApp = builder.AddProject<Projects.ChatWithCustomData_CSharp_Web_AspireClassName_Web>("aichatweb-app");
 #if (IsOllama) // AI SERVICE PROVIDER REFERENCES
 webApp
@@ -75,5 +79,7 @@ webApp
     .WaitFor(vectorDB);
 #else // IsLocalVectorStore
 #endif
+webApp
+    .WithEnvironment("MARKITDOWN_MCP_URL", markitdown.GetEndpoint("http"));
 
 builder.Build().Run();

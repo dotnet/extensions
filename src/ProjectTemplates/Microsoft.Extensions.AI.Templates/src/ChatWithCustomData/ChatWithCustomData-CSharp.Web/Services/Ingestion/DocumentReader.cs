@@ -6,7 +6,7 @@ internal sealed class DocumentReader(DirectoryInfo rootDirectory) : IngestionDoc
 {
     private readonly MarkdownReader _markdownReader = new();
 #if (IsAspire)
-    private readonly MarkItDownReader _pdfReader = new();
+    private readonly MarkItDownMcpReader _pdfReader = new(mcpServerUri: GetMarkItDownMcpServerUrl());
 #else
     private readonly PdfPigReader _pdfReader = new();
 #endif
