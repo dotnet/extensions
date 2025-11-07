@@ -81,6 +81,11 @@ public class ImageGenerationOptions
     /// </summary>
     public ImageGenerationResponseFormat? ResponseFormat { get; set; }
 
+    /// <summary>
+    /// Gets or sets the number of intermediate streaming images to generate.
+    /// </summary>
+    public int? StreamingCount { get; set; }
+
     /// <summary>Gets or sets any additional properties associated with the options.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
