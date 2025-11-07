@@ -8,15 +8,12 @@ public class SemanticSearch(
     [FromKeyedServices("ingestion_directory")] DirectoryInfo ingestionDirectory,
     DataIngestor dataIngestor)
 {
-    private bool _initialized = false;
+    private Task? _ingestionTask;
 
     public async Task<IReadOnlyList<IngestedChunk>> SearchAsync(string text, string? documentIdFilter, int maxResults)
     {
-        if (!_initialized)
-        {
-            await dataIngestor.IngestDataAsync(ingestionDirectory, searchPattern: "*.*");
-            _initialized = true;
-        }
+        _ingestionTask ??= dataIngestor.IngestDataAsync(ingestionDirectory, searchPattern: "*.*");
+        await _ingestionTask;
 
         var nearest = vectorCollection.SearchAsync(text, maxResults, new VectorSearchOptions<IngestedChunk>
         {
