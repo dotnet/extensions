@@ -37,10 +37,12 @@ internal sealed class DocumentReader(DirectoryInfo rootDirectory) : IngestionDoc
             ".md" => "text/markdown",
             _ => null
         };
+#if (IsAspire)
 
     private static Uri GetMarkItDownMcpServerUrl()
     {
         var markItDownMcpUrl = $"{Environment.GetEnvironmentVariable("MARKITDOWN_MCP_URL")}/mcp";
         return new Uri(markItDownMcpUrl);
     }
+#endif
 }
