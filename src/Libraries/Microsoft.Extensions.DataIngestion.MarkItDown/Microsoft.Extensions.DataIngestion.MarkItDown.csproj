@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="Markdig.Signed" />
+    <PackageReference Include="ModelContextProtocol.Core" />
   </ItemGroup>
 
 </Project>
