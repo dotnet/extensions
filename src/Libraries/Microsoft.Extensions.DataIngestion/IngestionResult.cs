@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.IO;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -13,9 +12,9 @@ namespace Microsoft.Extensions.DataIngestion;
 public sealed class IngestionResult
 {
     /// <summary>
-    /// Gets the source file that was ingested.
+    /// Gets the ID of the document that was ingested.
     /// </summary>
-    public FileInfo Source { get; }
+    public string DocumentId { get; }
 
     /// <summary>
     /// Gets the ingestion document created from the source file, if reading the document has succeeded.
@@ -32,9 +31,9 @@ public sealed class IngestionResult
     /// </summary>
     public bool Succeeded => Exception is null;
 
-    internal IngestionResult(FileInfo source, IngestionDocument? document, Exception? exception)
+    internal IngestionResult(string documentId, IngestionDocument? document, Exception? exception)
     {
-        Source = Throw.IfNull(source);
+        DocumentId = Throw.IfNullOrEmpty(documentId);
         Document = document;
         Exception = exception;
     }

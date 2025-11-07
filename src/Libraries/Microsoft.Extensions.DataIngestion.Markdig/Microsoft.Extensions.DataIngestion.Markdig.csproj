@@ -5,6 +5,7 @@
     <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
     <Description>Implementation of IngestionDocumentReader abstraction for Markdown.</Description>
     <Workstream>RAG</Workstream>
+    <PackageTags>RAG;ingestion;documents;markdown</PackageTags>
     <Stage>preview</Stage>
     <EnablePackageValidation>false</EnablePackageValidation>
     <MinCodeCoverage>75</MinCodeCoverage>

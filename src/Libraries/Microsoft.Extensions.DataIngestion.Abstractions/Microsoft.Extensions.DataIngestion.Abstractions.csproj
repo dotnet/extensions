@@ -5,6 +5,7 @@
     <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
     <Description>Abstractions representing Data Ingestion components for RAG.</Description>
     <Workstream>RAG</Workstream>
+    <PackageTags>RAG;ingestion;documents</PackageTags>
     <Stage>preview</Stage>
     <EnablePackageValidation>false</EnablePackageValidation>
     <MinCodeCoverage>75</MinCodeCoverage>

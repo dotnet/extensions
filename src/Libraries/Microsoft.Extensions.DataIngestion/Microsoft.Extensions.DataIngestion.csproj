@@ -5,6 +5,7 @@
     <RootNamespace>Microsoft.Extensions.DataIngestion</RootNamespace>
     <Description>Data Ingestion utilities for RAG.</Description>
     <Workstream>RAG</Workstream>
+    <PackageTags>RAG;ingestion;documents</PackageTags>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
     <Stage>preview</Stage>
@@ -15,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.DataIngestion.Abstractions\Microsoft.Extensions.DataIngestion.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,7 +28,6 @@
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
-    <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
