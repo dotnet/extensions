@@ -4640,6 +4640,356 @@ public class OpenAIResponseClientTests
         Assert.Equal("Refusal", errorContent.ErrorCode);
     }
 
+    [Fact]
+    public async Task HostedImageGenerationTool_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o",
+                "tools": [
+                    {
+                        "type": "image_generation",
+                        "model": "gpt-image-1",
+                        "size": "1024x1024",
+                        "output_format": "png"
+                    }
+                ],
+                "tool_choice": "auto",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Generate an image of a cat"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_abc123",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "model": "gpt-4o-2024-11-20",
+              "output": [
+                {
+                  "type": "image_generation_call",
+                  "id": "img_call_abc123",
+                  "result": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+                }
+              ],
+              "usage": {
+                "input_tokens": 15,
+                "output_tokens": 0,
+                "total_tokens": 15
+              }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o");
+
+        var imageTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                ImageSize = new(1024, 1024),
+                MediaType = "image/png"
+            }
+        };
+        var response = await client.GetResponseAsync("Generate an image of a cat", new ChatOptions
+        {
+            Tools = [imageTool]
+        });
+
+        Assert.NotNull(response);
+        Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
+
+        var contents = response.Messages[0].Contents;
+        Assert.Equal(2, contents.Count);
+
+        // First content should be the tool call
+        var toolCall = contents[0] as ImageGenerationToolCallContent;
+        Assert.NotNull(toolCall);
+        Assert.Equal("img_call_abc123", toolCall.ImageId);
+
+        // Second content should be the result with image data
+        var toolResult = contents[1] as ImageGenerationToolResultContent;
+        Assert.NotNull(toolResult);
+        Assert.Equal("img_call_abc123", toolResult.ImageId);
+        Assert.Single(toolResult.Outputs!);
+
+        var imageData = toolResult.Outputs![0] as DataContent;
+        Assert.NotNull(imageData);
+        Assert.Equal("image/png", imageData.MediaType);
+        Assert.True(imageData.Data.Length > 0);
+    }
+
+    [Fact]
+    public async Task HostedImageGenerationTool_Streaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o",
+                "tools": [
+                    {
+                        "type": "image_generation",
+                        "model": "gpt-image-1",
+                        "size": "1024x1024",
+                        "output_format": "png"
+                    }
+                ],
+                "tool_choice": "auto",
+                "stream": true,
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Generate an image of a dog"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_def456","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-2024-11-20","output":[],"tools":[{"type":"image_generation","image_generation":{"model":"gpt-image-1","size":{"width":1024,"height":1024},"output_format":"png"}}]}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_def456","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-2024-11-20","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"image_generation_call","id":"img_call_def456","status":"in_progress"}}
+
+            event: response.image_generation_call.in_progress
+            data: {"type":"response.image_generation_call.in_progress","item_id":"img_call_def456","output_index":0}
+
+            event: response.image_generation_call.generating
+            data: {"type":"response.image_generation_call.generating","item_id":"img_call_def456","output_index":0}
+
+            event: response.image_generation_call.partial_image
+            data: {"type":"response.image_generation_call.partial_image","item_id":"img_call_def456","output_index":0,"partial_image_index":0,"partial_image_b64":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"image_generation_call","id":"img_call_def456","image_result_b64":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_def456","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-2024-11-20","output":[{"type":"image_generation_call","id":"img_call_def456","image_result_b64":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}],"usage":{"input_tokens":15,"output_tokens":0,"total_tokens":15}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o");
+
+        List<ChatResponseUpdate> updates = [];
+        var imageTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                ImageSize = new(1024, 1024),
+                MediaType = "image/png"
+            }
+        };
+        await foreach (var update in client.GetStreamingResponseAsync("Generate an image of a dog", new ChatOptions
+        {
+            Tools = [imageTool]
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 6);
+
+        // Should have updates for: created, in_progress, tool call start, generating, partial image, completion
+        var createdUpdate = updates.First(u => u.CreatedAt.HasValue);
+        Assert.Equal("resp_def456", createdUpdate.ResponseId);
+        Assert.Equal("gpt-4o-2024-11-20", createdUpdate.ModelId);
+
+        // Should have tool call content
+        var toolCallUpdate = updates.FirstOrDefault(u =>
+            u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolCallContent));
+        Assert.NotNull(toolCallUpdate);
+        var toolCall = toolCallUpdate.Contents.OfType<ImageGenerationToolCallContent>().First();
+        Assert.Equal("img_call_def456", toolCall.ImageId);
+
+        // Should have partial image content
+        var partialImageUpdate = updates.FirstOrDefault(u =>
+            u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolResultContent result &&
+                result.Outputs != null && result.Outputs.Any(o => o.AdditionalProperties != null && o.AdditionalProperties.ContainsKey("PartialImageIndex"))));
+        Assert.NotNull(partialImageUpdate);
+
+        // Should have final completion with usage
+        var completionUpdate = updates.FirstOrDefault(u =>
+            u.Contents != null && u.Contents.Any(c => c is UsageContent));
+        Assert.NotNull(completionUpdate);
+        var usage = completionUpdate.Contents.OfType<UsageContent>().First();
+        Assert.Equal(15, usage.Details.InputTokenCount);
+        Assert.Equal(0, usage.Details.OutputTokenCount);
+        Assert.Equal(15, usage.Details.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task HostedImageGenerationTool_StreamingMultipleImages()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o",
+                "tools": [
+                    {
+                        "type": "image_generation",
+                        "model": "gpt-image-1",
+                        "size": "512x512",
+                        "output_format": "webp",
+                        "partial_images": 3
+                    }
+                ],
+                "tool_choice": "auto",
+                "stream": true,
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Generate an image of a sunset"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_ghi789","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-2024-11-20","output":[],"tools":[{"type":"image_generation","image_generation":{"model":"gpt-image-1","size":{"width":512,"height":512},"output_format":"webp","partial_images":3}}]}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_ghi789","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-2024-11-20","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"image_generation_call","id":"img_call_ghi789","status":"in_progress"}}
+
+            event: response.image_generation_call.in_progress
+            data: {"type":"response.image_generation_call.in_progress","item_id":"img_call_ghi789","output_index":0}
+
+            event: response.image_generation_call.generating
+            data: {"type":"response.image_generation_call.generating","item_id":"img_call_ghi789","output_index":0}
+
+            event: response.image_generation_call.partial_image
+            data: {"type":"response.image_generation_call.partial_image","item_id":"img_call_ghi789","output_index":0,"partial_image_index":0,"partial_image_b64":"SGVsbG8x"}
+
+            event: response.image_generation_call.partial_image
+            data: {"type":"response.image_generation_call.partial_image","item_id":"img_call_ghi789","output_index":0,"partial_image_index":1,"partial_image_b64":"SGVsbG8y"}
+
+            event: response.image_generation_call.partial_image
+            data: {"type":"response.image_generation_call.partial_image","item_id":"img_call_ghi789","output_index":0,"partial_image_index":2,"partial_image_b64":"SGVsbG8z"}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"image_generation_call","id":"img_call_ghi789","image_result_b64":"SGVsbG8z"}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_ghi789","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-2024-11-20","output":[{"type":"image_generation_call","id":"img_call_ghi789","image_result_b64":"SGVsbG8z"}],"usage":{"input_tokens":18,"output_tokens":0,"total_tokens":18}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o");
+
+        List<ChatResponseUpdate> updates = [];
+        var imageTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                ImageSize = new(512, 512),
+                MediaType = "image/webp",
+                StreamingCount = 3
+            }
+        };
+        await foreach (var update in client.GetStreamingResponseAsync("Generate an image of a sunset", new ChatOptions
+        {
+            Tools = [imageTool]
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 8); // Should have multiple partial image updates plus generating event
+
+        // Should have multiple partial images with different indices
+        var partialImageUpdates = updates.Where(u =>
+            u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolResultContent result &&
+                result.Outputs != null && result.Outputs.Any(o => o.AdditionalProperties != null && o.AdditionalProperties.ContainsKey("PartialImageIndex")))).ToList();
+
+        Assert.True(partialImageUpdates.Count >= 3);
+
+        // Verify partial images have correct indices and WebP format
+        for (int i = 0; i < 3; i++)
+        {
+            var partialUpdate = partialImageUpdates.FirstOrDefault(u =>
+                u.Contents.OfType<ImageGenerationToolResultContent>().Any(result =>
+                    HasPartialImageWithIndex(result, i)));
+            Assert.NotNull(partialUpdate);
+        }
+
+        static bool HasPartialImageWithIndex(ImageGenerationToolResultContent result, int index)
+        {
+            if (result.Outputs == null)
+            {
+                return false;
+            }
+
+            return result.Outputs.Any(o => HasCorrectImageData(o, index));
+        }
+
+        static bool HasCorrectImageData(AIContent o, int index)
+        {
+            if (o.AdditionalProperties == null)
+            {
+                return false;
+            }
+
+            if (!o.AdditionalProperties.TryGetValue("PartialImageIndex", out var imageIndex))
+            {
+                return false;
+            }
+
+            if (imageIndex == null || !imageIndex.Equals(index))
+            {
+                return false;
+            }
+
+            return o is DataContent dataContent && dataContent.MediaType == "image/webp";
+        }
+
+        // Verify tool call uses correct settings
+        var toolCallUpdate = updates.FirstOrDefault(u =>
+            u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolCallContent));
+        Assert.NotNull(toolCallUpdate);
+        var toolCall = toolCallUpdate.Contents.OfType<ImageGenerationToolCallContent>().First();
+        Assert.Equal("img_call_ghi789", toolCall.ImageId);
+    }
+
     private static IChatClient CreateResponseClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(
             new ApiKeyCredential("apikey"),

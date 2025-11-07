@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// <para>
 /// The relationship between <see cref="ChatResponse"/> and <see cref="ChatResponseUpdate"/> is
-/// codified in the <see cref="ChatResponseExtensions.ToChatResponseAsync"/> and
+/// codified in the <see cref="ChatResponseExtensions.ToChatResponseAsync(IAsyncEnumerable{ChatResponseUpdate}, System.Threading.CancellationToken)"/> and
 /// <see cref="ChatResponse.ToChatResponseUpdates"/>, which enable bidirectional conversions
 /// between the two. Note, however, that the provided conversions might be lossy, for example, if multiple
 /// updates all have different <see cref="RawRepresentation"/> objects whereas there's only one slot for
@@ -57,6 +57,29 @@ public class ChatResponseUpdate
         Role = role;
         _contents = contents;
     }
+
+    /// <summary>
+    /// Creates a new ChatResponseUpdate instance that is a copy of the current object.
+    /// </summary>
+    /// <remarks>The cloned object is a shallow copy; reference-type properties will reference the same
+    /// objects as the original. Use this method to duplicate the response update for further modification without
+    /// affecting the original instance.</remarks>
+    /// <returns>A new ChatResponseUpdate object with the same property values as the current instance.</returns>
+    public ChatResponseUpdate Clone() =>
+        new()
+        {
+            AdditionalProperties = AdditionalProperties,
+            AuthorName = AuthorName,
+            Contents = Contents,
+            CreatedAt = CreatedAt,
+            ConversationId = ConversationId,
+            FinishReason = FinishReason,
+            MessageId = MessageId,
+            ModelId = ModelId,
+            RawRepresentation = RawRepresentation,
+            ResponseId = ResponseId,
+            Role = Role,
+        };
 
     /// <summary>Gets or sets the name of the author of the response update.</summary>
     public string? AuthorName
