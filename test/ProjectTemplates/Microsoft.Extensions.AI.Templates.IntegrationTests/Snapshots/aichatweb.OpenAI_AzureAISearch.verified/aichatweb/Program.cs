@@ -30,7 +30,7 @@ var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small
 var azureAISearchEndpoint = new Uri(builder.Configuration["AzureAISearch:Endpoint"]
     ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details."));
 var azureAISearchCredential = new DefaultAzureCredential();
-builder.Services.AddAzureAISearchVectorStore();
+builder.Services.AddAzureAISearchVectorStore(azureAISearchEndpoint, azureAISearchCredential);
 builder.Services.AddAzureAISearchCollection<IngestedChunk>(IngestedChunk.CollectionName, azureAISearchEndpoint, azureAISearchCredential);
 
 builder.Services.AddSingleton<DataIngestor>();
