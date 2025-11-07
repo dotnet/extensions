@@ -26,6 +26,9 @@
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj"></PackageVersionVariableReference>
+      <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj"></PackageVersionVariableReference>
+      <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion.Markdig\Microsoft.Extensions.DataIngestion.Markdig.csproj"></PackageVersionVariableReference>
+      <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion.MarkItDown\Microsoft.Extensions.DataIngestion.MarkItDown.csproj"></PackageVersionVariableReference>
     </ItemGroup>
   </Target>
 
@@ -45,8 +48,8 @@
       <TemplatePackageVersion_MicrosoftExtensionsHosting>10.0.0-rc.2.25502.107</TemplatePackageVersion_MicrosoftExtensionsHosting>
       <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>9.5.1</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
       <TemplatePackageVersion_MicrosoftMLTokenizers>2.0.0-preview.25503.2</TemplatePackageVersion_MicrosoftMLTokenizers>
-      <TemplatePackageVersion_MicrosoftSemanticKernel>1.67.0</TemplatePackageVersion_MicrosoftSemanticKernel>
-      <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.67.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
+      <TemplatePackageVersion_MicrosoftSemanticKernel>1.67.1</TemplatePackageVersion_MicrosoftSemanticKernel>
+      <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.67.1-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
       <TemplatePackageVersion_ModelContextProtocol>0.4.0-preview.1</TemplatePackageVersion_ModelContextProtocol>
       <TemplatePackageVersion_OllamaSharp>5.4.8</TemplatePackageVersion_OllamaSharp>
       <TemplatePackageVersion_OpenTelemetry>1.13.0</TemplatePackageVersion_OpenTelemetry>
