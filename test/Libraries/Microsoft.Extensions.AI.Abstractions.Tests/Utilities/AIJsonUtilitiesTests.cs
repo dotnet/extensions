@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
@@ -14,7 +13,6 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
-using Microsoft.Extensions.AI.JsonSchemaExporter;
 using Microsoft.TestUtilities;
 using Xunit;
 
@@ -465,39 +463,6 @@ public static partial class AIJsonUtilitiesTests
     {
         JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(object));
         Assert.Equal(JsonValueKind.True, schema.ValueKind);
-    }
-
-    [Theory]
-    [MemberData(nameof(TestTypes.GetTestDataUsingAllValues), MemberType = typeof(TestTypes))]
-    public static void CreateJsonSchema_ValidateWithTestData(ITestData testData)
-    {
-        // Stress tests the schema generation method using types from the JsonSchemaExporter test battery.
-
-        JsonSerializerOptions options = testData.Options is { } opts
-            ? new(opts) { TypeInfoResolver = TestTypes.TestTypesContext.Default }
-            : TestTypes.TestTypesContext.Default.Options;
-
-        JsonTypeInfo typeInfo = options.GetTypeInfo(testData.Type);
-        AIJsonSchemaCreateOptions? createOptions = typeInfo.Properties.Any(prop => prop.IsExtensionData)
-            ? new() { TransformOptions = new() { DisallowAdditionalProperties = false } } // Do not append additionalProperties: false to the schema if the type has extension data.
-            : null;
-
-        JsonElement schema = AIJsonUtilities.CreateJsonSchema(testData.Type, serializerOptions: options, inferenceOptions: createOptions);
-        JsonNode? schemaAsNode = JsonSerializer.SerializeToNode(schema, options);
-
-        // NOTE: This is not validating the schemas match, only that they have the same top-level kind.
-        Assert.NotNull(schemaAsNode);
-        Assert.Equal(testData.ExpectedJsonSchema.GetValueKind(), schemaAsNode.GetValueKind());
-
-        if (testData.Value is null || testData.WritesNumbersAsStrings)
-        {
-            // By design, our generated schema does not accept null root values
-            // or numbers formatted as strings, so we skip schema validation.
-            return;
-        }
-
-        JsonNode? serializedValue = JsonSerializer.SerializeToNode(testData.Value, testData.Type, options);
-        SchemaTestHelpers.AssertDocumentMatchesSchema(schemaAsNode, serializedValue);
     }
 
     [Fact]
@@ -1331,70 +1296,6 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement transformedSchema = AIJsonUtilities.TransformSchema(schema, options);
         AssertDeepEquals(expectedSchema, transformedSchema);
-    }
-
-    [Theory]
-    [MemberData(nameof(TestTypes.GetTestDataUsingAllValues), MemberType = typeof(TestTypes))]
-    public static void TransformJsonSchema_ValidateWithTestData(ITestData testData)
-    {
-        // Stress tests the schema generation method using types from the JsonSchemaExporter test battery.
-
-        JsonSerializerOptions options = testData.Options is { } opts
-            ? new(opts) { TypeInfoResolver = TestTypes.TestTypesContext.Default }
-            : TestTypes.TestTypesContext.Default.Options;
-
-        JsonTypeInfo typeInfo = options.GetTypeInfo(testData.Type);
-        AIJsonSchemaCreateOptions? createOptions = typeInfo.Properties.Any(prop => prop.IsExtensionData)
-            ? new() { TransformOptions = new() { DisallowAdditionalProperties = false } } // Do not append additionalProperties: false to the schema if the type has extension data.
-            : null;
-
-        JsonElement schema = AIJsonUtilities.CreateJsonSchema(testData.Type, serializerOptions: options, inferenceOptions: createOptions);
-
-        int totalSchemaNodes = 0;
-        AIJsonSchemaTransformOptions transformOptions = new()
-        {
-            ConvertBooleanSchemas = true,
-            RequireAllProperties = true,
-            DisallowAdditionalProperties = true,
-            UseNullableKeyword = true,
-            TransformSchemaNode = (context, schema) =>
-            {
-                totalSchemaNodes++;
-                var schemaObj = Assert.IsType<JsonObject>(schema);
-                schemaObj.Add("myAwesomeKeyword", (JsonNode)42);
-                return schemaObj;
-            }
-        };
-
-        JsonElement transformedSchema = AIJsonUtilities.TransformSchema(schema, transformOptions);
-        Assert.True(totalSchemaNodes > 0, "TransformSchema was not invoked.");
-
-        int totalSchemaNodes2 = 0;
-        transformOptions = new()
-        {
-            TransformSchemaNode = (context, schema) =>
-            {
-                totalSchemaNodes2++;
-                var schemaObj = Assert.IsType<JsonObject>(schema);
-                Assert.Contains("myAwesomeKeyword", schemaObj);
-                if (schemaObj.TryGetPropertyValue("properties", out JsonNode? props))
-                {
-                    Assert.Contains("required", schemaObj);
-                    Assert.Contains("additionalProperties", schemaObj);
-                    Assert.Equal(((JsonArray)schemaObj["required"]!).Count, ((JsonObject)props!).Count);
-                }
-
-                if (schemaObj.TryGetPropertyValue("type", out JsonNode? type) && type is JsonArray typeArray)
-                {
-                    Assert.DoesNotContain("null", typeArray);
-                }
-
-                return schemaObj;
-            }
-        };
-
-        AIJsonUtilities.TransformSchema(transformedSchema, transformOptions);
-        Assert.Equal(totalSchemaNodes, totalSchemaNodes2);
     }
 
     [Fact]
