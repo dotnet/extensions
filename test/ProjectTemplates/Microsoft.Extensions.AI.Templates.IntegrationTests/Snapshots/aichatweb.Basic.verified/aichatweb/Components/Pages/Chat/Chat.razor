@@ -13,7 +13,7 @@
     <NoMessagesContent>
         <div>To get started, try asking about these example documents. You can replace these with your own data and replace this message.</div>
         <ChatCitation File="Example_Emergency_Survival_Kit.pdf"/>
-        <ChatCitation File="Example_GPS_Watch.pdf"/>
+        <ChatCitation File="Example_GPS_Watch.md"/>
     </NoMessagesContent>
 </ChatMessageList>
 
@@ -32,7 +32,7 @@
         Use the search tool to find relevant information. When you do this, end your
         reply with citations in the special XML format:
 
-        <citation filename='string' page_number='number'>exact quote here</citation>
+        <citation filename='string'>exact quote here</citation>
 
         Always include the citation in your response if there are results.
 
@@ -114,7 +114,7 @@
         await InvokeAsync(StateHasChanged);
         var results = await Search.SearchAsync(searchPhrase, filenameFilter, maxResults: 5);
         return results.Select(result =>
-            $"<result filename=\"{result.DocumentId}\" page_number=\"{result.PageNumber}\">{result.Text}</result>");
+            $"<result filename=\"{result.DocumentId}\">{result.Text}</result>");
     }
 
     public void Dispose()

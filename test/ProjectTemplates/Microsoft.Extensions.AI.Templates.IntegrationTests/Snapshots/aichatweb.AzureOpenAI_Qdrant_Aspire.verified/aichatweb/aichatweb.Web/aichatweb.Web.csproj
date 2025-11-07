@@ -11,11 +11,15 @@
     <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="9.5.1-preview.1.25502.11" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="10.0.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.66.0" />
-    <PackageReference Include="PdfPig" Version="0.1.11" />
+    <PackageReference Include="Microsoft.Extensions.DataIngestion" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DataIngestion.Markdig" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DataIngestion.MarkItDown" Version="10.0.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.67.0" />
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="2.0.0-preview.25503.2" />
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="2.0.0-preview.25503.2" />
     <PackageReference Include="System.Linq.Async" Version="6.0.3" />
     <PackageReference Include="Aspire.Azure.Search.Documents" Version="9.5.1" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.66.0-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.67.0-preview" />
   </ItemGroup>
 
   <ItemGroup>
