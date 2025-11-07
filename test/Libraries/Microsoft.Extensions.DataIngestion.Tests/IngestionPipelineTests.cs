@@ -101,7 +101,7 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.NotEmpty(retrieved);
         for (int i = 0; i < retrieved.Count; i++)
         {
-            Assert.NotEqual(Guid.Empty, GetKeyAsGuid(retrieved[i]["key"]));
+            Assert.NotEqual(Guid.Empty, (Guid)retrieved[i]["key"]!);
             Assert.NotEmpty((string)retrieved[i]["content"]!);
             Assert.Contains((string)retrieved[i]["documentid"]!, _sampleFiles.Select(info => info.FullName));
         }
@@ -135,7 +135,7 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.NotEmpty(retrieved);
         for (int i = 0; i < retrieved.Count; i++)
         {
-            Assert.NotEqual(Guid.Empty, GetKeyAsGuid(retrieved[i]["key"]));
+            Assert.NotEqual(Guid.Empty, (Guid)retrieved[i]["key"]!);
             Assert.NotEmpty((string)retrieved[i]["content"]!);
             Assert.StartsWith(directory.FullName, (string)retrieved[i]["documentid"]!);
         }
@@ -166,19 +166,12 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.NotEmpty(retrieved);
         for (int i = 0; i < retrieved.Count; i++)
         {
-            Assert.NotEqual(Guid.Empty, GetKeyAsGuid(retrieved[i]["key"]));
+            Assert.NotEqual(Guid.Empty, (Guid)retrieved[i]["key"]!);
             Assert.EndsWith(_withImage.Name, (string)retrieved[i]["documentid"]!);
         }
 
         AssertActivities(activities, "ProcessFiles");
     }
-
-    private static Guid GetKeyAsGuid(object? keyObj) => keyObj switch
-    {
-        Guid g => g,
-        string s when Guid.TryParse(s, out Guid parsed) => parsed,
-        _ => Guid.Empty
-    };
 
     internal class ImageChunker : IngestionChunker<DataContent>
     {
