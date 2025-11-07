@@ -71,7 +71,7 @@
         ]
       },
       {
-        "condition": "(!IsAspire)",
+        "condition": "(IsAspire)",
         "exclude": [
           "ChatWithCustomData-CSharp.Web/Services/Ingestion/PdfPigReader.cs"
         ]
