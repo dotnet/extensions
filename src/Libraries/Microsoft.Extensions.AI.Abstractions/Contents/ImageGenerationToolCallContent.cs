@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents the result of an image generation tool call by a hosted service.
+/// Represents the invocation of an image generation tool call by a hosted service.
 /// </summary>
 [Experimental("MEAI001")]
 public sealed class ImageGenerationToolCallContent : AIContent

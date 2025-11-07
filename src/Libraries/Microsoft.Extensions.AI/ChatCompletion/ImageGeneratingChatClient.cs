@@ -41,10 +41,10 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
         /// <summary>Pass all DataContent to inner client.</summary>
         None,
 
-        /// <summary>Replace all images with unique identifers when passing to inner client.</summary>
+        /// <summary>Replace all images with unique identifiers when passing to inner client.</summary>
         AllImages,
 
-        /// <summary>Replace only images that were produced by past of image generation requests with unique identifiers when passing to inner client.</summary>
+        /// <summary>Replace only images that were produced by past image generation requests with unique identifiers when passing to inner client.</summary>
         GeneratedImages
     }
 
@@ -153,14 +153,15 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             _dataContentHandling = dataContentHandling;
         }
 
+        /// <summary>
+        /// Processes the chat messages to replace images in data content with unique identifiers as needed.
+        /// All images will be stored for later retrieval during image editing operations.
+        /// See <see cref="DataContentHandling"/> for details on image replacement behavior.
+        /// </summary>
+        /// <param name="messages">Messages to process.</param>
+        /// <returns>Processed messages, or the original messages if no changes were made.</returns>
         public IEnumerable<ChatMessage> ProcessChatMessages(IEnumerable<ChatMessage> messages)
         {
-            // If no special handling is needed, return the original messages
-            if (_dataContentHandling == DataContentHandling.None)
-            {
-                return messages;
-            }
-
             List<ChatMessage>? newMessages = null;
             int messageIndex = 0;
             foreach (var message in messages)
@@ -169,6 +170,18 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                 for (int contentIndex = 0; contentIndex < message.Contents.Count; contentIndex++)
                 {
                     var content = message.Contents[contentIndex];
+
+                    void ReplaceImage(string imageId, DataContent dataContent)
+                    {
+                        // Replace image with a placeholder text content, to give an indication to the model of its placement in the context
+                        newContents ??= CopyList(message.Contents, contentIndex);
+                        newContents.Add(new TextContent($"[{ImageKey}:{imageId}] available for edit.")
+                        {
+                            Annotations = dataContent.Annotations,
+                            AdditionalProperties = dataContent.AdditionalProperties
+                        });
+                    }
+
                     if (content is DataContent dataContent && dataContent.HasTopLevelMediaType("image"))
                     {
                         // Store the image to make available for edit
@@ -176,13 +189,7 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
 
                         if (_dataContentHandling == DataContentHandling.AllImages)
                         {
-                            // Replace image with a placeholder text content
-                            newContents ??= CopyList(message.Contents, contentIndex);
-                            newContents.Add(new TextContent($"[{ImageKey}:{imageId}] available for edit.")
-                            {
-                                Annotations = dataContent.Annotations,
-                                AdditionalProperties = dataContent.AdditionalProperties
-                            });
+                            ReplaceImage(imageId, dataContent);
                             continue; // Skip adding the original content
                         }
                     }
@@ -198,13 +205,7 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                                 if (_dataContentHandling == DataContentHandling.AllImages ||
                                     _dataContentHandling == DataContentHandling.GeneratedImages)
                                 {
-                                    // Replace generated images with a placeholder text content
-                                    newContents ??= CopyList(message.Contents, contentIndex);
-                                    newContents.Add(new TextContent($"[{ImageKey}:{imageId}] available for edit.")
-                                    {
-                                        Annotations = generatedDataContent.Annotations,
-                                        AdditionalProperties = generatedDataContent.AdditionalProperties
-                                    });
+                                    ReplaceImage(imageId, generatedDataContent);
                                 }
                             }
                         }
@@ -276,6 +277,29 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             }
 
             return options;
+
+            List<AITool> InitializeTools(IList<AITool> existingTools, int toOffsetExclusive)
+            {
+#if NET
+                ReadOnlySpan<AITool> tools =
+#else
+                AITool[] tools =
+#endif
+                [
+                    AIFunctionFactory.Create(GenerateImageAsync),
+                    AIFunctionFactory.Create(EditImageAsync),
+                    AIFunctionFactory.Create(GetImagesForEdit)
+                ];
+
+                foreach (var tool in tools)
+                {
+                    _toolNames.Add(tool.Name);
+                }
+
+                var result = CopyList(existingTools, toOffsetExclusive, tools.Length);
+                result.AddRange(tools);
+                return result;
+            }
         }
 
         /// <summary>
@@ -317,11 +341,11 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                 else if (content is FunctionResultContent functionResult &&
                     _imageContentByCallId.TryGetValue(functionResult.CallId, out var imageContents))
                 {
-                    newContents ??= CopyList(contents, i, imageContents.Count - 1);
+                    newContents ??= CopyList(contents, i);
 
                     if (imageContents.Any())
                     {
-                        // Insert generated image content in its place, do not preserve the FunctionResultContent
+                        // Insert ImageGenerationToolResultContent in its place, do not preserve the FunctionResultContent
                         newContents.Add(new ImageGenerationToolResultContent
                         {
                             ImageId = functionResult.CallId,
@@ -458,29 +482,6 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
             }
 
             return newList;
-        }
-
-        private List<AITool> InitializeTools(IList<AITool> existingTools, int toOffsetExclusive)
-        {
-#if NET
-            ReadOnlySpan<AITool> tools =
-#else
-            AITool[] tools =
-#endif
-            [
-                AIFunctionFactory.Create(GenerateImageAsync),
-                AIFunctionFactory.Create(EditImageAsync),
-                AIFunctionFactory.Create(GetImagesForEdit)
-            ];
-
-            foreach (var tool in tools)
-            {
-                _toolNames.Add(tool.Name);
-            }
-
-            var result = CopyList(existingTools, toOffsetExclusive, tools.Length);
-            result.AddRange(tools);
-            return result;
         }
 
         private DataContent? RetrieveImageContent(string imageId)
