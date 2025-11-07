@@ -45,14 +45,14 @@ public class MarkItDownMcpReader : IngestionDocumentReader
 
         // Read file content and create data URI using DataContent
 #if NET
-        byte[] fileBytes = await File.ReadAllBytesAsync(source.FullName, cancellationToken).ConfigureAwait(false);
+        ReadOnlyMemory<byte> fileBytes = await File.ReadAllBytesAsync(source.FullName, cancellationToken).ConfigureAwait(false);
 #else
-        byte[] fileBytes;
+        ReadOnlyMemory<byte> fileBytes;
         using (FileStream fs = new(source.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1, FileOptions.Asynchronous))
         {
             using MemoryStream ms = new();
             await fs.CopyToAsync(ms).ConfigureAwait(false);
-            fileBytes = ms.ToArray();
+            fileBytes = ms.GetBuffer().AsMemory(0, (int)ms.Length);
         }
 #endif
         string mimeType = string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType!;
@@ -77,10 +77,9 @@ public class MarkItDownMcpReader : IngestionDocumentReader
 #else
         await source.CopyToAsync(ms).ConfigureAwait(false);
 #endif
-        ReadOnlyMemory<byte> data = new(ms.GetBuffer(), 0, (int)ms.Length);
-        string mimeType = string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType;
-        DataContent dataContent = new(data, mimeType);
-        string dataUri = dataContent.Uri;
+        string dataUri = new DataContent(
+            ms.GetBuffer().AsMemory(0, (int)ms.Length),
+            string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType).Uri;
 
         string markdown = await ConvertToMarkdownAsync(dataUri, cancellationToken).ConfigureAwait(false);
 
