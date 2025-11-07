@@ -18,14 +18,17 @@ namespace Microsoft.Extensions.DataIngestion;
 public class MarkItDownMcpReader : IngestionDocumentReader
 {
     private readonly Uri _mcpServerUri;
+    private readonly McpClientOptions? _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MarkItDownMcpReader"/> class.
     /// </summary>
-    /// <param name="mcpServerUri">The URI of the MarkItDown MCP server (e.g., http://localhost:3001/sse).</param>
-    public MarkItDownMcpReader(Uri mcpServerUri)
+    /// <param name="mcpServerUri">The URI of the MarkItDown MCP server (e.g., http://localhost:3001/mcp).</param>
+    /// <param name="options">Optional MCP client options for configuring the connection.</param>
+    public MarkItDownMcpReader(Uri mcpServerUri, McpClientOptions? options = null)
     {
         _mcpServerUri = Throw.IfNull(mcpServerUri);
+        _options = options;
     }
 
     /// <inheritdoc/>
@@ -44,16 +47,14 @@ public class MarkItDownMcpReader : IngestionDocumentReader
         byte[] fileBytes = await File.ReadAllBytesAsync(source.FullName, cancellationToken).ConfigureAwait(false);
 #else
         byte[] fileBytes;
-        using (FileStream fs = new(source.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
+        using (FileStream fs = new(source.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1, FileOptions.Asynchronous))
         {
             using MemoryStream ms = new();
             await fs.CopyToAsync(ms).ConfigureAwait(false);
             fileBytes = ms.ToArray();
         }
 #endif
-        string base64Content = Convert.ToBase64String(fileBytes);
-        string mimeType = string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType!;
-        string dataUri = $"data:{mimeType};base64,{base64Content}";
+        string dataUri = CreateDataUri(fileBytes, mediaType);
 
         string markdown = await ConvertToMarkdownAsync(dataUri, cancellationToken).ConfigureAwait(false);
 
@@ -74,29 +75,30 @@ public class MarkItDownMcpReader : IngestionDocumentReader
         await source.CopyToAsync(ms).ConfigureAwait(false);
 #endif
         byte[] fileBytes = ms.ToArray();
-        string base64Content = Convert.ToBase64String(fileBytes);
-        string mimeType = string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType;
-        string dataUri = $"data:{mimeType};base64,{base64Content}";
+        string dataUri = CreateDataUri(fileBytes, mediaType);
 
         string markdown = await ConvertToMarkdownAsync(dataUri, cancellationToken).ConfigureAwait(false);
 
         return MarkdownParser.Parse(markdown, identifier);
     }
 
+    private static string CreateDataUri(byte[] fileBytes, string? mediaType)
+    {
+        string base64Content = Convert.ToBase64String(fileBytes);
+        string mimeType = string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType!;
+        return $"data:{mimeType};base64,{base64Content}";
+    }
+
     private async Task<string> ConvertToMarkdownAsync(string dataUri, CancellationToken cancellationToken)
     {
         // Create HTTP client transport for MCP
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task - await using pattern
         await using var transport = new HttpClientTransport(new HttpClientTransportOptions
         {
             Endpoint = _mcpServerUri
         });
-#pragma warning restore CA2007
 
         // Create MCP client
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-        await using var client = await McpClient.CreateAsync(transport, cancellationToken: cancellationToken).ConfigureAwait(false);
-#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var client = await McpClient.CreateAsync(transport, _options, loggerFactory: null, cancellationToken).ConfigureAwait(false);
 
         // Build parameters for convert_to_markdown tool
         var parameters = new Dictionary<string, object?>

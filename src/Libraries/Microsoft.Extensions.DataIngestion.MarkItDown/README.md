@@ -42,7 +42,7 @@ using Microsoft.Extensions.DataIngestion;
 
 // Connect to a MarkItDown MCP server (e.g., running in Docker)
 IngestionDocumentReader reader =
-    new MarkItDownMcpReader(new Uri("http://localhost:3001/sse"));
+    new MarkItDownMcpReader(new Uri("http://localhost:3001/mcp"));
 
 using IngestionPipeline<string> pipeline = new(reader, CreateChunker(), CreateWriter());
 ```
@@ -50,7 +50,7 @@ using IngestionPipeline<string> pipeline = new(reader, CreateChunker(), CreateWr
 The MarkItDown MCP server can be run using Docker:
 
 ```bash
-docker run -p 3001:3001 mcp/markitdown
+docker run -p 3001:3001 mcp/markitdown --http --host 0.0.0.0 --port 3001
 ```
 
 Or installed via pip:
@@ -58,6 +58,32 @@ Or installed via pip:
 ```bash
 pip install markitdown-mcp-server
 markitdown-mcp --http --host 0.0.0.0 --port 3001
+```
+
+### Integrating with Aspire
+
+Aspire can be used for seamless integration with [MarkItDown MCP](https://github.com/microsoft/markitdown/tree/main/packages/markitdown-mcp). Sample AppHost logic:
+
+```csharp
+var builder = DistributedApplication.CreateBuilder(args);
+
+var markitdown = builder.AddContainer("markitdown", "mcp/markitdown")
+    .WithArgs("--http", "--host", "0.0.0.0", "--port", "3001")
+    .WithHttpEndpoint(targetPort: 3001, name: "http");
+    
+var webApp = builder.AddProject("name");
+
+webApp.WithEnvironment("MARKITDOWN_MCP_URL", markitdown.GetEndpoint("http"));
+
+builder.Build().Run();
+```
+
+Sample Ingestion Service:
+
+```csharp
+string url = $"{Environment.GetEnvironmentVariable("MARKITDOWN_MCP_URL")}/mcp";
+
+IngestionDocumentReader reader = new MarkItDownMcpReader(new Uri(url));
 ```
 
 ## Feedback & Contributing
