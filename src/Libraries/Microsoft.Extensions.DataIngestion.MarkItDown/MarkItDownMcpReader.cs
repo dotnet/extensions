@@ -82,7 +82,9 @@ public class MarkItDownMcpReader : IngestionDocumentReader
         return MarkdownParser.Parse(markdown, identifier);
     }
 
+#pragma warning disable S3995 // URI return values should not be strings
     private static string CreateDataUri(byte[] fileBytes, string? mediaType)
+#pragma warning restore S3995 // URI return values should not be strings
     {
         string base64Content = Convert.ToBase64String(fileBytes);
         string mimeType = string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType!;
@@ -92,32 +94,38 @@ public class MarkItDownMcpReader : IngestionDocumentReader
     private async Task<string> ConvertToMarkdownAsync(string dataUri, CancellationToken cancellationToken)
     {
         // Create HTTP client transport for MCP
-        await using var transport = new HttpClientTransport(new HttpClientTransportOptions
+        HttpClientTransport transport = new(new HttpClientTransportOptions
         {
             Endpoint = _mcpServerUri
         });
 
-        // Create MCP client
-        await using var client = await McpClient.CreateAsync(transport, _options, loggerFactory: null, cancellationToken).ConfigureAwait(false);
-
-        // Build parameters for convert_to_markdown tool
-        var parameters = new Dictionary<string, object?>
+        await using (transport.ConfigureAwait(false))
         {
-            ["uri"] = dataUri
-        };
+            // Create MCP client
+            McpClient client = await McpClient.CreateAsync(transport, _options, loggerFactory: null, cancellationToken).ConfigureAwait(false);
 
-        // Call the convert_to_markdown tool
-        var result = await client.CallToolAsync("convert_to_markdown", parameters, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        // Extract markdown content from result
-        // The result is expected to be in the format: { "content": [{ "type": "text", "text": "markdown content" }] }
-        if (result.Content != null && result.Content.Count > 0)
-        {
-            foreach (var content in result.Content)
+            await using (client.ConfigureAwait(false))
             {
-                if (content.Type == "text" && content is TextContentBlock textBlock)
+                // Build parameters for convert_to_markdown tool
+                Dictionary<string, object?> parameters = new()
                 {
-                    return textBlock.Text;
+                    ["uri"] = dataUri
+                };
+
+                // Call the convert_to_markdown tool
+                var result = await client.CallToolAsync("convert_to_markdown", parameters, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+                // Extract markdown content from result
+                // The result is expected to be in the format: { "content": [{ "type": "text", "text": "markdown content" }] }
+                if (result.Content != null && result.Content.Count > 0)
+                {
+                    foreach (var content in result.Content)
+                    {
+                        if (content.Type == "text" && content is TextContentBlock textBlock)
+                        {
+                            return textBlock.Text;
+                        }
+                    }
                 }
             }
         }

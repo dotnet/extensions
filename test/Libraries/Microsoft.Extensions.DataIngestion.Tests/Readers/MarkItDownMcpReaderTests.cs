@@ -34,7 +34,7 @@ public class MarkItDownMcpReaderTests
     {
         var reader = new MarkItDownMcpReader(new Uri("http://localhost:3001/sse"));
 
-        await Assert.ThrowsAsync<ArgumentNullException>("source", async () => await reader.ReadAsync((FileInfo)null!, "identifier"));
+        await Assert.ThrowsAsync<ArgumentNullException>("source", async () => await reader.ReadAsync(null!, "identifier"));
         await Assert.ThrowsAsync<ArgumentNullException>("source", async () => await reader.ReadAsync((Stream)null!, "identifier", "mediaType"));
     }
 
