@@ -99,7 +99,7 @@ var azureAISearchCredential = new DefaultAzureCredential();
 var azureAISearchCredential = new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"]
     ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details."));
 #endif
-builder.Services.AddAzureAISearchVectorStore();
+builder.Services.AddAzureAISearchVectorStore(azureAISearchEndpoint, azureAISearchCredential);
 builder.Services.AddAzureAISearchCollection<IngestedChunk>(IngestedChunk.CollectionName, azureAISearchEndpoint, azureAISearchCredential);
 #elif (IsLocalVectorStore)
 var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");

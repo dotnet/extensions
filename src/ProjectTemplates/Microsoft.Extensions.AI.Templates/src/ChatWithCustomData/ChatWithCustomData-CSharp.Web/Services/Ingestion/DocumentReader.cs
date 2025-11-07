@@ -5,7 +5,11 @@ namespace ChatWithCustomData_CSharp.Web.Services.Ingestion;
 internal sealed class DocumentReader(DirectoryInfo rootDirectory) : IngestionDocumentReader
 {
     private readonly MarkdownReader _markdownReader = new();
-    private readonly MarkItDownReader _markItDownReader = new();
+#if (IsAspire)
+    private readonly MarkItDownReader _pdfReader = new();
+#else
+    private readonly PdfPigReader _pdfReader = new();
+#endif
 
     public override Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
@@ -22,7 +26,7 @@ internal sealed class DocumentReader(DirectoryInfo rootDirectory) : IngestionDoc
     public override Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default)
         => mediaType switch
         {
-            "application/pdf" => _markItDownReader.ReadAsync(source, identifier, mediaType, cancellationToken),
+            "application/pdf" => _pdfReader.ReadAsync(source, identifier, mediaType, cancellationToken),
             "text/markdown" => _markdownReader.ReadAsync(source, identifier, mediaType, cancellationToken),
             _ => throw new InvalidOperationException($"Unsupported media type '{mediaType}'"),
         };

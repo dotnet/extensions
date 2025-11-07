@@ -53,6 +53,7 @@
       <TemplatePackageVersion_ModelContextProtocol>0.4.0-preview.1</TemplatePackageVersion_ModelContextProtocol>
       <TemplatePackageVersion_OllamaSharp>5.4.8</TemplatePackageVersion_OllamaSharp>
       <TemplatePackageVersion_OpenTelemetry>1.13.0</TemplatePackageVersion_OpenTelemetry>
+      <TemplatePackageVersion_PdfPig>0.1.11</TemplatePackageVersion_PdfPig>
       <TemplatePackageVersion_SystemLinqAsync>6.0.3</TemplatePackageVersion_SystemLinqAsync>
     </PropertyGroup>
 
@@ -81,6 +82,7 @@
         TemplatePackageVersion_ModelContextProtocol=$(TemplatePackageVersion_ModelContextProtocol);
         TemplatePackageVersion_OllamaSharp=$(TemplatePackageVersion_OllamaSharp);
         TemplatePackageVersion_OpenTelemetry=$(TemplatePackageVersion_OpenTelemetry);
+        TemplatePackageVersion_PdfPig=$(TemplatePackageVersion_PdfPig);
         TemplatePackageVersion_SystemLinqAsync=$(TemplatePackageVersion_SystemLinqAsync);
 
         <!-- Other properties -->

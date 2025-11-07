@@ -32,7 +32,11 @@
     <PackageReference Include="Microsoft.Extensions.AI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI}" />
     <PackageReference Include="Microsoft.Extensions.DataIngestion" Version="${TemplatePackageVersion_MicrosoftExtensionsDataIngestion}" />
     <PackageReference Include="Microsoft.Extensions.DataIngestion.Markdig" Version="${TemplatePackageVersion_MicrosoftExtensionsDataIngestionMarkdig}" />
+<!--#if (IsAspire) -->
     <PackageReference Include="Microsoft.Extensions.DataIngestion.MarkItDown" Version="${TemplatePackageVersion_MicrosoftExtensionsDataIngestionMarkItDown}" />
+<!--#else -->
+    <PackageReference Include="PdfPig" Version="${TemplatePackageVersion_PdfPig}" />
+<!--#endif -->
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${TemplatePackageVersion_MicrosoftSemanticKernel}" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="${TemplatePackageVersion_MicrosoftMLTokenizers}" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="${TemplatePackageVersion_MicrosoftMLTokenizers}" />
