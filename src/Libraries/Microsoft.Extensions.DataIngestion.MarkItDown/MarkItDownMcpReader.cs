@@ -86,10 +86,12 @@ public class MarkItDownMcpReader : IngestionDocumentReader
     private async Task<string> ConvertToMarkdownAsync(string dataUri, CancellationToken cancellationToken)
     {
         // Create HTTP client transport for MCP
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task - await using pattern
         await using var transport = new HttpClientTransport(new HttpClientTransportOptions
         {
             Endpoint = _mcpServerUri
         });
+#pragma warning restore CA2007
 
         // Create MCP client
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
