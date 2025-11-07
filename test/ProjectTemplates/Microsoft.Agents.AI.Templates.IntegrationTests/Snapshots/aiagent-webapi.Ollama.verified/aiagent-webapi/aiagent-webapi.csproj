@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Agents.AI" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Agents.AI.DevUI" Version="1.0.0" />
     <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="1.0.0" />
     <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="1.0.0" />
     <PackageReference Include="OllamaSharp" Version="5.4.8" />

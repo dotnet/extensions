@@ -93,6 +93,20 @@
       "isEnabled": "(AiServiceProvider == \"azureopenai\")",
       "description": "Use managed identity to access Azure services"
     },
+    "UseDevUI": {
+      "type": "parameter",
+      "displayName": "Enable the Agent Framework developer UI",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Add the Agent Framework developer UI for use in the development environment"
+    },
+    "DoNotUseDevUI": {
+      "type": "parameter",
+      "displayName": "Disable the Agent Framework developer UI",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Do not add the Agent Framework developer UI"
+    },
     "ChatModel": {
       "type": "parameter",
       "displayName": "Model/deployment for chat completions. Example: gpt-4o-mini",
@@ -101,6 +115,10 @@
     "IsManagedIdentity": {
       "type": "computed",
       "value": "(UseManagedIdentity)"
+    },
+    "IsDevUIEnabled": {
+      "type": "computed",
+      "value": "(UseDevUI && !DoNotUseDevUI)"
     },
     "IsAzureOpenAI": {
       "type": "computed",

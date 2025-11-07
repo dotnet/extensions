@@ -165,6 +165,10 @@ The application will start and listen on:
 
 The application exposes OpenAI-compatible API endpoints. You can interact with the AI agents using any OpenAI-compatible client or tools.
 
+<!--#if (IsDevUIEnabled) -->
+In development environments, a `/devui/` route is mapped to the Agent Framework development UI (DevUI), and when the app is launched through an IDE a browser will open to this URL. DevUI provides a web-based UI for interacting with agents and workflows. DevUI operates as an OpenAI-compatible client using the Responses and Conversations endpoints.
+
+<!--#endif -->
 ## How It Works
 
 This application demonstrates Agent Framework with:
@@ -280,5 +284,4 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 **Problem**: Model responses are slow or time out
 
 **Solution**: Ollama runs locally and performance depends on your hardware. Consider using a smaller model or ensuring your system has adequate resources (RAM, GPU if available).
-
 <!--#endif -->

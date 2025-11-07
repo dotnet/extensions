@@ -9,6 +9,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Agents.AI" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
+<!--#if (IsDevUIEnabled) -->
+    <PackageReference Include="Microsoft.Agents.AI.DevUI" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
+<!--#endif -->
     <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="${TemplatePackageVersion_MicrosoftAgentsAI}" />
     <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="${TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI}" />
 <!--#if (IsOpenAI || IsAzureOpenAI || IsGHModels) -->

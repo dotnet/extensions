@@ -15,6 +15,14 @@
     {
       "id": "UseManagedIdentity",
       "isVisible": true
+    },
+    {
+      "id": "UseDevUI",
+      "isVisible": true
+    },
+    {
+      "id": "DoNotUseDevUI",
+      "isVisible": false
     }
   ]
 }

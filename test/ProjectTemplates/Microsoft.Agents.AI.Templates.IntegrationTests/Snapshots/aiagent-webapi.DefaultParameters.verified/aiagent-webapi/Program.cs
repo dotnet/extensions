@@ -1,6 +1,7 @@
 ﻿using System.ClientModel;
 using System.ComponentModel;
 using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.DevUI;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
@@ -35,10 +36,28 @@ builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequenti
     sp.GetRequiredKeyedService<AIAgent>("editor")
 )).AddAsAIAgent();
 
-var app = builder.Build();
+if (builder.Environment.IsDevelopment())
+{
+    // Add the Agent Framework developer UI (DevUI) services in development environments
+    builder.AddDevUI();
+}
 
+var app = builder.Build();
 app.UseHttpsRedirection();
+
+// Expose the agents using the OpenAI Responses API
+// This is also needed for DevUI to function
 app.MapOpenAIResponses();
+
+// Expose the conversations using the OpenAI Conversations API
+// This is also needed for DevUI to manage stateful conversations
+app.MapOpenAIConversations();
+
+if (app.Environment.IsDevelopment())
+{
+    // Map the Agent Framework developer UI to /devui/ in development environments
+    app.MapDevUI();
+}
 
 app.Run();
 

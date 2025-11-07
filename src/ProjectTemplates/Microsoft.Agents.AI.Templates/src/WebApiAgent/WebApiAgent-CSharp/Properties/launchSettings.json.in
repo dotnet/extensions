@@ -1,12 +1,16 @@
-﻿{
+{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
+//#if (IsDevUIEnabled)
       "launchBrowser": true,
       "launchUrl": "devui/",
-      "applicationUrl": "http://localhost:9999",
+//#else
+      "launchBrowser": false,
+//#endif
+      "applicationUrl": "http://localhost:5056",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -14,9 +18,13 @@
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
+//#if (IsDevUIEnabled)
       "launchBrowser": true,
       "launchUrl": "devui/",
-      "applicationUrl": "https://localhost:9999;http://localhost:9999",
+//#else
+      "launchBrowser": false,
+//#endif
+      "applicationUrl": "https://localhost:7041;http://localhost:5056",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

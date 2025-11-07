@@ -4,13 +4,43 @@ This is an AI Agent Web API application created from the `aiagent-webapi` templa
 
 ## Prerequisites
 
-- An Azure OpenAI service deployment
+- A GitHub Models API token (free to get started)
 
 ## Getting Started
 
 ### 1. Configure Your AI Service
 
-#### Azure OpenAI Configuration
+#### GitHub Models Configuration
+
+This application uses GitHub Models (model: gpt-4o-mini) for AI functionality. You'll need to configure your GitHub Models API token:
+
+**Option A: Using User Secrets (Recommended for Development)**
+
+```bash
+dotnet user-secrets set "GitHubModels:Token" "your-github-models-token-here"
+```
+
+**Option B: Using Environment Variables**
+
+Set the `GitHubModels__Token` environment variable:
+
+- **Windows (PowerShell)**:
+  ```powershell
+  $env:GitHubModels__Token = "your-github-models-token-here"
+  ```
+
+- **Linux/macOS**:
+  ```bash
+  export GitHubModels__Token="your-github-models-token-here"
+  ```
+
+#### Get a GitHub Models Token
+
+1. Visit [GitHub Models](https://github.com/marketplace/models)
+2. Sign in with your GitHub account
+3. Select a model (e.g., gpt-4o-mini)
+4. Click "Get API Key" or follow the authentication instructions
+5. Copy your personal access token
 
 
 ### 2. Run the Application
@@ -26,8 +56,6 @@ The application will start and listen on:
 ### 3. Test the Application
 
 The application exposes OpenAI-compatible API endpoints. You can interact with the AI agents using any OpenAI-compatible client or tools.
-
-In development environments, a `/devui/` route is mapped to the Agent Framework development UI (DevUI), and when the app is launched through an IDE a browser will open to this URL. DevUI provides a web-based UI for interacting with agents and workflows. DevUI operates as an OpenAI-compatible client using the Responses and Conversations endpoints.
 
 ## How It Works
 
@@ -85,7 +113,15 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 
 - [AI apps for .NET developers](https://learn.microsoft.com/dotnet/ai)
 - [Microsoft Agent Framework Documentation](https://aka.ms/dotnet/agent-framework/docs)
-- [Azure OpenAI Service](https://azure.microsoft.com/products/ai-services/openai-service)
+- [GitHub Models](https://github.com/marketplace/models)
 
 ## Troubleshooting
+
+**Problem**: Application fails with "Missing configuration: GitHubModels:Token"
+
+**Solution**: Make sure you've configured your GitHub Models API token using one of the methods described above.
+
+**Problem**: API requests fail with authentication errors
+
+**Solution**: Verify your GitHub Models token is valid and hasn't expired. You may need to regenerate it from the GitHub Models website.
 

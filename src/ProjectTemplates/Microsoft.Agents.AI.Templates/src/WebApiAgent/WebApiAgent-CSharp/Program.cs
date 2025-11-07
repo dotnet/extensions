@@ -8,6 +8,9 @@ using System.ComponentModel;
 using Azure.Identity;
 #endif
 using Microsoft.Agents.AI;
+#if (IsDevUIEnabled)
+using Microsoft.Agents.AI.DevUI;
+#endif
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
@@ -86,11 +89,37 @@ builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequenti
     sp.GetRequiredKeyedService<AIAgent>("editor")
 )).AddAsAIAgent();
 
-var app = builder.Build();
+#if (IsDevUIEnabled)
+if (builder.Environment.IsDevelopment())
+{
+    // Add the Agent Framework developer UI (DevUI) services in development environments
+    builder.AddDevUI();
+}
 
+#endif
+var app = builder.Build();
 app.UseHttpsRedirection();
+
+// Expose the agents using the OpenAI Responses API
+#if (IsDevUIEnabled)
+// This is also needed for DevUI to function
+#endif
 app.MapOpenAIResponses();
 
+// Expose the conversations using the OpenAI Conversations API
+#if (IsDevUIEnabled)
+// This is also needed for DevUI to manage stateful conversations
+#endif
+app.MapOpenAIConversations();
+
+#if (IsDevUIEnabled)
+if (app.Environment.IsDevelopment())
+{
+    // Map the Agent Framework developer UI to /devui/ in development environments
+    app.MapDevUI();
+}
+
+#endif
 app.Run();
 
 [Description("Formats the story for display.")]

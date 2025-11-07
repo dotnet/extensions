@@ -16,6 +16,13 @@
       "longName": "managed-identity",
       "shortName": ""
     },
+    "UseDevUI": {
+      "isHidden": "true"
+    },
+    "DoNotUseDevUI": {
+      "longName": "no-devui",
+      "shortName": ""
+    },
     "httpPort": {
       "isHidden": "true",
       "longName": "httpPort",
