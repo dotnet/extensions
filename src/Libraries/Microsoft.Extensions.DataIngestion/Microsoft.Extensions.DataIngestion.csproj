@@ -8,6 +8,7 @@
     <PackageTags>RAG;ingestion;documents</PackageTags>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <Stage>preview</Stage>
     <EnablePackageValidation>false</EnablePackageValidation>
     <MinCodeCoverage>75</MinCodeCoverage>
@@ -23,16 +24,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
-    <PackageReference Include="System.Numerics.Tensors" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <!-- Workaround https://github.com/microsoft/semantic-kernel/issues/13316 -->
-    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonVersion)" />
+    <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>
 
 </Project>
