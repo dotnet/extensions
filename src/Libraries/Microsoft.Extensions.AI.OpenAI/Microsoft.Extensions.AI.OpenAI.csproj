@@ -4,6 +4,7 @@
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Implementation of generative AI abstractions for OpenAI-compatible endpoints.</Description>
     <Workstream>AI</Workstream>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -31,9 +32,6 @@
 
   <ItemGroup>
     <PackageReference Include="OpenAI" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>

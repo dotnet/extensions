@@ -1,6 +1,6 @@
 # Release History
 
-## NOT YET RELEASED
+## 9.10.2
 
 - Updated `AIFunctionFactory` to respect `[DisplayName(...)]` on functions as a way to override the function name.
 - Updated `AIFunctionFactory` to respect `[DefaultValue(...)]` on function parameters as a way to specify default values.

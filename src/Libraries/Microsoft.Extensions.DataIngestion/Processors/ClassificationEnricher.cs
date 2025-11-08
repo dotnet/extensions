@@ -2,13 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -21,30 +19,28 @@ namespace Microsoft.Extensions.DataIngestion;
 /// an optional fallback class for cases where no suitable classification can be determined.</remarks>
 public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
 {
-    private readonly IChatClient _chatClient;
-    private readonly ChatOptions? _chatOptions;
-    private readonly FrozenSet<string> _predefinedClasses;
+    private readonly EnricherOptions _options;
     private readonly ChatMessage _systemPrompt;
+    private readonly ILogger? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClassificationEnricher"/> class.
     /// </summary>
-    /// <param name="chatClient">The chat client used for classification.</param>
+    /// <param name="options">The options for the classification enricher.</param>
     /// <param name="predefinedClasses">The set of predefined classification classes.</param>
-    /// <param name="chatOptions">Options for the chat client.</param>
     /// <param name="fallbackClass">The fallback class to use when no suitable classification is found. When not provided, it defaults to "Unknown".</param>
-    public ClassificationEnricher(IChatClient chatClient, ReadOnlySpan<string> predefinedClasses,
-        ChatOptions? chatOptions = null, string? fallbackClass = null)
+    public ClassificationEnricher(EnricherOptions options, ReadOnlySpan<string> predefinedClasses,
+        string? fallbackClass = null)
     {
-        _chatClient = Throw.IfNull(chatClient);
-        _chatOptions = chatOptions;
+        _options = Throw.IfNull(options).Clone();
         if (string.IsNullOrWhiteSpace(fallbackClass))
         {
             fallbackClass = "Unknown";
         }
 
-        _predefinedClasses = CreatePredefinedSet(predefinedClasses, fallbackClass!);
+        Validate(predefinedClasses, fallbackClass!);
         _systemPrompt = CreateSystemPrompt(predefinedClasses, fallbackClass!);
+        _logger = _options.LoggerFactory?.CreateLogger<ClassificationEnricher>();
     }
 
     /// <summary>
@@ -53,28 +49,10 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
     public static string MetadataKey => "classification";
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IAsyncEnumerable<IngestionChunk<string>> chunks,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(chunks);
+    public override IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IAsyncEnumerable<IngestionChunk<string>> chunks, CancellationToken cancellationToken = default)
+        => Batching.ProcessAsync<string>(chunks, _options, MetadataKey, _systemPrompt, _logger, cancellationToken);
 
-        await foreach (IngestionChunk<string> chunk in chunks.WithCancellation(cancellationToken))
-        {
-            var response = await _chatClient.GetResponseAsync(
-            [
-                _systemPrompt,
-                new(ChatRole.User, chunk.Content)
-            ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            chunk.Metadata[MetadataKey] = _predefinedClasses.Contains(response.Text)
-                ? response.Text
-                : throw new InvalidOperationException($"Classification returned an unexpected class: '{response.Text}'.");
-
-            yield return chunk;
-        }
-    }
-
-    private static FrozenSet<string> CreatePredefinedSet(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
+    private static void Validate(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
     {
         if (predefinedClasses.Length == 0)
         {
@@ -84,15 +62,6 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
         HashSet<string> predefinedClassesSet = new(StringComparer.Ordinal) { fallbackClass };
         foreach (string predefinedClass in predefinedClasses)
         {
-#if NET
-            if (predefinedClass.Contains(',', StringComparison.Ordinal))
-#else
-            if (predefinedClass.IndexOf(',') >= 0)
-#endif
-            {
-                Throw.ArgumentException(nameof(predefinedClasses), $"Predefined class '{predefinedClass}' must not contain ',' character.");
-            }
-
             if (!predefinedClassesSet.Add(predefinedClass))
             {
                 if (predefinedClass.Equals(fallbackClass, StringComparison.Ordinal))
@@ -103,13 +72,11 @@ public sealed class ClassificationEnricher : IngestionChunkProcessor<string>
                 Throw.ArgumentException(nameof(predefinedClasses), $"Duplicate class found: '{predefinedClass}'.");
             }
         }
-
-        return predefinedClassesSet.ToFrozenSet();
     }
 
     private static ChatMessage CreateSystemPrompt(ReadOnlySpan<string> predefinedClasses, string fallbackClass)
     {
-        StringBuilder sb = new("You are a classification expert. Analyze the given text and assign a single, most relevant class. Use only the following predefined classes: ");
+        StringBuilder sb = new("You are a classification expert. For each of the following texts, assign a single, most relevant class. Use only the following predefined classes: ");
 
 #if NET9_0_OR_GREATER
         sb.AppendJoin(", ", predefinedClasses!);
