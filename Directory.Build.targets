@@ -9,10 +9,10 @@
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\ProjectStaging.targets" />
 
   <PropertyGroup>
-    <!-- Workaround https://github.com/dotnet/sdk/issues/51265 -->
+    <!-- Workaround https://github.com/dotnet/sdk/issues/51265 - can be removed when updating to .NET 10.0.100 (GA) SDK -->
     <RestoreEnablePackagePruning Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">false</RestoreEnablePackagePruning>
   </PropertyGroup>
-
+  
   <!-- Warning stuff -->
   <PropertyGroup>
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1138;MSB3270</MSBuildWarningsAsMessages>
