@@ -19,6 +19,9 @@ using OllamaSharp;
 #elif (IsGHModels || IsOpenAI || IsAzureOpenAI)
 using OpenAI;
 #endif
+#if (IsGHModels)
+using OpenAI.Chat;
+#endif
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,11 +30,11 @@ var builder = WebApplication.CreateBuilder(args);
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
 //   dotnet user-secrets set GitHubModels:Token YOUR-GITHUB-TOKEN
-var credential = new ApiKeyCredential(builder.Configuration["GitHubModels:Token"] ?? throw new InvalidOperationException("Missing configuration: GitHubModels:Token. See README for details."));
-var openAIOptions = new OpenAIClientOptions { Endpoint = new Uri("https://models.inference.ai.azure.com") };
-
-var chatClient = new OpenAIClient(credential, openAIOptions)
-    .GetChatClient("gpt-4o-mini").AsIChatClient();
+var chatClient = new ChatClient(
+        "gpt-4o-mini",
+        new ApiKeyCredential(builder.Configuration["GitHubModels:Token"] ?? throw new InvalidOperationException("Missing configuration: GitHubModels:Token.")),
+        new OpenAIClientOptions { Endpoint = new Uri("https://models.inference.ai.azure.com") })
+    .AsIChatClient();
 #elif (IsOllama)
 // You will need to have Ollama running locally with the llama3.2 model installed
 // Visit https://ollama.com for installation instructions
@@ -42,7 +45,7 @@ var chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.
 //   cd this-project-directory
 //   dotnet user-secrets set OpenAI:Key YOUR-API-KEY
 var openAIClient = new OpenAIClient(
-    new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key. See README for details.")));
+    new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key.")));
 
 #pragma warning disable OPENAI001 // GetOpenAIResponseClient(string) is experimental and subject to change or removal in future updates.
 var chatClient = openAIClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
@@ -55,7 +58,7 @@ var chatClient = openAIClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClie
 #if (!IsManagedIdentity)
 //   dotnet user-secrets set AzureOpenAI:Key YOUR-API-KEY
 #endif
-var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint. See README for details.")), "/openai/v1");
+var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint.")), "/openai/v1");
 #if (IsManagedIdentity)
 #pragma warning disable OPENAI001 // OpenAIClient(AuthenticationPolicy, OpenAIClientOptions) and GetOpenAIResponseClient(string) are experimental and subject to change or removal in future updates.
 var azureOpenAI = new OpenAIClient(
@@ -64,7 +67,7 @@ var azureOpenAI = new OpenAIClient(
 
 #elif (!IsManagedIdentity)
 var openAIOptions = new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint };
-var azureOpenAI = new OpenAIClient(new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key. See README for details.")), openAIOptions);
+var azureOpenAI = new OpenAIClient(new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key.")), openAIOptions);
 
 #pragma warning disable OPENAI001 // GetOpenAIResponseClient(string) is experimental and subject to change or removal in future updates.
 #endif
@@ -79,8 +82,8 @@ builder.AddAIAgent("writer", "You write short stories (300 words or less) about 
 builder.AddAIAgent("editor", (sp, key) => new ChatClientAgent(
     chatClient,
     name: key,
-    instructions: "You edit short stories to improve grammar and style. You ensure the stories are less than 300 words.",
-    tools: [ AIFunctionFactory.Create(FormatStory) ]
+    instructions: "You edit short stories to improve grammar and style, ensuring the stories are less than 300 words. Once finished editing, you select a title and format the story for publishing.",
+    tools: [AIFunctionFactory.Create(FormatStory)]
 ));
 
 builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequential(
@@ -89,43 +92,36 @@ builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequenti
     sp.GetRequiredKeyedService<AIAgent>("editor")
 )).AddAsAIAgent();
 
+// Register services for OpenAI responses and conversations
 #if (IsDevUIEnabled)
-if (builder.Environment.IsDevelopment())
-{
-    // Add the Agent Framework developer UI (DevUI) services in development environments
-    builder.AddDevUI();
-}
-
+// This is also required for DevUI
 #endif
+builder.Services.AddOpenAIResponses();
+builder.Services.AddOpenAIConversations();
+
 var app = builder.Build();
 app.UseHttpsRedirection();
 
-// Expose the agents using the OpenAI Responses API
+// Map endpoints for OpenAI responses and conversations
 #if (IsDevUIEnabled)
-// This is also needed for DevUI to function
+// This is also required for DevUI
 #endif
 app.MapOpenAIResponses();
-
-// Expose the conversations using the OpenAI Conversations API
-#if (IsDevUIEnabled)
-// This is also needed for DevUI to manage stateful conversations
-#endif
 app.MapOpenAIConversations();
 
 #if (IsDevUIEnabled)
-if (app.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment())
 {
-    // Map the Agent Framework developer UI to /devui/ in development environments
+    // Map DevUI endpoint to /devui
     app.MapDevUI();
 }
 
 #endif
 app.Run();
 
-[Description("Formats the story for display.")]
+[Description("Formats the story for publication, revealing its title.")]
 string FormatStory(string title, string story) => $"""
     **Title**: {title}
-    **Date**: {DateTime.Today.ToShortDateString()}
 
     {story}
     """;

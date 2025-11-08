@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
 //   dotnet user-secrets set AzureOpenAI:Endpoint https://YOUR-DEPLOYMENT-NAME.openai.azure.com
-var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint. See README for details.")), "/openai/v1");
+var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint.")), "/openai/v1");
 #pragma warning disable OPENAI001 // OpenAIClient(AuthenticationPolicy, OpenAIClientOptions) and GetOpenAIResponseClient(string) are experimental and subject to change or removal in future updates.
 var azureOpenAI = new OpenAIClient(
     new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
@@ -30,8 +30,8 @@ builder.AddAIAgent("writer", "You write short stories (300 words or less) about 
 builder.AddAIAgent("editor", (sp, key) => new ChatClientAgent(
     chatClient,
     name: key,
-    instructions: "You edit short stories to improve grammar and style. You ensure the stories are less than 300 words.",
-    tools: [ AIFunctionFactory.Create(FormatStory) ]
+    instructions: "You edit short stories to improve grammar and style, ensuring the stories are less than 300 words. Once finished editing, you select a title and format the story for publishing.",
+    tools: [AIFunctionFactory.Create(FormatStory)]
 ));
 
 builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequential(
@@ -40,35 +40,30 @@ builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequenti
     sp.GetRequiredKeyedService<AIAgent>("editor")
 )).AddAsAIAgent();
 
-if (builder.Environment.IsDevelopment())
-{
-    // Add the Agent Framework developer UI (DevUI) services in development environments
-    builder.AddDevUI();
-}
+// Register services for OpenAI responses and conversations
+// This is also required for DevUI
+builder.Services.AddOpenAIResponses();
+builder.Services.AddOpenAIConversations();
 
 var app = builder.Build();
 app.UseHttpsRedirection();
 
-// Expose the agents using the OpenAI Responses API
-// This is also needed for DevUI to function
+// Map endpoints for OpenAI responses and conversations
+// This is also required for DevUI
 app.MapOpenAIResponses();
-
-// Expose the conversations using the OpenAI Conversations API
-// This is also needed for DevUI to manage stateful conversations
 app.MapOpenAIConversations();
 
-if (app.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment())
 {
-    // Map the Agent Framework developer UI to /devui/ in development environments
+    // Map DevUI endpoint to /devui
     app.MapDevUI();
 }
 
 app.Run();
 
-[Description("Formats the story for display.")]
+[Description("Formats the story for publication, revealing its title.")]
 string FormatStory(string title, string story) => $"""
     **Title**: {title}
-    **Date**: {DateTime.Today.ToShortDateString()}
 
     {story}
     """;
