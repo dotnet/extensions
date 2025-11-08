@@ -22,9 +22,7 @@ public class ChatResponse<T> : ChatResponse
 {
     private static readonly JsonReaderOptions _allowMultipleValuesJsonReaderOptions = new()
     {
-#if NET9_0_OR_GREATER
         AllowMultipleValues = true
-#endif
     };
     private readonly JsonSerializerOptions _serializerOptions;
 

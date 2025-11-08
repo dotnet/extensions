@@ -199,11 +199,6 @@ public static partial class AIJsonUtilities
         }
     }
 
-#if !NET9_0_OR_GREATER
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access",
-        Justification = "Pre STJ-9 schema extraction can fail with a runtime exception if certain reflection metadata have been trimmed. " +
-                        "The exception message will guide users to turn off 'IlcTrimMetadata' which resolves all issues.")]
-#endif
     private static JsonNode CreateJsonSchemaCore(
         Type? type,
         ParameterInfo? parameter,
