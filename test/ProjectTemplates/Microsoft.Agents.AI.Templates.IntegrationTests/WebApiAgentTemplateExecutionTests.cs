@@ -55,7 +55,6 @@ public class WebApiAgentTemplateExecutionTests : TemplateExecutionTestBase<WebAp
     private static readonly (string name, string[] values)[] _templateOptions = [
         ("--provider",         ["azureopenai", "githubmodels", "ollama", "openai"]),
         ("--managed-identity", ["true", "false"]),
-        ("--no-devui",         ["true", "false"]),
     ];
 
     private static IEnumerable<object[]> GetFilteredTemplateOptions(params string[] filter)

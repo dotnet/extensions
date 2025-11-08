@@ -5,7 +5,7 @@ using Microsoft.Agents.AI.DevUI;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
-using OpenAI;
+using OpenAI.Chat;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,12 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
 //   dotnet user-secrets set OpenAI:Key YOUR-API-KEY
-var openAIClient = new OpenAIClient(
-    new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key.")));
-
-#pragma warning disable OPENAI001 // GetOpenAIResponseClient(string) is experimental and subject to change or removal in future updates.
-var chatClient = openAIClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
-#pragma warning restore OPENAI001
+var chatClient = new ChatClient(
+        "gpt-4o-mini",
+        new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key.")))
+    .AsIChatClient();
 
 builder.Services.AddChatClient(chatClient);
 
@@ -37,16 +35,14 @@ builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequenti
     sp.GetRequiredKeyedService<AIAgent>("editor")
 )).AddAsAIAgent();
 
-// Register services for OpenAI responses and conversations
-// This is also required for DevUI
+// Register services for OpenAI responses and conversations (also required for DevUI)
 builder.Services.AddOpenAIResponses();
 builder.Services.AddOpenAIConversations();
 
 var app = builder.Build();
 app.UseHttpsRedirection();
 
-// Map endpoints for OpenAI responses and conversations
-// This is also required for DevUI
+// Map endpoints for OpenAI responses and conversations (also required for DevUI)
 app.MapOpenAIResponses();
 app.MapOpenAIConversations();
 

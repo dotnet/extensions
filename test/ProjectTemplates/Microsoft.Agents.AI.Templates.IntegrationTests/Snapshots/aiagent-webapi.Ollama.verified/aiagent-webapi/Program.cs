@@ -29,16 +29,14 @@ builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequenti
     sp.GetRequiredKeyedService<AIAgent>("editor")
 )).AddAsAIAgent();
 
-// Register services for OpenAI responses and conversations
-// This is also required for DevUI
+// Register services for OpenAI responses and conversations (also required for DevUI)
 builder.Services.AddOpenAIResponses();
 builder.Services.AddOpenAIConversations();
 
 var app = builder.Build();
 app.UseHttpsRedirection();
 
-// Map endpoints for OpenAI responses and conversations
-// This is also required for DevUI
+// Map endpoints for OpenAI responses and conversations (also required for DevUI)
 app.MapOpenAIResponses();
 app.MapOpenAIConversations();
 

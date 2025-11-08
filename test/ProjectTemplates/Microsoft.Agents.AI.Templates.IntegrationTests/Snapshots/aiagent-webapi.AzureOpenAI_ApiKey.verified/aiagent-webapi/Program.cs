@@ -6,6 +6,7 @@ using Microsoft.Agents.AI.Hosting;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using OpenAI;
+using OpenAI.Chat;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,12 +16,12 @@ var builder = WebApplication.CreateBuilder(args);
 //   dotnet user-secrets set AzureOpenAI:Endpoint https://YOUR-DEPLOYMENT-NAME.openai.azure.com
 //   dotnet user-secrets set AzureOpenAI:Key YOUR-API-KEY
 var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint.")), "/openai/v1");
-var openAIOptions = new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint };
-var azureOpenAI = new OpenAIClient(new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key.")), openAIOptions);
 
-#pragma warning disable OPENAI001 // GetOpenAIResponseClient(string) is experimental and subject to change or removal in future updates.
-var chatClient = azureOpenAI.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
-#pragma warning restore OPENAI001
+var chatClient = new ChatClient(
+        "gpt-4o-mini",
+        new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key.")),
+        new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint })
+    .AsIChatClient();
 
 builder.Services.AddChatClient(chatClient);
 
@@ -39,16 +40,14 @@ builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequenti
     sp.GetRequiredKeyedService<AIAgent>("editor")
 )).AddAsAIAgent();
 
-// Register services for OpenAI responses and conversations
-// This is also required for DevUI
+// Register services for OpenAI responses and conversations (also required for DevUI)
 builder.Services.AddOpenAIResponses();
 builder.Services.AddOpenAIConversations();
 
 var app = builder.Build();
 app.UseHttpsRedirection();
 
-// Map endpoints for OpenAI responses and conversations
-// This is also required for DevUI
+// Map endpoints for OpenAI responses and conversations (also required for DevUI)
 app.MapOpenAIResponses();
 app.MapOpenAIConversations();
 

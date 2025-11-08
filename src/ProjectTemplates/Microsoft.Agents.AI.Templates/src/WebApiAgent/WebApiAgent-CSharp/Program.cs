@@ -8,18 +8,17 @@ using System.ComponentModel;
 using Azure.Identity;
 #endif
 using Microsoft.Agents.AI;
-#if (IsDevUIEnabled)
 using Microsoft.Agents.AI.DevUI;
-#endif
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 #if (IsOllama)
 using OllamaSharp;
-#elif (IsGHModels || IsOpenAI || IsAzureOpenAI)
+#endif
+#if (IsGHModels || IsAzureOpenAI)
 using OpenAI;
 #endif
-#if (IsGHModels)
+#if (IsGHModels || IsOpenAI || IsAzureOpenAI)
 using OpenAI.Chat;
 #endif
 
@@ -35,21 +34,15 @@ var chatClient = new ChatClient(
         new ApiKeyCredential(builder.Configuration["GitHubModels:Token"] ?? throw new InvalidOperationException("Missing configuration: GitHubModels:Token.")),
         new OpenAIClientOptions { Endpoint = new Uri("https://models.inference.ai.azure.com") })
     .AsIChatClient();
-#elif (IsOllama)
-// You will need to have Ollama running locally with the llama3.2 model installed
-// Visit https://ollama.com for installation instructions
-var chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
 #elif (IsOpenAI)
 // You will need to set the API key to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
 //   dotnet user-secrets set OpenAI:Key YOUR-API-KEY
-var openAIClient = new OpenAIClient(
-    new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key.")));
-
-#pragma warning disable OPENAI001 // GetOpenAIResponseClient(string) is experimental and subject to change or removal in future updates.
-var chatClient = openAIClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
-#pragma warning restore OPENAI001
+var chatClient = new ChatClient(
+        "gpt-4o-mini",
+        new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key.")))
+    .AsIChatClient();
 #elif (IsAzureOpenAI)
 // You will need to set the endpoint to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
@@ -59,20 +52,26 @@ var chatClient = openAIClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClie
 //   dotnet user-secrets set AzureOpenAI:Key YOUR-API-KEY
 #endif
 var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint.")), "/openai/v1");
+
 #if (IsManagedIdentity)
-#pragma warning disable OPENAI001 // OpenAIClient(AuthenticationPolicy, OpenAIClientOptions) and GetOpenAIResponseClient(string) are experimental and subject to change or removal in future updates.
-var azureOpenAI = new OpenAIClient(
-    new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
-    new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint });
-
-#elif (!IsManagedIdentity)
-var openAIOptions = new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint };
-var azureOpenAI = new OpenAIClient(new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key.")), openAIOptions);
-
-#pragma warning disable OPENAI001 // GetOpenAIResponseClient(string) is experimental and subject to change or removal in future updates.
-#endif
-var chatClient = azureOpenAI.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
+#pragma warning disable OPENAI001 // The overload accepting an AuthenticationPolicy is experimental and may change or be removed in future releases.
+var chatClient = new ChatClient(
+        "gpt-4o-mini",
+        new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
+        new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint })
+    .AsIChatClient();
 #pragma warning restore OPENAI001
+#else
+var chatClient = new ChatClient(
+        "gpt-4o-mini",
+        new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key.")),
+        new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint })
+    .AsIChatClient();
+#endif
+#elif (IsOllama)
+// You will need to have Ollama running locally with the llama3.2 model installed
+// Visit https://ollama.com for installation instructions
+var chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
 #endif
 
 builder.Services.AddChatClient(chatClient);
@@ -92,31 +91,23 @@ builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequenti
     sp.GetRequiredKeyedService<AIAgent>("editor")
 )).AddAsAIAgent();
 
-// Register services for OpenAI responses and conversations
-#if (IsDevUIEnabled)
-// This is also required for DevUI
-#endif
+// Register services for OpenAI responses and conversations (also required for DevUI)
 builder.Services.AddOpenAIResponses();
 builder.Services.AddOpenAIConversations();
 
 var app = builder.Build();
 app.UseHttpsRedirection();
 
-// Map endpoints for OpenAI responses and conversations
-#if (IsDevUIEnabled)
-// This is also required for DevUI
-#endif
+// Map endpoints for OpenAI responses and conversations (also required for DevUI)
 app.MapOpenAIResponses();
 app.MapOpenAIConversations();
 
-#if (IsDevUIEnabled)
 if (builder.Environment.IsDevelopment())
 {
     // Map DevUI endpoint to /devui
     app.MapDevUI();
 }
 
-#endif
 app.Run();
 
 [Description("Formats the story for publication, revealing its title.")]

@@ -21,12 +21,15 @@
 
   <ItemGroup>
     <Compile Include="..\Infrastructure\*.cs" Link="Infrastructure\%(Filename)%(Extension)" />
+    <Compile Remove="ExecutionTestSandbox\**" />
 
     <Compile Remove="Snapshots\**\*.*" />
     <None Include="Snapshots\**\*.*" />
 
     <Compile Remove="ExecutionTestSandbox\**\*.*" />
     <None Include="ExecutionTestSandbox\**\*.*" />
+    <Content Remove="ExecutionTestSandbox\**\*.*" />
+    <EmbeddedResource Remove="ExecutionTestSandbox\**\*.*" />
 
     <None Include="README.md" />
   </ItemGroup>

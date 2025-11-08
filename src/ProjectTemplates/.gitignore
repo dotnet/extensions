@@ -12,8 +12,8 @@ package-lock.json
 */src/**/Directory.Build.props
 */src/**/ingestioncache.*
 
-# The aichatweb template includes hard-coded launchSettings.json files in the template
-!Microsoft.Extensions.AI.Templates/src/ChatWithCustomData/*/Properties/launchSettings.json
+# The project templates include hard-coded launchSettings.json files
+!*/src/**/Properties/launchSettings.json
 
 # Templates include JS dependencies in dist folders.
 !**/dist/*

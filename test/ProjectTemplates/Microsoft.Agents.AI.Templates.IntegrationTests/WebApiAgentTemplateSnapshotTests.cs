@@ -73,12 +73,6 @@ public class WebApiAgentTemplateSnapshotTests
         await TestTemplateCoreAsync(scenarioName: nameof(Ollama), templateArgs: ["--provider", "ollama"]);
     }
 
-    [Fact]
-    public async Task DisableDevUI()
-    {
-        await TestTemplateCoreAsync(scenarioName: nameof(DisableDevUI), templateArgs: ["--no-devui"]);
-    }
-
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
     {
         string workingDir = TestUtils.CreateTemporaryFolder();
