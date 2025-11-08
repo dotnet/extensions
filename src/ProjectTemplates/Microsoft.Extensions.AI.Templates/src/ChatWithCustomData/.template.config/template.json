@@ -108,12 +108,16 @@
       "datatype": "choice",
       "choices": [
         {
+          "choice": "net10.0",
+          "description": ".NET 10"
+        },
+        {
           "choice": "net9.0",
-          "description": "Target net9.0"
+          "description": ".NET 9"
         }
       ],
-      "replaces": "net9.0",
-      "defaultValue": "net9.0",
+      "replaces": "net10.0",
+      "defaultValue": "net10.0",
       "displayName": "Framework"
     },
     "hostIdentifier": {
@@ -190,6 +194,10 @@
       "datatype": "bool",
       "defaultValue": "false",
       "description": "Create the project as a distributed application using Aspire."
+    },
+    "IsNET9": {
+      "type": "computed",
+      "value": "(Framework == \"net9.0\")"
     },
     "IsManagedIdentity": {
       "type": "computed",
