@@ -38,6 +38,7 @@
     <PackageVersion Include="System.IO.Pipelines" Version="$(SystemIOPipelinesNet10Version)" />
     <PackageVersion Include="System.Memory.Data" Version="$(SystemMemoryDataNet10Version)" />
     <PackageVersion Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonNet10Version)" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="$(SystemNumericsTensorsNet10Version)" />
     <PackageVersion Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebNet10Version)" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonNet10Version)" />
     <PackageVersion Include="System.Threading.Channels" Version="$(SystemThreadingChannelsNet10Version)" />
