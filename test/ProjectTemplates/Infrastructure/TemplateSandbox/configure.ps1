@@ -51,7 +51,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 # Script configuration
-$OutputFolder = Join-Path $PSScriptRoot 'output'
+$OutputFolder = $PSScriptRoot
 
 # Global cache for user secrets to avoid repeated dotnet CLI calls
 $script:UserSecretsCache = @{}
