@@ -3,16 +3,16 @@
 You are an AI assistant whose job is to test and validate variations of an AI Chat Web .NET project template.
 
 **TL;DR**
-For each `<test ai_status="pending">` in `output/AI_TODO.txt`: run the test project, open the printed app URL, send **exactly** `What's in the kit?` to the web chat, apply three validation checks (search logged, survival-kit content, citations), save screenshot under `output/ai/`, set `ai_status` to `passed|failed|skipped`, and write a short `<ai_remarks>` entry explaining what you did and why.
+For each `<test ai_status="pending">` in `AI_TODO.txt`: run the test project, open the printed app URL, send **exactly** `What's in the kit?` to the web chat, apply three validation checks (search logged, survival-kit content, citations), save screenshot under `AI-OUTPUT/`, set `ai_status` to `passed|failed|skipped`, and write a short `<ai_remarks>` entry explaining what you did and why.
 
 ---
 
 ## QUICK REFERENCES
 
 * `AI_TODO.txt` path:
-  `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/output/AI_TODO.txt`
+  `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/ExecutionTestSandbox/AI_TODO.txt`
 * Evidence dir:
-  `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/output/ai/`
+  `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/ExecutionTestSandbox/AI-OUTPUT/`
 
 ---
 
@@ -21,8 +21,8 @@ For each `<test ai_status="pending">` in `output/AI_TODO.txt`: run the test proj
 * Start by creating an individual TODO for each pending test in `AI_TODO.txt`
 * Run each test as its own subagent
 * Don't run any commands other than variations of the ones listed below:
-   * `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/Start-Project.ps1`
-   * `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/TemplateSandbox/Stop-Project.ps1`
+   * `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/ExecutionTestSandbox/Start-Project.ps1`
+   * `./test/ProjectTemplates/Microsoft.Extensions.AI.Templates.IntegrationTests/ExecutionTestSandbox/Stop-Project.ps1`
    * `Start-Sleep`
      * Wait a max of 3 seconds for most operations
      * For known long-running operations (like provisioning Azure resources), wait at most 30 seconds at a time
@@ -55,7 +55,7 @@ Follow these steps for one test. Keep outputs short and machine-parseable where 
    * From the repo root, run the `Start-Project.ps1` script, passing the directory specified in `<path>`:
 
      ```powershell
-     .\test\ProjectTemplates\Microsoft.Extensions.AI.Templates.IntegrationTests\TemplateSandbox\Start-Project.ps1 -ProjectPath "<path-from-AI_TODO>"
+     .\test\ProjectTemplates\Microsoft.Extensions.AI.Templates.IntegrationTests\ExecutionTestSandbox\Start-Project.ps1 -ProjectPath "<path-from-AI_TODO>"
      ```
    * If the project fails due to missing configuration, skip the project and set `ai_status="skipped"`.
    * Before moving to the next project, always terminate the already-running one using `Stop-Project -ProcessId <pid_from_start_project>`
@@ -90,7 +90,7 @@ Follow these steps for one test. Keep outputs short and machine-parseable where 
 
 8. **Produce evidence**
 
-   * Save a screenshot: `<test-id>_<status>_screenshot.png` into `.../output/ai/`.
+   * Save a screenshot: `<test-id>_<status>_screenshot.png` into `.../AI-OUTPUT/`.
 
 9. **Update `AI_TODO.txt`**
 
@@ -115,7 +115,7 @@ Include at least:
 
 ```xml
 <ai_remarks>
-   screenshot: output/ai/AIChatWeb_8512ad7cfe_screenshot_passed.png
+   screenshot: AI-OUTPUT/AIChatWeb_8512ad7cfe_screenshot_passed.png
    note: Response included survival kit details and citations.
 </ai_remarks>
 ```
