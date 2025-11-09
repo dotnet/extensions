@@ -61,7 +61,8 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
                 .WithEnvironmentVariable("NUGET_PACKAGES", WellKnownPaths.NuGetPackagesPath)
                 .WithCustomHive(_customHivePath)
                 .ExecuteAsync(OutputHelper);
-            installResult.AssertSucceeded();
+
+            installResult.AssertSucceeded($"dotnet new install {_configuration.TemplatePackageName}");
         }
     }
 
@@ -78,11 +79,14 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
             .. args
         ];
 
+        var testDescription = string.Join(' ', dotNetNewCommandArgs);
+
         var newProjectResult = await new DotNetNewCommand(dotNetNewCommandArgs)
             .WithWorkingDirectory(_templateTestOutputPath)
             .WithCustomHive(_customHivePath)
             .ExecuteAsync(OutputHelper);
-        newProjectResult.AssertSucceeded();
+
+        newProjectResult.AssertSucceeded(testDescription);
 
         var templateNuGetConfigPath = Path.Combine(outputFolderPath, "nuget.config");
         File.Copy(WellKnownPaths.TemplateTestNuGetConfigPath, templateNuGetConfigPath);
@@ -97,7 +101,14 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
             .WithEnvironmentVariable("LOCAL_SHIPPING_PATH", WellKnownPaths.LocalShippingPackagesPath)
             .WithEnvironmentVariable("NUGET_PACKAGES", WellKnownPaths.NuGetPackagesPath)
             .ExecuteAsync(OutputHelper);
-        restoreResult.AssertSucceeded();
+
+        restoreResult.AssertSucceeded($"""
+            dotnet restore
+
+            Working Directory: {project.StartupProjectFullPath}
+            Local Shipping Path: {WellKnownPaths.LocalShippingPackagesPath}
+            NuGet Packages Path: {WellKnownPaths.NuGetPackagesPath}
+            """);
     }
 
     public async Task BuildProjectAsync(Project project)
@@ -105,7 +116,12 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
         var buildResult = await new DotNetCommand("build", "--no-restore")
             .WithWorkingDirectory(project.StartupProjectFullPath)
             .ExecuteAsync(OutputHelper);
-        buildResult.AssertSucceeded();
+
+        buildResult.AssertSucceeded($"""
+            dotnet build --no-restore
+
+            Working Directory: {project.StartupProjectFullPath}
+            """);
     }
 
     public void SetCurrentTestOutputHelper(ITestOutputHelper? outputHelper)
