@@ -201,7 +201,7 @@ public sealed class LinuxUtilizationProviderTests
 
         var parser = new LinuxUtilizationParserCgroupV2(fileSystem: fileSystem, new FakeUserHz(100));
         var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
-        var snapshotProvider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider,logger, TimeProvider.System);
+        var snapshotProvider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, logger, TimeProvider.System);
         var logRecords = logger.Collector.GetSnapshot();
 
         return Verifier.Verify(logRecords).UseDirectory(VerifiedDataDirectory);

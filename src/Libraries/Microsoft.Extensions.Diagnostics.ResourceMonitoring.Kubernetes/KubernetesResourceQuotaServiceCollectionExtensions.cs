@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class KubernetesResourceQuotaServiceCollectionExtensions
 {
     /// <summary>
-    /// Configures and adds an Kubernetes resource monitoring components to a service collection alltoghter with necessary basic resource monitoring components.
+    /// Configures and adds an Kubernetes resource monitoring components to a service collection altogether with necessary basic resource monitoring components.
     /// </summary>
     /// <param name="services">The dependency injection container to add the Kubernetes resource monitoring to.</param>
     /// <param name="environmentVariablePrefix">Optional value of prefix used to read environment variables in the container.</param>

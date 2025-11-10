@@ -14,7 +14,7 @@ internal class KubernetesMetadata
     public ulong LimitsMemory { get; set; }
 
     /// <summary>
-    /// Gets or sets the resource CPU limit the container is allowed to use in milicores.
+    /// Gets or sets the resource CPU limit the container is allowed to use in millicores.
     /// </summary>
     public ulong LimitsCpu { get; set; }
 
@@ -24,7 +24,7 @@ internal class KubernetesMetadata
     public ulong RequestsMemory { get; set; }
 
     /// <summary>
-    /// Gets or sets the resource CPU request the container is allowed to use in milicores.
+    /// Gets or sets the resource CPU request the container is allowed to use in millicores.
     /// </summary>
     public ulong RequestsCpu { get; set; }
 
