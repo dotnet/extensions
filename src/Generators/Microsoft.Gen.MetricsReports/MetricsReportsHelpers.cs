@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Gen.Metrics.Model;
 
 namespace Microsoft.Gen.MetricsReports;
+
 internal static class MetricsReportsHelpers
 {
     internal static ReportedMetricClass[] MapToCommonModel(IReadOnlyList<MetricType> meteringClasses, string? rootNamespace)

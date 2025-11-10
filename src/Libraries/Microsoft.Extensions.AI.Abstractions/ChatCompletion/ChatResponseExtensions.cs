@@ -5,7 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+#if !NET
+using System.Runtime.InteropServices;
+#endif
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -180,8 +184,49 @@ public static class ChatResponseExtensions
         }
     }
 
+    /// <summary>
+    /// Coalesces image result content elements in the provided list of <see cref="AIContent"/> items.
+    /// Unlike other content coalescing methods, this will coalesce non-sequential items based on their Name property, 
+    /// and it will replace earlier items with later ones when duplicates are found.
+    /// </summary>
+    private static void CoalesceImageResultContent(IList<AIContent> contents)
+    {
+        Dictionary<string, int>? imageResultIndexById = null;
+        bool hasRemovals = false;
+
+        for (int i = 0; i < contents.Count; i++)
+        {
+            if (contents[i] is ImageGenerationToolResultContent imageResult && !string.IsNullOrEmpty(imageResult.ImageId))
+            {
+                // Check if there's an existing ImageGenerationToolResultContent with the same ImageId to replace
+                if (imageResultIndexById is null)
+                {
+                    imageResultIndexById = new(StringComparer.Ordinal);
+                }
+
+                if (imageResultIndexById.TryGetValue(imageResult.ImageId!, out int existingIndex))
+                {
+                    // Replace the existing imageResult with the new one
+                    contents[existingIndex] = imageResult;
+                    contents[i] = null!; // Mark the current one for removal, then remove in single o(n) pass
+                    hasRemovals = true;
+                }
+                else
+                {
+                    imageResultIndexById[imageResult.ImageId!] = i;
+                }
+            }
+        }
+
+        // Remove all of the null slots left over from the coalescing process.
+        if (hasRemovals)
+        {
+            RemoveNullContents(contents);
+        }
+    }
+
     /// <summary>Coalesces sequential <see cref="AIContent"/> content elements.</summary>
-    internal static void CoalesceTextContent(IList<AIContent> contents)
+    internal static void CoalesceContent(IList<AIContent> contents)
     {
         Coalesce<TextContent>(
             contents,
@@ -193,10 +238,138 @@ public static class ChatResponseExtensions
             contents,
             mergeSingle: false,
             canMerge: static (r1, r2) => string.IsNullOrEmpty(r1.ProtectedData), // we allow merging if the first item has no ProtectedData, even if the second does
-            static (contents, start, end) => new(MergeText(contents, start, end)) { AdditionalProperties = contents[start].AdditionalProperties?.Clone() });
+            static (contents, start, end) =>
+            {
+                TextReasoningContent content = new(MergeText(contents, start, end))
+                {
+                    AdditionalProperties = contents[start].AdditionalProperties?.Clone()
+                };
+
+#if DEBUG
+                for (int i = start; i < end - 1; i++)
+                {
+                    Debug.Assert(contents[i] is TextReasoningContent { ProtectedData: null }, "Expected all but the last to have a null ProtectedData");
+                }
+#endif
+
+                if (((TextReasoningContent)contents[end - 1]).ProtectedData is { } protectedData)
+                {
+                    content.ProtectedData = protectedData;
+                }
+
+                return content;
+            });
+
+        CoalesceImageResultContent(contents);
+
+        Coalesce<DataContent>(
+            contents,
+            mergeSingle: false,
+            canMerge: static (r1, r2) => r1.MediaType == r2.MediaType && r1.HasTopLevelMediaType("text") && r1.Name == r2.Name,
+            static (contents, start, end) =>
+            {
+                Debug.Assert(end - start > 1, "Expected multiple contents to merge");
+
+                MemoryStream ms = new();
+                for (int i = start; i < end; i++)
+                {
+                    var current = (DataContent)contents[i];
+#if NET
+                    ms.Write(current.Data.Span);
+#else
+                    if (!MemoryMarshal.TryGetArray(current.Data, out var segment))
+                    {
+                        segment = new(current.Data.ToArray());
+                    }
+
+                    ms.Write(segment.Array!, segment.Offset, segment.Count);
+#endif
+                }
+
+                var first = (DataContent)contents[start];
+                return new DataContent(new ReadOnlyMemory<byte>(ms.GetBuffer(), 0, (int)ms.Length), first.MediaType) { Name = first.Name };
+            });
+
+        Coalesce<CodeInterpreterToolCallContent>(
+            contents,
+            mergeSingle: true,
+            canMerge: static (r1, r2) => r1.CallId == r2.CallId,
+            static (contents, start, end) =>
+            {
+                var firstContent = (CodeInterpreterToolCallContent)contents[start];
+
+                if (start == end - 1)
+                {
+                    if (firstContent.Inputs is not null)
+                    {
+                        CoalesceContent(firstContent.Inputs);
+                    }
+
+                    return firstContent;
+                }
+
+                List<AIContent>? inputs = null;
+
+                for (int i = start; i < end; i++)
+                {
+                    (inputs ??= []).AddRange(((CodeInterpreterToolCallContent)contents[i]).Inputs ?? []);
+                }
+
+                if (inputs is not null)
+                {
+                    CoalesceContent(inputs);
+                }
+
+                return new()
+                {
+                    CallId = firstContent.CallId,
+                    Inputs = inputs,
+                    AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
+                };
+            });
+
+        Coalesce<CodeInterpreterToolResultContent>(
+            contents,
+            mergeSingle: true,
+            canMerge: static (r1, r2) => r1.CallId is not null && r2.CallId is not null && r1.CallId == r2.CallId,
+            static (contents, start, end) =>
+            {
+                var firstContent = (CodeInterpreterToolResultContent)contents[start];
+
+                if (start == end - 1)
+                {
+                    if (firstContent.Outputs is not null)
+                    {
+                        CoalesceContent(firstContent.Outputs);
+                    }
+
+                    return firstContent;
+                }
+
+                List<AIContent>? output = null;
+
+                for (int i = start; i < end; i++)
+                {
+                    (output ??= []).AddRange(((CodeInterpreterToolResultContent)contents[i]).Outputs ?? []);
+                }
+
+                if (output is not null)
+                {
+                    CoalesceContent(output);
+                }
+
+                return new()
+                {
+                    CallId = firstContent.CallId,
+                    Outputs = output,
+                    AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
+                };
+            });
 
         static string MergeText(IList<AIContent> contents, int start, int end)
         {
+            Debug.Assert(end - start > 1, "Expected multiple contents to merge");
+
             StringBuilder sb = new();
             for (int i = start; i < end; i++)
             {
@@ -264,29 +437,35 @@ public static class ChatResponseExtensions
             }
 
             // Remove all of the null slots left over from the coalescing process.
-            if (contents is List<AIContent> contentsList)
-            {
-                _ = contentsList.RemoveAll(u => u is null);
-            }
-            else
-            {
-                int nextSlot = 0;
-                int contentsCount = contents.Count;
-                for (int i = 0; i < contentsCount; i++)
-                {
-                    if (contents[i] is { } content)
-                    {
-                        contents[nextSlot++] = content;
-                    }
-                }
+            RemoveNullContents(contents);
+        }
+    }
 
-                for (int i = contentsCount - 1; i >= nextSlot; i--)
+    private static void RemoveNullContents<T>(IList<T> contents)
+        where T : class
+    {
+        if (contents is List<AIContent> contentsList)
+        {
+            _ = contentsList.RemoveAll(u => u is null);
+        }
+        else
+        {
+            int nextSlot = 0;
+            int contentsCount = contents.Count;
+            for (int i = 0; i < contentsCount; i++)
+            {
+                if (contents[i] is { } content)
                 {
-                    contents.RemoveAt(i);
+                    contents[nextSlot++] = content;
                 }
-
-                Debug.Assert(nextSlot == contents.Count, "Expected final count to equal list length.");
             }
+
+            for (int i = contentsCount - 1; i >= nextSlot; i--)
+            {
+                contents.RemoveAt(i);
+            }
+
+            Debug.Assert(nextSlot == contents.Count, "Expected final count to equal list length.");
         }
     }
 
@@ -296,7 +475,7 @@ public static class ChatResponseExtensions
         int count = response.Messages.Count;
         for (int i = 0; i < count; i++)
         {
-            CoalesceTextContent((List<AIContent>)response.Messages[i].Contents);
+            CoalesceContent((List<AIContent>)response.Messages[i].Contents);
         }
     }
 
@@ -306,26 +485,19 @@ public static class ChatResponseExtensions
     private static void ProcessUpdate(ChatResponseUpdate update, ChatResponse response)
     {
         // If there is no message created yet, or if the last update we saw had a different
-        // message ID or role than the newest update, create a new message.
-        ChatMessage message;
-        var isNewMessage = false;
-        if (response.Messages.Count == 0)
+        // identifying parts, create a new message.
+        bool isNewMessage = true;
+        if (response.Messages.Count != 0)
         {
-            isNewMessage = true;
-        }
-        else if (update.MessageId is { Length: > 0 } updateMessageId
-            && response.Messages[response.Messages.Count - 1].MessageId is string lastMessageId
-            && updateMessageId != lastMessageId)
-        {
-            isNewMessage = true;
-        }
-        else if (update.Role is { } updateRole
-            && response.Messages[response.Messages.Count - 1].Role is { } lastRole
-            && updateRole != lastRole)
-        {
-            isNewMessage = true;
+            var lastMessage = response.Messages[response.Messages.Count - 1];
+            isNewMessage =
+                NotEmptyOrEqual(update.AuthorName, lastMessage.AuthorName) ||
+                NotEmptyOrEqual(update.MessageId, lastMessage.MessageId) ||
+                NotNullOrEqual(update.Role, lastMessage.Role);
         }
 
+        // Get the message to target, either a new one or the last ones.
+        ChatMessage message;
         if (isNewMessage)
         {
             message = new(ChatRole.Assistant, []);
@@ -346,7 +518,7 @@ public static class ChatResponseExtensions
             message.AuthorName = update.AuthorName;
         }
 
-        if (update.CreatedAt is not null)
+        if (message.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > message.CreatedAt))
         {
             message.CreatedAt = update.CreatedAt;
         }
@@ -391,7 +563,7 @@ public static class ChatResponseExtensions
             response.ConversationId = update.ConversationId;
         }
 
-        if (update.CreatedAt is not null)
+        if (response.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > response.CreatedAt))
         {
             response.CreatedAt = update.CreatedAt;
         }
@@ -418,4 +590,12 @@ public static class ChatResponseExtensions
             }
         }
     }
+
+    /// <summary>Gets whether both strings are not null/empty and not the same as each other.</summary>
+    private static bool NotEmptyOrEqual(string? s1, string? s2) =>
+        s1 is { Length: > 0 } str1 && s2 is { Length: > 0 } str2 && str1 != str2;
+
+    /// <summary>Gets whether two roles are not null and not the same as each other.</summary>
+    private static bool NotNullOrEqual(ChatRole? r1, ChatRole? r2) =>
+        r1.HasValue && r2.HasValue && r1.Value != r2.Value;
 }

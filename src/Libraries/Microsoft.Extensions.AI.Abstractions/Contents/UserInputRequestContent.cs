@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -11,6 +12,9 @@ namespace Microsoft.Extensions.AI;
 /// Represents a request for user input.
 /// </summary>
 [Experimental("MEAI001")]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(FunctionApprovalRequestContent), "functionApprovalRequest")]
+[JsonDerivedType(typeof(McpServerToolApprovalRequestContent), "mcpServerToolApprovalRequest")]
 public class UserInputRequestContent : AIContent
 {
     /// <summary>

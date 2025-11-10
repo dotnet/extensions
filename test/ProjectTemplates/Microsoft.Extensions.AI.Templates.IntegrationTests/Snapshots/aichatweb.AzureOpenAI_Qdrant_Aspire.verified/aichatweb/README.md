@@ -5,6 +5,9 @@ This project is an AI chat application that demonstrates how to chat with custom
 >[!NOTE]
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
 
+### Prerequisites
+To use Azure OpenAI or Azure AI Search, you need an Azure account. If you don't already have one, [create an Azure account](https://azure.microsoft.com/free/).
+
 ### Known Issues
 
 #### Errors running Ollama or Docker
@@ -17,19 +20,8 @@ This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See
 
 ## Using Azure Provisioning
 
-The project is set up to automatically provision Azure resources, but local configuration is configured. For detailed instructions, see the [Local Provisioning documentation](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration).
+The project is set up to automatically provision Azure resources. When running the app for the first time, you will be prompted to provide Azure configuration values. For detailed instructions, see the [Local Provisioning documentation](https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration).
 
-From the command line, configure local provisioning for this project using .NET User Secrets by running the following commands:
-
-```sh
-cd aichatweb.AppHost
-dotnet user-secrets set Azure:SubscriptionId "<Your subscription id>"
-dotnet user-secrets set Azure:AllowResourceGroupCreation "true"
-dotnet user-secrets set Azure:ResourceGroup "<Valid resource group name>"
-dotnet user-secrets set Azure:Location "<Valid Azure location>"
-```
-
-Make sure to replace placeholder values with real configuration values.
 
 # Running the application
 
@@ -47,9 +39,9 @@ Make sure to replace placeholder values with real configuration values.
 
 ## Trust the localhost certificate
 
-Several .NET Aspire templates include ASP.NET Core projects that are configured to use HTTPS by default. If this is the first time you're running the project, an exception might occur when loading the Aspire dashboard. This error can be resolved by trusting the self-signed development certificate with the .NET CLI.
+Several Aspire templates include ASP.NET Core projects that are configured to use HTTPS by default. If this is the first time you're running the project, an exception might occur when loading the Aspire dashboard. This error can be resolved by trusting the self-signed development certificate with the .NET CLI.
 
-See [Troubleshoot untrusted localhost certificate in .NET Aspire](https://learn.microsoft.com/dotnet/aspire/troubleshooting/untrusted-localhost-certificate) for more information.
+See [Troubleshoot untrusted localhost certificate in Aspire](https://learn.microsoft.com/dotnet/aspire/troubleshooting/untrusted-localhost-certificate) for more information.
 
 # Updating JavaScript dependencies
 

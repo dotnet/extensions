@@ -13,7 +13,7 @@ public interface IManualHealthCheck : IDisposable
     /// <summary>
     /// Gets or sets the health status.
     /// </summary>
-    public HealthCheckResult Result { get; set; }
+    HealthCheckResult Result { get; set; }
 }
 
 /// <summary>

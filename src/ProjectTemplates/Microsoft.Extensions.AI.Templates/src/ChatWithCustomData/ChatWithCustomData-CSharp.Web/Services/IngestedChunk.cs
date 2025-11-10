@@ -9,14 +9,14 @@ public class IngestedChunk
 #else
     private const int VectorDimensions = 1536; // 1536 is the default vector size for the OpenAI text-embedding-3-small model
 #endif
-#if (UseAzureAISearch || UseQdrant)
+#if (IsAzureAISearch || IsQdrant)
     private const string VectorDistanceFunction = DistanceFunction.CosineSimilarity;
 #else
     private const string VectorDistanceFunction = DistanceFunction.CosineDistance;
 #endif
 
     [VectorStoreKey]
-#if (UseQdrant)
+#if (IsQdrant)
     public required Guid Key { get; set; }
 #else
     public required string Key { get; set; }

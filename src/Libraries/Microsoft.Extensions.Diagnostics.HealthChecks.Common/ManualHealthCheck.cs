@@ -10,22 +10,20 @@ internal sealed class ManualHealthCheck<T> : IManualHealthCheck<T>
 {
     private static readonly object _lock = new();
 
-    private HealthCheckResult _result;
-
     public HealthCheckResult Result
     {
         get
         {
             lock (_lock)
             {
-                return _result;
+                return field;
             }
         }
         set
         {
             lock (_lock)
             {
-                _result = value;
+                field = value;
             }
         }
     }

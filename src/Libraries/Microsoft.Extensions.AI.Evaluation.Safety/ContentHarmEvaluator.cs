@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// <see cref="ViolenceEvaluator.ViolenceMetricName"/>, <see cref="SelfHarmEvaluator.SelfHarmMetricName"/> and
 /// <see cref="SexualEvaluator.SexualMetricName"/>.
 /// </param>
-#pragma warning disable SA1118 // Parameter should not span multiple lines
+#pragma warning disable SA1118 // Parameter should not span multiple lines.
 public class ContentHarmEvaluator(IDictionary<string, string>? metricNames = null)
     : ContentSafetyEvaluator(
         contentSafetyServiceAnnotationTask: "content harm",

@@ -1,16 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if DEBUG
-using System.Diagnostics;
-#endif
 using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Evaluation.Console.Commands;
+using Microsoft.Extensions.AI.Evaluation.Console.Telemetry;
 using Microsoft.Extensions.Logging;
+
+#if DEBUG
+using System.Diagnostics;
+#endif
 
 namespace Microsoft.Extensions.AI.Evaluation.Console;
 
@@ -18,15 +20,31 @@ internal sealed class Program
 {
     private const string ShortName = "aieval";
     private const string Name = "Microsoft.Extensions.AI.Evaluation.Console";
-    private const string Banner = $"{Name} [{Constants.Version}]";
+    private const string Banner = $"{Name} ({ShortName}) version {Constants.Version}";
 
 #pragma warning disable EA0014 // Async methods should support cancellation.
     private static async Task<int> Main(string[] args)
 #pragma warning restore EA0014
     {
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+#pragma warning disable CA1303 // Do not pass literals as localized parameters.
+        // Use Console.WriteLine directly instead of ILogger to ensure proper formatting.
+        System.Console.WriteLine(Banner);
+        System.Console.WriteLine();
+#pragma warning restore CA1303
+
+        using ILoggerFactory factory =
+            LoggerFactory.Create(builder =>
+                builder.AddSimpleConsole(options =>
+                {
+                    options.SingleLine = true;
+                }));
+
         ILogger logger = factory.CreateLogger(ShortName);
-        logger.LogInformation("{banner}", Banner);
+        await logger.DisplayTelemetryOptOutMessageIfNeededAsync().ConfigureAwait(false);
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task.
+        await using var telemetryHelper = new TelemetryHelper(logger);
+#pragma warning restore CA2007
 
         var rootCmd = new RootCommand(Banner);
 
@@ -97,7 +115,9 @@ internal sealed class Program
         reportCmd.AddOption(formatOpt);
 
         reportCmd.SetHandler(
-            (path, endpoint, output, openReport, lastN, format) => new ReportCommand(logger).InvokeAsync(path, endpoint, output, openReport, lastN, format),
+            (path, endpoint, output, openReport, lastN, format) =>
+                new ReportCommand(logger, telemetryHelper)
+                    .InvokeAsync(path, endpoint, output, openReport, lastN, format),
             pathOpt,
             endpointOpt,
             outputOpt,
@@ -109,7 +129,7 @@ internal sealed class Program
 
         // TASK: Support more granular filters such as the specific scenario / iteration / execution whose results must
         // be cleaned up.
-        var cleanResultsCmd = new Command("cleanResults", "Delete results");
+        var cleanResultsCmd = new Command("clean-results", "Delete results");
         cleanResultsCmd.AddOption(pathOpt);
         cleanResultsCmd.AddOption(endpointOpt);
         cleanResultsCmd.AddValidator(requiresPathOrEndpoint);
@@ -118,20 +138,21 @@ internal sealed class Program
         cleanResultsCmd.AddOption(lastNOpt2);
 
         cleanResultsCmd.SetHandler(
-            (path, endpoint, lastN) => new CleanResultsCommand(logger).InvokeAsync(path, endpoint, lastN),
+            (path, endpoint, lastN) =>
+                new CleanResultsCommand(logger, telemetryHelper).InvokeAsync(path, endpoint, lastN),
             pathOpt,
             endpointOpt,
             lastNOpt2);
 
         rootCmd.Add(cleanResultsCmd);
 
-        var cleanCacheCmd = new Command("cleanCache", "Delete expired cache entries");
+        var cleanCacheCmd = new Command("clean-cache", "Delete expired cache entries");
         cleanCacheCmd.AddOption(pathOpt);
         cleanCacheCmd.AddOption(endpointOpt);
         cleanCacheCmd.AddValidator(requiresPathOrEndpoint);
 
         cleanCacheCmd.SetHandler(
-            (path, endpoint) => new CleanCacheCommand(logger).InvokeAsync(path, endpoint),
+            (path, endpoint) => new CleanCacheCommand(logger, telemetryHelper).InvokeAsync(path, endpoint),
             pathOpt, endpointOpt);
 
         rootCmd.Add(cleanCacheCmd);
@@ -148,7 +169,7 @@ internal sealed class Program
         }
 #endif
 
-        return await rootCmd.InvokeAsync(args).ConfigureAwait(false);
+        int exitCode = await rootCmd.InvokeAsync(args).ConfigureAwait(false);
+        return exitCode;
     }
-
 }
