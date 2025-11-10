@@ -1248,6 +1248,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "Microsoft.Extensions.AI.ChatResponseUpdate Microsoft.Extensions.AI.ChatResponseUpdate.Clone();",
+          "Stage": "Stable"
+        },
+        {
           "Member": "override string Microsoft.Extensions.AI.ChatResponseUpdate.ToString();",
           "Stage": "Stable"
         }

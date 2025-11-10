@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Processors.Tests;
@@ -15,9 +18,9 @@ public class KeywordEnricherTests
     private static readonly IngestionDocument _document = new("test");
 
     [Fact]
-    public void ThrowsOnNullChatClient()
+    public void ThrowsOnNullOptions()
     {
-        Assert.Throws<ArgumentNullException>("chatClient", () => new KeywordEnricher(null!, predefinedKeywords: null, confidenceThreshold: 0.5));
+        Assert.Throws<ArgumentNullException>("options", () => new KeywordEnricher(null!, predefinedKeywords: null, confidenceThreshold: 0.5));
     }
 
     [Theory]
@@ -25,7 +28,7 @@ public class KeywordEnricherTests
     [InlineData(1.1)]
     public void ThrowsOnInvalidThreshold(double threshold)
     {
-        Assert.Throws<ArgumentOutOfRangeException>("confidenceThreshold", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: null, confidenceThreshold: threshold));
+        Assert.Throws<ArgumentOutOfRangeException>("confidenceThreshold", () => new KeywordEnricher(new(new TestChatClient()), predefinedKeywords: null, confidenceThreshold: threshold));
     }
 
     [Theory]
@@ -33,28 +36,20 @@ public class KeywordEnricherTests
     [InlineData(-1)]
     public void ThrowsOnInvalidMaxKeywords(int keywordCount)
     {
-        Assert.Throws<ArgumentOutOfRangeException>("maxKeywords", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: null, maxKeywords: keywordCount));
+        Assert.Throws<ArgumentOutOfRangeException>("maxKeywords", () => new KeywordEnricher(new(new TestChatClient()), predefinedKeywords: null, maxKeywords: keywordCount));
     }
 
     [Fact]
     public void ThrowsOnDuplicateKeywords()
     {
-        Assert.Throws<ArgumentException>("predefinedKeywords", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: ["same", "same"], confidenceThreshold: 0.5));
-    }
-
-    [Theory]
-    [InlineData(',')]
-    [InlineData(';')]
-    public void ThrowsOnIllegalCharacters(char illegal)
-    {
-        Assert.Throws<ArgumentException>("predefinedKeywords", () => new KeywordEnricher(new TestChatClient(), predefinedKeywords: [$"n{illegal}t"]));
+        Assert.Throws<ArgumentException>("predefinedKeywords", () => new KeywordEnricher(new(new TestChatClient()), predefinedKeywords: ["same", "same"], confidenceThreshold: 0.5));
     }
 
     [Fact]
     public async Task ThrowsOnNullChunks()
     {
         using TestChatClient chatClient = new();
-        KeywordEnricher sut = new(chatClient, predefinedKeywords: null, confidenceThreshold: 0.5);
+        KeywordEnricher sut = new(new(chatClient), predefinedKeywords: null, confidenceThreshold: 0.5);
 
         await Assert.ThrowsAsync<ArgumentNullException>("chunks", async () =>
         {
@@ -71,25 +66,27 @@ public class KeywordEnricherTests
     public async Task CanExtractKeywords(params string[] predefined)
     {
         int counter = 0;
-        string[] keywords = { "AI;MEAI", "Animals;Rabbits" };
+        string[][] keywords = [["AI", "MEAI"], ["Animals", "Rabbits"]];
         using TestChatClient chatClient = new()
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
+                Assert.Equal(0, counter++);
                 var materializedMessages = messages.ToArray();
 
                 Assert.Equal(2, materializedMessages.Length);
                 Assert.Equal(ChatRole.System, materializedMessages[0].Role);
                 Assert.Equal(ChatRole.User, materializedMessages[1].Role);
 
+                string response = JsonSerializer.Serialize(new Envelope<string[][]> { data = keywords });
                 return Task.FromResult(new ChatResponse(new[]
                 {
-                    new ChatMessage(ChatRole.Assistant, keywords[counter++])
+                    new ChatMessage(ChatRole.Assistant, response)
                 }));
             }
         };
 
-        KeywordEnricher sut = new(chatClient, predefinedKeywords: predefined, confidenceThreshold: 0.5);
+        KeywordEnricher sut = new(new(chatClient), predefinedKeywords: predefined, confidenceThreshold: 0.5);
         var chunks = CreateChunks().ToAsyncEnumerable();
 
         IReadOnlyList<IngestionChunk<string>> got = await sut.ProcessAsync(chunks).ToListAsync();
@@ -99,29 +96,25 @@ public class KeywordEnricherTests
     }
 
     [Fact]
-    public async Task ThrowsOnInvalidResponse()
+    public async Task FailureDoesNotStopTheProcessing()
     {
+        FakeLogCollector collector = new();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
         using TestChatClient chatClient = new()
         {
-            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
-            {
-                return Task.FromResult(new ChatResponse(new[]
-                {
-                    new ChatMessage(ChatRole.Assistant, "Unexpected result!")
-                }));
-            }
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromException<ChatResponse>(new ExpectedException())
         };
 
-        KeywordEnricher sut = new(chatClient, ["some"]);
-        var input = CreateChunks().ToAsyncEnumerable();
+        KeywordEnricher sut = new(new(chatClient) { LoggerFactory = loggerFactory }, ["AI", "Other"]);
+        List<IngestionChunk<string>> chunks = CreateChunks();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            await foreach (var _ in sut.ProcessAsync(input))
-            {
-                // No-op
-            }
-        });
+        IReadOnlyList<IngestionChunk<string>> got = await sut.ProcessAsync(chunks.ToAsyncEnumerable()).ToListAsync();
+
+        Assert.Equal(chunks.Count, got.Count);
+        Assert.All(chunks, chunk => Assert.False(chunk.HasMetadata));
+        Assert.Equal(1, collector.Count); // with batching, only one log entry is expected
+        Assert.Equal(LogLevel.Error, collector.LatestRecord.Level);
+        Assert.IsType<ExpectedException>(collector.LatestRecord.Exception);
     }
 
     private static List<IngestionChunk<string>> CreateChunks() =>

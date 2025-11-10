@@ -2,12 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -20,34 +18,27 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </remarks>
 public sealed class SentimentEnricher : IngestionChunkProcessor<string>
 {
-    private readonly IChatClient _chatClient;
-    private readonly ChatOptions? _chatOptions;
-    private readonly FrozenSet<string> _validSentiments =
-#if NET9_0_OR_GREATER
-        FrozenSet.Create(StringComparer.Ordinal, "Positive", "Negative", "Neutral", "Unknown");
-#else
-        new string[] { "Positive", "Negative", "Neutral", "Unknown" }.ToFrozenSet(StringComparer.Ordinal);
-#endif
+    private readonly EnricherOptions _options;
     private readonly ChatMessage _systemPrompt;
+    private readonly ILogger? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SentimentEnricher"/> class.
     /// </summary>
-    /// <param name="chatClient">The chat client used for sentiment analysis.</param>
-    /// <param name="chatOptions">Options for the chat client.</param>
+    /// <param name="options">The options for sentiment analysis.</param>
     /// <param name="confidenceThreshold">The confidence threshold for sentiment determination. When not provided, it defaults to 0.7.</param>
-    public SentimentEnricher(IChatClient chatClient, ChatOptions? chatOptions = null, double? confidenceThreshold = null)
+    public SentimentEnricher(EnricherOptions options, double? confidenceThreshold = null)
     {
-        _chatClient = Throw.IfNull(chatClient);
-        _chatOptions = chatOptions;
+        _options = Throw.IfNull(options).Clone();
 
         double threshold = confidenceThreshold.HasValue ? Throw.IfOutOfRange(confidenceThreshold.Value, 0.0, 1.0, nameof(confidenceThreshold)) : 0.7;
 
         string prompt = $"""
-        You are a sentiment analysis expert. Analyze the sentiment of the given text and return Positive/Negative/Neutral or
-        Unknown when confidence score is below {threshold}. Return just the value of the sentiment.
+        You are a sentiment analysis expert. For each of the following texts, analyze the sentiment and return Positive/Negative/Neutral or
+        Unknown when confidence score is below {threshold}.
         """;
         _systemPrompt = new(ChatRole.System, prompt);
+        _logger = _options.LoggerFactory?.CreateLogger<SentimentEnricher>();
     }
 
     /// <summary>
@@ -56,27 +47,6 @@ public sealed class SentimentEnricher : IngestionChunkProcessor<string>
     public static string MetadataKey => "sentiment";
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IAsyncEnumerable<IngestionChunk<string>> chunks,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(chunks);
-
-        await foreach (var chunk in chunks.WithCancellation(cancellationToken))
-        {
-            var response = await _chatClient.GetResponseAsync(
-            [
-                _systemPrompt,
-                new(ChatRole.User, chunk.Content)
-            ], _chatOptions, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            if (!_validSentiments.Contains(response.Text))
-            {
-                throw new InvalidOperationException($"Invalid sentiment response: '{response.Text}'.");
-            }
-
-            chunk.Metadata[MetadataKey] = response.Text;
-
-            yield return chunk;
-        }
-    }
+    public override IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IAsyncEnumerable<IngestionChunk<string>> chunks, CancellationToken cancellationToken = default)
+        => Batching.ProcessAsync<string>(chunks, _options, MetadataKey, _systemPrompt, _logger, cancellationToken);
 }

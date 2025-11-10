@@ -62,19 +62,15 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
         _tokenUsageHistogram = _meter.CreateHistogram<int>(
             OpenTelemetryConsts.GenAI.Client.TokenUsage.Name,
             OpenTelemetryConsts.TokensUnit,
-            OpenTelemetryConsts.GenAI.Client.TokenUsage.Description
-#if NET9_0_OR_GREATER
-            , advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TokenUsage.ExplicitBucketBoundaries }
-#endif
+            OpenTelemetryConsts.GenAI.Client.TokenUsage.Description,
+            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TokenUsage.ExplicitBucketBoundaries }
             );
 
         _operationDurationHistogram = _meter.CreateHistogram<double>(
             OpenTelemetryConsts.GenAI.Client.OperationDuration.Name,
             OpenTelemetryConsts.SecondsUnit,
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description
-#if NET9_0_OR_GREATER
-            , advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
-#endif
+            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description,
+            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
             );
     }
 

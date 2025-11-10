@@ -1,0 +1,47 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using FluentAssertions;
+using Microsoft.Extensions.AmbientMetadata;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Testing;
+using Microsoft.Extensions.Options;
+using Xunit;
+
+namespace Microsoft.Gen.BuildMetadata.Test;
+
+public class BuildMetadataHostBuilderExtensionsTests
+{
+    [Fact]
+    public void Verify_HostBuilder()
+    {
+        var host = FakeHost.CreateBuilder()
+            .UseBuildMetadata()
+            .Build();
+
+        var buildMetadata = host.Services.GetRequiredService<IOptions<Extensions.AmbientMetadata.BuildMetadata>>();
+
+        buildMetadata.Value.Should().NotBeNull();
+        buildMetadata.Value.BuildId.Should().Be("GeneratedTest_AzureBuildId");
+        buildMetadata.Value.BuildNumber.Should().Be("GeneratedTest_AzureBuildNumber");
+        buildMetadata.Value.SourceBranchName.Should().Be("GeneratedTest_AzureSourceBranchName");
+        buildMetadata.Value.SourceVersion.Should().Be("GeneratedTest_AzureSourceVersion");
+    }
+
+    [Fact]
+    public void Verify_ApplicationHostBuilder()
+    {
+        var host = Host.CreateApplicationBuilder()
+            .UseBuildMetadata()
+            .Build();
+
+        var buildMetadata = host.Services.GetRequiredService<IOptions<Extensions.AmbientMetadata.BuildMetadata>>();
+
+        buildMetadata.Value.Should().NotBeNull();
+        buildMetadata.Value.BuildId.Should().Be("GeneratedTest_AzureBuildId");
+        buildMetadata.Value.BuildNumber.Should().Be("GeneratedTest_AzureBuildNumber");
+        buildMetadata.Value.SourceBranchName.Should().Be("GeneratedTest_AzureSourceBranchName");
+        buildMetadata.Value.SourceVersion.Should().Be("GeneratedTest_AzureSourceVersion");
+    }
+}

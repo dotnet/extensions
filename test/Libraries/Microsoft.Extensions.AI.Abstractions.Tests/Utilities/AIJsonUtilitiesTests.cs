@@ -362,9 +362,7 @@ public static partial class AIJsonUtilitiesTests
         JsonElement schemaParameters = func.JsonSchema.GetProperty("properties");
         Assert.NotNull(func.UnderlyingMethod);
         ParameterInfo[] parameters = func.UnderlyingMethod.GetParameters();
-#if NET9_0_OR_GREATER
         Assert.Equal(parameters.Length, schemaParameters.GetPropertyCount());
-#endif
 
         int i = 0;
         foreach (JsonProperty property in schemaParameters.EnumerateObject())
@@ -1434,13 +1432,7 @@ public static partial class AIJsonUtilitiesTests
 
     private static bool DeepEquals(JsonElement element1, JsonElement element2)
     {
-#if NET9_0_OR_GREATER
         return JsonElement.DeepEquals(element1, element2);
-#else
-        return JsonNode.DeepEquals(
-            JsonSerializer.SerializeToNode(element1, AIJsonUtilities.DefaultOptions),
-            JsonSerializer.SerializeToNode(element2, AIJsonUtilities.DefaultOptions));
-#endif
     }
 
     private static void AssertDeepEquals(JsonElement element1, JsonElement element2)
