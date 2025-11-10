@@ -14,10 +14,12 @@ public class SemanticSearch(
 {
     private Task? _ingestionTask;
 
+    public async Task LoadDocumentsAsync() => await ( _ingestionTask ??= dataIngestor.IngestDataAsync(ingestionDirectory, searchPattern: "*.*"));
+
     public async Task<IReadOnlyList<IngestedChunk>> SearchAsync(string text, string? documentIdFilter, int maxResults)
     {
-        _ingestionTask ??= dataIngestor.IngestDataAsync(ingestionDirectory, searchPattern: "*.*");
-        await _ingestionTask;
+        // Ensure documents have been loaded before searching
+        await LoadDocumentsAsync();
 
         var nearest = vectorCollection.SearchAsync(text, maxResults, new VectorSearchOptions<IngestedChunk>
         {
