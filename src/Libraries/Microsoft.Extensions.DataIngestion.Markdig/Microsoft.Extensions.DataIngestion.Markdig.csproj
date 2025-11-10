@@ -6,6 +6,7 @@
     <Description>Implementation of IngestionDocumentReader abstraction for Markdown.</Description>
     <Workstream>RAG</Workstream>
     <PackageTags>RAG;ingestion;documents;markdown</PackageTags>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <Stage>preview</Stage>
     <EnablePackageValidation>false</EnablePackageValidation>
     <MinCodeCoverage>75</MinCodeCoverage>
