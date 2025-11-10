@@ -96,7 +96,32 @@ public class GeneratorTests
         var result = driver.RunGeneratorsAndUpdateCompilation(comp!, out var outputCompilation, out var diagnostics);
         var runResult = result.GetRunResult();
 
+        // Verify the generated code compiles, allowing only expected missing reference errors
+        var compilationDiagnostics = outputCompilation.GetDiagnostics()
+            .Where(d => d.Severity >= DiagnosticSeverity.Warning)
+            .ToList();
+
+        // The generated code references Microsoft.Extensions.Hosting and related packages
+        // which aren't available in the test compilation context. We allow CS0234 (missing namespace)
+        // and CS1061 (missing member) errors as they're expected, but fail on any other errors.
+        var unexpectedDiagnostics = compilationDiagnostics
+            .Where(d => !IsExpectedCompilationError(d))
+            .ToList();
+
+        unexpectedDiagnostics.Should().BeEmpty(
+            because: "generated code should not have syntax or semantic errors beyond expected missing references, but found: {0}",
+            string.Join(", ", unexpectedDiagnostics.Select(d => $"{d.Id}: {d.GetMessage()}")));
+
         return (diagnostics, runResult.Results[0].GeneratedSources);
+    }
+
+    private static bool IsExpectedCompilationError(Diagnostic diagnostic)
+    {
+        // CS0234: The type or namespace name does not exist (missing assembly reference)
+        // CS1061: Type does not contain a definition for member (missing assembly reference)
+        // These are expected because the generated code uses Microsoft.Extensions types
+        // that aren't available in the test compilation context
+        return diagnostic.Id is "CS0234" or "CS1061";
     }
 
     private sealed class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
