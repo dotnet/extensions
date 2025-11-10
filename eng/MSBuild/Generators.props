@@ -10,4 +10,8 @@
   <ItemGroup Condition="'$(UseContextualOptionsGenerator)' == 'true' and '$(BuildingSlnForDocs)' != 'true'">
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.ContextualOptions\Microsoft.Gen.ContextualOptions.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(UseBuildMetadataGenerator)' == 'true' and '$(BuildingSlnForDocs)' != 'true'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.BuildMetadata\Microsoft.Gen.BuildMetadata.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+  </ItemGroup>
 </Project>

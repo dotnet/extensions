@@ -1,0 +1,26 @@
+﻿<Project>
+  <PropertyGroup>
+    <BuildMetadataAzureBuildId Condition="'$(BuildMetadataAzureBuildId)' == ''">GeneratedTest_AzureBuildId</BuildMetadataAzureBuildId>
+    <BuildMetadataAzureBuildNumber Condition="'$(BuildMetadataAzureBuildNumber)' == ''">GeneratedTest_AzureBuildNumber</BuildMetadataAzureBuildNumber>
+    <BuildMetadataAzureSourceBranchName Condition="'$(BuildMetadataAzureSourceBranchName)' == ''">GeneratedTest_AzureSourceBranchName</BuildMetadataAzureSourceBranchName>
+    <BuildMetadataAzureSourceVersion Condition="'$(BuildMetadataAzureSourceVersion)' == ''">GeneratedTest_AzureSourceVersion</BuildMetadataAzureSourceVersion>
+    <BuildMetadataIsAzureDevOps Condition="'$(BuildMetadataIsAzureDevOps)' == ''">true</BuildMetadataIsAzureDevOps>
+
+    <BuildMetadataGitHubRunId Condition="'$(BuildMetadataGitHubRunId)' == ''">GeneratedTest_GitHubRunId</BuildMetadataGitHubRunId>
+    <BuildMetadataGitHubRunNumber Condition="'$(BuildMetadataGitHubRunNumber)' == ''">GeneratedTest_GitHubRunNumber</BuildMetadataGitHubRunNumber>
+    <BuildMetadataGitHubRefName Condition="'$(BuildMetadataGitHubRefName)' == ''">GeneratedTest_GitHubRefName</BuildMetadataGitHubRefName>
+    <BuildMetadataGitHubSha Condition="'$(BuildMetadataGitHubSha)' == ''">GeneratedTest_GitHubSha</BuildMetadataGitHubSha>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="BuildMetadataAzureBuildId" />
+    <CompilerVisibleProperty Include="BuildMetadataAzureBuildNumber" />
+    <CompilerVisibleProperty Include="BuildMetadataAzureSourceBranchName" />
+    <CompilerVisibleProperty Include="BuildMetadataAzureSourceVersion" />
+    <CompilerVisibleProperty Include="BuildMetadataIsAzureDevOps" />
+    <CompilerVisibleProperty Include="BuildMetadataGitHubRunId" />
+    <CompilerVisibleProperty Include="BuildMetadataGitHubRunNumber" />
+    <CompilerVisibleProperty Include="BuildMetadataGitHubRefName" />
+    <CompilerVisibleProperty Include="BuildMetadataGitHubSha" />
+  </ItemGroup>
+</Project>
