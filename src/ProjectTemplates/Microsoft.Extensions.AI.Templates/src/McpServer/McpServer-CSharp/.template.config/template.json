@@ -45,8 +45,8 @@
           "description": ".NET 8"
         }
       ],
-      "replaces": "net9.0",
-      "defaultValue": "net9.0"
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
     },
     "hostIdentifier": {
       "type": "bind",

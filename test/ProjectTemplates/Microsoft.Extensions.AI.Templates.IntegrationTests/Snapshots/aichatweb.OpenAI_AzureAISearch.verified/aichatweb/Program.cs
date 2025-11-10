@@ -30,11 +30,12 @@ var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small
 var azureAISearchEndpoint = new Uri(builder.Configuration["AzureAISearch:Endpoint"]
     ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details."));
 var azureAISearchCredential = new DefaultAzureCredential();
-builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-aichatweb-chunks", azureAISearchEndpoint, azureAISearchCredential);
-builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-aichatweb-documents", azureAISearchEndpoint, azureAISearchCredential);
+builder.Services.AddAzureAISearchVectorStore(azureAISearchEndpoint, azureAISearchCredential);
+builder.Services.AddAzureAISearchCollection<IngestedChunk>(IngestedChunk.CollectionName, azureAISearchEndpoint, azureAISearchCredential);
 
-builder.Services.AddScoped<DataIngestor>();
+builder.Services.AddSingleton<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
+builder.Services.AddKeyedSingleton("ingestion_directory", new DirectoryInfo(Path.Combine(builder.Environment.WebRootPath, "Data")));
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
 builder.Services.AddEmbeddingGenerator(embeddingGenerator);
 
@@ -54,13 +55,5 @@ app.UseAntiforgery();
 app.UseStaticFiles();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
-// By default, we ingest PDF files from the /wwwroot/Data directory. You can ingest from
-// other sources by implementing IIngestionSource.
-// Important: ensure that any content you ingest is trusted, as it may be reflected back
-// to users or could be a source of prompt injection risk.
-await DataIngestor.IngestDataAsync(
-    app.Services,
-    new PDFDirectorySource(Path.Combine(builder.Environment.WebRootPath, "Data")));
 
 app.Run();
