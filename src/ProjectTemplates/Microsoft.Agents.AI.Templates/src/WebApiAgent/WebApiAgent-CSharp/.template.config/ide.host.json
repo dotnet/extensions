@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/ide.host",
+  "order": 1,
+  "icon": "ide/agent-framework.ico",
+  "displayOverviewPage": "",
+  "symbolInfo": [
+    {
+      "id": "AiServiceProvider",
+      "isVisible": true
+    },
+    {
+      "id": "ChatModel",
+      "isVisible": true
+    },
+    {
+      "id": "UseManagedIdentity",
+      "isVisible": true
+    }
+  ]
+}

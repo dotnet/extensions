@@ -80,7 +80,7 @@ public static partial class AIJsonUtilities
 
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
-        title ??= method.Name;
+        title ??= method.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? method.Name;
         description ??= method.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
         JsonObject parameterSchemas = new();
@@ -108,17 +108,18 @@ public static partial class AIJsonUtilities
                 continue;
             }
 
+            bool hasDefaultValue = TryGetEffectiveDefaultValue(parameter, out object? defaultValue);
             JsonNode parameterSchema = CreateJsonSchemaCore(
                 type: parameter.ParameterType,
                 parameter: parameter,
                 description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                hasDefaultValue: parameter.HasDefaultValue,
-                defaultValue: GetDefaultValueNormalized(parameter),
+                hasDefaultValue: hasDefaultValue,
+                defaultValue: defaultValue,
                 serializerOptions,
                 inferenceOptions);
 
             parameterSchemas.Add(parameter.Name, parameterSchema);
-            if (!parameter.IsOptional)
+            if (!parameter.IsOptional && !hasDefaultValue)
             {
                 (requiredProperties ??= []).Add((JsonNode)parameter.Name);
             }
@@ -198,11 +199,6 @@ public static partial class AIJsonUtilities
         }
     }
 
-#if !NET9_0_OR_GREATER
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access",
-        Justification = "Pre STJ-9 schema extraction can fail with a runtime exception if certain reflection metadata have been trimmed. " +
-                        "The exception message will guide users to turn off 'IlcTrimMetadata' which resolves all issues.")]
-#endif
     private static JsonNode CreateJsonSchemaCore(
         Type? type,
         ParameterInfo? parameter,
@@ -758,6 +754,32 @@ public static partial class AIJsonUtilities
     {
         Utf8JsonReader reader = new(utf8Json);
         return JsonElement.ParseValue(ref reader);
+    }
+
+    /// <summary>
+    /// Tries to get the effective default value for a parameter, checking both C# default value syntax and DefaultValueAttribute.
+    /// </summary>
+    /// <param name="parameterInfo">The parameter to check.</param>
+    /// <param name="defaultValue">The default value if one exists.</param>
+    /// <returns><see langword="true"/> if the parameter has a default value; otherwise, <see langword="false"/>.</returns>
+    internal static bool TryGetEffectiveDefaultValue(ParameterInfo parameterInfo, out object? defaultValue)
+    {
+        // First check for DefaultValueAttribute
+        if (parameterInfo.GetCustomAttribute<DefaultValueAttribute>(inherit: true) is { } attr)
+        {
+            defaultValue = attr.Value;
+            return true;
+        }
+
+        // Fall back to the parameter's declared default value
+        if (parameterInfo.HasDefaultValue)
+        {
+            defaultValue = GetDefaultValueNormalized(parameterInfo);
+            return true;
+        }
+
+        defaultValue = null;
+        return false;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.",

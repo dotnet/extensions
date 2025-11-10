@@ -12,14 +12,16 @@ public class HostedMcpServerToolTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        HostedMcpServerTool tool = new("serverName", "https://localhost/");
+        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"));
 
         Assert.Empty(tool.AdditionalProperties);
 
         Assert.Equal("serverName", tool.ServerName);
-        Assert.Equal("https://localhost/", tool.Url.ToString());
+        Assert.Equal("https://localhost/", tool.ServerAddress);
 
         Assert.Empty(tool.Description);
+        Assert.Null(tool.AuthorizationToken);
+        Assert.Null(tool.ServerDescription);
         Assert.Null(tool.AllowedTools);
         Assert.Null(tool.ApprovalMode);
     }
@@ -27,15 +29,21 @@ public class HostedMcpServerToolTests
     [Fact]
     public void Constructor_Roundtrips()
     {
-        HostedMcpServerTool tool = new("serverName", "https://localhost/");
+        HostedMcpServerTool tool = new("serverName", "connector_id");
 
         Assert.Empty(tool.AdditionalProperties);
         Assert.Empty(tool.Description);
-        Assert.Equal(nameof(HostedMcpServerTool), tool.Name);
+        Assert.Equal("mcp", tool.Name);
+        Assert.Equal(tool.Name, tool.ToString());
 
         Assert.Equal("serverName", tool.ServerName);
-        Assert.Equal("https://localhost/", tool.Url.ToString());
+        Assert.Equal("connector_id", tool.ServerAddress);
         Assert.Empty(tool.Description);
+
+        Assert.Null(tool.AuthorizationToken);
+        string authToken = "Bearer token123";
+        tool.AuthorizationToken = authToken;
+        Assert.Equal(authToken, tool.AuthorizationToken);
 
         Assert.Null(tool.ServerDescription);
         string serverDescription = "This is a test server";
@@ -57,20 +65,19 @@ public class HostedMcpServerToolTests
         var customApprovalMode = new HostedMcpServerToolRequireSpecificApprovalMode(["tool1"], ["tool2"]);
         tool.ApprovalMode = customApprovalMode;
         Assert.Same(customApprovalMode, tool.ApprovalMode);
-
-        Assert.Null(tool.Headers);
-        Dictionary<string, string> headers = [];
-        tool.Headers = headers;
-        Assert.Same(headers, tool.Headers);
     }
 
     [Fact]
     public void Constructor_Throws()
     {
-        Assert.Throws<ArgumentException>(() => new HostedMcpServerTool(string.Empty, new Uri("https://localhost/")));
-        Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool(null!, new Uri("https://localhost/")));
-        Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool("name", (Uri)null!));
-        Assert.Throws<ArgumentNullException>(() => new HostedMcpServerTool("name", (string)null!));
-        Assert.Throws<UriFormatException>(() => new HostedMcpServerTool("name", string.Empty));
+        Assert.Throws<ArgumentException>("serverName", () => new HostedMcpServerTool(string.Empty, "https://localhost/"));
+        Assert.Throws<ArgumentException>("serverName", () => new HostedMcpServerTool(string.Empty, new Uri("https://localhost/")));
+        Assert.Throws<ArgumentNullException>("serverName", () => new HostedMcpServerTool(null!, "https://localhost/"));
+        Assert.Throws<ArgumentNullException>("serverName", () => new HostedMcpServerTool(null!, new Uri("https://localhost/")));
+
+        Assert.Throws<ArgumentException>("serverAddress", () => new HostedMcpServerTool("name", string.Empty));
+        Assert.Throws<ArgumentException>("serverUrl", () => new HostedMcpServerTool("name", new Uri("/api/mcp", UriKind.Relative)));
+        Assert.Throws<ArgumentNullException>("serverAddress", () => new HostedMcpServerTool("name", (string)null!));
+        Assert.Throws<ArgumentNullException>("serverUrl", () => new HostedMcpServerTool("name", (Uri)null!));
     }
 }

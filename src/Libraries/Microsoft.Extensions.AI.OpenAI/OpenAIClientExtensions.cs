@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -213,6 +214,33 @@ public static class OpenAIClientExtensions
     internal static FunctionCallContent ParseCallContent(BinaryData utf8json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(utf8json, callId, name,
             static utf8json => JsonSerializer.Deserialize(utf8json, OpenAIJsonContext.Default.IDictionaryStringObject)!);
+
+    /// <summary>Gets a media type for an image based on the file extension in the provided URI.</summary>
+    internal static string ImageUriToMediaType(Uri uri)
+    {
+        string absoluteUri = uri.AbsoluteUri;
+        return
+            absoluteUri.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" :
+            absoluteUri.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg" :
+            absoluteUri.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg" :
+            absoluteUri.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ? "image/gif" :
+            absoluteUri.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ? "image/bmp" :
+            absoluteUri.EndsWith(".webp", StringComparison.OrdinalIgnoreCase) ? "image/webp" :
+            "image/*";
+    }
+
+    /// <summary>Sets $.model in <paramref name="patch"/> to <paramref name="modelId"/> if not already set.</summary>
+    internal static void PatchModelIfNotSet(ref JsonPatch patch, string? modelId)
+    {
+        if (modelId is not null)
+        {
+            _ = patch.TryGetValue("$.model"u8, out string? existingModel);
+            if (existingModel is null)
+            {
+                patch.Set("$.model"u8, modelId);
+            }
+        }
+    }
 
     /// <summary>Used to create the JSON payload for an OpenAI tool description.</summary>
     internal sealed class ToolJson

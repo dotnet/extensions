@@ -99,6 +99,11 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
     /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// However, return values whose declared type is <see cref="AIContent"/>, a derived type of <see cref="AIContent"/>, or
+    /// any type assignable from <see cref="IEnumerable{AIContent}"/> (e.g. <c>AIContent[]</c>, <c>List&lt;AIContent&gt;</c>) are
+    /// special-cased and are not serialized: the created function returns the original instance(s) directly to enable
+    /// callers (such as an <c>IChatClient</c>) to perform type tests and implement specialized handling. If
+    /// <see cref="AIFunctionFactoryOptions.MarshalResult"/> is supplied, that delegate governs the behavior instead.
     /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
     /// </remarks>
@@ -115,7 +120,7 @@ public static partial class AIFunctionFactory
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <param name="name">
     /// The name to use for the <see cref="AIFunction"/>. If <see langword="null"/>, the name will be derived from
-    /// the name of <paramref name="method"/>.
+    /// any <see cref="DisplayNameAttribute"/> on <paramref name="method"/>, if available, or else from the name of <paramref name="method"/>.
     /// </param>
     /// <param name="description">
     /// The description to use for the <see cref="AIFunction"/>. If <see langword="null"/>, a description will be derived from
@@ -172,7 +177,9 @@ public static partial class AIFunctionFactory
     /// </para>
     /// <para>
     /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/> if provided,
-    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>. However, return values whose declared type is <see cref="AIContent"/>, a
+    /// derived type of <see cref="AIContent"/>, or any type assignable from <see cref="IEnumerable{AIContent}"/> are not serialized;
+    /// they are returned as-is to facilitate specialized handling.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -262,6 +269,8 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
     /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// However, return values whose declared type is <see cref="AIContent"/>, a derived type of <see cref="AIContent"/>, or
+    /// any type assignable from <see cref="IEnumerable{AIContent}"/> are not serialized and are instead returned directly.
     /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
     /// </remarks>
@@ -288,7 +297,7 @@ public static partial class AIFunctionFactory
     /// </param>
     /// <param name="name">
     /// The name to use for the <see cref="AIFunction"/>. If <see langword="null"/>, the name will be derived from
-    /// the name of <paramref name="method"/>.
+    /// any <see cref="DisplayNameAttribute"/> on <paramref name="method"/>, if available, or else from the name of <paramref name="method"/>.
     /// </param>
     /// <param name="description">
     /// The description to use for the <see cref="AIFunction"/>. If <see langword="null"/>, a description will be derived from
@@ -345,7 +354,9 @@ public static partial class AIFunctionFactory
     /// </para>
     /// <para>
     /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/> if provided,
-    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>. However, return values whose declared type is <see cref="AIContent"/>, a
+    /// derived type of <see cref="AIContent"/>, or any type assignable from <see cref="IEnumerable{AIContent}"/> are returned
+    /// without serialization to enable specialized handling.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -448,6 +459,8 @@ public static partial class AIFunctionFactory
     /// <para>
     /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
     /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// However, return values whose declared type is <see cref="AIContent"/>, a derived type of <see cref="AIContent"/>, or any type
+    /// assignable from <see cref="IEnumerable{AIContent}"/> are returned directly without serialization.
     /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
     /// </remarks>
@@ -716,11 +729,11 @@ public static partial class AIFunctionFactory
 
             ReturnParameterMarshaller = GetReturnParameterMarshaller(key, serializerOptions, out Type? returnType);
             Method = key.Method;
-            Name = key.Name ?? GetFunctionName(key.Method);
+            Name = key.Name ?? key.Method.GetCustomAttribute<DisplayNameAttribute>(inherit: true)?.DisplayName ?? GetFunctionName(key.Method);
             Description = key.Description ?? key.Method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty;
             JsonSerializerOptions = serializerOptions;
             ReturnJsonSchema = returnType is null || key.ExcludeResultSchema ? null : AIJsonUtilities.CreateJsonSchema(
-                returnType,
+                NormalizeReturnType(returnType, serializerOptions),
                 description: key.Method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 serializerOptions: serializerOptions,
                 inferenceOptions: schemaOptions);
@@ -749,11 +762,21 @@ public static partial class AIFunctionFactory
             string name = SanitizeMemberName(method.Name);
 
             const string AsyncSuffix = "Async";
-            if (IsAsyncMethod(method) &&
-                name.EndsWith(AsyncSuffix, StringComparison.Ordinal) &&
-                name.Length > AsyncSuffix.Length)
+            if (IsAsyncMethod(method))
             {
-                name = name.Substring(0, name.Length - AsyncSuffix.Length);
+                // If the method ends in "Async" or contains "Async_", remove the "Async".
+                int asyncIndex = name.LastIndexOf(AsyncSuffix, StringComparison.Ordinal);
+                if (asyncIndex > 0 &&
+                    (asyncIndex + AsyncSuffix.Length == name.Length ||
+                     ((asyncIndex + AsyncSuffix.Length < name.Length) && (name[asyncIndex + AsyncSuffix.Length] == '_'))))
+                {
+                    name =
+#if NET
+                        string.Concat(name.AsSpan(0, asyncIndex), name.AsSpan(asyncIndex + AsyncSuffix.Length));
+#else
+                        string.Concat(name.Substring(0, asyncIndex), name.Substring(asyncIndex + AsyncSuffix.Length));
+#endif
+                }
             }
 
             return name;
@@ -821,10 +844,11 @@ public static partial class AIFunctionFactory
             // For IServiceProvider parameters, we bind to the services passed to InvokeAsync via AIFunctionArguments.
             if (parameterType == typeof(IServiceProvider))
             {
+                bool hasDefault = AIJsonUtilities.TryGetEffectiveDefaultValue(parameter, out _);
                 return (arguments, _) =>
                 {
                     IServiceProvider? services = arguments.Services;
-                    if (!parameter.HasDefaultValue && services is null)
+                    if (!hasDefault && services is null)
                     {
                         ThrowNullServices(parameter.Name);
                     }
@@ -836,6 +860,7 @@ public static partial class AIFunctionFactory
             // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary.
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             JsonTypeInfo? typeInfo = serializerOptions.GetTypeInfo(parameterType);
+            bool hasDefaultValue = AIJsonUtilities.TryGetEffectiveDefaultValue(parameter, out object? effectiveDefaultValue);
             return (arguments, _) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
@@ -884,13 +909,13 @@ public static partial class AIFunctionFactory
                 }
 
                 // If the parameter is required and there's no argument specified for it, throw.
-                if (!parameter.HasDefaultValue)
+                if (!hasDefaultValue)
                 {
                     Throw.ArgumentException(nameof(arguments), $"The arguments dictionary is missing a value for the required parameter '{parameter.Name}'.");
                 }
 
                 // Otherwise, use the optional parameter's default value.
-                return parameter.DefaultValue;
+                return effectiveDefaultValue;
             };
 
             // Throws an ArgumentNullException indicating that AIFunctionArguments.Services must be provided.
@@ -968,6 +993,7 @@ public static partial class AIFunctionFactory
                     MethodInfo taskResultGetter = GetMethodFromGenericMethodDefinition(returnType, _taskGetResult);
                     returnType = taskResultGetter.ReturnType;
 
+                    // If a MarshalResult delegate is provided, use it.
                     if (marshalResult is not null)
                     {
                         return async (taskObj, cancellationToken) =>
@@ -978,6 +1004,18 @@ public static partial class AIFunctionFactory
                         };
                     }
 
+                    // Special-case AIContent results to not be serialized, so that IChatClients can type test and handle them
+                    // specially, such as by returning content to the model/service in a manner appropriate to the content type.
+                    if (IsAIContentRelatedType(returnType))
+                    {
+                        return async (taskObj, cancellationToken) =>
+                        {
+                            await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(true);
+                            return ReflectionInvoke(taskResultGetter, taskObj, null);
+                        };
+                    }
+
+                    // For everything else, just serialize the result as-is.
                     returnTypeInfo = serializerOptions.GetTypeInfo(returnType);
                     return async (taskObj, cancellationToken) =>
                     {
@@ -994,6 +1032,7 @@ public static partial class AIFunctionFactory
                     MethodInfo asTaskResultGetter = GetMethodFromGenericMethodDefinition(valueTaskAsTask.ReturnType, _taskGetResult);
                     returnType = asTaskResultGetter.ReturnType;
 
+                    // If a MarshalResult delegate is provided, use it.
                     if (marshalResult is not null)
                     {
                         return async (taskObj, cancellationToken) =>
@@ -1005,6 +1044,19 @@ public static partial class AIFunctionFactory
                         };
                     }
 
+                    // Special-case AIContent results to not be serialized, so that IChatClients can type test and handle them
+                    // specially, such as by returning content to the model/service in a manner appropriate to the content type.
+                    if (IsAIContentRelatedType(returnType))
+                    {
+                        return async (taskObj, cancellationToken) =>
+                        {
+                            var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
+                            await task.ConfigureAwait(true);
+                            return ReflectionInvoke(asTaskResultGetter, task, null);
+                        };
+                    }
+
+                    // For everything else, just serialize the result as-is.
                     returnTypeInfo = serializerOptions.GetTypeInfo(returnType);
                     return async (taskObj, cancellationToken) =>
                     {
@@ -1016,13 +1068,21 @@ public static partial class AIFunctionFactory
                 }
             }
 
-            // For everything else, just serialize the result as-is.
+            // If a MarshalResult delegate is provided, use it.
             if (marshalResult is not null)
             {
                 Type returnTypeCopy = returnType;
                 return (result, cancellationToken) => marshalResult(result, returnTypeCopy, cancellationToken);
             }
 
+            // Special-case AIContent results to not be serialized, so that IChatClients can type test and handle them
+            // specially, such as by returning content to the model/service in a manner appropriate to the content type.
+            if (IsAIContentRelatedType(returnType))
+            {
+                return static (result, _) => new ValueTask<object?>(result);
+            }
+
+            // For everything else, just serialize the result as-is.
             returnTypeInfo = serializerOptions.GetTypeInfo(returnType);
             return (result, cancellationToken) => SerializeResultAsync(result, returnTypeInfo, cancellationToken);
 
@@ -1057,6 +1117,41 @@ public static partial class AIFunctionFactory
             const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
             return specializedType.GetMethods(All).First(m => m.MetadataToken == genericMethodDefinition.MetadataToken);
 #endif
+        }
+
+        private static bool IsAIContentRelatedType(Type type) =>
+            typeof(AIContent).IsAssignableFrom(type) ||
+            typeof(IEnumerable<AIContent>).IsAssignableFrom(type);
+
+        private static Type NormalizeReturnType(Type type, JsonSerializerOptions? options)
+        {
+            options ??= AIJsonUtilities.DefaultOptions;
+
+            if (options == AIJsonUtilities.DefaultOptions && !options.TryGetTypeInfo(type, out _))
+            {
+                // GetTypeInfo is not polymorphic, so attempts to look up derived types will fail even if the
+                // base type is registered. In some cases, though, we can fall back to using interfaces
+                // we know we have contracts for in AIJsonUtilities.DefaultOptions where the semantics of using
+                // that interface will be reasonable. This should really only affect situations where
+                // reflection-based serialization is disabled.
+
+                if (typeof(IEnumerable<AIContent>).IsAssignableFrom(type))
+                {
+                    return typeof(IEnumerable<AIContent>);
+                }
+
+                if (typeof(IEnumerable<ChatMessage>).IsAssignableFrom(type))
+                {
+                    return typeof(IEnumerable<ChatMessage>);
+                }
+
+                if (typeof(IEnumerable<string>).IsAssignableFrom(type))
+                {
+                    return typeof(IEnumerable<string>);
+                }
+            }
+
+            return type;
         }
 
         private record struct DescriptorKey(
@@ -1105,16 +1200,37 @@ public static partial class AIFunctionFactory
     /// Replaces non-alphanumeric characters in the identifier with the underscore character.
     /// Primarily intended to remove characters produced by compiler-generated method name mangling.
     /// </returns>
-    private static string SanitizeMemberName(string memberName) =>
-        InvalidNameCharsRegex().Replace(memberName, "_");
+    private static string SanitizeMemberName(string memberName)
+    {
+        // Handle compiler-generated names (local functions and lambdas)
+        // Local functions: <ContainingMethod>g__LocalFunctionName|ordinal_depth -> ContainingMethod_LocalFunctionName_ordinal_depth
+        // Lambdas: <ContainingMethod>b__ordinal_depth -> ContainingMethod_ordinal_depth
+        if (CompilerGeneratedNameRegex().Match(memberName) is { Success: true } match)
+        {
+            memberName = $"{match.Groups[1].Value}_{match.Groups[2].Value}";
+        }
 
-    /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
+        // Replace all non-alphanumeric characters with underscores.
+        return InvalidNameCharsRegex().Replace(memberName, "_");
+    }
+
+    /// <summary>Regex that matches compiler-generated names (local functions and lambdas).</summary>
 #if NET
-    [GeneratedRegex("[^0-9A-Za-z_]")]
+    [GeneratedRegex(@"^<([^>]+)>\w__(.+)")]
+    private static partial Regex CompilerGeneratedNameRegex();
+#else
+    private static Regex CompilerGeneratedNameRegex() => _compilerGeneratedNameRegex;
+    private static readonly Regex _compilerGeneratedNameRegex = new(@"^<([^>]+)>\w__(.+)", RegexOptions.Compiled);
+#endif
+
+    /// <summary>Regex that flags any character other than ASCII digits or letters.</summary>
+    /// <remarks>Underscore isn't included so that sequences of underscores are replaced by a single one.</remarks>
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z]+")]
     private static partial Regex InvalidNameCharsRegex();
 #else
     private static Regex InvalidNameCharsRegex() => _invalidNameCharsRegex;
-    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z]+", RegexOptions.Compiled);
 #endif
 
     /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>

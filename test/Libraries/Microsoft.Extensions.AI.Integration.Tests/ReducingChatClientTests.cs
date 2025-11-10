@@ -12,7 +12,6 @@ using Xunit;
 
 #pragma warning disable S103 // Lines should not be too long
 #pragma warning disable SA1402 // File may only contain a single type
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 namespace Microsoft.Extensions.AI;
 

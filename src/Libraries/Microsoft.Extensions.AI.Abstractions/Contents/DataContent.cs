@@ -9,12 +9,14 @@ using System.ComponentModel;
 #endif
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 #if !NET
 using System.Runtime.InteropServices;
 #endif
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable IDE0032 // Use auto property
 #pragma warning disable CA1307 // Specify StringComparison for clarity
 
 namespace Microsoft.Extensions.AI;
@@ -114,6 +116,7 @@ public class DataContent : AIContent
     /// <param name="mediaType">The media type (also known as MIME type) represented by the content.</param>
     /// <exception cref="ArgumentNullException"><paramref name="mediaType"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="mediaType"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentException"><paramref name="mediaType"/> represents an invalid media type.</exception>
     public DataContent(ReadOnlyMemory<byte> data, string mediaType)
     {
         MediaType = DataUriParser.ThrowIfInvalidMediaType(mediaType);
@@ -235,6 +238,16 @@ public class DataContent : AIContent
     {
         get
         {
+            if (HasTopLevelMediaType("text"))
+            {
+                return $"MediaType = {MediaType}, Text = \"{Encoding.UTF8.GetString(Data.ToArray())}\"";
+            }
+
+            if ("application/json".Equals(MediaType, StringComparison.OrdinalIgnoreCase))
+            {
+                return $"JSON = {Encoding.UTF8.GetString(Data.ToArray())}";
+            }
+
             const int MaxLength = 80;
 
             string uri = Uri;

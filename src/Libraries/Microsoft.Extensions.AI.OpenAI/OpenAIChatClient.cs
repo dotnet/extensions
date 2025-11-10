@@ -554,12 +554,12 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         if (options is null)
         {
-            return new ChatCompletionOptions();
+            return new();
         }
 
         if (options.RawRepresentationFactory?.Invoke(this) is not ChatCompletionOptions result)
         {
-            result = new ChatCompletionOptions();
+            result = new();
         }
 
         result.FrequencyPenalty ??= options.FrequencyPenalty;
@@ -568,6 +568,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         result.PresencePenalty ??= options.PresencePenalty;
         result.Temperature ??= options.Temperature;
         result.Seed ??= options.Seed;
+        OpenAIClientExtensions.PatchModelIfNotSet(ref result.Patch, options.ModelId);
 
         if (options.StopSequences is { Count: > 0 } stopSequences)
         {
@@ -708,7 +709,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
             case ChatMessageContentPartKind.Image:
                 aiContent =
-                    contentPart.ImageUri is not null ? new UriContent(contentPart.ImageUri, "image/*") :
+                    contentPart.ImageUri is not null ? new UriContent(contentPart.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(contentPart.ImageUri)) :
                     contentPart.ImageBytes is not null ? new DataContent(contentPart.ImageBytes.ToMemory(), contentPart.ImageBytesMediaType) :
                     null;
 
@@ -721,7 +722,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
             case ChatMessageContentPartKind.File:
                 aiContent =
-                    contentPart.FileId is not null ? new HostedFileContent(contentPart.FileId) :
+                    contentPart.FileId is not null ? new HostedFileContent(contentPart.FileId) { Name = contentPart.Filename } :
                     contentPart.FileBytes is not null ? new DataContent(contentPart.FileBytes.ToMemory(), contentPart.FileBytesMediaType) { Name = contentPart.Filename } :
                     null;
                 break;

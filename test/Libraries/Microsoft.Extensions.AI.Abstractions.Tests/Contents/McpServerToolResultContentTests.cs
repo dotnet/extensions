@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -47,5 +48,21 @@ public class McpServerToolResultContentTests
     {
         Assert.Throws<ArgumentException>("callId", () => new McpServerToolResultContent(string.Empty));
         Assert.Throws<ArgumentNullException>("callId", () => new McpServerToolResultContent(null!));
+    }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new McpServerToolResultContent("call123")
+        {
+            Output = new List<AIContent> { new TextContent("result") }
+        };
+
+        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+        var deserializedContent = JsonSerializer.Deserialize<McpServerToolResultContent>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(deserializedContent);
+        Assert.Equal(content.CallId, deserializedContent.CallId);
+        Assert.NotNull(deserializedContent.Output);
     }
 }

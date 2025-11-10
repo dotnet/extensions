@@ -12,6 +12,28 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public class ImageGenerationOptions
 {
+    /// <summary>Initializes a new instance of the <see cref="ImageGenerationOptions"/> class.</summary>
+    public ImageGenerationOptions()
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="ImageGenerationOptions"/> class, performing a shallow copy of all properties from <paramref name="other"/>.</summary>
+    protected ImageGenerationOptions(ImageGenerationOptions? other)
+    {
+        if (other is null)
+        {
+            return;
+        }
+
+        AdditionalProperties = other.AdditionalProperties?.Clone();
+        Count = other.Count;
+        ImageSize = other.ImageSize;
+        MediaType = other.MediaType;
+        ModelId = other.ModelId;
+        RawRepresentationFactory = other.RawRepresentationFactory;
+        ResponseFormat = other.ResponseFormat;
+    }
+
     /// <summary>
     /// Gets or sets the number of images to generate.
     /// </summary>
@@ -59,26 +81,17 @@ public class ImageGenerationOptions
     /// </summary>
     public ImageGenerationResponseFormat? ResponseFormat { get; set; }
 
+    /// <summary>
+    /// Gets or sets the number of intermediate streaming images to generate.
+    /// </summary>
+    public int? StreamingCount { get; set; }
+
     /// <summary>Gets or sets any additional properties associated with the options.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <summary>Produces a clone of the current <see cref="ImageGenerationOptions"/> instance.</summary>
     /// <returns>A clone of the current <see cref="ImageGenerationOptions"/> instance.</returns>
-    public virtual ImageGenerationOptions Clone()
-    {
-        ImageGenerationOptions options = new()
-        {
-            AdditionalProperties = AdditionalProperties?.Clone(),
-            Count = Count,
-            MediaType = MediaType,
-            ImageSize = ImageSize,
-            ModelId = ModelId,
-            RawRepresentationFactory = RawRepresentationFactory,
-            ResponseFormat = ResponseFormat
-        };
-
-        return options;
-    }
+    public virtual ImageGenerationOptions Clone() => new(this);
 }
 
 /// <summary>

@@ -11,9 +11,6 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public class ImageGenerationResponse
 {
-    /// <summary>The content items in the generated text response.</summary>
-    private IList<AIContent>? _contents;
-
     /// <summary>Initializes a new instance of the <see cref="ImageGenerationResponse"/> class.</summary>
     [JsonConstructor]
     public ImageGenerationResponse()
@@ -24,7 +21,7 @@ public class ImageGenerationResponse
     /// <param name="contents">The contents for this response.</param>
     public ImageGenerationResponse(IList<AIContent>? contents)
     {
-        _contents = contents;
+        Contents = contents;
     }
 
     /// <summary>Gets or sets the raw representation of the image generation response from an underlying implementation.</summary>
@@ -46,8 +43,8 @@ public class ImageGenerationResponse
     [AllowNull]
     public IList<AIContent> Contents
     {
-        get => _contents ??= [];
-        set => _contents = value;
+        get => field ??= [];
+        set;
     }
 
     /// <summary>Gets or sets usage details for the image generation response.</summary>

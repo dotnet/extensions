@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Shared.ProjectTemplates.Tests;
 using Microsoft.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
