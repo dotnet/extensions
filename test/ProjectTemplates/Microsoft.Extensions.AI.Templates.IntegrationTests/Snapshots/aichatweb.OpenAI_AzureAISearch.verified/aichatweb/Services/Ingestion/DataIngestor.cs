@@ -18,7 +18,7 @@ public class DataIngestor(
         {
             CollectionName = IngestedChunk.CollectionName,
             DistanceFunction = IngestedChunk.VectorDistanceFunction,
-            IncrementalIngestion = true,
+            IncrementalIngestion = false,
         });
 
         using var pipeline = new IngestionPipeline<string>(
