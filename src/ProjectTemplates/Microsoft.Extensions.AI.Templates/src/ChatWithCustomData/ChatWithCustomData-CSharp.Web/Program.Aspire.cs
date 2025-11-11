@@ -34,20 +34,21 @@ openai.AddEmbeddingGenerator("text-embedding-3-small");
 
 #if (IsAzureAISearch)
 builder.AddAzureSearchClient("search");
-builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks");
-builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents");
+builder.Services.AddAzureAISearchVectorStore();
+builder.Services.AddAzureAISearchCollection<IngestedChunk>(IngestedChunk.CollectionName);
 #elif (IsQdrant)
 builder.AddQdrantClient("vectordb");
-builder.Services.AddQdrantCollection<Guid, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks");
-builder.Services.AddQdrantCollection<Guid, IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents");
+builder.Services.AddQdrantVectorStore();
+builder.Services.AddQdrantCollection<Guid, IngestedChunk>(IngestedChunk.CollectionName);
 #else // IsLocalVectorStore
 var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
 var vectorStoreConnectionString = $"Data Source={vectorStorePath}";
-builder.Services.AddSqliteCollection<string, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks", vectorStoreConnectionString);
-builder.Services.AddSqliteCollection<string, IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents", vectorStoreConnectionString);
+builder.Services.AddSqliteVectorStore(_ => vectorStoreConnectionString);
+builder.Services.AddSqliteCollection<string, IngestedChunk>(IngestedChunk.CollectionName, vectorStoreConnectionString);
 #endif
-builder.Services.AddScoped<DataIngestor>();
+builder.Services.AddSingleton<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
+builder.Services.AddKeyedSingleton("ingestion_directory", new DirectoryInfo(Path.Combine(builder.Environment.WebRootPath, "Data")));
 #if (IsOllama)
 // Applies robust HTTP resilience settings for all HttpClients in the Web project,
 // not across the entire solution. It's aimed at supporting Ollama scenarios due
@@ -74,13 +75,5 @@ app.UseAntiforgery();
 app.UseStaticFiles();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
-// By default, we ingest PDF files from the /wwwroot/Data directory. You can ingest from
-// other sources by implementing IIngestionSource.
-// Important: ensure that any content you ingest is trusted, as it may be reflected back
-// to users or could be a source of prompt injection risk.
-await DataIngestor.IngestDataAsync(
-    app.Services,
-    new PDFDirectorySource(Path.Combine(builder.Environment.WebRootPath, "Data")));
 
 app.Run();

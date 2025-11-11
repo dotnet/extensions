@@ -15,10 +15,11 @@ openai.AddChatClient("gpt-4o-mini")
 openai.AddEmbeddingGenerator("text-embedding-3-small");
 
 builder.AddAzureSearchClient("search");
-builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-aichatweb-chunks");
-builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-aichatweb-documents");
-builder.Services.AddScoped<DataIngestor>();
+builder.Services.AddAzureAISearchVectorStore();
+builder.Services.AddAzureAISearchCollection<IngestedChunk>(IngestedChunk.CollectionName);
+builder.Services.AddSingleton<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
+builder.Services.AddKeyedSingleton("ingestion_directory", new DirectoryInfo(Path.Combine(builder.Environment.WebRootPath, "Data")));
 
 var app = builder.Build();
 
@@ -38,13 +39,5 @@ app.UseAntiforgery();
 app.UseStaticFiles();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
-// By default, we ingest PDF files from the /wwwroot/Data directory. You can ingest from
-// other sources by implementing IIngestionSource.
-// Important: ensure that any content you ingest is trusted, as it may be reflected back
-// to users or could be a source of prompt injection risk.
-await DataIngestor.IngestDataAsync(
-    app.Services,
-    new PDFDirectorySource(Path.Combine(builder.Environment.WebRootPath, "Data")));
 
 app.Run();
