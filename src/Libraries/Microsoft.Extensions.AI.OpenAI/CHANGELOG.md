@@ -1,6 +1,6 @@
 # Release History
 
-## NOT YET RELEASED
+## 9.10.2-preview.1.25552.1
 
 - Updated to depend on OpenAI 2.6.0.
 - Updated the OpenAI Responses `IChatClient` to allow either conversation or response ID for `ChatOptions.ConversationId`.

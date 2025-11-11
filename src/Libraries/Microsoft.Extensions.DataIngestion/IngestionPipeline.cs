@@ -154,7 +154,7 @@ public sealed class IngestionPipeline<T> : IDisposable
                     processFileActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
                     _logger?.ReadDocument(document.Identifier);
 
-                    await IngestAsync(document, processFileActivity, cancellationToken).ConfigureAwait(false);
+                    document = await IngestAsync(document, processFileActivity, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -164,12 +164,13 @@ public sealed class IngestionPipeline<T> : IDisposable
                     failure = ex;
                 }
 
-                yield return new IngestionResult(fileInfo, document, failure);
+                string documentId = document?.Identifier ?? fileInfo.FullName;
+                yield return new IngestionResult(documentId, document, failure);
             }
         }
     }
 
-    private async Task IngestAsync(IngestionDocument document, Activity? parentActivity, CancellationToken cancellationToken)
+    private async Task<IngestionDocument> IngestAsync(IngestionDocument document, Activity? parentActivity, CancellationToken cancellationToken)
     {
         foreach (IngestionDocumentProcessor processor in DocumentProcessors)
         {
@@ -188,5 +189,7 @@ public sealed class IngestionPipeline<T> : IDisposable
         _logger?.WritingChunks(GetShortName(_writer));
         await _writer.WriteAsync(chunks, cancellationToken).ConfigureAwait(false);
         _logger?.WroteChunks(document.Identifier);
+
+        return document;
     }
 }

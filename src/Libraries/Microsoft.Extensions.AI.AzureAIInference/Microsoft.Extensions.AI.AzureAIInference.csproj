@@ -4,6 +4,7 @@
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Implementation of generative AI abstractions for Azure.AI.Inference.</Description>
     <Workstream>AI</Workstream>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -29,9 +30,6 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.Inference" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>

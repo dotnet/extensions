@@ -31,5 +31,11 @@ namespace Microsoft.Extensions.DataIngestion
 
         [LoggerMessage(6, LogLevel.Error, "An error occurred while ingesting document '{identifier}'.")]
         internal static partial void IngestingFailed(this ILogger logger, Exception exception, string identifier);
+
+        [LoggerMessage(7, LogLevel.Error, "The AI chat service returned {resultCount} instead of {expectedCount} results.")]
+        internal static partial void UnexpectedResultsCount(this ILogger logger, int resultCount, int expectedCount);
+
+        [LoggerMessage(8, LogLevel.Error, "Unexpected enricher failure.")]
+        internal static partial void UnexpectedEnricherFailure(this ILogger logger, Exception exception);
     }
 }
