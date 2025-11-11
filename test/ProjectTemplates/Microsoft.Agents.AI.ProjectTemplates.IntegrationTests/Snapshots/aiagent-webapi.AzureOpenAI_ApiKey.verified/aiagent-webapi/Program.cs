@@ -15,11 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
 //   cd this-project-directory
 //   dotnet user-secrets set AzureOpenAI:Endpoint https://YOUR-DEPLOYMENT-NAME.openai.azure.com
 //   dotnet user-secrets set AzureOpenAI:Key YOUR-API-KEY
-var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint.")), "/openai/v1");
+var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint")), "/openai/v1");
 
 var chatClient = new ChatClient(
         "gpt-4o-mini",
-        new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key.")),
+        new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key")),
         new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint })
     .AsIChatClient();
 

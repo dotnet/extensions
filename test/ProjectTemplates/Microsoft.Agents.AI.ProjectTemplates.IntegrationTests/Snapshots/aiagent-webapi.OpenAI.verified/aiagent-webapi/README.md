@@ -17,21 +17,21 @@ This application uses the OpenAI Platform (model: gpt-4o-mini). You'll need to c
 **Using User Secrets (Recommended for Development)**
 
 ```bash
-dotnet user-secrets set "OpenAI:Key" "your-openai-api-key-here"
+dotnet user-secrets set "OPENAI_KEY" "your-openai-api-key-here"
 ```
 
 **Using Environment Variables**
 
-Set the `OpenAI__Key` environment variable:
+Set the `OPENAI_KEY` environment variable:
 
 - **Windows (PowerShell)**:
   ```powershell
-  $env:OpenAI__Key = "your-openai-api-key-here"
+  $env:OPENAI_KEY = "your-openai-api-key-here"
   ```
 
 - **Linux/macOS**:
   ```bash
-  export OpenAI__Key="your-openai-api-key-here"
+  export OPENAI_KEY="your-openai-api-key-here"
   ```
 
 #### Get an OpenAI API Key
@@ -119,7 +119,7 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 
 ## Troubleshooting
 
-**Problem**: Application fails with "Missing configuration: OpenAI:Key"
+**Problem**: Application fails with "Missing configuration: OPENAI_KEY"
 
 **Solution**: Make sure you've configured your OpenAI API key using one of the methods described above.
 

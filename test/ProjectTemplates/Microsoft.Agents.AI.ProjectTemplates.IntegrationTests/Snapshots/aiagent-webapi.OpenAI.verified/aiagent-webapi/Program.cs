@@ -12,10 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 // You will need to set the API key to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
-//   dotnet user-secrets set OpenAI:Key YOUR-API-KEY
+//   dotnet user-secrets set "OPENAI_KEY" "your-openai-api-key-here"
 var chatClient = new ChatClient(
         "gpt-4o-mini",
-        new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key.")))
+        new ApiKeyCredential(builder.Configuration["OPENAI_KEY"] ?? throw new InvalidOperationException("Missing configuration: OPENAI_KEY")))
     .AsIChatClient();
 
 builder.Services.AddChatClient(chatClient);

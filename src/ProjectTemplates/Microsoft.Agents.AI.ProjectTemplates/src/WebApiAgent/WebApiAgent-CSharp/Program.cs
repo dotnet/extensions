@@ -28,20 +28,20 @@ var builder = WebApplication.CreateBuilder(args);
 // You will need to set the token to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
-//   dotnet user-secrets set GitHubModels:Token YOUR-GITHUB-TOKEN
+//   dotnet user-secrets set "GITHUB_TOKEN" "your-github-models-token-here"
 var chatClient = new ChatClient(
         "gpt-4o-mini",
-        new ApiKeyCredential(builder.Configuration["GitHubModels:Token"] ?? throw new InvalidOperationException("Missing configuration: GitHubModels:Token.")),
+        new ApiKeyCredential(builder.Configuration["GITHUB_TOKEN"] ?? throw new InvalidOperationException("Missing configuration: GITHUB_TOKEN")),
         new OpenAIClientOptions { Endpoint = new Uri("https://models.inference.ai.azure.com") })
     .AsIChatClient();
 #elif (IsOpenAI)
 // You will need to set the API key to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
-//   dotnet user-secrets set OpenAI:Key YOUR-API-KEY
+//   dotnet user-secrets set "OPENAI_KEY" "your-openai-api-key-here"
 var chatClient = new ChatClient(
         "gpt-4o-mini",
-        new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key.")))
+        new ApiKeyCredential(builder.Configuration["OPENAI_KEY"] ?? throw new InvalidOperationException("Missing configuration: OPENAI_KEY")))
     .AsIChatClient();
 #elif (IsAzureOpenAI)
 // You will need to set the endpoint to your own value
@@ -51,7 +51,7 @@ var chatClient = new ChatClient(
 #if (!IsManagedIdentity)
 //   dotnet user-secrets set AzureOpenAI:Key YOUR-API-KEY
 #endif
-var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint.")), "/openai/v1");
+var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint")), "/openai/v1");
 
 #if (IsManagedIdentity)
 #pragma warning disable OPENAI001 // The overload accepting an AuthenticationPolicy is experimental and may change or be removed in future releases.
@@ -64,7 +64,7 @@ var chatClient = new ChatClient(
 #else
 var chatClient = new ChatClient(
         "gpt-4o-mini",
-        new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key.")),
+        new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key")),
         new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint })
     .AsIChatClient();
 #endif

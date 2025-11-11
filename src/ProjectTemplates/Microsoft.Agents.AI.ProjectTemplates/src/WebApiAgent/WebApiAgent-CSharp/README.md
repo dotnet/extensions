@@ -26,21 +26,21 @@ This application uses GitHub Models (model: gpt-4o-mini) for AI functionality. Y
 **Option A: Using User Secrets (Recommended for Development)**
 
 ```bash
-dotnet user-secrets set "GitHubModels:Token" "your-github-models-token-here"
+dotnet user-secrets set "GITHUB_TOKEN" "your-github-models-token-here"
 ```
 
 **Option B: Using Environment Variables**
 
-Set the `GitHubModels__Token` environment variable:
+Set the `GITHUB_TOKEN` environment variable:
 
 - **Windows (PowerShell)**:
   ```powershell
-  $env:GitHubModels__Token = "your-github-models-token-here"
+  $env:GITHUB_TOKEN = "your-github-models-token-here"
   ```
 
 - **Linux/macOS**:
   ```bash
-  export GitHubModels__Token="your-github-models-token-here"
+  export GITHUB_TOKEN="your-github-models-token-here"
   ```
 
 #### Get a GitHub Models Token
@@ -59,21 +59,21 @@ This application uses the OpenAI Platform (model: gpt-4o-mini). You'll need to c
 **Using User Secrets (Recommended for Development)**
 
 ```bash
-dotnet user-secrets set "OpenAI:Key" "your-openai-api-key-here"
+dotnet user-secrets set "OPENAI_KEY" "your-openai-api-key-here"
 ```
 
 **Using Environment Variables**
 
-Set the `OpenAI__Key` environment variable:
+Set the `OPENAI_KEY` environment variable:
 
 - **Windows (PowerShell)**:
   ```powershell
-  $env:OpenAI__Key = "your-openai-api-key-here"
+  $env:OPENAI_KEY = "your-openai-api-key-here"
   ```
 
 - **Linux/macOS**:
   ```bash
-  export OpenAI__Key="your-openai-api-key-here"
+  export OPENAI_KEY="your-openai-api-key-here"
   ```
 
 #### Get an OpenAI API Key
@@ -236,7 +236,7 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 ## Troubleshooting
 
 <!--#if (IsGHModels) -->
-**Problem**: Application fails with "Missing configuration: GitHubModels:Token"
+**Problem**: Application fails with "Missing configuration: GITHUB_TOKEN"
 
 **Solution**: Make sure you've configured your GitHub Models API token using one of the methods described above.
 
@@ -245,7 +245,7 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 **Solution**: Verify your GitHub Models token is valid and hasn't expired. You may need to regenerate it from the GitHub Models website.
 
 <!--#elif (IsOpenAI) -->
-**Problem**: Application fails with "Missing configuration: OpenAI:Key"
+**Problem**: Application fails with "Missing configuration: OPENAI_KEY"
 
 **Solution**: Make sure you've configured your OpenAI API key using one of the methods described above.
 

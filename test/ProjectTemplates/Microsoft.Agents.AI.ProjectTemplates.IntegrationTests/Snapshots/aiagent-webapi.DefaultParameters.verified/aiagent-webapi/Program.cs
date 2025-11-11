@@ -13,10 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 // You will need to set the token to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
-//   dotnet user-secrets set GitHubModels:Token YOUR-GITHUB-TOKEN
+//   dotnet user-secrets set "GITHUB_TOKEN" "your-github-models-token-here"
 var chatClient = new ChatClient(
         "gpt-4o-mini",
-        new ApiKeyCredential(builder.Configuration["GitHubModels:Token"] ?? throw new InvalidOperationException("Missing configuration: GitHubModels:Token.")),
+        new ApiKeyCredential(builder.Configuration["GITHUB_TOKEN"] ?? throw new InvalidOperationException("Missing configuration: GITHUB_TOKEN")),
         new OpenAIClientOptions { Endpoint = new Uri("https://models.inference.ai.azure.com") })
     .AsIChatClient();
 
