@@ -40,7 +40,7 @@
       <TemplatePackageVersion_MicrosoftAgentsAI>1.0.0-preview.251110.2</TemplatePackageVersion_MicrosoftAgentsAI>
       <TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>1.0.0-alpha.251110.2</TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>
       <TemplatePackageVersion_Aspire>13.0.0</TemplatePackageVersion_Aspire>
-      <TemplatePackageVersion_Aspire_Preview>13.0.0</TemplatePackageVersion_Aspire_Preview>
+      <TemplatePackageVersion_Aspire_Preview>13.0.0-preview.1.25560.3</TemplatePackageVersion_Aspire_Preview>
       <TemplatePackageVersion_AzureAIProjects>1.0.0</TemplatePackageVersion_AzureAIProjects>
       <TemplatePackageVersion_AzureIdentity>1.17.0</TemplatePackageVersion_AzureIdentity>
       <TemplatePackageVersion_AzureSearchDocuments>11.7.0</TemplatePackageVersion_AzureSearchDocuments>
