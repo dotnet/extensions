@@ -7,7 +7,14 @@
     <PackageTags>dotnet-new;templates;ai;agent</PackageTags>
 
     <Stage>preview</Stage>
-    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+
+    <!-- Set the version info to align with Microsoft.Agents.AI packages -->
+    <MajorVersion>1</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <PatchVersion>0</PatchVersion>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <VersionSuffix>preview.251110.2</VersionSuffix>
+
     <Workstream>AI</Workstream>
     <MinCodeCoverage>0</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>

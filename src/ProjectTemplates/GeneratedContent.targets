@@ -37,8 +37,8 @@
       Specifies external packages that get referenced in generated template content.
     -->
     <PropertyGroup>
-      <TemplatePackageVersion_MicrosoftAgentsAI>1.0.0-local.251108.1</TemplatePackageVersion_MicrosoftAgentsAI>
-      <TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>1.0.0-local.251108.1</TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>
+      <TemplatePackageVersion_MicrosoftAgentsAI>1.0.0-preview.251110.2</TemplatePackageVersion_MicrosoftAgentsAI>
+      <TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>1.0.0-alpha.251110.2</TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>
       <TemplatePackageVersion_Aspire>9.5.1</TemplatePackageVersion_Aspire>
       <TemplatePackageVersion_Aspire_Preview>9.5.1-preview.1.25502.11</TemplatePackageVersion_Aspire_Preview>
       <TemplatePackageVersion_AzureAIProjects>1.0.0</TemplatePackageVersion_AzureAIProjects>
