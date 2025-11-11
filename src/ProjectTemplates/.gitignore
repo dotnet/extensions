@@ -12,8 +12,8 @@ package-lock.json
 */src/**/Directory.Build.props
 */src/**/ingestioncache.*
 
-# launchSettings.json files are required for the templates.
-!launchSettings.json
+# The project templates include hard-coded launchSettings.json files
+!*/src/ProjectTemplates/**/Properties/launchSettings.json
 
 # Templates include JS dependencies in dist folders.
 !**/dist/*

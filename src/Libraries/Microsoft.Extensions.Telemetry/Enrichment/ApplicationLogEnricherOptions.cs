@@ -6,7 +6,7 @@ using Microsoft.Extensions.AmbientMetadata;
 namespace Microsoft.Extensions.Diagnostics.Enrichment;
 
 /// <summary>
-/// Options for the service log enricher.
+/// Options for the application log enricher.
 /// </summary>
 public class ApplicationLogEnricherOptions
 {

@@ -184,6 +184,47 @@ public static class ChatResponseExtensions
         }
     }
 
+    /// <summary>
+    /// Coalesces image result content elements in the provided list of <see cref="AIContent"/> items.
+    /// Unlike other content coalescing methods, this will coalesce non-sequential items based on their Name property, 
+    /// and it will replace earlier items with later ones when duplicates are found.
+    /// </summary>
+    private static void CoalesceImageResultContent(IList<AIContent> contents)
+    {
+        Dictionary<string, int>? imageResultIndexById = null;
+        bool hasRemovals = false;
+
+        for (int i = 0; i < contents.Count; i++)
+        {
+            if (contents[i] is ImageGenerationToolResultContent imageResult && !string.IsNullOrEmpty(imageResult.ImageId))
+            {
+                // Check if there's an existing ImageGenerationToolResultContent with the same ImageId to replace
+                if (imageResultIndexById is null)
+                {
+                    imageResultIndexById = new(StringComparer.Ordinal);
+                }
+
+                if (imageResultIndexById.TryGetValue(imageResult.ImageId!, out int existingIndex))
+                {
+                    // Replace the existing imageResult with the new one
+                    contents[existingIndex] = imageResult;
+                    contents[i] = null!; // Mark the current one for removal, then remove in single o(n) pass
+                    hasRemovals = true;
+                }
+                else
+                {
+                    imageResultIndexById[imageResult.ImageId!] = i;
+                }
+            }
+        }
+
+        // Remove all of the null slots left over from the coalescing process.
+        if (hasRemovals)
+        {
+            RemoveNullContents(contents);
+        }
+    }
+
     /// <summary>Coalesces sequential <see cref="AIContent"/> content elements.</summary>
     internal static void CoalesceContent(IList<AIContent> contents)
     {
@@ -218,6 +259,8 @@ public static class ChatResponseExtensions
 
                 return content;
             });
+
+        CoalesceImageResultContent(contents);
 
         Coalesce<DataContent>(
             contents,
@@ -394,29 +437,35 @@ public static class ChatResponseExtensions
             }
 
             // Remove all of the null slots left over from the coalescing process.
-            if (contents is List<AIContent> contentsList)
-            {
-                _ = contentsList.RemoveAll(u => u is null);
-            }
-            else
-            {
-                int nextSlot = 0;
-                int contentsCount = contents.Count;
-                for (int i = 0; i < contentsCount; i++)
-                {
-                    if (contents[i] is { } content)
-                    {
-                        contents[nextSlot++] = content;
-                    }
-                }
+            RemoveNullContents(contents);
+        }
+    }
 
-                for (int i = contentsCount - 1; i >= nextSlot; i--)
+    private static void RemoveNullContents<T>(IList<T> contents)
+        where T : class
+    {
+        if (contents is List<AIContent> contentsList)
+        {
+            _ = contentsList.RemoveAll(u => u is null);
+        }
+        else
+        {
+            int nextSlot = 0;
+            int contentsCount = contents.Count;
+            for (int i = 0; i < contentsCount; i++)
+            {
+                if (contents[i] is { } content)
                 {
-                    contents.RemoveAt(i);
+                    contents[nextSlot++] = content;
                 }
-
-                Debug.Assert(nextSlot == contents.Count, "Expected final count to equal list length.");
             }
+
+            for (int i = contentsCount - 1; i >= nextSlot; i--)
+            {
+                contents.RemoveAt(i);
+            }
+
+            Debug.Assert(nextSlot == contents.Count, "Expected final count to equal list length.");
         }
     }
 
