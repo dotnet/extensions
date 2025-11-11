@@ -12,11 +12,11 @@ using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Agents.AI.Templates.Tests;
+namespace Microsoft.Agents.AI.ProjectTemplates.Tests;
 
 public class WebApiAgentTemplateSnapshotTests
 {
-    // Keep the exclude patterns below in sync with those in Microsoft.Agents.AI.Templates.csproj.
+    // Keep the exclude patterns below in sync with those in Microsoft.Agents.AI.ProjectTemplates.csproj.
     private static readonly string[] _verificationExcludePatterns = [
         "**/bin/**",
         "**/obj/**",
@@ -79,7 +79,7 @@ public class WebApiAgentTemplateSnapshotTests
         string templateShortName = "aiagent-webapi";
 
         // Get the template location
-        string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Agents.AI.Templates", "src", "WebApiAgent");
+        string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Agents.AI.ProjectTemplates", "src", "WebApiAgent");
 
         var verificationExcludePatterns = Path.DirectorySeparatorChar is '/'
             ? _verificationExcludePatterns

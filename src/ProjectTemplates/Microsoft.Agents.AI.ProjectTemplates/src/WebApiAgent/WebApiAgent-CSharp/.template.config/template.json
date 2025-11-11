@@ -2,7 +2,7 @@
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [ "Common", "AI", "API", "Web", "Web API", "WebAPI", "Service" ],
-  "identity": "Microsoft.Agents.AI.Templates.WebApiAgent.CSharp",
+  "identity": "Microsoft.Agents.AI.ProjectTemplates.WebApiAgent.CSharp",
   "name": "AI Agent Web API",
   "description": "A project template for creating an AI Agent Web API application.",
   "shortName": "aiagent-webapi",

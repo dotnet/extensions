@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Tests for Microsoft.Agents.AI.Templates.</Description>
+    <Description>Tests for Microsoft.Agents.AI.ProjectTemplates.</Description>
     <IsUnitTestProject>false</IsUnitTestProject>
     <IsIntegrationTestProject>true</IsIntegrationTestProject>
   </PropertyGroup>

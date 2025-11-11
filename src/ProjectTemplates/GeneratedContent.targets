@@ -9,7 +9,7 @@
     -->
     <_LocalChatTemplateVariant>aspire</_LocalChatTemplateVariant>
 
-    <_WebApiAgentRoot>$(MSBuildThisFileDirectory)Microsoft.Agents.AI.Templates\src\WebApiAgent\</_WebApiAgentRoot>
+    <_WebApiAgentRoot>$(MSBuildThisFileDirectory)Microsoft.Agents.AI.ProjectTemplates\src\WebApiAgent\</_WebApiAgentRoot>
     <_ChatWithCustomDataContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\</_ChatWithCustomDataContentRoot>
     <_McpServerContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\McpServer\</_McpServerContentRoot>
   </PropertyGroup>

@@ -8,7 +8,7 @@ using Microsoft.Shared.ProjectTemplates.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Agents.AI.Templates.Tests;
+namespace Microsoft.Agents.AI.ProjectTemplates.Tests;
 
 /// <summary>
 /// Contains execution tests for the "AI Agent Web API" template.
@@ -30,7 +30,7 @@ public class WebApiAgentTemplateExecutionTests : TemplateExecutionTestBase<WebAp
 
     public static TemplateExecutionTestConfiguration Configuration { get; } = new()
     {
-        TemplatePackageName = "Microsoft.Agents.AI.Templates",
+        TemplatePackageName = "Microsoft.Agents.AI.ProjectTemplates",
         TestOutputFolderPrefix = "WebApiAgent"
     };
 
