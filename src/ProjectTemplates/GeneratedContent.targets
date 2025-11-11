@@ -9,7 +9,7 @@
     -->
     <_LocalChatTemplateVariant>aspire</_LocalChatTemplateVariant>
 
-    <_WebApiAgentRoot>$(MSBuildThisFileDirectory)Microsoft.Agents.AI.Templates\src\WebApiAgent\</_WebApiAgentRoot>
+    <_WebApiAgentRoot>$(MSBuildThisFileDirectory)Microsoft.Agents.AI.ProjectTemplates\src\WebApiAgent\</_WebApiAgentRoot>
     <_ChatWithCustomDataContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\</_ChatWithCustomDataContentRoot>
     <_McpServerContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\McpServer\</_McpServerContentRoot>
   </PropertyGroup>
@@ -37,8 +37,8 @@
       Specifies external packages that get referenced in generated template content.
     -->
     <PropertyGroup>
-      <TemplatePackageVersion_MicrosoftAgentsAI>1.0.0-preview.251104.1</TemplatePackageVersion_MicrosoftAgentsAI>
-      <TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>1.0.0-alpha.251104.1</TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>
+      <TemplatePackageVersion_MicrosoftAgentsAI>1.0.0-preview.251110.2</TemplatePackageVersion_MicrosoftAgentsAI>
+      <TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>1.0.0-alpha.251110.2</TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>
       <TemplatePackageVersion_Aspire>9.5.1</TemplatePackageVersion_Aspire>
       <TemplatePackageVersion_Aspire_Preview>9.5.1-preview.1.25502.11</TemplatePackageVersion_Aspire_Preview>
       <TemplatePackageVersion_AzureAIProjects>1.0.0</TemplatePackageVersion_AzureAIProjects>
@@ -92,6 +92,9 @@
 
     <ItemGroup>
       <GeneratedContent
+        Include="$(_WebApiAgentRoot)WebApiAgent-CSharp\WebApiAgent-CSharp.csproj.in"
+        OutputPath="$(_WebApiAgentRoot)WebApiAgent-CSharp\WebApiAgent-CSharp.csproj" />
+      <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.sln.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.sln" />
       <GeneratedContent
@@ -100,9 +103,6 @@
       <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)Directory.Build.props.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)Directory.Build.props" />
-      <GeneratedContent
-        Include="$(_WebApiAgentRoot)WebApiAgent-CSharp\WebApiAgent-CSharp.csproj.in"
-        OutputPath="$(_WebApiAgentRoot)WebApiAgent-CSharp\WebApiAgent-CSharp.csproj" />
       <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj" />
