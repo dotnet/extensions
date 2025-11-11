@@ -10,36 +10,6 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes.Tests;
 public class KubernetesMetadataTests
 {
     [Fact]
-    public void Constructor_WithValidPrefix_SetsPrefix()
-    {
-        // Arrange & Act
-        var metadata = new KubernetesMetadata("TEST_PREFIX_");
-
-        // Assert
-        Assert.NotNull(metadata);
-    }
-
-    [Fact]
-    public void Constructor_WithEmptyPrefix_SetsEmptyPrefix()
-    {
-        // Arrange & Act
-        var metadata = new KubernetesMetadata(string.Empty);
-
-        // Assert
-        Assert.NotNull(metadata);
-    }
-
-    [Fact]
-    public void Constructor_WithNullPrefix_SetsNullPrefix()
-    {
-        // Arrange & Act
-        var metadata = new KubernetesMetadata(null!);
-
-        // Assert
-        Assert.NotNull(metadata);
-    }
-
-    [Fact]
     public void Build_WithValidEnvironmentVariables_ReturnsCorrectValues()
     {
         // Arrange
@@ -56,19 +26,16 @@ public class KubernetesMetadataTests
             requestsMemory: expectedRequestsMemory,
             requestsCpu: expectedRequestsCpu);
 
-        var metadata = new KubernetesMetadata(string.Empty);
-
         try
         {
             // Act
-            var result = metadata.Build();
+            var result = KubernetesMetadata.FromEnvironmentVariables(string.Empty);
 
             // Assert
-            Assert.Same(metadata, result);
-            Assert.Equal(expectedLimitsMemory, metadata.LimitsMemory);
-            Assert.Equal(expectedLimitsCpu, metadata.LimitsCpu);
-            Assert.Equal(expectedRequestsMemory, metadata.RequestsMemory);
-            Assert.Equal(expectedRequestsCpu, metadata.RequestsCpu);
+            Assert.Equal(expectedLimitsMemory, result.LimitsMemory);
+            Assert.Equal(expectedLimitsCpu, result.LimitsCpu);
+            Assert.Equal(expectedRequestsMemory, result.RequestsMemory);
+            Assert.Equal(expectedRequestsCpu, result.RequestsCpu);
         }
         finally
         {
@@ -94,17 +61,14 @@ public class KubernetesMetadataTests
             requestsMemory: expectedRequestsMemory,
             requestsCpu: expectedRequestsCpu);
 
-        var metadata = new KubernetesMetadata(CustomPrefix);
-
         // Act
-        var result = metadata.Build();
+        var result = KubernetesMetadata.FromEnvironmentVariables(CustomPrefix);
 
         // Assert
-        Assert.Same(metadata, result);
-        Assert.Equal(expectedLimitsMemory, metadata.LimitsMemory);
-        Assert.Equal(expectedLimitsCpu, metadata.LimitsCpu);
-        Assert.Equal(expectedRequestsMemory, metadata.RequestsMemory);
-        Assert.Equal(expectedRequestsCpu, metadata.RequestsCpu);
+        Assert.Equal(expectedLimitsMemory, result.LimitsMemory);
+        Assert.Equal(expectedLimitsCpu, result.LimitsCpu);
+        Assert.Equal(expectedRequestsMemory, result.RequestsMemory);
+        Assert.Equal(expectedRequestsCpu, result.RequestsCpu);
     }
 
     [Fact]
@@ -113,19 +77,17 @@ public class KubernetesMetadataTests
         // Arrange
         var tempSetup = new TestKubernetesEnvironmentSetup();
         tempSetup.ClearEnvironmentVariables();
-        var metadata = new KubernetesMetadata("NONEXISTENT_PREFIX_");
 
         try
         {
             // Act
-            var result = metadata.Build();
+            var result = KubernetesMetadata.FromEnvironmentVariables("NONEXISTENT_PREFIX_");
 
             // Assert
-            Assert.Same(metadata, result);
-            Assert.Equal(0UL, metadata.LimitsMemory);
-            Assert.Equal(0UL, metadata.LimitsCpu);
-            Assert.Equal(0UL, metadata.RequestsMemory);
-            Assert.Equal(0UL, metadata.RequestsCpu);
+            Assert.Equal(0UL, result.LimitsMemory);
+            Assert.Equal(0UL, result.LimitsCpu);
+            Assert.Equal(0UL, result.RequestsMemory);
+            Assert.Equal(0UL, result.RequestsCpu);
         }
         finally
         {
@@ -147,18 +109,16 @@ public class KubernetesMetadataTests
         tempSetup.SetEnvironmentVariable("REQUESTS_MEMORY", envValue);
         tempSetup.SetEnvironmentVariable("REQUESTS_CPU", envValue);
 
-        var metadata = new KubernetesMetadata(string.Empty);
-
         try
         {
             // Act
-            var result = metadata.Build();
+            var result = KubernetesMetadata.FromEnvironmentVariables(string.Empty);
 
             // Assert
-            Assert.Equal(0UL, metadata.LimitsMemory);
-            Assert.Equal(0UL, metadata.LimitsCpu);
-            Assert.Equal(0UL, metadata.RequestsMemory);
-            Assert.Equal(0UL, metadata.RequestsCpu);
+            Assert.Equal(0UL, result.LimitsMemory);
+            Assert.Equal(0UL, result.LimitsCpu);
+            Assert.Equal(0UL, result.RequestsMemory);
+            Assert.Equal(0UL, result.RequestsCpu);
         }
         finally
         {
@@ -177,12 +137,11 @@ public class KubernetesMetadataTests
         // Arrange
         var tempSetup = new TestKubernetesEnvironmentSetup();
         tempSetup.SetEnvironmentVariable(varSuffix, invalidValue);
-        var metadata = new KubernetesMetadata(string.Empty);
 
         try
         {
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => metadata.Build());
+            var exception = Assert.Throws<InvalidOperationException>(() => KubernetesMetadata.FromEnvironmentVariables(string.Empty));
             Assert.Contains(varSuffix, exception.Message);
             Assert.Contains(invalidValue, exception.Message);
             Assert.Contains("Expected a non-negative integer", exception.Message);
@@ -200,20 +159,19 @@ public class KubernetesMetadataTests
         var tempSetup = new TestKubernetesEnvironmentSetup();
         tempSetup.SetEnvironmentVariable("LIMITS_MEMORY", "2147483648"); // 2GB
         tempSetup.SetEnvironmentVariable("LIMITS_CPU", "2000"); // 2 cores
-        // Intentionally not setting REQUESTS_MEMORY and REQUESTS_CPU
 
-        var metadata = new KubernetesMetadata(string.Empty);
+        // Intentionally not setting REQUESTS_MEMORY and REQUESTS_CPU
 
         try
         {
             // Act
-            metadata.Build();
+            var result = KubernetesMetadata.FromEnvironmentVariables(string.Empty);
 
             // Assert
-            Assert.Equal(2_147_483_648UL, metadata.LimitsMemory);
-            Assert.Equal(2_000UL, metadata.LimitsCpu);
-            Assert.Equal(0UL, metadata.RequestsMemory); // Should be 0 for missing variables
-            Assert.Equal(0UL, metadata.RequestsCpu); // Should be 0 for missing variables
+            Assert.Equal(2_147_483_648UL, result.LimitsMemory);
+            Assert.Equal(2_000UL, result.LimitsCpu);
+            Assert.Equal(0UL, result.RequestsMemory); // Should be 0 for missing variables
+            Assert.Equal(0UL, result.RequestsCpu); // Should be 0 for missing variables
         }
         finally
         {
@@ -234,20 +192,17 @@ public class KubernetesMetadataTests
         tempSetup.SetEnvironmentVariable($"{Prefix2}LIMITS_MEMORY", "2147483648"); // 2GB
         tempSetup.SetEnvironmentVariable($"{Prefix2}LIMITS_CPU", "2000"); // 2 cores
 
-        var metadata1 = new KubernetesMetadata(Prefix1);
-        var metadata2 = new KubernetesMetadata(Prefix2);
-
         try
         {
             // Act
-            metadata1.Build();
-            metadata2.Build();
+            var result1 = KubernetesMetadata.FromEnvironmentVariables(Prefix1);
+            var result2 = KubernetesMetadata.FromEnvironmentVariables(Prefix2);
 
             // Assert
-            Assert.Equal(1_073_741_824UL, metadata1.LimitsMemory);
-            Assert.Equal(1_000UL, metadata1.LimitsCpu);
-            Assert.Equal(2_147_483_648UL, metadata2.LimitsMemory);
-            Assert.Equal(2_000UL, metadata2.LimitsCpu);
+            Assert.Equal(1_073_741_824UL, result1.LimitsMemory);
+            Assert.Equal(1_000UL, result1.LimitsCpu);
+            Assert.Equal(2_147_483_648UL, result2.LimitsMemory);
+            Assert.Equal(2_000UL, result2.LimitsCpu);
         }
         finally
         {

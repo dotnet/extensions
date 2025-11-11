@@ -32,12 +32,6 @@ public class KubernetesResourceQuotasServiceCollectionExtensionsTests
 
         // Assert
         ResourceQuotaProvider? resourceQuotaProvider = serviceProvider.GetService<ResourceQuotaProvider>();
-        KubernetesMetadata? metadata = serviceProvider.GetService<KubernetesMetadata>();
-        Assert.NotNull(metadata);
-        Assert.Equal(limitsMemory, metadata.LimitsMemory);
-        Assert.Equal(limitsCpu, metadata.LimitsCpu);
-        Assert.Equal(requestsMemory, metadata.RequestsMemory);
-        Assert.Equal(requestsCpu, metadata.RequestsCpu);
 
         Assert.NotNull(resourceQuotaProvider);
         Assert.IsType<KubernetesResourceQuotaProvider>(resourceQuotaProvider);
@@ -66,12 +60,6 @@ public class KubernetesResourceQuotasServiceCollectionExtensionsTests
 
         // Assert
         ResourceQuotaProvider? resourceQuotaProvider = serviceProvider.GetService<ResourceQuotaProvider>();
-        KubernetesMetadata? metadata = serviceProvider.GetService<KubernetesMetadata>();
-        Assert.NotNull(metadata);
-        Assert.Equal(limitsMemory, metadata.LimitsMemory);
-        Assert.Equal(limitsCpu, metadata.LimitsCpu);
-        Assert.Equal(requestsMemory, metadata.RequestsMemory);
-        Assert.Equal(requestsCpu, metadata.RequestsCpu);
 
         Assert.NotNull(resourceQuotaProvider);
         Assert.IsType<KubernetesResourceQuotaProvider>(resourceQuotaProvider);
@@ -83,9 +71,6 @@ public class KubernetesResourceQuotasServiceCollectionExtensionsTests
     {
         // Arrange
         IServiceCollection services = new ServiceCollection();
-
-        ulong limitsMemory = 1_073_741_824;
-        ulong limitsCpu = 1_000;
         using TestKubernetesEnvironmentSetup setup = new();
         setup.SetupMinimalKubernetesEnvironmentWithoutRequests("TEST_CLUSTER_");
 
@@ -98,15 +83,41 @@ public class KubernetesResourceQuotasServiceCollectionExtensionsTests
 
         // Assert
         ResourceQuotaProvider? resourceQuotaProvider = serviceProvider.GetService<ResourceQuotaProvider>();
-        KubernetesMetadata? metadata = serviceProvider.GetService<KubernetesMetadata>();
-        Assert.NotNull(metadata);
-        Assert.Equal(limitsMemory, metadata.LimitsMemory);
-        Assert.Equal(limitsCpu, metadata.LimitsCpu);
-        Assert.Equal(0UL, metadata.RequestsMemory);
-        Assert.Equal(0UL, metadata.RequestsCpu);
 
         Assert.NotNull(resourceQuotaProvider);
         Assert.IsType<KubernetesResourceQuotaProvider>(resourceQuotaProvider);
         Assert.NotNull(serviceProvider.GetService<IResourceMonitor>());
     }
+
+#pragma warning disable CS0618 // Type or member is obsolete - ISnapshotProvider is marked obsolete but still available for testing
+    [Fact]
+    public void AddKubernetesResourceMonitoring_RegistersISnapshotProvider()
+    {
+        // Arrange
+        IServiceCollection services = new ServiceCollection();
+
+        ulong limitsMemory = 2_147_483_648; // 2GB
+        ulong limitsCpu = 2_000; // 2 cores in millicores
+        ulong requestsMemory = 1_073_741_824; // 1GB  
+        ulong requestsCpu = 1_000; // 1 core in millicores
+        using TestKubernetesEnvironmentSetup setup = new();
+        setup.SetupKubernetesEnvironment(prefix: string.Empty, limitsMemory, limitsCpu, requestsMemory, requestsCpu);
+
+        // Act
+        services.AddKubernetesResourceMonitoring();
+        services
+            .AddLogging()
+            .AddSingleton<TimeProvider>(TimeProvider.System);
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        ISnapshotProvider? snapshotProvider = serviceProvider.GetService<ISnapshotProvider>();
+        Assert.NotNull(snapshotProvider);
+
+        Assert.NotEqual(default, snapshotProvider.Resources);
+
+        var snapshot = snapshotProvider.GetSnapshot();
+        Assert.NotEqual(default, snapshot);
+    }
+#pragma warning restore CS0618
 }

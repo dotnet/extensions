@@ -17,10 +17,6 @@
     <MinMutationScore>90</MinMutationScore>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <Compile Remove="Linux\**\*.cs" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ResourceMonitoring\Microsoft.Extensions.Diagnostics.ResourceMonitoring.csproj" />
   </ItemGroup>

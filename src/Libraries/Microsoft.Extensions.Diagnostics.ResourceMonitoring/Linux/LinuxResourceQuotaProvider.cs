@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 
-internal class LinuxResourceQuotaProvider : ResourceQuotaProvider
+internal sealed class LinuxResourceQuotaProvider : ResourceQuotaProvider
 {
     private readonly ILinuxUtilizationParser _parser;
     private bool _useLinuxCalculationV2;

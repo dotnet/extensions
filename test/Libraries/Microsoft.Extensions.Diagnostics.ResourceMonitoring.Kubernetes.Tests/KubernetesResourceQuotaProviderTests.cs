@@ -135,9 +135,9 @@ public class KubernetesResourceQuotaProviderTests
         // Assert
         Assert.NotNull(quota);
         Assert.Equal(maxMemory, quota.MaxMemoryInBytes);
-        Assert.Equal((double)maxCpu / 1000.0, quota.MaxCpuInCores);
+        Assert.Equal(maxCpu / 1000.0, quota.MaxCpuInCores);
         Assert.Equal(requestsMemory, quota.BaselineMemoryInBytes);
-        Assert.Equal((double)requestsCpu / 1000.0, quota.BaselineCpuInCores);
+        Assert.Equal(requestsCpu / 1000.0, quota.BaselineCpuInCores);
     }
 
     [Theory]
@@ -278,7 +278,7 @@ public class KubernetesResourceQuotaProviderTests
         ulong requestsMemory,
         ulong requestsCpu)
     {
-        return new KubernetesMetadata(string.Empty)
+        return new KubernetesMetadata
         {
             LimitsMemory = limitsMemory,
             LimitsCpu = limitsCpu,

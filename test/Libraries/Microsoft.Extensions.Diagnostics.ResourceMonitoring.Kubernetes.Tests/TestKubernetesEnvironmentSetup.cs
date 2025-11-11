@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 internal class TestKubernetesEnvironmentSetup : IDisposable
 {
     private const string ClusterLimitCpu = "MYCLUSTER_";
-    private readonly List<string> _environmentVariablesToCleanup = new();
+    private readonly List<string> _environmentVariablesToCleanup = [];
 
     /// <summary>
     /// Sets up environment variables for Kubernetes resource monitoring tests.
@@ -81,6 +81,7 @@ internal class TestKubernetesEnvironmentSetup : IDisposable
         {
             Environment.SetEnvironmentVariable(variableName, null, EnvironmentVariableTarget.Process);
         }
+
         _environmentVariablesToCleanup.Clear();
     }
 

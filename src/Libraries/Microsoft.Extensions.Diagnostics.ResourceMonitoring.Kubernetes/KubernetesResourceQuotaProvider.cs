@@ -5,7 +5,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes;
 
-internal class KubernetesResourceQuotaProvider : ResourceQuotaProvider
+internal sealed class KubernetesResourceQuotaProvider : ResourceQuotaProvider
 {
     private const double MillicoresPerCore = 1000.0;
     private KubernetesMetadata _kubernetesMetadata;

@@ -33,12 +33,10 @@ public static class KubernetesResourceQuotaServiceCollectionExtensions
         this IServiceCollection services,
         string? environmentVariablePrefix = default)
     {
-        services.TryAddSingleton<KubernetesMetadata>(serviceProvider =>
+        services.TryAddSingleton<ResourceQuotaProvider>(sp =>
         {
-            var metadata = new KubernetesMetadata(environmentVariablePrefix ?? string.Empty);
-            return metadata.Build();
+            return new KubernetesResourceQuotaProvider(KubernetesMetadata.FromEnvironmentVariables(environmentVariablePrefix ?? string.Empty));
         });
-        services.TryAddSingleton<ResourceQuotaProvider, KubernetesResourceQuotaProvider>();
 
         _ = services.AddResourceMonitoring();
 

@@ -28,25 +28,15 @@ internal class KubernetesMetadata
     /// </summary>
     public ulong RequestsCpu { get; set; }
 
-    private string _environmentVariablePrefix;
-
-    public KubernetesMetadata(string environmentVariablePrefix)
+    public static KubernetesMetadata FromEnvironmentVariables(string environmentVariablePrefix)
     {
-        _environmentVariablePrefix = environmentVariablePrefix;
-    }
-
-    /// <summary>
-    /// Fills the object with data loaded from environment variables.
-    /// </summary>
-    /// <returns>Self</returns>
-    public KubernetesMetadata Build()
-    {
-        LimitsMemory = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}LIMITS_MEMORY");
-        LimitsCpu = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}LIMITS_CPU");
-        RequestsMemory = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}REQUESTS_MEMORY");
-        RequestsCpu = GetEnvironmentVariableAsUInt64($"{_environmentVariablePrefix}REQUESTS_CPU");
-
-        return this;
+        return new KubernetesMetadata
+        {
+            LimitsMemory = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}LIMITS_MEMORY"),
+            LimitsCpu = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}LIMITS_CPU"),
+            RequestsMemory = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}REQUESTS_MEMORY"),
+            RequestsCpu = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}REQUESTS_CPU"),
+        };
     }
 
     private static ulong GetEnvironmentVariableAsUInt64(string variableName)

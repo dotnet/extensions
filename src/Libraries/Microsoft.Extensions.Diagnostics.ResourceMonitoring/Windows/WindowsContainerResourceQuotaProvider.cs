@@ -7,7 +7,7 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
-internal class WindowsContainerResourceQuotaProvider : ResourceQuotaProvider
+internal sealed class WindowsContainerResourceQuotaProvider : ResourceQuotaProvider
 {
     private readonly ISystemInfo _systemInfo;
     private readonly Lazy<MEMORYSTATUSEX> _memoryStatus;
