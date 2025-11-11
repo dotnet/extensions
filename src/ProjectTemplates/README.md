@@ -35,7 +35,7 @@ By default the templates use just-built versions of library packages from this r
 Once the library packages are built, the template packages can be built with references to the local package versions using the following commands:
 
 ```pwsh
-.\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Agents.AI.Templates\Microsoft.Extensions.AI.Templates.csproj
+.\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Agents.AI.ProjectTemplates\Microsoft.Extensions.AI.Templates.csproj
 .\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Extensions.AI.Templates\Microsoft.Extensions.AI.Templates.csproj
 ```
 
@@ -44,7 +44,7 @@ Once the library packages are built, the template packages can be built with ref
 The templates can also be built to reference pinned versions of the library packages. This approach is used when a templates package is updated off-cycle from the library packages. The pinned versions are hard-coded in the `GeneratedContent.targets` file in this directory. To build the templates package using the pinned versions, run:
 
 ```pwsh
-.\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Agents.AI.Templates\Microsoft.Agents.AI.Templates.csproj /p:TemplateUsePinnedPackageVersions=true
+.\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Agents.AI.ProjectTemplates\Microsoft.Agents.AI.ProjectTemplates.csproj /p:TemplateUsePinnedPackageVersions=true
 .\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Extensions.AI.Templates\Microsoft.Extensions.AI.Templates.csproj /p:TemplateUsePinnedPackageVersions=true
 ```
 
@@ -62,7 +62,7 @@ After building the templates package using one of the approaches above, it can b
 
 ```pwsh
 # Uninstall any existing version of the templates
-dotnet new uninstall Microsoft.Agents.AI.Templates
+dotnet new uninstall Microsoft.Agents.AI.ProjectTemplates
 dotnet new uninstall Microsoft.Extensions.AI.Templates
 
 # Clear the packages from the NuGet cache since the local package version does not change
@@ -70,7 +70,7 @@ Remove-Item ~\.nuget\packages\Microsoft.Agents.AI* -Recurse -Force
 Remove-Item ~\.nuget\packages\Microsoft.Extensions.AI* -Recurse -Force
 
 # Install the templates from the generated .nupkg file (in the artifacts/packages folder)
-dotnet new install .\artifacts\packages\Debug\Shipping\Microsoft.Agents.AI.Templates*.nupkg
+dotnet new install .\artifacts\packages\Debug\Shipping\Microsoft.Agents.AI.ProjectTemplates*.nupkg
 dotnet new install .\artifacts\packages\Debug\Shipping\Microsoft.Extensions.AI.Templates*.nupkg
 ```
 
