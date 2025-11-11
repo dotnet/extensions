@@ -89,3 +89,19 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 
 ## Troubleshooting
 
+**Problem**: Application fails with "Missing configuration: AzureOpenAI:Endpoint"
+
+**Solution**: Make sure you've configured your Azure OpenAI endpoint using one of the methods described above.
+
+**Problem**: Managed identity authentication fails
+
+**Solution**:
+- Ensure your Azure resource has a system-assigned or user-assigned managed identity enabled
+- Verify the managed identity has been granted the "Cognitive Services OpenAI User" role on your Azure OpenAI resource
+- For local development, ensure you're signed in to Azure CLI: `az login`
+
+**Problem**: API requests fail with authentication errors
+
+**Solution**: Verify your Azure OpenAI endpoint is correct and your managed identity has the correct permissions.
+
+

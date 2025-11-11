@@ -117,8 +117,12 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 
 ## Troubleshooting
 
+**Problem**: Application fails with "Missing configuration: AzureOpenAI:Endpoint" or "Missing configuration: AzureOpenAI:Key"
 
+**Solution**: Make sure you've configured your Azure OpenAI endpoint and API key using one of the methods described above.
 
 **Problem**: API requests fail with authentication errors
+
+**Solution**: Verify your Azure OpenAI endpoint is correct and your API key is valid.
 
 

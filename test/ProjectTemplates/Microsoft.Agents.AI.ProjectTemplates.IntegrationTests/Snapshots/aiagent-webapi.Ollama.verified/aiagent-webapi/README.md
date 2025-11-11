@@ -102,7 +102,7 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 
 **Problem**: Application fails to connect to Ollama
 
-**Solution**: 
+**Solution**:
 - Ensure Ollama is running. On macOS/Linux, check with `pgrep ollama`. On Windows, check Task Manager.
 - Verify Ollama is accessible at `http://localhost:9999`
 - Make sure you've downloaded the llama3.2 model: `ollama pull llama3.2`

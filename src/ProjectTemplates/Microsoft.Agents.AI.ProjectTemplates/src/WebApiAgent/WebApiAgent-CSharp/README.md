@@ -254,27 +254,37 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 **Solution**: Verify your OpenAI API key is valid. Check your usage limits and billing status on the OpenAI Platform.
 
 <!--#elif (IsAzureOpenAI) -->
-**Problem**: Application fails with "Missing configuration: AzureOpenAI:Endpoint"<!--#if (!IsManagedIdentity) --> or "Missing configuration: AzureOpenAI:Key"<!--#endif -->
+<!--#if (!IsManagedIdentity) -->
+**Problem**: Application fails with "Missing configuration: AzureOpenAI:Endpoint" or "Missing configuration: AzureOpenAI:Key"
 
-**Solution**: Make sure you've configured your Azure OpenAI endpoint<!--#if (!IsManagedIdentity) --> and API key<!--#endif --> using one of the methods described above.
+**Solution**: Make sure you've configured your Azure OpenAI endpoint and API key using one of the methods described above.
 
-<!--#if (IsManagedIdentity) -->
+**Problem**: API requests fail with authentication errors
+
+**Solution**: Verify your Azure OpenAI endpoint is correct and your API key is valid.
+
+<!--#else -->
+**Problem**: Application fails with "Missing configuration: AzureOpenAI:Endpoint"
+
+**Solution**: Make sure you've configured your Azure OpenAI endpoint using one of the methods described above.
+
 **Problem**: Managed identity authentication fails
 
-**Solution**: 
+**Solution**:
 - Ensure your Azure resource has a system-assigned or user-assigned managed identity enabled
 - Verify the managed identity has been granted the "Cognitive Services OpenAI User" role on your Azure OpenAI resource
 - For local development, ensure you're signed in to Azure CLI: `az login`
 
-<!--#endif -->
 **Problem**: API requests fail with authentication errors
 
-**Solution**: Verify your Azure OpenAI endpoint is correct and<!--#if (!IsManagedIdentity) --> your API key is valid<!--#endif --><!--#if (IsManagedIdentity) --> your managed identity has the correct permissions<!--#endif -->.
+**Solution**: Verify your Azure OpenAI endpoint is correct and your managed identity has the correct permissions.
+
+<!--#endif -->
 
 <!--#elif (IsOllama) -->
 **Problem**: Application fails to connect to Ollama
 
-**Solution**: 
+**Solution**:
 - Ensure Ollama is running. On macOS/Linux, check with `pgrep ollama`. On Windows, check Task Manager.
 - Verify Ollama is accessible at `http://localhost:11434`
 - Make sure you've downloaded the llama3.2 model: `ollama pull llama3.2`
