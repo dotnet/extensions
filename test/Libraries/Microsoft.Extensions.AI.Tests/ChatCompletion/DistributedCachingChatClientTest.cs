@@ -773,7 +773,7 @@ public class DistributedCachingChatClientTest
     }
 
     private static IAsyncEnumerable<T> ToAsyncEnumerableAsync<T>(IEnumerable<T> values)
-        => ToAsyncEnumerableAsync(Task.CompletedTask, values);
+        => values.ToAsyncEnumerable();
 
     private static IAsyncEnumerable<T> ToAsyncEnumerableAsync<T>(Task preTask, IEnumerable<T> valueFactories)
         => ToAsyncEnumerableAsync(preTask, valueFactories.Select<T, Func<T>>(v => () => v));
