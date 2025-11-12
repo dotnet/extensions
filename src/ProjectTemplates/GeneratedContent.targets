@@ -54,7 +54,7 @@
       <TemplatePackageVersion_OllamaSharp>5.4.8</TemplatePackageVersion_OllamaSharp>
       <TemplatePackageVersion_OpenTelemetry>1.13.0</TemplatePackageVersion_OpenTelemetry>
       <TemplatePackageVersion_PdfPig>0.1.11</TemplatePackageVersion_PdfPig>
-      <TemplatePackageVersion_SystemLinqAsync>6.0.3</TemplatePackageVersion_SystemLinqAsync>
+      <TemplatePackageVersion_SystemLinqAsyncEnumerable>10.0.0</TemplatePackageVersion_SystemLinqAsyncEnumerable>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -83,7 +83,7 @@
         TemplatePackageVersion_OllamaSharp=$(TemplatePackageVersion_OllamaSharp);
         TemplatePackageVersion_OpenTelemetry=$(TemplatePackageVersion_OpenTelemetry);
         TemplatePackageVersion_PdfPig=$(TemplatePackageVersion_PdfPig);
-        TemplatePackageVersion_SystemLinqAsync=$(TemplatePackageVersion_SystemLinqAsync);
+        TemplatePackageVersion_SystemLinqAsyncEnumerable=$(TemplatePackageVersion_SystemLinqAsyncEnumerable);
 
         <!-- Other properties -->
         LocalChatTemplateVariant=$(_LocalChatTemplateVariant);

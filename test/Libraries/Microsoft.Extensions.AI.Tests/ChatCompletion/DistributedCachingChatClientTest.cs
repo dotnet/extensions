@@ -276,7 +276,7 @@ public class DistributedCachingChatClientTest
             GetStreamingResponseAsyncCallback = delegate
             {
                 innerCallCount++;
-                return ToAsyncEnumerableAsync(actualUpdate);
+                return actualUpdate.ToAsyncEnumerable();
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -320,7 +320,7 @@ public class DistributedCachingChatClientTest
 
         using var testClient = new TestChatClient
         {
-            GetStreamingResponseAsyncCallback = delegate { return ToAsyncEnumerableAsync(expectedResponse); }
+            GetStreamingResponseAsyncCallback = delegate { return expectedResponse.ToAsyncEnumerable(); }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
         {
@@ -398,7 +398,7 @@ public class DistributedCachingChatClientTest
 
         using var testClient = new TestChatClient
         {
-            GetStreamingResponseAsyncCallback = delegate { return ToAsyncEnumerableAsync(expectedResponse); }
+            GetStreamingResponseAsyncCallback = delegate { return expectedResponse.ToAsyncEnumerable(); }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
         {
@@ -771,9 +771,6 @@ public class DistributedCachingChatClientTest
 
         return result;
     }
-
-    private static IAsyncEnumerable<T> ToAsyncEnumerableAsync<T>(IEnumerable<T> values)
-        => ToAsyncEnumerableAsync(Task.CompletedTask, values);
 
     private static IAsyncEnumerable<T> ToAsyncEnumerableAsync<T>(Task preTask, IEnumerable<T> valueFactories)
         => ToAsyncEnumerableAsync(preTask, valueFactories.Select<T, Func<T>>(v => () => v));
