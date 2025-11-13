@@ -172,7 +172,9 @@ public class LinuxResourceHealthCheckTests
         parser.Setup(x => x.GetMemoryUsageInBytes()).Returns(memoryUsed);
         parser.Setup(x => x.GetAvailableMemoryInBytes()).Returns(totalMemory);
 
-        var provider = new LinuxUtilizationProvider(Options.Options.Create<ResourceMonitoringOptions>(new()), parser.Object, meterFactoryMock.Object, logger, fakeClock);
+        var resourceMonitoringOptions = Options.Options.Create<ResourceMonitoringOptions>(new());
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser.Object, resourceMonitoringOptions);
+        var provider = new LinuxUtilizationProvider(resourceMonitoringOptions, parser.Object, meterFactoryMock.Object, resourceQuotaProvider, logger, fakeClock);
 
         var checkContext = new HealthCheckContext();
         var checkOptions = new ResourceUtilizationHealthCheckOptions
