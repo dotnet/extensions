@@ -4246,7 +4246,9 @@ public class OpenAIResponseClientTests
                         "content":[
                             {"type":"input_text","text":"Check this image: "},
                             {"type":"input_image","image_url":"https://example.com/image.png"},
+                            {"type":"input_image","image_url":"https://example.com/image.png","detail":"high"},
                             {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgo="},
+                            {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgo=","detail":"low"},
                             {"type":"input_file","file_data":"data:application/pdf;base64,cGRmZGF0YQ==","filename":"doc.pdf"},
                             {"type":"input_file","file_id":"file-123"},
                             {"type":"refusal","refusal":"I cannot process this"}
@@ -4278,7 +4280,9 @@ public class OpenAIResponseClientTests
             new ChatMessage(ChatRole.User, [
                 new TextContent("Check this image: "),
                 new UriContent(new Uri("https://example.com/image.png"), "image/png"),
+                new UriContent(new Uri("https://example.com/image.png"), "image/png") { AdditionalProperties = new AdditionalPropertiesDictionary { ["detail"] = "high" }},
                 new DataContent(imageData, "image/png"),
+                new DataContent(imageData, "image/png") { AdditionalProperties = new AdditionalPropertiesDictionary { ["detail"] = ResponseImageDetailLevel.Low }},
                 new DataContent(pdfData, "application/pdf") { Name = "doc.pdf" },
                 new HostedFileContent("file-123"),
                 new ErrorContent("I cannot process this") { ErrorCode = "Refusal" }
