@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -93,5 +94,41 @@ public class OpenTelemetryEmbeddingGeneratorTests
         Assert.Equal(enableSensitiveData ? "value3" : null, activity.GetTagItem("AndSomethingElse"));
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
+    }
+
+    [Fact]
+    public async Task ExceptionEventRecorded_Async()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerGenerator = new TestEmbeddingGenerator
+        {
+            GenerateAsyncCallback = (values, options, cancellationToken) =>
+            {
+                throw new InvalidOperationException("Test exception");
+            },
+        };
+
+        using var generator = innerGenerator
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName)
+            .Build();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => generator.GenerateVectorAsync("hello"));
+
+        var activity = Assert.Single(activities);
+        Assert.Equal(ActivityStatusCode.Error, activity.Status);
+        Assert.Equal("Test exception", activity.StatusDescription);
+        Assert.Equal("System.InvalidOperationException", activity.GetTagItem("error.type"));
+
+        var exceptionEvent = Assert.Single(activity.Events.Where(e => e.Name == "exception"));
+        Assert.Equal("System.InvalidOperationException", exceptionEvent.Tags.First(t => t.Key == "exception.type").Value);
+        Assert.Equal("Test exception", exceptionEvent.Tags.First(t => t.Key == "exception.message").Value);
+        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.stacktrace").Value);
     }
 }

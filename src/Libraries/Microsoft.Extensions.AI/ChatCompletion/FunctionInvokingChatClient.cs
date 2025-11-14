@@ -1168,7 +1168,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             if (activity is not null)
             {
                 _ = activity.SetTag(OpenTelemetryConsts.Error.Type, e.GetType().FullName)
-                            .SetStatus(ActivityStatusCode.Error, e.Message);
+                            .SetStatus(ActivityStatusCode.Error, e.Message)
+                            .AddException(e);
             }
 
             if (e is OperationCanceledException)

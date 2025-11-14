@@ -1363,4 +1363,53 @@ public class FunctionInvokingChatClientTests
             yield return item;
         }
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionExceptionEventRecorded(bool streaming)
+    {
+        string sourceName = Guid.NewGuid().ToString();
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(string () => throw new InvalidOperationException("Function failed"), "FailingFunc")],
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "FailingFunc")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Error: Function failed.")]),
+            new ChatMessage(ChatRole.Assistant, "done"),
+        ];
+
+        List<Activity> activities = new();
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName)) { IncludeDetailedErrors = false });
+
+        if (streaming)
+        {
+            await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
+        }
+        else
+        {
+            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+        }
+
+        var executeTool = Assert.Single(activities.Where(a => a.DisplayName == "execute_tool FailingFunc"));
+        Assert.Equal(ActivityStatusCode.Error, executeTool.Status);
+        Assert.Equal("Function failed", executeTool.StatusDescription);
+        Assert.Equal("System.InvalidOperationException", executeTool.GetTagItem("error.type"));
+
+        var exceptionEvent = Assert.Single(executeTool.Events.Where(e => e.Name == "exception"));
+        Assert.Equal("System.InvalidOperationException", exceptionEvent.Tags.First(t => t.Key == "exception.type").Value);
+        Assert.Equal("Function failed", exceptionEvent.Tags.First(t => t.Key == "exception.message").Value);
+        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.stacktrace").Value);
+    }
 }

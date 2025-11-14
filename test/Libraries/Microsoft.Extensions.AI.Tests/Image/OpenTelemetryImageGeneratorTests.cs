@@ -165,4 +165,40 @@ public class OpenTelemetryImageGeneratorTests
 
         static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
     }
+
+    [Fact]
+    public async Task ExceptionEventRecorded_Async()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerGenerator = new TestImageGenerator
+        {
+            GenerateImagesAsyncCallback = (request, options, cancellationToken) =>
+            {
+                throw new InvalidOperationException("Test exception");
+            },
+        };
+
+        using var generator = innerGenerator
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName)
+            .Build();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => generator.GenerateAsync(new ImageGenerationRequest { Prompt = "test" }));
+
+        var activity = Assert.Single(activities);
+        Assert.Equal(ActivityStatusCode.Error, activity.Status);
+        Assert.Equal("Test exception", activity.StatusDescription);
+        Assert.Equal("System.InvalidOperationException", activity.GetTagItem("error.type"));
+
+        var exceptionEvent = Assert.Single(activity.Events.Where(e => e.Name == "exception"));
+        Assert.Equal("System.InvalidOperationException", exceptionEvent.Tags.First(t => t.Key == "exception.type").Value);
+        Assert.Equal("Test exception", exceptionEvent.Tags.First(t => t.Key == "exception.message").Value);
+        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.stacktrace").Value);
+    }
 }

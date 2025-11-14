@@ -234,7 +234,8 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             {
                 _ = activity
                     .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                    .SetStatus(ActivityStatusCode.Error, error.Message);
+                    .SetStatus(ActivityStatusCode.Error, error.Message)
+                    .AddException(error);
             }
 
             if (inputTokens.HasValue)
