@@ -466,19 +466,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     yield return CreateUpdate(GetImageGenerationResult(streamingImageGenUpdate, options));
                     break;
 
-                case StreamingResponseImageGenerationCallInProgressUpdate imageGenInProgress:
-                    yield return CreateUpdate(new ImageGenerationToolCallContent
-                    {
-                        ImageId = imageGenInProgress.ItemId,
-                        RawRepresentation = imageGenInProgress,
-
-                    });
-                    goto default;
-
-                case StreamingResponseImageGenerationCallPartialImageUpdate streamingImageGenUpdate:
-                    yield return CreateUpdate(GetImageGenerationResult(streamingImageGenUpdate, options));
-                    break;
-
                 default:
                     yield return CreateUpdate();
                     break;
@@ -1308,26 +1295,13 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
         var outputType = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
-        var bytes = update.PartialImageBytes;
-
-        if (bytes is null || bytes.Length == 0)
-        {
-            // workaround https://github.com/openai/openai-dotnet/issues/809
-            if (update.Patch.TryGetJson("$.partial_image_b64"u8, out var jsonBytes))
-            {
-                Utf8JsonReader reader = new(jsonBytes.Span);
-                _ = reader.Read();
-                bytes = BinaryData.FromBytes(reader.GetBytesFromBase64());
-            }
-        }
-
         return new ImageGenerationToolResultContent
         {
             ImageId = update.ItemId,
             RawRepresentation = update,
             Outputs = new List<AIContent>
             {
-                new DataContent(bytes, $"image/{outputType}")
+                new DataContent(update.PartialImageBytes, $"image/{outputType}")
                 {
                     AdditionalProperties = new()
                     {

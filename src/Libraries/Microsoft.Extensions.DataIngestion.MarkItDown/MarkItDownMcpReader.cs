@@ -43,21 +43,23 @@ public class MarkItDownMcpReader : IngestionDocumentReader
             throw new FileNotFoundException("The specified file does not exist.", source.FullName);
         }
 
-        // Read file content as base64 data URI
+        // Read file content and create DataContent
 #if NET
-        byte[] fileBytes = await File.ReadAllBytesAsync(source.FullName, cancellationToken).ConfigureAwait(false);
+        ReadOnlyMemory<byte> fileBytes = await File.ReadAllBytesAsync(source.FullName, cancellationToken).ConfigureAwait(false);
 #else
-        byte[] fileBytes;
+        ReadOnlyMemory<byte> fileBytes;
         using (FileStream fs = new(source.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1, FileOptions.Asynchronous))
         {
-            using MemoryStream ms = new();
+            using MemoryStream ms = new((int)Math.Min(int.MaxValue, fs.Length));
             await fs.CopyToAsync(ms).ConfigureAwait(false);
-            fileBytes = ms.ToArray();
+            fileBytes = ms.GetBuffer().AsMemory(0, (int)ms.Length);
         }
 #endif
-        string dataUri = CreateDataUri(fileBytes, mediaType);
+        DataContent dataContent = new(
+            fileBytes,
+            string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType!);
 
-        string markdown = await ConvertToMarkdownAsync(dataUri, cancellationToken).ConfigureAwait(false);
+        string markdown = await ConvertToMarkdownAsync(dataContent, cancellationToken).ConfigureAwait(false);
 
         return MarkdownParser.Parse(markdown, identifier);
     }
@@ -68,31 +70,23 @@ public class MarkItDownMcpReader : IngestionDocumentReader
         _ = Throw.IfNull(source);
         _ = Throw.IfNullOrEmpty(identifier);
 
-        // Read stream content as base64 data URI
-        using MemoryStream ms = new();
+        // Read stream content and create DataContent
+        using MemoryStream ms = source.CanSeek ? new((int)Math.Min(int.MaxValue, source.Length)) : new();
 #if NET
         await source.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
 #else
         await source.CopyToAsync(ms).ConfigureAwait(false);
 #endif
-        byte[] fileBytes = ms.ToArray();
-        string dataUri = CreateDataUri(fileBytes, mediaType);
+        DataContent dataContent = new(
+            ms.GetBuffer().AsMemory(0, (int)ms.Length),
+            string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType);
 
-        string markdown = await ConvertToMarkdownAsync(dataUri, cancellationToken).ConfigureAwait(false);
+        string markdown = await ConvertToMarkdownAsync(dataContent, cancellationToken).ConfigureAwait(false);
 
         return MarkdownParser.Parse(markdown, identifier);
     }
 
-#pragma warning disable S3995 // URI return values should not be strings
-    private static string CreateDataUri(byte[] fileBytes, string? mediaType)
-#pragma warning restore S3995 // URI return values should not be strings
-    {
-        string base64Content = Convert.ToBase64String(fileBytes);
-        string mimeType = string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType!;
-        return $"data:{mimeType};base64,{base64Content}";
-    }
-
-    private async Task<string> ConvertToMarkdownAsync(string dataUri, CancellationToken cancellationToken)
+    private async Task<string> ConvertToMarkdownAsync(DataContent dataContent, CancellationToken cancellationToken)
     {
         // Create HTTP client transport for MCP
         HttpClientTransport transport = new(new HttpClientTransportOptions
@@ -110,7 +104,7 @@ public class MarkItDownMcpReader : IngestionDocumentReader
                 // Build parameters for convert_to_markdown tool
                 Dictionary<string, object?> parameters = new()
                 {
-                    ["uri"] = dataUri
+                    ["uri"] = dataContent.Uri
                 };
 
                 // Call the convert_to_markdown tool
