@@ -1,6 +1,6 @@
 # Release History
 
-## NOT YET RELEASED
+## 9.10.2
 
 - Updated the Open Telemetry instrumentation to conform to the latest 1.38 draft specification of the Semantic Conventions for Generative AI systems.
 

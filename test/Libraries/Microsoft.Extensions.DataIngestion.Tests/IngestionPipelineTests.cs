@@ -211,23 +211,13 @@ public sealed class IngestionPipelineTests : IDisposable
             List<IngestionResult> ingestionResults = await results.ToListAsync();
 
             Assert.Equal(_sampleFiles.Count, ingestionResults.Count);
-            Assert.All(ingestionResults, result => Assert.NotNull(result.Source));
+            Assert.All(ingestionResults, result => Assert.NotEmpty(result.DocumentId));
             IngestionResult ingestionResult = Assert.Single(ingestionResults.Where(result => !result.Succeeded));
             Assert.IsType<ExpectedException>(ingestionResult.Exception);
             AssertErrorActivities(activities, expectedFailedActivitiesCount: 1);
 
             activities.Clear();
             failed = 0;
-        }
-    }
-
-    private class ExpectedException : Exception
-    {
-        internal const string ExceptionMessage = "An expected exception occurred.";
-
-        public ExpectedException()
-            : base(ExceptionMessage)
-        {
         }
     }
 
@@ -246,7 +236,7 @@ public sealed class IngestionPipelineTests : IDisposable
     {
         Assert.NotEmpty(ingestionResults);
         Assert.All(ingestionResults, result => Assert.True(result.Succeeded));
-        Assert.All(ingestionResults, result => Assert.NotNull(result.Source));
+        Assert.All(ingestionResults, result => Assert.NotEmpty(result.DocumentId));
         Assert.All(ingestionResults, result => Assert.NotNull(result.Document));
         Assert.All(ingestionResults, result => Assert.Null(result.Exception));
     }

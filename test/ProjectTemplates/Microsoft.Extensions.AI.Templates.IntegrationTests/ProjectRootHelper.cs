@@ -1,11 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 /// <summary>
 /// Contains a helper for determining the disk location of the containing project folder.

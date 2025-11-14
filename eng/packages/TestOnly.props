@@ -31,6 +31,12 @@
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- Warn NU1903 happens at restore time when a transitive dependency has been marked with a vulnerability in NuGet. Our test projects get it due to Transitive dependencies to System.Net.Http and System.Text.RegularExpressions.
+    Given both of those assemblies are in the shared framework, they won't be used at runtime and so we dismiss this warning for test projects. -->
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc" Version="2.1.3" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.1.3" />

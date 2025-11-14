@@ -13,7 +13,7 @@
     <NoMessagesContent>
         <div>To get started, try asking about these example documents. You can replace these with your own data and replace this message.</div>
         <ChatCitation File="Example_Emergency_Survival_Kit.pdf"/>
-        <ChatCitation File="Example_GPS_Watch.pdf"/>
+        <ChatCitation File="Example_GPS_Watch.md"/>
     </NoMessagesContent>
 </ChatMessageList>
 
@@ -29,10 +29,12 @@
         Do not answer questions about anything else.
         Use only simple markdown to format your responses.
 
-        Use the search tool to find relevant information. When you do this, end your
+        Use the LoadDocuments tool to prepare for searches before answering any questions.
+
+        Use the Search tool to find relevant information. When you do this, end your
         reply with citations in the special XML format:
 
-        <citation filename='string' page_number='number'>exact quote here</citation>
+        <citation filename='string'>exact quote here</citation>
 
         Always include the citation in your response if there are results.
 
@@ -52,7 +54,10 @@
     {
         statefulMessageCount = 0;
         messages.Add(new(ChatRole.System, SystemPrompt));
-        chatOptions.Tools = [AIFunctionFactory.Create(SearchAsync)];
+        chatOptions.Tools = [
+            AIFunctionFactory.Create(LoadDocumentsAsync),
+            AIFunctionFactory.Create(SearchAsync)
+        ];
     }
 
     private async Task AddUserMessageAsync(ChatMessage userMessage)
@@ -106,7 +111,14 @@
         await chatInput!.FocusAsync();
     }
 
-    [Description("Searches for information using a phrase or keyword")]
+    [Description("Loads the documents needed for performing searches. Must be completed before a search can be executed, but only needs to be completed once.")]
+    private async Task LoadDocumentsAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+        await Search.LoadDocumentsAsync();
+    }
+
+    [Description("Searches for information using a phrase or keyword. Relies on documents already being loaded.")]
     private async Task<IEnumerable<string>> SearchAsync(
         [Description("The phrase to search for.")] string searchPhrase,
         [Description("If possible, specify the filename to search that file only. If not provided or empty, the search includes all files.")] string? filenameFilter = null)
@@ -114,7 +126,7 @@
         await InvokeAsync(StateHasChanged);
         var results = await Search.SearchAsync(searchPhrase, filenameFilter, maxResults: 5);
         return results.Select(result =>
-            $"<result filename=\"{result.DocumentId}\" page_number=\"{result.PageNumber}\">{result.Text}</result>");
+            $"<result filename=\"{result.DocumentId}\">{result.Text}</result>");
     }
 
     public void Dispose()

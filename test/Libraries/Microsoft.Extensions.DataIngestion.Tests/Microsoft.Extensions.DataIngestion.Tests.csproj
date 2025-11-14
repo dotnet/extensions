@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion.Markdig\Microsoft.Extensions.DataIngestion.Markdig.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion.MarkItDown\Microsoft.Extensions.DataIngestion.MarkItDown.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.Testing\Microsoft.Extensions.Diagnostics.Testing.csproj" />
     <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 
@@ -26,11 +27,6 @@
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <!-- Workaround https://github.com/microsoft/semantic-kernel/issues/13316 -->
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesVersion)" />
-  </ItemGroup>
-  
   <ItemGroup>
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestEmbeddingGenerator.cs" />

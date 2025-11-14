@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Shared.ProjectTemplates.Tests;
 using Microsoft.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
@@ -115,6 +116,7 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
         ("--vector-store",      ["azureaisearch", "local", "qdrant"]),
         ("--managed-identity",  ["true", "false"]),
         ("--aspire",            ["true", "false"]),
+        ("--Framework",         ["net9.0", "net10.0"])
     ];
 
     private static IEnumerable<object[]> GetFilteredTemplateOptions(params string[] filter)

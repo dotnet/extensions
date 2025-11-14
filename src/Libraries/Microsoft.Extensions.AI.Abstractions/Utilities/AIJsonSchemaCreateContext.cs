@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// Defines the context in which a JSON schema within a type graph is being generated.
 /// </summary>
 /// <remarks>
-/// This struct is being passed to the user-provided <see cref="AIJsonSchemaCreateOptions.TransformSchemaNode"/> 
+/// This struct is being passed to the user-provided <see cref="AIJsonSchemaCreateOptions.TransformSchemaNode"/>
 /// callback by the <see cref="AIJsonUtilities.CreateJsonSchema"/> method and cannot be instantiated directly.
 /// </remarks>
 public readonly struct AIJsonSchemaCreateContext
@@ -51,32 +51,20 @@ public readonly struct AIJsonSchemaCreateContext
     /// Gets the declaring type of the property or parameter being processed.
     /// </summary>
     public Type? DeclaringType =>
-#if NET9_0_OR_GREATER
         _exporterContext.PropertyInfo?.DeclaringType;
-#else
-        _exporterContext.DeclaringType;
-#endif
 
     /// <summary>
     /// Gets the <see cref="ICustomAttributeProvider"/> corresponding to the property or field being processed.
     /// </summary>
     public ICustomAttributeProvider? PropertyAttributeProvider =>
-#if NET9_0_OR_GREATER
         _exporterContext.PropertyInfo?.AttributeProvider;
-#else
-        _exporterContext.PropertyAttributeProvider;
-#endif
 
     /// <summary>
     /// Gets the <see cref="System.Reflection.ICustomAttributeProvider"/> of the
     /// constructor parameter associated with the accompanying <see cref="PropertyInfo"/>.
     /// </summary>
     public ICustomAttributeProvider? ParameterAttributeProvider =>
-#if NET9_0_OR_GREATER
         _exporterContext.PropertyInfo?.AssociatedParameter?.AttributeProvider;
-#else
-        _exporterContext.ParameterInfo;
-#endif
 
     /// <summary>
     /// Retrieves a custom attribute of a specified type that is applied to the specified schema node context.
