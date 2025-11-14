@@ -1,5 +1,10 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Updated to depend on OpenAI 2.7.0
+- Added support for image detail in OpenAI Responses `IChatClient`
+
 ## 10.0.0-preview.1.25560.10
 
 - Added support for `HostedImageGenerationTool` in the OpenAI Responses `IChatClient`.
