@@ -1,5 +1,9 @@
 # Release History
 
+## 10.0.0-preview.1.25560.10
+
+- Updated .NET dependencies to 10.0.0 versions.
+
 ## 9.10.1-preview.1.25521.4
 
 - No changes.

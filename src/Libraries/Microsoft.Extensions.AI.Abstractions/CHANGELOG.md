@@ -1,5 +1,10 @@
 # Release History
 
+## 10.0.0
+
+- Added experimental `HostedImageGenerationTool`.
+- Updated .NET dependencies to 10.0.0 versions.
+
 ## 9.10.2
 
 - Updated `AIFunctionFactory` to respect `[DisplayName(...)]` on functions as a way to override the function name.

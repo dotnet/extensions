@@ -1,5 +1,10 @@
 # Release History
 
+## 10.0.0
+
+- Added experimental `ImageGenerationChatClient`.
+- Updated .NET dependencies to 10.0.0 versions.
+
 ## 9.10.2
 
 - Updated the Open Telemetry instrumentation to conform to the latest 1.38 draft specification of the Semantic Conventions for Generative AI systems.

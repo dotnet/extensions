@@ -1,5 +1,15 @@
 # Release History
 
+## NOT YET RELEASED
+
+- Updated to depend on OpenAI 2.7.0
+- Added support for image detail in OpenAI Responses `IChatClient`
+
+## 10.0.0-preview.1.25560.10
+
+- Added support for `HostedImageGenerationTool` in the OpenAI Responses `IChatClient`.
+- Updated .NET dependencies to 10.0.0 versions.
+
 ## 9.10.2-preview.1.25552.1
 
 - Updated to depend on OpenAI 2.6.0.
