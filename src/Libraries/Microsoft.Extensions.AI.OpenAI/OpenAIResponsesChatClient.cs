@@ -845,11 +845,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
-                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(uriContent.Uri));
+                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(uriContent.Uri, GetImageDetail(item)));
                             break;
 
                         case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
-                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
+                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, GetImageDetail(item)));
                             break;
 
                         case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
@@ -1362,6 +1362,21 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             }
 
             return OpenAIResponsesContinuationToken.FromToken(token);
+        }
+
+        return null;
+    }
+
+    private static ResponseImageDetailLevel? GetImageDetail(AIContent content)
+    {
+        if (content.AdditionalProperties?.TryGetValue("detail", out object? value) is true)
+        {
+            return value switch
+            {
+                string detailString => new ResponseImageDetailLevel(detailString),
+                ResponseImageDetailLevel detail => detail,
+                _ => null
+            };
         }
 
         return null;
