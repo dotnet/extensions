@@ -5,7 +5,6 @@ using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -27,11 +26,6 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an <see cref="OpenAIResponseClient"/>.</summary>
 internal sealed class OpenAIResponsesChatClient : IChatClient
 {
-    // Fix this to not use reflection once https://github.com/openai/openai-dotnet/issues/643 is addressed.
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
-    private static readonly Type? _internalResponseReasoningSummaryTextDeltaEventType = Type.GetType("OpenAI.Responses.InternalResponseReasoningSummaryTextDeltaEvent, OpenAI");
-    private static readonly PropertyInfo? _summaryTextDeltaProperty = _internalResponseReasoningSummaryTextDeltaEventType?.GetProperty("Delta");
-
     // These delegate instances are used to call the internal overloads of CreateResponseAsync and CreateResponseStreamingAsync that accept
     // a RequestOptions. These should be replaced once a better way to pass RequestOptions is available.
     private static readonly Func<OpenAIResponseClient, IEnumerable<ResponseItem>, ResponseCreationOptions, RequestOptions, Task<ClientResult<OpenAIResponse>>>?
@@ -393,6 +387,14 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     yield return CreateUpdate(new TextContent(outputTextDeltaUpdate.Delta));
                     break;
 
+                case StreamingResponseReasoningSummaryTextDeltaUpdate reasoningSummaryTextDeltaUpdate:
+                    yield return CreateUpdate(new TextReasoningContent(reasoningSummaryTextDeltaUpdate.Delta));
+                    break;
+
+                case StreamingResponseReasoningTextDeltaUpdate reasoningTextDeltaUpdate:
+                    yield return CreateUpdate(new TextReasoningContent(reasoningTextDeltaUpdate.Delta));
+                    break;
+
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is FunctionCallResponseItem fcri:
                     yield return CreateUpdate(OpenAIClientExtensions.ParseCallContent(fcri.FunctionArguments.ToString(), fcri.CallId, fcri.FunctionName));
                     break;
@@ -452,19 +454,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     });
                     break;
 
-                // Replace with public StreamingResponseReasoningSummaryTextDelta when available
-                case StreamingResponseUpdate when
-                        streamingUpdate.GetType() == _internalResponseReasoningSummaryTextDeltaEventType &&
-                        _summaryTextDeltaProperty?.GetValue(streamingUpdate) is string delta:
-                    yield return CreateUpdate(new TextReasoningContent(delta));
-                    break;
-
                 case StreamingResponseImageGenerationCallInProgressUpdate imageGenInProgress:
                     yield return CreateUpdate(new ImageGenerationToolCallContent
                     {
                         ImageId = imageGenInProgress.ItemId,
                         RawRepresentation = imageGenInProgress,
-
                     });
                     goto default;
 
@@ -1203,6 +1197,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                     case FileCitationMessageAnnotation fcma:
                         ca.FileId = fcma.FileId;
+                        ca.Title = fcma.Filename;
                         break;
 
                     case UriCitationMessageAnnotation ucma:
@@ -1300,26 +1295,13 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
         var outputType = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
-        var bytes = update.PartialImageBytes;
-
-        if (bytes is null || bytes.Length == 0)
-        {
-            // workaround https://github.com/openai/openai-dotnet/issues/809
-            if (update.Patch.TryGetJson("$.partial_image_b64"u8, out var jsonBytes))
-            {
-                Utf8JsonReader reader = new(jsonBytes.Span);
-                _ = reader.Read();
-                bytes = BinaryData.FromBytes(reader.GetBytesFromBase64());
-            }
-        }
-
         return new ImageGenerationToolResultContent
         {
             ImageId = update.ItemId,
             RawRepresentation = update,
             Outputs = new List<AIContent>
             {
-                new DataContent(bytes, $"image/{outputType}")
+                new DataContent(update.PartialImageBytes, $"image/{outputType}")
                 {
                     AdditionalProperties = new()
                     {
