@@ -236,7 +236,8 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
         {
             _ = activity?
                 .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                .SetStatus(ActivityStatusCode.Error, error.Message);
+                .SetStatus(ActivityStatusCode.Error, error.Message)
+                .AddException(error);
         }
 
         if (response is not null)

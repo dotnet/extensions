@@ -589,5 +589,65 @@ public class OpenTelemetryChatClientTests
 
     private sealed class NonSerializableAIContent : AIContent;
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExceptionEventRecorded_Async(bool streaming)
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        List<Activity> activities = new();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                throw new InvalidOperationException("Test exception");
+            },
+            GetStreamingResponseAsyncCallback = ThrowingStreamAsync,
+        };
+
+        static async IAsyncEnumerable<ChatResponseUpdate> ThrowingStreamAsync(
+            IEnumerable<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "Hello");
+            throw new InvalidOperationException("Test exception");
+        }
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName)
+            .Build();
+
+        if (streaming)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await foreach (var update in chatClient.GetStreamingResponseAsync("hello"))
+                {
+                    await Task.Yield();
+                }
+            });
+        }
+        else
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.GetResponseAsync("hello"));
+        }
+
+        var activity = Assert.Single(activities);
+        Assert.Equal(ActivityStatusCode.Error, activity.Status);
+        Assert.Equal("Test exception", activity.StatusDescription);
+        Assert.Equal("System.InvalidOperationException", activity.GetTagItem("error.type"));
+
+        var exceptionEvent = Assert.Single(activity.Events.Where(e => e.Name == "exception"));
+        Assert.Equal("System.InvalidOperationException", exceptionEvent.Tags.First(t => t.Key == "exception.type").Value);
+        Assert.Equal("Test exception", exceptionEvent.Tags.First(t => t.Key == "exception.message").Value);
+        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.stacktrace").Value);
+    }
+
     private static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
 }

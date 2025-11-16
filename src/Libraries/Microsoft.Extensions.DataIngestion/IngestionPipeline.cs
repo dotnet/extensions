@@ -122,7 +122,8 @@ public sealed class IngestionPipeline<T> : IDisposable
     private static void TraceException(Activity? activity, Exception ex)
     {
         activity?.SetTag(ErrorTypeTagName, ex.GetType().FullName)
-                 .SetStatus(ActivityStatusCode.Error, ex.Message);
+                 .SetStatus(ActivityStatusCode.Error, ex.Message)
+                 .AddException(ex);
     }
 
     private async IAsyncEnumerable<IngestionResult> ProcessAsync(IEnumerable<FileInfo> files, Activity? rootActivity,
