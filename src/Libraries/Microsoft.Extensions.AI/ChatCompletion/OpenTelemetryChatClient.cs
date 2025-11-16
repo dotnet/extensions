@@ -30,6 +30,9 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 {
+    internal const string SensitiveDataEnabledCustomKey = "__EnableSensitiveData__";
+    internal const string SensitiveDataEnabledTrueValue = "true";
+
     private readonly ActivitySource _activitySource;
     private readonly Meter _meter;
 
@@ -372,6 +375,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             activity = _activitySource.StartActivity(
                 string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.ChatName : $"{OpenTelemetryConsts.GenAI.ChatName} {modelId}",
                 ActivityKind.Client);
+
+            if (EnableSensitiveData)
+            {
+                activity?.SetCustomProperty(SensitiveDataEnabledCustomKey, SensitiveDataEnabledTrueValue);
+            }
 
             if (activity is { IsAllDataRequested: true })
             {
