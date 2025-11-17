@@ -99,4 +99,9 @@ public class HostedMcpServerTool : AITool
     /// </para>
     /// </remarks>
     public HostedMcpServerToolApprovalMode? ApprovalMode { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional headers to include in requests to the remote MCP server.
+    /// </summary>
+    public IDictionary<string, string>? Headers { get; set; }
 }
