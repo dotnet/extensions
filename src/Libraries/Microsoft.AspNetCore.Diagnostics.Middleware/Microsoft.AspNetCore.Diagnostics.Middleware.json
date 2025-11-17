@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.AspNetCore.Diagnostics.Middleware, Version=9.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.AspNetCore.Diagnostics.Middleware, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions",

@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI.Evaluation, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI.Evaluation, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.BooleanMetric : Microsoft.Extensions.AI.Evaluation.EvaluationMetric<bool?>",
@@ -12,10 +12,7 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to remove primary constructor portion
-      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
-      // See: https://github.com/icsharpcode/ILSpy/issues/829
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.ChatConfiguration",
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.ChatConfiguration(Microsoft.Extensions.AI.IChatClient chatClient)",
       "Stage": "Stable",
       "Methods": [
         {
@@ -115,10 +112,7 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to remove primary constructor portion
-      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
-      // See: https://github.com/icsharpcode/ILSpy/issues/829
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic",
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic(Microsoft.Extensions.AI.Evaluation.EvaluationDiagnosticSeverity severity, string message)",
       "Stage": "Stable",
       "Methods": [
         {
@@ -181,10 +175,7 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to remove primary constructor portion
-      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
-      // See: https://github.com/icsharpcode/ILSpy/issues/829
-      "Type": "class Microsoft.Extensions.AI.Evaluation.EvaluationMetric",
+      "Type": "class Microsoft.Extensions.AI.Evaluation.EvaluationMetric(string name, string? reason = null)",
       "Stage": "Stable",
       "Methods": [
         {
@@ -278,10 +269,7 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to remove primary constructor portion
-      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
-      // See: https://github.com/icsharpcode/ILSpy/issues/829
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation",
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation(Microsoft.Extensions.AI.Evaluation.EvaluationRating rating = Microsoft.Extensions.AI.Evaluation.EvaluationRating.Unknown, bool failed = false, string? reason = null)",
       "Stage": "Stable",
       "Methods": [
         {

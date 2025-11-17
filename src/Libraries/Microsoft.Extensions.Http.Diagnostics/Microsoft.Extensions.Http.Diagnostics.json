@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Http.Diagnostics, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Http.Diagnostics, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class Microsoft.Extensions.DependencyInjection.HttpClientLatencyTelemetryExtensions",
@@ -123,12 +123,31 @@
           "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.StatusCode",
           "Stage": "Stable",
           "Value": "http.response.status_code"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.UrlQuery",
+          "Stage": "Experimental",
+          "Value": "url.query"
         }
       ],
       "Properties": [
         {
           "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.TagNames { get; }",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.Http.Diagnostics.HttpDependencyMetadataResolver",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Http.Diagnostics.HttpDependencyMetadataResolver.HttpDependencyMetadataResolver(System.Collections.Generic.IEnumerable<Microsoft.Extensions.Http.Diagnostics.IDownstreamDependencyMetadata> dependencyMetadata);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.Http.Diagnostics.RequestMetadata? Microsoft.Extensions.Http.Diagnostics.HttpDependencyMetadataResolver.GetRequestMetadata(System.Net.Http.HttpRequestMessage requestMessage);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -207,6 +226,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "bool Microsoft.Extensions.Http.Logging.LoggingOptions.LogContentHeaders { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "bool Microsoft.Extensions.Http.Logging.LoggingOptions.LogRequestStart { get; set; }",
           "Stage": "Stable"
         },
@@ -225,6 +248,10 @@
         {
           "Member": "Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Logging.LoggingOptions.RequestPathParameterRedactionMode { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Logging.LoggingOptions.RequestQueryParametersDataClasses { get; set; }",
+          "Stage": "Experimental"
         },
         {
           "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Http.Logging.LoggingOptions.ResponseBodyContentTypes { get; set; }",

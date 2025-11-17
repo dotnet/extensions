@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Diagnostics.Probes, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Diagnostics.Probes, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class Microsoft.Extensions.DependencyInjection.KubernetesProbesExtensions",
@@ -30,43 +30,15 @@
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.LivenessProbe { get; set; }",
+          "Member": "Microsoft.Extensions.Diagnostics.Probes.TcpEndpointProbesOptions Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.LivenessProbe { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.ReadinessProbe { get; set; }",
+          "Member": "Microsoft.Extensions.Diagnostics.Probes.TcpEndpointProbesOptions Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.ReadinessProbe { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.StartupProbe { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.EndpointOptions();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "System.Func<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration, bool>? Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.FilterChecks { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.HealthAssessmentPeriod { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "int Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.MaxPendingConnections { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "int Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.TcpPort { get; set; }",
+          "Member": "Microsoft.Extensions.Diagnostics.Probes.TcpEndpointProbesOptions Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.StartupProbe { get; set; }",
           "Stage": "Experimental"
         }
       ]
@@ -89,6 +61,64 @@
           "Member": "const string Microsoft.Extensions.Diagnostics.Probes.ProbeTags.Startup",
           "Stage": "Experimental",
           "Value": "_probe_startup"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.TcpEndpointProbesExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.TcpEndpointProbesExtensions.AddTcpEndpointProbe(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.TcpEndpointProbesExtensions.AddTcpEndpointProbe(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string name);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.TcpEndpointProbesExtensions.AddTcpEndpointProbe(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.Probes.TcpEndpointProbesOptions> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.TcpEndpointProbesExtensions.AddTcpEndpointProbe(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string name, System.Action<Microsoft.Extensions.Diagnostics.Probes.TcpEndpointProbesOptions> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.TcpEndpointProbesExtensions.AddTcpEndpointProbe(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection configurationSection);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.TcpEndpointProbesExtensions.AddTcpEndpointProbe(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string name, Microsoft.Extensions.Configuration.IConfigurationSection configurationSection);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.Probes.TcpEndpointProbesOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Probes.TcpEndpointProbesOptions.TcpEndpointProbesOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Func<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration, bool>? Microsoft.Extensions.Diagnostics.Probes.TcpEndpointProbesOptions.FilterChecks { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.Probes.TcpEndpointProbesOptions.HealthAssessmentPeriod { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Diagnostics.Probes.TcpEndpointProbesOptions.MaxPendingConnections { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Diagnostics.Probes.TcpEndpointProbesOptions.TcpPort { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     }

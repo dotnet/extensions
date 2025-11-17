@@ -1,0 +1,145 @@
+{
+  "Name": "Microsoft.Extensions.AI.Evaluation.NLP, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.NLP.BLEUEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.NLP.BLEUEvaluator.BLEUEvaluator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.NLP.BLEUEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.NLP.BLEUEvaluator.BLEUMetricName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.NLP.BLEUEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.NLP.BLEUEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.NLP.BLEUEvaluatorContext.BLEUEvaluatorContext(System.Collections.Generic.IEnumerable<string> references);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.NLP.BLEUEvaluatorContext.BLEUEvaluatorContext(params string[] references);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.AI.Evaluation.NLP.BLEUEvaluatorContext.References { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.NLP.BLEUEvaluatorContext.ReferencesContextName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.NLP.F1Evaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.NLP.F1Evaluator.F1Evaluator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.NLP.F1Evaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.NLP.F1Evaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.NLP.F1Evaluator.F1MetricName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.NLP.F1EvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.NLP.F1EvaluatorContext.F1EvaluatorContext(string groundTruth);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.NLP.F1EvaluatorContext.GroundTruth { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.NLP.F1EvaluatorContext.GroundTruthContextName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.NLP.GLEUEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.NLP.GLEUEvaluator.GLEUEvaluator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.NLP.GLEUEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.NLP.GLEUEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.NLP.GLEUEvaluator.GLEUMetricName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.NLP.GLEUEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.NLP.GLEUEvaluatorContext.GLEUEvaluatorContext(System.Collections.Generic.IEnumerable<string> references);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.NLP.GLEUEvaluatorContext.GLEUEvaluatorContext(params string[] references);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.AI.Evaluation.NLP.GLEUEvaluatorContext.References { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.NLP.GLEUEvaluatorContext.ReferencesContextName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

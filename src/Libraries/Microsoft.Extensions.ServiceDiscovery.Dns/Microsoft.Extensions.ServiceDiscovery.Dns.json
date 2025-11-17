@@ -1,0 +1,127 @@
+{
+  "Name": "Microsoft.Extensions.ServiceDiscovery.Dns, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+  "Types": [
+    {
+      "Type": "class Microsoft.Extensions.ServiceDiscovery.Dns.DnsResolverOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.ServiceDiscovery.Dns.DnsResolverOptions.DnsResolverOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.ServiceDiscovery.Dns.DnsResolverOptions.MaxAttempts { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<System.Net.IPEndPoint> Microsoft.Extensions.ServiceDiscovery.Dns.DnsResolverOptions.Servers { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.ServiceDiscovery.Dns.DnsResolverOptions.Timeout { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.ServiceDiscovery.Dns.DnsServiceEndpointProviderOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.ServiceDiscovery.Dns.DnsServiceEndpointProviderOptions.DnsServiceEndpointProviderOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.ServiceDiscovery.Dns.DnsServiceEndpointProviderOptions.DefaultRefreshPeriod { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.ServiceDiscovery.Dns.DnsServiceEndpointProviderOptions.MaxRetryPeriod { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.ServiceDiscovery.Dns.DnsServiceEndpointProviderOptions.MinRetryPeriod { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "double Microsoft.Extensions.ServiceDiscovery.Dns.DnsServiceEndpointProviderOptions.RetryBackOffFactor { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint, bool> Microsoft.Extensions.ServiceDiscovery.Dns.DnsServiceEndpointProviderOptions.ShouldApplyHostNameMetadata { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.ServiceDiscovery.Dns.DnsSrvServiceEndpointProviderOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.ServiceDiscovery.Dns.DnsSrvServiceEndpointProviderOptions.DnsSrvServiceEndpointProviderOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.ServiceDiscovery.Dns.DnsSrvServiceEndpointProviderOptions.DefaultRefreshPeriod { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.ServiceDiscovery.Dns.DnsSrvServiceEndpointProviderOptions.MaxRetryPeriod { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.ServiceDiscovery.Dns.DnsSrvServiceEndpointProviderOptions.MinRetryPeriod { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.ServiceDiscovery.Dns.DnsSrvServiceEndpointProviderOptions.QuerySuffix { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "double Microsoft.Extensions.ServiceDiscovery.Dns.DnsSrvServiceEndpointProviderOptions.RetryBackOffFactor { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery, string>? Microsoft.Extensions.ServiceDiscovery.Dns.DnsSrvServiceEndpointProviderOptions.ServiceDomainNameCallback { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint, bool> Microsoft.Extensions.ServiceDiscovery.Dns.DnsSrvServiceEndpointProviderOptions.ShouldApplyHostNameMetadata { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Hosting.ServiceDiscoveryDnsServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Hosting.ServiceDiscoveryDnsServiceCollectionExtensions.AddDnsServiceEndpointProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Hosting.ServiceDiscoveryDnsServiceCollectionExtensions.AddDnsServiceEndpointProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ServiceDiscovery.Dns.DnsServiceEndpointProviderOptions> configureOptions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Hosting.ServiceDiscoveryDnsServiceCollectionExtensions.AddDnsSrvServiceEndpointProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Hosting.ServiceDiscoveryDnsServiceCollectionExtensions.AddDnsSrvServiceEndpointProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ServiceDiscovery.Dns.DnsSrvServiceEndpointProviderOptions> configureOptions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Hosting.ServiceDiscoveryDnsServiceCollectionExtensions.ConfigureDnsResolver(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ServiceDiscovery.Dns.DnsResolverOptions> configureOptions);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

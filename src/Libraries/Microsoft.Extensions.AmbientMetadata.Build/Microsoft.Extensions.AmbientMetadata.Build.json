@@ -1,0 +1,47 @@
+{
+  "Name": "Microsoft.Extensions.AmbientMetadata.Build, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "class Microsoft.Extensions.AmbientMetadata.BuildMetadata",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AmbientMetadata.BuildMetadata.BuildMetadata();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.BuildMetadata.BuildId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.BuildMetadata.BuildNumber { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.BuildMetadata.SourceBranchName { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.BuildMetadata.SourceVersion { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.BuildMetadataServiceCollectionExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.BuildMetadataServiceCollectionExtensions.AddBuildMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.BuildMetadataServiceCollectionExtensions.AddBuildMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.AmbientMetadata.BuildMetadata> configure);",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}

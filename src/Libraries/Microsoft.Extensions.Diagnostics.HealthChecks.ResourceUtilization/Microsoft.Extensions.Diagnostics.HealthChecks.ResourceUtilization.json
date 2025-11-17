@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "class Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds",
@@ -79,7 +79,11 @@
         },
         {
           "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions.SamplingWindow { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Obsolete"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions.UseObservableResourceMonitoringInstruments { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     }

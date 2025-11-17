@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Compliance.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Compliance.Abstractions, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "readonly struct Microsoft.Extensions.Compliance.Classification.DataClassification : System.IEquatable<Microsoft.Extensions.Compliance.Classification.DataClassification>",
@@ -120,6 +120,32 @@
         {
           "Member": "Microsoft.Extensions.Compliance.Classification.DataClassificationSet Microsoft.Extensions.Compliance.Classification.DataClassificationSet.Union(Microsoft.Extensions.Compliance.Classification.DataClassificationSet other);",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Compliance.Classification.DataClassificationTypeConverter : System.ComponentModel.TypeConverter",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassificationTypeConverter.DataClassificationTypeConverter();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.Compliance.Classification.DataClassificationTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type sourceType);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.Compliance.Classification.DataClassificationTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.Compliance.Classification.DataClassificationTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.Compliance.Classification.DataClassificationTypeConverter.IsValid(System.ComponentModel.ITypeDescriptorContext? context, object? value);",
+          "Stage": "Experimental"
         }
       ]
     },

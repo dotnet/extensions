@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Http.Resilience, Version=9.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Http.Resilience, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "class Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions",
@@ -138,6 +138,20 @@
         {
           "Member": "bool Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions.ShouldRetryAfterHeader { get; set; }",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptionsExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static void Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptionsExtensions.DisableFor(this Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions options, params System.Net.Http.HttpMethod[] methods);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptionsExtensions.DisableForUnsafeHttpMethods(this Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions options);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -394,6 +408,10 @@
         {
           "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.DependencyInjection.ResilienceHttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.ResilienceHttpClientBuilderExtensions.RemoveAllResilienceHandlers(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
+          "Stage": "Experimental"
         }
       ]
     },

@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI.Evaluation.Quality, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI.Evaluation.Quality, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.CoherenceEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
@@ -50,10 +50,7 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to remove primary constructor portion
-      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
-      // See: https://github.com/icsharpcode/ILSpy/issues/829
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluatorContext(string groundTruth) : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
       "Stage": "Stable",
       "Methods": [
         {
@@ -97,10 +94,7 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to remove primary constructor portion
-      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
-      // See: https://github.com/icsharpcode/ILSpy/issues/829
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluatorContext(string groundTruth) : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
       "Stage": "Stable",
       "Methods": [
         {
@@ -168,10 +162,7 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to remove primary constructor portion
-      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
-      // See: https://github.com/icsharpcode/ILSpy/issues/829
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluatorContext(string groundingContext) : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
       "Stage": "Stable",
       "Methods": [
         {
@@ -187,6 +178,54 @@
         {
           "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluatorContext.GroundingContextName { get; }",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.IntentResolutionEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.IntentResolutionEvaluator.IntentResolutionEvaluator();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Quality.IntentResolutionEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.Quality.IntentResolutionEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.IntentResolutionEvaluator.IntentResolutionMetricName { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.IntentResolutionEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.IntentResolutionEvaluatorContext.IntentResolutionEvaluatorContext(params Microsoft.Extensions.AI.AITool[] toolDefinitions);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.IntentResolutionEvaluatorContext.IntentResolutionEvaluatorContext(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AITool> toolDefinitions);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.AITool> Microsoft.Extensions.AI.Evaluation.Quality.IntentResolutionEvaluatorContext.ToolDefinitions { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.IntentResolutionEvaluatorContext.ToolDefinitionsContextName { get; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -275,11 +314,11 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluatorContext.RetrievalEvaluatorContext(System.Collections.Generic.IEnumerable<string> retrievedContextChunks);",
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluatorContext.RetrievalEvaluatorContext(params string[] retrievedContextChunks);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluatorContext.RetrievalEvaluatorContext(params string[] retrievedContextChunks);",
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluatorContext.RetrievalEvaluatorContext(System.Collections.Generic.IEnumerable<string> retrievedContextChunks);",
           "Stage": "Stable"
         }
       ],
@@ -291,6 +330,102 @@
         {
           "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluatorContext.RetrievedContextChunksContextName { get; }",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.TaskAdherenceEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.TaskAdherenceEvaluator.TaskAdherenceEvaluator();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Quality.TaskAdherenceEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.Quality.TaskAdherenceEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.TaskAdherenceEvaluator.TaskAdherenceMetricName { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.TaskAdherenceEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.TaskAdherenceEvaluatorContext.TaskAdherenceEvaluatorContext(params Microsoft.Extensions.AI.AITool[] toolDefinitions);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.TaskAdherenceEvaluatorContext.TaskAdherenceEvaluatorContext(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AITool> toolDefinitions);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.AITool> Microsoft.Extensions.AI.Evaluation.Quality.TaskAdherenceEvaluatorContext.ToolDefinitions { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.TaskAdherenceEvaluatorContext.ToolDefinitionsContextName { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.ToolCallAccuracyEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.ToolCallAccuracyEvaluator.ToolCallAccuracyEvaluator();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Quality.ToolCallAccuracyEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.Quality.ToolCallAccuracyEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.ToolCallAccuracyEvaluator.ToolCallAccuracyMetricName { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.ToolCallAccuracyEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.ToolCallAccuracyEvaluatorContext.ToolCallAccuracyEvaluatorContext(params Microsoft.Extensions.AI.AITool[] toolDefinitions);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.ToolCallAccuracyEvaluatorContext.ToolCallAccuracyEvaluatorContext(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AITool> toolDefinitions);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.AITool> Microsoft.Extensions.AI.Evaluation.Quality.ToolCallAccuracyEvaluatorContext.ToolDefinitions { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.ToolCallAccuracyEvaluatorContext.ToolDefinitionsContextName { get; }",
+          "Stage": "Experimental"
         }
       ]
     }

@@ -1,0 +1,167 @@
+{
+  "Name": "Microsoft.Extensions.ServiceDiscovery.Abstractions, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+  "Types": [
+    {
+      "Type": "interface Microsoft.Extensions.ServiceDiscovery.IHostNameFeature",
+      "Stage": "Stable",
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.ServiceDiscovery.IHostNameFeature.HostName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.ServiceDiscovery.IServiceEndpointBuilder",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.ServiceDiscovery.IServiceEndpointBuilder.AddChangeToken(Microsoft.Extensions.Primitives.IChangeToken changeToken);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint> Microsoft.Extensions.ServiceDiscovery.IServiceEndpointBuilder.Endpoints { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.AspNetCore.Http.Features.IFeatureCollection Microsoft.Extensions.ServiceDiscovery.IServiceEndpointBuilder.Features { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.ServiceDiscovery.IServiceEndpointProvider : System.IAsyncDisposable",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.ServiceDiscovery.IServiceEndpointProvider.PopulateAsync(Microsoft.Extensions.ServiceDiscovery.IServiceEndpointBuilder endpoints, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.ServiceDiscovery.IServiceEndpointProviderFactory",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "bool Microsoft.Extensions.ServiceDiscovery.IServiceEndpointProviderFactory.TryCreateProvider(Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery query, out Microsoft.Extensions.ServiceDiscovery.IServiceEndpointProvider? provider);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint.ServiceEndpoint();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint.Create(System.Net.EndPoint endPoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint.TryParse(string? value, out Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint? serviceEndpoint);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "abstract System.Net.EndPoint Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint.EndPoint { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract Microsoft.AspNetCore.Http.Features.IFeatureCollection Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint.Features { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "override string? Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery.ToString();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery.TryParse(string input, out Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery? query);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery.EndpointName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery.IncludedSchemes { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery.ServiceName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource.ServiceEndpointSource(System.Collections.Generic.List<Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint>? endpoints, Microsoft.Extensions.Primitives.IChangeToken changeToken, Microsoft.AspNetCore.Http.Features.IFeatureCollection features);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource.ToString();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Primitives.IChangeToken Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource.ChangeToken { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint> Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource.Endpoints { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.AspNetCore.Http.Features.IFeatureCollection Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource.Features { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.ServiceDiscovery.UriEndPoint : System.Net.EndPoint",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.ServiceDiscovery.UriEndPoint.UriEndPoint(System.Uri uri);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.ServiceDiscovery.UriEndPoint.Equals(object? obj);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.ServiceDiscovery.UriEndPoint.GetHashCode();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string? Microsoft.Extensions.ServiceDiscovery.UriEndPoint.ToString();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Uri Microsoft.Extensions.ServiceDiscovery.UriEndPoint.Uri { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

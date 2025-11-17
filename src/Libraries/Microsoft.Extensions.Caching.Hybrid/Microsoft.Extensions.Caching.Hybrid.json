@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Caching.Hybrid, Version=9.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Caching.Hybrid, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class Microsoft.Extensions.DependencyInjection.HybridCacheBuilderExtensions",

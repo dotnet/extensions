@@ -1,0 +1,121 @@
+{
+  "Name": "Microsoft.Extensions.ServiceDiscovery, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.ServiceDiscovery.ConfigurationServiceEndpointProviderOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.ServiceDiscovery.ConfigurationServiceEndpointProviderOptions.ConfigurationServiceEndpointProviderOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.ServiceDiscovery.ConfigurationServiceEndpointProviderOptions.SectionName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.ServiceDiscovery.ServiceEndpoint, bool> Microsoft.Extensions.ServiceDiscovery.ConfigurationServiceEndpointProviderOptions.ShouldApplyHostNameMetadata { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.ServiceDiscovery.Http.IServiceDiscoveryHttpMessageHandlerFactory",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "System.Net.Http.HttpMessageHandler Microsoft.Extensions.ServiceDiscovery.Http.IServiceDiscoveryHttpMessageHandlerFactory.CreateHandler(System.Net.Http.HttpMessageHandler handler);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.ServiceDiscoveryHttpClientBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.ServiceDiscoveryHttpClientBuilderExtensions.AddServiceDiscovery(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder httpClientBuilder);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions.ServiceDiscoveryOptions();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions.ApplyAllowedSchemes(System.Collections.Generic.IReadOnlyList<string> requestedSchemes);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions.AllowAllSchemes { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<string> Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions.AllowedSchemes { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions.RefreshPeriod { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddConfigurationServiceEndpointProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddConfigurationServiceEndpointProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ServiceDiscovery.ConfigurationServiceEndpointProviderOptions> configureOptions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddPassThroughServiceEndpointProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddServiceDiscovery(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddServiceDiscovery(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions> configureOptions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddServiceDiscoveryCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddServiceDiscoveryCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions> configureOptions);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.ServiceDiscovery.ServiceEndpointResolver : System.IAsyncDisposable",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.ServiceDiscovery.ServiceEndpointResolver.DisposeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource> Microsoft.Extensions.ServiceDiscovery.ServiceEndpointResolver.GetEndpointsAsync(string serviceName, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}
