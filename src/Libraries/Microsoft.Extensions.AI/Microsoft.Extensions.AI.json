@@ -15,7 +15,7 @@
         },
         {
           "Member": "abstract string Microsoft.Extensions.AI.CachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, scoped System.ReadOnlySpan<object?> additionalValues);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.CachingChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
@@ -63,7 +63,7 @@
         },
         {
           "Member": "abstract string Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(scoped System.ReadOnlySpan<object?> values);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "abstract System.Threading.Tasks.Task<TEmbedding?> Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.ReadCacheAsync(string key, System.Threading.CancellationToken cancellationToken);",
@@ -315,7 +315,7 @@
         },
         {
           "Member": "override string Microsoft.Extensions.AI.DistributedCachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, scoped System.ReadOnlySpan<object?> additionalValues);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse?> Microsoft.Extensions.AI.DistributedCachingChatClient.ReadCacheAsync(string key, System.Threading.CancellationToken cancellationToken);",
@@ -365,7 +365,7 @@
         },
         {
           "Member": "override string Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(scoped System.ReadOnlySpan<object?> values);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override System.Threading.Tasks.Task<TEmbedding?> Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.ReadCacheAsync(string key, System.Threading.CancellationToken cancellationToken);",
