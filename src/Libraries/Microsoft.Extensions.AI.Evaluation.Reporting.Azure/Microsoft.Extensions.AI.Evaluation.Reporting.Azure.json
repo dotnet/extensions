@@ -12,7 +12,10 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.AzureStorageResponseCacheProvider(Azure.Storage.Files.DataLake.DataLakeDirectoryClient client, System.TimeSpan? timeToLiveForCacheEntries = null) : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider",
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.AzureStorageResponseCacheProvider : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider",
       "Stage": "Stable",
       "Methods": [
         {
@@ -34,7 +37,10 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.AzureStorageResultStore(Azure.Storage.Files.DataLake.DataLakeDirectoryClient client) : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore",
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.AzureStorageResultStore : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore",
       "Stage": "Stable",
       "Methods": [
         {
