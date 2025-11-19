@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Extensions.Logging.Testing;
 /// </summary>
 [DebuggerDisplay("Count = {Count}, LatestRecord = {LatestRecord}")]
 [DebuggerTypeProxy(typeof(FakeLogCollectorDebugView))]
-public class FakeLogCollector
+public partial class FakeLogCollector
 {
     private readonly List<FakeLogRecord> _records = [];
     private readonly FakeLogCollectorOptions _options;
@@ -54,6 +55,7 @@ public class FakeLogCollector
         lock (_records)
         {
             _records.Clear();
+            _recordCollectionVersion++;
         }
     }
 
@@ -136,10 +138,22 @@ public class FakeLogCollector
             return;
         }
 
+        TaskCompletionSource<object?>? logEnumerationSharedWaiterToWake = null;
+
         lock (_records)
         {
             _records.Add(record);
+
+            if (_waitingEnumeratorCount > 0)
+            {
+                logEnumerationSharedWaiterToWake = _logEnumerationSharedWaiter;
+                _logEnumerationSharedWaiter = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _waitingEnumeratorCount = 0;
+            }
         }
+
+        // it is possible the task was already completed, but it does not matter and we can avoid locking
+        _ = logEnumerationSharedWaiterToWake?.TrySetResult(null);
 
         _options.OutputSink?.Invoke(_options.OutputFormatter(record));
     }
