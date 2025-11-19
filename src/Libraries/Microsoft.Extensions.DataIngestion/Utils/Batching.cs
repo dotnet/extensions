@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-#if NET10_0_OR_GREATER
 using System.Linq;
-#endif
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,40 +67,4 @@ internal static class Batching
             }
         }
     }
-
-#if !NET10_0_OR_GREATER
-#pragma warning disable VSTHRD200 // Use "Async" suffix for async methods
-    private static IAsyncEnumerable<TSource[]> Chunk<TSource>(this IAsyncEnumerable<TSource> source, int count)
-#pragma warning restore VSTHRD200 // Use "Async" suffix for async methods
-    {
-        _ = Throw.IfNull(source);
-        _ = Throw.IfLessThanOrEqual(count, 0);
-
-        return CoreAsync(source, count);
-
-        static async IAsyncEnumerable<TSource[]> CoreAsync(IAsyncEnumerable<TSource> source, int count,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            var buffer = new TSource[count];
-            int index = 0;
-
-            await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                buffer[index++] = item;
-
-                if (index == count)
-                {
-                    index = 0;
-                    yield return buffer;
-                }
-            }
-
-            if (index > 0)
-            {
-                Array.Resize(ref buffer, index);
-                yield return buffer;
-            }
-        }
-    }
-#endif
 }

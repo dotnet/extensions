@@ -352,6 +352,133 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task ReasoningTextDelta_Streaming()
+    {
+        const string Input = """
+            {
+              "input":[{
+                "type":"message",
+                "role":"user",
+                "content":[{
+                  "type":"input_text",
+                  "text":"Solve this problem step by step."
+                }]
+              }],
+              "reasoning": {
+                "effort": "medium"
+              },
+              "model": "o4-mini",
+              "stream": true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_reasoning123","object":"response","created_at":1756752900,"status":"in_progress","model":"o4-mini-2025-04-16","output":[],"reasoning":{"effort":"medium"}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_reasoning123","object":"response","created_at":1756752900,"status":"in_progress","model":"o4-mini-2025-04-16","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"rs_reasoning123","type":"reasoning","text":""}}
+
+            event: response.reasoning_text.delta
+            data: {"type":"response.reasoning_text.delta","sequence_number":3,"item_id":"rs_reasoning123","output_index":0,"delta":"First, "}
+
+            event: response.reasoning_text.delta
+            data: {"type":"response.reasoning_text.delta","sequence_number":4,"item_id":"rs_reasoning123","output_index":0,"delta":"let's analyze "}
+
+            event: response.reasoning_text.delta
+            data: {"type":"response.reasoning_text.delta","sequence_number":5,"item_id":"rs_reasoning123","output_index":0,"delta":"the problem."}
+
+            event: response.reasoning_text.done
+            data: {"type":"response.reasoning_text.done","sequence_number":6,"item_id":"rs_reasoning123","output_index":0,"text":"First, let's analyze the problem."}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":7,"output_index":0,"item":{"id":"rs_reasoning123","type":"reasoning","text":"First, let's analyze the problem."}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":8,"output_index":1,"item":{"id":"msg_reasoning123","type":"message","status":"in_progress","content":[],"role":"assistant"}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","sequence_number":9,"item_id":"msg_reasoning123","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"text":""}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":10,"item_id":"msg_reasoning123","output_index":1,"content_index":0,"delta":"The solution is 42."}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","sequence_number":11,"item_id":"msg_reasoning123","output_index":1,"content_index":0,"text":"The solution is 42."}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","sequence_number":12,"item_id":"msg_reasoning123","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"text":"The solution is 42."}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":13,"output_index":1,"item":{"id":"msg_reasoning123","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"text":"The solution is 42."}],"role":"assistant"}}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":14,"response":{"id":"resp_reasoning123","object":"response","created_at":1756752900,"status":"completed","model":"o4-mini-2025-04-16","output":[{"id":"rs_reasoning123","type":"reasoning","text":"First, let's analyze the problem."},{"id":"msg_reasoning123","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"text":"The solution is 42."}],"role":"assistant"}],"usage":{"input_tokens":10,"output_tokens":25,"total_tokens":35}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "o4-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("Solve this problem step by step.", new()
+        {
+            RawRepresentationFactory = options => new ResponseCreationOptions
+            {
+                ReasoningOptions = new()
+                {
+                    ReasoningEffortLevel = ResponseReasoningEffortLevel.Medium
+                }
+            }
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("The solution is 42.", string.Concat(updates.Where(u => u.Role == ChatRole.Assistant).Select(u => u.Text)));
+
+        var createdAt = DateTimeOffset.FromUnixTimeSeconds(1_756_752_900);
+        Assert.Equal(15, updates.Count);
+
+        for (int i = 0; i < updates.Count; i++)
+        {
+            Assert.Equal("resp_reasoning123", updates[i].ResponseId);
+            Assert.Equal(createdAt, updates[i].CreatedAt);
+            Assert.Equal("o4-mini-2025-04-16", updates[i].ModelId);
+        }
+
+        // Verify reasoning text delta updates (sequence 3-5)
+        var reasoningUpdates = updates.Where((u, idx) => idx >= 3 && idx <= 5).ToList();
+        Assert.Equal(3, reasoningUpdates.Count);
+        Assert.All(reasoningUpdates, u =>
+        {
+            Assert.Single(u.Contents);
+            Assert.Null(u.Role);
+            var reasoning = Assert.IsType<TextReasoningContent>(u.Contents.Single());
+            Assert.NotNull(reasoning.Text);
+        });
+
+        // Verify the reasoning text content
+        var allReasoningText = string.Concat(reasoningUpdates.Select(u => u.Contents.OfType<TextReasoningContent>().First().Text));
+        Assert.Equal("First, let's analyze the problem.", allReasoningText);
+
+        // Verify assistant response
+        var assistantUpdate = updates.First(u => u.Role == ChatRole.Assistant && !string.IsNullOrEmpty(u.Text));
+        Assert.Equal("The solution is 42.", assistantUpdate.Text);
+
+        // Verify usage
+        UsageContent usage = updates.SelectMany(u => u.Contents).OfType<UsageContent>().Single();
+        Assert.Equal(10, usage.Details.InputTokenCount);
+        Assert.Equal(25, usage.Details.OutputTokenCount);
+        Assert.Equal(35, usage.Details.TotalTokenCount);
+    }
+
+    [Fact]
     public async Task BasicRequestResponse_Streaming()
     {
         const string Input = """
@@ -4246,7 +4373,9 @@ public class OpenAIResponseClientTests
                         "content":[
                             {"type":"input_text","text":"Check this image: "},
                             {"type":"input_image","image_url":"https://example.com/image.png"},
+                            {"type":"input_image","image_url":"https://example.com/image.png","detail":"high"},
                             {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgo="},
+                            {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgo=","detail":"low"},
                             {"type":"input_file","file_data":"data:application/pdf;base64,cGRmZGF0YQ==","filename":"doc.pdf"},
                             {"type":"input_file","file_id":"file-123"},
                             {"type":"refusal","refusal":"I cannot process this"}
@@ -4278,7 +4407,9 @@ public class OpenAIResponseClientTests
             new ChatMessage(ChatRole.User, [
                 new TextContent("Check this image: "),
                 new UriContent(new Uri("https://example.com/image.png"), "image/png"),
+                new UriContent(new Uri("https://example.com/image.png"), "image/png") { AdditionalProperties = new AdditionalPropertiesDictionary { ["detail"] = "high" }},
                 new DataContent(imageData, "image/png"),
+                new DataContent(imageData, "image/png") { AdditionalProperties = new AdditionalPropertiesDictionary { ["detail"] = ResponseImageDetailLevel.Low }},
                 new DataContent(pdfData, "application/pdf") { Name = "doc.pdf" },
                 new HostedFileContent("file-123"),
                 new ErrorContent("I cannot process this") { ErrorCode = "Refusal" }

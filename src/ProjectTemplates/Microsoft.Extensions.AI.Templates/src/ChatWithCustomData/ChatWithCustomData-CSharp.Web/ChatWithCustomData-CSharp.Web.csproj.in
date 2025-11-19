@@ -40,7 +40,7 @@
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="${TemplatePackageVersion_MicrosoftMLTokenizers}" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="${TemplatePackageVersion_MicrosoftMLTokenizers}" />
 <!--#if (IsNET9) -->
-    <PackageReference Include="System.Linq.Async" Version="${TemplatePackageVersion_SystemLinqAsync}" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" Version="${TemplatePackageVersion_SystemLinqAsyncEnumerable}" />
 <!--#endif -->
 <!--#if (IsAzureAISearch && IsAspire)
     <PackageReference Include="Aspire.Azure.Search.Documents" Version="${TemplatePackageVersion_Aspire}" />
