@@ -184,8 +184,7 @@ public sealed class AcceptanceTest
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [Fact]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv1()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
@@ -281,8 +280,7 @@ public sealed class AcceptanceTest
         return Task.CompletedTask;
     }
 
-    [Theory]
-    [CombinatorialData]
+    [Fact]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
@@ -388,8 +386,7 @@ public sealed class AcceptanceTest
         return Task.CompletedTask;
     }
 
-    [Theory]
-    [CombinatorialData]
+    [Fact]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2_Using_LinuxCalculationV2()
     {
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>

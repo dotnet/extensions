@@ -7,8 +7,8 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using OllamaSharp;
-using Xunit;
 using Microsoft.DotNet.XUnitExtensions;
+using Xunit;
 
 namespace Microsoft.Extensions.AI;
 

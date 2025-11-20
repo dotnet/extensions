@@ -8,8 +8,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DataIngestion.Tests.Utils;
-using Xunit;
 using Microsoft.DotNet.XUnitExtensions;
+using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 

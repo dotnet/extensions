@@ -22,8 +22,7 @@ public sealed class LinuxUtilizationProviderTests
 {
     private const string VerifiedDataDirectory = "Verified";
 
-    [Theory]
-    [CombinatorialData]
+    [Fact]
     public void Provider_Registers_Instruments()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -103,8 +102,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [Fact]
     public void Provider_Registers_Instruments_CgroupV2()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -217,8 +215,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
     }
 
-    [Theory]
-    [CombinatorialData]
+    [Fact]
     public void Provider_Registers_Instruments_CgroupV2_WithoutHostCpu()
     {
         var meterName = Guid.NewGuid().ToString();

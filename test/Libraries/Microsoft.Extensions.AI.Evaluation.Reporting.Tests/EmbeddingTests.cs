@@ -3,8 +3,8 @@
 
 using System;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Html;
-using Xunit;
 using Microsoft.DotNet.XUnitExtensions;
+using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Tests;
 
