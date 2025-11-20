@@ -18,12 +18,13 @@ using Xunit;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk.Test;
 
 [SupportedOSPlatform("windows")]
+[PlatformSpecific(TestPlatforms.Windows)]
 public class WindowsDiskMetricsTests
 {
     private const string CategoryName = "LogicalDisk";
     private readonly FakeLogger<WindowsDiskMetrics> _fakeLogger = new();
 
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void Creates_Meter_With_Correct_Name()
     {
         using var meterFactory = new TestMeterFactory();
@@ -41,7 +42,7 @@ public class WindowsDiskMetricsTests
         Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
     }
 
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void DiskOperationMetricsTest()
     {
         using var meterFactory = new TestMeterFactory();
@@ -115,7 +116,7 @@ public class WindowsDiskMetricsTests
         Assert.Equal(5700, measurements.Last(x => x.MatchesTags(writeTag, deviceTagD)).Value); // 3600 + 35 * 60 = 5700
     }
 
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void DiskIoBytesMetricsTest()
     {
         using var meterFactory = new TestMeterFactory();

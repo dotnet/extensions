@@ -7,9 +7,10 @@ using Xunit;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
 [SupportedOSPlatform("windows")]
+[PlatformSpecific(TestPlatforms.Windows)]
 public class PerformanceCounterWrapperTests
 {
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void GetInstanceNameTest()
     {
         var wrapper = new PerformanceCounterWrapper("Processor", "% Processor Time", "_Total");

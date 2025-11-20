@@ -18,6 +18,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
+[PlatformSpecific(TestPlatforms.Windows)]
 public sealed class WindowsSnapshotProviderTests
 {
     private const string VerifiedDataDirectory = "Verified";
@@ -37,7 +38,7 @@ public sealed class WindowsSnapshotProviderTests
         _fakeLogger = new FakeLogger<WindowsSnapshotProvider>();
     }
 
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void BasicConstructor()
     {
         var provider = new WindowsSnapshotProvider(_fakeLogger, _meterFactoryMock.Object, _options);
@@ -49,7 +50,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.Equal(memoryStatus.TotalPhys, provider.Resources.MaximumMemoryInBytes);
     }
 
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void GetSnapshot_DoesNotThrowExceptions()
     {
         var provider = new WindowsSnapshotProvider(_fakeLogger, _meterFactoryMock.Object, _options);
@@ -58,7 +59,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.Null(exception);
     }
 
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public Task SnapshotProvider_EmitsLogRecord()
     {
         var provider = new WindowsSnapshotProvider(_fakeLogger, _meterFactoryMock.Object, _options);
@@ -69,7 +70,7 @@ public sealed class WindowsSnapshotProviderTests
         return Verifier.Verify(logRecords[0]).UseDirectory(VerifiedDataDirectory);
     }
 
-    [WindowsOnlyTheory]
+    [ConditionalTheory]
     [CombinatorialData]
     public void SnapshotProvider_EmitsCpuMetrics(bool useZeroToOneRange)
     {
@@ -110,7 +111,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.Equal(0.05 * multiplier, metricCollector.LastMeasurement?.Value); // Still consuming 5% of the CPU
     }
 
-    [WindowsOnlyTheory]
+    [ConditionalTheory]
     [CombinatorialData]
     public void SnapshotProvider_EmitsMemoryMetrics(bool useZeroToOneRange)
     {
@@ -160,7 +161,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.Equal(1 * multiplier, Math.Round(metricCollector.LastMeasurement.Value)); // Consuming 100% of the memory
     }
 
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void Provider_Returns_MemoryConsumption()
     {
         // This is a synthetic test to have full test coverage:
@@ -168,7 +169,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.InRange(usage, 0, long.MaxValue);
     }
 
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void Provider_Creates_Meter_With_Correct_Name()
     {
         using var meterFactory = new TestMeterFactory();

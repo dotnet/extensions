@@ -17,11 +17,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
+[PlatformSpecific(TestPlatforms.Linux)]
 public sealed class LinuxUtilizationProviderTests
 {
     private const string VerifiedDataDirectory = "Verified";
 
-    [LinuxOnlyFact]
+    [ConditionalFact]
     [CombinatorialData]
     public void Provider_Registers_Instruments()
     {
@@ -102,7 +103,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
     }
 
-    [LinuxOnlyFact]
+    [ConditionalFact]
     [CombinatorialData]
     public void Provider_Registers_Instruments_CgroupV2()
     {
@@ -216,7 +217,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
     }
 
-    [LinuxOnlyFact]
+    [ConditionalFact]
     [CombinatorialData]
     public void Provider_Registers_Instruments_CgroupV2_WithoutHostCpu()
     {

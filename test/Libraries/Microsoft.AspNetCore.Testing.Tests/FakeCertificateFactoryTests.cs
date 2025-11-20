@@ -22,7 +22,7 @@ public class FakeCertificateFactoryTests
         Assert.False(certificate.Extensions.OfType<X509EnhancedKeyUsageExtension>().Single().Critical);
     }
 
-    [PlatformSpecific(TestPlatforms.Windows | TestPlatforms.OSX)]
+    [PlatformSpecific(~TestPlatforms.Linux)]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -31,7 +31,7 @@ public class FakeCertificateFactoryTests
         Assert.NotNull(FakeSslCertificateFactory.GenerateRsa(runsOnWindows));
     }
 
-    [PlatformSpecific(TestPlatforms.Linux | TestPlatforms.OSX)]
+    [PlatformSpecific(~TestPlatforms.Windows)]
     [Fact]
     public void GenerateRsa_DoesNotRunOnWindows_GeneratesRsa()
     {

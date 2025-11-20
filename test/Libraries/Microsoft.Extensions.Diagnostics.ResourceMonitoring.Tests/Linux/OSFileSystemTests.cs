@@ -10,9 +10,10 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
+[PlatformSpecific(TestPlatforms.Linux)]
 public sealed class OSFileSystemTests
 {
-    [LinuxOnlyFact]
+    [ConditionalFact]
     public void GetDirectoryNames_ReturnsDirectoryNames()
     {
         var fileSystem = new OSFileSystem();
@@ -22,7 +23,7 @@ public sealed class OSFileSystemTests
         Assert.Single(directoryNames);
     }
 
-    [LinuxOnlyFact]
+    [ConditionalFact]
     public void Reading_First_File_Line_Works()
     {
         const string Content = "Name:   cat";
@@ -35,7 +36,7 @@ public sealed class OSFileSystemTests
         Assert.Equal(Content, s);
     }
 
-    [LinuxOnlyFact]
+    [ConditionalFact]
     public void Reading_The_Whole_File_Works()
     {
         const string Content = "user 1399428\nsystem 1124053\n";
@@ -49,7 +50,7 @@ public sealed class OSFileSystemTests
         Assert.Equal(Content, s);
     }
 
-    [LinuxOnlyTheory]
+    [ConditionalTheory]
     [InlineData(128)]
     [InlineData(256)]
     [InlineData(512)]

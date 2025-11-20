@@ -11,11 +11,12 @@ using Xunit;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk.Test;
 
 [SupportedOSPlatform("windows")]
+[PlatformSpecific(TestPlatforms.Windows)]
 public class WindowsDiskIoTimePerfCounterTests
 {
     private const string CategoryName = "LogicalDisk";
 
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void DiskReadsPerfCounter_Per60Seconds()
     {
         const string CounterName = WindowsDiskPerfCounterNames.DiskReadsCounter;

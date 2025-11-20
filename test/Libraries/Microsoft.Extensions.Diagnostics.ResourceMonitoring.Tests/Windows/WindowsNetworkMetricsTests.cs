@@ -11,9 +11,10 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
+[PlatformSpecific(TestPlatforms.Windows)]
 public class WindowsNetworkMetricsTests
 {
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void Creates_Meter_With_Correct_Name()
     {
         using var meterFactory = new TestMeterFactory();

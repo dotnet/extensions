@@ -23,9 +23,11 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
+[PlatformSpecific(TestPlatforms.Linux)]
 public sealed class AcceptanceTest
 {
-    [LinuxOnlyFact]
+    [ConditionalFact]
+    [PlatformSpecific(TestPlatforms.Linux)]
     public void Adding_Linux_Resource_Utilization_Allows_To_Query_Snapshot_Provider()
     {
         using var services = new ServiceCollection()
@@ -38,7 +40,8 @@ public sealed class AcceptanceTest
         Assert.NotEqual(default, provider.GetSnapshot());
     }
 
-    [LinuxOnlyFact]
+    [ConditionalFact]
+    [PlatformSpecific(TestPlatforms.Linux)]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_Can_Be_Configured_With_Section()
     {
@@ -67,7 +70,8 @@ public sealed class AcceptanceTest
         Assert.Equal(memoryRefresh, options.Value.MemoryConsumptionRefreshInterval);
     }
 
-    [LinuxOnlyFact]
+    [ConditionalFact]
+    [PlatformSpecific(TestPlatforms.Linux)]
     public void Adding_Linux_Resource_Utilization_Can_Be_Configured_With_Action()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
@@ -88,7 +92,8 @@ public sealed class AcceptanceTest
         Assert.Equal(memoryRefresh, options.Value.MemoryConsumptionRefreshInterval);
     }
 
-    [LinuxOnlyFact]
+    [ConditionalFact]
+    [PlatformSpecific(TestPlatforms.Linux)]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv1()
     {
@@ -136,7 +141,8 @@ public sealed class AcceptanceTest
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 
-    [LinuxOnlyFact]
+    [ConditionalFact]
+    [PlatformSpecific(TestPlatforms.Linux)]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv2()
     {
@@ -185,7 +191,7 @@ public sealed class AcceptanceTest
 
     [ConditionalFact]
     [CombinatorialData]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [PlatformSpecific(TestPlatforms.Linux)]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv1()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
@@ -283,7 +289,7 @@ public sealed class AcceptanceTest
 
     [ConditionalFact]
     [CombinatorialData]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [PlatformSpecific(TestPlatforms.Linux)]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
@@ -391,7 +397,7 @@ public sealed class AcceptanceTest
 
     [ConditionalFact]
     [CombinatorialData]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [PlatformSpecific(TestPlatforms.Linux)]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2_Using_LinuxCalculationV2()
     {
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>

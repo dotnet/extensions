@@ -16,6 +16,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk.Test;
 
+[PlatformSpecific(TestPlatforms.Linux)]
 public class LinuxSystemDiskMetricsTests
 {
     private static readonly string[] _skipDevicePrefixes = new[] { "ram", "loop", "dm-" };

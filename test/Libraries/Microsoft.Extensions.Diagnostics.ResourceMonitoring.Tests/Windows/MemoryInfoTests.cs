@@ -11,9 +11,10 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 /// </summary>
 /// <remarks>These tests are added for coverage reasons, but the code doesn't have
 /// the necessary environment predictability to really test it.</remarks>
+[PlatformSpecific(TestPlatforms.Windows)]
 public sealed class MemoryInfoTests
 {
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void GetGlobalMemory()
     {
         var memoryStatus = new MemoryInfo().GetMemoryStatus();

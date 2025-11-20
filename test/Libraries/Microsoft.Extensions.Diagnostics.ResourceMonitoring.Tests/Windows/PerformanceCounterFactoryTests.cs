@@ -7,9 +7,10 @@ using Xunit;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
 [SupportedOSPlatform("windows")]
+[PlatformSpecific(TestPlatforms.Windows)]
 public class PerformanceCounterFactoryTests
 {
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void GetInstanceNameTest()
     {
         var performanceCounterFactory = new PerformanceCounterFactory();

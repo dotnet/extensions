@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 
-[OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
+[PlatformSpecific(~TestPlatforms.OSX)]
 public sealed class ResourceMonitoringBuilderTests
 {
     [ConditionalFact(Skip = "Not supported on MacOs.")]
@@ -32,7 +32,7 @@ public sealed class ResourceMonitoringBuilderTests
         Assert.IsAssignableFrom<EmptyPublisher>(publishersArray.First());
     }
 
-    [ConditionalFact]
+    [Fact]
     public void AddPublisher_CalledMultipleTimes_AddsMultiplePublishersToServiceCollection()
     {
         using var provider = new ServiceCollection()

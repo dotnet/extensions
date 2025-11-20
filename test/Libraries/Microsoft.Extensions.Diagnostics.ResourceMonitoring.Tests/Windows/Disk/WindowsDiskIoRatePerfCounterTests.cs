@@ -11,11 +11,12 @@ using Xunit;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk.Test;
 
 [SupportedOSPlatform("windows")]
+[PlatformSpecific(TestPlatforms.Windows)]
 public class WindowsDiskIoRatePerfCounterTests
 {
     private const string CategoryName = "LogicalDisk";
 
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void DiskReadsPerfCounter_Per60Seconds()
     {
         const string CounterName = WindowsDiskPerfCounterNames.DiskReadsCounter;
@@ -62,7 +63,7 @@ public class WindowsDiskIoRatePerfCounterTests
         Assert.Equal(660, ratePerfCounters.TotalCountDict["D:"]); // 450 + 3.5 * 60 = 660
     }
 
-    [WindowsOnlyFact]
+    [ConditionalFact]
     public void DiskWriteBytesPerfCounter_Per30Seconds()
     {
         const string CounterName = WindowsDiskPerfCounterNames.DiskWriteBytesCounter;
