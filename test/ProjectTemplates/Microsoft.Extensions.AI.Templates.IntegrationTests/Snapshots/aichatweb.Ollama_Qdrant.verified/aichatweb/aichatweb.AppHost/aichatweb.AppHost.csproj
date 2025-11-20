@@ -13,7 +13,7 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="13.0.0" />
     <PackageReference Include="Aspire.Hosting.Qdrant" Version="13.0.0" />
-    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="9.8.1-beta.413" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="13.0.0-beta.444" />
   </ItemGroup>
 
   <ItemGroup>
