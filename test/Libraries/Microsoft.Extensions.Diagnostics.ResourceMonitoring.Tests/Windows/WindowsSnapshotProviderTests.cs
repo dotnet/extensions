@@ -38,7 +38,7 @@ public sealed class WindowsSnapshotProviderTests
         _fakeLogger = new FakeLogger<WindowsSnapshotProvider>();
     }
 
-    [ConditionalFact]
+    [Fact]
     public void BasicConstructor()
     {
         var provider = new WindowsSnapshotProvider(_fakeLogger, _meterFactoryMock.Object, _options);
@@ -50,7 +50,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.Equal(memoryStatus.TotalPhys, provider.Resources.MaximumMemoryInBytes);
     }
 
-    [ConditionalFact]
+    [Fact]
     public void GetSnapshot_DoesNotThrowExceptions()
     {
         var provider = new WindowsSnapshotProvider(_fakeLogger, _meterFactoryMock.Object, _options);
@@ -59,7 +59,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.Null(exception);
     }
 
-    [ConditionalFact]
+    [Fact]
     public Task SnapshotProvider_EmitsLogRecord()
     {
         var provider = new WindowsSnapshotProvider(_fakeLogger, _meterFactoryMock.Object, _options);
@@ -70,7 +70,7 @@ public sealed class WindowsSnapshotProviderTests
         return Verifier.Verify(logRecords[0]).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [CombinatorialData]
     public void SnapshotProvider_EmitsCpuMetrics(bool useZeroToOneRange)
     {
@@ -111,7 +111,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.Equal(0.05 * multiplier, metricCollector.LastMeasurement?.Value); // Still consuming 5% of the CPU
     }
 
-    [ConditionalTheory]
+    [Theory]
     [CombinatorialData]
     public void SnapshotProvider_EmitsMemoryMetrics(bool useZeroToOneRange)
     {
@@ -161,7 +161,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.Equal(1 * multiplier, Math.Round(metricCollector.LastMeasurement.Value)); // Consuming 100% of the memory
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Provider_Returns_MemoryConsumption()
     {
         // This is a synthetic test to have full test coverage:
@@ -169,7 +169,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.InRange(usage, 0, long.MaxValue);
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Provider_Creates_Meter_With_Correct_Name()
     {
         using var meterFactory = new TestMeterFactory();

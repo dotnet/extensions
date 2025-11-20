@@ -225,7 +225,7 @@ public sealed class Tcp6TableInfoTests
         return (uint)NTSTATUS.Success;
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Test_Tcp6TableInfo_Get_UnsuccessfulStatus_All_The_Time()
     {
         var options = new ResourceMonitoringOptions
@@ -242,7 +242,7 @@ public sealed class Tcp6TableInfoTests
         });
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Test_Tcp6TableInfo_Get_InsufficientBuffer_Then_Get_InvalidParameter()
     {
         var options = new ResourceMonitoringOptions
@@ -258,7 +258,7 @@ public sealed class Tcp6TableInfoTests
         });
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Test_Tcp6TableInfo_Get_Correct_Information()
     {
         StartTimestamp = DateTimeOffset.UtcNow;

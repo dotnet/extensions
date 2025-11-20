@@ -16,7 +16,7 @@ public class WindowsDiskIoTimePerfCounterTests
 {
     private const string CategoryName = "LogicalDisk";
 
-    [ConditionalFact]
+    [Fact]
     public void DiskReadsPerfCounter_Per60Seconds()
     {
         const string CounterName = WindowsDiskPerfCounterNames.DiskReadsCounter;

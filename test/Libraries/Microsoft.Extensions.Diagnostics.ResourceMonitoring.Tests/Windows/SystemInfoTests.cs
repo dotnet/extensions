@@ -17,7 +17,7 @@ public sealed class SystemInfoTests
     /// <summary>
     /// Get basic system info.
     /// </summary>
-    [ConditionalFact]
+    [Fact]
     public void GetSystemInfo()
     {
         var sysInfo = new SystemInfo().GetSystemInfo();

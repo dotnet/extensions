@@ -19,8 +19,8 @@ Describe "Slngen.ps1" {
 
         $DefaultExcludePath = "--exclude src\Tools\MutationTesting\samples\ --exclude src\Templates\templates"
         $DefaultSlnPath = '"' + (Join-Path -Path (Get-Location) -ChildPath "SDK.sln") + '"'
-        $PollyKeywordGlobs = 'test/TestUtilities/TestUtilities.csproj src/**/*Polly*/**/*.*sproj test/**/*Polly*/**/*.*sproj bench/**/*Polly*/**/*.*sproj int_test/**/*Polly*/**/*.*sproj docs/**/*Polly*/**/*.*sproj'
-        $PollyHttpKeywordsGlobs = 'test/TestUtilities/TestUtilities.csproj src/**/*Polly*/**/*.*sproj test/**/*Polly*/**/*.*sproj bench/**/*Polly*/**/*.*sproj int_test/**/*Polly*/**/*.*sproj docs/**/*Polly*/**/*.*sproj src/**/*Http*/**/*.*sproj test/**/*Http*/**/*.*sproj bench/**/*Http*/**/*.*sproj int_test/**/*Http*/**/*.*sproj docs/**/*Http*/**/*.*sproj'
+        $PollyKeywordGlobs = 'src/**/*Polly*/**/*.*sproj test/**/*Polly*/**/*.*sproj bench/**/*Polly*/**/*.*sproj int_test/**/*Polly*/**/*.*sproj docs/**/*Polly*/**/*.*sproj'
+        $PollyHttpKeywordsGlobs = 'src/**/*Polly*/**/*.*sproj test/**/*Polly*/**/*.*sproj bench/**/*Polly*/**/*.*sproj int_test/**/*Polly*/**/*.*sproj docs/**/*Polly*/**/*.*sproj src/**/*Http*/**/*.*sproj test/**/*Http*/**/*.*sproj bench/**/*Http*/**/*.*sproj int_test/**/*Http*/**/*.*sproj docs/**/*Http*/**/*.*sproj'
     }
 
     Context "Invoke-SlngenExe with test cases from examples" {

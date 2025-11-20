@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 [PlatformSpecific(TestPlatforms.Windows)]
 public class PerformanceCounterFactoryTests
 {
-    [ConditionalFact]
+    [Fact]
     public void GetInstanceNameTest()
     {
         var performanceCounterFactory = new PerformanceCounterFactory();

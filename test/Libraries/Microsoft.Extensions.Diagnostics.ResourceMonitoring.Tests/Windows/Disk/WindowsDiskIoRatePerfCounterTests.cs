@@ -16,7 +16,7 @@ public class WindowsDiskIoRatePerfCounterTests
 {
     private const string CategoryName = "LogicalDisk";
 
-    [ConditionalFact]
+    [Fact]
     public void DiskReadsPerfCounter_Per60Seconds()
     {
         const string CounterName = WindowsDiskPerfCounterNames.DiskReadsCounter;
@@ -63,7 +63,7 @@ public class WindowsDiskIoRatePerfCounterTests
         Assert.Equal(660, ratePerfCounters.TotalCountDict["D:"]); // 450 + 3.5 * 60 = 660
     }
 
-    [ConditionalFact]
+    [Fact]
     public void DiskWriteBytesPerfCounter_Per30Seconds()
     {
         const string CounterName = WindowsDiskPerfCounterNames.DiskWriteBytesCounter;

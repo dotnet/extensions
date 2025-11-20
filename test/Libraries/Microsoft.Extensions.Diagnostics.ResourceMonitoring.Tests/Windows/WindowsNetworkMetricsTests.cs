@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 [PlatformSpecific(TestPlatforms.Windows)]
 public class WindowsNetworkMetricsTests
 {
-    [ConditionalFact]
+    [Fact]
     public void Creates_Meter_With_Correct_Name()
     {
         using var meterFactory = new TestMeterFactory();

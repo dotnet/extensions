@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 [PlatformSpecific(TestPlatforms.Windows)]
 public class PerformanceCounterWrapperTests
 {
-    [ConditionalFact]
+    [Fact]
     public void GetInstanceNameTest()
     {
         var wrapper = new PerformanceCounterWrapper("Processor", "% Processor Time", "_Total");

@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 [PlatformSpecific(TestPlatforms.Windows)]
 public sealed class MemoryInfoTests
 {
-    [ConditionalFact]
+    [Fact]
     public void GetGlobalMemory()
     {
         var memoryStatus = new MemoryInfo().GetMemoryStatus();

@@ -168,7 +168,7 @@ public sealed class TcpTableInfoTests
         return (uint)NTSTATUS.Success;
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Test_TcpTableInfo_Get_UnsuccessfulStatus_All_The_Time()
     {
         var options = new ResourceMonitoringOptions
@@ -184,7 +184,7 @@ public sealed class TcpTableInfoTests
         });
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Test_TcpTableInfo_Get_InsufficientBuffer_Then_Get_InvalidParameter()
     {
         var options = new ResourceMonitoringOptions
@@ -200,7 +200,7 @@ public sealed class TcpTableInfoTests
         });
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Test_TcpTableInfo_Get_Correct_Information()
     {
         StartTimestamp = DateTimeOffset.UtcNow;
@@ -261,7 +261,7 @@ public sealed class TcpTableInfoTests
         Assert.Equal(2, tcpStateInfo.DeleteTcbCount);
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Test_TcpTableInfo_CalculateCount_default_branch()
     {
         TcpStateInfo tcpStateInfo = new();
