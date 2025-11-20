@@ -5,19 +5,17 @@ using System;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 using Microsoft.Extensions.Time.Testing;
-using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk.Test;
 
 [SupportedOSPlatform("windows")]
-[OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public class WindowsDiskIoRatePerfCounterTests
 {
     private const string CategoryName = "LogicalDisk";
 
-    [ConditionalFact]
+    [WindowsOnlyFact]
     public void DiskReadsPerfCounter_Per60Seconds()
     {
         const string CounterName = WindowsDiskPerfCounterNames.DiskReadsCounter;
@@ -64,7 +62,7 @@ public class WindowsDiskIoRatePerfCounterTests
         Assert.Equal(660, ratePerfCounters.TotalCountDict["D:"]); // 450 + 3.5 * 60 = 660
     }
 
-    [ConditionalFact]
+    [WindowsOnlyFact]
     public void DiskWriteBytesPerfCounter_Per30Seconds()
     {
         const string CounterName = WindowsDiskPerfCounterNames.DiskWriteBytesCounter;

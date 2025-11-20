@@ -7,19 +7,17 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Shared.Pools;
-using Microsoft.TestUtilities;
 using Moq;
 using VerifyXunit;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
-[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
 public sealed class LinuxUtilizationParserCgroupV2Tests
 {
     private const string VerifiedDataDirectory = "Verified";
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("DFIJEUWGHFWGBWEFWOMDOWKSLA")]
     [InlineData("")]
     [InlineData("________________________Asdasdasdas          dd")]
@@ -43,7 +41,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupPeriodsIntervalInMicroSecondsV2());
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void Can_Read_Host_And_Cgroup_Available_Cpu_Count()
     {
         var parser = new LinuxUtilizationParserCgroupV2(new FileNamesOnlyFileSystem(TestResources.TestFilesLocation), new FakeUserHz(100));
@@ -54,7 +52,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(2.0, cgroupCpuCount);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void Provides_Total_Available_Memory_In_Bytes()
     {
         var fs = new FileNamesOnlyFileSystem(TestResources.TestFilesLocation);
@@ -65,7 +63,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(16_233_760UL * 1024, totalMem);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("----------------------")]
     [InlineData("@ @#dddada")]
     [InlineData("1231234124124")]
@@ -95,7 +93,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("----------------------")]
     [InlineData("@ @#dddada")]
     [InlineData("_1231234124124")]
@@ -120,7 +118,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("max\n", 134_796_910_592ul)]
     [InlineData("1000000\n", 1_000_000ul)]
     public void Returns_Available_Memory_When_AvailableMemoryInBytes_Is_Valid(string content, ulong expectedResult)
@@ -137,7 +135,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(expectedResult, result);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("Suspicious12312312")]
     [InlineData("string@")]
     [InlineData("string12312")]
@@ -154,7 +152,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public Task Throws_When_UsageInBytes_Doesnt_Contain_A_Number()
     {
         var regexPatternforSlices = @"\w+.slice";
@@ -169,7 +167,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void Returns_Memory_Usage_When_Memory_Usage_Is_Valid()
     {
         // When memory usage is a positive number
@@ -195,7 +193,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(0, r);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData(104343, 1)]
     [InlineData(23423, 22)]
     [InlineData(10000, 100)]
@@ -213,7 +211,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseParameters(inactive, total).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("Mem")]
     [InlineData("MemTotal:")]
     [InlineData("MemTotal: 120")]
@@ -238,7 +236,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseParameters(totalMemory).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("kB", 231, 236_544)]
     [InlineData("MB", 287, 300_941_312)]
     [InlineData("GB", 372, 399_431_958_528)]
@@ -256,7 +254,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(bytes, memory);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("0-11", 12)]
     [InlineData("0", 1)]
     [InlineData("1000", 1)]
@@ -282,7 +280,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(result, cpus);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("0::/")]
     [InlineData("0::/fakeslice")]
     public void Gets_Available_Cpus_From_CpuSetCpusFromSlices_When_Cpu_Limits_Not_Set(string slicepath)
@@ -300,7 +298,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(2, cpus);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("2500", 64.0)]
     [InlineData("10000", 256.0)]
     public void Calculates_Cpu_Request_From_Cpu_WeightInSlices(string content, float result)
@@ -317,7 +315,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(result, r);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void Gets_Available_Cpus_From_CpuSetCpus_When_Cpu_Max_Set_To_Max_()
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -332,7 +330,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(3, cpus);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("-11")]
     [InlineData("0-")]
     [InlineData("d-22")]
@@ -358,7 +356,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public Task Fallsback_To_Cpuset_When_Quota_And_Period_Are_Minus_One_()
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -373,7 +371,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("dd1d", "18")]
     [InlineData("-18", "18")]
     [InlineData("\r\r\r\r\r", "18")]
@@ -398,7 +396,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseParameters(quota, period).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void Reads_CpuUsage_When_Valid_Input()
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -412,7 +410,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(77_994_900_000_000, r);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("0::/", "usage_usec 222222\nnr_periods 50", "222222000", "50")]
     [InlineData("0::/fakeslice", "usage_usec 222222\nnr_periods 75", "222222000", "75")]
     public void Reads_CpuUsageFromSlices_When_Valid_Input(string slicepath, string content, string expectedUsage, string expectedPeriods)
@@ -433,7 +431,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(expectedPeriods, periods.ToString());
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void Reads_TotalMemory_When_Valid_Input()
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -448,7 +446,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Null(r);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("2569530367000")]
     [InlineData("  2569530 36700 245693 4860924 82283 0 4360 0dsa")]
     [InlineData("asdasd  2569530 36700 245693 4860924 82283 0 4360 0 0 0")]
@@ -468,7 +466,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("usage_", 12222)]
     [InlineData("dasd", -1)]
     [InlineData("@#dddada", 342322)]
@@ -485,7 +483,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseParameters(content, value).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData(-32131)]
     [InlineData(-1)]
     [InlineData(-15.323)]
@@ -502,7 +500,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseParameters(value).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("-1")]
     [InlineData("dasrz3424")]
     [InlineData("0")]
@@ -520,7 +518,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("2500", 64.0)]
     [InlineData("10000", 256.0)]
     public void Calculates_Cpu_Request_From_Cpu_Weight(string content, float result)
@@ -536,7 +534,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(result, r);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("0::/", "filename", "/sys/fs/cgroup/filename")]
     [InlineData("0::/filesystem.slice", "filename", "/sys/fs/cgroup/filesystem.slice/filename")]
     [InlineData("0::/filesystem.slice/", "filename", "/sys/fs/cgroup/filesystem.slice/filename")]
@@ -553,7 +551,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(result, r);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public async Task Is_Thread_Safe_Async()
     {
         var f1 = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>

@@ -4,8 +4,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.TestUtilities;
 using Xunit;
+using Microsoft.DotNet.XUnitExtensions;
 
 namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 

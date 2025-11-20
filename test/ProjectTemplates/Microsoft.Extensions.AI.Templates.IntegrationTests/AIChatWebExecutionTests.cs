@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.TestHelpers;
 using Microsoft.Shared.ProjectTemplates.Tests;
-using Microsoft.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -95,8 +95,7 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     /// environment variable <c>AI_TEMPLATES_TEST_PROJECT_NAMES</c> to "true" or "1"
     /// to enable it.
     /// </remarks>
-    [ConditionalTheory]
-    [EnvironmentVariableCondition("AI_TEMPLATES_TEST_PROJECT_NAMES", "true", "1")]
+    [ConditionalTheory(nameof(TestConditions.IsAITemplatesTestProjectNamesSet))]
     [MemberData(nameof(GetAspireProjectNameVariants))]
     public async Task CreateRestoreAndBuild_AspireProjectName_Variants(string provider, string projectName)
     {

@@ -11,12 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.XUnitExtensions" />
     <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>

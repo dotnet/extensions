@@ -11,6 +11,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.AspNetCore.Testing\Microsoft.AspNetCore.Testing.csproj" ProjectUnderTest="true" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />
-    <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.XUnitExtensions" />
+  </ItemGroup>
+
   </ItemGroup>
 </Project>

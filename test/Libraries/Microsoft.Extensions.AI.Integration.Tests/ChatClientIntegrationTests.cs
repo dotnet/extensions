@@ -18,9 +18,9 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.TestUtilities;
 using OpenTelemetry.Trace;
 using Xunit;
+using Microsoft.DotNet.XUnitExtensions;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CA2214 // Do not call overridable methods in constructors

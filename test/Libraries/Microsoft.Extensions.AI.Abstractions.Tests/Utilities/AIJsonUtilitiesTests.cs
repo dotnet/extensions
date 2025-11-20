@@ -15,7 +15,6 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Microsoft.Extensions.AI.JsonSchemaExporter;
-using Microsoft.TestUtilities;
 using Xunit;
 
 #pragma warning disable SA1114 // parameter list should follow declaration

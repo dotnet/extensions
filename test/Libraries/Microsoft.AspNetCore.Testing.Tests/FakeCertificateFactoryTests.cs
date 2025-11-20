@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Testing.Test;
@@ -23,8 +22,8 @@ public class FakeCertificateFactoryTests
         Assert.False(certificate.Extensions.OfType<X509EnhancedKeyUsageExtension>().Single().Critical);
     }
 
-    [ConditionalTheory]
-    [OSSkipCondition(OperatingSystems.Linux)]
+    [PlatformSpecific(TestPlatforms.Windows | TestPlatforms.OSX)]
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void GenerateRsa_RunsOnWindows_GeneratesRsa(bool runsOnWindows)
@@ -32,8 +31,8 @@ public class FakeCertificateFactoryTests
         Assert.NotNull(FakeSslCertificateFactory.GenerateRsa(runsOnWindows));
     }
 
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows)]
+    [PlatformSpecific(TestPlatforms.Linux | TestPlatforms.OSX)]
+    [Fact]
     public void GenerateRsa_DoesNotRunOnWindows_GeneratesRsa()
     {
         Assert.NotNull(FakeSslCertificateFactory.GenerateRsa(runsOnWindows: false));

@@ -19,15 +19,13 @@ using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
-using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
 public sealed class AcceptanceTest
 {
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [LinuxOnlyFact]
     public void Adding_Linux_Resource_Utilization_Allows_To_Query_Snapshot_Provider()
     {
         using var services = new ServiceCollection()
@@ -40,8 +38,7 @@ public sealed class AcceptanceTest
         Assert.NotEqual(default, provider.GetSnapshot());
     }
 
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [LinuxOnlyFact]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_Can_Be_Configured_With_Section()
     {
@@ -70,8 +67,7 @@ public sealed class AcceptanceTest
         Assert.Equal(memoryRefresh, options.Value.MemoryConsumptionRefreshInterval);
     }
 
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [LinuxOnlyFact]
     public void Adding_Linux_Resource_Utilization_Can_Be_Configured_With_Action()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
@@ -92,8 +88,7 @@ public sealed class AcceptanceTest
         Assert.Equal(memoryRefresh, options.Value.MemoryConsumptionRefreshInterval);
     }
 
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [LinuxOnlyFact]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv1()
     {
@@ -141,8 +136,7 @@ public sealed class AcceptanceTest
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [LinuxOnlyFact]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv2()
     {

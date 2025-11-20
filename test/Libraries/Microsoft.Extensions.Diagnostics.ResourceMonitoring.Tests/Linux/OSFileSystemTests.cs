@@ -6,15 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Shared.Pools;
-using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
-[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
 public sealed class OSFileSystemTests
 {
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void GetDirectoryNames_ReturnsDirectoryNames()
     {
         var fileSystem = new OSFileSystem();
@@ -24,7 +22,7 @@ public sealed class OSFileSystemTests
         Assert.Single(directoryNames);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void Reading_First_File_Line_Works()
     {
         const string Content = "Name:   cat";
@@ -37,7 +35,7 @@ public sealed class OSFileSystemTests
         Assert.Equal(Content, s);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void Reading_The_Whole_File_Works()
     {
         const string Content = "user 1399428\nsystem 1124053\n";
@@ -51,7 +49,7 @@ public sealed class OSFileSystemTests
         Assert.Equal(Content, s);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData(128)]
     [InlineData(256)]
     [InlineData(512)]

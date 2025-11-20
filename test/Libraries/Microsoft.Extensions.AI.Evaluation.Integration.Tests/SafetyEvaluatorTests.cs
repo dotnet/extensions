@@ -13,8 +13,8 @@ using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 using Microsoft.Extensions.AI.Evaluation.Safety;
 using Microsoft.Extensions.AI.Evaluation.Tests;
 using Microsoft.Extensions.AI.Evaluation.Utilities;
-using Microsoft.TestUtilities;
 using Xunit;
+using Microsoft.DotNet.XUnitExtensions;
 
 namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
 

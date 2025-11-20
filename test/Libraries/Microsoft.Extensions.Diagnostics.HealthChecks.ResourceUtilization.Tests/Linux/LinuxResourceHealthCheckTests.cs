@@ -9,7 +9,6 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
-using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
 

@@ -5,8 +5,8 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.TestUtilities;
 using Xunit;
+using Microsoft.DotNet.XUnitExtensions;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Tests;
 

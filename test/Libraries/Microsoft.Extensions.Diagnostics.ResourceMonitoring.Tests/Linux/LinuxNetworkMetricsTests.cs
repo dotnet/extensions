@@ -10,13 +10,11 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
-using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
-[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
 public class LinuxNetworkMetricsTests
 {
     private readonly Mock<ITcpStateInfoProvider> _tcpStateInfoProvider = new();

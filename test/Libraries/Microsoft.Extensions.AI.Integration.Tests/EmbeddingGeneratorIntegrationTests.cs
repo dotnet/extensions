@@ -16,9 +16,9 @@ using System.Numerics.Tensors;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.TestUtilities;
 using OpenTelemetry.Trace;
 using Xunit;
+using Microsoft.DotNet.XUnitExtensions;
 
 #pragma warning disable CA2214 // Do not call overridable methods in constructors
 #pragma warning disable S3967  // Multidimensional arrays should not be used

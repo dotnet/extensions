@@ -5,7 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.TestUtilities;
+using Microsoft.DotNet.XUnitExtensions;
 
 namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 

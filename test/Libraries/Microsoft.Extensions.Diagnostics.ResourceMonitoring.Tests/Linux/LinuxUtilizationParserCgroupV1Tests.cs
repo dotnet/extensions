@@ -8,16 +8,14 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Shared.Pools;
-using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
-[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
 public sealed class LinuxUtilizationParserCgroupV1Tests
 {
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("DFIJEUWGHFWGBWEFWOMDOWKSLA")]
     [InlineData("")]
     [InlineData("________________________Asdasdasdas          dd")]
@@ -40,7 +38,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Throws<NotSupportedException>(() => parser.GetCgroupRequestCpuV2());
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void Parser_Can_Read_Host_And_Cgroup_Available_Cpu_Count()
     {
         var parser = new LinuxUtilizationParserCgroupV1(new FileNamesOnlyFileSystem(TestResources.TestFilesLocation), new FakeUserHz(100));
@@ -51,7 +49,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Equal(1.0, cgroupCpuCount);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void Parser_Provides_Total_Available_Memory_In_Bytes()
     {
         var fs = new FileNamesOnlyFileSystem(TestResources.TestFilesLocation);
@@ -62,7 +60,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Equal(16_233_760UL * 1024, totalMem);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("----------------------")]
     [InlineData("@ @#dddada")]
     [InlineData("1231234124124")]
@@ -93,7 +91,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Contains("total_inactive_file", r.Message);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("----------------------")]
     [InlineData("@ @#dddada")]
     [InlineData("_1231234124124")]
@@ -119,7 +117,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Contains("/sys/fs/cgroup/memory/memory.usage_in_bytes", r.Message);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData(10, 1)]
     [InlineData(23, 22)]
     [InlineData(100000, 10000)]
@@ -138,7 +136,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Contains("lesser than", r.Message);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("Mem")]
     [InlineData("MemTotal:")]
     [InlineData("MemTotal: 120")]
@@ -164,7 +162,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Contains("/proc/meminfo", r.Message);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("kB", 231, 236544)]
     [InlineData("MB", 287, 300_941_312)]
     [InlineData("GB", 372, 399_431_958_528)]
@@ -183,7 +181,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Equal(bytes, memory);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("0-11", 12)]
     [InlineData("0", 1)]
     [InlineData("1000", 1)]
@@ -210,7 +208,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Equal(result, cpus);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("-11")]
     [InlineData("0-")]
     [InlineData("d-22")]
@@ -238,7 +236,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Contains("/sys/fs/cgroup/cpuset/cpuset.cpus", r.Message);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("-1", "18")]
     [InlineData("18", "-1")]
     [InlineData("18", "")]
@@ -259,7 +257,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Contains("/sys/fs/cgroup/cpuset/cpuset.cpus", r.Message);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("dd1d", "18")]
     [InlineData("-18", "18")]
     [InlineData("\r\r\r\r\r", "18")]
@@ -287,7 +285,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Contains("/sys/fs/cgroup/cpu/cpu.cfs_", r.Message);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void ReadingCpuUsage_Does_Not_Throw_For_Valid_Input()
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -301,7 +299,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Null(r);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public void ReadingTotalMemory_Does_Not_Throw_For_Valid_Input()
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -316,7 +314,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Null(r);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("2569530367000")]
     [InlineData("  2569530 36700 245693 4860924 82283 0 4360 0dsa 0 0 asdasd @@@@")]
     [InlineData("asdasd  2569530 36700 245693 4860924 82283 0 4360 0 0 0")]
@@ -337,7 +335,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Contains("proc/stat", r.Message);
     }
 
-    [ConditionalTheory]
+    [LinuxOnlyTheory]
     [InlineData("-1")]
     [InlineData("")]
     public void Parser_Throws_When_Cgroup_Cpu_Shares_Files_Contain_Invalid_Data(string content)
@@ -354,7 +352,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Contains("/sys/fs/cgroup/cpu/cpu.shares", r.Message);
     }
 
-    [ConditionalFact]
+    [LinuxOnlyFact]
     public async Task ThreadSafetyAsync()
     {
         var f1 = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
