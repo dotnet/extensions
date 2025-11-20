@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
-[PlatformSpecific(TestPlatforms.Windows)]
 public class FakePerformanceCounter(string instanceName, float[] values) : IPerformanceCounter
 {
 #pragma warning disable S3604 // Member initializer values should not be redundant
