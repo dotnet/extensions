@@ -1,28 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 #if NET
 using System.Collections;
 #endif
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-
 #if NET
 using System.Numerics.Tensors;
 #endif
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using System;
+
+using Microsoft.DotNet.XUnitExtensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using OpenTelemetry.Trace;
-using Microsoft.DotNet.XUnitExtensions;
 using Xunit;
-
-#pragma warning disable CA2214 // Do not call overridable methods in constructors
-#pragma warning disable S3967  // Multidimensional arrays should not be used
-
 namespace Microsoft.Extensions.AI;
 
 public abstract class EmbeddingGeneratorIntegrationTests : IDisposable

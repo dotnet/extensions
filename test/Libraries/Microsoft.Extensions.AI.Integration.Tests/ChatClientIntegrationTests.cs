@@ -1,35 +1,27 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
+
+using Microsoft.DotNet.XUnitExtensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry.Trace;
-using Microsoft.DotNet.XUnitExtensions;
 using Xunit;
-
-#pragma warning disable CA2000 // Dispose objects before losing scope
-#pragma warning disable CA2214 // Do not call overridable methods in constructors
-#pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-#pragma warning disable S103 // Lines should not be too long
-#pragma warning disable S1144 // Unused private types or members should be removed
-#pragma warning disable S3604 // Member initializer values should not be redundant
-#pragma warning disable SA1515 // Single-line comment should be preceded by blank line
-
 namespace Microsoft.Extensions.AI;
 
 public abstract class ChatClientIntegrationTests : IDisposable
