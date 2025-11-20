@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -114,6 +115,7 @@ public abstract class CachingEmbeddingGenerator<TInput, TEmbedding> : Delegating
     /// <summary>Computes a cache key for the specified values.</summary>
     /// <param name="values">The values to inform the key.</param>
     /// <returns>The computed key.</returns>
+    [Experimental("MEAI001")]
     protected abstract string GetCacheKey(params ReadOnlySpan<object?> values);
 
     /// <summary>Returns a previously cached <see cref="Embedding{TEmbedding}"/>, if available.</summary>

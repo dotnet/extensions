@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -108,6 +109,7 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     /// The generated cache key is not guaranteed to be stable across releases of the library.
     /// </para>
     /// </remarks>
+    [Experimental("MEAI001")]
     protected override string GetCacheKey(params ReadOnlySpan<object?> values)
     {
         const int FixedValuesCount = 1;

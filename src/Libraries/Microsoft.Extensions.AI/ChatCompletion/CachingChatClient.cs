@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -147,6 +148,7 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <param name="options">The <see cref="ChatOptions"/> to inform the key.</param>
     /// <param name="additionalValues">Any other values to inform the key.</param>
     /// <returns>The computed key.</returns>
+    [Experimental("MEAI001")]
     protected abstract string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues);
 
     /// <summary>

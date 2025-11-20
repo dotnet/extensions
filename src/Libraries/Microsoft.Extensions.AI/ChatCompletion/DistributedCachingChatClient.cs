@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -132,6 +133,7 @@ public class DistributedCachingChatClient : CachingChatClient
     /// The generated cache key is not guaranteed to be stable across releases of the library.
     /// </para>
     /// </remarks>
+    [Experimental("MEAI001")]
     protected override string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues)
     {
         const int FixedValuesCount = 3;
