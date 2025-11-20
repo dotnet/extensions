@@ -114,7 +114,7 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Logging.Testing.FakeLogger : Microsoft.Extensions.Logging.ILogger, Microsoft.Extensions.Logging.Abstractions.IBufferedLogger",
+      "Type": "class Microsoft.Extensions.Logging.Testing.FakeLogger : Microsoft.Extensions.Logging.ILogger",
       "Stage": "Stable",
       "Methods": [
         {
