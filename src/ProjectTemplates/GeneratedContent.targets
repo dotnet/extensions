@@ -37,23 +37,23 @@
       Specifies external packages that get referenced in generated template content.
     -->
     <PropertyGroup>
-      <TemplatePackageVersion_MicrosoftAgentsAI>1.0.0-preview.251110.2</TemplatePackageVersion_MicrosoftAgentsAI>
-      <TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>1.0.0-alpha.251110.2</TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>
+      <TemplatePackageVersion_MicrosoftAgentsAI>1.0.0-preview.251114.1</TemplatePackageVersion_MicrosoftAgentsAI>
+      <TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>1.0.0-alpha.251114.1</TemplatePackageVersion_MicrosoftAgentsAIHostingOpenAI>
       <TemplatePackageVersion_Aspire>13.0.0</TemplatePackageVersion_Aspire>
       <TemplatePackageVersion_Aspire_Preview>13.0.0-preview.1.25560.3</TemplatePackageVersion_Aspire_Preview>
-      <TemplatePackageVersion_AzureAIProjects>1.0.0</TemplatePackageVersion_AzureAIProjects>
-      <TemplatePackageVersion_AzureIdentity>1.17.0</TemplatePackageVersion_AzureIdentity>
+      <TemplatePackageVersion_AzureAIProjects>1.1.0</TemplatePackageVersion_AzureAIProjects>
+      <TemplatePackageVersion_AzureIdentity>1.17.1</TemplatePackageVersion_AzureIdentity>
       <TemplatePackageVersion_AzureSearchDocuments>11.7.0</TemplatePackageVersion_AzureSearchDocuments>
-      <TemplatePackageVersion_CommunityToolkitAspire>9.8.1-beta.413</TemplatePackageVersion_CommunityToolkitAspire>
+      <TemplatePackageVersion_CommunityToolkitAspire>13.0.0-beta.444</TemplatePackageVersion_CommunityToolkitAspire>
       <TemplatePackageVersion_MicrosoftExtensionsHosting>10.0.0</TemplatePackageVersion_MicrosoftExtensionsHosting>
       <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>10.0.0</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
-      <TemplatePackageVersion_MicrosoftMLTokenizers>2.0.0-preview.25503.2</TemplatePackageVersion_MicrosoftMLTokenizers>
+      <TemplatePackageVersion_MicrosoftMLTokenizers>2.0.0</TemplatePackageVersion_MicrosoftMLTokenizers>
       <TemplatePackageVersion_MicrosoftSemanticKernel>1.67.1</TemplatePackageVersion_MicrosoftSemanticKernel>
       <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.67.1-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
-      <TemplatePackageVersion_ModelContextProtocol>0.4.0-preview.1</TemplatePackageVersion_ModelContextProtocol>
-      <TemplatePackageVersion_OllamaSharp>5.4.8</TemplatePackageVersion_OllamaSharp>
-      <TemplatePackageVersion_OpenTelemetry>1.13.0</TemplatePackageVersion_OpenTelemetry>
-      <TemplatePackageVersion_PdfPig>0.1.11</TemplatePackageVersion_PdfPig>
+      <TemplatePackageVersion_ModelContextProtocol>0.4.0-preview.3</TemplatePackageVersion_ModelContextProtocol>
+      <TemplatePackageVersion_OllamaSharp>5.4.11</TemplatePackageVersion_OllamaSharp>
+      <TemplatePackageVersion_OpenTelemetry>1.14.0</TemplatePackageVersion_OpenTelemetry>
+      <TemplatePackageVersion_PdfPig>0.1.12</TemplatePackageVersion_PdfPig>
       <TemplatePackageVersion_SystemLinqAsyncEnumerable>10.0.0</TemplatePackageVersion_SystemLinqAsyncEnumerable>
     </PropertyGroup>
 
