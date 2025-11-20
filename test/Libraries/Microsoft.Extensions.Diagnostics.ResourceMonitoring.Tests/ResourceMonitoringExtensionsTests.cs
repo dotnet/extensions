@@ -11,7 +11,6 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Options;
-using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
