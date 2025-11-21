@@ -12,7 +12,6 @@
 - Introduced `IngestionResult` class for representing ingestion operation results
 - Introduced chunker implementations:
   - `HeaderChunker` - Splits documents based on headers and their levels
-  - `ElementsChunker` - Splits documents into chunks of individual elements
   - `SemanticSimilarityChunker` - Splits documents based on semantic similarity using embeddings
 - Introduced `IngestionChunkerOptions` class for configuring chunker behavior (token limits, overlap, etc.)
 - Introduced document processors/enrichers:
