@@ -315,7 +315,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         int updateNumber = 0;
         string responseText = "";
-        object? continuationToken = null;
+        ResponseContinuationToken? continuationToken = null;
 
         await foreach (var update in ChatClient.GetStreamingResponseAsync("What is the capital of France?", chatOptions))
         {

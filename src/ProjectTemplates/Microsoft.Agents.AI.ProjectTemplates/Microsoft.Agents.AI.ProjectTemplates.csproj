@@ -13,7 +13,6 @@
     <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
-    <VersionSuffix>preview.251110.2</VersionSuffix>
 
     <Workstream>AI</Workstream>
     <MinCodeCoverage>0</MinCodeCoverage>
