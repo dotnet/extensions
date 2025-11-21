@@ -38,9 +38,9 @@ internal class LogCollector : ILoggerProvider
         {
             lock (_items)
             {
-                if (_items.Count >= expectedErrorIds.Length)
+                // Check for exact match to avoid race conditions with AssertErrors
+                if (_items.Count == expectedErrorIds.Length)
                 {
-                    // Check if we have the expected logs
                     bool match = true;
                     for (int i = 0; i < expectedErrorIds.Length; i++)
                     {
@@ -55,6 +55,13 @@ internal class LogCollector : ILoggerProvider
                     {
                         return; // Success
                     }
+                }
+
+                // If we have more logs than expected, something unexpected happened
+                // Stop waiting to let AssertErrors report the mismatch
+                if (_items.Count > expectedErrorIds.Length)
+                {
+                    return;
                 }
             }
 
