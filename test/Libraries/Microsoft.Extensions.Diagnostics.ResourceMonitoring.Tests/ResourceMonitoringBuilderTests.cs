@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.Metrics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
-using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 using Microsoft.TestUtilities;
 using Xunit;
 
