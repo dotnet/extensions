@@ -39,17 +39,17 @@
     },
     {
       "Type": "interface Microsoft.Extensions.Diagnostics.ResourceMonitoring.ISnapshotProvider",
-      "Stage": "Experimental",
+      "Stage": "Obsolete",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.Snapshot Microsoft.Extensions.Diagnostics.ResourceMonitoring.ISnapshotProvider.GetSnapshot();",
-          "Stage": "Experimental"
+          "Stage": "Obsolete"
         }
       ],
       "Properties": [
         {
           "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources Microsoft.Extensions.Diagnostics.ResourceMonitoring.ISnapshotProvider.Resources { get; }",
-          "Stage": "Experimental"
+          "Stage": "Obsolete"
         }
       ]
     },
@@ -167,33 +167,33 @@
     },
     {
       "Type": "readonly struct Microsoft.Extensions.Diagnostics.ResourceMonitoring.Snapshot",
-      "Stage": "Experimental",
+      "Stage": "Obsolete",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.Snapshot.Snapshot(System.TimeSpan totalTimeSinceStart, System.TimeSpan kernelTimeSinceStart, System.TimeSpan userTimeSinceStart, ulong memoryUsageInBytes);",
-          "Stage": "Experimental"
+          "Stage": "Obsolete"
         },
         {
           "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.Snapshot.Snapshot();",
-          "Stage": "Experimental"
+          "Stage": "Obsolete"
         }
       ],
       "Properties": [
         {
           "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.ResourceMonitoring.Snapshot.KernelTimeSinceStart { get; }",
-          "Stage": "Experimental"
+          "Stage": "Obsolete"
         },
         {
           "Member": "ulong Microsoft.Extensions.Diagnostics.ResourceMonitoring.Snapshot.MemoryUsageInBytes { get; }",
-          "Stage": "Experimental"
+          "Stage": "Obsolete"
         },
         {
           "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.ResourceMonitoring.Snapshot.TotalTimeSinceStart { get; }",
-          "Stage": "Experimental"
+          "Stage": "Obsolete"
         },
         {
           "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.ResourceMonitoring.Snapshot.UserTimeSinceStart { get; }",
-          "Stage": "Experimental"
+          "Stage": "Obsolete"
         }
       ]
     },
