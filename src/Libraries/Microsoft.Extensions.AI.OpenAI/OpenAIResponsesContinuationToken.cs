@@ -53,19 +53,14 @@ internal sealed class OpenAIResponsesContinuationToken : ResponseContinuationTok
     /// </summary>
     /// <param name="token">The token to create the <see cref="OpenAIResponsesContinuationToken"/> from.</param>
     /// <returns>A <see cref="OpenAIResponsesContinuationToken"/> equivalent of the provided <paramref name="token"/>.</returns>
-    internal static OpenAIResponsesContinuationToken FromToken(object token)
+    internal static OpenAIResponsesContinuationToken FromToken(ResponseContinuationToken token)
     {
         if (token is OpenAIResponsesContinuationToken openAIResponsesContinuationToken)
         {
             return openAIResponsesContinuationToken;
         }
 
-        if (token is not ResponseContinuationToken)
-        {
-            Throw.ArgumentException(nameof(token), "Failed to create OpenAIResponsesResumptionToken from provided token because it is not of type ResponseContinuationToken.");
-        }
-
-        ReadOnlyMemory<byte> data = ((ResponseContinuationToken)token).ToBytes();
+        ReadOnlyMemory<byte> data = token.ToBytes();
 
         if (data.Length == 0)
         {

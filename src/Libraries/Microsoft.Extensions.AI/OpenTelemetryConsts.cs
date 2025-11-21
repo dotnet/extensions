@@ -35,6 +35,7 @@ internal static class OpenTelemetryConsts
         public const string ChatName = "chat";
         public const string EmbeddingsName = "embeddings";
         public const string ExecuteToolName = "execute_tool";
+        public const string InvokeAgentName = "invoke_agent";
         public const string OrchestrateToolsName = "orchestrate_tools"; // Non-standard
         public const string GenerateContentName = "generate_content";
 

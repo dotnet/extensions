@@ -512,6 +512,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "System.Func<System.Reflection.ParameterInfo, string?>? Microsoft.Extensions.AI.AIJsonSchemaCreateOptions.ParameterDescriptionProvider { get; init; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "Microsoft.Extensions.AI.AIJsonSchemaTransformOptions? Microsoft.Extensions.AI.AIJsonSchemaCreateOptions.TransformOptions { get; init; }",
           "Stage": "Stable"
         },

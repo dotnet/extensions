@@ -109,6 +109,12 @@ public static partial class AIJsonUtilitiesTests
                     property.SetValue(options2, includeParameter);
                     break;
 
+                case null when property.PropertyType == typeof(Func<ParameterInfo, string?>):
+                    Func<ParameterInfo, string?> parameterDescriptionProvider = static (parameter) => "description";
+                    property.SetValue(options1, parameterDescriptionProvider);
+                    property.SetValue(options2, parameterDescriptionProvider);
+                    break;
+
                 case null when property.PropertyType == typeof(AIJsonSchemaTransformOptions):
                     AIJsonSchemaTransformOptions transformOptions = new AIJsonSchemaTransformOptions { RequireAllProperties = true };
                     property.SetValue(options1, transformOptions);
@@ -1165,6 +1171,108 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateFunctionJsonSchema_ParameterDescriptionProvider_OverridesDescriptionAttribute()
+    {
+        Delegate method = (
+            [Description("Original description for first")] int first,
+            [Description("Original description for second")] string second) =>
+        {
+        };
+
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
+        {
+            ParameterDescriptionProvider = p => p.Name == "first" ? "Overridden description for first" : null
+        });
+
+        JsonElement properties = schema.GetProperty("properties");
+        Assert.Equal("Overridden description for first", properties.GetProperty("first").GetProperty("description").GetString());
+        Assert.Equal("Original description for second", properties.GetProperty("second").GetProperty("description").GetString());
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_ParameterDescriptionProvider_AddsDescriptionWhenAttributeMissing()
+    {
+        Delegate method = (int first, string second) =>
+        {
+        };
+
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
+        {
+            ParameterDescriptionProvider = p => p.Name switch
+            {
+                "first" => "Added description for first",
+                "second" => "Added description for second",
+                _ => null
+            }
+        });
+
+        JsonElement properties = schema.GetProperty("properties");
+        Assert.Equal("Added description for first", properties.GetProperty("first").GetProperty("description").GetString());
+        Assert.Equal("Added description for second", properties.GetProperty("second").GetProperty("description").GetString());
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_ParameterDescriptionProvider_ReturnsNull_UsesAttributeDescriptions()
+    {
+        Delegate method = (
+            [Description("Description from attribute")] int first,
+            string second) =>
+        {
+        };
+
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
+        {
+            ParameterDescriptionProvider = _ => null
+        });
+
+        JsonElement properties = schema.GetProperty("properties");
+        Assert.Equal("Description from attribute", properties.GetProperty("first").GetProperty("description").GetString());
+        Assert.False(properties.GetProperty("second").TryGetProperty("description", out _));
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_ParameterDescriptionProvider_NullValue_UsesAttributeDescriptions()
+    {
+        Delegate method = (
+            [Description("Description from attribute")] int first,
+            string second) =>
+        {
+        };
+
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
+        {
+            ParameterDescriptionProvider = null
+        });
+
+        JsonElement properties = schema.GetProperty("properties");
+        Assert.Equal("Description from attribute", properties.GetProperty("first").GetProperty("description").GetString());
+        Assert.False(properties.GetProperty("second").TryGetProperty("description", out _));
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_ParameterDescriptionProvider_OnlyCalledForActualParameters()
+    {
+        Delegate method = (int first, string second) =>
+        {
+        };
+
+        List<string?> calledParameterNames = [];
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
+        {
+            ParameterDescriptionProvider = p =>
+            {
+                calledParameterNames.Add(p.Name);
+                return p.Name == "first" ? "Description for first" : null;
+            }
+        });
+
+        JsonElement properties = schema.GetProperty("properties");
+        Assert.Equal(2, properties.EnumerateObject().Count());
+        Assert.Equal("Description for first", properties.GetProperty("first").GetProperty("description").GetString());
+        Assert.Equal(["first", "second"], calledParameterNames);
+    }
+
+    [Fact]
     public static void TransformJsonSchema_ConvertBooleanSchemas()
     {
         JsonElement schema = JsonDocument.Parse("""
@@ -1414,6 +1522,34 @@ public static partial class AIJsonUtilitiesTests
         JsonElement schema = JsonDocument.Parse(invalidSchema).RootElement;
         AIJsonSchemaTransformOptions transformOptions = new() { ConvertBooleanSchemas = true };
         Assert.Throws<ArgumentException>("schema", () => AIJsonUtilities.TransformSchema(schema, transformOptions));
+    }
+
+    [Theory]
+    [InlineData("true")]
+    [InlineData("false")]
+    public static void TransformJsonSchema_BooleanSchemas_Success(string booleanSchema)
+    {
+        // Boolean schemas (true/false) are valid JSON schemas per the spec.
+        // This test verifies they are accepted by TransformSchema.
+        JsonElement schema = JsonDocument.Parse(booleanSchema).RootElement;
+        AIJsonSchemaTransformOptions transformOptions = new() { ConvertBooleanSchemas = true };
+
+        // Should not throw - boolean schemas are valid
+        JsonElement result = AIJsonUtilities.TransformSchema(schema, transformOptions);
+
+        // Verify the transformation happened correctly
+        if (booleanSchema == "true")
+        {
+            // 'true' schema should be converted to empty object
+            Assert.Equal(JsonValueKind.Object, result.ValueKind);
+        }
+        else
+        {
+            // 'false' schema should be converted to {"not": true}
+            Assert.Equal(JsonValueKind.Object, result.ValueKind);
+            Assert.True(result.TryGetProperty("not", out JsonElement notValue));
+            Assert.Equal(JsonValueKind.True, notValue.ValueKind);
+        }
     }
 
     private class DerivedAIContent : AIContent

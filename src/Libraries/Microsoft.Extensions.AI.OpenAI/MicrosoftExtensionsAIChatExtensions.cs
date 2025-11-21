@@ -234,7 +234,7 @@ public static class MicrosoftExtensionsAIChatExtensions
                             part.Write(writer, ModelReaderWriterOptions.Json);
                         }
 
-                        return JsonSerializer.Deserialize(ms.GetBuffer().AsSpan(0, (int)ms.Position), AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)))!;
+                        return JsonElement.Parse(ms.GetBuffer().AsSpan(0, (int)ms.Position));
                     }
 
                     break;
