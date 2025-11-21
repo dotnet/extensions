@@ -76,7 +76,7 @@ public class ChatResponseFormatTests
     public void Serialization_ForJsonSchemaRoundtrips()
     {
         string json = JsonSerializer.Serialize(
-            ChatResponseFormat.ForJsonSchema(JsonSerializer.Deserialize<JsonElement>("[1,2,3]", AIJsonUtilities.DefaultOptions), "name", "description"),
+            ChatResponseFormat.ForJsonSchema(JsonElement.Parse("[1,2,3]"), "name", "description"),
             TestJsonSerializerContext.Default.ChatResponseFormat);
         Assert.Equal("""{"$type":"json","schema":[1,2,3],"schemaName":"name","schemaDescription":"description"}""", json);
 
