@@ -7,13 +7,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Identity;
+using Microsoft.DotNet.XUnitExtensions;
 using Microsoft.Extensions.AI.Evaluation.Quality;
 using Microsoft.Extensions.AI.Evaluation.Reporting;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 using Microsoft.Extensions.AI.Evaluation.Safety;
 using Microsoft.Extensions.AI.Evaluation.Tests;
 using Microsoft.Extensions.AI.Evaluation.Utilities;
-using Microsoft.DotNet.XUnitExtensions;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
