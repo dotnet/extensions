@@ -28,4 +28,8 @@
     <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>
 
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))">
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
+  </ItemGroup>
+
 </Project>
