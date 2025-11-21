@@ -54,6 +54,19 @@ internal sealed class HttpLatencyTelemetryHandler : DelegatingHandler
 
         _ = request.Headers.TryAddWithoutValidation(TelemetryConstants.ClientApplicationNameHeader, _applicationName);
 
-        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        // End metrics (only once, here) then snapshot.
+#if NET
+        _latencyMediator.RecordEnd(context, response);
+#endif
+        var data = context.LatencyData;
+        if (data.Tags.Length > 0 || data.Checkpoints.Length > 0 || data.Measures.Length > 0)
+        {
+            var snapshot = new LatencySnapshot(in data);
+            HttpRequestLatencySnapshotStore.Set(request, snapshot);
+        }
+
+        return response;
     }
 }

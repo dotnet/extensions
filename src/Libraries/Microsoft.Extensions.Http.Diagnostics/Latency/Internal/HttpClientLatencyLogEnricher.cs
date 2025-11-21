@@ -23,140 +23,168 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
 {
     private static readonly ObjectPool<StringBuilder> _builderPool = PoolFactory.SharedStringBuilderPool;
     private readonly HttpClientLatencyContext _latencyContext;
-    private readonly HttpLatencyMediator _httpLatencyMediator;
     private readonly CheckpointToken _enricherInvoked;
 
     public HttpClientLatencyLogEnricher(
         HttpClientLatencyContext latencyContext,
         ILatencyContextTokenIssuer tokenIssuer,
-        HttpLatencyMediator httpLatencyMediator)
+        HttpLatencyMediator _ /* mediator no longer needed for record end here */)
     {
         _latencyContext = latencyContext;
-        _httpLatencyMediator = httpLatencyMediator;
         _enricherInvoked = tokenIssuer.GetCheckpointToken(HttpCheckpoints.EnricherInvoked);
     }
 
     public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage? request, HttpResponseMessage? response, Exception? exception)
     {
-        if (response != null)
+        if (response == null)
         {
-            var lc = _latencyContext.Get();
+            return;
+        }
 
-            if (lc != null)
+        var live = _latencyContext.Get();
+        LatencySnapshot? snapshot = null;
+
+        if (live == null && request != null)
+        {
+            _ = HttpRequestLatencySnapshotStore.TryGet(request, out snapshot);
+        }
+
+        if (live != null)
+        {
+            // Final checkpoint for the logging enrichment only (no record-end here).
+            live.AddCheckpoint(_enricherInvoked);
+        }
+
+        var sb = _builderPool.Get();
+        try
+        {
+            _ = sb.Append("v1.0").Append(',');
+            AppendServerName(response.Headers, sb);
+            _ = sb.Append(',');
+
+            if (live != null)
             {
-                // Add the checkpoint
-                lc.AddCheckpoint(_enricherInvoked);
-
-                // Use the mediator to record all metrics
-                _httpLatencyMediator.RecordEnd(lc, response);
+                AppendTags(live.LatencyData, sb); _ = sb.Append(',');
+                AppendCheckpoints(live.LatencyData, sb); _ = sb.Append(',');
+                AppendMeasures(live.LatencyData, sb);
+            }
+            else if (snapshot != null)
+            {
+                AppendTags(snapshot, sb); _ = sb.Append(',');
+                AppendCheckpoints(snapshot, sb); _ = sb.Append(',');
+                AppendMeasures(snapshot, sb);
             }
 
-            StringBuilder stringBuilder = _builderPool.Get();
-
-            try
-            {
-                /* Add version, serverName, checkpoints, and measures to outgoing http logs.
-                 * Schemas: 1) ServerName,CheckpointName,CheckpointValue
-                 *          2) v1.0,ServerName,TagName,TagValue,CheckpointName,CheckpointValue,MetricName,MetricValue
-                 */
-
-                // Add version
-                _ = stringBuilder.Append("v1.0");
-                _ = stringBuilder.Append(',');
-
-                // Add server name
-                AppendServerName(response.Headers, stringBuilder);
-                _ = stringBuilder.Append(',');
-
-                // Add tags, checkpoints, and measures
-                if (lc != null)
-                {
-                    AppendTags(lc, stringBuilder);
-                    _ = stringBuilder.Append(',');
-
-                    AppendCheckpoints(lc, stringBuilder);
-                    _ = stringBuilder.Append(',');
-
-                    AppendMeasures(lc, stringBuilder);
-                }
-
-                collector.Add("LatencyInfo", stringBuilder.ToString());
-            }
-            finally
-            {
-                _builderPool.Return(stringBuilder);
-            }
+            collector.Add("LatencyInfo", sb.ToString());
+        }
+        finally
+        {
+            _builderPool.Return(sb);
         }
     }
 
-    private static void AppendServerName(HttpHeaders headers, StringBuilder stringBuilder)
+    private static void AppendServerName(HttpHeaders headers, StringBuilder sb)
     {
         if (headers.TryGetValues(TelemetryConstants.ServerApplicationNameHeader, out var values))
         {
-            _ = stringBuilder.Append(values.First());
+            _ = sb.Append(values.First());
         }
     }
 
-    private static void AppendCheckpoints(ILatencyContext latencyContext, StringBuilder stringBuilder)
+    private static void AppendTags(in LatencyData data, StringBuilder sb)
     {
-        const int MillisecondsPerSecond = 1000;
-
-        var latencyData = latencyContext.LatencyData;
-        var checkpointCount = latencyData.Checkpoints.Length;
-
-        for (int i = 0; i < checkpointCount; i++)
+        var span = data.Tags;
+        for (int i = 0; i < span.Length; i++)
         {
-            _ = stringBuilder.Append(latencyData.Checkpoints[i].Name);
-            _ = stringBuilder.Append('/');
+            _ = sb.Append(span[i].Name).Append('/');
         }
 
-        _ = stringBuilder.Append(',');
-
-        for (int i = 0; i < checkpointCount; i++)
+        _ = sb.Append(',');
+        for (int i = 0; i < span.Length; i++)
         {
-            var cp = latencyData.Checkpoints[i];
-            _ = stringBuilder.Append((long)Math.Round(((double)cp.Elapsed / cp.Frequency) * MillisecondsPerSecond));
-            _ = stringBuilder.Append('/');
+            _ = sb.Append(span[i].Value).Append('/');
         }
     }
 
-    private static void AppendMeasures(ILatencyContext latencyContext, StringBuilder stringBuilder)
+    private static void AppendCheckpoints(in LatencyData data, StringBuilder sb)
     {
-        var latencyData = latencyContext.LatencyData;
-        var measureCount = latencyData.Measures.Length;
-
-        for (int i = 0; i < measureCount; i++)
+        const int MsPerSec = 1000;
+        var span = data.Checkpoints;
+        for (int i = 0; i < span.Length; i++)
         {
-            _ = stringBuilder.Append(latencyData.Measures[i].Name);
-            _ = stringBuilder.Append('/');
+            _ = sb.Append(span[i].Name).Append('/');
         }
 
-        _ = stringBuilder.Append(',');
-
-        for (int i = 0; i < measureCount; i++)
+        _ = sb.Append(',');
+        for (int i = 0; i < span.Length; i++)
         {
-            _ = stringBuilder.Append(latencyData.Measures[i].Value);
-            _ = stringBuilder.Append('/');
+            var cp = span[i];
+            var ms = (long)Math.Round(((double)cp.Elapsed / cp.Frequency) * MsPerSec);
+            _ = sb.Append(ms).Append('/');
         }
     }
 
-    private static void AppendTags(ILatencyContext latencyContext, StringBuilder stringBuilder)
+    private static void AppendMeasures(in LatencyData data, StringBuilder sb)
     {
-        var latencyData = latencyContext.LatencyData;
-        var tagCount = latencyData.Tags.Length;
-
-        for (int i = 0; i < tagCount; i++)
+        var span = data.Measures;
+        for (int i = 0; i < span.Length; i++)
         {
-            _ = stringBuilder.Append(latencyData.Tags[i].Name);
-            _ = stringBuilder.Append('/');
+            _ = sb.Append(span[i].Name).Append('/');
         }
 
-        _ = stringBuilder.Append(',');
-
-        for (int i = 0; i < tagCount; i++)
+        _ = sb.Append(',');
+        for (int i = 0; i < span.Length; i++)
         {
-            _ = stringBuilder.Append(latencyData.Tags[i].Value);
-            _ = stringBuilder.Append('/');
+            _ = sb.Append(span[i].Value).Append('/');
+        }
+    }
+
+    // Snapshot overloads
+    private static void AppendTags(LatencySnapshot snapshot, StringBuilder sb)
+    {
+        var arr = snapshot.Tags;
+        for (int i = 0; i < arr.Length; i++)
+        {
+            _ = sb.Append(arr[i].Name).Append('/');
+        }
+
+        _ = sb.Append(',');
+        for (int i = 0; i < arr.Length; i++)
+        {
+            _ = sb.Append(arr[i].Value).Append('/');
+        }
+    }
+
+    private static void AppendCheckpoints(LatencySnapshot snapshot, StringBuilder sb)
+    {
+        const int MsPerSec = 1000;
+        var arr = snapshot.Checkpoints;
+        for (int i = 0; i < arr.Length; i++)
+        {
+            _ = sb.Append(arr[i].Name).Append('/');
+        }
+
+        _ = sb.Append(',');
+        for (int i = 0; i < arr.Length; i++)
+        {
+            var cp = arr[i];
+            var ms = (long)Math.Round(((double)cp.Elapsed / cp.Frequency) * MsPerSec);
+            _ = sb.Append(ms).Append('/');
+        }
+    }
+
+    private static void AppendMeasures(LatencySnapshot snapshot, StringBuilder sb)
+    {
+        var arr = snapshot.Measures;
+        foreach (var t in arr)
+        {
+            _ = sb.Append(t.Name).Append('/');
+        }
+
+        _ = sb.Append(',');
+        foreach (var t in arr)
+        {
+            _ = sb.Append(t.Value).Append('/');
         }
     }
 }
