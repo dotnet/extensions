@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -34,6 +35,16 @@ public sealed record class AIJsonSchemaCreateOptions
     /// The delegate is not invoked for <see cref="CancellationToken"/> parameters.
     /// </remarks>
     public Func<ParameterInfo, bool>? IncludeParameter { get; init; }
+
+    /// <summary>
+    /// Gets descriptions for individual parameters, where the key is the parameter name.
+    /// </summary>
+    /// <remarks>
+    /// This property provides descriptions for individual parameters, overriding any <see cref="System.ComponentModel.DescriptionAttribute"/>
+    /// on the parameter. If a parameter name is not in this dictionary, the description will be derived from
+    /// the parameter's <see cref="System.ComponentModel.DescriptionAttribute"/>, if present.
+    /// </remarks>
+    public IReadOnlyDictionary<string, string>? ParameterDescriptions { get; init; }
 
     /// <summary>
     /// Gets a <see cref="AIJsonSchemaTransformOptions"/> governing transformations on the JSON schema after it has been generated.
