@@ -119,6 +119,7 @@ public sealed class LinuxUtilizationProviderTests
 
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
+            { new FileInfo("/proc/self/cgroup"), "0::/" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "9223372036854771712" },
             { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
             { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
@@ -188,6 +189,7 @@ public sealed class LinuxUtilizationProviderTests
 
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
+            { new FileInfo("/proc/self/cgroup"), "0::/" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "9223372036854771712" },
             { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
             { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
