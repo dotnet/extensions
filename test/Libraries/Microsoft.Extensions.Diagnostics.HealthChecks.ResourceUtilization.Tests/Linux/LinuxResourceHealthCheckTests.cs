@@ -141,9 +141,9 @@ public class LinuxResourceHealthCheckTests
             },
         };
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(Data))]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux-specific test.")]
+    [PlatformSpecific(TestPlatforms.Linux)]
     public async Task TestCpuAndMemoryChecks_WithMetrics(
         HealthStatus expected, double utilization, ulong memoryUsed, ulong totalMemory,
         ResourceUsageThresholds cpuThresholds, ResourceUsageThresholds memoryThresholds,

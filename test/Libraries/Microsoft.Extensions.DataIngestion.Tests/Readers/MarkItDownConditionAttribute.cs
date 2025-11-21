@@ -5,21 +5,17 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.DotNet.XUnitExtensions;
 
 namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 
 /// <summary>
-/// This class exists because currently the local copy of <see cref="ConditionalTheoryAttribute"/> can't ignore tests that throw <see cref="SkipTestException"/>.
+/// Helper class for checking if MarkItDown is installed.
 /// </summary>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true)]
-public class MarkItDownConditionAttribute : Attribute, ITestCondition
+public static class MarkItDownCondition
 {
     internal static readonly Lazy<bool> IsInstalled = new(CanInvokeMarkItDown);
 
-    public bool IsMet => IsInstalled.Value;
-
-    public string SkipReason => "MarkItDown is not installed or not accessible.";
+    public static bool IsMarkItDownInstalled => IsInstalled.Value;
 
     private static bool CanInvokeMarkItDown()
     {

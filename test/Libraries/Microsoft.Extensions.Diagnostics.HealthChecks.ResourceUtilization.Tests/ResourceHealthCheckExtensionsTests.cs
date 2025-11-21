@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
@@ -19,10 +20,10 @@ using static Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks.Test;
 
-[OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
+[PlatformSpecific(~TestPlatforms.OSX)]
 public class ResourceHealthCheckExtensionsTests
 {
-    [ConditionalFact]
+    [Fact]
     public async Task AddResourceHealthCheck()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -463,9 +464,9 @@ public class ResourceHealthCheckExtensionsTests
         Assert.Throws<ArgumentNullException>(() => ((IHealthChecksBuilder)null!).AddResourceUtilizationHealthCheck((IConfigurationSection)null!));
     }
 
-    [ConditionalTheory]
+    [Theory]
     [ClassData(typeof(HealthCheckTestData))]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows-specific test.")]
+    [PlatformSpecific(TestPlatforms.Windows)]
     public async Task TestCpuAndMemoryChecks_WithMetrics(
         HealthStatus expected, double utilization, ulong memoryUsed, ulong totalMemory,
         ResourceUsageThresholds cpuThresholds, ResourceUsageThresholds memoryThresholds,
