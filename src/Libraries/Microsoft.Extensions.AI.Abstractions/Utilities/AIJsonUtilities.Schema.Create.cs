@@ -109,10 +109,16 @@ public static partial class AIJsonUtilities
             }
 
             bool hasDefaultValue = TryGetEffectiveDefaultValue(parameter, out object? defaultValue);
+
+            // Use a description from the description provider, if available. Otherwise, fall back to the DescriptionAttribute.
+            string? parameterDescription =
+                inferenceOptions.ParameterDescriptionProvider?.Invoke(parameter) ??
+                parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+
             JsonNode parameterSchema = CreateJsonSchemaCore(
                 type: parameter.ParameterType,
                 parameter: parameter,
-                description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+                description: parameterDescription,
                 hasDefaultValue: hasDefaultValue,
                 defaultValue: defaultValue,
                 serializerOptions,
