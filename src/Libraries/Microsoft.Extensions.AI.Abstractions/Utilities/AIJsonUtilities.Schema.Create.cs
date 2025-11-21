@@ -110,11 +110,10 @@ public static partial class AIJsonUtilities
 
             bool hasDefaultValue = TryGetEffectiveDefaultValue(parameter, out object? defaultValue);
 
-            // Check if there's a description override in ParameterDescriptions, otherwise use the attribute
+            // Use a description from the description provider, if available. Otherwise, fall back to the DescriptionAttribute.
             string? parameterDescription =
-                inferenceOptions.ParameterDescriptions?.TryGetValue(parameter.Name, out string? descriptionOverride) is true
-                ? descriptionOverride
-                : parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+                inferenceOptions.ParameterDescriptionProvider?.Invoke(parameter) ??
+                parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
 
             JsonNode parameterSchema = CreateJsonSchemaCore(
                 type: parameter.ParameterType,

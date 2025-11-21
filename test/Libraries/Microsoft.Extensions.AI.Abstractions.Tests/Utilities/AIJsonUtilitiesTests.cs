@@ -109,10 +109,10 @@ public static partial class AIJsonUtilitiesTests
                     property.SetValue(options2, includeParameter);
                     break;
 
-                case null when property.PropertyType == typeof(IReadOnlyDictionary<string, string>):
-                    IReadOnlyDictionary<string, string> parameterDescriptions = new Dictionary<string, string> { ["key"] = "value" };
-                    property.SetValue(options1, parameterDescriptions);
-                    property.SetValue(options2, parameterDescriptions);
+                case null when property.PropertyType == typeof(Func<ParameterInfo, string?>):
+                    Func<ParameterInfo, string?> parameterDescriptionProvider = static (parameter) => "description";
+                    property.SetValue(options1, parameterDescriptionProvider);
+                    property.SetValue(options2, parameterDescriptionProvider);
                     break;
 
                 case null when property.PropertyType == typeof(AIJsonSchemaTransformOptions):
@@ -1171,7 +1171,7 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
-    public static void CreateFunctionJsonSchema_ParameterDescriptions_OverridesDescriptionAttribute()
+    public static void CreateFunctionJsonSchema_ParameterDescriptionProvider_OverridesDescriptionAttribute()
     {
         Delegate method = (
             [Description("Original description for first")] int first,
@@ -1181,10 +1181,7 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
         {
-            ParameterDescriptions = new Dictionary<string, string>
-            {
-                ["first"] = "Overridden description for first"
-            }
+            ParameterDescriptionProvider = p => p.Name == "first" ? "Overridden description for first" : null
         });
 
         JsonElement properties = schema.GetProperty("properties");
@@ -1193,7 +1190,7 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
-    public static void CreateFunctionJsonSchema_ParameterDescriptions_AddsDescriptionWhenAttributeMissing()
+    public static void CreateFunctionJsonSchema_ParameterDescriptionProvider_AddsDescriptionWhenAttributeMissing()
     {
         Delegate method = (int first, string second) =>
         {
@@ -1201,10 +1198,11 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
         {
-            ParameterDescriptions = new Dictionary<string, string>
+            ParameterDescriptionProvider = p => p.Name switch
             {
-                ["first"] = "Added description for first",
-                ["second"] = "Added description for second"
+                "first" => "Added description for first",
+                "second" => "Added description for second",
+                _ => null
             }
         });
 
@@ -1214,7 +1212,7 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
-    public static void CreateFunctionJsonSchema_ParameterDescriptions_EmptyDictionary_UsesAttributeDescriptions()
+    public static void CreateFunctionJsonSchema_ParameterDescriptionProvider_ReturnsNull_UsesAttributeDescriptions()
     {
         Delegate method = (
             [Description("Description from attribute")] int first,
@@ -1224,7 +1222,7 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
         {
-            ParameterDescriptions = new Dictionary<string, string>()
+            ParameterDescriptionProvider = _ => null
         });
 
         JsonElement properties = schema.GetProperty("properties");
@@ -1233,7 +1231,7 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
-    public static void CreateFunctionJsonSchema_ParameterDescriptions_NullValue_UsesAttributeDescriptions()
+    public static void CreateFunctionJsonSchema_ParameterDescriptionProvider_NullValue_UsesAttributeDescriptions()
     {
         Delegate method = (
             [Description("Description from attribute")] int first,
@@ -1243,7 +1241,7 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
         {
-            ParameterDescriptions = null
+            ParameterDescriptionProvider = null
         });
 
         JsonElement properties = schema.GetProperty("properties");
@@ -1252,24 +1250,26 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
-    public static void CreateFunctionJsonSchema_ParameterDescriptions_NonExistentParameter_Ignored()
+    public static void CreateFunctionJsonSchema_ParameterDescriptionProvider_OnlyCalledForActualParameters()
     {
         Delegate method = (int first, string second) =>
         {
         };
 
+        List<string?> calledParameterNames = [];
         JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
         {
-            ParameterDescriptions = new Dictionary<string, string>
+            ParameterDescriptionProvider = p =>
             {
-                ["first"] = "Description for first",
-                ["nonExistentParameter"] = "This should be ignored"
+                calledParameterNames.Add(p.Name);
+                return p.Name == "first" ? "Description for first" : null;
             }
         });
 
         JsonElement properties = schema.GetProperty("properties");
         Assert.Equal(2, properties.EnumerateObject().Count());
         Assert.Equal("Description for first", properties.GetProperty("first").GetProperty("description").GetString());
+        Assert.Equal(["first", "second"], calledParameterNames);
     }
 
     [Fact]

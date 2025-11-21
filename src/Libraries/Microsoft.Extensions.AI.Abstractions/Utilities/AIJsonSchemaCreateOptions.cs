@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -37,14 +37,16 @@ public sealed record class AIJsonSchemaCreateOptions
     public Func<ParameterInfo, bool>? IncludeParameter { get; init; }
 
     /// <summary>
-    /// Gets descriptions for individual parameters, where the key is the parameter name.
+    /// Gets a callback that is invoked for each parameter in the <see cref="MethodBase"/> provided to
+    /// <see cref="AIJsonUtilities.CreateFunctionJsonSchema"/> to obtain a description for the parameter.
     /// </summary>
     /// <remarks>
-    /// This property provides descriptions for individual parameters, overriding any <see cref="System.ComponentModel.DescriptionAttribute"/>
-    /// on the parameter. If a parameter name is not in this dictionary, the description will be derived from
-    /// the parameter's <see cref="System.ComponentModel.DescriptionAttribute"/>, if present.
+    /// The delegate receives a <see cref="ParameterInfo"/> instance and returns a string describing
+    /// the parameter. If <see langword="null"/>, or if the delegate returns <see langword="null"/>,
+    /// the description will be sourced from the <see cref="MethodBase"/> metadata (like <see cref="DescriptionAttribute"/>),
+    /// if available.
     /// </remarks>
-    public IReadOnlyDictionary<string, string>? ParameterDescriptions { get; init; }
+    public Func<ParameterInfo, string?>? ParameterDescriptionProvider { get; init; }
 
     /// <summary>
     /// Gets a <see cref="AIJsonSchemaTransformOptions"/> governing transformations on the JSON schema after it has been generated.

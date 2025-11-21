@@ -512,7 +512,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, string>? Microsoft.Extensions.AI.AIJsonSchemaCreateOptions.ParameterDescriptions { get; init; }",
+          "Member": "System.Func<System.Reflection.ParameterInfo, string?>? Microsoft.Extensions.AI.AIJsonSchemaCreateOptions.ParameterDescriptionProvider { get; init; }",
           "Stage": "Stable"
         },
         {
