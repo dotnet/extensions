@@ -4,18 +4,16 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Microsoft.DotNet.XUnitExtensions;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 
+[ConditionalClass(typeof(MarkItDownCondition), nameof(MarkItDownCondition.IsMarkItDownInstalled))]
 public class MarkItDownReaderTests : DocumentReaderConformanceTests
 {
     protected override IngestionDocumentReader CreateDocumentReader(bool extractImages = false)
-        => MarkItDownCondition.IsInstalled.Value
-        ? new MarkItDownReader(extractImages: extractImages)
-        : throw new SkipTestException("MarkItDown is not installed");
+        => new MarkItDownReader(extractImages: extractImages);
 
     protected override void SimpleAsserts(IngestionDocument document, string source, string expectedId)
     {
