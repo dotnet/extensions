@@ -83,7 +83,7 @@ public class CitationAnnotationTests
 
         Assert.NotNull(deserialized.AdditionalProperties);
         Assert.Single(deserialized.AdditionalProperties);
-        Assert.Equal(JsonSerializer.Deserialize<JsonElement>("\"value\"", AIJsonUtilities.DefaultOptions).ToString(), deserialized.AdditionalProperties["key"]!.ToString());
+        Assert.Equal(JsonElement.Parse("\"value\"").ToString(), deserialized.AdditionalProperties["key"]!.ToString());
 
         Assert.Null(deserialized.RawRepresentation);
         Assert.Equal("snippet", deserialized.Snippet);
