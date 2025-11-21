@@ -25,14 +25,25 @@
     <ItemGroup>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj"></PackageVersionVariableReference>
-      <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion.Markdig\Microsoft.Extensions.DataIngestion.Markdig.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion.MarkItDown\Microsoft.Extensions.DataIngestion.MarkItDown.csproj"></PackageVersionVariableReference>
+
+      <!--
+      Excluded from 10.0.1 release:
+
+        <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj"></PackageVersionVariableReference>
+      -->
     </ItemGroup>
   </Target>
 
   <Target Name="ComputeGeneratedContentProperties">
+    <!--
+      Specifies internal packages not being serviced currently that get referenced in generated template content.
+    -->
+    <PropertyGroup>
+      <TemplatePackageVersion_MicrosoftExtensionsHttpResilience>10.0.0</TemplatePackageVersion_MicrosoftExtensionsHttpResilience>
+    </PropertyGroup>
     <!--
       Specifies external packages that get referenced in generated template content.
     -->
@@ -75,6 +86,7 @@
         TemplatePackageVersion_AzureSearchDocuments=$(TemplatePackageVersion_AzureSearchDocuments);
         TemplatePackageVersion_CommunityToolkitAspire=$(TemplatePackageVersion_CommunityToolkitAspire);
         TemplatePackageVersion_MicrosoftExtensionsHosting=$(TemplatePackageVersion_MicrosoftExtensionsHosting);
+        TemplatePackageVersion_MicrosoftExtensionsHttpResilience=$(TemplatePackageVersion_MicrosoftExtensionsHttpResilience);
         TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery=$(TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery);
         TemplatePackageVersion_MicrosoftMLTokenizers=$(TemplatePackageVersion_MicrosoftMLTokenizers);
         TemplatePackageVersion_MicrosoftSemanticKernel=$(TemplatePackageVersion_MicrosoftSemanticKernel);
