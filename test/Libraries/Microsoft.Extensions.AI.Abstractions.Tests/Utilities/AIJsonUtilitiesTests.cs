@@ -1416,6 +1416,50 @@ public static partial class AIJsonUtilitiesTests
         Assert.Throws<ArgumentException>("schema", () => AIJsonUtilities.TransformSchema(schema, transformOptions));
     }
 
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("""{"type":"object"}""")]
+    [InlineData("""{"properties":{"name":{"type":"string"}}}""")]
+    [InlineData("true")]
+    [InlineData("false")]
+    public static void ValidateSchemaDocument_ValidSchema_DoesNotThrow(string validSchema)
+    {
+        JsonElement schema = JsonDocument.Parse(validSchema).RootElement;
+
+        // Use reflection to call the internal ValidateSchemaDocument method
+        var method = typeof(AIJsonUtilities).GetMethod(
+            "ValidateSchemaDocument",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.NotNull(method);
+
+        // Should not throw for valid schemas
+        method.Invoke(null, [schema, "testParam"]);
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("42")]
+    [InlineData("\"string\"")]
+    [InlineData("[1,2,3]")]
+    [InlineData("""["type","object"]""")]
+    public static void ValidateSchemaDocument_InvalidSchema_ThrowsArgumentException(string invalidSchema)
+    {
+        JsonElement schema = JsonDocument.Parse(invalidSchema).RootElement;
+
+        // Use reflection to call the internal ValidateSchemaDocument method
+        var method = typeof(AIJsonUtilities).GetMethod(
+            "ValidateSchemaDocument",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.NotNull(method);
+
+        // Should throw ArgumentException for invalid schemas
+        var ex = Assert.Throws<TargetInvocationException>(() => method.Invoke(null, [schema, "testParam"]));
+        Assert.IsType<ArgumentException>(ex.InnerException);
+        var argEx = (ArgumentException)ex.InnerException!;
+        Assert.Equal("testParam", argEx.ParamName);
+        Assert.Contains("must be an object or a boolean value", argEx.Message);
+    }
+
     private class DerivedAIContent : AIContent
     {
         public int DerivedValue { get; set; }
