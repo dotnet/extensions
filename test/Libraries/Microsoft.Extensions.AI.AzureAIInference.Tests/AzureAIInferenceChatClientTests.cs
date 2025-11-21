@@ -886,7 +886,7 @@ public class AzureAIInferenceChatClientTests
 
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
-            ResponseFormat = ChatResponseFormat.ForJsonSchema(JsonSerializer.Deserialize<JsonElement>("""
+            ResponseFormat = ChatResponseFormat.ForJsonSchema(JsonElement.Parse("""
                 {
                   "type": "object",
                   "properties": {
