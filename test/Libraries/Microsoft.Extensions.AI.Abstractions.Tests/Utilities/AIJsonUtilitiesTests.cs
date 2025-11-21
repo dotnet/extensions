@@ -1524,6 +1524,34 @@ public static partial class AIJsonUtilitiesTests
         Assert.Throws<ArgumentException>("schema", () => AIJsonUtilities.TransformSchema(schema, transformOptions));
     }
 
+    [Theory]
+    [InlineData("true")]
+    [InlineData("false")]
+    public static void TransformJsonSchema_BooleanSchemas_Success(string booleanSchema)
+    {
+        // Boolean schemas (true/false) are valid JSON schemas per the spec.
+        // This test verifies they are accepted by TransformSchema.
+        JsonElement schema = JsonDocument.Parse(booleanSchema).RootElement;
+        AIJsonSchemaTransformOptions transformOptions = new() { ConvertBooleanSchemas = true };
+
+        // Should not throw - boolean schemas are valid
+        JsonElement result = AIJsonUtilities.TransformSchema(schema, transformOptions);
+
+        // Verify the transformation happened correctly
+        if (booleanSchema == "true")
+        {
+            // 'true' schema should be converted to empty object
+            Assert.Equal(JsonValueKind.Object, result.ValueKind);
+        }
+        else
+        {
+            // 'false' schema should be converted to {"not": true}
+            Assert.Equal(JsonValueKind.Object, result.ValueKind);
+            Assert.True(result.TryGetProperty("not", out JsonElement notValue));
+            Assert.Equal(JsonValueKind.True, notValue.ValueKind);
+        }
+    }
+
     private class DerivedAIContent : AIContent
     {
         public int DerivedValue { get; set; }

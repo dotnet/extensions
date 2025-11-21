@@ -195,12 +195,12 @@ public static partial class AIJsonUtilities
     }
 
     /// <summary>Gets the default JSON schema to be used by types or functions.</summary>
-    internal static JsonElement DefaultJsonSchema { get; } = ParseJsonElement("{}"u8);
+    internal static JsonElement DefaultJsonSchema { get; } = JsonElement.Parse("{}"u8);
 
     /// <summary>Validates the provided JSON schema document.</summary>
     internal static void ValidateSchemaDocument(JsonElement document, [CallerArgumentExpression("document")] string? paramName = null)
     {
-        if (document.ValueKind is not JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True)
+        if (document.ValueKind is not (JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True))
         {
             Throw.ArgumentException(paramName ?? "schema", "The schema document must be an object or a boolean value.");
         }
@@ -755,12 +755,6 @@ public static partial class AIJsonUtilities
             jsonObject[entry.Key] = entry.Value;
         }
 #endif
-    }
-
-    private static JsonElement ParseJsonElement(ReadOnlySpan<byte> utf8Json)
-    {
-        Utf8JsonReader reader = new(utf8Json);
-        return JsonElement.ParseValue(ref reader);
     }
 
     /// <summary>
