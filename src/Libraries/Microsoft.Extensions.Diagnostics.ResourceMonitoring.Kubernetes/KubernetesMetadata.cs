@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes;
 
-internal class KubernetesMetadata
+internal sealed class KubernetesMetadata
 {
     /// <summary>
     /// Gets or sets the resource memory limit the container is allowed to use in bytes.
