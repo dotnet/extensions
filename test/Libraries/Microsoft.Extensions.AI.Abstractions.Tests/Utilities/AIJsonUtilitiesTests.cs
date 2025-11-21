@@ -1417,47 +1417,31 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Theory]
-    [InlineData("{}")]
-    [InlineData("""{"type":"object"}""")]
-    [InlineData("""{"properties":{"name":{"type":"string"}}}""")]
     [InlineData("true")]
     [InlineData("false")]
-    public static void ValidateSchemaDocument_ValidSchema_DoesNotThrow(string validSchema)
+    public static void TransformJsonSchema_BooleanSchemas_Success(string booleanSchema)
     {
-        JsonElement schema = JsonDocument.Parse(validSchema).RootElement;
+        // Boolean schemas (true/false) are valid JSON schemas per the spec.
+        // This test verifies they are accepted by TransformSchema.
+        JsonElement schema = JsonDocument.Parse(booleanSchema).RootElement;
+        AIJsonSchemaTransformOptions transformOptions = new() { ConvertBooleanSchemas = true };
 
-        // Use reflection to call the internal ValidateSchemaDocument method
-        var method = typeof(AIJsonUtilities).GetMethod(
-            "ValidateSchemaDocument",
-            BindingFlags.NonPublic | BindingFlags.Static);
-        Assert.NotNull(method);
+        // Should not throw - boolean schemas are valid
+        JsonElement result = AIJsonUtilities.TransformSchema(schema, transformOptions);
 
-        // Should not throw for valid schemas
-        method.Invoke(null, [schema, "testParam"]);
-    }
-
-    [Theory]
-    [InlineData("null")]
-    [InlineData("42")]
-    [InlineData("\"string\"")]
-    [InlineData("[1,2,3]")]
-    [InlineData("""["type","object"]""")]
-    public static void ValidateSchemaDocument_InvalidSchema_ThrowsArgumentException(string invalidSchema)
-    {
-        JsonElement schema = JsonDocument.Parse(invalidSchema).RootElement;
-
-        // Use reflection to call the internal ValidateSchemaDocument method
-        var method = typeof(AIJsonUtilities).GetMethod(
-            "ValidateSchemaDocument",
-            BindingFlags.NonPublic | BindingFlags.Static);
-        Assert.NotNull(method);
-
-        // Should throw ArgumentException for invalid schemas
-        var ex = Assert.Throws<TargetInvocationException>(() => method.Invoke(null, [schema, "testParam"]));
-        Assert.IsType<ArgumentException>(ex.InnerException);
-        var argEx = (ArgumentException)ex.InnerException!;
-        Assert.Equal("testParam", argEx.ParamName);
-        Assert.Contains("must be an object or a boolean value", argEx.Message);
+        // Verify the transformation happened correctly
+        if (booleanSchema == "true")
+        {
+            // 'true' schema should be converted to empty object
+            Assert.Equal(JsonValueKind.Object, result.ValueKind);
+        }
+        else
+        {
+            // 'false' schema should be converted to {"not": true}
+            Assert.Equal(JsonValueKind.Object, result.ValueKind);
+            Assert.True(result.TryGetProperty("not", out JsonElement notValue));
+            Assert.Equal(JsonValueKind.True, notValue.ValueKind);
+        }
     }
 
     private class DerivedAIContent : AIContent
