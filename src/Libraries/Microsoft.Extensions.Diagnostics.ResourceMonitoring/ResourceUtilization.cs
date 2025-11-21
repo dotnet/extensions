@@ -48,7 +48,6 @@ public readonly struct ResourceUtilization
     /// <summary>
     /// Gets the latest snapshot of the resource utilization of the system.
     /// </summary>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
     public Snapshot Snapshot { get; } = default;
 
     /// <summary>

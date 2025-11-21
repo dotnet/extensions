@@ -157,7 +157,7 @@
         },
         {
           "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.Snapshot Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilization.Snapshot { get; }",
-          "Stage": "Experimental"
+          "Stage": "Obsolete"
         },
         {
           "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilization.SystemResources { get; }",
