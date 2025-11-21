@@ -193,7 +193,7 @@ public static partial class AIJsonUtilities
     /// <summary>Validates the provided JSON schema document.</summary>
     internal static void ValidateSchemaDocument(JsonElement document, [CallerArgumentExpression("document")] string? paramName = null)
     {
-        if (document.ValueKind is not JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True)
+        if (document.ValueKind is not (JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True))
         {
             Throw.ArgumentException(paramName ?? "schema", "The schema document must be an object or a boolean value.");
         }
