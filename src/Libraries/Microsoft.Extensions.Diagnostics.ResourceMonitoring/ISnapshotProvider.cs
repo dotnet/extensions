@@ -10,7 +10,6 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// <summary>
 /// An interface to be implemented by a provider that represents an underlying system and gets resources data about it.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
 [Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
     DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
     UrlFormat = DiagnosticIds.UrlFormat)]
