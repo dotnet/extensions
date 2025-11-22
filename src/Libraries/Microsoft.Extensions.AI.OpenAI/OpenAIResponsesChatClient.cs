@@ -296,17 +296,17 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             ChatResponseUpdate CreateUpdate(AIContent? content = null) =>
                 new(lastRole, content is not null ? [content] : null)
                 {
+                    ContinuationToken = CreateContinuationToken(
+                        responseId!,
+                        latestResponseStatus,
+                        options?.BackgroundModeEnabled,
+                        streamingUpdate.SequenceNumber),
                     ConversationId = conversationId,
                     CreatedAt = createdAt,
                     MessageId = lastMessageId,
                     ModelId = modelId,
                     RawRepresentation = streamingUpdate,
                     ResponseId = responseId,
-                    ContinuationToken = CreateContinuationToken(
-                        responseId!,
-                        latestResponseStatus,
-                        options?.BackgroundModeEnabled,
-                        streamingUpdate.SequenceNumber)
                 };
 
             switch (streamingUpdate)
@@ -368,8 +368,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 }
 
                 case StreamingResponseOutputItemAddedUpdate outputItemAddedUpdate:
-                    // NOTE: When adding a case here, also ensure that same case is added in the generic
-                    // StreamingResponseOutputItemDoneUpdate handler below, if applicable.
                     switch (outputItemAddedUpdate.Item)
                     {
                         case MessageResponseItem mri:
@@ -397,51 +395,74 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     yield return CreateUpdate(new TextReasoningContent(reasoningTextDeltaUpdate.Delta));
                     break;
 
-                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is FunctionCallResponseItem fcri:
-                    yield return CreateUpdate(OpenAIClientExtensions.ParseCallContent(fcri.FunctionArguments.ToString(), fcri.CallId, fcri.FunctionName));
-                    break;
-
-                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is McpToolCallItem mtci:
-                    var mcpUpdate = CreateUpdate();
-                    AddMcpToolCallContent(mtci, mcpUpdate.Contents);
-                    yield return mcpUpdate;
-                    break;
-
-                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is McpToolCallApprovalRequestItem mtcari:
-                    yield return CreateUpdate(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
+                case StreamingResponseImageGenerationCallInProgressUpdate imageGenInProgress:
+                    yield return CreateUpdate(new ImageGenerationToolCallContent
                     {
-                        Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
-                        RawRepresentation = mtcari,
-                    })
-                    {
-                        RawRepresentation = mtcari,
+                        ImageId = imageGenInProgress.ItemId,
+                        RawRepresentation = imageGenInProgress,
                     });
                     break;
 
-                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is CodeInterpreterCallResponseItem cicri:
-                    var codeUpdate = CreateUpdate();
-                    AddCodeInterpreterContents(cicri, codeUpdate.Contents);
-                    yield return codeUpdate;
+                case StreamingResponseImageGenerationCallPartialImageUpdate streamingImageGenUpdate:
+                    yield return CreateUpdate(GetImageGenerationResult(streamingImageGenUpdate, options));
                     break;
 
-                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when
-                        outputItemDoneUpdate.Item is MessageResponseItem mri &&
-                        mri.Content is { Count: > 0 } content &&
-                        content.Any(c => c.OutputTextAnnotations is { Count: > 0 }):
-                    AIContent annotatedContent = new();
-                    foreach (var c in content)
+                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate:
+                    switch (outputItemDoneUpdate.Item)
                     {
-                        PopulateAnnotations(c, annotatedContent);
+                        // Translate completed ResponseItems into their corresponding abstraction representations.
+                        case FunctionCallResponseItem fcri:
+                            yield return CreateUpdate(OpenAIClientExtensions.ParseCallContent(fcri.FunctionArguments.ToString(), fcri.CallId, fcri.FunctionName));
+                            break;
+
+                        case McpToolCallItem mtci:
+                            var mcpUpdate = CreateUpdate();
+                            AddMcpToolCallContent(mtci, mcpUpdate.Contents);
+                            yield return mcpUpdate;
+                            break;
+
+                        case McpToolCallApprovalRequestItem mtcari:
+                            yield return CreateUpdate(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
+                            {
+                                Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
+                                RawRepresentation = mtcari,
+                            })
+                            {
+                                RawRepresentation = mtcari,
+                            });
+                            break;
+
+                        case CodeInterpreterCallResponseItem cicri:
+                            var codeUpdate = CreateUpdate();
+                            AddCodeInterpreterContents(cicri, codeUpdate.Contents);
+                            yield return codeUpdate;
+                            break;
+
+                        // MessageResponseItems will have already had their content yielded as part of delta updates.
+                        // However, those deltas didn't yield annotations. If there are any annotations, yield them now.
+                        case MessageResponseItem mri when mri.Content is { Count: > 0 } mriContent && mriContent.Any(c => c.OutputTextAnnotations is { Count: > 0 }):
+                            AIContent annotatedContent = new(); // do not include RawRepresentation to avoid duplication with already yielded deltas
+                            foreach (var c in mriContent)
+                            {
+                                PopulateAnnotations(c, annotatedContent);
+                            }
+                            yield return CreateUpdate(annotatedContent);
+                            break;
+
+                        // For ResponseItems where we've already yielded partial deltas for the whole content,
+                        // we still want to yield an update, but we don't want it to include the ResponseItem
+                        // as the RawRepresentation, since if it did, when roundtripping we'd end up sending
+                        // the same content twice (first from the deltas, then from the raw response item).
+                        // Just yield an update without AIContent for the ResponseItem.
+                        case MessageResponseItem or ReasoningResponseItem or ImageGenerationCallResponseItem:
+                            yield return CreateUpdate();
+                            break;
+
+                        // For everything else, yield an AIContent for the ResponseItem.
+                        default:
+                            yield return CreateUpdate(new AIContent { RawRepresentation = outputItemDoneUpdate.Item });
+                            break;
                     }
-
-                    yield return CreateUpdate(annotatedContent);
-                    break;
-
-                // Ensures that every fully-formed ResponseItem that wasn't previously handled, either via a dedicated abstraction type or
-                // via partial deltas handling, is now yielded as part of an AIContent.
-                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when
-                        outputItemDoneUpdate.Item is not (MessageResponseItem or ReasoningResponseItem or FunctionCallResponseItem or ImageGenerationCallResponseItem):
-                    yield return CreateUpdate(new AIContent { RawRepresentation = outputItemDoneUpdate.Item });
                     break;
 
                 case StreamingResponseErrorUpdate errorUpdate:
@@ -457,18 +478,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     {
                         ErrorCode = nameof(ResponseContentPart.Refusal),
                     });
-                    break;
-
-                case StreamingResponseImageGenerationCallInProgressUpdate imageGenInProgress:
-                    yield return CreateUpdate(new ImageGenerationToolCallContent
-                    {
-                        ImageId = imageGenInProgress.ItemId,
-                        RawRepresentation = imageGenInProgress,
-                    });
-                    goto default;
-
-                case StreamingResponseImageGenerationCallPartialImageUpdate streamingImageGenUpdate:
-                    yield return CreateUpdate(GetImageGenerationResult(streamingImageGenUpdate, options));
                     break;
 
                 default:
@@ -1304,8 +1313,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             ImageId = update.ItemId,
             RawRepresentation = update,
-            Outputs = new List<AIContent>
-            {
+            Outputs =
+            [
                 new DataContent(update.PartialImageBytes, $"image/{outputType}")
                 {
                     AdditionalProperties = new()
@@ -1315,7 +1324,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         [nameof(update.PartialImageIndex)] = update.PartialImageIndex
                     }
                 }
-            }
+            ]
         };
     }
 
