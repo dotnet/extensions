@@ -368,6 +368,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 }
 
                 case StreamingResponseOutputItemAddedUpdate outputItemAddedUpdate:
+                    // NOTE: When adding a case here, also ensure that same case is added in the generic
+                    // StreamingResponseOutputItemDoneUpdate handler below, if applicable.
                     switch (outputItemAddedUpdate.Item)
                     {
                         case MessageResponseItem mri:
@@ -405,10 +407,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     yield return mcpUpdate;
                     break;
 
-                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is McpToolDefinitionListItem mtdli:
-                    yield return CreateUpdate(new AIContent { RawRepresentation = mtdli });
-                    break;
-
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when outputItemDoneUpdate.Item is McpToolCallApprovalRequestItem mtcari:
                     yield return CreateUpdate(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
                     {
@@ -437,6 +435,13 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     }
 
                     yield return CreateUpdate(annotatedContent);
+                    break;
+
+                // Ensures that every fully-formed ResponseItem that wasn't previously handled, either via a dedicated abstraction type or
+                // via partial deltas handling, is now yielded as part of an AIContent.
+                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate when
+                        outputItemDoneUpdate.Item is not (MessageResponseItem or ReasoningResponseItem or FunctionCallResponseItem or ImageGenerationCallResponseItem):
+                    yield return CreateUpdate(new AIContent { RawRepresentation = outputItemDoneUpdate.Item });
                     break;
 
                 case StreamingResponseErrorUpdate errorUpdate:

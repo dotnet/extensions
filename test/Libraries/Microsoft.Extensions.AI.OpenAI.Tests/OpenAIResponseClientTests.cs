@@ -594,6 +594,238 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task MissingAbstractionResponse_NonStreaming()
+    {
+        const string Input =
+            """
+            {
+                "model": "computer-use-preview",
+                "reasoning":{"summary":"concise"},
+                "tools": [
+                    {
+                        "type": "computer_use_preview",
+                        "environment": "browser",
+                        "display_width": 1024,
+                        "display_height": 768
+                    }
+                ],
+                "tool_choice": "auto",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Search the web for the temperature today in Fremont"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output =
+            """
+            {
+              "id": "resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": 20,
+              "model": "computer-use-preview-2025-03-11",
+              "output": [
+                {
+                  "type": "reasoning",
+                  "id": "rs_67cc...",
+                  "summary": [
+                    {
+                        "type": "summary_text",
+                        "text": "Clicking on the browser address bar."
+                    }
+                  ]
+                },
+                {
+                  "type": "computer_call",
+                  "id": "cu_67cc...",
+                  "call_id": "call_zw3...",
+                  "action": {
+                    "type": "click",
+                    "button": "left",
+                    "x": 156,
+                    "y": 50
+                  },
+                  "pending_safety_checks": [],
+                  "status": "completed"
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "reasoning": {
+                "generate_summary": "concise"
+              },
+              "store": true,
+              "temperature": 1.0,
+              "text": {
+                "format": {
+                  "type": "text"
+                }
+              },
+              "tool_choice": "auto",
+              "tools": [],
+              "top_p": 1.0,
+              "usage": {
+                "input_tokens": 18,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 53,
+                "output_tokens_details": {
+                  "reasoning_tokens": 12
+                },
+                "total_tokens": 71
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "computer-use-preview");
+
+        ChatOptions chatOptions = new()
+        {
+            Tools = [ResponseTool.CreateComputerTool(ComputerToolEnvironment.Browser, 1024, 768).AsAITool()],
+            RawRepresentationFactory = options => new ResponseCreationOptions
+            {
+                ReasoningOptions = new() { ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Concise },
+            }
+        };
+        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "Search the web for the temperature today in Fremont")], chatOptions);
+        Assert.NotNull(response);
+
+        Assert.Equal("resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d", response.ResponseId);
+        Assert.Equal("resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d", response.ConversationId);
+        Assert.Empty(response.Text);
+        Assert.Equal("computer-use-preview-2025-03-11", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_741_891_428), response.CreatedAt);
+        Assert.Null(response.FinishReason);
+        ChatMessage responseMessage = Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, responseMessage.Role);
+        Assert.Equal(2, responseMessage.Contents.Count);
+        Assert.Single(responseMessage.Contents, content => content is TextReasoningContent);
+        AIContent computerUserItem = Assert.Single(responseMessage.Contents, content => content.GetType() == typeof(AIContent));
+        Assert.NotNull(computerUserItem.RawRepresentation);
+        Assert.IsType<ComputerCallResponseItem>(computerUserItem.RawRepresentation);
+        Assert.NotNull(response.Usage);
+        Assert.Equal(18, response.Usage.InputTokenCount);
+        Assert.Equal(53, response.Usage.OutputTokenCount);
+        Assert.Equal(71, response.Usage.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task MissingAbstractionResponse_Streaming()
+    {
+        const string Input =
+            """
+            {
+                "model": "computer-use-preview",
+                "reasoning": {
+                    "summary": "concise"
+                },
+                "tools": [
+                    {
+                        "type": "computer_use_preview",
+                        "environment": "browser",
+                        "display_width": 1024,
+                        "display_height": 768
+                    }
+                ],
+                "tool_choice": "auto",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Search the web for the temperature today in Fremont"
+                            }
+                        ]
+                    }
+                ],
+                "stream":true
+            }
+            """;
+
+        const string Output =
+            """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_0b949080ec8e4b8a006920e0661d00819383ed81438ab11299","object":"response","created_at":1763762278,"status":"in_progress","background":false,"content_filters":null,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"computer-use-preview-2025-03-11","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","generate_summary":"concise","summary":"concise"},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":null,"tools":[{"type":"computer-use-preview-2025-03-11","environment":"browser","display_width":1024,"display_height":768}],"top_logprobs":0,"top_p":1.0,"truncation":"auto","usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_0b949080ec8e4b8a006920e0661d00819383ed81438ab11299","object":"response","created_at":1763762278,"status":"in_progress","background":false,"content_filters":null,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"computer-use-preview-2025-03-11","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","generate_summary":"concise","summary":"concise"},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":null,"tools":[{"type":"computer_use_preview","environment":"browser","display_width":1024,"display_height":768}],"top_logprobs":0,"top_p":1.0,"truncation":"auto","usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"type":"computer_call","id":"cu_0b949080ec8e4b8a006920e067a7c0819384d047d21b484357","status":"in_progress","call_id":"call_p7K8YjFwNjqMgkKhSiExgFH6","action":{"type":"screenshot"},"pending_safety_checks":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":3,"output_index":0,"item":{"type":"computer_call","id":"cu_0b949080ec8e4b8a006920e067a7c0819384d047d21b484357","status":"completed","call_id":"call_p7K8YjFwNjqMgkKhSiExgFH6","action":{"type":"screenshot"},"pending_safety_checks":[]}}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":4,"response":{"id":"resp_0b949080ec8e4b8a006920e0661d00819383ed81438ab11299","object":"response","created_at":1763762278,"status":"completed","background":false,"content_filters":null,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"computer-use-preview-2025-03-11","output":[{"type":"computer_call","id":"cu_0b949080ec8e4b8a006920e067a7c0819384d047d21b484357","status":"completed","call_id":"call_p7K8YjFwNjqMgkKhSiExgFH6","action":{"type":"screenshot"},"pending_safety_checks":[]}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","generate_summary":"concise","summary":"concise"},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":null,"tools":[{"type":"computer-use-preview-2025-03-11","environment":"browser","display_width":1024,"display_height":768}],"top_logprobs":0,"top_p":1.0,"truncation":"auto","usage":{"input_tokens":18,"input_tokens_details":{"cached_tokens":0},"output_tokens":53,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":71},"user":null,"metadata":{}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "computer-use-preview");
+
+        ChatOptions chatOptions = new()
+        {
+            Tools = [ResponseTool.CreateComputerTool(ComputerToolEnvironment.Browser, 1024, 768).AsAITool()],
+            RawRepresentationFactory = options => new ResponseCreationOptions
+            {
+                ReasoningOptions = new() { ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Concise },
+            }
+        };
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "Search the web for the temperature today in Fremont")], chatOptions))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal(5, updates.Count);
+        Assert.All(updates, u => Assert.Empty(u.Text));
+
+        for (int i = 0; i < updates.Count; i++)
+        {
+            Assert.Equal("resp_0b949080ec8e4b8a006920e0661d00819383ed81438ab11299", updates[i].ResponseId);
+            Assert.Equal("resp_0b949080ec8e4b8a006920e0661d00819383ed81438ab11299", updates[i].ConversationId);
+            Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_763_762_278), updates[i].CreatedAt);
+            Assert.Equal("computer-use-preview-2025-03-11", updates[i].ModelId);
+            Assert.Null(updates[i].AdditionalProperties);
+            Assert.Equal(i >= 3 ? 1 : 0, updates[i].Contents.Count);
+            Assert.Equal(i >= 4 ? ChatFinishReason.Stop : null, updates[i].FinishReason);
+            Assert.Null(updates[i].Role);
+        }
+
+        AIContent content = Assert.Single(updates[3].Contents);
+        var ccri = Assert.IsType<ComputerCallResponseItem>(content.RawRepresentation);
+
+        UsageContent usage = Assert.IsType<UsageContent>(Assert.Single(updates[4].Contents));
+        Assert.Equal(18, usage.Details.InputTokenCount);
+        Assert.Equal(53, usage.Details.OutputTokenCount);
+        Assert.Equal(71, usage.Details.TotalTokenCount);
+    }
+
+    [Fact]
     public async Task ChatOptions_StrictRespected()
     {
         const string Input = """
