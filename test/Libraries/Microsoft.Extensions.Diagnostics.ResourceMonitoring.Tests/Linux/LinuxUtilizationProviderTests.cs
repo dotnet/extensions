@@ -50,7 +50,8 @@ public sealed class LinuxUtilizationProviderTests
         });
 
         var parser = new LinuxUtilizationParserCgroupV1(fileSystem: fileSystem, new FakeUserHz(100));
-        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, logger, TimeProvider.System);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
+        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, logger, TimeProvider.System);
 
         using var listener = new MeterListener
         {
@@ -118,6 +119,7 @@ public sealed class LinuxUtilizationProviderTests
 
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
+            { new FileInfo("/proc/self/cgroup"), "0::/" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "9223372036854771712" },
             { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
             { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
@@ -130,7 +132,8 @@ public sealed class LinuxUtilizationProviderTests
         });
 
         var parser = new LinuxUtilizationParserCgroupV2(fileSystem: fileSystem, new FakeUserHz(100));
-        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, logger, TimeProvider.System);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
+        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, logger, TimeProvider.System);
 
         using var listener = new MeterListener
         {
@@ -173,7 +176,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
     }
 
-    [Fact]
+    [ConditionalFact]
     public Task Provider_EmitsLogRecord()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -186,6 +189,7 @@ public sealed class LinuxUtilizationProviderTests
 
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
+            { new FileInfo("/proc/self/cgroup"), "0::/" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "9223372036854771712" },
             { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
             { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
@@ -198,8 +202,8 @@ public sealed class LinuxUtilizationProviderTests
         });
 
         var parser = new LinuxUtilizationParserCgroupV2(fileSystem: fileSystem, new FakeUserHz(100));
-
-        var snapshotProvider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, logger, TimeProvider.System);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
+        var snapshotProvider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, logger, TimeProvider.System);
         var logRecords = logger.Collector.GetSnapshot();
 
         return Verifier.Verify(logRecords).UseDirectory(VerifiedDataDirectory);
@@ -212,7 +216,8 @@ public sealed class LinuxUtilizationProviderTests
         using var meterFactory = new TestMeterFactory();
 
         var parser = new DummyLinuxUtilizationParser();
-        _ = new LinuxUtilizationProvider(options, parser, meterFactory);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
+        _ = new LinuxUtilizationProvider(options, parser, meterFactory, resourceQuotaProvider);
 
         var meter = meterFactory.Meters.Single();
         Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
@@ -245,7 +250,8 @@ public sealed class LinuxUtilizationProviderTests
         });
 
         var parser = new LinuxUtilizationParserCgroupV2(fileSystem: fileSystem, new FakeUserHz(100));
-        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, logger, TimeProvider.System);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
+        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, logger, TimeProvider.System);
 
         using var listener = new MeterListener
         {
@@ -316,7 +322,8 @@ public sealed class LinuxUtilizationProviderTests
         parserMock.Setup(p => p.GetCgroupLimitedCpus()).Returns(12f);
 
         var fakeTime = new FakeTimeProvider(DateTimeOffset.UtcNow);
-        var provider = new LinuxUtilizationProvider(options, parserMock.Object, meterFactoryMock.Object, logger, fakeTime);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parserMock.Object, options);
+        var provider = new LinuxUtilizationProvider(options, parserMock.Object, meterFactoryMock.Object, resourceQuotaProvider, logger, fakeTime);
 
         using var listener = new MeterListener
         {
@@ -382,7 +389,8 @@ public sealed class LinuxUtilizationProviderTests
         parserMock.Setup(p => p.GetCgroupLimitedCpus()).Returns(12f);
 
         var fakeTime = new FakeTimeProvider(DateTimeOffset.UtcNow);
-        var provider = new LinuxUtilizationProvider(options, parserMock.Object, meterFactoryMock.Object, logger, fakeTime);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parserMock.Object, options);
+        var provider = new LinuxUtilizationProvider(options, parserMock.Object, meterFactoryMock.Object, resourceQuotaProvider, logger, fakeTime);
 
         using var listener = new MeterListener
         {

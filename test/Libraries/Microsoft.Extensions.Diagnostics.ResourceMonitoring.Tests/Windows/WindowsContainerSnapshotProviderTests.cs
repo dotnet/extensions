@@ -89,15 +89,15 @@ public sealed class WindowsContainerSnapshotProviderTests
         // https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_cpu_rate_control_information
         _cpuLimit.CpuRate = cpuRate;
 
+        var resourceQuotaProvider = CreateResourceQuotaProvider();
         var provider = new WindowsContainerSnapshotProvider(
-            _memoryInfoMock.Object,
-            _systemInfoMock.Object,
             _processInfoMock.Object,
             _logger,
             _meterFactory.Object,
             () => _jobHandleMock.Object,
             new FakeTimeProvider(),
-            new());
+            new ResourceMonitoringOptions(),
+            resourceQuotaProvider);
 
         Assert.Equal(expectedCpuUnits, provider.Resources.GuaranteedCpuUnits);
         Assert.Equal(expectedCpuUnits, provider.Resources.MaximumCpuUnits);
@@ -112,15 +112,15 @@ public sealed class WindowsContainerSnapshotProviderTests
         // to not use the value of CpuRate in the calculation.
         _cpuLimit.ControlFlags = 1;
 
+        var resourceQuotaProvider = CreateResourceQuotaProvider();
         var source = new WindowsContainerSnapshotProvider(
-            _memoryInfoMock.Object,
-            _systemInfoMock.Object,
             _processInfoMock.Object,
             _logger,
             _meterFactory.Object,
             () => _jobHandleMock.Object,
             new FakeTimeProvider(),
-            new());
+            new ResourceMonitoringOptions(),
+            resourceQuotaProvider);
 
         var data = source.GetSnapshot();
         Assert.Equal(_accountingInfo.TotalKernelTime, data.KernelTimeSinceStart.Ticks);
@@ -136,15 +136,15 @@ public sealed class WindowsContainerSnapshotProviderTests
     {
         _cpuLimit.ControlFlags = uint.MaxValue; // force all bits in ControlFlags to be 1.
 
+        var resourceQuotaProvider = CreateResourceQuotaProvider();
         var source = new WindowsContainerSnapshotProvider(
-            _memoryInfoMock.Object,
-            _systemInfoMock.Object,
             _processInfoMock.Object,
             _logger,
             _meterFactory.Object,
             () => _jobHandleMock.Object,
             new FakeTimeProvider(),
-            new());
+            new ResourceMonitoringOptions(),
+            resourceQuotaProvider);
 
         var data = source.GetSnapshot();
 
@@ -169,15 +169,15 @@ public sealed class WindowsContainerSnapshotProviderTests
 
         _appMemoryUsage = 3000UL;
 
+        var resourceQuotaProvider = CreateResourceQuotaProvider();
         var source = new WindowsContainerSnapshotProvider(
-            _memoryInfoMock.Object,
-            _systemInfoMock.Object,
             _processInfoMock.Object,
             _logger,
             _meterFactory.Object,
             () => _jobHandleMock.Object,
             new FakeTimeProvider(),
-            new());
+            new ResourceMonitoringOptions(),
+            resourceQuotaProvider);
 
         var data = source.GetSnapshot();
         Assert.Equal(_accountingInfo.TotalKernelTime, data.KernelTimeSinceStart.Ticks);
@@ -198,12 +198,13 @@ public sealed class WindowsContainerSnapshotProviderTests
         updatedAccountingInfo.TotalKernelTime = 2500;
         updatedAccountingInfo.TotalUserTime = 1500;
 
-        _jobHandleMock.SetupSequence(j => j.GetBasicAccountingInfo())
-            .Returns(_accountingInfo)
-            .Returns(_accountingInfo)
-            .Returns(updatedAccountingInfo)
-            .Returns(updatedAccountingInfo)
-            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+        var callCount = 0;
+        _jobHandleMock.Setup(j => j.GetBasicAccountingInfo())
+            .Returns(() =>
+            {
+                callCount++;
+                return callCount <= 2 ? _accountingInfo : updatedAccountingInfo;
+            });
 
         _sysInfo.NumberOfProcessors = 2;
 
@@ -216,29 +217,29 @@ public sealed class WindowsContainerSnapshotProviderTests
 
         var options = new ResourceMonitoringOptions { CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
 
+        var resourceQuotaProvider = CreateResourceQuotaProvider();
         var snapshotProvider = new WindowsContainerSnapshotProvider(
-            _memoryInfoMock.Object,
-            _systemInfoMock.Object,
             _processInfoMock.Object,
             _logger,
             meterFactoryMock.Object,
             () => _jobHandleMock.Object,
             fakeClock,
-            options);
+            options,
+            resourceQuotaProvider);
 
         // Step #0 - state in the beginning:
         metricCollector.RecordObservableInstruments();
         var snapshot = metricCollector.GetMeasurementSnapshot();
         Assert.Equal(2, snapshot.Count);
         Assert.Contains(_accountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
-        Assert.Contains(_accountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
+        Assert.Contains(_accountingInfo.TotalUserTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
 
         // Step #1 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
         snapshot = metricCollector.GetMeasurementSnapshot();
         Assert.Contains(updatedAccountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
-        Assert.Contains(updatedAccountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
+        Assert.Contains(updatedAccountingInfo.TotalUserTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
 
         // Step #2 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
@@ -247,7 +248,7 @@ public sealed class WindowsContainerSnapshotProviderTests
 
         // CPU time should be the same as before, as we're not simulating any CPU usage:
         Assert.Contains(updatedAccountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
-        Assert.Contains(updatedAccountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
+        Assert.Contains(updatedAccountingInfo.TotalUserTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
     }
 
     [Theory]
@@ -262,12 +263,13 @@ public sealed class WindowsContainerSnapshotProviderTests
         updatedAccountingInfo.TotalKernelTime = 2500;
         updatedAccountingInfo.TotalUserTime = 1500;
 
-        _jobHandleMock.SetupSequence(j => j.GetBasicAccountingInfo())
-            .Returns(() => _accountingInfo)
-            .Returns(updatedAccountingInfo)
-            .Returns(updatedAccountingInfo)
-            .Returns(updatedAccountingInfo)
-            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+        var callCount = 0;
+        _jobHandleMock.Setup(j => j.GetBasicAccountingInfo())
+            .Returns(() =>
+            {
+                callCount++;
+                return callCount == 1 ? _accountingInfo : updatedAccountingInfo;
+            });
 
         _sysInfo.NumberOfProcessors = 2;
 
@@ -284,15 +286,15 @@ public sealed class WindowsContainerSnapshotProviderTests
             UseZeroToOneRangeForMetrics = useZeroToOneRange
         };
         var multiplier = useZeroToOneRange ? 1 : 100;
+        var resourceQuotaProvider = CreateResourceQuotaProvider();
         var snapshotProvider = new WindowsContainerSnapshotProvider(
-            _memoryInfoMock.Object,
-            _systemInfoMock.Object,
             _processInfoMock.Object,
             _logger,
             meterFactoryMock.Object,
             () => _jobHandleMock.Object,
             fakeClock,
-            options);
+            options,
+            resourceQuotaProvider);
 
         // Step #0 - state in the beginning:
         metricCollector.RecordObservableInstruments();
@@ -330,15 +332,21 @@ public sealed class WindowsContainerSnapshotProviderTests
         _appMemoryUsage = 200UL;
         ulong updatedAppMemoryUsage = 600UL;
 
-        _processInfoMock.SetupSequence(p => p.GetCurrentProcessMemoryUsage())
-            .Returns(() => _appMemoryUsage)
-            .Returns(updatedAppMemoryUsage)
-            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+        var processMemoryCallCount = 0;
+        _processInfoMock.Setup(p => p.GetCurrentProcessMemoryUsage())
+            .Returns(() =>
+            {
+                processMemoryCallCount++;
+                return processMemoryCallCount <= 1 ? _appMemoryUsage : updatedAppMemoryUsage;
+            });
 
-        _processInfoMock.SetupSequence(p => p.GetMemoryUsage())
-            .Returns(() => _appMemoryUsage)
-            .Returns(updatedAppMemoryUsage)
-            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+        var containerMemoryCallCount = 0;
+        _processInfoMock.Setup(p => p.GetMemoryUsage())
+            .Returns(() =>
+            {
+                containerMemoryCallCount++;
+                return containerMemoryCallCount <= 1 ? _appMemoryUsage : updatedAppMemoryUsage;
+            });
 
         var fakeClock = new FakeTimeProvider();
         using var meter = new Meter(nameof(SnapshotProvider_EmitsMemoryMetrics));
@@ -353,15 +361,15 @@ public sealed class WindowsContainerSnapshotProviderTests
             UseZeroToOneRangeForMetrics = useZeroToOneRange
         };
         var multiplier = useZeroToOneRange ? 1 : 100;
+        var resourceQuotaProvider = CreateResourceQuotaProvider();
         var snapshotProvider = new WindowsContainerSnapshotProvider(
-            _memoryInfoMock.Object,
-            _systemInfoMock.Object,
             _processInfoMock.Object,
             _logger,
             meterFactoryMock.Object,
             () => _jobHandleMock.Object,
             fakeClock,
-            options);
+            options,
+            resourceQuotaProvider);
 
         // Step #0 - state in the beginning:
         metricCollector.RecordObservableInstruments();
@@ -387,15 +395,21 @@ public sealed class WindowsContainerSnapshotProviderTests
         ulong updatedAppMemoryUsage = 600UL;
         ulong updatedContainerMemoryUsage = 1200UL;
 
-        _processInfoMock.SetupSequence(p => p.GetCurrentProcessMemoryUsage())
-            .Returns(() => _appMemoryUsage)
-            .Returns(updatedAppMemoryUsage)
-            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+        var processMemoryCallCount = 0;
+        _processInfoMock.Setup(p => p.GetCurrentProcessMemoryUsage())
+            .Returns(() =>
+            {
+                processMemoryCallCount++;
+                return processMemoryCallCount <= 1 ? _appMemoryUsage : updatedAppMemoryUsage;
+            });
 
-        _processInfoMock.SetupSequence(p => p.GetMemoryUsage())
-            .Returns(() => containerMemoryUsage)
-            .Returns(updatedContainerMemoryUsage)
-            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+        var containerMemoryCallCount = 0;
+        _processInfoMock.Setup(p => p.GetMemoryUsage())
+            .Returns(() =>
+            {
+                containerMemoryCallCount++;
+                return containerMemoryCallCount <= 1 ? containerMemoryUsage : updatedContainerMemoryUsage;
+            });
 
         var fakeClock = new FakeTimeProvider();
         using var meter = new Meter(nameof(SnapshotProvider_TestMemoryMetricsTogether));
@@ -410,15 +424,15 @@ public sealed class WindowsContainerSnapshotProviderTests
         {
             MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2)
         };
+        var resourceQuotaProvider = CreateResourceQuotaProvider();
         var snapshotProvider = new WindowsContainerSnapshotProvider(
-            _memoryInfoMock.Object,
-            _systemInfoMock.Object,
             _processInfoMock.Object,
             _logger,
             meterFactoryMock.Object,
             () => _jobHandleMock.Object,
             fakeClock,
-            options);
+            options,
+            resourceQuotaProvider);
 
         // Step #0 - state in the beginning:
         processMetricCollector.RecordObservableInstruments();
@@ -465,17 +479,31 @@ public sealed class WindowsContainerSnapshotProviderTests
         const ulong UpdatedAppMemoryUsage = 600UL;
         const ulong UpdatedAppMemoryUsage2 = 300UL;
 
-        _processInfoMock.SetupSequence(p => p.GetCurrentProcessMemoryUsage())
-            .Returns(() => _appMemoryUsage)
-            .Returns(UpdatedAppMemoryUsage)
-            .Returns(UpdatedAppMemoryUsage2)
-            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+        var processMemoryCallCount = 0;
+        _processInfoMock.Setup(p => p.GetCurrentProcessMemoryUsage())
+            .Returns(() =>
+            {
+                processMemoryCallCount++;
+                return processMemoryCallCount switch
+                {
+                    1 => _appMemoryUsage,
+                    2 => UpdatedAppMemoryUsage,
+                    _ => UpdatedAppMemoryUsage2
+                };
+            });
 
-        _processInfoMock.SetupSequence(p => p.GetMemoryUsage())
-            .Returns(() => _appMemoryUsage)
-            .Returns(UpdatedAppMemoryUsage)
-            .Returns(UpdatedAppMemoryUsage2)
-            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+        var containerMemoryCallCount = 0;
+        _processInfoMock.Setup(p => p.GetMemoryUsage())
+            .Returns(() =>
+            {
+                containerMemoryCallCount++;
+                return containerMemoryCallCount switch
+                {
+                    1 => _appMemoryUsage,
+                    2 => UpdatedAppMemoryUsage,
+                    _ => UpdatedAppMemoryUsage2
+                };
+            });
 
         var fakeClock = new FakeTimeProvider();
         using var meter = new Meter(nameof(SnapshotProvider_EmitsMemoryMetrics));
@@ -488,15 +516,15 @@ public sealed class WindowsContainerSnapshotProviderTests
         {
             MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2),
         };
+        var resourceQuotaProvider = CreateResourceQuotaProvider();
         var snapshotProvider = new WindowsContainerSnapshotProvider(
-            _memoryInfoMock.Object,
-            _systemInfoMock.Object,
             _processInfoMock.Object,
             _logger,
             meterFactoryMock.Object,
             () => _jobHandleMock.Object,
             fakeClock,
-            options);
+            options,
+            resourceQuotaProvider);
 
         // Step #0 - state in the beginning:
         metricCollector.RecordObservableInstruments();
@@ -522,15 +550,15 @@ public sealed class WindowsContainerSnapshotProviderTests
     [Fact]
     public Task SnapshotProvider_EmitsLogRecord()
     {
+        var resourceQuotaProvider = CreateResourceQuotaProvider();
         var snapshotProvider = new WindowsContainerSnapshotProvider(
-            _memoryInfoMock.Object,
-            _systemInfoMock.Object,
             _processInfoMock.Object,
             _logger,
             _meterFactory.Object,
             () => _jobHandleMock.Object,
             new FakeTimeProvider(),
-            new());
+            new ResourceMonitoringOptions(),
+            resourceQuotaProvider);
 
         var logRecords = _logger.Collector.GetSnapshot();
 
@@ -540,20 +568,27 @@ public sealed class WindowsContainerSnapshotProviderTests
     [Fact]
     public void Provider_Creates_Meter_With_Correct_Name()
     {
-        var options = Options.Options.Create<ResourceMonitoringOptions>(new());
         using var meterFactory = new TestMeterFactory();
 
+        var resourceQuotaProvider = CreateResourceQuotaProvider();
         _ = new WindowsContainerSnapshotProvider(
-            _memoryInfoMock.Object,
-            _systemInfoMock.Object,
             _processInfoMock.Object,
             _logger,
             meterFactory,
             () => _jobHandleMock.Object,
             new FakeTimeProvider(),
-            new());
+            new ResourceMonitoringOptions(),
+            resourceQuotaProvider);
 
         var meter = meterFactory.Meters.Single();
         Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
+    }
+
+    private WindowsContainerResourceQuotaProvider CreateResourceQuotaProvider()
+    {
+        return new WindowsContainerResourceQuotaProvider(
+            _memoryInfoMock.Object,
+            _systemInfoMock.Object,
+            () => _jobHandleMock.Object);
     }
 }
