@@ -62,6 +62,10 @@ public class HostedMcpServerToolTests
         tool.ApprovalMode = HostedMcpServerToolApprovalMode.AlwaysRequire;
         Assert.Same(HostedMcpServerToolApprovalMode.AlwaysRequire, tool.ApprovalMode);
 
+        var customApprovalMode = new HostedMcpServerToolRequireSpecificApprovalMode(["tool1"], ["tool2"]);
+        tool.ApprovalMode = customApprovalMode;
+        Assert.Same(customApprovalMode, tool.ApprovalMode);
+
         Assert.Null(tool.Headers);
         IDictionary<string, string> headers = new Dictionary<string, string>
         {
@@ -72,10 +76,6 @@ public class HostedMcpServerToolTests
 
         tool.Headers = null;
         Assert.Null(tool.Headers);
-
-        var customApprovalMode = new HostedMcpServerToolRequireSpecificApprovalMode(["tool1"], ["tool2"]);
-        tool.ApprovalMode = customApprovalMode;
-        Assert.Same(customApprovalMode, tool.ApprovalMode);
     }
 
     [Fact]
