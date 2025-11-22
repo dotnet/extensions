@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.TestUtilities;
+using Microsoft.DotNet.XUnitExtensions;
 using Xunit;
 
 #pragma warning disable CA2214 // Do not call overridable methods in constructors

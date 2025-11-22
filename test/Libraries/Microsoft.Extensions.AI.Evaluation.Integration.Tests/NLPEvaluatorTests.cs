@@ -5,12 +5,11 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.DotNet.XUnitExtensions;
 using Microsoft.Extensions.AI.Evaluation.NLP;
 using Microsoft.Extensions.AI.Evaluation.Reporting;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
-using Microsoft.TestUtilities;
 using Xunit;
-
 namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
 
 [Experimental("AIEVAL001")]
