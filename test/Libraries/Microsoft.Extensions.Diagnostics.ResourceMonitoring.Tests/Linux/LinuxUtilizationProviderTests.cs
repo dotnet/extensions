@@ -385,8 +385,8 @@ public sealed class LinuxUtilizationProviderTests
         var parserMock = new Mock<ILinuxUtilizationParser>();
         parserMock.Setup(p => p.GetMemoryUsageInBytes()).Returns(() =>
         {
-            callCount++;
             // 4 represents number of calls of GetMemoryUsageInBytes() in LinuxUtilizationProvider in one interval
+            callCount++;
             if (callCount <= 4)
             {
                 throw new InvalidOperationException("Simulated unhandled exception");
