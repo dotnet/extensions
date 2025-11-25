@@ -4890,6 +4890,135 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task StreamingErrorUpdate_DocumentedFormat_ParsesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: error
+            data: {"type":"error","sequence_number":1,"message":"Rate limit exceeded","code":"rate_limit_exceeded","param":"requests"}
+
+            event: response.failed
+            data: {"type":"response.failed","sequence_number":2,"response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[],"error":{"code":"rate_limit_exceeded","message":"Rate limit exceeded"}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        var errorUpdate = updates.FirstOrDefault(u => u.Contents.Any(c => c is ErrorContent));
+        Assert.NotNull(errorUpdate);
+
+        var errorContent = errorUpdate.Contents.OfType<ErrorContent>().First();
+        Assert.Equal("Rate limit exceeded", errorContent.Message);
+        Assert.Equal("rate_limit_exceeded", errorContent.ErrorCode);
+        Assert.Equal("requests", errorContent.Details);
+    }
+
+    [Fact]
+    public async Task StreamingErrorUpdate_ActualErroneousFormat_ParsesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_002","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: error
+            data: {"type":"error","sequence_number":1,"error":{"message":"Content filter triggered","code":"content_filter","param":"safety"}}
+
+            event: response.failed
+            data: {"type":"response.failed","sequence_number":2,"response":{"id":"resp_002","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[],"error":{"code":"content_filter","message":"Content filter triggered"}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        var errorUpdate = updates.FirstOrDefault(u => u.Contents.Any(c => c is ErrorContent));
+        Assert.NotNull(errorUpdate);
+
+        var errorContent = errorUpdate.Contents.OfType<ErrorContent>().First();
+        Assert.Equal("Content filter triggered", errorContent.Message);
+        Assert.Equal("content_filter", errorContent.ErrorCode);
+        Assert.Equal("safety", errorContent.Details);
+    }
+
+    [Fact]
+    public async Task StreamingErrorUpdate_NoErrorInformation_HandlesGracefully()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_003","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: error
+            data: {"type":"error","sequence_number":1}
+
+            event: response.failed
+            data: {"type":"response.failed","sequence_number":2,"response":{"id":"resp_003","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[]}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        var errorUpdate = updates.FirstOrDefault(u => u.Contents.Any(c => c is ErrorContent));
+        Assert.NotNull(errorUpdate);
+
+        var errorContent = errorUpdate.Contents.OfType<ErrorContent>().First();
+        Assert.True(string.IsNullOrEmpty(errorContent.Message));
+        Assert.True(string.IsNullOrEmpty(errorContent.ErrorCode));
+        Assert.True(string.IsNullOrEmpty(errorContent.Details));
+    }
+
+    [Fact]
     public async Task StreamingResponseWithAnnotations_HandlesCorrectly()
     {
         const string Input = """
