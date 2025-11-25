@@ -60,8 +60,8 @@ internal static partial class Log
     [LoggerMessage(7, LogLevel.Debug,
         "Computed memory usage with MemoryUsedInBytes = {memoryUsed}, MemoryRequest = {memoryRequest}, MemoryPercentage = {memoryPercentage}.")]
     public static partial void MemoryPercentageRequest(
-    this ILogger logger,
-    ulong memoryUsed,
-    double memoryRequest,
-    double memoryPercentage);
+        this ILogger logger,
+        ulong memoryUsed,
+        double memoryRequest,
+        double memoryPercentage);
 }

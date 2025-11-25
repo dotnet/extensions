@@ -93,7 +93,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization).value));
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization);
-        Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization).value));
+        Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization).value);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
