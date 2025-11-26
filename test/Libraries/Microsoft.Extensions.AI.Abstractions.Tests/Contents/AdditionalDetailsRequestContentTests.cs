@@ -44,6 +44,7 @@ public class AdditionalDetailsRequestContentTests
         Assert.NotNull(textResponse);
         Assert.Same(id, textResponse.Id);
         Assert.Same(response, textResponse.Response);
+        Assert.Throws<ArgumentNullException>("response", () => content.CreateResponse(null!));
     }
 
     [Fact]
