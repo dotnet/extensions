@@ -155,7 +155,7 @@ public sealed class IngestionPipeline<T> : IDisposable
 
                 _logger?.IngestingFailed(ex, document?.Identifier ?? documentIdentifier);
 
-                // In contrary to other processing methods that take collections of files, here we re-throw the exception to inform the caller.
+                // Contrary to other processing methods that take collections of files, here we re-throw the exception to inform the caller.
                 throw;
             }
         }
