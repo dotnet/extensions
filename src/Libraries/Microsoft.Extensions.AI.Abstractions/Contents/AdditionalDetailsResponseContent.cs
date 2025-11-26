@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.AI;
 /// Represents a response for additional details request from the user.
 /// </summary>
 [Experimental("MEAI001")]
-public class AdditionalDetailsResponseContent : UserInputResponseContent
+public sealed class AdditionalDetailsResponseContent : UserInputResponseContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AdditionalDetailsResponseContent"/> class.
