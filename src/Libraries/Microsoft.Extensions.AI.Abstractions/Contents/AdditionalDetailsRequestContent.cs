@@ -32,7 +32,7 @@ public sealed class AdditionalDetailsRequestContent : UserInputRequestContent
     /// <summary>
     /// Creates a <see cref="AdditionalDetailsResponseContent"/> to provide the requested additional details.
     /// </summary>
-    /// <param name="response">The <see cref="AIContent"/> containing the requestd additional details.</param>
+    /// <param name="response">The <see cref="AIContent"/> containing the requested additional details.</param>
     /// <returns>The <see cref="AdditionalDetailsResponseContent"/> representing the response.</returns>
     public AdditionalDetailsResponseContent CreateResponse(AIContent response) => new(Id, response);
 }
