@@ -85,6 +85,7 @@ public abstract class IngestionDocumentReader
             ".jpg" => "image/jpeg",
             ".key" => "application/x-iwork-keynote-sffkey",
             ".lwp" => "application/vnd.lotus-wordpro",
+            ".markdown" or ".md" => "text/markdown",
             ".mcw" => "application/macwriteii",
             ".mw" => "application/macwriteii",
             ".numbers" => "application/x-iwork-numbers-sffnumbers",
