@@ -1,8 +1,14 @@
-# Release History
+# Microsoft.Extensions.AI.AzureAIInference Release History
+
+## NOT YET RELEASED
+
+- Fixed package references for net10.0 asset.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 10.0.0-preview.1.25560.10
 
 - Updated .NET dependencies to 10.0.0 versions.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.10.1-preview.1.25521.4
 
