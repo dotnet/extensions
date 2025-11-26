@@ -15,6 +15,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
+[PlatformSpecific(TestPlatforms.Linux)]
 public class LinuxCountersTests
 {
     [Fact]

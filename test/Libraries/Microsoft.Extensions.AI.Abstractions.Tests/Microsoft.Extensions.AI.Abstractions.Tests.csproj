@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.XUnitExtensions" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="JsonSchema.Net" />
@@ -37,6 +38,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" ProjectUnderTest="true" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
-    <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 </Project>

@@ -11,20 +11,18 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
-using Microsoft.TestUtilities;
 using Moq;
 using VerifyXunit;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
-[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+[PlatformSpecific(TestPlatforms.Linux)]
 public sealed class LinuxUtilizationProviderTests
 {
     private const string VerifiedDataDirectory = "Verified";
 
-    [ConditionalFact]
-    [CombinatorialData]
+    [Fact]
     public void Provider_Registers_Instruments()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -105,8 +103,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
     }
 
-    [ConditionalFact]
-    [CombinatorialData]
+    [Fact]
     public void Provider_Registers_Instruments_CgroupV2()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -223,8 +220,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
     }
 
-    [ConditionalFact]
-    [CombinatorialData]
+    [Fact]
     public void Provider_Registers_Instruments_CgroupV2_WithoutHostCpu()
     {
         var meterName = Guid.NewGuid().ToString();
