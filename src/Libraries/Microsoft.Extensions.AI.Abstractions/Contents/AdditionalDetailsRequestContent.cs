@@ -18,6 +18,9 @@ public sealed class AdditionalDetailsRequestContent : UserInputRequestContent
     /// </summary>
     /// <param name="id">The ID that uniquely identifies the additional details request/response pair.</param>
     /// <param name="request">The additional details request.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="id"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is <see langword="null"/>.</exception>
     public AdditionalDetailsRequestContent(string id, AIContent request)
         : base(id)
     {
@@ -32,7 +35,7 @@ public sealed class AdditionalDetailsRequestContent : UserInputRequestContent
     /// <summary>
     /// Creates a <see cref="AdditionalDetailsResponseContent"/> to provide the requested additional details.
     /// </summary>
-    /// <param name="response">The <see cref="AIContent"/> containing the requestd additional details.</param>
+    /// <param name="response">The <see cref="AIContent"/> containing the requested additional details.</param>
     /// <returns>The <see cref="AdditionalDetailsResponseContent"/> representing the response.</returns>
     public AdditionalDetailsResponseContent CreateResponse(AIContent response) => new(Id, response);
 }
