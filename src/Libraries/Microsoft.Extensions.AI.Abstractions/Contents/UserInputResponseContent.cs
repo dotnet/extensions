@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.AI;
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(FunctionApprovalResponseContent), "functionApprovalResponse")]
 [JsonDerivedType(typeof(McpServerToolApprovalResponseContent), "mcpServerToolApprovalResponse")]
+[JsonDerivedType(typeof(AdditionalDetailsResponseContent), "additionalDetailsResponseContent")]
 public class UserInputResponseContent : AIContent
 {
     /// <summary>
