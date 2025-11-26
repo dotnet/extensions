@@ -18,6 +18,9 @@ public sealed class AdditionalDetailsResponseContent : UserInputResponseContent
     /// </summary>
     /// <param name="id">The ID that uniquely identifies the additional details request/response pair.</param>
     /// <param name="response">The additional details response.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="id"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
     public AdditionalDetailsResponseContent(string id, AIContent response)
         : base(id)
     {
