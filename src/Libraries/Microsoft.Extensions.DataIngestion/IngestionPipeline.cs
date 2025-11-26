@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -115,6 +116,73 @@ public sealed class IngestionPipeline<T> : IDisposable
                 yield return ingestionResult;
             }
         }
+    }
+
+    /// <summary>
+    /// Processes a document from the specified stream.
+    /// </summary>
+    /// <param name="documentSource">The stream containing the document data to be processed. Must be readable and positioned at the start of the
+    /// document.</param>
+    /// <param name="documentIdentifier">A unique identifier for the document being processed. Cannot be null or empty.</param>
+    /// <param name="documentMediaType">The media type (MIME type) of the document, such as "application/pdf" or "text/plain".</param>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>A task that represents the asynchronous processing operation.</returns>
+    public async Task ProcessAsync(Stream documentSource, string documentIdentifier, string documentMediaType, CancellationToken cancellationToken = default)
+    {
+        Throw.IfNull(documentSource);
+        Throw.IfNullOrEmpty(documentIdentifier);
+
+        // We don't validate documentMediaType for null/empty here, as some readers may not require it.
+
+        using (Activity? processDocument = _activitySource.StartActivity(ProcessStream.ActivityName, ActivityKind.Internal, parentContext: default))
+        {
+            processDocument?.SetTag(ProcessSource.DocumentIdTagName, documentIdentifier);
+            processDocument?.SetTag(ProcessStream.DocumentMediaType, documentMediaType);
+
+            IngestionDocument? document = null;
+            try
+            {
+                document = await _reader.ReadAsync(documentSource, documentIdentifier, documentMediaType, cancellationToken).ConfigureAwait(false);
+
+                processDocument?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
+                _logger?.ReadDocument(document.Identifier);
+
+                document = await IngestAsync(document, processDocument, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                TraceException(processDocument, ex);
+
+                _logger?.IngestingFailed(ex, document?.Identifier ?? documentIdentifier);
+
+                // In contrary to other processing methods that take collections of files, here we re-throw the exception to inform the caller.
+                throw;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Processes a document from the specified buffer.
+    /// </summary>
+    /// <param name="documentContent">The buffer containing the document data to be processed.</param>
+    /// <param name="documentIdentifier">A unique identifier for the document being processed. Cannot be null or empty.</param>
+    /// <param name="documentMediaType">The media type (MIME type) of the document, such as "application/pdf" or "text/plain".</param>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>A task that represents the asynchronous processing operation.</returns>
+    public async Task ProcessAsync(ReadOnlyMemory<byte> documentContent, string documentIdentifier, string documentMediaType, CancellationToken cancellationToken = default)
+    {
+        if (documentContent.IsEmpty)
+        {
+            Throw.ArgumentException("Document content cannot be empty.", nameof(documentContent));
+        }
+
+        Throw.IfNullOrEmpty(documentIdentifier);
+
+        using MemoryStream documentStream = MemoryMarshal.TryGetArray(documentContent, out ArraySegment<byte> array)
+            ? new MemoryStream(array.Array!, array.Offset, array.Count)
+            : new MemoryStream(documentContent.ToArray());
+
+        await ProcessAsync(documentStream, documentIdentifier, documentMediaType, cancellationToken).ConfigureAwait(false);
     }
 
     private static string GetShortName(object any) => any.GetType().Name;

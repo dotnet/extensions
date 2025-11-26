@@ -144,6 +144,20 @@ public sealed class IngestionPipelineTests : IDisposable
     }
 
     [Fact]
+    public async Task CanProcessStream()
+    {
+        using Stream stream = _withTable.OpenRead();
+        await CanProcessSingleDocument(pipeline => pipeline.ProcessAsync(stream, "stream overload", "text/markdown"), "stream overload");
+    }
+
+    [Fact]
+    public async Task CanProcessBuffer()
+    {
+        ReadOnlyMemory<byte> buffer = File.ReadAllBytes(_withTable.FullName);
+        await CanProcessSingleDocument(pipeline => pipeline.ProcessAsync(buffer, "buffer overload", "text/markdown"), "buffer overload");
+    }
+
+    [Fact]
     public async Task ChunksCanBeMoreThanJustText()
     {
         List<Activity> activities = [];
@@ -221,6 +235,36 @@ public sealed class IngestionPipelineTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task OverloadsThatProcessSingleDocumentRethrowExceptions()
+    {
+        TestReader failingReader = new((_, __, ___, ____) => Task.FromException<IngestionDocument>(new ExpectedException()));
+
+        List<Activity> activities = [];
+        using TracerProvider tracerProvider = CreateTraceProvider(activities);
+
+        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
+        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
+
+        using IngestionPipeline<string> pipeline = new(failingReader, CreateChunker(), vectorStoreWriter);
+
+        using Stream stream = _withImage.OpenRead();
+        await Verify(() => pipeline.ProcessAsync(stream, "stream", "text/markdown"));
+
+        ReadOnlyMemory<byte> buffer = File.ReadAllBytes(_withImage.FullName);
+        await Verify(() => pipeline.ProcessAsync(buffer, "buffer", "text/markdown"));
+
+        async Task Verify(Func<Task> processAsync)
+        {
+            await Assert.ThrowsAsync<ExpectedException>(processAsync);
+
+            AssertErrorActivities(activities, expectedFailedActivitiesCount: 1);
+
+            activities.Clear();
+        }
+    }
+
     private static IngestionDocumentReader CreateReader() => new MarkdownReader();
 
     private static IngestionChunker<string> CreateChunker() => new HeaderChunker(new(TiktokenTokenizer.CreateForModel("gpt-4")));
@@ -241,12 +285,12 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.All(ingestionResults, result => Assert.Null(result.Exception));
     }
 
-    private static void AssertActivities(List<Activity> activities, string rootActivityName)
+    private static void AssertActivities(List<Activity> activities, string rootActivityName, string childActivity = "ProcessFile")
     {
         Assert.NotEmpty(activities);
         Assert.All(activities, a => Assert.Equal("Experimental.Microsoft.Extensions.DataIngestion", a.Source.Name));
         Assert.Single(activities, a => a.OperationName == rootActivityName);
-        Assert.Contains(activities, a => a.OperationName == "ProcessFile");
+        Assert.Contains(activities, a => a.OperationName == childActivity);
     }
 
     private static void AssertErrorActivities(List<Activity> activities, int expectedFailedActivitiesCount)
@@ -257,5 +301,34 @@ public sealed class IngestionPipelineTests : IDisposable
         var failed = activities.Where(act => act.Status == ActivityStatusCode.Error).ToList();
         Assert.Equal(expectedFailedActivitiesCount, failed.Count);
         Assert.All(failed, a => Assert.Equal(ExpectedException.ExceptionMessage, a.StatusDescription));
+    }
+
+    private static async Task CanProcessSingleDocument(Func<IngestionPipeline<string>, Task> methodUnderTest, string expectedId)
+    {
+        List<Activity> activities = [];
+        using TracerProvider tracerProvider = CreateTraceProvider(activities);
+
+        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
+        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
+
+        using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
+        await methodUnderTest(pipeline);
+
+        Assert.True(embeddingGenerator.WasCalled, "Embedding generator should have been called.");
+
+        var retrieved = await vectorStoreWriter.VectorStoreCollection
+            .GetAsync(record => (string)record["documentid"]! == expectedId, top: 1000)
+            .ToListAsync();
+
+        Assert.NotEmpty(retrieved);
+        for (int i = 0; i < retrieved.Count; i++)
+        {
+            Assert.NotEqual(Guid.Empty, (Guid)retrieved[i]["key"]!);
+            Assert.NotEmpty((string)retrieved[i]["content"]!);
+            Assert.StartsWith(expectedId, (string)retrieved[i]["documentid"]!);
+        }
+
+        AssertActivities(activities, "ProcessStream", "ProcessStream");
     }
 }

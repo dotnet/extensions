@@ -32,4 +32,10 @@ internal static class DiagnosticsConstants
         internal const string ActivityName = "ProcessFile";
         internal const string FilePathTagName = "rag.file.path";
     }
+
+    internal static class ProcessStream
+    {
+        internal const string ActivityName = "ProcessStream";
+        internal const string DocumentMediaType = "rag.document.mediatype";
+    }
 }
