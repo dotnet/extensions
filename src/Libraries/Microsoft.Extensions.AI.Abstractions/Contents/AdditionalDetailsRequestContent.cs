@@ -38,5 +38,6 @@ public sealed class AdditionalDetailsRequestContent : UserInputRequestContent
     /// </summary>
     /// <param name="response">The <see cref="AIContent"/> containing the requested additional details.</param>
     /// <returns>The <see cref="AdditionalDetailsResponseContent"/> representing the response.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
     public AdditionalDetailsResponseContent CreateResponse(AIContent response) => new(Id, response);
 }
