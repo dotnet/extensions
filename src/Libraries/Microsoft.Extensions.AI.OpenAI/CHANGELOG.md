@@ -9,7 +9,7 @@
 ## 10.0.1-preview.1.25571.5
 
 - Updated to depend on OpenAI 2.7.0.
-- Added support for image detail in OpenAI Responses `IChatClient`
+- Added support for image detail in OpenAI Responses `IChatClient`.
 - Fixed IEmbeddingGenerator implementation to correctly handle missing usage data.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
