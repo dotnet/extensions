@@ -30,12 +30,27 @@ internal sealed class KubernetesMetadata
 
     public static KubernetesMetadata FromEnvironmentVariables(string environmentVariablePrefix)
     {
+        var limitsMemory = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}LIMITS_MEMORY");
+        var limitsCpu = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}LIMITS_CPU");
+        var requestsMemory = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}REQUESTS_MEMORY");
+        var requestsCpu = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}REQUESTS_CPU");
+
+        if (limitsMemory == 0)
+        {
+            throw new InvalidOperationException($"Environment variable '{environmentVariablePrefix}LIMITS_MEMORY' is required and cannot be zero or missing.");
+        }
+
+        if (limitsCpu == 0)
+        {
+            throw new InvalidOperationException($"Environment variable '{environmentVariablePrefix}LIMITS_CPU' is required and cannot be zero or missing.");
+        }
+
         return new KubernetesMetadata
         {
-            LimitsMemory = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}LIMITS_MEMORY"),
-            LimitsCpu = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}LIMITS_CPU"),
-            RequestsMemory = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}REQUESTS_MEMORY"),
-            RequestsCpu = GetEnvironmentVariableAsUInt64($"{environmentVariablePrefix}REQUESTS_CPU"),
+            LimitsMemory = limitsMemory,
+            LimitsCpu = limitsCpu,
+            RequestsMemory = requestsMemory,
+            RequestsCpu = requestsCpu,
         };
     }
 

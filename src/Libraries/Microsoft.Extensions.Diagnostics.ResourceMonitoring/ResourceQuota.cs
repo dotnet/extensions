@@ -12,6 +12,9 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// Maximum values define the upper limits of resource usage, while baseline values specify 
 /// the minimum assured resource allocations, usually based on Kubernetes requests or Linux shares and weights distribution.
 /// </summary>
+/// <remarks>
+/// Max values will be emitted by limit metrics, and baseline values will be emmited by request metrics.
+/// </remarks>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ResourceQuota
 {

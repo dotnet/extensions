@@ -128,5 +128,19 @@ public class KubernetesResourceQuotasServiceCollectionExtensionsTests
         Assert.Equal(limitsMemory, quota.MaxMemoryInBytes);
         Assert.Equal(requestsMemory, quota.BaselineMemoryInBytes);
     }
+
+    [Fact]
+    public void LinuxUtilizationProvider_ThrowsWhenLimitsNotFound()
+    {
+        using var environmentSetup = new TestKubernetesEnvironmentSetup();
+        environmentSetup.SetEnvironmentVariable("TEST_REQUESTS_MEMORY", "1000");
+        environmentSetup.SetEnvironmentVariable("TEST_REQUESTS_CPU", "1000");
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            KubernetesMetadata.FromEnvironmentVariables("TEST_"));
+
+        Assert.Contains("LIMITS_MEMORY", exception.Message);
+        Assert.Contains("is required and cannot be zero or missing", exception.Message);
+    }
 #pragma warning restore CS0618
 }

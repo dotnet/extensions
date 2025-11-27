@@ -45,7 +45,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
     private DateTimeOffset _refreshAfterProcessMemory;
-    private double _cpuPercentage = double.NaN;
+    private long _cachedUsageTickDelta;
+    private long _cachedTimeTickDelta;
     private double _processMemoryPercentage;
     private ulong _memoryUsage;
 
@@ -235,32 +236,24 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private double CpuPercentage(double denominator)
     {
         var now = _timeProvider.GetUtcNow();
-
-        lock (_cpuLocker)
-        {
-            if (now < _refreshAfterCpu)
-            {
-                return _cpuPercentage;
-            }
-        }
-
-        using var jobHandle = _createJobHandleObject();
-        var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
-        var currentCpuTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
-
         lock (_cpuLocker)
         {
             if (now >= _refreshAfterCpu)
             {
+                using var jobHandle = _createJobHandleObject();
+                var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
+                var currentCpuTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
+
                 var usageTickDelta = currentCpuTicks - _oldCpuUsageTicks;
-                var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * denominator;
+                var timeTickDelta = now.Ticks - _oldCpuTimeTicks;
+
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
-                    // Don't change calculation order, otherwise precision is lost:
-                    _cpuPercentage = Math.Min(_metricValueMultiplier, usageTickDelta / timeTickDelta * _metricValueMultiplier);
+                    _cachedUsageTickDelta = usageTickDelta;
+                    _cachedTimeTickDelta = timeTickDelta;
 
                     _logger.CpuContainerUsageData(
-                        basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, denominator, _cpuPercentage);
+                        basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, denominator, double.NaN);
 
                     _oldCpuUsageTicks = currentCpuTicks;
                     _oldCpuTimeTicks = now.Ticks;
@@ -268,7 +261,15 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
                 }
             }
 
-            return _cpuPercentage;
+            if (_cachedUsageTickDelta > 0 && _cachedTimeTickDelta > 0)
+            {
+                var timeTickDeltaWithDenominator = _cachedTimeTickDelta * denominator;
+
+                // Don't change calculation order, otherwise precision is lost:
+                return Math.Min(_metricValueMultiplier, _cachedUsageTickDelta / timeTickDeltaWithDenominator * _metricValueMultiplier);
+            }
+
+            return double.NaN;
         }
     }
 }

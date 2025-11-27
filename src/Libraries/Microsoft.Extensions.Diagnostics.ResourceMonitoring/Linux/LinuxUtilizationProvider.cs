@@ -155,7 +155,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         DateTimeOffset now = _timeProvider.GetUtcNow();
         lock (_cpuLocker)
         {
-            if (now < _refreshAfterCpu)
+            if (now <= _refreshAfterCpu)
             {
                 return _lastCpuCoresUsed;
             }
@@ -164,7 +164,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         (long cpuUsageTime, long cpuPeriodCounter) = _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
         lock (_cpuLocker)
         {
-            if (now < _refreshAfterCpu)
+            if (now <= _refreshAfterCpu)
             {
                 return _lastCpuCoresUsed;
             }
@@ -197,7 +197,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         lock (_cpuLocker)
         {
-            if (now < _refreshAfterCpu)
+            if (now <= _refreshAfterCpu)
             {
                 return _cpuPercentage;
             }
@@ -208,7 +208,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         lock (_cpuLocker)
         {
-            if (now < _refreshAfterCpu)
+            if (now <= _refreshAfterCpu)
             {
                 return _cpuPercentage;
             }
