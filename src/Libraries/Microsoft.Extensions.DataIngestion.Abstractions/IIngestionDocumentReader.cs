@@ -19,7 +19,7 @@ public interface IIngestionDocumentReader<TSource>
     /// </summary>
     /// <param name="source">The source to read.</param>
     /// <param name="identifier">The unique identifier for the document.</param>
-    /// <param name="mediaType">The media type of the file.</param>
+    /// <param name="mediaType">The media type of the source (if needed).</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous read operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="source"/> or <paramref name="identifier"/> is <see langword="null"/> or empty.</exception>

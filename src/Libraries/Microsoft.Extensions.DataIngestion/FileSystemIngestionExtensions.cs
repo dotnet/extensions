@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DataIngestion;
 #pragma warning disable CA1031 // Do not catch general exception types
 
 /// <summary>
-/// Provides a set of File System extension methods for the <see cref="IngestionPipeline{TChunk, TSource}"/> class.
+/// Provides a set of File System extension methods for the <see cref="IngestionPipeline{FileInfo, TChunk}"/> class.
 /// </summary>
 public static class FileSystemIngestionExtensions
 {
@@ -50,7 +50,7 @@ public static class FileSystemIngestionExtensions
                          .SetTag(ProcessDirectory.SearchOptionTagName, searchOption.ToString());
             pipeline.Logger?.ProcessingDirectory(directory.FullName, searchPattern, searchOption);
 
-            var files = directory.GetFiles(searchPattern, searchOption);
+            var files = directory.EnumerateFiles(searchPattern, searchOption);
             await foreach (var ingestionResult in pipeline.ProcessAsync(files, rootActivity, cancellationToken).ConfigureAwait(false))
             {
                 yield return ingestionResult;
