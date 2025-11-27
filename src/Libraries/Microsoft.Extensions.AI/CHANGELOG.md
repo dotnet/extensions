@@ -1,4 +1,14 @@
-# Release History
+# Microsoft.Extensions.AI Release History
+
+## NOT YET RELEASED
+
+- Fixed package references for net10.0 asset.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Improved `FunctionInvokingChatClient`'s handling of spans in the presence of an `invoke_agent` span.
+
+## 10.0.1
+
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 10.0.0
 

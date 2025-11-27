@@ -1,4 +1,14 @@
-# Release History
+# Microsoft.Extensions.AI.Abstractions Release History
+
+## NOT YET RELEASED
+
+- Fixed package references for net10.0 asset.
+- Added `AIJsonSchemaCreateOptions.ParameterDescriptions`.
+
+## 10.0.1
+
+- Updated return type of [Experimental] `ContinuationToken` properties.
+- Fixed ValidateSchemaDocument's handling of valid Boolean schemas.
 
 ## 10.0.0
 
