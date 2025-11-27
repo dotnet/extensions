@@ -20,9 +20,9 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Represents a pipeline for ingesting data from documents and processing it into chunks.
 /// </summary>
-/// <typeparam name="TChunk">The type of the chunk content.</typeparam>
 /// <typeparam name="TSource">The type of the source content.</typeparam>
-public sealed class IngestionPipeline<TChunk, TSource> : IDisposable
+/// <typeparam name="TChunk">The type of the chunk content.</typeparam>
+public sealed class IngestionPipeline<TSource, TChunk> : IDisposable
 {
     internal readonly ActivitySource ActivitySource;
     internal readonly ILogger? Logger;
@@ -31,7 +31,7 @@ public sealed class IngestionPipeline<TChunk, TSource> : IDisposable
     private readonly IngestionChunkWriter<TChunk> _writer;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="IngestionPipeline{TChunk, TSource}"/> class.
+    /// Initializes a new instance of the <see cref="IngestionPipeline{TSource, TChunk}"/> class.
     /// </summary>
     /// <param name="reader">The reader for ingestion documents.</param>
     /// <param name="chunker">The chunker to split documents into chunks.</param>
@@ -49,7 +49,7 @@ public sealed class IngestionPipeline<TChunk, TSource> : IDisposable
         _chunker = Throw.IfNull(chunker);
         _writer = Throw.IfNull(writer);
         ActivitySource = new((options ?? new()).ActivitySourceName);
-        Logger = loggerFactory?.CreateLogger<IngestionPipeline<TChunk, TSource>>();
+        Logger = loggerFactory?.CreateLogger<IngestionPipeline<TSource, TChunk>>();
     }
 
     /// <inheritdoc/>

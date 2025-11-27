@@ -33,7 +33,7 @@ public static class FileSystemIngestionExtensions
     /// <param name="cancellationToken">The cancellation token for the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     public static async IAsyncEnumerable<IngestionResult> ProcessAsync<TChunk>(
-        this IngestionPipeline<TChunk, FileInfo> pipeline,
+        this IngestionPipeline<FileInfo, TChunk> pipeline,
         DirectoryInfo directory, string searchPattern = "*.*",
         SearchOption searchOption = SearchOption.TopDirectoryOnly,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -67,7 +67,7 @@ public static class FileSystemIngestionExtensions
     /// <param name="cancellationToken">The cancellation token for the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     public static async IAsyncEnumerable<IngestionResult> ProcessAsync<TChunk>(
-        this IngestionPipeline<TChunk, FileInfo> pipeline,
+        this IngestionPipeline<FileInfo, TChunk> pipeline,
         IEnumerable<FileInfo> files,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -84,7 +84,7 @@ public static class FileSystemIngestionExtensions
     }
 
     private static async IAsyncEnumerable<IngestionResult> ProcessAsync<TChunk>(
-        this IngestionPipeline<TChunk, FileInfo> pipeline,
+        this IngestionPipeline<FileInfo, TChunk> pipeline,
         IEnumerable<FileInfo> files, Activity? rootActivity,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
