@@ -86,11 +86,11 @@ public sealed class IngestionPipelineTests : IDisposable
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
         using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
 
-        using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
-        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(_sampleFiles).ToListAsync();
-
-        Assert.Equal(_sampleFiles.Count, ingestionResults.Count);
-        AssertAllIngestionsSucceeded(ingestionResults);
+        using IngestionPipeline<string, FileInfo> pipeline = new(CreateFileReader(), CreateChunker(), vectorStoreWriter);
+        foreach (var file in _sampleFiles)
+        {
+            await pipeline.ProcessAsync(file, file.FullName);
+        }
 
         Assert.True(embeddingGenerator.WasCalled, "Embedding generator should have been called.");
 
@@ -106,7 +106,7 @@ public sealed class IngestionPipelineTests : IDisposable
             Assert.Contains((string)retrieved[i]["documentid"]!, _sampleFiles.Select(info => info.FullName));
         }
 
-        AssertActivities(activities, "ProcessFiles");
+        AssertActivities(activities, "ProcessSources");
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public sealed class IngestionPipelineTests : IDisposable
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
         using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
 
-        using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
+        using IngestionPipeline<string, FileInfo> pipeline = new(CreateFileReader(), CreateChunker(), vectorStoreWriter);
 
         DirectoryInfo directory = new("TestFiles");
         List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(directory, "*.md").ToListAsync();
@@ -152,11 +152,13 @@ public sealed class IngestionPipelineTests : IDisposable
         TestEmbeddingGenerator<DataContent> embeddingGenerator = new();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
         using VectorStoreWriter<DataContent> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<DataContent>.DimensionCount);
-        using IngestionPipeline<DataContent> pipeline = new(CreateReader(), new ImageChunker(), vectorStoreWriter);
+        using IngestionPipeline<DataContent, FileInfo> pipeline = new(CreateFileReader(), new ImageChunker(), vectorStoreWriter);
 
         Assert.False(embeddingGenerator.WasCalled);
-        var ingestionResults = await pipeline.ProcessAsync(_sampleFiles).ToListAsync();
-        AssertAllIngestionsSucceeded(ingestionResults);
+        foreach (var file in _sampleFiles)
+        {
+            await pipeline.ProcessAsync(file, file.FullName);
+        }
 
         var retrieved = await vectorStoreWriter.VectorStoreCollection
             .GetAsync(record => ((string)record["documentid"]!).EndsWith(_withImage.Name), top: 100)
@@ -170,7 +172,7 @@ public sealed class IngestionPipelineTests : IDisposable
             Assert.EndsWith(_withImage.Name, (string)retrieved[i]["documentid"]!);
         }
 
-        AssertActivities(activities, "ProcessFiles");
+        AssertActivities(activities, "ProcessSources");
     }
 
     internal class ImageChunker : IngestionChunker<DataContent>
@@ -201,9 +203,8 @@ public sealed class IngestionPipelineTests : IDisposable
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
         using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
 
-        using IngestionPipeline<string> pipeline = new(failingForFirstReader, CreateChunker(), vectorStoreWriter);
+        using IngestionPipeline<string, FileInfo> pipeline = new(failingForFirstReader, CreateChunker(), vectorStoreWriter);
 
-        await Verify(pipeline.ProcessAsync(_sampleFiles));
         await Verify(pipeline.ProcessAsync(_sampleDirectory));
 
         async Task Verify(IAsyncEnumerable<IngestionResult> results)
@@ -221,7 +222,7 @@ public sealed class IngestionPipelineTests : IDisposable
         }
     }
 
-    private static IngestionDocumentReader CreateReader() => new MarkdownReader();
+    private static IIngestionDocumentReader<FileInfo> CreateFileReader() => new MarkdownReader();
 
     private static IngestionChunker<string> CreateChunker() => new HeaderChunker(new(TiktokenTokenizer.CreateForModel("gpt-4")));
 
@@ -246,7 +247,7 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.NotEmpty(activities);
         Assert.All(activities, a => Assert.Equal("Experimental.Microsoft.Extensions.DataIngestion", a.Source.Name));
         Assert.Single(activities, a => a.OperationName == rootActivityName);
-        Assert.Contains(activities, a => a.OperationName == "ProcessFile");
+        Assert.Contains(activities, a => a.OperationName == "ProcessSource");
     }
 
     private static void AssertErrorActivities(List<Activity> activities, int expectedFailedActivitiesCount)

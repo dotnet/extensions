@@ -2,58 +2,70 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
+using static Microsoft.Extensions.DataIngestion.DiagnosticsConstants;
 
 namespace Microsoft.Extensions.DataIngestion;
 
+#pragma warning disable IDE0058 // Expression value is never used
+#pragma warning disable IDE0063 // Use simple 'using' statement
+#pragma warning disable CA1031 // Do not catch general exception types
+
 /// <summary>
-/// Reads source content and converts it to an <see cref="IngestionDocument"/>.
+/// Provides extension methods for the <see cref="IngestionPipeline{TChunk, TSource}"/> class.
 /// </summary>
-public abstract class IngestionDocumentReader
+public static class IngestionPipelineExtensions
 {
     /// <summary>
-    /// Reads a file and converts it to an <see cref="IngestionDocument"/>.
+    /// Processes all files in the specified directory that match the given search pattern and option.
     /// </summary>
-    /// <param name="source">The file to read.</param>
-    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-    /// <returns>A task representing the asynchronous read operation.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
-    public Task<IngestionDocument> ReadAsync(FileInfo source, CancellationToken cancellationToken = default)
+    /// <typeparam name="TChunk">The type of the chunk content.</typeparam>
+    /// <param name="pipeline">The ingestion pipeline.</param>
+    /// <param name="directory">The directory to process.</param>
+    /// <param name="searchPattern">The search pattern for file selection.</param>
+    /// <param name="searchOption">The search option for directory traversal.</param>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static async IAsyncEnumerable<IngestionResult> ProcessAsync<TChunk>(
+        this IngestionPipeline<TChunk, FileInfo> pipeline,
+        DirectoryInfo directory, string searchPattern = "*.*",
+        SearchOption searchOption = SearchOption.TopDirectoryOnly,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        string identifier = Throw.IfNull(source).FullName; // entire path is more unique than just part of it.
-        return ReadAsync(source, identifier, GetMediaType(source), cancellationToken);
+        Throw.IfNull(pipeline);
+        Throw.IfNull(directory);
+        Throw.IfNullOrEmpty(searchPattern);
+        Throw.IfOutOfRange((int)searchOption, (int)SearchOption.TopDirectoryOnly, (int)SearchOption.AllDirectories);
+
+        using (Activity? rootActivity = pipeline.ActivitySource.StartActivity(ProcessDirectory.ActivityName))
+        {
+            rootActivity?.SetTag(ProcessDirectory.DirectoryPathTagName, directory.FullName)
+                         .SetTag(ProcessDirectory.SearchPatternTagName, searchPattern)
+                         .SetTag(ProcessDirectory.SearchOptionTagName, searchOption.ToString());
+            pipeline.Logger?.ProcessingDirectory(directory.FullName, searchPattern, searchOption);
+
+            foreach (var fileInfo in directory.EnumerateFiles(searchPattern, searchOption))
+            {
+                Exception? ex = null;
+                try
+                {
+                    await pipeline.ProcessAsync(fileInfo, fileInfo.FullName, GetMediaType(fileInfo), cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    ex = e;
+                }
+
+                yield return new IngestionResult(fileInfo.FullName, null, ex);
+            }
+        }
     }
-
-    /// <summary>
-    /// Reads a file and converts it to an <see cref="IngestionDocument"/>.
-    /// </summary>
-    /// <param name="source">The file to read.</param>
-    /// <param name="identifier">The unique identifier for the document.</param>
-    /// <param name="mediaType">The media type of the file.</param>
-    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-    /// <returns>A task representing the asynchronous read operation.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="source"/> or <paramref name="identifier"/> is <see langword="null"/> or empty.</exception>
-    public virtual async Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(source);
-        _ = Throw.IfNullOrEmpty(identifier);
-
-        using FileStream stream = new(source.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 1, FileOptions.Asynchronous);
-        return await ReadAsync(stream, identifier, string.IsNullOrEmpty(mediaType) ? GetMediaType(source) : mediaType!, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Reads a stream and converts it to an <see cref="IngestionDocument"/>.
-    /// </summary>
-    /// <param name="source">The stream to read.</param>
-    /// <param name="identifier">The unique identifier for the document.</param>
-    /// <param name="mediaType">The media type of the content.</param>
-    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-    /// <returns>A task representing the asynchronous read operation.</returns>
-    public abstract Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default);
 
     private static string GetMediaType(FileInfo source)
         => source.Extension switch

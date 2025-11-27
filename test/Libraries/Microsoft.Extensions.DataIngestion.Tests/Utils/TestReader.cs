@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.DataIngestion;
 
-internal sealed class TestReader : IngestionDocumentReader
+internal sealed class TestReader : IIngestionDocumentReader<FileInfo>
 {
-    public TestReader(Func<Stream, string, string, CancellationToken, Task<IngestionDocument>> readAsyncCallback)
+    public TestReader(Func<FileInfo, string, string?, CancellationToken, Task<IngestionDocument>> readAsyncCallback)
     {
         ReadAsyncCallback = readAsyncCallback;
     }
 
-    public Func<Stream, string, string, CancellationToken, Task<IngestionDocument>> ReadAsyncCallback { get; }
+    public Func<FileInfo, string, string?, CancellationToken, Task<IngestionDocument>> ReadAsyncCallback { get; }
 
-    public override Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default)
+    public Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
         => ReadAsyncCallback(source, identifier, mediaType, cancellationToken);
 }

@@ -11,10 +11,10 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Reads Markdown content and converts it to an <see cref="IngestionDocument"/>.
 /// </summary>
-public sealed class MarkdownReader : IngestionDocumentReader
+public sealed class MarkdownReader : IIngestionDocumentReader<FileInfo>, IIngestionDocumentReader<Stream>
 {
     /// <inheritdoc/>
-    public override async Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
+    public async Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(source);
         _ = Throw.IfNullOrEmpty(identifier);
@@ -29,7 +29,7 @@ public sealed class MarkdownReader : IngestionDocumentReader
     }
 
     /// <inheritdoc/>
-    public override async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default)
+    public async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(source);
         _ = Throw.IfNullOrEmpty(identifier);
