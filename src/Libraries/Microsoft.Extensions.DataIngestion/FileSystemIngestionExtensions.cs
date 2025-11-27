@@ -18,9 +18,9 @@ namespace Microsoft.Extensions.DataIngestion;
 #pragma warning disable CA1031 // Do not catch general exception types
 
 /// <summary>
-/// Provides extension methods for the <see cref="IngestionPipeline{TChunk, TSource}"/> class.
+/// Provides a set of File System extension methods for the <see cref="IngestionPipeline{TChunk, TSource}"/> class.
 /// </summary>
-public static class IngestionPipelineExtensions
+public static class FileSystemIngestionExtensions
 {
     /// <summary>
     /// Processes all files in the specified directory that match the given search pattern and option.
@@ -50,19 +50,74 @@ public static class IngestionPipelineExtensions
                          .SetTag(ProcessDirectory.SearchOptionTagName, searchOption.ToString());
             pipeline.Logger?.ProcessingDirectory(directory.FullName, searchPattern, searchOption);
 
-            foreach (var fileInfo in directory.EnumerateFiles(searchPattern, searchOption))
+            var files = directory.GetFiles(searchPattern, searchOption);
+            await foreach (var ingestionResult in pipeline.ProcessAsync(files, rootActivity, cancellationToken).ConfigureAwait(false))
             {
-                Exception? ex = null;
+                yield return ingestionResult;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Processes the specified files.
+    /// </summary>
+    /// <typeparam name="TChunk">The type of the chunk content.</typeparam>
+    /// <param name="pipeline">The ingestion pipeline.</param>
+    /// <param name="files">The collection of files to process.</param>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static async IAsyncEnumerable<IngestionResult> ProcessAsync<TChunk>(
+        this IngestionPipeline<TChunk, FileInfo> pipeline,
+        IEnumerable<FileInfo> files,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Throw.IfNull(pipeline);
+        Throw.IfNull(files);
+
+        using (Activity? rootActivity = pipeline.ActivitySource.StartActivity(ProcessFiles.ActivityName))
+        {
+            await foreach (var ingestionResult in pipeline.ProcessAsync(files, rootActivity, cancellationToken).ConfigureAwait(false))
+            {
+                yield return ingestionResult;
+            }
+        }
+    }
+
+    private static async IAsyncEnumerable<IngestionResult> ProcessAsync<TChunk>(
+        this IngestionPipeline<TChunk, FileInfo> pipeline,
+        IEnumerable<FileInfo> files, Activity? rootActivity,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+#if NET
+        if (System.Linq.Enumerable.TryGetNonEnumeratedCount(files, out int count))
+#else
+        if (files is IReadOnlyCollection<FileInfo> { Count: int count })
+#endif
+        {
+            rootActivity?.SetTag(ProcessFiles.FileCountTagName, count);
+            pipeline.Logger?.LogFileCount(count);
+        }
+
+        foreach (FileInfo fileInfo in files)
+        {
+            using (Activity? processFileActivity = pipeline.ActivitySource.StartActivity(ProcessFile.ActivityName, ActivityKind.Internal, parentContext: rootActivity?.Context ?? default))
+            {
+                processFileActivity?.SetTag(ProcessFile.FilePathTagName, fileInfo.FullName);
+
+                Exception? failure = null;
+                IngestionDocument? document = null;
+
                 try
                 {
-                    await pipeline.ProcessAsync(fileInfo, fileInfo.FullName, GetMediaType(fileInfo), cancellationToken).ConfigureAwait(false);
+                    document = await pipeline.ProcessAsync(fileInfo, fileInfo.FullName, GetMediaType(fileInfo), cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
-                    ex = e;
+                    failure = e;
                 }
 
-                yield return new IngestionResult(fileInfo.FullName, null, ex);
+                string documentId = document?.Identifier ?? fileInfo.FullName;
+                yield return new IngestionResult(documentId, document, failure);
             }
         }
     }

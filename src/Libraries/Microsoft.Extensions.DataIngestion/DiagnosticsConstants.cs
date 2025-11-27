@@ -16,9 +16,21 @@ internal static class DiagnosticsConstants
         internal const string SearchOptionTagName = "rag.directory.search.option";
     }
 
+    internal static class ProcessFiles
+    {
+        internal const string ActivityName = "ProcessFiles";
+        internal const string FileCountTagName = "rag.file.count";
+    }
+
     internal static class ProcessSource
     {
         internal const string ActivityName = "ProcessSource";
         internal const string DocumentIdTagName = "rag.document.id";
+    }
+
+    internal static class ProcessFile
+    {
+        internal const string ActivityName = "ProcessFile";
+        internal const string FilePathTagName = "rag.file.path";
     }
 }

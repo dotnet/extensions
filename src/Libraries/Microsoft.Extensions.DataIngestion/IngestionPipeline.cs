@@ -77,7 +77,7 @@ public sealed class IngestionPipeline<TChunk, TSource> : IDisposable
     /// <param name="sourceMediaType">The media type of the source.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task ProcessAsync(TSource source, string documentIdentifier, string? sourceMediaType = null, CancellationToken cancellationToken = default)
+    public async Task<IngestionDocument> ProcessAsync(TSource source, string documentIdentifier, string? sourceMediaType = null, CancellationToken cancellationToken = default)
     {
         Throw.IfNull(source);
         Throw.IfNull(documentIdentifier);
@@ -92,7 +92,7 @@ public sealed class IngestionPipeline<TChunk, TSource> : IDisposable
                 processActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
                 Logger?.ReadDocument(document.Identifier);
 
-                document = await IngestAsync(document, processActivity, cancellationToken).ConfigureAwait(false);
+                return await IngestAsync(document, processActivity, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
