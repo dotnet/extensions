@@ -8,7 +8,7 @@ namespace aichatweb.Services.Ingestion;
 
 internal sealed class PdfPigReader : IngestionDocumentReader
 {
-    public override Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default)
+    public override Task<IngestionDocument> ReadAsync(Stream source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         using var pdf = PdfDocument.Open(source);
         var document = new IngestionDocument(identifier);
