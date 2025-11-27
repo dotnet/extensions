@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Reads documents by converting them to Markdown using the <see href="https://github.com/microsoft/markitdown">MarkItDown</see> MCP server.
 /// </summary>
-public class MarkItDownMcpReader : IIngestionDocumentReader<FileInfo>, IIngestionDocumentReader<Stream>
+public class MarkItDownMcpReader : IngestionDocumentReader
 {
     private readonly Uri _mcpServerUri;
     private readonly McpClientOptions? _options;
@@ -33,7 +33,7 @@ public class MarkItDownMcpReader : IIngestionDocumentReader<FileInfo>, IIngestio
     }
 
     /// <inheritdoc/>
-    public async Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
+    public override async Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(source);
         _ = Throw.IfNullOrEmpty(identifier);
@@ -65,7 +65,7 @@ public class MarkItDownMcpReader : IIngestionDocumentReader<FileInfo>, IIngestio
     }
 
     /// <inheritdoc/>
-    public async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
+    public override async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(source);
         _ = Throw.IfNullOrEmpty(identifier);

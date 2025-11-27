@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Reads documents by converting them to Markdown using the <see href="https://github.com/microsoft/markitdown">MarkItDown</see> tool.
 /// </summary>
-public class MarkItDownReader : IIngestionDocumentReader<FileInfo>, IIngestionDocumentReader<Stream>
+public class MarkItDownReader : IngestionDocumentReader
 {
     private readonly FileInfo? _exePath;
     private readonly bool _extractImages;
@@ -31,7 +31,7 @@ public class MarkItDownReader : IIngestionDocumentReader<FileInfo>, IIngestionDo
     }
 
     /// <inheritdoc/>
-    public async Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
+    public override async Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(source);
         _ = Throw.IfNullOrEmpty(identifier);
@@ -94,7 +94,7 @@ public class MarkItDownReader : IIngestionDocumentReader<FileInfo>, IIngestionDo
 
     /// <inheritdoc/>
     /// <remarks>The contents of <paramref name="source"/> are copied to a temporary file.</remarks>
-    public async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
+    public override async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(source);
         _ = Throw.IfNullOrEmpty(identifier);

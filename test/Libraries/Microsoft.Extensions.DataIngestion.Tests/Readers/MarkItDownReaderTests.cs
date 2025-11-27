@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TestUtilities;
@@ -13,12 +12,7 @@ namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 [MarkItDownCondition]
 public class MarkItDownReaderTests : DocumentReaderConformanceTests
 {
-    protected override IIngestionDocumentReader<FileInfo> CreateFileReader(bool extractImages = false)
-        => MarkItDownConditionAttribute.IsInstalled.Value
-        ? new MarkItDownReader(extractImages: extractImages)
-        : throw new SkipTestException("MarkItDown is not installed");
-
-    protected override IIngestionDocumentReader<Stream> CreateStreamReader(bool extractImages = false)
+    protected override IngestionDocumentReader CreateDocumentReader(bool extractImages = false)
         => MarkItDownConditionAttribute.IsInstalled.Value
         ? new MarkItDownReader(extractImages: extractImages)
         : throw new SkipTestException("MarkItDown is not installed");

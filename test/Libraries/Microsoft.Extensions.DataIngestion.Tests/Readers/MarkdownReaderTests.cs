@@ -12,9 +12,7 @@ namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 
 public class MarkdownReaderTests : DocumentReaderConformanceTests
 {
-    protected override IIngestionDocumentReader<FileInfo> CreateFileReader(bool extractImages = false) => new MarkdownReader();
-
-    protected override IIngestionDocumentReader<Stream> CreateStreamReader(bool extractImages = false) => new MarkdownReader();
+    protected override IngestionDocumentReader CreateDocumentReader(bool extractImages = false) => new MarkdownReader();
 
     public static new TheoryData<string> Links =>
     [
@@ -138,6 +136,6 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
     private async Task<IngestionDocument> ReadAsync(string content)
     {
         using MemoryStream stream = new(System.Text.Encoding.UTF8.GetBytes(content));
-        return await CreateStreamReader().ReadAsync(stream, "id", "text/markdown");
+        return await CreateDocumentReader().ReadAsync(stream, "id", "text/markdown");
     }
 }

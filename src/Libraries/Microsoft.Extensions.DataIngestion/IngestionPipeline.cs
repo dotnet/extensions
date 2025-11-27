@@ -118,7 +118,7 @@ public sealed class IngestionPipeline<TChunk, TSource> : IDisposable
         {
             document = await processor.ProcessAsync(document, cancellationToken).ConfigureAwait(false);
 
-            // A DocumentProcessor might change the document documentIdentifier (for example by extracting it from its content), so update the ID tag.
+            // A DocumentProcessor might change the document identifier (for example by extracting it from its content), so update the ID tag.
             parentActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
         }
 

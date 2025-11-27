@@ -17,33 +17,30 @@ public abstract class DocumentReaderConformanceTests
 {
     private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(30) };
 
-    protected abstract IIngestionDocumentReader<FileInfo> CreateFileReader(bool extractImages = false);
-
-    protected abstract IIngestionDocumentReader<Stream> CreateStreamReader(bool extractImages = false);
+    protected abstract IngestionDocumentReader CreateDocumentReader(bool extractImages = false);
 
     [ConditionalFact]
     public async Task ThrowsWhenIdentifierIsNotProvided()
     {
-        var fileReader = CreateFileReader();
+        var reader = CreateDocumentReader();
 
-        await Assert.ThrowsAsync<ArgumentNullException>("identifier", async () => await fileReader.ReadAsync(new FileInfo("fileName.txt"), identifier: null!));
-        await Assert.ThrowsAsync<ArgumentException>("identifier", async () => await fileReader.ReadAsync(new FileInfo("fileName.txt"), identifier: string.Empty));
+        await Assert.ThrowsAsync<ArgumentNullException>("identifier", async () => await reader.ReadAsync(new FileInfo("fileName.txt"), identifier: null!));
+        await Assert.ThrowsAsync<ArgumentException>("identifier", async () => await reader.ReadAsync(new FileInfo("fileName.txt"), identifier: string.Empty));
 
-        var streamReader = CreateStreamReader();
         using MemoryStream stream = new();
-        await Assert.ThrowsAsync<ArgumentNullException>("identifier", async () => await streamReader.ReadAsync(stream, identifier: null!, mediaType: "some"));
-        await Assert.ThrowsAsync<ArgumentException>("identifier", async () => await streamReader.ReadAsync(stream, identifier: string.Empty, mediaType: "some"));
+        await Assert.ThrowsAsync<ArgumentNullException>("identifier", async () => await reader.ReadAsync(stream, identifier: null!, mediaType: "some"));
+        await Assert.ThrowsAsync<ArgumentException>("identifier", async () => await reader.ReadAsync(stream, identifier: string.Empty, mediaType: "some"));
     }
 
     [ConditionalFact]
     public async Task ThrowsIfCancellationRequestedStream()
     {
-        var streamReader = CreateStreamReader();
+        var reader = CreateDocumentReader();
         using CancellationTokenSource cts = new();
         cts.Cancel();
 
         using MemoryStream stream = new();
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await streamReader.ReadAsync(stream, "id", "mediaType", cts.Token));
+        await Assert.ThrowsAsync<TaskCanceledException>(async () => await reader.ReadAsync(stream, "id", "mediaType", cts.Token));
     }
 
     [ConditionalFact]
@@ -56,13 +53,13 @@ public abstract class DocumentReaderConformanceTests
         File.WriteAllText(filePath, "This is a test file for cancellation token.");
 #endif
 
-        var reader = CreateFileReader();
+        var reader = CreateDocumentReader();
         using CancellationTokenSource cts = new();
         cts.Cancel();
 
         try
         {
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await reader.ReadAsync(new FileInfo(filePath), filePath, cancellationToken: cts.Token));
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await reader.ReadAsync(new FileInfo(filePath), cts.Token));
         }
         finally
         {
@@ -83,7 +80,7 @@ public abstract class DocumentReaderConformanceTests
     {
         using HttpResponseMessage response = await DownloadAsync(new(source));
 
-        IngestionDocument document = await CreateStreamReader().ReadAsync(
+        IngestionDocument document = await CreateDocumentReader().ReadAsync(
             await response.Content.ReadAsStreamAsync(),
             source, mediaType: response.Content.Headers.ContentType?.MediaType!);
 
@@ -98,7 +95,7 @@ public abstract class DocumentReaderConformanceTests
 
         try
         {
-            IngestionDocument document = await CreateFileReader().ReadAsync(inputFile, inputFile.FullName);
+            IngestionDocument document = await CreateDocumentReader().ReadAsync(inputFile);
 
             SimpleAsserts(document, inputFile.FullName, inputFile.FullName);
         }
@@ -118,8 +115,8 @@ public abstract class DocumentReaderConformanceTests
 
         try
         {
-            var reader = CreateFileReader(extractImages: true);
-            var document = await reader.ReadAsync(inputFile, inputFile.FullName);
+            var reader = CreateDocumentReader(extractImages: true);
+            var document = await reader.ReadAsync(inputFile);
 
             SimpleAsserts(document, inputFile.FullName, expectedId: inputFile.FullName);
             var elements = document.EnumerateContent().ToArray();
@@ -144,7 +141,7 @@ public abstract class DocumentReaderConformanceTests
         };
         using Stream wordDoc = DocxHelper.CreateDocumentWithTable(expected);
 
-        var document = await CreateStreamReader().ReadAsync(wordDoc, "doc", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        var document = await CreateDocumentReader().ReadAsync(wordDoc, "doc", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 
         IngestionDocumentTable documentTable = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentTable>());
         Assert.Equal(5, documentTable.Cells.GetLength(0));
