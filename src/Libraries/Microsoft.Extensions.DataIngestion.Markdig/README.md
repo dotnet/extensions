@@ -27,7 +27,7 @@ using Microsoft.Extensions.DataIngestion;
 
 IngestionDocumentReader reader = new MarkdownReader();
 
-using IngestionPipeline<string> pipeline = new(reader, CreateChunker(), CreateWriter());
+using IngestionPipeline<FileInfo, string> pipeline = new(reader, CreateChunker(), CreateWriter());
 ```
 
 ## Feedback & Contributing
