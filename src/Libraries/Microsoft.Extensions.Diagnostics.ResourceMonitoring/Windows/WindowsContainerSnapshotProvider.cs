@@ -36,7 +36,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private double _memoryLimit;
     private double _cpuLimit;
 #pragma warning disable S1450 // Private fields only used as local variables in methods should become local variables. Those will be used once we bring relevant meters.
-    private ulong _memoryRequest;
+    private double _memoryRequest;
     private double _cpuRequest;
 #pragma warning restore S1450 // Private fields only used as local variables in methods should become local variables
 
@@ -45,7 +45,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
     private DateTimeOffset _refreshAfterProcessMemory;
-    private double _cpuPercentage = double.NaN;
+    private long _cachedUsageTickDelta;
+    private long _cachedTimeTickDelta;
     private double _processMemoryPercentage;
     private ulong _memoryUsage;
 
@@ -95,9 +96,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         _cpuRequest = quota.BaselineCpuInCores;
         _memoryRequest = quota.BaselineMemoryInBytes;
 
-        ulong memoryLimitRounded = (ulong)Math.Round(_memoryLimit);
-        Resources = new SystemResources(_cpuRequest, _cpuLimit, _memoryRequest, memoryLimitRounded);
-        _logger.SystemResourcesInfo(_cpuLimit, _cpuRequest, memoryLimitRounded, _memoryRequest);
+        Resources = new SystemResources(_cpuRequest, _cpuLimit, quota.BaselineMemoryInBytes, quota.MaxMemoryInBytes);
+        _logger.SystemResourcesInfo(_cpuLimit, _cpuRequest, quota.MaxMemoryInBytes, quota.BaselineMemoryInBytes);
 
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
         _oldCpuUsageTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
@@ -123,11 +123,19 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         _ = meter.CreateObservableGauge(
             name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization,
-            observeValue: CpuPercentage);
+            observeValue: () => CpuPercentage(_cpuLimit));
 
         _ = meter.CreateObservableGauge(
             name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization,
             observeValue: () => Math.Min(_metricValueMultiplier, MemoryUsage() / _memoryLimit * _metricValueMultiplier));
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization,
+            observeValue: () => CpuPercentage(_cpuRequest));
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ContainerMemoryRequestUtilization,
+            observeValue: () => Math.Min(_metricValueMultiplier, MemoryUsage() / _memoryRequest * _metricValueMultiplier));
 
         _ = meter.CreateObservableUpDownCounter(
             name: ResourceUtilizationInstruments.ContainerMemoryUsage,
@@ -138,7 +146,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         // Process based metrics:
         _ = meter.CreateObservableGauge(
             name: ResourceUtilizationInstruments.ProcessCpuUtilization,
-            observeValue: CpuPercentage);
+            observeValue: () => CpuPercentage(_cpuLimit));
 
         _ = meter.CreateObservableGauge(
             name: ResourceUtilizationInstruments.ProcessMemoryUtilization,
@@ -207,7 +215,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             {
                 _memoryUsage = memoryUsage;
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
-                _logger.ContainerMemoryUsageData(_memoryUsage, _memoryLimit);
+                _logger.ContainerMemoryUsageData(_memoryUsage, _memoryLimit, _memoryRequest);
             }
 
             return _memoryUsage;
@@ -225,35 +233,27 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             [new KeyValuePair<string, object?>("cpu.mode", "system")]);
     }
 
-    private double CpuPercentage()
+    private double CpuPercentage(double denominator)
     {
         var now = _timeProvider.GetUtcNow();
-
-        lock (_cpuLocker)
-        {
-            if (now < _refreshAfterCpu)
-            {
-                return _cpuPercentage;
-            }
-        }
-
-        using var jobHandle = _createJobHandleObject();
-        var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
-        var currentCpuTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
-
         lock (_cpuLocker)
         {
             if (now >= _refreshAfterCpu)
             {
+                using var jobHandle = _createJobHandleObject();
+                var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
+                var currentCpuTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
+
                 var usageTickDelta = currentCpuTicks - _oldCpuUsageTicks;
-                var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuLimit;
+                var timeTickDelta = now.Ticks - _oldCpuTimeTicks;
+
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
-                    // Don't change calculation order, otherwise precision is lost:
-                    _cpuPercentage = Math.Min(_metricValueMultiplier, usageTickDelta / timeTickDelta * _metricValueMultiplier);
+                    _cachedUsageTickDelta = usageTickDelta;
+                    _cachedTimeTickDelta = timeTickDelta;
 
                     _logger.CpuContainerUsageData(
-                        basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, _cpuLimit, _cpuPercentage);
+                        basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, denominator, double.NaN);
 
                     _oldCpuUsageTicks = currentCpuTicks;
                     _oldCpuTimeTicks = now.Ticks;
@@ -261,7 +261,15 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
                 }
             }
 
-            return _cpuPercentage;
+            if (_cachedUsageTickDelta > 0 && _cachedTimeTickDelta > 0)
+            {
+                var timeTickDeltaWithDenominator = _cachedTimeTickDelta * denominator;
+
+                // Don't change calculation order, otherwise precision is lost:
+                return Math.Min(_metricValueMultiplier, _cachedUsageTickDelta / timeTickDeltaWithDenominator * _metricValueMultiplier);
+            }
+
+            return double.NaN;
         }
     }
 }

@@ -256,6 +256,8 @@ public sealed class WindowsContainerSnapshotProviderTests
     [InlineData(ResourceUtilizationInstruments.ProcessCpuUtilization, false)]
     [InlineData(ResourceUtilizationInstruments.ContainerCpuLimitUtilization, true)]
     [InlineData(ResourceUtilizationInstruments.ContainerCpuLimitUtilization, false)]
+    [InlineData(ResourceUtilizationInstruments.ContainerCpuRequestUtilization, true)]
+    [InlineData(ResourceUtilizationInstruments.ContainerCpuRequestUtilization, false)]
     public void SnapshotProvider_EmitsCpuMetrics(string instrumentName, bool useZeroToOneRange)
     {
         // Simulating 10% CPU usage (2 CPUs, 2000 ticks initially, 4000 ticks after 1 ms):
@@ -327,6 +329,8 @@ public sealed class WindowsContainerSnapshotProviderTests
     [InlineData(ResourceUtilizationInstruments.ProcessMemoryUtilization, false)]
     [InlineData(ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, true)]
     [InlineData(ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, false)]
+    [InlineData(ResourceUtilizationInstruments.ContainerMemoryRequestUtilization, true)]
+    [InlineData(ResourceUtilizationInstruments.ContainerMemoryRequestUtilization, false)]
     public void SnapshotProvider_EmitsMemoryMetrics(string instrumentName, bool useZeroToOneRange)
     {
         _appMemoryUsage = 200UL;
