@@ -619,7 +619,7 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
         //    be used again.
         //
 
-        DnsResourceRecord? soa = authorities.FirstOrDefault(r => r.Type == QueryType.SOA);
+        DnsResourceRecord? soa = authorities.Find(r => r.Type == QueryType.SOA);
         if (soa != null && DnsPrimitives.TryReadSoa(soa.Value.Data, out _, out _, out _, out _, out _, out _, out uint minimum, out _))
         {
             expiration = createdAt.AddSeconds(Math.Min(minimum, soa.Value.Ttl));
@@ -653,7 +653,7 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
             //    another query for the same <QNAME, QTYPE, QCLASS> that resulted in
             //    the cached negative response.
             //
-            if (!authorities.Any(r => r.Type == QueryType.NS) && GetNegativeCacheExpiration(createdAt, authorities, out DateTime newExpiration))
+            if (!authorities.Exists(r => r.Type == QueryType.NS) && GetNegativeCacheExpiration(createdAt, authorities, out DateTime newExpiration))
             {
                 expiration = newExpiration;
                 // _cache.TryAdd(name, queryType, expiration, Array.Empty<T>());

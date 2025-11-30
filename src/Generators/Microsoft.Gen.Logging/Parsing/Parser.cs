@@ -251,7 +251,7 @@ internal sealed partial class Parser
                         if (keepMethod &&
                             string.IsNullOrWhiteSpace(lm.Message) &&
                             !lm.EventId.HasValue &&
-                            lm.Parameters.All(x => x.IsLogger || x.IsLogLevel))
+                            lm.Parameters.TrueForAll(static x => x.IsLogger || x.IsLogLevel))
                         {
                             if (!_failedMethod)
                             {

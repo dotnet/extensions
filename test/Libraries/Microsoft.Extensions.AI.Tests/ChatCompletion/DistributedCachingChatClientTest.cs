@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -388,7 +389,7 @@ public class DistributedCachingChatClientTest
                         AdditionalProperties = new() { ["e"] = "f", ["g"] = "h" },
                     }
                 ],
-                CreatedAt = DateTime.Parse("2024-10-11T19:23:36.0152137Z"),
+                CreatedAt = DateTime.Parse("2024-10-11T19:23:36.0152137Z", DateTimeFormatInfo.InvariantInfo),
                 ResponseId = "12345",
                 MessageId = "someMessageId123",
                 AuthorName = "Someone",
@@ -419,7 +420,7 @@ public class DistributedCachingChatClientTest
         Assert.Equal("someMessageId123", item.MessageId);
         Assert.Equal("Someone", item.AuthorName);
         Assert.Equal(ChatFinishReason.Length, item.FinishReason);
-        Assert.Equal(DateTime.Parse("2024-10-11T19:23:36.0152137Z"), item.CreatedAt);
+        Assert.Equal(DateTime.Parse("2024-10-11T19:23:36.0152137Z", DateTimeFormatInfo.InvariantInfo), item.CreatedAt);
 
         var content = Assert.IsType<TextContent>(Assert.Single(item.Contents));
         Assert.Equal("Hello world, how are you?", content.Text);

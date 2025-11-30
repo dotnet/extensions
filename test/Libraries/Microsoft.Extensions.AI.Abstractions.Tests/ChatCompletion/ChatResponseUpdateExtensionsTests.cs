@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -803,9 +804,9 @@ public class ChatResponseUpdateExtensionsTests
     [MemberData(nameof(ToChatResponse_TimestampFolding_MemberData))]
     public async Task ToChatResponse_TimestampFolding(bool useAsync, string? timestamp1, string? timestamp2, string? expectedTimestamp)
     {
-        DateTimeOffset? first = timestamp1 is not null ? DateTimeOffset.Parse(timestamp1) : null;
-        DateTimeOffset? second = timestamp2 is not null ? DateTimeOffset.Parse(timestamp2) : null;
-        DateTimeOffset? expected = expectedTimestamp is not null ? DateTimeOffset.Parse(expectedTimestamp) : null;
+        DateTimeOffset? first = timestamp1 is not null ? DateTimeOffset.Parse(timestamp1, DateTimeFormatInfo.InvariantInfo) : null;
+        DateTimeOffset? second = timestamp2 is not null ? DateTimeOffset.Parse(timestamp2, DateTimeFormatInfo.InvariantInfo) : null;
+        DateTimeOffset? expected = expectedTimestamp is not null ? DateTimeOffset.Parse(expectedTimestamp, DateTimeFormatInfo.InvariantInfo) : null;
 
         ChatResponseUpdate[] updates =
         [

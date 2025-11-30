@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using Xunit;
@@ -16,7 +17,7 @@ public class EmbeddingTests
         float[] floats = [1f, 2f, 3f];
 
         AdditionalPropertiesDictionary props = [];
-        var createdAt = DateTimeOffset.Parse("2022-01-01T00:00:00Z");
+        var createdAt = DateTimeOffset.Parse("2022-01-01T00:00:00Z", DateTimeFormatInfo.InvariantInfo);
         const string Model = "text-embedding-3-small";
 
         Embedding<float> e = new(floats)

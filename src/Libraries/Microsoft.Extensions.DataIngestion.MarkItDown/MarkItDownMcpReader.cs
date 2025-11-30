@@ -97,7 +97,7 @@ public class MarkItDownMcpReader : IngestionDocumentReader
         await using (transport.ConfigureAwait(false))
         {
             // Create MCP client
-            McpClient client = await McpClient.CreateAsync(transport, _options, loggerFactory: null, cancellationToken).ConfigureAwait(false);
+            McpClient client = await McpClient.CreateAsync(transport, _options, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             await using (client.ConfigureAwait(false))
             {

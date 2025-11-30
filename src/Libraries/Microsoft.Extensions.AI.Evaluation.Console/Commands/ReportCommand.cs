@@ -52,7 +52,7 @@ internal sealed partial class ReportCommand(ILogger logger, TelemetryHelper tele
                         if (storageRootDir is not null)
                         {
                             string storageRootPath = storageRootDir.FullName;
-                            logger.LogInformation("Storage root path: {storageRootPath}", storageRootPath);
+                            logger.LogInformation("Storage root path: {StorageRootPath}", storageRootPath);
 
                             resultStore = new DiskBasedResultStore(storageRootPath);
 
@@ -60,7 +60,7 @@ internal sealed partial class ReportCommand(ILogger logger, TelemetryHelper tele
                         }
                         else if (endpointUri is not null)
                         {
-                            logger.LogInformation("Azure Storage endpoint: {endpointUri}", endpointUri);
+                            logger.LogInformation("Azure Storage endpoint: {EndpointUri}", endpointUri);
 
                             var fsClient = new DataLakeDirectoryClient(endpointUri, new DefaultAzureCredential());
                             resultStore = new AzureStorageResultStore(fsClient);
@@ -107,7 +107,7 @@ internal sealed partial class ReportCommand(ILogger logger, TelemetryHelper tele
                                 results.Add(result);
 
                                 logger.LogInformation(
-                                    "Execution: {executionName} Scenario: {scenarioName} Iteration: {iterationName}",
+                                    "Execution: {ExecutionName} Scenario: {ScenarioName} Iteration: {IterationName}",
                                     result.ExecutionName,
                                     result.ScenarioName,
                                     result.IterationName);
@@ -131,7 +131,7 @@ internal sealed partial class ReportCommand(ILogger logger, TelemetryHelper tele
                         };
 
                         await reportWriter.WriteReportAsync(results, cancellationToken).ConfigureAwait(false);
-                        logger.LogInformation("Report: {outputFilePath} [{format}]", outputFilePath, format);
+                        logger.LogInformation("Report: {OutputFilePath} [{Format}]", outputFilePath, format);
 
                         // See the following issues for reasoning behind this check. We want to avoid opening the
                         // report if this process is running as a service or in a CI pipeline.
