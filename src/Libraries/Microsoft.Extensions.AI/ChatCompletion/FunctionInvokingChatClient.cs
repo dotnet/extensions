@@ -751,7 +751,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// Gets whether <paramref name="messages"/> contains any <see cref="FunctionApprovalRequestContent"/> or <see cref="FunctionApprovalResponseContent"/> instances.
     /// </summary>
     private static bool HasAnyApprovalContent(List<ChatMessage> messages) =>
-        messages.Any(static m => m.Contents.Any(static c => c is FunctionApprovalRequestContent or FunctionApprovalResponseContent));
+        messages.Exists(static m => m.Contents.Any(static c => c is FunctionApprovalRequestContent or FunctionApprovalResponseContent));
 
     /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="messages"/> to <paramref name="functionCalls"/>.</summary>
     private static bool CopyFunctionCalls(
@@ -925,7 +925,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                         messages, options, toolMap, functionCallContents,
                         iteration, callIndex, captureExceptions: true, isStreaming, cancellationToken)));
 
-                shouldTerminate = results.Any(r => r.Terminate);
+                shouldTerminate = results.Exists(static r => r.Terminate);
             }
             else
             {
