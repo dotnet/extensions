@@ -35,7 +35,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private double _memoryLimit;
     private double _cpuLimit;
 #pragma warning disable S1450 // Private fields only used as local variables in methods should become local variables. This will be used once we bring relevant meters.
-    private ulong _memoryRequest;
+    private double _memoryRequest;
 #pragma warning restore S1450 // Private fields only used as local variables in methods should become local variables
     private double _cpuRequest;
 
@@ -69,8 +69,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
 
         var quota = resourceQuotaProvider.GetResourceQuota();
-        _memoryLimit = quota.MaxMemoryInBytes;
         _cpuLimit = quota.MaxCpuInCores;
+        _memoryLimit = quota.MaxMemoryInBytes;
         _cpuRequest = quota.BaselineCpuInCores;
         _memoryRequest = quota.BaselineMemoryInBytes;
 
@@ -127,7 +127,12 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         _ = meter.CreateObservableGauge(
             name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization,
-            observeValues: () => GetMeasurementWithRetry(MemoryPercentage),
+            observeValues: () => GetMeasurementWithRetry(() => MemoryPercentageLimit()),
+            unit: "1");
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ContainerMemoryRequestUtilization,
+            observeValues: () => GetMeasurementWithRetry(() => MemoryPercentageRequest()),
             unit: "1");
 
         _ = meter.CreateObservableUpDownCounter(
@@ -138,12 +143,11 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         _ = meter.CreateObservableGauge(
             name: ResourceUtilizationInstruments.ProcessMemoryUtilization,
-            observeValues: () => GetMeasurementWithRetry(MemoryPercentage),
+            observeValues: () => GetMeasurementWithRetry(() => MemoryPercentageLimit()),
             unit: "1");
 
-        ulong memoryLimitRounded = (ulong)Math.Round(_memoryLimit);
-        Resources = new SystemResources(_cpuRequest, _cpuLimit, _memoryRequest, memoryLimitRounded);
-        _logger.SystemResourcesInfo(_cpuLimit, _cpuRequest, memoryLimitRounded, _memoryRequest);
+        Resources = new SystemResources(_cpuRequest, _cpuLimit, quota.BaselineMemoryInBytes, quota.MaxMemoryInBytes);
+        _logger.SystemResourcesInfo(_cpuLimit, _cpuRequest, quota.MaxMemoryInBytes, quota.BaselineMemoryInBytes);
     }
 
     public double CpuUtilizationV2()
@@ -151,7 +155,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         DateTimeOffset now = _timeProvider.GetUtcNow();
         lock (_cpuLocker)
         {
-            if (now < _refreshAfterCpu)
+            if (now <= _refreshAfterCpu)
             {
                 return _lastCpuCoresUsed;
             }
@@ -160,7 +164,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         (long cpuUsageTime, long cpuPeriodCounter) = _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
         lock (_cpuLocker)
         {
-            if (now < _refreshAfterCpu)
+            if (now <= _refreshAfterCpu)
             {
                 return _lastCpuCoresUsed;
             }
@@ -193,7 +197,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         lock (_cpuLocker)
         {
-            if (now < _refreshAfterCpu)
+            if (now <= _refreshAfterCpu)
             {
                 return _cpuPercentage;
             }
@@ -204,7 +208,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         lock (_cpuLocker)
         {
-            if (now < _refreshAfterCpu)
+            if (now <= _refreshAfterCpu)
             {
                 return _cpuPercentage;
             }
@@ -276,12 +280,21 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             memoryUsageInBytes: memoryUsed);
     }
 
-    private double MemoryPercentage()
+    private double MemoryPercentageLimit()
     {
         ulong memoryUsage = MemoryUsage();
         double memoryPercentage = Math.Min(One, memoryUsage / _memoryLimit);
 
-        _logger.MemoryPercentageData(memoryUsage, _memoryLimit, memoryPercentage);
+        _logger.MemoryPercentageLimit(memoryUsage, _memoryLimit, memoryPercentage);
+        return memoryPercentage;
+    }
+
+    private double MemoryPercentageRequest()
+    {
+        ulong memoryUsage = MemoryUsage();
+        double memoryPercentage = Math.Min(One, memoryUsage / _memoryRequest);
+
+        _logger.MemoryPercentageRequest(memoryUsage, _memoryRequest, memoryPercentage);
         return memoryPercentage;
     }
 

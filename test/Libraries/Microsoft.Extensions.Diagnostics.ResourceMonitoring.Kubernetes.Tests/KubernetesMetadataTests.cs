@@ -72,7 +72,7 @@ public class KubernetesMetadataTests
     }
 
     [Fact]
-    public void Build_WithMissingEnvironmentVariables_SetsZeroValues()
+    public void Build_WithMissingEnvironmentVariables_ThrowsInvalidOperationException()
     {
         // Arrange
         var tempSetup = new TestKubernetesEnvironmentSetup();
@@ -80,14 +80,12 @@ public class KubernetesMetadataTests
 
         try
         {
-            // Act
-            var result = KubernetesMetadata.FromEnvironmentVariables("NONEXISTENT_PREFIX_");
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                KubernetesMetadata.FromEnvironmentVariables("NONEXISTENT_PREFIX_"));
 
-            // Assert
-            Assert.Equal(0UL, result.LimitsMemory);
-            Assert.Equal(0UL, result.LimitsCpu);
-            Assert.Equal(0UL, result.RequestsMemory);
-            Assert.Equal(0UL, result.RequestsCpu);
+            Assert.Contains("LIMITS_MEMORY", exception.Message);
+            Assert.Contains("is required and cannot be zero or missing", exception.Message);
         }
         finally
         {
@@ -100,7 +98,7 @@ public class KubernetesMetadataTests
     [InlineData("   ")]
     [InlineData("\t")]
     [InlineData("\n")]
-    public void Build_WithEmptyOrWhitespaceEnvironmentVariables_SetsZeroValues(string envValue)
+    public void Build_WithEmptyOrWhitespaceEnvironmentVariables_ThrowsInvalidOperationException(string envValue)
     {
         // Arrange
         var tempSetup = new TestKubernetesEnvironmentSetup();
@@ -111,14 +109,12 @@ public class KubernetesMetadataTests
 
         try
         {
-            // Act
-            var result = KubernetesMetadata.FromEnvironmentVariables(string.Empty);
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                KubernetesMetadata.FromEnvironmentVariables(string.Empty));
 
-            // Assert
-            Assert.Equal(0UL, result.LimitsMemory);
-            Assert.Equal(0UL, result.LimitsCpu);
-            Assert.Equal(0UL, result.RequestsMemory);
-            Assert.Equal(0UL, result.RequestsCpu);
+            Assert.Contains("LIMITS_MEMORY", exception.Message);
+            Assert.Contains("is required and cannot be zero or missing", exception.Message);
         }
         finally
         {

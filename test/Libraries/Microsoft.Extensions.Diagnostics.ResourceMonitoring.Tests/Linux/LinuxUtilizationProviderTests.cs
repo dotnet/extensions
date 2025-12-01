@@ -84,13 +84,16 @@ public sealed class LinuxUtilizationProviderTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(6, samples.Count);
+        Assert.Equal(7, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization);
+        Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization).value);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
@@ -158,7 +161,7 @@ public sealed class LinuxUtilizationProviderTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(5, samples.Count);
+        Assert.Equal(6, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
@@ -168,6 +171,9 @@ public sealed class LinuxUtilizationProviderTests
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization);
+        Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization).value);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization).value));
@@ -276,7 +282,7 @@ public sealed class LinuxUtilizationProviderTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(6, samples.Count);
+        Assert.Equal(7, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
@@ -289,6 +295,9 @@ public sealed class LinuxUtilizationProviderTests
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization);
+        Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization).value);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
@@ -376,8 +385,9 @@ public sealed class LinuxUtilizationProviderTests
         var parserMock = new Mock<ILinuxUtilizationParser>();
         parserMock.Setup(p => p.GetMemoryUsageInBytes()).Returns(() =>
         {
+            // 4 represents number of calls of GetMemoryUsageInBytes() in LinuxUtilizationProvider in one interval
             callCount++;
-            if (callCount <= 3)
+            if (callCount <= 4)
             {
                 throw new InvalidOperationException("Simulated unhandled exception");
             }
@@ -416,12 +426,13 @@ public sealed class LinuxUtilizationProviderTests
 
         Assert.Throws<AggregateException>(() => listener.RecordObservableInstruments());
         Assert.DoesNotContain(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
+        parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(4));
 
         fakeTime.Advance(TimeSpan.FromMinutes(1));
         listener.RecordObservableInstruments();
         var metric = samples.SingleOrDefault(x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
         Assert.Equal(1234f / 2000f, metric.value, 0.01f);
 
-        parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(4));
+        parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(5));
     }
 }

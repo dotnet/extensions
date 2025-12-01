@@ -466,10 +466,38 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case StreamingResponseErrorUpdate errorUpdate:
-                    yield return CreateUpdate(new ErrorContent(errorUpdate.Message)
+                    string? errorMessage = errorUpdate.Message;
+                    string? errorCode = errorUpdate.Code;
+                    string? errorParam = errorUpdate.Param;
+
+                    // Workaround for https://github.com/openai/openai-dotnet/issues/849.
+                    // The OpenAI service is sending down error information in a different format
+                    // than is documented and thus a different format from what the OpenAI client
+                    // library deserializes. Until that's addressed such that the data is correctly
+                    // propagated through the OpenAI library, if it looks like the update doesn't
+                    // contain the properly deserialized error information, try accessing it
+                    // directly from the underlying JSON.
                     {
-                        ErrorCode = errorUpdate.Code,
-                        Details = errorUpdate.Param,
+                        if (string.IsNullOrEmpty(errorMessage))
+                        {
+                            _ = errorUpdate.Patch.TryGetValue("$.error.message"u8, out errorMessage);
+                        }
+
+                        if (string.IsNullOrEmpty(errorCode))
+                        {
+                            _ = errorUpdate.Patch.TryGetValue("$.error.code"u8, out errorCode);
+                        }
+
+                        if (string.IsNullOrEmpty(errorParam))
+                        {
+                            _ = errorUpdate.Patch.TryGetValue("$.error.param"u8, out errorParam);
+                        }
+                    }
+
+                    yield return CreateUpdate(new ErrorContent(errorMessage)
+                    {
+                        ErrorCode = errorCode,
+                        Details = errorParam,
                     });
                     break;
 

@@ -21,7 +21,7 @@ internal static partial class Log
 
     [LoggerMessage(2, LogLevel.Debug,
         "Computed memory usage with MemoryUsedInBytes = {memoryUsed}, MemoryLimit = {memoryLimit}, MemoryPercentage = {memoryPercentage}.")]
-    public static partial void MemoryPercentageData(
+    public static partial void MemoryPercentageLimit(
         this ILogger logger,
         ulong memoryUsed,
         double memoryLimit,
@@ -56,4 +56,12 @@ internal static partial class Log
     public static partial void MemoryUsageData(
         this ILogger logger,
         ulong memoryUsed);
+
+    [LoggerMessage(7, LogLevel.Debug,
+        "Computed memory usage with MemoryUsedInBytes = {memoryUsed}, MemoryRequest = {memoryRequest}, MemoryPercentage = {memoryPercentage}.")]
+    public static partial void MemoryPercentageRequest(
+        this ILogger logger,
+        ulong memoryUsed,
+        double memoryRequest,
+        double memoryPercentage);
 }
