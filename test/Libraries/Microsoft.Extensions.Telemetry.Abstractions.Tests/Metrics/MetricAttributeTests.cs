@@ -21,6 +21,8 @@ public class MetricAttributeTests
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -35,6 +37,8 @@ public class MetricAttributeTests
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -49,6 +53,8 @@ public class MetricAttributeTests
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -63,6 +69,8 @@ public class MetricAttributeTests
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -77,6 +85,8 @@ public class MetricAttributeTests
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -92,6 +102,8 @@ public class MetricAttributeTests
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -107,6 +119,8 @@ public class MetricAttributeTests
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -122,6 +136,8 @@ public class MetricAttributeTests
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -137,6 +153,8 @@ public class MetricAttributeTests
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -152,6 +170,8 @@ public class MetricAttributeTests
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
