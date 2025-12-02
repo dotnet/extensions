@@ -24,21 +24,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.HostedMcpServerTool.get_Headers</Target>
-    <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.AI.HostedMcpServerTool.get_Url</Target>
-    <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.HostedMcpServerTool.set_Headers(System.Collections.Generic.IDictionary{System.String,System.String})</Target>
     <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
