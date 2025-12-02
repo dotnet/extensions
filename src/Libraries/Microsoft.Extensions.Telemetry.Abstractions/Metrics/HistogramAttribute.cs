@@ -75,4 +75,9 @@ public sealed class HistogramAttribute : Attribute
     /// Gets the type that supplies metric tag values.
     /// </summary>
     public Type? Type { get; }
+
+    /// <summary>
+    /// Gets or sets the unit of measurement for the metric.
+    /// </summary>
+    public string? Unit { get; set; }
 }

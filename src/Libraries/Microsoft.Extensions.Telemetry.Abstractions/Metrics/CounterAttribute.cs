@@ -76,4 +76,9 @@ public sealed class CounterAttribute : Attribute
     /// Gets the type that supplies metric tags values.
     /// </summary>
     public Type? Type { get; }
+
+    /// <summary>
+    /// Gets or sets the unit of measurement for the metric.
+    /// </summary>
+    public string? Unit { get; set; }
 }

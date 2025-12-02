@@ -792,4 +792,17 @@ public partial class ParserTests
 
         return d;
     }
+
+    [Fact]
+    public async Task UnitParameterTest()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                [Counter(Unit = ""s"", Name = ""myMetricName"")]
+                static partial MetricName CreateMetric(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
 }
