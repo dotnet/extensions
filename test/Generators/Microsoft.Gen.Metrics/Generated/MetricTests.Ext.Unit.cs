@@ -16,7 +16,6 @@ public partial class MetricTests
         // Verify that a counter created with a unit works correctly
         using var collector = new MetricCollector<long>(_meter, "CounterWithUnit");
 
-        // You'll need to add this to TestClasses/MetricsWithUnit.cs
         CounterWithUnit counter = MetricsWithUnit.CreateCounterWithUnit(_meter);
         counter.Add(100L);
 
@@ -33,7 +32,6 @@ public partial class MetricTests
         // Verify that a histogram created with a unit works correctly
         using var collector = new MetricCollector<long>(_meter, "HistogramWithUnit");
 
-        // You'll need to add this to TestClasses/HistogramTestExtensions.cs
         HistogramWithUnit histogram = MetricsWithUnit.CreateHistogramWithUnit(_meter);
         histogram.Record(50L);
 

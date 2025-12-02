@@ -617,7 +617,7 @@ internal sealed class Parser
     {
         var strongTypeAttributeParameters = new StrongTypeAttributeParameters();
 
-        // i want to check namedArguments array for key == name and for key == unit
+        // Extract "Name" and "Unit" values from the named arguments, if present, and assign them to the corresponding properties.
         foreach (var namedArgument in namedArguments)
         {
             if (namedArgument.Key == "Name" && namedArgument.Value.Value is { } nameValue)

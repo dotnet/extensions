@@ -41,9 +41,4 @@ public sealed class TagNameAttribute : Attribute
     /// Gets the name of the tag.
     /// </summary>
     public string Name { get; }
-
-    /// <summary>
-    /// Gets or sets the unit of measurement for the metric.
-    /// </summary>
-    public string? Unit { get; set; }
 }
