@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable CA1307 // Specify StringComparison for clarity
+#pragma warning disable CA1308 // Normalize strings to uppercase
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 #pragma warning disable SA1113 // Comma should be on the same line as previous parameter
 
@@ -23,11 +25,14 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.37, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.38, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 {
+    internal const string SensitiveDataEnabledCustomKey = "__EnableSensitiveData__";
+    internal const string SensitiveDataEnabledTrueValue = "true";
+
     private readonly ActivitySource _activitySource;
     private readonly Meter _meter;
 
@@ -67,19 +72,15 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         _tokenUsageHistogram = _meter.CreateHistogram<int>(
             OpenTelemetryConsts.GenAI.Client.TokenUsage.Name,
             OpenTelemetryConsts.TokensUnit,
-            OpenTelemetryConsts.GenAI.Client.TokenUsage.Description
-#if NET9_0_OR_GREATER
-            , advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TokenUsage.ExplicitBucketBoundaries }
-#endif
+            OpenTelemetryConsts.GenAI.Client.TokenUsage.Description,
+            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TokenUsage.ExplicitBucketBoundaries }
             );
 
         _operationDurationHistogram = _meter.CreateHistogram<double>(
             OpenTelemetryConsts.GenAI.Client.OperationDuration.Name,
             OpenTelemetryConsts.SecondsUnit,
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description
-#if NET9_0_OR_GREATER
-            , advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
-#endif
+            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description,
+            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
             );
 
         _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
@@ -239,6 +240,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     message.Role == ChatRole.Tool ? "tool" :
                     message.Role == ChatRole.System || message.Role == new ChatRole("developer") ? "system" :
                     "user",
+                Name = message.AuthorName,
             };
 
             foreach (AIContent content in message.Contents)
@@ -272,19 +274,34 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         });
                         break;
 
-                    // These are non-standard and are using the "generic" non-text part that provides an extensibility mechanism:
-
-                    case UriContent uc:
-                        m.Parts.Add(new OtelGenericPart { Type = "image", Content = uc.Uri.ToString() });
+                    case DataContent dc:
+                        m.Parts.Add(new OtelBlobPart
+                        {
+                            Content = dc.Base64Data.ToString(),
+                            MimeType = dc.MediaType,
+                            Modality = DeriveModalityFromMediaType(dc.MediaType),
+                        });
                         break;
 
-                    case DataContent dc:
-                        m.Parts.Add(new OtelGenericPart { Type = "image", Content = dc.Uri });
+                    case UriContent uc:
+                        m.Parts.Add(new OtelUriPart
+                        {
+                            Uri = uc.Uri.AbsoluteUri,
+                            MimeType = uc.MediaType,
+                            Modality = DeriveModalityFromMediaType(uc.MediaType),
+                        });
                         break;
 
                     case HostedFileContent fc:
-                        m.Parts.Add(new OtelGenericPart { Type = "file", Content = fc.FileId });
+                        m.Parts.Add(new OtelFilePart
+                        {
+                            FileId = fc.FileId,
+                            MimeType = fc.MediaType,
+                            Modality = DeriveModalityFromMediaType(fc.MediaType),
+                        });
                         break;
+
+                    // These are non-standard and are using the "generic" non-text part that provides an extensibility mechanism:
 
                     case HostedVectorStoreContent vsc:
                         m.Parts.Add(new OtelGenericPart { Type = "vector_store", Content = vsc.VectorStoreId });
@@ -328,6 +345,25 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         return JsonSerializer.Serialize(output, _defaultOptions.GetTypeInfo(typeof(IList<object>)));
     }
 
+    private static string? DeriveModalityFromMediaType(string? mediaType)
+    {
+        if (mediaType is not null)
+        {
+            int pos = mediaType.IndexOf('/');
+            if (pos >= 0)
+            {
+                ReadOnlySpan<char> topLevel = mediaType.AsSpan(0, pos);
+                return
+                    topLevel.Equals("image", StringComparison.OrdinalIgnoreCase) ? "image" :
+                    topLevel.Equals("audio", StringComparison.OrdinalIgnoreCase) ? "audio" :
+                    topLevel.Equals("video", StringComparison.OrdinalIgnoreCase) ? "video" :
+                    null;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>Creates an activity for a chat request, or returns <see langword="null"/> if not enabled.</summary>
     private Activity? CreateAndConfigureActivity(ChatOptions? options)
     {
@@ -339,6 +375,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             activity = _activitySource.StartActivity(
                 string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.ChatName : $"{OpenTelemetryConsts.GenAI.ChatName} {modelId}",
                 ActivityKind.Client);
+
+            if (EnableSensitiveData)
+            {
+                activity?.SetCustomProperty(SensitiveDataEnabledCustomKey, SensitiveDataEnabledTrueValue);
+            }
 
             if (activity is { IsAllDataRequested: true })
             {
@@ -595,6 +636,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     private sealed class OtelMessage
     {
         public string? Role { get; set; }
+        public string? Name { get; set; }
         public List<object> Parts { get; set; } = [];
         public string? FinishReason { get; set; }
     }
@@ -603,6 +645,30 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     {
         public string Type { get; set; } = "text";
         public object? Content { get; set; } // should be a string when Type == "text"
+    }
+
+    private sealed class OtelBlobPart
+    {
+        public string Type { get; set; } = "blob";
+        public string? Content { get; set; } // base64-encoded binary data
+        public string? MimeType { get; set; }
+        public string? Modality { get; set; }
+    }
+
+    private sealed class OtelUriPart
+    {
+        public string Type { get; set; } = "uri";
+        public string? Uri { get; set; }
+        public string? MimeType { get; set; }
+        public string? Modality { get; set; }
+    }
+
+    private sealed class OtelFilePart
+    {
+        public string Type { get; set; } = "file";
+        public string? FileId { get; set; }
+        public string? MimeType { get; set; }
+        public string? Modality { get; set; }
     }
 
     private sealed class OtelToolCallRequestPart
@@ -651,6 +717,9 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     [JsonSerializable(typeof(IList<object>))]
     [JsonSerializable(typeof(OtelMessage))]
     [JsonSerializable(typeof(OtelGenericPart))]
+    [JsonSerializable(typeof(OtelBlobPart))]
+    [JsonSerializable(typeof(OtelUriPart))]
+    [JsonSerializable(typeof(OtelFilePart))]
     [JsonSerializable(typeof(OtelToolCallRequestPart))]
     [JsonSerializable(typeof(OtelToolCallResponsePart))]
     [JsonSerializable(typeof(IEnumerable<OtelFunction>))]

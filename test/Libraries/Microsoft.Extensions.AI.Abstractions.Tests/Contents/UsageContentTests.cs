@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -56,5 +57,25 @@ public class UsageContentTests
         Assert.Throws<ArgumentNullException>("value", () => c.Details = null!);
 
         Assert.Same(d, c.Details);
+    }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new UsageContent(new UsageDetails
+        {
+            InputTokenCount = 10,
+            OutputTokenCount = 20,
+            TotalTokenCount = 30
+        });
+
+        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+        var deserializedContent = JsonSerializer.Deserialize<UsageContent>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(deserializedContent);
+        Assert.NotNull(deserializedContent.Details);
+        Assert.Equal(content.Details.InputTokenCount, deserializedContent.Details.InputTokenCount);
+        Assert.Equal(content.Details.OutputTokenCount, deserializedContent.Details.OutputTokenCount);
+        Assert.Equal(content.Details.TotalTokenCount, deserializedContent.Details.TotalTokenCount);
     }
 }

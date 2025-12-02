@@ -118,7 +118,9 @@ public sealed class FakeHost : IHost
 
         _disposed = true;
 
-        StopAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+        StopAsync().GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002
         _host.Dispose();
     }
 }

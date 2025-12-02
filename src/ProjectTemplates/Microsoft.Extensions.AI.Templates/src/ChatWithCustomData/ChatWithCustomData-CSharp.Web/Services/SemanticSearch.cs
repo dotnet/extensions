@@ -1,16 +1,26 @@
-﻿using Microsoft.Extensions.VectorData;
+﻿using ChatWithCustomData_CSharp.Web.Services.Ingestion;
+using Microsoft.Extensions.VectorData;
 
 namespace ChatWithCustomData_CSharp.Web.Services;
 
 public class SemanticSearch(
 #if (IsQdrant)
-    VectorStoreCollection<Guid, IngestedChunk> vectorCollection)
+    VectorStoreCollection<Guid, IngestedChunk> vectorCollection,
 #else
-    VectorStoreCollection<string, IngestedChunk> vectorCollection)
+    VectorStoreCollection<string, IngestedChunk> vectorCollection,
 #endif
+    [FromKeyedServices("ingestion_directory")] DirectoryInfo ingestionDirectory,
+    DataIngestor dataIngestor)
 {
+    private Task? _ingestionTask;
+
+    public async Task LoadDocumentsAsync() => await ( _ingestionTask ??= dataIngestor.IngestDataAsync(ingestionDirectory, searchPattern: "*.*"));
+
     public async Task<IReadOnlyList<IngestedChunk>> SearchAsync(string text, string? documentIdFilter, int maxResults)
     {
+        // Ensure documents have been loaded before searching
+        await LoadDocumentsAsync();
+
         var nearest = vectorCollection.SearchAsync(text, maxResults, new VectorSearchOptions<IngestedChunk>
         {
             Filter = documentIdFilter is { Length: > 0 } ? record => record.DocumentId == documentIdFilter : null,

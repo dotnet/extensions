@@ -8,11 +8,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Grpc.Core;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http.Resilience.Test.Grpc;
 using Polly;
 using Xunit;
@@ -21,21 +21,26 @@ namespace Microsoft.Extensions.Http.Resilience.Test.Resilience;
 
 public class GrpcResilienceTests
 {
-    private IWebHost _host;
+    private IHost _host;
     private HttpMessageHandler _handler;
 
     public GrpcResilienceTests()
     {
-        _host = WebHost
-            .CreateDefaultBuilder()
-            .ConfigureServices(services => services.AddGrpc())
-            .Configure(builder =>
+        _host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                builder.UseRouting();
-                builder.UseEndpoints(endpoints => endpoints.MapGrpcService<GreeterService>());
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services => services.AddGrpc())
+                    .Configure(builder =>
+                    {
+                        builder.UseRouting();
+                        builder.UseEndpoints(endpoints => endpoints.MapGrpcService<GreeterService>());
+                    });
             })
-            .UseTestServer()
-            .Start();
+            .Build();
+
+        _host.Start();
 
         _handler = _host.GetTestServer().CreateHandler();
     }

@@ -1,6 +1,28 @@
-# Release History
+# Microsoft.Extensions.AI Release History
 
 ## NOT YET RELEASED
+
+- Fixed package references for net10.0 asset.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Improved `FunctionInvokingChatClient`'s handling of spans in the presence of an `invoke_agent` span.
+
+## 10.0.1
+
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 10.0.0
+
+- Added experimental `ImageGenerationChatClient`.
+- Updated .NET dependencies to 10.0.0 versions.
+
+## 9.10.2
+
+- Updated the Open Telemetry instrumentation to conform to the latest 1.38 draft specification of the Semantic Conventions for Generative AI systems.
+
+## 9.10.1
+
+- Added an `[Experimental]` implementation of tool reduction component for constraining the set of tools exposed.
+- Fixed `SummarizingChatReducer` to preserve function calling content in the chat history.
 
 ## 9.10.0
 
@@ -20,7 +42,7 @@
 
 - Added `FunctionInvokingChatClient` support for non-invocable tools and `TerminateOnUnknownCalls` property.
 - Added support to `FunctionInvokingChatClient` for user approval of function invocations.
-- Updated the Open Telemetry instrumentation to conform to the latest 1.37.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated the Open Telemetry instrumentation to conform to the latest 1.37 draft specification of the Semantic Conventions for Generative AI systems.
 - Fixed `GetResponseAsync<T>` to only look at the contents of the last message in the response.
 
 ## 9.8.0
@@ -33,20 +55,20 @@
 
 - Added `FunctionInvokingChatClient.FunctionInvoker` to simplify customizing how functions are invoked.
 - Increased the default `FunctionInvokingChatClient.MaximumIterationsPerRequest` value from 10 to 40.
-- Updated the Open Telemetry instrumentation to conform to the latest 1.36.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated the Open Telemetry instrumentation to conform to the latest 1.36 draft specification of the Semantic Conventions for Generative AI systems.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.7.0
 
 - Added `DistributedCachingChatClient/EmbeddingGenerator.AdditionalCacheKeyValues` to allow adding additional values to the cache key.
 - Allowed a `CachingChatClient` to control per-request caching.
-- Updated the Open Telemetry instrumentation to conform to the latest 1.35.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated the Open Telemetry instrumentation to conform to the latest 1.35 draft specification of the Semantic Conventions for Generative AI systems.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.6.0
 
 - Fixed hashing in `CachingChatClient` and `CachingEmbeddingGenerator` to be stable with respect to indentation settings and property ordering.
-- Updated the Open Telemetry instrumentation to conform to the latest 1.34.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated the Open Telemetry instrumentation to conform to the latest 1.34 draft specification of the Semantic Conventions for Generative AI systems.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.5.0
@@ -55,7 +77,7 @@
 - Changed `FunctionInvokingChatClient` to respect the `SynchronizationContext` of the caller when invoking functions.
 - Changed hash function algorithm used in `CachingChatClient` and `CachingEmbeddingGenerator` to SHA-384 instead of SHA-256.
 - Updated `FunctionInvokingChatClient` to include token counts on its emitted diagnostic spans.
-- Updated `OpenTelemetryChatClient` and `OpenTelemetryEmbeddingGenerator` to conform to the latest 1.33.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated `OpenTelemetryChatClient` and `OpenTelemetryEmbeddingGenerator` to conform to the latest 1.33 draft specification of the Semantic Conventions for Generative AI systems.
 - Renamed the `useJsonSchema` paramter of `GetResponseAsync<T>`.
 - Removed debug-level logging of updates in `LoggingChatClient`.
 - Avoided caching in `CachingChatClient` when `ConversationId` is set.
@@ -65,7 +87,7 @@
 
 - Fixed `CachingChatClient` to avoid caching when `ConversationId` is set.
 - Renamed `useJsonSchema` parameter in `GetResponseAsync<T>` to `useJsonSchemaResponseFormat`.
-- Updated `OpenTelemetryChatClient` and `OpenTelemetryEmbeddingGenerator` to conform to the latest 1.33.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated `OpenTelemetryChatClient` and `OpenTelemetryEmbeddingGenerator` to conform to the latest 1.32 draft specification of the Semantic Conventions for Generative AI systems.
 
 ## 9.4.3-preview.1.25230.7
 
@@ -114,12 +136,12 @@
 
 ## 9.3.0-preview.1.25114.11
 
-- Updated `OpenTelemetryChatClient`/`OpenTelemetryEmbeddingGenerator` to conform to the latest 1.30.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated `OpenTelemetryChatClient`/`OpenTelemetryEmbeddingGenerator` to conform to the latest 1.30 draft specification of the Semantic Conventions for Generative AI systems.
 
 ## 9.1.0-preview.1.25064.3
 
 - Added `FunctionInvokingChatClient.CurrentContext` to give functions access to detailed function invocation information.
-- Updated `OpenTelemetryChatClient`/`OpenTelemetryEmbeddingGenerator` to conform to the latest 1.29.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated `OpenTelemetryChatClient`/`OpenTelemetryEmbeddingGenerator` to conform to the latest 1.29 draft specification of the Semantic Conventions for Generative AI systems.
 - Updated `FunctionInvokingChatClient` to emit an `Activity`/span around all interactions related to a single chat operation.
 
 ## 9.0.1-preview.1.24570.5
@@ -151,7 +173,7 @@
 - Improved the readability of JSON generated as part of logging.
 - Fixed handling of generated JSON schema names when using arrays or generic types.
 - Improved `CachingChatClient`'s coalescing of streaming updates, including reduced memory allocation and enhanced metadata propagation.
-- Updated `OpenTelemetryChatClient` and `OpenTelemetryEmbeddingGenerator` to conform to the latest 1.28.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated `OpenTelemetryChatClient` and `OpenTelemetryEmbeddingGenerator` to conform to the latest 1.28 draft specification of the Semantic Conventions for Generative AI systems.
 - Improved `CompleteAsync<T>`'s structured output support to handle primitive types, enums, and arrays.
 
 ## 9.0.0-preview.9.24507.7

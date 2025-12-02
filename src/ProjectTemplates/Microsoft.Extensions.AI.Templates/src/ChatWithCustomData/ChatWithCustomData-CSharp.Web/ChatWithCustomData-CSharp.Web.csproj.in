@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>d5681fae-b21b-4114-b781-48180f08c0c4</UserSecretsId>
@@ -30,9 +30,18 @@
     <PackageReference Include="Azure.Identity" Version="${TemplatePackageVersion_AzureIdentity}" />
 <!--#endif -->
     <PackageReference Include="Microsoft.Extensions.AI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI}" />
-    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${TemplatePackageVersion_MicrosoftSemanticKernel}" />
+    <PackageReference Include="Microsoft.Extensions.DataIngestion" Version="${TemplatePackageVersion_MicrosoftExtensionsDataIngestion}" />
+    <PackageReference Include="Microsoft.Extensions.DataIngestion.Markdig" Version="${TemplatePackageVersion_MicrosoftExtensionsDataIngestionMarkdig}" />
+<!--#if (IsAspire) -->
+    <PackageReference Include="Microsoft.Extensions.DataIngestion.MarkItDown" Version="${TemplatePackageVersion_MicrosoftExtensionsDataIngestionMarkItDown}" />
+<!--#else -->
     <PackageReference Include="PdfPig" Version="${TemplatePackageVersion_PdfPig}" />
-    <PackageReference Include="System.Linq.Async" Version="${TemplatePackageVersion_SystemLinqAsync}" />
+<!--#endif -->
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="${TemplatePackageVersion_MicrosoftMLTokenizers}" />
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="${TemplatePackageVersion_MicrosoftMLTokenizers}" />
+<!--#if (IsNET9) -->
+    <PackageReference Include="System.Linq.AsyncEnumerable" Version="${TemplatePackageVersion_SystemLinqAsyncEnumerable}" />
+<!--#endif -->
 <!--#if (IsAzureAISearch && IsAspire)
     <PackageReference Include="Aspire.Azure.Search.Documents" Version="${TemplatePackageVersion_Aspire}" />
 #elif (IsAzureAISearch && !IsAspire)

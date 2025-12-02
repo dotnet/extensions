@@ -11,7 +11,7 @@ public class RetryTests : LoopbackDnsTestBase
 {
     public RetryTests(ITestOutputHelper output) : base(output)
     {
-        Options.Attempts = 3;
+        Options.MaxAttempts = 3;
     }
 
     private Task SetupUdpProcessFunction(LoopbackDnsServer server, Func<LoopbackDnsResponseBuilder, Task> func)
@@ -49,7 +49,7 @@ public class RetryTests : LoopbackDnsTestBase
         Task t = SetupUdpProcessFunction(builder =>
         {
             attempt++;
-            if (attempt == Options.Attempts)
+            if (attempt == Options.MaxAttempts)
             {
                 builder.Answers.AddAddress(hostName, 3600, address);
             }
@@ -214,7 +214,7 @@ public class RetryTests : LoopbackDnsTestBase
                 return Task.CompletedTask;
             });
 
-        Assert.Equal(Options.Attempts, primaryAttempt);
+        Assert.Equal(Options.MaxAttempts, primaryAttempt);
         Assert.Equal(1, secondaryAttempt);
 
         AddressResult res = Assert.Single(results);

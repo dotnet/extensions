@@ -3,6 +3,7 @@
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <StrongNameKeyId>Open</StrongNameKeyId>
     <!-- https://github.com/dotnet/extensions/issues/6871 tracks enabling these -->
     <NoWarn>$(NoWarn);IDE0004;IDE0040;IDE0055;IDE1006;CA2000;S1121;S1128;SA1316;SA1500;SA1513</NoWarn>
   </PropertyGroup>

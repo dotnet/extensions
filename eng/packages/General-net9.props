@@ -2,7 +2,7 @@
   
   <!-- The items in this ItemGroup are packages coming from aspnetcore and runtime repos. When an asset is targeting net9.0 version
   of the framework, the following versions should be used. -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0' Or '$(ForceLatestDotnetVersions)' == 'true'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0' And '$(ForceLatestDotnetVersions)' != 'true'">
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesVersion)" />
     <PackageVersion Include="Microsoft.Bcl.Memory" Version="$(MicrosoftBclMemoryVersion)" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderVersion)" />
@@ -38,6 +38,7 @@
     <PackageVersion Include="System.IO.Pipelines" Version="$(SystemIOPipelinesVersion)" />
     <PackageVersion Include="System.Memory.Data" Version="$(SystemMemoryDataVersion)" />
     <PackageVersion Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonVersion)" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="$(SystemNumericsTensorsVersion)" />
     <PackageVersion Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
     <PackageVersion Include="System.Threading.Channels" Version="$(SystemThreadingChannelsVersion)" />

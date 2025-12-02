@@ -9,7 +9,9 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -350,6 +352,133 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task ReasoningTextDelta_Streaming()
+    {
+        const string Input = """
+            {
+              "input":[{
+                "type":"message",
+                "role":"user",
+                "content":[{
+                  "type":"input_text",
+                  "text":"Solve this problem step by step."
+                }]
+              }],
+              "reasoning": {
+                "effort": "medium"
+              },
+              "model": "o4-mini",
+              "stream": true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_reasoning123","object":"response","created_at":1756752900,"status":"in_progress","model":"o4-mini-2025-04-16","output":[],"reasoning":{"effort":"medium"}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_reasoning123","object":"response","created_at":1756752900,"status":"in_progress","model":"o4-mini-2025-04-16","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"rs_reasoning123","type":"reasoning","text":""}}
+
+            event: response.reasoning_text.delta
+            data: {"type":"response.reasoning_text.delta","sequence_number":3,"item_id":"rs_reasoning123","output_index":0,"delta":"First, "}
+
+            event: response.reasoning_text.delta
+            data: {"type":"response.reasoning_text.delta","sequence_number":4,"item_id":"rs_reasoning123","output_index":0,"delta":"let's analyze "}
+
+            event: response.reasoning_text.delta
+            data: {"type":"response.reasoning_text.delta","sequence_number":5,"item_id":"rs_reasoning123","output_index":0,"delta":"the problem."}
+
+            event: response.reasoning_text.done
+            data: {"type":"response.reasoning_text.done","sequence_number":6,"item_id":"rs_reasoning123","output_index":0,"text":"First, let's analyze the problem."}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":7,"output_index":0,"item":{"id":"rs_reasoning123","type":"reasoning","text":"First, let's analyze the problem."}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":8,"output_index":1,"item":{"id":"msg_reasoning123","type":"message","status":"in_progress","content":[],"role":"assistant"}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","sequence_number":9,"item_id":"msg_reasoning123","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"text":""}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":10,"item_id":"msg_reasoning123","output_index":1,"content_index":0,"delta":"The solution is 42."}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","sequence_number":11,"item_id":"msg_reasoning123","output_index":1,"content_index":0,"text":"The solution is 42."}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","sequence_number":12,"item_id":"msg_reasoning123","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"text":"The solution is 42."}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":13,"output_index":1,"item":{"id":"msg_reasoning123","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"text":"The solution is 42."}],"role":"assistant"}}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":14,"response":{"id":"resp_reasoning123","object":"response","created_at":1756752900,"status":"completed","model":"o4-mini-2025-04-16","output":[{"id":"rs_reasoning123","type":"reasoning","text":"First, let's analyze the problem."},{"id":"msg_reasoning123","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"text":"The solution is 42."}],"role":"assistant"}],"usage":{"input_tokens":10,"output_tokens":25,"total_tokens":35}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "o4-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("Solve this problem step by step.", new()
+        {
+            RawRepresentationFactory = options => new ResponseCreationOptions
+            {
+                ReasoningOptions = new()
+                {
+                    ReasoningEffortLevel = ResponseReasoningEffortLevel.Medium
+                }
+            }
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("The solution is 42.", string.Concat(updates.Where(u => u.Role == ChatRole.Assistant).Select(u => u.Text)));
+
+        var createdAt = DateTimeOffset.FromUnixTimeSeconds(1_756_752_900);
+        Assert.Equal(15, updates.Count);
+
+        for (int i = 0; i < updates.Count; i++)
+        {
+            Assert.Equal("resp_reasoning123", updates[i].ResponseId);
+            Assert.Equal(createdAt, updates[i].CreatedAt);
+            Assert.Equal("o4-mini-2025-04-16", updates[i].ModelId);
+        }
+
+        // Verify reasoning text delta updates (sequence 3-5)
+        var reasoningUpdates = updates.Where((u, idx) => idx >= 3 && idx <= 5).ToList();
+        Assert.Equal(3, reasoningUpdates.Count);
+        Assert.All(reasoningUpdates, u =>
+        {
+            Assert.Single(u.Contents);
+            Assert.Null(u.Role);
+            var reasoning = Assert.IsType<TextReasoningContent>(u.Contents.Single());
+            Assert.NotNull(reasoning.Text);
+        });
+
+        // Verify the reasoning text content
+        var allReasoningText = string.Concat(reasoningUpdates.Select(u => u.Contents.OfType<TextReasoningContent>().First().Text));
+        Assert.Equal("First, let's analyze the problem.", allReasoningText);
+
+        // Verify assistant response
+        var assistantUpdate = updates.First(u => u.Role == ChatRole.Assistant && !string.IsNullOrEmpty(u.Text));
+        Assert.Equal("The solution is 42.", assistantUpdate.Text);
+
+        // Verify usage
+        UsageContent usage = updates.SelectMany(u => u.Contents).OfType<UsageContent>().Single();
+        Assert.Equal(10, usage.Details.InputTokenCount);
+        Assert.Equal(25, usage.Details.OutputTokenCount);
+        Assert.Equal(35, usage.Details.TotalTokenCount);
+    }
+
+    [Fact]
     public async Task BasicRequestResponse_Streaming()
     {
         const string Input = """
@@ -462,6 +591,238 @@ public class OpenAIResponseClientTests
         Assert.Equal(26, usage.Details.InputTokenCount);
         Assert.Equal(10, usage.Details.OutputTokenCount);
         Assert.Equal(36, usage.Details.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task MissingAbstractionResponse_NonStreaming()
+    {
+        const string Input =
+            """
+            {
+                "model": "computer-use-preview",
+                "reasoning":{"summary":"concise"},
+                "tools": [
+                    {
+                        "type": "computer_use_preview",
+                        "environment": "browser",
+                        "display_width": 1024,
+                        "display_height": 768
+                    }
+                ],
+                "tool_choice": "auto",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Search the web for the temperature today in Fremont"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output =
+            """
+            {
+              "id": "resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": 20,
+              "model": "computer-use-preview-2025-03-11",
+              "output": [
+                {
+                  "type": "reasoning",
+                  "id": "rs_67cc...",
+                  "summary": [
+                    {
+                        "type": "summary_text",
+                        "text": "Clicking on the browser address bar."
+                    }
+                  ]
+                },
+                {
+                  "type": "computer_call",
+                  "id": "cu_67cc...",
+                  "call_id": "call_zw3...",
+                  "action": {
+                    "type": "click",
+                    "button": "left",
+                    "x": 156,
+                    "y": 50
+                  },
+                  "pending_safety_checks": [],
+                  "status": "completed"
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "reasoning": {
+                "generate_summary": "concise"
+              },
+              "store": true,
+              "temperature": 1.0,
+              "text": {
+                "format": {
+                  "type": "text"
+                }
+              },
+              "tool_choice": "auto",
+              "tools": [],
+              "top_p": 1.0,
+              "usage": {
+                "input_tokens": 18,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 53,
+                "output_tokens_details": {
+                  "reasoning_tokens": 12
+                },
+                "total_tokens": 71
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "computer-use-preview");
+
+        ChatOptions chatOptions = new()
+        {
+            Tools = [ResponseTool.CreateComputerTool(ComputerToolEnvironment.Browser, 1024, 768).AsAITool()],
+            RawRepresentationFactory = options => new ResponseCreationOptions
+            {
+                ReasoningOptions = new() { ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Concise },
+            }
+        };
+        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "Search the web for the temperature today in Fremont")], chatOptions);
+        Assert.NotNull(response);
+
+        Assert.Equal("resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d", response.ResponseId);
+        Assert.Equal("resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d", response.ConversationId);
+        Assert.Empty(response.Text);
+        Assert.Equal("computer-use-preview-2025-03-11", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_741_891_428), response.CreatedAt);
+        Assert.Null(response.FinishReason);
+        ChatMessage responseMessage = Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, responseMessage.Role);
+        Assert.Equal(2, responseMessage.Contents.Count);
+        Assert.Single(responseMessage.Contents, content => content is TextReasoningContent);
+        AIContent computerUserItem = Assert.Single(responseMessage.Contents, content => content.GetType() == typeof(AIContent));
+        Assert.NotNull(computerUserItem.RawRepresentation);
+        Assert.IsType<ComputerCallResponseItem>(computerUserItem.RawRepresentation);
+        Assert.NotNull(response.Usage);
+        Assert.Equal(18, response.Usage.InputTokenCount);
+        Assert.Equal(53, response.Usage.OutputTokenCount);
+        Assert.Equal(71, response.Usage.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task MissingAbstractionResponse_Streaming()
+    {
+        const string Input =
+            """
+            {
+                "model": "computer-use-preview",
+                "reasoning": {
+                    "summary": "concise"
+                },
+                "tools": [
+                    {
+                        "type": "computer_use_preview",
+                        "environment": "browser",
+                        "display_width": 1024,
+                        "display_height": 768
+                    }
+                ],
+                "tool_choice": "auto",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Search the web for the temperature today in Fremont"
+                            }
+                        ]
+                    }
+                ],
+                "stream":true
+            }
+            """;
+
+        const string Output =
+            """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_0b949080ec8e4b8a006920e0661d00819383ed81438ab11299","object":"response","created_at":1763762278,"status":"in_progress","background":false,"content_filters":null,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"computer-use-preview-2025-03-11","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","generate_summary":"concise","summary":"concise"},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":null,"tools":[{"type":"computer-use-preview-2025-03-11","environment":"browser","display_width":1024,"display_height":768}],"top_logprobs":0,"top_p":1.0,"truncation":"auto","usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_0b949080ec8e4b8a006920e0661d00819383ed81438ab11299","object":"response","created_at":1763762278,"status":"in_progress","background":false,"content_filters":null,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"computer-use-preview-2025-03-11","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","generate_summary":"concise","summary":"concise"},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":null,"tools":[{"type":"computer_use_preview","environment":"browser","display_width":1024,"display_height":768}],"top_logprobs":0,"top_p":1.0,"truncation":"auto","usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"type":"computer_call","id":"cu_0b949080ec8e4b8a006920e067a7c0819384d047d21b484357","status":"in_progress","call_id":"call_p7K8YjFwNjqMgkKhSiExgFH6","action":{"type":"screenshot"},"pending_safety_checks":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":3,"output_index":0,"item":{"type":"computer_call","id":"cu_0b949080ec8e4b8a006920e067a7c0819384d047d21b484357","status":"completed","call_id":"call_p7K8YjFwNjqMgkKhSiExgFH6","action":{"type":"screenshot"},"pending_safety_checks":[]}}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":4,"response":{"id":"resp_0b949080ec8e4b8a006920e0661d00819383ed81438ab11299","object":"response","created_at":1763762278,"status":"completed","background":false,"content_filters":null,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"computer-use-preview-2025-03-11","output":[{"type":"computer_call","id":"cu_0b949080ec8e4b8a006920e067a7c0819384d047d21b484357","status":"completed","call_id":"call_p7K8YjFwNjqMgkKhSiExgFH6","action":{"type":"screenshot"},"pending_safety_checks":[]}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","generate_summary":"concise","summary":"concise"},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":null,"tools":[{"type":"computer-use-preview-2025-03-11","environment":"browser","display_width":1024,"display_height":768}],"top_logprobs":0,"top_p":1.0,"truncation":"auto","usage":{"input_tokens":18,"input_tokens_details":{"cached_tokens":0},"output_tokens":53,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":71},"user":null,"metadata":{}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "computer-use-preview");
+
+        ChatOptions chatOptions = new()
+        {
+            Tools = [ResponseTool.CreateComputerTool(ComputerToolEnvironment.Browser, 1024, 768).AsAITool()],
+            RawRepresentationFactory = options => new ResponseCreationOptions
+            {
+                ReasoningOptions = new() { ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Concise },
+            }
+        };
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "Search the web for the temperature today in Fremont")], chatOptions))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal(5, updates.Count);
+        Assert.All(updates, u => Assert.Empty(u.Text));
+
+        for (int i = 0; i < updates.Count; i++)
+        {
+            Assert.Equal("resp_0b949080ec8e4b8a006920e0661d00819383ed81438ab11299", updates[i].ResponseId);
+            Assert.Equal("resp_0b949080ec8e4b8a006920e0661d00819383ed81438ab11299", updates[i].ConversationId);
+            Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_763_762_278), updates[i].CreatedAt);
+            Assert.Equal("computer-use-preview-2025-03-11", updates[i].ModelId);
+            Assert.Null(updates[i].AdditionalProperties);
+            Assert.Equal(i >= 3 ? 1 : 0, updates[i].Contents.Count);
+            Assert.Equal(i >= 4 ? ChatFinishReason.Stop : null, updates[i].FinishReason);
+            Assert.Null(updates[i].Role);
+        }
+
+        AIContent content = Assert.Single(updates[3].Contents);
+        var ccri = Assert.IsType<ComputerCallResponseItem>(content.RawRepresentation);
+
+        UsageContent usage = Assert.IsType<UsageContent>(Assert.Single(updates[4].Contents));
+        Assert.Equal(18, usage.Details.InputTokenCount);
+        Assert.Equal(53, usage.Details.OutputTokenCount);
+        Assert.Equal(71, usage.Details.TotalTokenCount);
     }
 
     [Fact]
@@ -929,7 +1290,7 @@ public class OpenAIResponseClientTests
 
         var chatOptions = new ChatOptions
         {
-            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")]
+            Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))]
         };
         McpServerToolApprovalRequestContent approvalRequest;
 
@@ -1307,7 +1668,7 @@ public class OpenAIResponseClientTests
 
         AITool mcpTool = rawTool ?
             ResponseTool.CreateMcpTool("deepwiki", serverUri: new("https://mcp.deepwiki.com/mcp"), toolCallApprovalPolicy: new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval)).AsAITool() :
-            new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+            new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
             {
                 ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
             };
@@ -1723,7 +2084,7 @@ public class OpenAIResponseClientTests
 
         ChatOptions chatOptions = new()
         {
-            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+            Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
                 {
                     ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
                 }
@@ -2239,6 +2600,361 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task CodeInterpreterTool_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-2024-08-06",
+                "input":[{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"Calculate the sum of numbers from 1 to 5"}]
+                }],
+                "tool_choice":"auto",
+                "tools":[{
+                    "type":"code_interpreter",
+                    "container":{"type":"auto"}
+                }]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_0e599e83cc6642210068fb7475165481a08efc750483c7048f",
+              "object": "response",
+              "created_at": 1761309813,
+              "status": "completed",
+              "background": false,
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": null,
+              "max_tool_calls": null,
+              "model": "gpt-4o-2024-08-06",
+              "output": [
+                {
+                  "id": "ci_0e599e83cc6642210068fb7477fb9881a0811e8b0dc054b2fa",
+                  "type": "code_interpreter_call",
+                  "status": "completed",
+                  "code": "# Calculating the sum of numbers from 1 to 5\nresult = sum(range(1, 6))\nresult",
+                  "container_id": "cntr_68fb7476c384819186524b78cdc3180000a9a0fdd06b3cd4",
+                  "outputs": null
+                },
+                {
+                  "id": "msg_0e599e83cc6642210068fb747e118081a08c3ed46daa9d9dcb",
+                  "type": "message",
+                  "status": "completed",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "annotations": [],
+                      "logprobs": [],
+                      "text": "15"
+                    }
+                  ],
+                  "role": "assistant"
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "prompt_cache_key": null,
+              "reasoning": {
+                "effort": null,
+                "summary": null
+              },
+              "safety_identifier": null,
+              "service_tier": "default",
+              "store": true,
+              "temperature": 1.0,
+              "text": {
+                "format": {
+                  "type": "text"
+                },
+                "verbosity": "medium"
+              },
+              "tool_choice": "auto",
+              "tools": [
+                {
+                  "type": "code_interpreter",
+                  "container": {
+                    "type": "auto"
+                  }
+                }
+              ],
+              "top_logprobs": 0,
+              "top_p": 1.0,
+              "truncation": "disabled",
+              "usage": {
+                "input_tokens": 225,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 34,
+                "output_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "total_tokens": 259
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-2024-08-06");
+
+        var response = await client.GetResponseAsync("Calculate the sum of numbers from 1 to 5", new()
+        {
+            Tools = [new HostedCodeInterpreterTool()],
+        });
+
+        Assert.NotNull(response);
+        Assert.Single(response.Messages);
+
+        var message = response.Messages[0];
+        Assert.Equal(ChatRole.Assistant, message.Role);
+        Assert.Equal(3, message.Contents.Count);
+
+        var codeCall = Assert.IsType<CodeInterpreterToolCallContent>(message.Contents[0]);
+        Assert.NotNull(codeCall.Inputs);
+        var codeInput = Assert.IsType<DataContent>(Assert.Single(codeCall.Inputs));
+        Assert.Equal("text/x-python", codeInput.MediaType);
+
+        var codeResult = Assert.IsType<CodeInterpreterToolResultContent>(message.Contents[1]);
+        Assert.Equal(codeCall.CallId, codeResult.CallId);
+
+        var textContent = Assert.IsType<TextContent>(message.Contents[2]);
+        Assert.Equal("15", textContent.Text);
+    }
+
+    [Fact]
+    public async Task CodeInterpreterTool_Streaming()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-2024-08-06",
+                "input":[{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"Calculate the sum of numbers from 1 to 10 using Python"}]
+                }],
+                "tool_choice":"auto",
+                "tools":[{
+                    "type":"code_interpreter",
+                    "container":{"type":"auto"}
+                }],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_05d8f42f04f94cb80068fc3b7e07bc819eaf0d6e2c1923e564","object":"response","created_at":1761360766,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"code_interpreter","container":{"type":"auto"}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_05d8f42f04f94cb80068fc3b7e07bc819eaf0d6e2c1923e564","object":"response","created_at":1761360766,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"code_interpreter","container":{"type":"auto"}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","type":"code_interpreter_call","status":"in_progress","code":"","container_id":"cntr_68fc3b80043c8191990a5837d7617af704511ed77cec9447","outputs":null}}
+
+            event: response.code_interpreter_call.in_progress
+            data: {"type":"response.code_interpreter_call.in_progress","sequence_number":3,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":4,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"#","obfuscation":"sl1L6kjYGbL3W7b"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":5,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" Calculate","obfuscation":"nXS0Oz"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":6,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" the","obfuscation":"BeywG4wkYSPO"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":7,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" sum","obfuscation":"lQQwYY1jVUku"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":8,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" of","obfuscation":"B7ZYHyd1bTIIr"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":9,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" numbers","obfuscation":"c9P1UFe4"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":10,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" from","obfuscation":"jARdbqvpfdt"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":11,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" ","obfuscation":"wciF7LWnjGSdWPb"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":12,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"1","obfuscation":"KLuWFhT8xPOyTNH"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":13,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" to","obfuscation":"5QCNr2nNt72Hg"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":14,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" ","obfuscation":"F3vctEo2cPUvnhe"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":15,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"10","obfuscation":"JBwcgWLYbSTskz"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":16,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"\n","obfuscation":"AgU5f5WddGwHDJg"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":17,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"sum","obfuscation":"Vey8vqQPTbewO"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":18,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"_of","obfuscation":"Lyrmc5oOwdmsp"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":19,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"_numbers","obfuscation":"YxvseUG4"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":20,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" =","obfuscation":"yoo1CBUhRbgI36"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":21,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" sum","obfuscation":"pKTBmkNEE4SA"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":22,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"(range","obfuscation":"BixU5bs5ms"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":23,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"(","obfuscation":"nsarVNP46dpVYMb"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":24,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"1","obfuscation":"qkth7DCPzS6mfEd"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":25,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":",","obfuscation":"J5uAitISxtjRSQA"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":26,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" ","obfuscation":"thr4ylmBRbAk0PY"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":27,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"11","obfuscation":"FWxcmwOFHJKEPJ"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":28,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"))\n","obfuscation":"ifI2JoREexe3t"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":29,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"sum","obfuscation":"VI7RlYoKWGMKP"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":30,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"_of","obfuscation":"lkv27YflY8GLq"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":31,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"_numbers","obfuscation":"xAQFrVav"}
+
+            event: response.code_interpreter_call_code.done
+            data: {"type":"response.code_interpreter_call_code.done","sequence_number":32,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","code":"# Calculate the sum of numbers from 1 to 10\nsum_of_numbers = sum(range(1, 11))\nsum_of_numbers"}
+
+            event: response.code_interpreter_call.interpreting
+            data: {"type":"response.code_interpreter_call.interpreting","sequence_number":33,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3"}
+
+            event: response.code_interpreter_call.completed
+            data: {"type":"response.code_interpreter_call.completed","sequence_number":34,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3"}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":35,"output_index":0,"item":{"id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","type":"code_interpreter_call","status":"completed","code":"# Calculate the sum of numbers from 1 to 10\nsum_of_numbers = sum(range(1, 11))\nsum_of_numbers","container_id":"cntr_68fc3b80043c8191990a5837d7617af704511ed77cec9447","outputs":null}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":36,"output_index":1,"item":{"id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","type":"message","status":"in_progress","content":[],"role":"assistant"}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","sequence_number":37,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":""}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":38,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":"The","logprobs":[],"obfuscation":"r7iIr1QJ50aER"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":39,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" sum","logprobs":[],"obfuscation":"AQlXzWBYj2nu"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":40,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" of","logprobs":[],"obfuscation":"PpVAep2w6YBTd"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":41,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" numbers","logprobs":[],"obfuscation":"q2oosiA3"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":42,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" from","logprobs":[],"obfuscation":"BBLhSYyDDUG"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":43,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" ","logprobs":[],"obfuscation":"itOENAMFwzo6ESp"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":44,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":"1","logprobs":[],"obfuscation":"g93CJ2MyMSbq26V"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":45,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" to","logprobs":[],"obfuscation":"WyzXmwaUVATTs"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":46,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" ","logprobs":[],"obfuscation":"DBgQSKk2myfDWpq"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":47,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":"10","logprobs":[],"obfuscation":"RA4RYQSLNug4pg"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":48,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" is","logprobs":[],"obfuscation":"CgEfKJVj1DJtz"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":49,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":" ","logprobs":[],"obfuscation":"TVg4ccd4ZMwEiru"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":50,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":"55","logprobs":[],"obfuscation":"CVN92VujTbUiZ0"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":51,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"delta":".","logprobs":[],"obfuscation":"7YegRUzag3K6fdV"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","sequence_number":52,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"text":"The sum of numbers from 1 to 10 is 55.","logprobs":[]}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","sequence_number":53,"item_id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":"The sum of numbers from 1 to 10 is 55."}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":54,"output_index":1,"item":{"id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"The sum of numbers from 1 to 10 is 55."}],"role":"assistant"}}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":55,"response":{"id":"resp_05d8f42f04f94cb80068fc3b7e07bc819eaf0d6e2c1923e564","object":"response","created_at":1761360766,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[{"id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","type":"code_interpreter_call","status":"completed","code":"# Calculate the sum of numbers from 1 to 10\nsum_of_numbers = sum(range(1, 11))\nsum_of_numbers","container_id":"cntr_68fc3b80043c8191990a5837d7617af704511ed77cec9447","outputs":null},{"id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"The sum of numbers from 1 to 10 is 55."}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"code_interpreter","container":{"type":"auto"}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":219,"input_tokens_details":{"cached_tokens":0},"output_tokens":50,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":269},"user":null,"metadata":{}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-2024-08-06");
+
+        var response = await client.GetStreamingResponseAsync("Calculate the sum of numbers from 1 to 10 using Python", new()
+        {
+            Tools = [new HostedCodeInterpreterTool()],
+        }).ToChatResponseAsync();
+
+        Assert.NotNull(response);
+        Assert.Single(response.Messages);
+
+        var message = response.Messages[0];
+        Assert.Equal(ChatRole.Assistant, message.Role);
+        Assert.Equal(3, message.Contents.Count);
+
+        var codeCall = Assert.IsType<CodeInterpreterToolCallContent>(message.Contents[0]);
+        Assert.NotNull(codeCall.Inputs);
+        var codeInput = Assert.IsType<DataContent>(Assert.Single(codeCall.Inputs));
+        Assert.Equal("text/x-python", codeInput.MediaType);
+        Assert.Contains("sum_of_numbers", Encoding.UTF8.GetString(codeInput.Data.ToArray()));
+
+        var codeResult = Assert.IsType<CodeInterpreterToolResultContent>(message.Contents[1]);
+        Assert.Equal(codeCall.CallId, codeResult.CallId);
+
+        var textContent = Assert.IsType<TextContent>(message.Contents[2]);
+        Assert.Equal("The sum of numbers from 1 to 10 is 55.", textContent.Text);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(219, response.Usage.InputTokenCount);
+        Assert.Equal(50, response.Usage.OutputTokenCount);
+        Assert.Equal(269, response.Usage.TotalTokenCount);
+    }
+
+    [Fact]
     public async Task RequestHeaders_UserAgent_ContainsMEAI()
     {
         using var handler = new ThrowUserAgentExceptionHandler();
@@ -2249,6 +2965,2521 @@ public class OpenAIResponseClientTests
 
         Assert.StartsWith("User-Agent header: OpenAI", e.Message);
         Assert.Contains("MEAI", e.Message);
+    }
+
+    [Fact]
+    public async Task ConversationId_AsResponseId_NonStreaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "previous_response_id":"resp_12345",
+                "input": [{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"hello"}]
+                }],
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_67890",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello! How can I assist you today?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ConversationId = "resp_12345",
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_67890", response.ResponseId);
+        Assert.Equal("resp_67890", response.ConversationId);
+    }
+
+    [Fact]
+    public async Task ConversationId_AsConversationId_NonStreaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "conversation":"conv_12345",
+                "input": [{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"hello"}]
+                }],
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_67890",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello! How can I assist you today?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ConversationId = "conv_12345",
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_67890", response.ResponseId);
+        Assert.Equal("conv_12345", response.ConversationId);
+    }
+
+    [Fact]
+    public async Task ConversationId_WhenStoreDisabled_ReturnsNull_NonStreaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "store":false,
+                "input": [{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"hello"}]
+                }],
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_67890",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "model": "gpt-4o-mini-2024-07-18",
+              "store": false,
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello! How can I assist you today?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            {
+                StoredOutputEnabled = false
+            }
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_67890", response.ResponseId);
+        Assert.Null(response.ConversationId);
+    }
+
+    [Fact]
+    public async Task ConversationId_ChatOptionsOverridesRawRepresentationResponseId_NonStreaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "previous_response_id":"resp_override",
+                "input": [{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"hello"}]
+                }],
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_67890",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello! How can I assist you today?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ConversationId = "resp_override",
+            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            {
+                PreviousResponseId = null
+            }
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_67890", response.ResponseId);
+        Assert.Equal("resp_67890", response.ConversationId);
+    }
+
+    [Fact]
+    public async Task ConversationId_RawRepresentationPreviousResponseIdTakesPrecedence_NonStreaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "previous_response_id":"resp_fromraw",
+                "input": [{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"hello"}]
+                }],
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_67890",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello! How can I assist you today?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ConversationId = "conv_ignored",
+            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            {
+                PreviousResponseId = "resp_fromraw"
+            }
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_67890", response.ResponseId);
+        Assert.Equal("resp_67890", response.ConversationId);
+    }
+
+    [Fact]
+    public async Task ConversationId_WhenStoreExplicitlyTrue_UsesResponseId_NonStreaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "store":true,
+                "input": [{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"hello"}]
+                }],
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_67890",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "model": "gpt-4o-mini-2024-07-18",
+              "store": true,
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello! How can I assist you today?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            {
+                StoredOutputEnabled = true
+            }
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_67890", response.ResponseId);
+        Assert.Equal("resp_67890", response.ConversationId);
+    }
+
+    [Fact]
+    public async Task ConversationId_WhenStoreExplicitlyTrue_UsesResponseId_Streaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "store":true,
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"hello"}]
+                    }
+                ],
+                "stream":true,
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"in_progress","role":"assistant","content":[]}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"delta":"Hello"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"delta":"!"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"text":"Hello!"}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"part":{"type":"output_text","text":"Hello!","annotations":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            {
+                StoredOutputEnabled = true
+            }
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Hello!", string.Concat(updates.Select(u => u.Text)));
+
+        for (int i = 0; i < updates.Count; i++)
+        {
+            Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ResponseId);
+            Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ConversationId);
+        }
+    }
+
+    [Fact]
+    public async Task ConversationId_WhenStoreDisabled_ReturnsNull_Streaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "store":false,
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"hello"}]
+                    }
+                ],
+                "stream":true,
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":false,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":false,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"in_progress","role":"assistant","content":[]}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"delta":"Hello"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"delta":"!"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"text":"Hello!"}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"part":{"type":"output_text","text":"Hello!","annotations":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":false,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            {
+                StoredOutputEnabled = false
+            }
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Hello!", string.Concat(updates.Select(u => u.Text)));
+
+        for (int i = 0; i < updates.Count; i++)
+        {
+            Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ResponseId);
+            Assert.Null(updates[i].ConversationId);
+        }
+    }
+
+    [Fact]
+    public async Task ConversationId_AsConversationId_Streaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "conversation":"conv_12345",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"hello"}]
+                    }
+                ],
+                "stream":true,
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"in_progress","role":"assistant","content":[]}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"delta":"Hello"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"delta":"!"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"text":"Hello!"}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"part":{"type":"output_text","text":"Hello!","annotations":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ConversationId = "conv_12345",
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Hello!", string.Concat(updates.Select(u => u.Text)));
+
+        for (int i = 0; i < updates.Count; i++)
+        {
+            Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ResponseId);
+            Assert.Equal("conv_12345", updates[i].ConversationId);
+        }
+    }
+
+    [Fact]
+    public async Task ConversationId_AsResponseId_Streaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o-mini",
+                "previous_response_id":"resp_12345",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"hello"}]
+                    }
+                ],
+                "stream":true,
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"in_progress","role":"assistant","content":[]}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"delta":"Hello"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"delta":"!"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"text":"Hello!"}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"part":{"type":"output_text","text":"Hello!","annotations":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ConversationId = "resp_12345",
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Hello!", string.Concat(updates.Select(u => u.Text)));
+
+        for (int i = 0; i < updates.Count; i++)
+        {
+            Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ResponseId);
+            Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ConversationId);
+        }
+    }
+
+    [Fact]
+    public async Task ConversationId_RawRepresentationConversationIdTakesPrecedence_NonStreaming()
+    {
+        const string Input = """
+        {
+            "temperature":0.5,
+            "model":"gpt-4o-mini",
+            "conversation":"conv_12345",
+            "input": [{
+                "type":"message",
+                "role":"user",
+                "content":[{"type":"input_text","text":"hello"}]
+            }],
+            "max_output_tokens":20
+        }
+        """;
+
+        const string Output = """
+        {
+            "id": "resp_67890",
+            "object": "response",
+            "created_at": 1741891428,
+            "status": "completed",
+            "model": "gpt-4o-mini-2024-07-18",
+            "output": [
+            {
+                "type": "message",
+                "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                "status": "completed",
+                "role": "assistant",
+                "content": [
+                {
+                    "type": "output_text",
+                    "text": "Hello! How can I assist you today?",
+                    "annotations": []
+                }
+                ]
+            }
+            ]
+        }
+        """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var rcoJsonModel = (IJsonModel<ResponseCreationOptions>)new ResponseCreationOptions();
+        BinaryData rcoJsonBinaryData = rcoJsonModel.Write(ModelReaderWriterOptions.Json);
+        JsonObject rcoJsonObject = Assert.IsType<JsonObject>(JsonNode.Parse(rcoJsonBinaryData.ToMemory().Span));
+        Assert.Null(rcoJsonObject["conversation"]);
+        rcoJsonObject["conversation"] = "conv_12345";
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ConversationId = "conv_ignored",
+            RawRepresentationFactory = (c) => rcoJsonModel.Create(
+                new BinaryData(JsonSerializer.SerializeToUtf8Bytes(rcoJsonObject)),
+                ModelReaderWriterOptions.Json)
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_67890", response.ResponseId);
+        Assert.Equal("conv_12345", response.ConversationId);
+    }
+
+    [Fact]
+    public async Task ChatOptions_ModelId_OverridesClientModel_NonStreaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o",
+                "input": [{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"hello"}]
+                }],
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_67890",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "model": "gpt-4o-2024-08-06",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello! How can I assist you today?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ModelId = "gpt-4o",
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_67890", response.ResponseId);
+        Assert.Equal("gpt-4o-2024-08-06", response.ModelId);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+    }
+
+    [Fact]
+    public async Task ChatOptions_ModelId_OverridesClientModel_Streaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "model":"gpt-4o",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"hello"}]
+                    }
+                ],
+                "stream":true,
+                "max_output_tokens":20
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"in_progress","role":"assistant","content":[]}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"delta":"Hello"}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"delta":"!"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"text":"Hello!"}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","item_id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","output_index":0,"content_index":0,"part":{"type":"output_text","text":"Hello!","annotations":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-2024-08-06","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ModelId = "gpt-4o",
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Hello!", string.Concat(updates.Select(u => u.Text)));
+        Assert.All(updates, u => Assert.Equal("gpt-4o-2024-08-06", u.ModelId));
+    }
+
+    [Fact]
+    public async Task ToolCallResult_SingleTextContent_SerializesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_123",
+                        "output":[{"type":"input_text","text":"Result text"}]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_001",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"Done","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("call_123", new TextContent("Result text"))])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Done", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_MultipleTextContents_SerializesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_456",
+                        "output":[
+                            {"type":"input_text","text":"First part. "},
+                            {"type":"input_text","text":"Second part."}
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_002",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_002",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"Processed","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [
+                new FunctionResultContent("call_456", new List<AIContent>
+                {
+                    new TextContent("First part. "),
+                    new TextContent("Second part.")
+                })
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Processed", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_DataContent_SerializesAsInputImage()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_789",
+                        "output":[
+                            {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgo="}
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_003",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_003",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"Image processed","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var imageData = Convert.FromBase64String("iVBORw0KGgo=");
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [
+                new FunctionResultContent("call_789", new DataContent(imageData, "image/png"))
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Image processed", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_UriContent_SerializesAsInputImage()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_uri",
+                        "output":[
+                            {"type":"input_image","image_url":"https://example.com/image.png"}
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_004",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_004",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"URI processed","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [
+                new FunctionResultContent("call_uri", new UriContent(new Uri("https://example.com/image.png"), "image/png"))
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("URI processed", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_HostedFileContent_SerializesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_file",
+                        "output":[
+                            {"type":"input_image","file_id":"file-abc123","filename":"result.png"}
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_005",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_005",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"File processed","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [
+                new FunctionResultContent("call_file", new HostedFileContent("file-abc123") { MediaType = "image/png", Name = "result.png" })
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("File processed", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_MixedContent_SerializesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_mixed",
+                        "output":[
+                            {"type":"input_text","text":"Text result: "},
+                            {"type":"input_image","image_url":"https://example.com/result.png"},
+                            {"type":"input_text","text":" - Image uploaded"}
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_006",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_006",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"Mixed content processed","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [
+                new FunctionResultContent("call_mixed", new List<AIContent>
+                {
+                    new TextContent("Text result: "),
+                    new UriContent(new Uri("https://example.com/result.png"), "image/png"),
+                    new TextContent(" - Image uploaded")
+                })
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Mixed content processed", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_DataContentPDF_SerializesAsInputFile()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_pdf",
+                        "output":[
+                            {"type":"input_file","file_data":"data:application/pdf;base64,cGRmZGF0YQ==","filename":"report.pdf"}
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_007",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_007",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"PDF processed","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var pdfData = Encoding.UTF8.GetBytes("pdfdata");
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [
+                new FunctionResultContent("call_pdf", new DataContent(pdfData, "application/pdf") { Name = "report.pdf" })
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("PDF processed", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_ObjectSerialization_SerializesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_obj",
+                        "output":"{\"name\":\"John\",\"age\":30}"
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_obj",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_obj",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"Object processed","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [
+                new FunctionResultContent("call_obj", new { name = "John", age = 30 })
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Object processed", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_StringFallback_SerializesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_string",
+                        "output":"Simple string result"
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_008",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_008",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"String processed","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [
+                new FunctionResultContent("call_string", "Simple string result")
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("String processed", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_UriContentNonImage_SerializesAsInputFile()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_file_uri",
+                        "output":[
+                            {"type":"input_file","file_url":"https://example.com/document.pdf"}
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_009",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_009",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"File URI processed","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [
+                new FunctionResultContent("call_file_uri", new UriContent(new Uri("https://example.com/document.pdf"), "application/pdf"))
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("File URI processed", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_HostedFileContentNonImage_SerializesAsInputFile()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_hosted_file",
+                        "output":[
+                            {"type":"input_file","file_id":"file-xyz789","filename":"document.txt"}
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_010",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_010",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"Hosted file processed","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [
+                new FunctionResultContent("call_hosted_file", new HostedFileContent("file-xyz789") { MediaType = "text/plain", Name = "document.txt" })
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Hosted file processed", response.Text);
+    }
+
+    [Fact]
+    public async Task ResponseWithEndUserId_IncludesInAdditionalProperties()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}],
+              "user":"user_123"
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("test");
+
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Equal("user_123", response.AdditionalProperties["EndUserId"]);
+    }
+
+    [Fact]
+    public async Task ResponseWithError_IncludesInAdditionalPropertiesAndMessage()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"failed",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Processing","annotations":[]}]}],
+              "error":{"code":"rate_limit_exceeded","message":"Rate limit exceeded"}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("test");
+
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.NotNull(response.AdditionalProperties["Error"]);
+
+        var lastMessage = response.Messages.Last();
+        var errorContent = lastMessage.Contents.OfType<ErrorContent>().FirstOrDefault();
+        Assert.NotNull(errorContent);
+        Assert.Equal("Rate limit exceeded", errorContent.Message);
+        Assert.Equal("rate_limit_exceeded", errorContent.ErrorCode);
+    }
+
+    [Fact]
+    public async Task ResponseWithUsageDetails_ParsesTokenCounts()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}],
+              "usage":{
+                "input_tokens":50,
+                "input_tokens_details":{"cached_tokens":10},
+                "output_tokens":25,
+                "output_tokens_details":{"reasoning_tokens":5},
+                "total_tokens":75
+              }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("test");
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(50, response.Usage.InputTokenCount);
+        Assert.Equal(25, response.Usage.OutputTokenCount);
+        Assert.Equal(75, response.Usage.TotalTokenCount);
+        Assert.NotNull(response.Usage.AdditionalCounts);
+        Assert.Equal(10, response.Usage.AdditionalCounts["InputTokenDetails.CachedTokenCount"]);
+        Assert.Equal(5, response.Usage.AdditionalCounts["OutputTokenDetails.ReasoningTokenCount"]);
+    }
+
+    [Fact]
+    public async Task UserMessageWithVariousContentTypes_ConvertsCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[
+                            {"type":"input_text","text":"Check this image: "},
+                            {"type":"input_image","image_url":"https://example.com/image.png"},
+                            {"type":"input_image","image_url":"https://example.com/image.png","detail":"high"},
+                            {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgo="},
+                            {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgo=","detail":"low"},
+                            {"type":"input_file","file_data":"data:application/pdf;base64,cGRmZGF0YQ==","filename":"doc.pdf"},
+                            {"type":"input_file","file_id":"file-123"},
+                            {"type":"refusal","refusal":"I cannot process this"}
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var imageData = Convert.FromBase64String("iVBORw0KGgo=");
+        var pdfData = Convert.FromBase64String("cGRmZGF0YQ==");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, [
+                new TextContent("Check this image: "),
+                new UriContent(new Uri("https://example.com/image.png"), "image/png"),
+                new UriContent(new Uri("https://example.com/image.png"), "image/png") { AdditionalProperties = new AdditionalPropertiesDictionary { ["detail"] = "high" }},
+                new DataContent(imageData, "image/png"),
+                new DataContent(imageData, "image/png") { AdditionalProperties = new AdditionalPropertiesDictionary { ["detail"] = ResponseImageDetailLevel.Low }},
+                new DataContent(pdfData, "application/pdf") { Name = "doc.pdf" },
+                new HostedFileContent("file-123"),
+                new ErrorContent("I cannot process this") { ErrorCode = "Refusal" }
+            ])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Done", response.Text);
+    }
+
+    [Fact]
+    public async Task NonStreamingResponseWithIncompleteReason_MapsFinishReason()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"incomplete",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Partial","annotations":[]}]}],
+              "incomplete_details":{"reason":"max_output_tokens"}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("test");
+
+        Assert.NotNull(response);
+        Assert.Equal("Partial", response.Text);
+        Assert.Equal(ChatFinishReason.Length, response.FinishReason);
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithQueuedUpdate_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.queued
+            data: {"type":"response.queued","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"queued","model":"gpt-4o-mini","output":[]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}]}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 3);
+        Assert.All(updates, u => Assert.Equal("resp_001", u.ResponseId));
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithFailedUpdate_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.failed
+            data: {"type":"response.failed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[],"error":{"code":"internal_error","message":"Internal error"}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 2);
+        Assert.All(updates, u => Assert.Equal("resp_001", u.ResponseId));
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithIncompleteUpdate_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.incomplete
+            data: {"type":"response.incomplete","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"incomplete","model":"gpt-4o-mini","output":[],"incomplete_details":{"reason":"max_output_tokens"}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 2);
+        Assert.All(updates, u => Assert.Equal("resp_001", u.ResponseId));
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithInProgressUpdate_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}]}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 3);
+        Assert.All(updates, u => Assert.Equal("resp_001", u.ResponseId));
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithRefusalUpdate_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.refusal.done
+            data: {"type":"response.refusal.done","refusal":"I cannot provide that information"}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[]}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        var refusalUpdate = updates.FirstOrDefault(u => u.Contents.Any(c => c is ErrorContent ec && ec.ErrorCode == "Refusal"));
+        Assert.NotNull(refusalUpdate);
+
+        var errorContent = refusalUpdate.Contents.OfType<ErrorContent>().First();
+        Assert.Equal("I cannot provide that information", errorContent.Message);
+        Assert.Equal("Refusal", errorContent.ErrorCode);
+    }
+
+    [Fact]
+    public async Task GetContinuationToken_WithMessages_ThrowsException()
+    {
+        using HttpClient httpClient = new();
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var token = new TestOpenAIResponsesContinuationToken("resp_123");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await client.GetResponseAsync(
+                [new ChatMessage(ChatRole.User, "test")],
+                new ChatOptions { ContinuationToken = token });
+        });
+    }
+
+    [Fact]
+    public async Task StreamingErrorUpdate_DocumentedFormat_ParsesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: error
+            data: {"type":"error","sequence_number":1,"message":"Rate limit exceeded","code":"rate_limit_exceeded","param":"requests"}
+
+            event: response.failed
+            data: {"type":"response.failed","sequence_number":2,"response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[],"error":{"code":"rate_limit_exceeded","message":"Rate limit exceeded"}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        var errorUpdate = updates.FirstOrDefault(u => u.Contents.Any(c => c is ErrorContent));
+        Assert.NotNull(errorUpdate);
+
+        var errorContent = errorUpdate.Contents.OfType<ErrorContent>().First();
+        Assert.Equal("Rate limit exceeded", errorContent.Message);
+        Assert.Equal("rate_limit_exceeded", errorContent.ErrorCode);
+        Assert.Equal("requests", errorContent.Details);
+    }
+
+    [Fact]
+    public async Task StreamingErrorUpdate_ActualErroneousFormat_ParsesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_002","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: error
+            data: {"type":"error","sequence_number":1,"error":{"message":"Content filter triggered","code":"content_filter","param":"safety"}}
+
+            event: response.failed
+            data: {"type":"response.failed","sequence_number":2,"response":{"id":"resp_002","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[],"error":{"code":"content_filter","message":"Content filter triggered"}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        var errorUpdate = updates.FirstOrDefault(u => u.Contents.Any(c => c is ErrorContent));
+        Assert.NotNull(errorUpdate);
+
+        var errorContent = errorUpdate.Contents.OfType<ErrorContent>().First();
+        Assert.Equal("Content filter triggered", errorContent.Message);
+        Assert.Equal("content_filter", errorContent.ErrorCode);
+        Assert.Equal("safety", errorContent.Details);
+    }
+
+    [Fact]
+    public async Task StreamingErrorUpdate_NoErrorInformation_HandlesGracefully()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_003","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: error
+            data: {"type":"error","sequence_number":1}
+
+            event: response.failed
+            data: {"type":"response.failed","sequence_number":2,"response":{"id":"resp_003","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[]}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        var errorUpdate = updates.FirstOrDefault(u => u.Contents.Any(c => c is ErrorContent));
+        Assert.NotNull(errorUpdate);
+
+        var errorContent = errorUpdate.Contents.OfType<ErrorContent>().First();
+        Assert.True(string.IsNullOrEmpty(errorContent.Message));
+        Assert.True(string.IsNullOrEmpty(errorContent.ErrorCode));
+        Assert.True(string.IsNullOrEmpty(errorContent.Details));
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithAnnotations_HandlesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","response_id":"resp_001","output_index":0,"item":{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Annotated text","annotations":[{"type":"file_citation","file_id":"file_123","start_index":0,"end_index":14}]}]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Annotated text","annotations":[{"type":"file_citation","file_id":"file_123","start_index":0,"end_index":14}]}]}]}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        var annotatedUpdate = updates.FirstOrDefault(u => u.Contents.Any(c => c.Annotations?.Count > 0));
+        Assert.NotNull(annotatedUpdate);
+        Assert.NotEmpty(annotatedUpdate.Contents.First().Annotations!);
+    }
+
+    [Fact]
+    public async Task UserMessageWithEmptyText_CreatesEmptyInputPart()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":""}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Ok","annotations":[]}]}]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "")]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Ok", response.Text);
+    }
+
+    [Fact]
+    public async Task ResponseWithRefusalContent_ParsesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"harmful request"}]}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_001",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[
+                    {"type":"refusal","refusal":"I cannot help with that request"}
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("harmful request");
+
+        Assert.NotNull(response);
+        var errorContent = response.Messages.Last().Contents.OfType<ErrorContent>().FirstOrDefault();
+        Assert.NotNull(errorContent);
+        Assert.Equal("I cannot help with that request", errorContent.Message);
+        Assert.Equal("Refusal", errorContent.ErrorCode);
+    }
+
+    [Fact]
+    public async Task HostedImageGenerationTool_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o",
+                "tools": [
+                    {
+                        "type": "image_generation",
+                        "model": "gpt-image-1",
+                        "size": "1024x1024",
+                        "output_format": "png"
+                    }
+                ],
+                "tool_choice": "auto",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Generate an image of a cat"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_abc123",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "model": "gpt-4o-2024-11-20",
+              "output": [
+                {
+                  "type": "image_generation_call",
+                  "id": "img_call_abc123",
+                  "result": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+                }
+              ],
+              "usage": {
+                "input_tokens": 15,
+                "output_tokens": 0,
+                "total_tokens": 15
+              }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o");
+
+        var imageTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                ImageSize = new(1024, 1024),
+                MediaType = "image/png"
+            }
+        };
+        var response = await client.GetResponseAsync("Generate an image of a cat", new ChatOptions
+        {
+            Tools = [imageTool]
+        });
+
+        Assert.NotNull(response);
+        Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
+
+        var contents = response.Messages[0].Contents;
+        Assert.Equal(2, contents.Count);
+
+        // First content should be the tool call
+        var toolCall = contents[0] as ImageGenerationToolCallContent;
+        Assert.NotNull(toolCall);
+        Assert.Equal("img_call_abc123", toolCall.ImageId);
+
+        // Second content should be the result with image data
+        var toolResult = contents[1] as ImageGenerationToolResultContent;
+        Assert.NotNull(toolResult);
+        Assert.Equal("img_call_abc123", toolResult.ImageId);
+        Assert.Single(toolResult.Outputs!);
+
+        var imageData = toolResult.Outputs![0] as DataContent;
+        Assert.NotNull(imageData);
+        Assert.Equal("image/png", imageData.MediaType);
+        Assert.True(imageData.Data.Length > 0);
+    }
+
+    [Fact]
+    public async Task HostedImageGenerationTool_Streaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o",
+                "tools": [
+                    {
+                        "type": "image_generation",
+                        "model": "gpt-image-1",
+                        "size": "1024x1024",
+                        "output_format": "png"
+                    }
+                ],
+                "tool_choice": "auto",
+                "stream": true,
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Generate an image of a dog"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_def456","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-2024-11-20","output":[],"tools":[{"type":"image_generation","image_generation":{"model":"gpt-image-1","size":{"width":1024,"height":1024},"output_format":"png"}}]}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_def456","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-2024-11-20","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"image_generation_call","id":"img_call_def456","status":"in_progress"}}
+
+            event: response.image_generation_call.in_progress
+            data: {"type":"response.image_generation_call.in_progress","item_id":"img_call_def456","output_index":0}
+
+            event: response.image_generation_call.generating
+            data: {"type":"response.image_generation_call.generating","item_id":"img_call_def456","output_index":0}
+
+            event: response.image_generation_call.partial_image
+            data: {"type":"response.image_generation_call.partial_image","item_id":"img_call_def456","output_index":0,"partial_image_index":0,"partial_image_b64":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"image_generation_call","id":"img_call_def456","image_result_b64":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_def456","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-2024-11-20","output":[{"type":"image_generation_call","id":"img_call_def456","image_result_b64":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}],"usage":{"input_tokens":15,"output_tokens":0,"total_tokens":15}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o");
+
+        List<ChatResponseUpdate> updates = [];
+        var imageTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                ImageSize = new(1024, 1024),
+                MediaType = "image/png"
+            }
+        };
+        await foreach (var update in client.GetStreamingResponseAsync("Generate an image of a dog", new ChatOptions
+        {
+            Tools = [imageTool]
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 6);
+
+        // Should have updates for: created, in_progress, tool call start, generating, partial image, completion
+        var createdUpdate = updates.First(u => u.CreatedAt.HasValue);
+        Assert.Equal("resp_def456", createdUpdate.ResponseId);
+        Assert.Equal("gpt-4o-2024-11-20", createdUpdate.ModelId);
+
+        // Should have tool call content
+        var toolCallUpdate = updates.FirstOrDefault(u =>
+            u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolCallContent));
+        Assert.NotNull(toolCallUpdate);
+        var toolCall = toolCallUpdate.Contents.OfType<ImageGenerationToolCallContent>().First();
+        Assert.Equal("img_call_def456", toolCall.ImageId);
+
+        // Should have partial image content
+        var partialImageUpdate = updates.FirstOrDefault(u =>
+            u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolResultContent result &&
+                result.Outputs != null && result.Outputs.Any(o => o.AdditionalProperties != null && o.AdditionalProperties.ContainsKey("PartialImageIndex"))));
+        Assert.NotNull(partialImageUpdate);
+
+        // Should have final completion with usage
+        var completionUpdate = updates.FirstOrDefault(u =>
+            u.Contents != null && u.Contents.Any(c => c is UsageContent));
+        Assert.NotNull(completionUpdate);
+        var usage = completionUpdate.Contents.OfType<UsageContent>().First();
+        Assert.Equal(15, usage.Details.InputTokenCount);
+        Assert.Equal(0, usage.Details.OutputTokenCount);
+        Assert.Equal(15, usage.Details.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task HostedImageGenerationTool_StreamingMultipleImages()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o",
+                "tools": [
+                    {
+                        "type": "image_generation",
+                        "model": "gpt-image-1",
+                        "size": "512x512",
+                        "output_format": "webp",
+                        "partial_images": 3
+                    }
+                ],
+                "tool_choice": "auto",
+                "stream": true,
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Generate an image of a sunset"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_ghi789","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-2024-11-20","output":[],"tools":[{"type":"image_generation","image_generation":{"model":"gpt-image-1","size":{"width":512,"height":512},"output_format":"webp","partial_images":3}}]}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_ghi789","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-2024-11-20","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"image_generation_call","id":"img_call_ghi789","status":"in_progress"}}
+
+            event: response.image_generation_call.in_progress
+            data: {"type":"response.image_generation_call.in_progress","item_id":"img_call_ghi789","output_index":0}
+
+            event: response.image_generation_call.generating
+            data: {"type":"response.image_generation_call.generating","item_id":"img_call_ghi789","output_index":0}
+
+            event: response.image_generation_call.partial_image
+            data: {"type":"response.image_generation_call.partial_image","item_id":"img_call_ghi789","output_index":0,"partial_image_index":0,"partial_image_b64":"SGVsbG8x"}
+
+            event: response.image_generation_call.partial_image
+            data: {"type":"response.image_generation_call.partial_image","item_id":"img_call_ghi789","output_index":0,"partial_image_index":1,"partial_image_b64":"SGVsbG8y"}
+
+            event: response.image_generation_call.partial_image
+            data: {"type":"response.image_generation_call.partial_image","item_id":"img_call_ghi789","output_index":0,"partial_image_index":2,"partial_image_b64":"SGVsbG8z"}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"image_generation_call","id":"img_call_ghi789","image_result_b64":"SGVsbG8z"}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_ghi789","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-2024-11-20","output":[{"type":"image_generation_call","id":"img_call_ghi789","image_result_b64":"SGVsbG8z"}],"usage":{"input_tokens":18,"output_tokens":0,"total_tokens":18}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o");
+
+        List<ChatResponseUpdate> updates = [];
+        var imageTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                ImageSize = new(512, 512),
+                MediaType = "image/webp",
+                StreamingCount = 3
+            }
+        };
+        await foreach (var update in client.GetStreamingResponseAsync("Generate an image of a sunset", new ChatOptions
+        {
+            Tools = [imageTool]
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.True(updates.Count >= 8); // Should have multiple partial image updates plus generating event
+
+        // Should have multiple partial images with different indices
+        var partialImageUpdates = updates.Where(u =>
+            u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolResultContent result &&
+                result.Outputs != null && result.Outputs.Any(o => o.AdditionalProperties != null && o.AdditionalProperties.ContainsKey("PartialImageIndex")))).ToList();
+
+        Assert.True(partialImageUpdates.Count >= 3);
+
+        // Verify partial images have correct indices and WebP format
+        for (int i = 0; i < 3; i++)
+        {
+            var partialUpdate = partialImageUpdates.FirstOrDefault(u =>
+                u.Contents.OfType<ImageGenerationToolResultContent>().Any(result =>
+                    HasPartialImageWithIndex(result, i)));
+            Assert.NotNull(partialUpdate);
+        }
+
+        static bool HasPartialImageWithIndex(ImageGenerationToolResultContent result, int index)
+        {
+            if (result.Outputs == null)
+            {
+                return false;
+            }
+
+            return result.Outputs.Any(o => HasCorrectImageData(o, index));
+        }
+
+        static bool HasCorrectImageData(AIContent o, int index)
+        {
+            if (o.AdditionalProperties == null)
+            {
+                return false;
+            }
+
+            if (!o.AdditionalProperties.TryGetValue("PartialImageIndex", out var imageIndex))
+            {
+                return false;
+            }
+
+            if (imageIndex == null || !imageIndex.Equals(index))
+            {
+                return false;
+            }
+
+            return o is DataContent dataContent && dataContent.MediaType == "image/webp";
+        }
+
+        // Verify tool call uses correct settings
+        var toolCallUpdate = updates.FirstOrDefault(u =>
+            u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolCallContent));
+        Assert.NotNull(toolCallUpdate);
+        var toolCall = toolCallUpdate.Contents.OfType<ImageGenerationToolCallContent>().First();
+        Assert.Equal("img_call_ghi789", toolCall.ImageId);
     }
 
     private static IChatClient CreateResponseClient(HttpClient httpClient, string modelId) =>
@@ -2281,19 +5512,14 @@ public class OpenAIResponseClientTests
         /// <summary>Gets or sets the sequence number of a streamed update.</summary>
         internal int? SequenceNumber { get; set; }
 
-        internal static TestOpenAIResponsesContinuationToken FromToken(object token)
+        internal static TestOpenAIResponsesContinuationToken FromToken(ResponseContinuationToken token)
         {
             if (token is TestOpenAIResponsesContinuationToken testOpenAIResponsesContinuationToken)
             {
                 return testOpenAIResponsesContinuationToken;
             }
 
-            if (token is not ResponseContinuationToken)
-            {
-                throw new ArgumentException("Failed to create OpenAIResponsesResumptionToken from provided token because it is not of type ResponseContinuationToken.", nameof(token));
-            }
-
-            ReadOnlyMemory<byte> data = ((ResponseContinuationToken)token).ToBytes();
+            ReadOnlyMemory<byte> data = token.ToBytes();
 
             Utf8JsonReader reader = new(data.Span);
 

@@ -377,7 +377,7 @@ public sealed class ToolGroupingChatClient : DelegatingChatClient
                     return true;
                 }
 
-                group = expandedGroupToolGroups.FirstOrDefault(g => string.Equals(g.Name, groupName, StringComparison.Ordinal));
+                group = expandedGroupToolGroups.Find(g => string.Equals(g.Name, groupName, StringComparison.Ordinal));
                 return group is not null;
             }
 

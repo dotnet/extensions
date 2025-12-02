@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements
+#pragma warning disable MEAI0001 // Suppress experimental warnings for testing
 
 namespace Microsoft.Extensions.AI;
 
@@ -450,7 +452,7 @@ public class ChatResponseUpdateExtensionsTests
     {
         ChatResponseUpdate[] updates =
         [
-            
+
             // First message - ID "msg1", AuthorName "Assistant"
             new(null, "Hi! ") { CreatedAt = new DateTimeOffset(2023, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
             new(ChatRole.Assistant, "Hello") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
@@ -634,6 +636,43 @@ public class ChatResponseUpdateExtensionsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ToChatResponse_CoalescesTextReasoningContentUpToProtectedData(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        {
+            new() { Contents = [new TextReasoningContent("A") { ProtectedData = "1" }] },
+            new() { Contents = [new TextReasoningContent("B") { ProtectedData = "2" }] },
+            new() { Contents = [new TextReasoningContent("C")] },
+            new() { Contents = [new TextReasoningContent("D")] },
+            new() { Contents = [new TextReasoningContent("E") { ProtectedData = "3" }] },
+            new() { Contents = [new TextReasoningContent("F") { ProtectedData = "4" }] },
+            new() { Contents = [new TextReasoningContent("G")] },
+            new() { Contents = [new TextReasoningContent("H")] },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+        Assert.Equal(5, message.Contents.Count);
+
+        Assert.Equal("A", Assert.IsType<TextReasoningContent>(message.Contents[0]).Text);
+        Assert.Equal("1", ((TextReasoningContent)message.Contents[0]).ProtectedData);
+
+        Assert.Equal("B", Assert.IsType<TextReasoningContent>(message.Contents[1]).Text);
+        Assert.Equal("2", ((TextReasoningContent)message.Contents[1]).ProtectedData);
+
+        Assert.Equal("CDE", Assert.IsType<TextReasoningContent>(message.Contents[2]).Text);
+        Assert.Equal("3", ((TextReasoningContent)message.Contents[2]).ProtectedData);
+
+        Assert.Equal("F", Assert.IsType<TextReasoningContent>(message.Contents[3]).Text);
+        Assert.Equal("4", ((TextReasoningContent)message.Contents[3]).ProtectedData);
+
+        Assert.Equal("GH", Assert.IsType<TextReasoningContent>(message.Contents[4]).Text);
+        Assert.Null(((TextReasoningContent)message.Contents[4]).ProtectedData);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ToChatResponse_DoesNotCoalesceAnnotatedContent(bool useAsync)
     {
         ChatResponseUpdate[] updates =
@@ -765,9 +804,9 @@ public class ChatResponseUpdateExtensionsTests
     [MemberData(nameof(ToChatResponse_TimestampFolding_MemberData))]
     public async Task ToChatResponse_TimestampFolding(bool useAsync, string? timestamp1, string? timestamp2, string? expectedTimestamp)
     {
-        DateTimeOffset? first = timestamp1 is not null ? DateTimeOffset.Parse(timestamp1) : null;
-        DateTimeOffset? second = timestamp2 is not null ? DateTimeOffset.Parse(timestamp2) : null;
-        DateTimeOffset? expected = expectedTimestamp is not null ? DateTimeOffset.Parse(expectedTimestamp) : null;
+        DateTimeOffset? first = timestamp1 is not null ? DateTimeOffset.Parse(timestamp1, DateTimeFormatInfo.InvariantInfo) : null;
+        DateTimeOffset? second = timestamp2 is not null ? DateTimeOffset.Parse(timestamp2, DateTimeFormatInfo.InvariantInfo) : null;
+        DateTimeOffset? expected = expectedTimestamp is not null ? DateTimeOffset.Parse(expectedTimestamp, DateTimeFormatInfo.InvariantInfo) : null;
 
         ChatResponseUpdate[] updates =
         [
@@ -783,6 +822,99 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("ab", response.Messages[0].Text);
         Assert.Equal(expected, response.Messages[0].CreatedAt);
         Assert.Equal(expected, response.CreatedAt);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_CoalescesImageGenerationToolResultContent(bool useAsync)
+    {
+        // Create test image content with actual byte arrays
+        var image1 = new DataContent((byte[])[1, 2, 3, 4], "image/png") { Name = "image1.png" };
+        var image2 = new DataContent((byte[])[5, 6, 7, 8], "image/jpeg") { Name = "image2.jpg" };
+        var image3 = new DataContent((byte[])[9, 10, 11, 12], "image/png") { Name = "image3.png" };
+        var image4 = new DataContent((byte[])[13, 14, 15, 16], "image/gif") { Name = "image4.gif" };
+
+        ChatResponseUpdate[] updates =
+        {
+            new(null, "Let's generate"),
+            new(null, " some images"),
+
+            // Initial ImageGenerationToolResultContent with ID "img1"
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img1", Outputs = [image1] }] },
+
+            // Another ImageGenerationToolResultContent with different ID "img2" 
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img2", Outputs = [image2] }] },
+
+            // Another ImageGenerationToolResultContent with same ID "img1" - should replace the first one
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img1", Outputs = [image3] }] },
+
+            // ImageGenerationToolResultContent with same ID "img2" - should replace the second one
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img2", Outputs = [image4] }] },
+
+            // Final text
+            new(null, "Here are those generated images"),
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        // Should have 4 content items: 1 text (coalesced) + 2 image results (coalesced) + 1 text
+        Assert.Equal(4, message.Contents.Count);
+
+        // Verify text content was coalesced properly
+        Assert.Equal("Let's generate some images",
+                     Assert.IsType<TextContent>(message.Contents[0]).Text);
+
+        // Get the image result contents
+        var imageResults = message.Contents.OfType<ImageGenerationToolResultContent>().ToArray();
+        Assert.Equal(2, imageResults.Length);
+
+        // Verify the first image result (ID "img1") has the latest content (image3)
+        var firstImageResult = imageResults.First(ir => ir.ImageId == "img1");
+        Assert.NotNull(firstImageResult.Outputs);
+        var firstOutput = Assert.Single(firstImageResult.Outputs);
+        Assert.Same(image3, firstOutput); // Should be the later image, not image1
+
+        // Verify the second image result (ID "img2") has the latest content (image4)
+        var secondImageResult = imageResults.First(ir => ir.ImageId == "img2");
+        Assert.NotNull(secondImageResult.Outputs);
+        var secondOutput = Assert.Single(secondImageResult.Outputs);
+        Assert.Same(image4, secondOutput); // Should be the later image, not image2
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_ImageGenerationToolResultContentWithNullOrEmptyImageId_DoesNotCoalesce(bool useAsync)
+    {
+        var image1 = new DataContent((byte[])[1, 2, 3, 4], "image/png") { Name = "image1.png" };
+        var image2 = new DataContent((byte[])[5, 6, 7, 8], "image/jpeg") { Name = "image2.jpg" };
+        var image3 = new DataContent((byte[])[9, 10, 11, 12], "image/png") { Name = "image3.png" };
+
+        ChatResponseUpdate[] updates =
+        {
+            // ImageGenerationToolResultContent with null ImageId - should not coalesce
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = null, Outputs = [image1] }] },
+
+            // ImageGenerationToolResultContent with empty ImageId - should not coalesce
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "", Outputs = [image2] }] },
+
+            // Another with null ImageId - should not coalesce with the first
+            new() { Contents = [new ImageGenerationToolResultContent { ImageId = null, Outputs = [image3] }] },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        // Should have all 3 image result contents since they can't be coalesced
+        var imageResults = message.Contents.OfType<ImageGenerationToolResultContent>().ToArray();
+        Assert.Equal(3, imageResults.Length);
+
+        // Verify each has its original content
+        Assert.Same(image1, imageResults[0].Outputs![0]);
+        Assert.Same(image2, imageResults[1].Outputs![0]);
+        Assert.Same(image3, imageResults[2].Outputs![0]);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)

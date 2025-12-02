@@ -15,6 +15,7 @@ using OpenTelemetry.Trace;
 using Xunit;
 
 #pragma warning disable SA1118 // Parameter should not span multiple lines
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
@@ -1230,6 +1231,220 @@ public class FunctionInvokingChatClientTests
         // The original options should be cloned and have a null ContinuationToken
         Assert.NotSame(originalChatOptions, actualChatOptions);
         Assert.Null(actualChatOptions!.ContinuationToken);
+    }
+
+    [Fact]
+    public async Task DoesNotCreateOrchestrateToolsSpanWhenInvokeAgentIsParent()
+    {
+        string agentSourceName = Guid.NewGuid().ToString();
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
+
+        var activities = new List<Activity>();
+
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(agentSourceName)
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using (var agentSource = new ActivitySource(agentSourceName))
+        using (var invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
+        {
+            Assert.NotNull(invokeAgentActivity);
+            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+        }
+
+        Assert.DoesNotContain(activities, a => a.DisplayName == "orchestrate_tools");
+        Assert.Contains(activities, a => a.DisplayName == "chat");
+        Assert.Contains(activities, a => a.DisplayName == "execute_tool Func1");
+
+        var invokeAgent = Assert.Single(activities, a => a.DisplayName == "invoke_agent");
+        var childActivities = activities.Where(a => a != invokeAgent).ToList();
+        Assert.All(childActivities, activity => Assert.Same(invokeAgent, activity.Parent));
+    }
+
+    [Fact]
+    public async Task UsesAgentActivitySourceWhenInvokeAgentIsParent()
+    {
+        string agentSourceName = Guid.NewGuid().ToString();
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
+
+        var activities = new List<Activity>();
+
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(agentSourceName)
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using (var agentSource = new ActivitySource(agentSourceName))
+        using (var invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
+        {
+            Assert.NotNull(invokeAgentActivity);
+            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+        }
+
+        var executeToolActivities = activities.Where(a => a.DisplayName == "execute_tool Func1").ToList();
+        Assert.NotEmpty(executeToolActivities);
+        Assert.All(executeToolActivities, executeTool => Assert.Equal(agentSourceName, executeTool.Source.Name));
+    }
+
+    public static IEnumerable<object[]> SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent_MemberData() =>
+        from invokeAgentSensitiveData in new bool?[] { null, false, true }
+        from innerOpenTelemetryChatClient in new bool?[] { null, false, true }
+        select new object?[] { invokeAgentSensitiveData, innerOpenTelemetryChatClient };
+
+    [Theory]
+    [MemberData(nameof(SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent_MemberData))]
+    public async Task SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent(
+        bool? invokeAgentSensitiveData, bool? innerOpenTelemetryChatClient)
+    {
+        string agentSourceName = Guid.NewGuid().ToString();
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg1"] = "secret" })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        var activities = new List<Activity>();
+
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(agentSourceName)
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using (var agentSource = new ActivitySource(agentSourceName))
+        using (var invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
+        {
+            if (invokeAgentSensitiveData is not null)
+            {
+                invokeAgentActivity?.SetCustomProperty("__EnableSensitiveData__", invokeAgentSensitiveData is true ? "true" : "false");
+            }
+
+            await InvokeAndAssertAsync(options, plan, configurePipeline: b =>
+            {
+                b.UseFunctionInvocation();
+
+                if (innerOpenTelemetryChatClient is not null)
+                {
+                    b.UseOpenTelemetry(sourceName: clientSourceName, configure: c =>
+                    {
+                        c.EnableSensitiveData = innerOpenTelemetryChatClient.Value;
+                    });
+                }
+
+                return b;
+            });
+        }
+
+        var executeToolActivity = Assert.Single(activities, a => a.DisplayName == "execute_tool Func1");
+
+        var hasArguments = executeToolActivity.Tags.Any(t => t.Key == "gen_ai.tool.call.arguments");
+        var hasResult = executeToolActivity.Tags.Any(t => t.Key == "gen_ai.tool.call.result");
+
+        if (invokeAgentSensitiveData is true)
+        {
+            Assert.True(hasArguments, "Expected arguments to be logged when agent EnableSensitiveData is true");
+            Assert.True(hasResult, "Expected result to be logged when agent EnableSensitiveData is true");
+
+            var argsTag = Assert.Single(executeToolActivity.Tags, t => t.Key == "gen_ai.tool.call.arguments");
+            Assert.Contains("arg1", argsTag.Value);
+        }
+        else
+        {
+            Assert.False(hasArguments, "Expected arguments NOT to be logged when agent EnableSensitiveData is false");
+            Assert.False(hasResult, "Expected result NOT to be logged when agent EnableSensitiveData is false");
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreatesOrchestrateToolsSpanWhenNoInvokeAgentParent(bool streaming)
+    {
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
+
+        var activities = new List<Activity>();
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        if (streaming)
+        {
+            await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
+        }
+        else
+        {
+            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+        }
+
+        var orchestrateTools = Assert.Single(activities, a => a.DisplayName == "orchestrate_tools");
+
+        var executeTools = activities.Where(a => a.DisplayName.StartsWith("execute_tool")).ToList();
+        Assert.NotEmpty(executeTools);
+        foreach (var executeTool in executeTools)
+        {
+            Assert.Same(orchestrateTools, executeTool.Parent);
+        }
     }
 
     [Fact]

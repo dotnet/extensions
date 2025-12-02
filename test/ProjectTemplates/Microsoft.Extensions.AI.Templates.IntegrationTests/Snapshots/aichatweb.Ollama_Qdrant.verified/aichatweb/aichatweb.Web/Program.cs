@@ -16,10 +16,11 @@ builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
 
 builder.AddQdrantClient("vectordb");
-builder.Services.AddQdrantCollection<Guid, IngestedChunk>("data-aichatweb-chunks");
-builder.Services.AddQdrantCollection<Guid, IngestedDocument>("data-aichatweb-documents");
-builder.Services.AddScoped<DataIngestor>();
+builder.Services.AddQdrantVectorStore();
+builder.Services.AddQdrantCollection<Guid, IngestedChunk>(IngestedChunk.CollectionName);
+builder.Services.AddSingleton<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
+builder.Services.AddKeyedSingleton("ingestion_directory", new DirectoryInfo(Path.Combine(builder.Environment.WebRootPath, "Data")));
 // Applies robust HTTP resilience settings for all HttpClients in the Web project,
 // not across the entire solution. It's aimed at supporting Ollama scenarios due
 // to its self-hosted nature and potentially slow responses.
@@ -44,13 +45,5 @@ app.UseAntiforgery();
 app.UseStaticFiles();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
-// By default, we ingest PDF files from the /wwwroot/Data directory. You can ingest from
-// other sources by implementing IIngestionSource.
-// Important: ensure that any content you ingest is trusted, as it may be reflected back
-// to users or could be a source of prompt injection risk.
-await DataIngestor.IngestDataAsync(
-    app.Services,
-    new PDFDirectorySource(Path.Combine(builder.Environment.WebRootPath, "Data")));
 
 app.Run();

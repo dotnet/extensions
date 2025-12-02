@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.IO;
+#if !NET10_0
 using System.Linq;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -162,6 +164,7 @@ public sealed class AcceptanceTest
             .AddSingleton<IUserHz>(new FakeUserHz(100))
             .AddSingleton<IFileSystem>(new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
             {
+                { new FileInfo("/proc/self/cgroup"), "0::/" },
                 { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
                 { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
                 { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
@@ -294,6 +297,7 @@ public sealed class AcceptanceTest
         var memoryRefresh = TimeSpan.FromMinutes(14);
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
+            { new FileInfo("/proc/self/cgroup"), "0::/" },
             { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
             { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102\nnr_periods 50"},
             { new FileInfo("/sys/fs/cgroup/memory.max"), "1048576" },

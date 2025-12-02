@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.BuildMetadata.Test</RootNamespace>
+    <Description>Tests for Microsoft.Gen.BuildMetadata</Description>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Generators\Microsoft.Gen.BuildMetadata\Microsoft.Gen.BuildMetadata.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.AmbientMetadata.Build\Microsoft.Extensions.AmbientMetadata.Build.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Shared\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "Framework": {
+      "longName": "framework"
+    },
+    "AiServiceProvider": {
+      "longName": "provider",
+      "shortName": ""
+    },
+    "ChatModel": {
+      "longName": "chat-model",
+      "shortName": ""
+    },
+    "UseManagedIdentity": {
+      "longName": "managed-identity",
+      "shortName": ""
+    },
+    "httpPort": {
+      "isHidden": "true",
+      "longName": "httpPort",
+      "shortName": ""
+    },
+    "httpsPort": {
+      "isHidden": "true",
+      "longName": "httpsPort",
+      "shortName": ""
+    }
+  },
+  "usageExamples": [
+    ""
+  ]
+}

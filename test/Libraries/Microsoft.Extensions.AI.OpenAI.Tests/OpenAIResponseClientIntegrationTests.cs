@@ -36,6 +36,34 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         ChatMessage message = Assert.Single(response.Messages);
 
         Assert.Equal("6", message.Text);
+
+        // Validate CodeInterpreterToolCallContent
+        var toolCallContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolCallContent>().SingleOrDefault();
+        Assert.NotNull(toolCallContent);
+        Assert.NotNull(toolCallContent.CallId);
+        Assert.NotEmpty(toolCallContent.CallId);
+        Assert.NotNull(toolCallContent.Inputs);
+        Assert.NotEmpty(toolCallContent.Inputs);
+
+        var codeInput = toolCallContent.Inputs.OfType<DataContent>().FirstOrDefault();
+        Assert.NotNull(codeInput);
+        Assert.Equal("text/x-python", codeInput.MediaType);
+        Assert.NotEmpty(codeInput.Data.ToArray());
+
+        // Validate CodeInterpreterToolResultContent
+        var toolResultContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolResultContent>().FirstOrDefault();
+        Assert.NotNull(toolResultContent);
+        Assert.NotNull(toolResultContent.CallId);
+        Assert.NotEmpty(toolResultContent.CallId);
+
+        if (toolResultContent.Outputs is not null)
+        {
+            Assert.NotEmpty(toolResultContent.Outputs);
+            if (toolResultContent.Outputs.OfType<TextContent>().FirstOrDefault() is { } resultOutput)
+            {
+                Assert.NotEmpty(resultOutput.Text);
+            }
+        }
     }
 
     [ConditionalFact]
@@ -74,7 +102,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         ChatOptions chatOptions = new()
         {
-            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp") { ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire }],
+            Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp")) { ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire }],
         };
 
         ChatResponse response = await CreateChatClient()!.GetResponseAsync("Which tools are available on the wiki_tools MCP server?", chatOptions);
@@ -96,7 +124,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         {
             ChatOptions chatOptions = new()
             {
-                Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+                Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
                     {
                         ApprovalMode = requireSpecific ?
                             HostedMcpServerToolApprovalMode.RequireSpecific(null, ["read_wiki_structure", "ask_question"]) :
@@ -136,7 +164,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         {
             ChatOptions chatOptions = new()
             {
-                Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+                Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
                     {
                         ApprovalMode = requireSpecific ?
                             HostedMcpServerToolApprovalMode.RequireSpecific(["read_wiki_structure", "ask_question"], null) :
@@ -287,7 +315,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         int updateNumber = 0;
         string responseText = "";
-        object? continuationToken = null;
+        ResponseContinuationToken? continuationToken = null;
 
         await foreach (var update in ChatClient.GetStreamingResponseAsync("What is the capital of France?", chatOptions))
         {
@@ -396,5 +424,130 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             var content = Assert.IsType<TextContent>(Assert.Single(toolResult.Output!));
             Assert.Equal(@"{""events"": [], ""next_page_token"": null}", content.Text);
         }
+    }
+
+    [ConditionalFact]
+    public async Task ToolCallResult_TextContent()
+    {
+        SkipIfNotEnabled();
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create((int a, int b) => new TextContent($"The sum is {a + b}"), "AddNumbers", "Adds two numbers together")]
+        };
+
+        using var client = new FunctionInvokingChatClient(ChatClient);
+
+        var response = await client.GetResponseAsync("What is 25 plus 17? Use the AddNumbers function.", chatOptions);
+
+        Assert.NotNull(response);
+
+        // The model should have called the function and received "The sum is 42"
+        Assert.Contains("42", response.Text);
+    }
+
+    [ConditionalFact]
+    public async Task ToolCallResult_MultipleAIContents()
+    {
+        SkipIfNotEnabled();
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create((string city) => new List<AIContent>
+            {
+                new TextContent($"Weather in {city}: "),
+                new TextContent("Sunny, 72°F")
+            }, "GetWeather", "Gets the weather for a city")]
+        };
+
+        using var client = new FunctionInvokingChatClient(ChatClient);
+
+        var response = await client.GetResponseAsync("What's the weather in Seattle? Use GetWeather.", chatOptions);
+
+        Assert.NotNull(response);
+
+        // Verify the function was called and both parts were included
+        var messages = response.Messages.ToList();
+        Assert.NotEmpty(messages);
+
+        // Check that we got a response mentioning the weather data
+        Assert.Contains("72", response.Text);
+    }
+
+    [ConditionalFact]
+    public async Task ToolCallResult_ImageDataContent()
+    {
+        SkipIfNotEnabled();
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => new DataContent(ImageDataUri.GetImageDataUri(), "image/png"), "GetDotnetLogo", "Returns the .NET logo image")]
+        };
+
+        using var client = new FunctionInvokingChatClient(ChatClient);
+
+        var response = await client.GetResponseAsync("Call GetDotnetLogo and tell me what you see in the image.", chatOptions);
+
+        Assert.NotNull(response);
+
+        // The model should describe seeing the .NET logo or purple/related colors
+        Assert.True(
+            response.Text.Contains("logo", StringComparison.OrdinalIgnoreCase) ||
+            response.Text.Contains("purple", StringComparison.OrdinalIgnoreCase) ||
+            response.Text.Contains("dot", StringComparison.OrdinalIgnoreCase) ||
+            response.Text.Contains("net", StringComparison.OrdinalIgnoreCase),
+            $"Expected response to mention logo or colors, but got: {response.Text}");
+    }
+
+    [ConditionalFact]
+    public async Task ToolCallResult_PdfDataContent()
+    {
+        SkipIfNotEnabled();
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => new DataContent(ImageDataUri.GetPdfDataUri(), "application/pdf") { Name = "document.pdf" }, "GetDocument", "Returns a PDF document")]
+        };
+
+        using var client = new FunctionInvokingChatClient(ChatClient);
+
+        var response = await client.GetResponseAsync("Call GetDocument and tell me what text is in the PDF.", chatOptions);
+
+        Assert.NotNull(response);
+
+        // The PDF contains "Hello World!" text
+        Assert.Contains("Hello World", response.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task ToolCallResult_MixedContentWithImage()
+    {
+        SkipIfNotEnabled();
+
+        var imageUri = ImageDataUri.GetImageDataUri();
+        var imageBytes = Convert.FromBase64String(imageUri.ToString().Split(',')[1]);
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => new List<AIContent>
+            {
+                new TextContent("Analysis result: "),
+                new DataContent(imageBytes, "image/png"),
+                new TextContent(" - Image provided above")
+            }, "AnalyzeImage", "Analyzes an image and returns results")]
+        };
+
+        using var client = new FunctionInvokingChatClient(ChatClient);
+
+        var response = await client.GetResponseAsync("Call AnalyzeImage and describe what you see.", chatOptions);
+
+        Assert.NotNull(response);
+
+        // Should mention the analysis and describe the image
+        Assert.True(
+            response.Text.Contains("analysis", StringComparison.OrdinalIgnoreCase) ||
+            response.Text.Contains("image", StringComparison.OrdinalIgnoreCase) ||
+            response.Text.Contains("logo", StringComparison.OrdinalIgnoreCase),
+            $"Expected response to mention analysis or image content, but got: {response.Text}");
     }
 }

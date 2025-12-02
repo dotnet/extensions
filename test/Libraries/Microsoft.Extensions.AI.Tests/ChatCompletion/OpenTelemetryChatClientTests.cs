@@ -105,10 +105,10 @@ public class OpenTelemetryChatClientTests
         List<ChatMessage> messages =
         [
             new(ChatRole.System, "You are a close friend."),
-            new(ChatRole.User, "Hey!"),
+            new(ChatRole.User, "Hey!") { AuthorName = "Alice" },
             new(ChatRole.Assistant, [new FunctionCallContent("12345", "GetPersonName")]),
             new(ChatRole.Tool, [new FunctionResultContent("12345", "John")]),
-            new(ChatRole.Assistant, "Hey John, what's up?"),
+            new(ChatRole.Assistant, "Hey John, what's up?") { AuthorName = "BotAssistant" },
             new(ChatRole.User, "What's the biggest animal?")
         ];
 
@@ -201,6 +201,7 @@ public class OpenTelemetryChatClientTests
                   },
                   {
                     "role": "user",
+                    "name": "Alice",
                     "parts": [
                       {
                         "type": "text",
@@ -230,6 +231,7 @@ public class OpenTelemetryChatClientTests
                   },
                   {
                     "role": "assistant",
+                    "name": "BotAssistant",
                     "parts": [
                       {
                         "type": "text",
@@ -329,6 +331,192 @@ public class OpenTelemetryChatClientTests
             Assert.False(tags.ContainsKey("gen_ai.system_instructions"));
             Assert.False(tags.ContainsKey("gen_ai.tool.definitions"));
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AllOfficialOtelContentPartTypes_SerializedCorrectly(bool streaming)
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant,
+                [
+                    new TextContent("Assistant response text"),
+                    new TextReasoningContent("This is reasoning"),
+                    new FunctionCallContent("call-123", "GetWeather", new Dictionary<string, object?> { ["location"] = "Seattle" }),
+                    new FunctionResultContent("call-123", "72°F and sunny"),
+                    new DataContent(Convert.FromBase64String("aGVsbG8gd29ybGQ="), "image/png"),
+                    new UriContent(new Uri("https://example.com/image.jpg"), "image/jpeg"),
+                    new HostedFileContent("file-abc123"),
+                ]));
+            },
+            GetStreamingResponseAsyncCallback = CallbackAsync,
+        };
+
+        async static IAsyncEnumerable<ChatResponseUpdate> CallbackAsync(
+            IEnumerable<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            yield return new(ChatRole.Assistant, "Assistant response text");
+            yield return new() { Contents = [new TextReasoningContent("This is reasoning")] };
+            yield return new() { Contents = [new FunctionCallContent("call-123", "GetWeather", new Dictionary<string, object?> { ["location"] = "Seattle" })] };
+            yield return new() { Contents = [new FunctionResultContent("call-123", "72°F and sunny")] };
+            yield return new() { Contents = [new DataContent(Convert.FromBase64String("aGVsbG8gd29ybGQ="), "image/png")] };
+            yield return new() { Contents = [new UriContent(new Uri("https://example.com/image.jpg"), "image/jpeg")] };
+            yield return new() { Contents = [new HostedFileContent("file-abc123")] };
+        }
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName, configure: instance =>
+            {
+                instance.EnableSensitiveData = true;
+                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+            })
+            .Build();
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User,
+            [
+                new TextContent("User request text"),
+                new TextReasoningContent("User reasoning"),
+                new DataContent(Convert.FromBase64String("ZGF0YSBjb250ZW50"), "audio/mp3"),
+                new UriContent(new Uri("https://example.com/video.mp4"), "video/mp4"),
+                new HostedFileContent("file-xyz789"),
+            ]),
+            new(ChatRole.Assistant, [new FunctionCallContent("call-456", "SearchFiles")]),
+            new(ChatRole.Tool, [new FunctionResultContent("call-456", "Found 3 files")]),
+        ];
+
+        if (streaming)
+        {
+            await foreach (var update in chatClient.GetStreamingResponseAsync(messages))
+            {
+                await Task.Yield();
+            }
+        }
+        else
+        {
+            await chatClient.GetResponseAsync(messages);
+        }
+
+        var activity = Assert.Single(activities);
+        Assert.NotNull(activity);
+
+        var inputMessages = activity.Tags.First(kvp => kvp.Key == "gen_ai.input.messages").Value;
+        Assert.Equal(ReplaceWhitespace("""
+            [
+              {
+                "role": "user",
+                "parts": [
+                  {
+                    "type": "text",
+                    "content": "User request text"
+                  },
+                  {
+                    "type": "reasoning",
+                    "content": "User reasoning"
+                  },
+                  {
+                    "type": "blob",
+                    "content": "ZGF0YSBjb250ZW50",
+                    "mime_type": "audio/mp3",
+                    "modality": "audio"
+                  },
+                  {
+                    "type": "uri",
+                    "uri": "https://example.com/video.mp4",
+                    "mime_type": "video/mp4",
+                    "modality": "video"
+                  },
+                  {
+                    "type": "file",
+                    "file_id": "file-xyz789"
+                  }
+                ]
+              },
+              {
+                "role": "assistant",
+                "parts": [
+                  {
+                    "type": "tool_call",
+                    "id": "call-456",
+                    "name": "SearchFiles"
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "parts": [
+                  {
+                    "type": "tool_call_response",
+                    "id": "call-456",
+                    "response": "Found 3 files"
+                  }
+                ]
+              }
+            ]
+            """), ReplaceWhitespace(inputMessages));
+
+        var outputMessages = activity.Tags.First(kvp => kvp.Key == "gen_ai.output.messages").Value;
+        Assert.Equal(ReplaceWhitespace("""
+            [
+              {
+                "role": "assistant",
+                "parts": [
+                  {
+                    "type": "text",
+                    "content": "Assistant response text"
+                  },
+                  {
+                    "type": "reasoning",
+                    "content": "This is reasoning"
+                  },
+                  {
+                    "type": "tool_call",
+                    "id": "call-123",
+                    "name": "GetWeather",
+                    "arguments": {
+                      "location": "Seattle"
+                    }
+                  },
+                  {
+                    "type": "tool_call_response",
+                    "id": "call-123",
+                    "response": "72°F and sunny"
+                  },
+                  {
+                    "type": "blob",
+                    "content": "aGVsbG8gd29ybGQ=",
+                    "mime_type": "image/png",
+                    "modality": "image"
+                  },
+                  {
+                    "type": "uri",
+                    "uri": "https://example.com/image.jpg",
+                    "mime_type": "image/jpeg",
+                    "modality": "image"
+                  },
+                  {
+                    "type": "file",
+                    "file_id": "file-abc123"
+                  }
+                ]
+              }
+            ]
+            """), ReplaceWhitespace(outputMessages));
     }
 
     [Fact]

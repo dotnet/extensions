@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.ServiceDiscovery.Dns.Resolver;
 
@@ -19,43 +20,40 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
     private const int IPv4Length = 4;
     private const int IPv6Length = 16;
 
-    // CancellationTokenSource.CancelAfter has a maximum timeout of Int32.MaxValue milliseconds.
-    private static readonly TimeSpan s_maxTimeout = TimeSpan.FromMilliseconds(int.MaxValue);
-
     private bool _disposed;
-    private readonly ResolverOptions _options;
+    private readonly DnsResolverOptions _options;
     private readonly CancellationTokenSource _pendingRequestsCts = new();
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<DnsResolver> _logger;
 
-    public DnsResolver(TimeProvider timeProvider, ILogger<DnsResolver> logger) : this(timeProvider, logger, OperatingSystem.IsLinux() || OperatingSystem.IsMacOS() ? ResolvConf.GetOptions() : NetworkInfo.GetOptions())
-    {
-    }
-
-    internal DnsResolver(TimeProvider timeProvider, ILogger<DnsResolver> logger, ResolverOptions options)
+    public DnsResolver(TimeProvider timeProvider, ILogger<DnsResolver> logger, IOptions<DnsResolverOptions> options)
     {
         _timeProvider = timeProvider;
         _logger = logger;
-        _options = options;
-        Debug.Assert(_options.Servers.Count > 0);
+        _options = options.Value;
 
-        if (options.Timeout != Timeout.InfiniteTimeSpan)
+        if (_options.Servers.Count == 0)
         {
-            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(options.Timeout, TimeSpan.Zero);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Timeout, s_maxTimeout);
+            foreach (var server in OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()
+                ? ResolvConf.GetServers()
+                : NetworkInfo.GetServers())
+            {
+                _options.Servers.Add(server);
+            }
+
+            if (_options.Servers.Count == 0)
+            {
+                throw new ArgumentException("At least one DNS server is required.", nameof(options));
+            }
         }
     }
 
-    internal DnsResolver(ResolverOptions options) : this(TimeProvider.System, NullLogger<DnsResolver>.Instance, options)
+    // This constructor is for unit testing only. Does not auto-add system DNS servers.
+    internal DnsResolver(DnsResolverOptions options)
     {
-    }
-
-    internal DnsResolver(IEnumerable<IPEndPoint> servers) : this(new ResolverOptions(servers.ToArray()))
-    {
-    }
-
-    internal DnsResolver(IPEndPoint server) : this(new ResolverOptions(server))
-    {
+        _timeProvider = TimeProvider.System;
+        _logger = NullLogger<DnsResolver>.Instance;
+        _options = options;
     }
 
     public ValueTask<ServiceResult[]> ResolveServiceAsync(string name, CancellationToken cancellationToken = default)
@@ -365,7 +363,7 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
         {
             IPEndPoint serverEndPoint = _options.Servers[index];
 
-            for (int attempt = 1; attempt <= _options.Attempts; attempt++)
+            for (int attempt = 1; attempt <= _options.MaxAttempts; attempt++)
             {
                 DnsResponse response = default;
                 try
@@ -621,7 +619,7 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
         //    be used again.
         //
 
-        DnsResourceRecord? soa = authorities.FirstOrDefault(r => r.Type == QueryType.SOA);
+        DnsResourceRecord? soa = authorities.Find(r => r.Type == QueryType.SOA);
         if (soa != null && DnsPrimitives.TryReadSoa(soa.Value.Data, out _, out _, out _, out _, out _, out _, out uint minimum, out _))
         {
             expiration = createdAt.AddSeconds(Math.Min(minimum, soa.Value.Ttl));
@@ -655,7 +653,7 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
             //    another query for the same <QNAME, QTYPE, QCLASS> that resulted in
             //    the cached negative response.
             //
-            if (!authorities.Any(r => r.Type == QueryType.NS) && GetNegativeCacheExpiration(createdAt, authorities, out DateTime newExpiration))
+            if (!authorities.Exists(r => r.Type == QueryType.NS) && GetNegativeCacheExpiration(createdAt, authorities, out DateTime newExpiration))
             {
                 expiration = newExpiration;
                 // _cache.TryAdd(name, queryType, expiration, Array.Empty<T>());

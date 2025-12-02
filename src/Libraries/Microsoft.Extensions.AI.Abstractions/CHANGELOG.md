@@ -1,9 +1,34 @@
-# Release History
+# Microsoft.Extensions.AI.Abstractions Release History
 
 ## NOT YET RELEASED
 
+- Fixed package references for net10.0 asset.
+- Added `AIJsonSchemaCreateOptions.ParameterDescriptions`.
+
+## 10.0.1
+
+- Updated return type of [Experimental] `ContinuationToken` properties.
+- Fixed ValidateSchemaDocument's handling of valid Boolean schemas.
+
+## 10.0.0
+
+- Added experimental `HostedImageGenerationTool`.
+- Updated .NET dependencies to 10.0.0 versions.
+
+## 9.10.2
+
+- Updated `AIFunctionFactory` to respect `[DisplayName(...)]` on functions as a way to override the function name.
+- Updated `AIFunctionFactory` to respect `[DefaultValue(...)]` on function parameters as a way to specify default values.
+- Added `CodeInterpreterToolCallContent`/`CodeInterpreterToolResultContent` for representing code interpreter tool calls and results.
+- Added `Name`, `MediaType`, and `HasTopLevelMediaType` to `HostedFileContent`.
+- Fixed the serialization/deserialization of variables typed as `UserInputRequestContent`/`UserInputResponseContent`.
+
+## 9.10.1
+
 - Updated `HostedMcpServerTool` to allow for non-`Uri` server addresses, in order to enable built-in names.
 - Updated `HostedMcpServerTool` to replace the header collection with an `AuthorizationToken` property.
+- Fixed `ToChatResponse{Async}` to not discard `TextReasoningContent.ProtectedData` when coalescing messages.
+- Fixed `AIFunctionFactory.Create` to special-case return types of `AIContent` and `IEnumerable<AIContent>` to not automatically JSON serialize them.
 
 ## 9.10.0
 

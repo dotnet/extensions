@@ -518,7 +518,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         public override string Name => name;
         public override IReadOnlyDictionary<string, object?> AdditionalProperties => additionalProperties;
-        public override JsonElement JsonSchema { get; } = JsonSerializer.Deserialize<JsonElement>(jsonSchema, AIJsonUtilities.DefaultOptions);
+        public override JsonElement JsonSchema { get; } = JsonElement.Parse(jsonSchema);
         protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) => throw new NotSupportedException();
     }
 

@@ -2,7 +2,6 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Shared.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Shared</Description>
-    <DefineConstants>$(DefineConstants);TESTS_JSON_SCHEMA_EXPORTER_POLYFILL</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>

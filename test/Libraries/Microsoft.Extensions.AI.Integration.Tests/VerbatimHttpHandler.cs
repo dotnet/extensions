@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -85,12 +86,24 @@ public sealed class VerbatimHttpHandler : DelegatingHandler
         return new() { Content = new StringContent(_expectedOutput) };
     }
 
-    public static string? RemoveWhiteSpace(string? text) =>
-        text is null ? null :
-        Regex.Replace(text, @"\s*", string.Empty);
+    [return: NotNullIfNotNull(nameof(text))]
+    public static string? RemoveWhiteSpace(string? text)
+    {
+        if (text is null)
+        {
+            return null;
+        }
+
+        text = text.Replace("\\r", "").Replace("\\n", "").Replace("\\t", "");
+
+        return Regex.Replace(text, @"\s*", string.Empty);
+    }
 
     private static void AssertEqualNormalized(string expected, string actual)
     {
+        expected = RemoveWhiteSpace(expected);
+        actual = RemoveWhiteSpace(actual);
+
         // First try to compare as JSON.
         JsonNode? expectedNode = null;
         JsonNode? actualNode = null;
@@ -114,10 +127,7 @@ public sealed class VerbatimHttpHandler : DelegatingHandler
         }
 
         // Legitimately may not have been JSON. Fall back to whitespace normalization.
-        if (RemoveWhiteSpace(expected) != RemoveWhiteSpace(actual))
-        {
-            FailNotEqual(expected, actual);
-        }
+        FailNotEqual(expected, actual);
     }
 
     private static void FailNotEqual(string expected, string actual) =>

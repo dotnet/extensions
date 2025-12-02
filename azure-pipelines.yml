@@ -75,6 +75,13 @@ variables:
   - name: Build.Arcade.VSIXOutputPath
     value: $(Build.Arcade.ArtifactsPath)VSIX
 
+  # Enable extraction of published outputs for analysis
+  - name: GDN_EXTRACT_TOOLS
+    value: 'binskim,bandit,roslynanalyzers'
+
+  - name: GDN_EXTRACT_FILTER
+    value: 'f|**/*.zip;f|**/*.nupkg;f|**/*.vsix;f|**/*.cspkg;f|**/*.sfpkg;f|**/*.package'
+
   - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/validation/'), eq(variables['Build.Reason'], 'Manual')) }}:
     - name: PostBuildSign
       value: false
@@ -117,6 +124,8 @@ variables:
   - ${{ if and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
     - name: enableSourceIndex
       value: true
+    - name: sourceIndexBuildCommand
+      value: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
   - ${{ else }}:
     - name: enableSourceIndex
       value: false
@@ -131,6 +140,8 @@ resources:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    featureFlags:
+      binskimScanAllExtensions: true
     sdl:
       policheck:
         enabled: true
@@ -152,18 +163,19 @@ extends:
       jobs:
       - template: /eng/common/templates-official/jobs/jobs.yml@self
         parameters:
+          artifacts:
+            publish:
+              logs: true
+              manifests: true
           enableMicrobuild: true
           enableTelemetry: true
           enableSourceIndex: ${{ variables['enableSourceIndex'] }}
           runAsPublic: ${{ variables['runAsPublic'] }}
-          # Publish build logs
-          enablePublishBuildArtifacts: true
           # Publish test logs
           enablePublishTestResults: true
           # Publish NuGet packages using v3
           # https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Publishing.md#basic-onboarding-scenario-for-new-repositories-to-the-current-publishing-version-v3
           enablePublishUsingPipelines: true
-          enablePublishBuildAssets: true
           workspace:
             clean: all
 
@@ -187,9 +199,16 @@ extends:
               outputs:
               - output: pipelineArtifact
                 displayName: 'Publish Azure DevOps extension artifacts'
-                condition: succeeded()
                 targetPath: '$(Build.Arcade.VSIXOutputPath)'
                 artifactName: 'VSIXArtifacts'
+                condition: always()
+                continueOnError: true
+              - output: pipelineArtifact
+                displayName: 'Publish Packages'
+                targetPath: '$(Build.Arcade.ArtifactsPath)packages'
+                artifactName: 'PackageArtifacts_Windows'
+                condition: always()
+                continueOnError: true
 
             preSteps:
             - checkout: self
@@ -206,7 +225,6 @@ extends:
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
                 isWindows: true
-                warnAsError: 0
 
           # ----------------------------------------------------------------
           # This job build and run tests on Ubuntu
@@ -237,7 +255,6 @@ extends:
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
                 isWindows: false
-                warnAsError: 0
 
     # ----------------------------------------------------------------
     # This stage performs quality gates enforcements
