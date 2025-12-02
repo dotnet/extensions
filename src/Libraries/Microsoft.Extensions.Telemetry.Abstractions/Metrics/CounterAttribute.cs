@@ -75,7 +75,7 @@ public sealed class CounterAttribute : Attribute
     public string[]? TagNames { get; }
 
     /// <summary>
-    /// Gets the type that supplies metric tags values.
+    /// Gets the type that supplies metric tag values.
     /// </summary>
     public Type? Type { get; }
 

@@ -11,9 +11,8 @@ namespace Microsoft.Gen.Metrics.Test;
 public partial class MetricTests
 {
     [Fact]
-    public void ValidateCounterWithUnit()
+    public void CounterWithUnit_WorkCorrectly()
     {
-        // Verify that a counter created with a unit works correctly
         using var collector = new MetricCollector<long>(_meter, "CounterWithUnit");
 
         CounterWithUnit counter = MetricsWithUnit.CreateCounterWithUnit(_meter);
@@ -27,9 +26,8 @@ public partial class MetricTests
     }
 
     [Fact]
-    public void ValidateHistogramWithUnit()
+    public void HistogramWithUnit_WorkCorrectly()
     {
-        // Verify that a histogram created with a unit works correctly
         using var collector = new MetricCollector<long>(_meter, "HistogramWithUnit");
 
         HistogramWithUnit histogram = MetricsWithUnit.CreateHistogramWithUnit(_meter);
@@ -44,7 +42,7 @@ public partial class MetricTests
     }
 
     [Fact]
-    public void ValidateCounterWithUnitAndDimensions()
+    public void CounterWithUnitAndDimensions_WorkCorrectly()
     {
         const long Value = 12345L;
 
@@ -64,11 +62,11 @@ public partial class MetricTests
     }
 
     [Fact]
-    public void ValidateHistogramWithUnitAndDimensions()
+    public void HistogramWithUnitAndDimensions_WorkCorrectly()
     {
-        const int Value = 9876;
+        const long Value = 9876;
 
-        using var collector = new MetricCollector<int>(_meter, "HistogramWithUnitAndDims");
+        using var collector = new MetricCollector<long>(_meter, "HistogramWithUnitAndDims");
 
         HistogramWithUnitAndDims histogram = MetricsWithUnit.CreateHistogramWithUnitAndDims(_meter);
         histogram.Record(Value, "val1");
@@ -84,7 +82,7 @@ public partial class MetricTests
     }
 
     [Fact]
-    public void ValidateHistogramWithUnitAndStrongType()
+    public void HistogramStrongTypeAndUnit_WorkCorrectly()
     {
         var newDimensions = new Dimensions
         {
@@ -114,7 +112,7 @@ public partial class MetricTests
     }
 
     [Fact]
-    public void ValidateCounterWithUnitAndStrongType()
+    public void CounterStrongTypeAndUnit_WorkCorrectly()
     {
         var newDimensions = new Dimensions
         {
@@ -144,7 +142,7 @@ public partial class MetricTests
     }
 
     [Fact]
-    public void ValidateGenericCounterWithUnit()
+    public void GenericCounterWithUnit_WorkCorrectly()
     {
         using var collector = new MetricCollector<double>(_meter, "GenericDoubleCounterWithUnit");
 
@@ -161,7 +159,24 @@ public partial class MetricTests
     }
 
     [Fact]
-    public void ValidateCounterWithEmptyUnit()
+    public void GenericHistogramWithUnit_WorkCorrectly()
+    {
+        using var collector = new MetricCollector<int>(_meter, "GenericIntHistogramWithUnit");
+
+        GenericIntHistogramWithUnit counter = MetricsWithUnit.CreateGenericHistogramWithUnitAndDims(_meter);
+        counter.Record(3);
+
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(3, measurement.Value);
+        Assert.Empty(measurement.Tags);
+
+        // Verify the instrument has the correct unit
+        Assert.NotNull(collector.Instrument);
+        Assert.Equal("microseconds", collector.Instrument.Unit);
+    }
+
+    [Fact]
+    public void CounterWithNoUnit_UnitInInstrumentIsNull()
     {
         // Test that counters with empty/null units work
         using var collector = new MetricCollector<long>(_meter, nameof(Counter0D));

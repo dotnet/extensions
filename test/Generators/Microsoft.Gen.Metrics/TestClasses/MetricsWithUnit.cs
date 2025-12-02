@@ -30,8 +30,11 @@ namespace TestClasses
         [Histogram(typeof(Dimensions), Unit = "s")]
         public static partial HistogramStrongTypeWithUnit CreateHistogramStrongTypeWithUnit(Meter meter);
 
-        [Histogram<int>("s1", Unit = "requests", Name = "HistogramWithUnitAndDims")]
+        [Histogram("s1", Unit = "requests", Name = "HistogramWithUnitAndDims")]
         public static partial HistogramWithUnitAndDims CreateHistogramWithUnitAndDims(Meter meter);
+
+        [Histogram<int>(Unit = "microseconds", Name = "GenericIntHistogramWithUnit")]
+        public static partial GenericIntHistogramWithUnit CreateGenericHistogramWithUnitAndDims(Meter meter);
     }
 
     public class Dimensions
