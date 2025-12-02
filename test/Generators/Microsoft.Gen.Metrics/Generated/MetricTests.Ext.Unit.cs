@@ -84,6 +84,66 @@ public partial class MetricTests
     }
 
     [Fact]
+    public void ValidateHistogramWithUnitAndStrongType()
+    {
+        var newDimensions = new Dimensions
+        {
+            Dim1 = "s1",
+            Dim2 = "s2"
+        };
+
+        // Verify that a histogram created with a unit works correctly
+        using var collector = new MetricCollector<long>(_meter, nameof(HistogramStrongTypeWithUnit));
+
+        HistogramStrongTypeWithUnit histogram = MetricsWithUnit.CreateHistogramStrongTypeWithUnit(_meter);
+        histogram.Record(50L, newDimensions);
+
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(50L, measurement.Value);
+
+        Assert.NotNull(collector.Instrument);
+        Assert.Equal("s", collector.Instrument.Unit);
+
+        Assert.Equal(
+           new (string, object?)[]
+           {
+                ("Dim1",      newDimensions.Dim1),
+                ("Dim2",      newDimensions.Dim2)
+           },
+           measurement.Tags.Select(x => (x.Key, x.Value)));
+    }
+
+    [Fact]
+    public void ValidateCounterWithUnitAndStrongType()
+    {
+        var newDimensions = new Dimensions
+        {
+            Dim1 = "s1",
+            Dim2 = "s2"
+        };
+
+        // Verify that a histogram created with a unit works correctly
+        using var collector = new MetricCollector<long>(_meter, nameof(CounterStrongTypeWithUnit));
+
+        CounterStrongTypeWithUnit counter = MetricsWithUnit.CreateCounterStrongTypeWithUnit(_meter);
+        counter.Add(50L, newDimensions);
+
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(50L, measurement.Value);
+
+        Assert.NotNull(collector.Instrument);
+        Assert.Equal("bytes", collector.Instrument.Unit);
+
+        Assert.Equal(
+           new (string, object?)[]
+           {
+                ("Dim1",      newDimensions.Dim1),
+                ("Dim2",      newDimensions.Dim2)
+           },
+           measurement.Tags.Select(x => (x.Key, x.Value)));
+    }
+
+    [Fact]
     public void ValidateGenericCounterWithUnit()
     {
         using var collector = new MetricCollector<double>(_meter, "GenericDoubleCounterWithUnit");

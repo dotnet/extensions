@@ -36,8 +36,8 @@ namespace TestClasses
 
     public class Dimensions
     {
-        public string? Dim1;
-        public string? Dim2;
+        public string? Dim1 { get; set; }
+        public string? Dim2 { get; set; }
     }
 #pragma warning disable SA1402
 }
