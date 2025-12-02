@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Metrics;
 
@@ -86,5 +88,6 @@ public sealed class HistogramAttribute<T> : Attribute
     /// <summary>
     /// Gets or sets the unit of measurement for the metric.
     /// </summary>
+    [Experimental(DiagnosticIds.Experiments.Telemetry)]
     public string? Unit { get; set; }
 }
