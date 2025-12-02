@@ -94,5 +94,7 @@ internal class TestKubernetesEnvironmentSetup : IDisposable
 
 [CollectionDefinition("EnvironmentVariableTests", DisableParallelization = true)]
 #pragma warning disable SA1402 // File may only contain a single type
-public class KubernetesEnvironmentTestCollection { }
+public class KubernetesEnvironmentTestCollection
+{
+}
 #pragma warning restore SA1402 // File may only contain a single type
