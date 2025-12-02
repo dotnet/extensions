@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes.Tests;
 
+[Collection("EnvironmentVariableTests")]
 public class KubernetesResourceQuotasServiceCollectionExtensionsTests
 {
     [Fact]

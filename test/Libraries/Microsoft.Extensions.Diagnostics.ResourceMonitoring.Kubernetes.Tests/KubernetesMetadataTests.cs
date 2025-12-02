@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes.Tests;
 
+[Collection("EnvironmentVariableTests")]
 public class KubernetesMetadataTests
 {
     [Fact]
