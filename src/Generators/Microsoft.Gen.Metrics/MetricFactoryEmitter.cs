@@ -152,7 +152,7 @@ internal sealed class MetricFactoryEmitter : EmitterBase
         }
         else
         {
-            OutLn($"        var instrument = _meter.{createMethodName}(@\"{metricMethod.MetricName}\", \"{metricMethod.MetricUnit}\");");
+            OutLn($"        var instrument = _meter.{createMethodName}(@\"{metricMethod.MetricName}\", @\"{metricMethod.MetricUnit}\");");
         }
 
         OutLn($"        return new {nsprefix}{metricMethod.MetricTypeName}(instrument);");
