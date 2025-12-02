@@ -30,7 +30,7 @@ public class AcceptanceTest
         using var environmentSetup = new TestKubernetesEnvironmentSetup();
 
         environmentSetup.SetupKubernetesEnvironment(
-            "ACCEPTANCE_TEST_",
+            "ACCEPTANCE_TEST_WINDOWS_",
             LimitsMemory,
             LimitsCpu,
             RequestsMemory,
