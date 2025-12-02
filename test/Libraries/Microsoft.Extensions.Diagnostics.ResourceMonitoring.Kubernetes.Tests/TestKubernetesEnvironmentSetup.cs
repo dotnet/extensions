@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 
 internal class TestKubernetesEnvironmentSetup : IDisposable
 {
-    private const string ClusterLimitCpu = "MYCLUSTER_";
+    private const string ClusterLimitCpu = "TEST_SETUP_CLUSTER_";
     private readonly List<string> _environmentVariablesToCleanup = [];
 
     /// <summary>
@@ -90,3 +91,8 @@ internal class TestKubernetesEnvironmentSetup : IDisposable
         ClearEnvironmentVariables();
     }
 }
+
+[CollectionDefinition("EnvironmentVariableTests", DisableParallelization = true)]
+#pragma warning disable SA1402 // File may only contain a single type
+public class KubernetesEnvironmentTestCollection { }
+#pragma warning restore SA1402 // File may only contain a single type
