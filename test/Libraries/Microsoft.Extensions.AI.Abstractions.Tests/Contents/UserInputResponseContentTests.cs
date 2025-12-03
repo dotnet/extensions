@@ -41,6 +41,7 @@ public class UserInputResponseContentTests
         [
             new FunctionApprovalResponseContent("request123", true, new FunctionCallContent("call123", "functionName")),
             new McpServerToolApprovalResponseContent("request123", true),
+            new AdditionalDetailsResponseContent("response123", new TextContent("I would like to fly from New York to San Francisco."))
         ];
 
         var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.UserInputResponseContentArray);

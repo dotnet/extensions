@@ -75,7 +75,9 @@ public class AIContentTests
             new McpServerToolCallContent("call123", "myTool", "myServer"),
             new McpServerToolResultContent("call123"),
             new McpServerToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
-            new McpServerToolApprovalResponseContent("request123", approved: true)
+            new McpServerToolApprovalResponseContent("request123", approved: true),
+            new AdditionalDetailsRequestContent("request123", new TextContent("Please provide the image you mentioned but did not provide.")),
+            new AdditionalDetailsResponseContent("response123", new DataContent(new byte[]{ 1, 2, 3 }, "image/jpeg"))
         ]);
 
         var serialized = JsonSerializer.Serialize(message, AIJsonUtilities.DefaultOptions);
