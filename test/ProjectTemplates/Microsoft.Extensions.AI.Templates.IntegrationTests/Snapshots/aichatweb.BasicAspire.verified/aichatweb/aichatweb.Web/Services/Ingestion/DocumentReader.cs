@@ -19,7 +19,7 @@ internal sealed class DocumentReader(DirectoryInfo rootDirectory) : IngestionDoc
         return base.ReadAsync(source, identifier, mediaType, cancellationToken);
     }
 
-    public override Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default)
+    public override Task<IngestionDocument> ReadAsync(Stream source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
         => mediaType switch
         {
             "application/pdf" => _pdfReader.ReadAsync(source, identifier, mediaType, cancellationToken),

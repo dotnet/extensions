@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,17 +20,18 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Represents a pipeline for ingesting data from documents and processing it into chunks.
 /// </summary>
-/// <typeparam name="T">The type of the chunk content.</typeparam>
-public sealed class IngestionPipeline<T> : IDisposable
+/// <typeparam name="TSource">The type of the source content.</typeparam>
+/// <typeparam name="TChunk">The type of the chunk content.</typeparam>
+public sealed class IngestionPipeline<TSource, TChunk> : IDisposable
 {
-    private readonly IngestionDocumentReader _reader;
-    private readonly IngestionChunker<T> _chunker;
-    private readonly IngestionChunkWriter<T> _writer;
-    private readonly ActivitySource _activitySource;
-    private readonly ILogger? _logger;
+    internal readonly ActivitySource ActivitySource;
+    internal readonly ILogger? Logger;
+    private readonly IIngestionDocumentReader<TSource> _reader;
+    private readonly IngestionChunker<TChunk> _chunker;
+    private readonly IngestionChunkWriter<TChunk> _writer;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="IngestionPipeline{T}"/> class.
+    /// Initializes a new instance of the <see cref="IngestionPipeline{TSource, TChunk}"/> class.
     /// </summary>
     /// <param name="reader">The reader for ingestion documents.</param>
     /// <param name="chunker">The chunker to split documents into chunks.</param>
@@ -39,24 +39,24 @@ public sealed class IngestionPipeline<T> : IDisposable
     /// <param name="options">The options for the ingestion pipeline.</param>
     /// <param name="loggerFactory">The logger factory for creating loggers.</param>
     public IngestionPipeline(
-        IngestionDocumentReader reader,
-        IngestionChunker<T> chunker,
-        IngestionChunkWriter<T> writer,
+        IIngestionDocumentReader<TSource> reader,
+        IngestionChunker<TChunk> chunker,
+        IngestionChunkWriter<TChunk> writer,
         IngestionPipelineOptions? options = default,
         ILoggerFactory? loggerFactory = default)
     {
         _reader = Throw.IfNull(reader);
         _chunker = Throw.IfNull(chunker);
         _writer = Throw.IfNull(writer);
-        _activitySource = new((options ?? new()).ActivitySourceName);
-        _logger = loggerFactory?.CreateLogger<IngestionPipeline<T>>();
+        ActivitySource = new((options ?? new()).ActivitySourceName);
+        Logger = loggerFactory?.CreateLogger<IngestionPipeline<TSource, TChunk>>();
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
         _writer.Dispose();
-        _activitySource.Dispose();
+        ActivitySource.Dispose();
     }
 
     /// <summary>
@@ -67,52 +67,39 @@ public sealed class IngestionPipeline<T> : IDisposable
     /// <summary>
     /// Gets the chunk processors in the pipeline.
     /// </summary>
-    public IList<IngestionChunkProcessor<T>> ChunkProcessors { get; } = [];
+    public IList<IngestionChunkProcessor<TChunk>> ChunkProcessors { get; } = [];
 
     /// <summary>
-    /// Processes all files in the specified directory that match the given search pattern and option.
+    /// Processes the specified input.
     /// </summary>
-    /// <param name="directory">The directory to process.</param>
-    /// <param name="searchPattern">The search pattern for file selection.</param>
-    /// <param name="searchOption">The search option for directory traversal.</param>
-    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <param name="source">The source input to process.</param>
+    /// <param name="documentIdentifier">The unique documentIdentifier for the document.</param>
+    /// <param name="sourceMediaType">The media type of the source.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public async IAsyncEnumerable<IngestionResult> ProcessAsync(DirectoryInfo directory, string searchPattern = "*.*",
-        SearchOption searchOption = SearchOption.TopDirectoryOnly, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IngestionDocument> ProcessAsync(TSource source, string documentIdentifier, string? sourceMediaType = null, CancellationToken cancellationToken = default)
     {
-        Throw.IfNull(directory);
-        Throw.IfNullOrEmpty(searchPattern);
-        Throw.IfOutOfRange((int)searchOption, (int)SearchOption.TopDirectoryOnly, (int)SearchOption.AllDirectories);
+        Throw.IfNull(source);
+        Throw.IfNull(documentIdentifier);
 
-        using (Activity? rootActivity = _activitySource.StartActivity(ProcessDirectory.ActivityName))
+        using (Activity? processActivity = ActivitySource.StartActivity(ProcessSource.ActivityName))
         {
-            rootActivity?.SetTag(ProcessDirectory.DirectoryPathTagName, directory.FullName)
-                         .SetTag(ProcessDirectory.SearchPatternTagName, searchPattern)
-                         .SetTag(ProcessDirectory.SearchOptionTagName, searchOption.ToString());
-            _logger?.ProcessingDirectory(directory.FullName, searchPattern, searchOption);
-
-            await foreach (var ingestionResult in ProcessAsync(directory.EnumerateFiles(searchPattern, searchOption), rootActivity, cancellationToken).ConfigureAwait(false))
+            IngestionDocument? document = null;
+            try
             {
-                yield return ingestionResult;
+                document = await _reader.ReadAsync(source, documentIdentifier, sourceMediaType, cancellationToken).ConfigureAwait(false);
+
+                processActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
+                Logger?.ReadDocument(document.Identifier);
+
+                return await IngestAsync(document, processActivity, cancellationToken).ConfigureAwait(false);
             }
-        }
-    }
-
-    /// <summary>
-    /// Processes the specified files.
-    /// </summary>
-    /// <param name="files">The collection of files to process.</param>
-    /// <param name="cancellationToken">The cancellation token for the operation.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    public async IAsyncEnumerable<IngestionResult> ProcessAsync(IEnumerable<FileInfo> files, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        Throw.IfNull(files);
-
-        using (Activity? rootActivity = _activitySource.StartActivity(ProcessFiles.ActivityName))
-        {
-            await foreach (var ingestionResult in ProcessAsync(files, rootActivity, cancellationToken).ConfigureAwait(false))
+            catch (Exception ex)
             {
-                yield return ingestionResult;
+                TraceException(processActivity, ex);
+                Logger?.IngestingFailed(ex, document?.Identifier ?? documentIdentifier);
+
+                throw;
             }
         }
     }
@@ -125,51 +112,6 @@ public sealed class IngestionPipeline<T> : IDisposable
                  .SetStatus(ActivityStatusCode.Error, ex.Message);
     }
 
-    private async IAsyncEnumerable<IngestionResult> ProcessAsync(IEnumerable<FileInfo> files, Activity? rootActivity,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-#if NET
-        if (System.Linq.Enumerable.TryGetNonEnumeratedCount(files, out int count))
-#else
-        if (files is IReadOnlyCollection<FileInfo> { Count: int count })
-#endif
-        {
-            rootActivity?.SetTag(ProcessFiles.FileCountTagName, count);
-            _logger?.LogFileCount(count);
-        }
-
-        foreach (FileInfo fileInfo in files)
-        {
-            using (Activity? processFileActivity = _activitySource.StartActivity(ProcessFile.ActivityName, ActivityKind.Internal, parentContext: rootActivity?.Context ?? default))
-            {
-                processFileActivity?.SetTag(ProcessFile.FilePathTagName, fileInfo.FullName);
-                _logger?.ReadingFile(fileInfo.FullName, GetShortName(_reader));
-
-                IngestionDocument? document = null;
-                Exception? failure = null;
-                try
-                {
-                    document = await _reader.ReadAsync(fileInfo, cancellationToken).ConfigureAwait(false);
-
-                    processFileActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
-                    _logger?.ReadDocument(document.Identifier);
-
-                    document = await IngestAsync(document, processFileActivity, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    TraceException(processFileActivity, ex);
-                    _logger?.IngestingFailed(ex, document?.Identifier ?? fileInfo.FullName);
-
-                    failure = ex;
-                }
-
-                string documentId = document?.Identifier ?? fileInfo.FullName;
-                yield return new IngestionResult(documentId, document, failure);
-            }
-        }
-    }
-
     private async Task<IngestionDocument> IngestAsync(IngestionDocument document, Activity? parentActivity, CancellationToken cancellationToken)
     {
         foreach (IngestionDocumentProcessor processor in DocumentProcessors)
@@ -180,15 +122,15 @@ public sealed class IngestionPipeline<T> : IDisposable
             parentActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
         }
 
-        IAsyncEnumerable<IngestionChunk<T>> chunks = _chunker.ProcessAsync(document, cancellationToken);
+        IAsyncEnumerable<IngestionChunk<TChunk>> chunks = _chunker.ProcessAsync(document, cancellationToken);
         foreach (var processor in ChunkProcessors)
         {
             chunks = processor.ProcessAsync(chunks, cancellationToken);
         }
 
-        _logger?.WritingChunks(GetShortName(_writer));
+        Logger?.WritingChunks(GetShortName(_writer));
         await _writer.WriteAsync(chunks, cancellationToken).ConfigureAwait(false);
-        _logger?.WroteChunks(document.Identifier);
+        Logger?.WroteChunks(document.Identifier);
 
         return document;
     }
