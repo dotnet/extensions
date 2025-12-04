@@ -8,7 +8,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents a response to a function approval request.
+/// Represents a response to an approval request.
 /// </summary>
 [Experimental("MEAI001")]
 public sealed class FunctionApprovalResponseContent : UserInputResponseContent
@@ -16,17 +16,17 @@ public sealed class FunctionApprovalResponseContent : UserInputResponseContent
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionApprovalResponseContent"/> class.
     /// </summary>
-    /// <param name="id">The ID that uniquely identifies the function approval request/response pair.</param>
-    /// <param name="approved"><see langword="true"/> if the function call is approved; otherwise, <see langword="false"/>.</param>
-    /// <param name="functionCall">The function call that requires user approval.</param>
+    /// <param name="id">The ID that uniquely identifies the approval request/response pair.</param>
+    /// <param name="approved"><see langword="true"/> if the call is approved; otherwise, <see langword="false"/>.</param>
+    /// <param name="callContent">The call content that requires user approval.</param>
     /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="id"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="functionCall"/> is <see langword="null"/>.</exception>
-    public FunctionApprovalResponseContent(string id, bool approved, FunctionCallContent functionCall)
+    /// <exception cref="ArgumentNullException"><paramref name="callContent"/> is <see langword="null"/>.</exception>
+    public FunctionApprovalResponseContent(string id, bool approved, AIContent callContent)
         : base(id)
     {
         Approved = approved;
-        FunctionCall = Throw.IfNull(functionCall);
+        CallContent = Throw.IfNull(callContent);
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public sealed class FunctionApprovalResponseContent : UserInputResponseContent
     public bool Approved { get; }
 
     /// <summary>
-    /// Gets the function call for which approval was requested.
+    /// Gets the call content for which approval was requested.
     /// </summary>
-    public FunctionCallContent FunctionCall { get; }
+    public AIContent CallContent { get; }
 }

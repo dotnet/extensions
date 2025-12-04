@@ -14,7 +14,6 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(FunctionApprovalResponseContent), "functionApprovalResponse")]
-[JsonDerivedType(typeof(McpServerToolApprovalResponseContent), "mcpServerToolApprovalResponse")]
 public class UserInputResponseContent : AIContent
 {
     /// <summary>
