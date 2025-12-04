@@ -105,13 +105,10 @@ public class HostedMcpServerTool : AITool
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The default value is <see langword="null"/>, which indicates no additional headers should be included.
+    /// The underlying provider may respond with an error if <see cref="AuthorizationToken"/> is set and an Authorization header is included.
     /// </para>
     /// <para>
-    /// If specified, these headers will be included in addition to any authorization headers specified via <see cref="AuthorizationToken"/>. Headers conflicting with authorization headers may cause undefined behavior.
-    /// </para>
-    /// <para>
-    /// Providers are not guaranteed to support or honor these headers.
+    /// The underlying provider is not guaranteed to support or honor the headers.
     /// </para>
     /// </remarks>
     public IDictionary<string, string>? Headers { get; set; }
