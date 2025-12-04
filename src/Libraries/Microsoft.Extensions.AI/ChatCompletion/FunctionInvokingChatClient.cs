@@ -1329,7 +1329,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     case FunctionApprovalRequestContent farc:
                         // Validation: Capture each call id for each approval request to ensure later we have a matching response.
                         _ = (approvalRequestCallIds ??= []).Add(farc.FunctionCall.CallId);
-                        (allApprovalRequestsMessages ??= []).Add(farc.Id, message);
+                        (allApprovalRequestsMessages ??= []).Add(farc.RequestId, message);
                         break;
 
                     case FunctionApprovalResponseContent farc:

@@ -15,24 +15,24 @@ public class FunctionApprovalRequestContentTests
     {
         FunctionCallContent functionCall = new("FCC1", "TestFunction");
 
-        Assert.Throws<ArgumentNullException>("id", () => new FunctionApprovalRequestContent(null!, functionCall));
-        Assert.Throws<ArgumentException>("id", () => new FunctionApprovalRequestContent("", functionCall));
-        Assert.Throws<ArgumentException>("id", () => new FunctionApprovalRequestContent("\r\t\n ", functionCall));
+        Assert.Throws<ArgumentNullException>("requestId", () => new FunctionApprovalRequestContent(null!, functionCall));
+        Assert.Throws<ArgumentException>("requestId", () => new FunctionApprovalRequestContent("", functionCall));
+        Assert.Throws<ArgumentException>("requestId", () => new FunctionApprovalRequestContent("\r\t\n ", functionCall));
 
-        Assert.Throws<ArgumentNullException>("functionCall", () => new FunctionApprovalRequestContent("id", null!));
+        Assert.Throws<ArgumentNullException>("functionCall", () => new FunctionApprovalRequestContent("requestId", null!));
     }
 
     [Theory]
     [InlineData("abc")]
     [InlineData("123")]
     [InlineData("!@#")]
-    public void Constructor_Roundtrips(string id)
+    public void Constructor_Roundtrips(string requestId)
     {
         FunctionCallContent functionCall = new("FCC1", "TestFunction");
 
-        FunctionApprovalRequestContent content = new(id, functionCall);
+        FunctionApprovalRequestContent content = new(requestId, functionCall);
 
-        Assert.Same(id, content.Id);
+        Assert.Same(requestId, content.RequestId);
         Assert.Same(functionCall, content.FunctionCall);
     }
 
@@ -41,15 +41,15 @@ public class FunctionApprovalRequestContentTests
     [InlineData(false)]
     public void CreateResponse_ReturnsExpectedResponse(bool approved)
     {
-        string id = "req-1";
+        string requestId = "req-1";
         FunctionCallContent functionCall = new("FCC1", "TestFunction");
 
-        FunctionApprovalRequestContent content = new(id, functionCall);
+        FunctionApprovalRequestContent content = new(requestId, functionCall);
 
         var response = content.CreateResponse(approved);
 
         Assert.NotNull(response);
-        Assert.Same(id, response.Id);
+        Assert.Same(requestId, response.RequestId);
         Assert.Equal(approved, response.Approved);
         Assert.Same(functionCall, response.FunctionCall);
     }
@@ -63,7 +63,7 @@ public class FunctionApprovalRequestContentTests
         var deserializedContent = JsonSerializer.Deserialize<FunctionApprovalRequestContent>(json, AIJsonUtilities.DefaultOptions);
 
         Assert.NotNull(deserializedContent);
-        Assert.Equal(content.Id, deserializedContent.Id);
+        Assert.Equal(content.RequestId, deserializedContent.RequestId);
         Assert.NotNull(deserializedContent.FunctionCall);
         Assert.Equal(content.FunctionCall.CallId, deserializedContent.FunctionCall.CallId);
         Assert.Equal(content.FunctionCall.Name, deserializedContent.FunctionCall.Name);

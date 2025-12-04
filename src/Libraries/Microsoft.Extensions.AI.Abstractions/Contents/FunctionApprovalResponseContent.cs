@@ -16,14 +16,14 @@ public sealed class FunctionApprovalResponseContent : UserInputResponseContent
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionApprovalResponseContent"/> class.
     /// </summary>
-    /// <param name="id">The ID that uniquely identifies the function approval request/response pair.</param>
+    /// <param name="requestId">The identifier of the <see cref="FunctionApprovalRequestContent"/> associated with this response.</param>
     /// <param name="approved"><see langword="true"/> if the function call is approved; otherwise, <see langword="false"/>.</param>
     /// <param name="functionCall">The function call that requires user approval.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="id"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="requestId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="requestId"/> is empty or composed entirely of whitespace.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functionCall"/> is <see langword="null"/>.</exception>
-    public FunctionApprovalResponseContent(string id, bool approved, FunctionCallContent functionCall)
-        : base(id)
+    public FunctionApprovalResponseContent(string requestId, bool approved, FunctionCallContent functionCall)
+        : base(requestId)
     {
         Approved = approved;
         FunctionCall = Throw.IfNull(functionCall);
