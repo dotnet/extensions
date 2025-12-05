@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -273,13 +274,14 @@ internal sealed class Parser
         return false;
     }
 
-    private (string metricName, HashSet<string> tagNames, Dictionary<string, string> dimensionDescriptions) ExtractAttributeParameters(
+    private (string metricName, string metricUnit, HashSet<string> tagNames, Dictionary<string, string> dimensionDescriptions) ExtractAttributeParameters(
         AttributeData attribute,
         SemanticModel semanticModel)
     {
         var tagHashSet = new HashSet<string>();
         var tagDescriptionMap = new Dictionary<string, string>();
         string metricNameFromAttribute = string.Empty;
+        string metricUnitFromAttribute = string.Empty;
         if (!attribute.NamedArguments.IsDefaultOrEmpty)
         {
             foreach (var arg in attribute.NamedArguments)
@@ -288,7 +290,11 @@ internal sealed class Parser
                     arg.Key is "MetricName" or "Name")
                 {
                     metricNameFromAttribute = (arg.Value.Value ?? string.Empty).ToString().Replace("\\\\", "\\");
-                    break;
+                }
+                else if (arg.Value.Kind == TypedConstantKind.Primitive &&
+                    arg.Key is "Unit")
+                {
+                    metricUnitFromAttribute = (arg.Value.Value ?? string.Empty).ToString();
                 }
             }
         }
@@ -330,7 +336,7 @@ internal sealed class Parser
             }
         }
 
-        return (metricNameFromAttribute, tagHashSet, tagDescriptionMap);
+        return (metricNameFromAttribute, metricUnitFromAttribute, tagHashSet, tagDescriptionMap);
     }
 
     private string GetSymbolXmlCommentSummary(ISymbol symbol)
@@ -422,20 +428,20 @@ internal sealed class Parser
         if (!methodAttribute.ConstructorArguments.IsDefaultOrEmpty
             && methodAttribute.ConstructorArguments[0].Kind == TypedConstantKind.Type)
         {
-            KeyValuePair<string, TypedConstant> namedArg = default;
+            ImmutableArray<KeyValuePair<string, TypedConstant>> namedArgs = ImmutableArray<KeyValuePair<string, TypedConstant>>.Empty;
             var ctorArg = methodAttribute.ConstructorArguments[0];
 
             if (!methodAttribute.NamedArguments.IsDefaultOrEmpty)
             {
-                namedArg = methodAttribute.NamedArguments[0];
+                namedArgs = methodAttribute.NamedArguments;
             }
 
-            strongTypeAttrParams = ExtractStrongTypeAttributeParameters(ctorArg, namedArg, symbols);
+            strongTypeAttrParams = ExtractStrongTypeAttributeParameters(ctorArg, namedArgs, symbols);
         }
         else
         {
             var parameters = ExtractAttributeParameters(methodAttribute, semanticModel);
-            (strongTypeAttrParams.MetricNameFromAttribute, strongTypeAttrParams.TagHashSet, strongTypeAttrParams.TagDescriptionDictionary) = parameters;
+            (strongTypeAttrParams.MetricNameFromAttribute, strongTypeAttrParams.MetricUnitFromAttribute, strongTypeAttrParams.TagHashSet, strongTypeAttrParams.TagDescriptionDictionary) = parameters;
         }
 
         string metricNameFromMethod = methodSymbol.ReturnType.Name;
@@ -444,6 +450,7 @@ internal sealed class Parser
         {
             Name = methodSymbol.Name,
             MetricName = string.IsNullOrWhiteSpace(strongTypeAttrParams.MetricNameFromAttribute) ? metricNameFromMethod : strongTypeAttrParams.MetricNameFromAttribute,
+            MetricUnit = strongTypeAttrParams.MetricUnitFromAttribute,
             InstrumentKind = instrumentKind,
             GenericType = genericType.ToDisplayString(_genericTypeSymbolFormat),
             TagKeys = strongTypeAttrParams.TagHashSet,
@@ -605,14 +612,22 @@ internal sealed class Parser
 
     private StrongTypeAttributeParameters ExtractStrongTypeAttributeParameters(
         TypedConstant constructorArg,
-        KeyValuePair<string, TypedConstant> namedArgument,
+        ImmutableArray<KeyValuePair<string, TypedConstant>> namedArguments,
         SymbolHolder symbols)
     {
         var strongTypeAttributeParameters = new StrongTypeAttributeParameters();
 
-        if (namedArgument is { Key: "Name", Value.Value: { } })
+        // Extract "Name" and "Unit" values from the named arguments, if present, and assign them to the corresponding properties.
+        foreach (var namedArgument in namedArguments)
         {
-            strongTypeAttributeParameters.MetricNameFromAttribute = namedArgument.Value.Value.ToString();
+            if (namedArgument.Key == "Name" && namedArgument.Value.Value is { } nameValue)
+            {
+                strongTypeAttributeParameters.MetricNameFromAttribute = nameValue.ToString();
+            }
+            else if (namedArgument.Key == "Unit" && namedArgument.Value.Value is { } unitValue)
+            {
+                strongTypeAttributeParameters.MetricUnitFromAttribute = unitValue.ToString();
+            }
         }
 
         if (constructorArg.IsNull ||

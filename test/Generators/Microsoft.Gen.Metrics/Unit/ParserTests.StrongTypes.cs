@@ -660,4 +660,23 @@ public partial class ParserTests
             }");
         Assert.Empty(d);
     }
+
+    [Fact]
+    public async Task StructTypeWithUnit()
+    {
+        var d = await RunGenerator(@"
+            public struct HistogramStruct
+            {
+                [Dimension(""Dim1_FromAttribute"")]
+                public string? Dim1 { get; set; }
+            }
+
+            public static partial class MetricClass
+            {
+                [Histogram(typeof(HistogramStruct), Name=""TotalCountTest"", Unit = ""s"")]
+                public static partial TotalCount CreateTotalCountCounter(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
 }
