@@ -1326,25 +1326,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 var content = message.Contents[j];
                 switch (content)
                 {
-                    case FunctionApprovalRequestContent farc:
-                        // Skip if CallContent is not FunctionCallContent
-                        if (farc.CallContent is not FunctionCallContent requestFcc)
-                        {
-                            goto default;
-                        }
-
+                    case FunctionApprovalRequestContent farc when farc.CallContent is FunctionCallContent requestFcc:
                         // Validation: Capture each call id for each approval request to ensure later we have a matching response.
                         _ = (approvalRequestCallIds ??= []).Add(requestFcc.CallId);
                         (allApprovalRequestsMessages ??= []).Add(farc.Id, message);
                         break;
 
-                    case FunctionApprovalResponseContent farc:
-                        // Skip if CallContent is not FunctionCallContent
-                        if (farc.CallContent is not FunctionCallContent responseFcc)
-                        {
-                            goto default;
-                        }
-
+                    case FunctionApprovalResponseContent farc when farc.CallContent is FunctionCallContent responseFcc:
                         // Validation: Remove the call id for each approval response, to check it off the list of requests we need responses for.
                         _ = approvalRequestCallIds?.Remove(responseFcc.CallId);
                         (allApprovalResponses ??= []).Add(farc);
@@ -1416,7 +1404,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 ChatMessage? requestMessage = null;
                 _ = allApprovalRequestsMessages?.TryGetValue(fcc.CallId, out requestMessage);
 
-                (targetList ??= []).Add(new() { Response = approvalResponse, FunctionCallContent = fcc, RequestMessage = requestMessage });
+                (targetList ??= []).Add(new() { Response = approvalResponse, RequestMessage = requestMessage });
             }
         }
 
@@ -1735,7 +1723,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     private readonly struct ApprovalResultWithRequestMessage
     {
         public FunctionApprovalResponseContent Response { get; init; }
-        public FunctionCallContent FunctionCallContent { get; init; }
         public ChatMessage? RequestMessage { get; init; }
+        public FunctionCallContent FunctionCallContent => (FunctionCallContent)Response.CallContent;
     }
 }
