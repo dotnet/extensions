@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.TestUtilities;
+using Microsoft.DotNet.XUnitExtensions;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Tests;

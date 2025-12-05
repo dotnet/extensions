@@ -14,9 +14,10 @@ using System.Linq;
 using System.Numerics.Tensors;
 #endif
 using System.Threading.Tasks;
+
+using Microsoft.DotNet.XUnitExtensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.TestUtilities;
 using OpenTelemetry.Trace;
 using Xunit;
 

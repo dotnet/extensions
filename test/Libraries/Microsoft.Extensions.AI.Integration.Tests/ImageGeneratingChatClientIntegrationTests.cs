@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.TestUtilities;
+using Microsoft.DotNet.XUnitExtensions;
 using Xunit;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope

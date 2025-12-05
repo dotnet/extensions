@@ -18,6 +18,7 @@ using static Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
+[PlatformSpecific(TestPlatforms.Windows)]
 public sealed class WindowsContainerSnapshotProviderTests
 {
     private const string VerifiedDataDirectory = "Verified";

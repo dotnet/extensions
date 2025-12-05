@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.TestUtilities;
+using Microsoft.DotNet.XUnitExtensions;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;

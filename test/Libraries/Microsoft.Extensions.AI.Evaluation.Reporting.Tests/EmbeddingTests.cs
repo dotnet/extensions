@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.DotNet.XUnitExtensions;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Html;
-using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Tests;
