@@ -99,4 +99,17 @@ public class HostedMcpServerTool : AITool
     /// </para>
     /// </remarks>
     public HostedMcpServerToolApprovalMode? ApprovalMode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the HTTP headers that the AI service could use when calling the remote MCP server.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The underlying provider may respond with an error if <see cref="AuthorizationToken"/> is set and an Authorization header is included.
+    /// </para>
+    /// <para>
+    /// The underlying provider is not guaranteed to support or honor the headers.
+    /// </para>
+    /// </remarks>
+    public IDictionary<string, string>? Headers { get; set; }
 }
