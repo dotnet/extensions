@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using Microsoft.ML.Tokenizers;
@@ -36,46 +36,79 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
         }
 
         /// <inheritdoc/>
-        public override IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IngestionDocument document, CancellationToken cancellationToken = default)
+        public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IngestionDocument document, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             _ = Throw.IfNull(document);
 
-            string documentMarkdown = GetDocumentMarkdown(document);
-            int[] tokens = _tokenizer.EncodeToIds(documentMarkdown).ToArray();
-            List<ArraySegment<int>> tokenGroups = CreateGroups(tokens);
-
-            return tokenGroups.Select(g => GroupToChunk(document, g)).ToAsyncEnumerable();
-        }
-
-        private static string GetDocumentMarkdown(IngestionDocument document)
-        {
-            StringBuilder sb = new();
-            for (int i = 0; i < document.Sections.Count; i++)
+            int prevOverlapTokenCount = 0;
+            string? prevOverlap = string.Empty;
+            int stringBuilderTokenCount = 0;
+            StringBuilder stringBuilder = new();
+            foreach (IngestionDocumentSection section in document.Sections)
             {
-                _ = sb.Append(document.Sections[i].GetMarkdown());
-                if (i != document.Sections.Count - 1)
+                cancellationToken.ThrowIfCancellationRequested();
+                string? semanticContentToProcess = section.GetSemanticContent();
+                if (string.IsNullOrEmpty(semanticContentToProcess))
                 {
-                    _ = sb.AppendLine();
+                    continue;
                 }
-            }
-            return sb.ToString();
-        }
 
-        private List<ArraySegment<int>> CreateGroups(int[] tokens)
-        {
-            List<ArraySegment<int>> groups = [];
-            for (int i = 0; i < tokens.Length; i += (_maxTokensPerChunk - _chunkOverlap))
+                int elementTokenCount = _tokenizer.CountTokens(semanticContentToProcess!);
+                while (prevOverlapTokenCount + stringBuilderTokenCount + elementTokenCount > _maxTokensPerChunk)
+                {
+                    int index = _tokenizer.GetIndexByTokenCount(
+                        text: semanticContentToProcess!,
+                        maxTokenCount: _maxTokensPerChunk - prevOverlapTokenCount - stringBuilderTokenCount,
+                        out string? _,
+                        out int _,
+                        considerNormalization: false);
+
+                    ReadOnlySpan<char> spanToAppend = semanticContentToProcess.AsSpan(0, index);
+#if NET
+                    stringBuilder.Append(spanToAppend);
+#else
+                    stringBuilder.Append(spanToAppend.ToString());
+#endif
+                    yield return FinaliseChunk();
+
+                    semanticContentToProcess = semanticContentToProcess!.Substring(index);
+                    elementTokenCount = _tokenizer.CountTokens(semanticContentToProcess);
+
+                }
+
+                stringBuilder.Append(semanticContentToProcess);
+                stringBuilderTokenCount += elementTokenCount;
+            }
+
+            if (stringBuilder.Length > 0)
             {
-                int count = Math.Min(_maxTokensPerChunk, tokens.Length - i);
-                groups.Add(new ArraySegment<int>(tokens, i, count));
+                yield return FinaliseChunk();
             }
-            return groups;
-        }
+            yield break;
 
-        private IngestionChunk<string> GroupToChunk(IngestionDocument document, ArraySegment<int> tokenGroup)
-        {
-            string text = _tokenizer.Decode(tokenGroup);
-            return new(text, document);
+            IngestionChunk<string> FinaliseChunk()
+            {
+                stringBuilder.Insert(0, prevOverlap);
+                IngestionChunk<string> chunk = new IngestionChunk<string>(
+                    content: stringBuilder.ToString(),
+                    document: document,
+                    context: null);
+                stringBuilder.Clear();
+                stringBuilderTokenCount = 0;
+
+                if (_chunkOverlap > 0)
+                {
+                    int index = _tokenizer.GetIndexByTokenCountFromEnd(
+                        text: chunk.Content,
+                        maxTokenCount: _chunkOverlap,
+                        out string? _,
+                        out prevOverlapTokenCount,
+                        considerNormalization: false);
+                    prevOverlap = chunk.Content.Substring(index);
+                }
+
+                return chunk;
+            }
         }
 
     }
