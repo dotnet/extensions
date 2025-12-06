@@ -14,8 +14,11 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
     /// <summary>
     /// Processes a document by tokenizing its content and dividing it into overlapping chunks of tokens.
     /// </summary>
-    /// <remarks>This class uses a tokenizer to convert the document's content into tokens and then splits the
-    /// tokens into chunks of a specified size, with a configurable overlap between consecutive chunks.</remarks>
+    /// <remarks>
+    /// <para>This class uses a tokenizer to convert the document's content into tokens and then splits the
+    /// tokens into chunks of a specified size, with a configurable overlap between consecutive chunks.</para>
+    /// <para>Note that tables may be split mid-row.</para>
+    /// </remarks>
     public sealed class DocumentTokenChunker : IngestionChunker<string>
     {
         private readonly Tokenizer _tokenizer;
