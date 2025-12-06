@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
@@ -12,21 +13,19 @@ public class CodeInterpreterToolCallContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        CodeInterpreterToolCallContent c = new();
+        CodeInterpreterToolCallContent c = new("call123");
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.CallId);
+        Assert.Equal("call123", c.Id);
         Assert.Null(c.Inputs);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        CodeInterpreterToolCallContent c = new();
+        CodeInterpreterToolCallContent c = new("call123");
 
-        Assert.Null(c.CallId);
-        c.CallId = "call123";
-        Assert.Equal("call123", c.CallId);
+        Assert.Equal("call123", c.Id);
 
         Assert.Null(c.Inputs);
         IList<AIContent> inputs = [new TextContent("print('hello')")];
@@ -47,9 +46,8 @@ public class CodeInterpreterToolCallContentTests
     [Fact]
     public void Inputs_SupportsMultipleContentTypes()
     {
-        CodeInterpreterToolCallContent c = new()
+        CodeInterpreterToolCallContent c = new("call456")
         {
-            CallId = "call456",
             Inputs =
             [
                 new TextContent("import numpy as np"),
@@ -68,9 +66,8 @@ public class CodeInterpreterToolCallContentTests
     [Fact]
     public void Serialization_Roundtrips()
     {
-        CodeInterpreterToolCallContent content = new()
+        CodeInterpreterToolCallContent content = new("call123")
         {
-            CallId = "call123",
             Inputs =
             [
                 new TextContent("print('hello')"),
@@ -82,12 +79,19 @@ public class CodeInterpreterToolCallContentTests
         var deserializedSut = JsonSerializer.Deserialize<CodeInterpreterToolCallContent>(json, AIJsonUtilities.DefaultOptions);
 
         Assert.NotNull(deserializedSut);
-        Assert.Equal("call123", deserializedSut.CallId);
+        Assert.Equal("call123", deserializedSut.Id);
         Assert.NotNull(deserializedSut.Inputs);
         Assert.Equal(2, deserializedSut.Inputs.Count);
         Assert.IsType<TextContent>(deserializedSut.Inputs[0]);
         Assert.Equal("print('hello')", ((TextContent)deserializedSut.Inputs[0]).Text);
         Assert.IsType<HostedFileContent>(deserializedSut.Inputs[1]);
         Assert.Equal("file456", ((HostedFileContent)deserializedSut.Inputs[1]).FileId);
+    }
+
+    [Fact]
+    public void Constructor_Throws()
+    {
+        Assert.Throws<ArgumentNullException>("id", () => new CodeInterpreterToolCallContent(null!));
+        Assert.Throws<ArgumentException>("id", () => new CodeInterpreterToolCallContent(string.Empty));
     }
 }

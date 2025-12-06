@@ -75,7 +75,8 @@ public class AIContentTests
             new McpServerToolCallContent("call123", "myTool", "myServer"),
             new McpServerToolResultContent("call123"),
             new McpServerToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
-            new McpServerToolApprovalResponseContent("request123", approved: true)
+            new McpServerToolApprovalResponseContent("request123", approved: true),
+            new ServiceActionContent("action123")
         ]);
 
         var serialized = JsonSerializer.Serialize(message, AIJsonUtilities.DefaultOptions);

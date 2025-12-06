@@ -1099,14 +1099,14 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case McpServerToolCallContent mstcc:
-                            (idToContentMapping ??= [])[mstcc.CallId] = mstcc;
+                            (idToContentMapping ??= [])[mstcc.Id] = mstcc;
                             break;
 
                         case McpServerToolResultContent mstrc:
-                            if (idToContentMapping?.TryGetValue(mstrc.CallId, out AIContent? callContentFromMapping) is true &&
+                            if (idToContentMapping?.TryGetValue(mstrc.Id, out AIContent? callContentFromMapping) is true &&
                                 callContentFromMapping is McpServerToolCallContent associatedCall)
                             {
-                                _ = idToContentMapping.Remove(mstrc.CallId);
+                                _ = idToContentMapping.Remove(mstrc.Id);
                                 McpToolCallItem mtci = ResponseItem.CreateMcpToolCallItem(
                                     associatedCall.ServerName,
                                     associatedCall.ToolName,
@@ -1287,9 +1287,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="cicri"/> into <paramref name="contents"/>.</summary>
     private static void AddCodeInterpreterContents(CodeInterpreterCallResponseItem cicri, IList<AIContent> contents)
     {
-        contents.Add(new CodeInterpreterToolCallContent
+        contents.Add(new CodeInterpreterToolCallContent(cicri.Id)
         {
-            CallId = cicri.Id,
             Inputs = !string.IsNullOrWhiteSpace(cicri.Code) ? [new DataContent(Encoding.UTF8.GetBytes(cicri.Code), "text/x-python")] : null,
 
             // We purposefully do not set the RawRepresentation on the HostedCodeInterpreterToolCallContent, only on the HostedCodeInterpreterToolResultContent, to avoid
@@ -1297,9 +1296,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             // CodeInterpreterCallResponseItem sent back for the pair.
         });
 
-        contents.Add(new CodeInterpreterToolResultContent
+        contents.Add(new CodeInterpreterToolResultContent(cicri.Id)
         {
-            CallId = cicri.Id,
             Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
                 o switch
                 {

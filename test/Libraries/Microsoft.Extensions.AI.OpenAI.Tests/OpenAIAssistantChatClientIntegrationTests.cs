@@ -64,10 +64,7 @@ public class OpenAIAssistantChatClientIntegrationTests : ChatClientIntegrationTe
         // Validate CodeInterpreterToolCallContent
         var toolCallContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolCallContent>().SingleOrDefault();
         Assert.NotNull(toolCallContent);
-        if (toolCallContent.CallId is not null)
-        {
-            Assert.NotEmpty(toolCallContent.CallId);
-        }
+        Assert.NotEmpty(toolCallContent.Id);
 
         if (toolCallContent.Inputs is not null)
         {
@@ -83,10 +80,7 @@ public class OpenAIAssistantChatClientIntegrationTests : ChatClientIntegrationTe
         var toolResultContents = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolResultContent>().ToList();
         foreach (var toolResultContent in toolResultContents)
         {
-            if (toolResultContent.CallId is not null)
-            {
-                Assert.NotEmpty(toolResultContent.CallId);
-            }
+            Assert.NotEmpty(toolResultContent.Id);
 
             if (toolResultContent.Outputs is not null)
             {

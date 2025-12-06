@@ -14,19 +14,13 @@ namespace Microsoft.Extensions.AI;
 /// It is informational only and represents the call itself, not the result.
 /// </remarks>
 [Experimental("MEAI001")]
-public sealed class CodeInterpreterToolCallContent : AIContent
+public sealed class CodeInterpreterToolCallContent : ServiceActionContent
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CodeInterpreterToolCallContent"/> class.
-    /// </summary>
-    public CodeInterpreterToolCallContent()
+    /// <inheritdoc/>
+    public CodeInterpreterToolCallContent(string id)
+        : base(id)
     {
     }
-
-    /// <summary>
-    /// Gets or sets the tool call ID.
-    /// </summary>
-    public string? CallId { get; set; }
 
     /// <summary>
     /// Gets or sets the inputs to the code interpreter tool.

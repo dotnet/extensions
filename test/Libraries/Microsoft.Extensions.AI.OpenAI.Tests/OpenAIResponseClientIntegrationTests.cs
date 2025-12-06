@@ -40,8 +40,8 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         // Validate CodeInterpreterToolCallContent
         var toolCallContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolCallContent>().SingleOrDefault();
         Assert.NotNull(toolCallContent);
-        Assert.NotNull(toolCallContent.CallId);
-        Assert.NotEmpty(toolCallContent.CallId);
+        Assert.NotNull(toolCallContent.Id);
+        Assert.NotEmpty(toolCallContent.Id);
         Assert.NotNull(toolCallContent.Inputs);
         Assert.NotEmpty(toolCallContent.Inputs);
 
@@ -53,8 +53,8 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         // Validate CodeInterpreterToolResultContent
         var toolResultContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolResultContent>().FirstOrDefault();
         Assert.NotNull(toolResultContent);
-        Assert.NotNull(toolResultContent.CallId);
-        Assert.NotEmpty(toolResultContent.CallId);
+        Assert.NotNull(toolResultContent.Id);
+        Assert.NotEmpty(toolResultContent.Id);
 
         if (toolResultContent.Outputs is not null)
         {
@@ -199,7 +199,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                     response.Messages
                             .SelectMany(m => m.Contents)
                             .OfType<McpServerToolApprovalRequestContent>()
-                            .Select(c => new McpServerToolApprovalResponseContent(c.ToolCall.CallId, true))
+                            .Select(c => new McpServerToolApprovalResponseContent(c.ToolCall.Id, true))
                             .ToArray());
                 if (approvalResponse.Contents.Count == 0)
                 {
