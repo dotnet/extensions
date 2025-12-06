@@ -36,5 +36,30 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             Assert.True(chunks[1].Content.Split(' ').Length <= 512);
             Assert.Equal(text, string.Join("", chunks.Select(c => c.Content)));
         }
+
+
+        [Fact]
+        public async Task ManyChunks()
+        {
+            string text = string.Join(" ", Enumerable.Repeat("word", 1500)); // each word is 1 token
+            IngestionDocument doc = new IngestionDocument("smallChunksNoOverlapDoc");
+            doc.Sections.Add(new IngestionDocumentSection
+            {
+                Elements =
+                {
+                    new IngestionDocumentParagraph(text)
+                }
+            });
+
+            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 200, overlapTokens: 0);
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+            Assert.Equal(8, chunks.Count);
+            foreach (var chunk in chunks)
+            {
+                Assert.True(chunk.Content.Split(' ').Count(str => str.Contains("word")) <= 200);
+            }
+
+            Assert.Equal(text, string.Join("", chunks.Select(c => c.Content)));
+        }
     }
 }
