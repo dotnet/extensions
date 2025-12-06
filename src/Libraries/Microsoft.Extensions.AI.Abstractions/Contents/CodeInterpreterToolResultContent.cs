@@ -10,19 +10,13 @@ namespace Microsoft.Extensions.AI;
 /// Represents the result of a code interpreter tool invocation by a hosted service.
 /// </summary>
 [Experimental("MEAI001")]
-public sealed class CodeInterpreterToolResultContent : AIContent
+public sealed class CodeInterpreterToolResultContent : ServiceActionContent
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CodeInterpreterToolResultContent"/> class.
-    /// </summary>
-    public CodeInterpreterToolResultContent()
+    /// <inheritdoc/>
+    public CodeInterpreterToolResultContent(string id)
+        : base(id)
     {
     }
-
-    /// <summary>
-    /// Gets or sets the tool call ID that this result corresponds to.
-    /// </summary>
-    public string? CallId { get; set; }
 
     /// <summary>
     /// Gets or sets the output of code interpreter tool.

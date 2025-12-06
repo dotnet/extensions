@@ -1438,7 +1438,7 @@ public class OpenAIResponseClientTests
             Assert.Equal(3, message.Contents.Count);
 
             var call = Assert.IsType<McpServerToolCallContent>(message.Contents[0]);
-            Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", call.CallId);
+            Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", call.Id);
             Assert.Equal("deepwiki", call.ServerName);
             Assert.Equal("ask_question", call.ToolName);
             Assert.NotNull(call.Arguments);
@@ -1447,7 +1447,7 @@ public class OpenAIResponseClientTests
             Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)call.Arguments["question"]!).GetString());
 
             var result = Assert.IsType<McpServerToolResultContent>(message.Contents[1]);
-            Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", result.CallId);
+            Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", result.Id);
             Assert.NotNull(result.Output);
             Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(result.Output)).Text);
 
@@ -1694,7 +1694,7 @@ public class OpenAIResponseClientTests
         Assert.Equal(6, message.Contents.Count);
 
         var firstCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
-        Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstCall.CallId);
+        Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstCall.Id);
         Assert.Equal("deepwiki", firstCall.ServerName);
         Assert.Equal("read_wiki_structure", firstCall.ToolName);
         Assert.NotNull(firstCall.Arguments);
@@ -1702,12 +1702,12 @@ public class OpenAIResponseClientTests
         Assert.Equal("dotnet/extensions", ((JsonElement)firstCall.Arguments["repoName"]!).GetString());
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
-        Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstResult.CallId);
+        Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstResult.Id);
         Assert.NotNull(firstResult.Output);
         Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Output)).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
-        Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondCall.CallId);
+        Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondCall.Id);
         Assert.Equal("deepwiki", secondCall.ServerName);
         Assert.Equal("ask_question", secondCall.ToolName);
         Assert.NotNull(secondCall.Arguments);
@@ -1715,7 +1715,7 @@ public class OpenAIResponseClientTests
         Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)secondCall.Arguments["question"]!).GetString());
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
-        Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondResult.CallId);
+        Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondResult.Id);
         Assert.NotNull(secondResult.Output);
         Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(secondResult.Output)).Text);
 
@@ -2108,7 +2108,7 @@ public class OpenAIResponseClientTests
         Assert.Equal(6, message.Contents.Count);
 
         var firstCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
-        Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstCall.CallId);
+        Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstCall.Id);
         Assert.Equal("deepwiki", firstCall.ServerName);
         Assert.Equal("read_wiki_structure", firstCall.ToolName);
         Assert.NotNull(firstCall.Arguments);
@@ -2116,12 +2116,12 @@ public class OpenAIResponseClientTests
         Assert.Equal("dotnet/extensions", ((JsonElement)firstCall.Arguments["repoName"]!).GetString());
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
-        Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstResult.CallId);
+        Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstResult.Id);
         Assert.NotNull(firstResult.Output);
         Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Output)).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
-        Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondCall.CallId);
+        Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondCall.Id);
         Assert.Equal("deepwiki", secondCall.ServerName);
         Assert.Equal("ask_question", secondCall.ToolName);
         Assert.NotNull(secondCall.Arguments);
@@ -2129,7 +2129,7 @@ public class OpenAIResponseClientTests
         Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)secondCall.Arguments["question"]!).GetString());
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
-        Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondResult.CallId);
+        Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondResult.Id);
         Assert.NotNull(secondResult.Output);
         Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(Assert.Single(secondResult.Output)).Text);
 
@@ -2722,7 +2722,7 @@ public class OpenAIResponseClientTests
         Assert.Equal("text/x-python", codeInput.MediaType);
 
         var codeResult = Assert.IsType<CodeInterpreterToolResultContent>(message.Contents[1]);
-        Assert.Equal(codeCall.CallId, codeResult.CallId);
+        Assert.Equal(codeCall.Id, codeResult.Id);
 
         var textContent = Assert.IsType<TextContent>(message.Contents[2]);
         Assert.Equal("15", textContent.Text);
@@ -2943,7 +2943,7 @@ public class OpenAIResponseClientTests
         Assert.Contains("sum_of_numbers", Encoding.UTF8.GetString(codeInput.Data.ToArray()));
 
         var codeResult = Assert.IsType<CodeInterpreterToolResultContent>(message.Contents[1]);
-        Assert.Equal(codeCall.CallId, codeResult.CallId);
+        Assert.Equal(codeCall.Id, codeResult.Id);
 
         var textContent = Assert.IsType<TextContent>(message.Contents[2]);
         Assert.Equal("The sum of numbers from 1 to 10 is 55.", textContent.Text);
