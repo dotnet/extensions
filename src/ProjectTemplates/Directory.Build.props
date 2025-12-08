@@ -6,5 +6,8 @@
     <SkipAnalyzers>true</SkipAnalyzers>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <Api>false</Api>
+    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
+
+    <ArtifactsTemplateGeneratedContentDir>$(ArtifactsDir)ProjectTemplates\GeneratedContent\</ArtifactsTemplateGeneratedContentDir>
   </PropertyGroup>
 </Project>

@@ -102,14 +102,13 @@
     </ItemGroup>
   </Target>
 
-  <!-- This target is used to get the package versions of projects. -->
-  <Target Name="_GetPackageVersionInfo"
-          Returns="@(_PackageVersionInfo)">
+  <!-- This target is used to get the package versions of projects for consumption in project templates. -->
+  <Target Name="GetProjectPackageVersion"
+          Returns="@(_PackageVersion)">
     <ItemGroup>
-      <_PackageVersionInfo Include="$(MSBuildProjectFullPath)">
-        <PackageVersion>$(PackageVersion)</PackageVersion>
-        <PackageId>$(PackageId)</PackageId>
-      </_PackageVersionInfo>
+      <_PackageVersion Include="$(PackageId)"
+                       Version="$(PackageVersion)"
+                       Project="$(MSBuildProjectFullPath)" />
     </ItemGroup>
   </Target>
 

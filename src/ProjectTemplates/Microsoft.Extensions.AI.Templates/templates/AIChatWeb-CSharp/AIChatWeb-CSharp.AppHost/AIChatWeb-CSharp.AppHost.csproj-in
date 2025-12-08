@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Aspire.AppHost.Sdk" Version="{TemplatePackageVersion:Aspire}" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>b2f4f5e9-1083-472c-8c3b-f055ac67ba54</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="{TemplatePackageVersion:Aspire}" />
+<!--#if (IsQdrant)
+    <PackageReference Include="Aspire.Hosting.Qdrant" Version="{TemplatePackageVersion:Aspire}" />
+#elif (IsAzureAISearch)
+    <PackageReference Include="Aspire.Hosting.Azure.Search" Version="{TemplatePackageVersion:Aspire}" />
+#endif -->
+<!--#if (IsAzureOpenAI) -->
+    <PackageReference Include="Aspire.Hosting.Azure.CognitiveServices" Version="{TemplatePackageVersion:Aspire}" />
+<!--#elif (IsOllama)
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="{TemplatePackageVersion:CommunityToolkit.Aspire}" />
+#endif -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AIChatWeb-CSharp.Web\AIChatWeb-CSharp.Web.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Project templates for Microsoft.Agents.AI.</Description>
     <PackageTags>dotnet-new;templates;ai;agent</PackageTags>
 
@@ -30,32 +30,29 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--
-      Reference the GenerateTemplateContent project so that template content gets generated prior
-      to building this project.
-    -->
-    <ProjectReference
-      Include="..\GenerateTemplateContent\GenerateTemplateContent.csproj"
-      ReferenceOutputAssembly="false"
-      PrivateAssets="all" />
+    <TemplatePackageVersion Include="Azure.Identity" Version="1.17.1" />
+    <TemplatePackageVersion Include="Microsoft.Agents.AI" Version="1.0.0-preview.251114.1" />
+    <TemplatePackageVersion Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="1.0.0-alpha.251114.1" />
+    <TemplatePackageVersion Include="OllamaSharp" Version="5.4.11" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Keep the exclude patterns below in sync with those in WebApiAgentTemplateSnapshotTests.cs -->
-    <Content
-      Include="src\WebApiAgent\**\*"
-      Exclude="
-        **\bin\**;
-        **\obj\**;
-        **\.vs\**;
-        **\*.user;
-        **\*.in;
-        **\NuGet.config;
-        **\Directory.Build.targets;
-        **\Directory.Build.props;" />
-    
-    <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
     <Compile Remove="**\*" />
-  </ItemGroup>
 
+    <Content
+      Include="templates\**"
+      Exclude="templates\**\*.csproj-in"
+      PackagePath="content" />
+
+    <TemplateContent
+      Include="templates\**\*.csproj-in"
+      ChangeExtension=".csproj"
+      PackagePath="content" />
+
+    <None
+      Include="THIRD-PARTY-NOTICES.TXT"
+      Pack="true"
+      PackagePath="." />
+
+  </ItemGroup>
 </Project>

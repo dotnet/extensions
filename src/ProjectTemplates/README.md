@@ -2,10 +2,12 @@
 
 ## Updating project template JavaScript dependencies
 
-To update project template JavaScript dependencies:
+The AIChatWeb project template within Microsoft.Extensions.AI.Templates bundles JavaScript dependencies into the package. To update those project template JavaScript dependencies:
+
+1. Navigate into the root of the Microsoft.Extensions.AI.Templates directory
 1. Install a recent build of Node.js
 2. Update the `package.json` file with added or updated dependencies
-3. Run the following commands from this directory:
+3. Run the following commands:
     ```sh
     npm install
     npm run copy-dependencies
@@ -23,7 +25,7 @@ There are template execution tests in the `test/ProjectTemplates` folders that c
 
 However, CG can't detect JS dependencies by scanning execution test output, because the generated projects don't contain manifests describing JS dependencies. Instead, we have a `package.json` and `package-lock.json` in the same folder as this README that define which JS dependencies get included in the template and how they get copied into template content (see previous section in this document). CG then automatically tracks packages listed in this `package-lock.json`.
 
-## Build the templates using just-built library package versions
+## Build the templates
 
 By default the templates use just-built versions of library packages from this repository, so NuGet packages must be produced before the templates can be run:
 
@@ -35,24 +37,79 @@ By default the templates use just-built versions of library packages from this r
 Once the library packages are built, the template packages can be built with references to the local package versions using the following commands:
 
 ```pwsh
-.\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Agents.AI.ProjectTemplates\Microsoft.Extensions.AI.Templates.csproj
-.\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Extensions.AI.Templates\Microsoft.Extensions.AI.Templates.csproj
+.\build.cmd -build -pack -projects .\src\ProjectTemplates\Microsoft.Agents.AI.ProjectTemplates\Microsoft.Agents.AI.ProjectTemplates.csproj
+.\build.cmd -build -pack -projects .\src\ProjectTemplates\Microsoft.Extensions.AI.Templates\Microsoft.Extensions.AI.Templates.csproj
 ```
 
-## Build the templates using pinned library package versions
+## Package references in the project templates
 
-The templates can also be built to reference pinned versions of the library packages. This approach is used when a templates package is updated off-cycle from the library packages. The pinned versions are hard-coded in the `GeneratedContent.targets` file in this directory. To build the templates package using the pinned versions, run:
+The `Directory.Build.targets` file defines and configures the necessary targets for processing package references in the project template to insert the package versions into the produced `.csproj` files.
 
-```pwsh
-.\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Agents.AI.ProjectTemplates\Microsoft.Agents.AI.ProjectTemplates.csproj /p:TemplateUsePinnedPackageVersions=true
-.\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Extensions.AI.Templates\Microsoft.Extensions.AI.Templates.csproj /p:TemplateUsePinnedPackageVersions=true
+Template projects can reference packages either with pinned `Version` values or have versions resolved from projects within the repository using `Project` properties. If both a `Project` and `Version` are specified, the pinned version is used.
+
+```xml
+<!-- Define the package version to be resolved from a project -->
+<TemplatePackageVersion
+    Include="Microsoft.Extensions.AI"
+    Project="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
+
+<!-- Define a package version for an external dependency -->
+<TemplatePackageVersion Include="Azure.AI.Projects" Version="1.1.0" />
+
+<!-- Define package version values not specific to specific packages -->
+<TemplatePackageVersion Include="Aspire" Version="13.0.0" />
+<TemplatePackageVersion Include="Aspire-Preview" Version="13.0.0-preview.1.25560.3" />
+
+<!-- Override a project package's version with a pinned version -->
+<TemplatePackageVersion
+    Include="Microsoft.Extensions.DataIngestion"
+    Project="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj"
+    Version="10.0.1-preview.1.25571.5" />
 ```
 
-Setting `/p:TemplateUsePinnedPackageVersions=true` will apply three different categories of pinned package versions:
+Files in the template that need to reference the resolved versions must be pre-processed as generated template content. While this works with any text file, it is typically used with `.csproj` files. This is accomplished by:
 
-1. Packages from this repository that are _not_ part of `Microsoft.Extensions.AI*`, namely `Microsoft.Extensions.Http.Resilience`
-2. Packages from this repository that _are_ part of `Microsoft.Extensions.AI*`
-3. The `Microsoft.EntityFrameworkCoreSqlite` package
+1. Rename the `.csproj` file to `.csproj-in`
+2. Exclude the `.csproj-in` file from the project `<Content />`
+3. Include the `.csproj-in` file in the project's `<TemplateContent />`
+
+**Project template project**
+```xml
+  <ItemGroup>
+    <Compile Remove="**\*" />
+
+    <Content
+      Include="templates\**\*"
+      Exclude="templates\**\*.csproj-in"
+      PackagePath="content" />
+
+    <TemplateContent
+      Include="templates\**\*.csproj-in"
+      ChangeExtension=".csproj"
+      PackagePath="content" />
+  </ItemGroup>
+```
+
+Note that for the 'ChangeExtension' behavior to work, the extension to be replaced cannot contain a '.'. Therefore, `.csproj.in` cannot be used, which is why `.csproj-in` is used instead. This is true for any extension, so `.md-in` can also be changed to `.md` using this same logic.
+
+**Project template csproj-in file**
+```xml
+<Sdk Name="Aspire.AppHost.Sdk" Version="{TemplatePackageVersion:Aspire}" />
+...
+<PackageReference
+    Include="Microsoft.Extensions.AI"
+    Version="{TemplatePackageVersion:Microsoft.Extensions.AI}" />
+...
+<PackageReference
+    Include="Aspire.Hosting.AppHost"
+    Version="{TemplatePackageVersion:Aspire}" />
+...
+<PackageReference
+    Include="Aspire.Azure.AI.OpenAI"
+    Version="{TemplatePackageVersion:Aspire-Preview}" />
+```
+
+During build, the generated content is saved into the `/artifacts/ProjectTemplates/GeneratedContent` folder, and the generated content is then added as `<Content />` included from the artifacts folder.
 
 ## Installing the templates locally
 
@@ -77,20 +134,24 @@ dotnet new install .\artifacts\packages\Debug\Shipping\Microsoft.Extensions.AI.T
 Finally, create a project from the template and run it:
 
 ```pwsh
-dotnet new aiagent-webapi `
-    [--provider <azureopenai | githubmodels | ollama | openai>] `
-    [--managed-identity]
+    dotnet new aiagent-webapi `
+        [--provider <azureopenai | githubmodels | ollama | openai>] `
+        [--managed-identity]
 
 # or
 
-dotnet new aichatweb `
-    [--provider <azureopenai | githubmodels | ollama | openai>] `
-    [--vector-store <azureaisearch | local | qdrant>] `
-    [--aspire] `
-    [--managed-identity]
+    dotnet new aichatweb `
+        [--provider <azureopenai | githubmodels | ollama | openai>] `
+        [--vector-store <azureaisearch | local | qdrant>] `
+        [--aspire] `
+        [--managed-identity]
 
-# If using `--aspire`, cd into the *AppHost directory
-# Follow the instructions in the generated README for setting the necessary user-secrets
+    # If using `--aspire`, cd into the *AppHost directory
+    # Follow the instructions in the generated README for setting the necessary user-secrets
+
+# or
+
+    dotnet new mcpserver [--aot] [--self-contained]
 
 dotnet run
 ```
