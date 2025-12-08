@@ -37,7 +37,6 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             Assert.Equal(text, string.Join("", chunks.Select(c => c.Content)));
         }
 
-
         [Fact]
         public async Task ManyChunks()
         {
