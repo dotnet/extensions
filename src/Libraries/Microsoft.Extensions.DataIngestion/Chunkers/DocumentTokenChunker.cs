@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
                     continue;
                 }
 
-                int elementTokenCount = _tokenizer.CountTokens(semanticContentToProcess!);
+                int elementTokenCount = _tokenizer.CountTokens(semanticContentToProcess!, considerNormalization: false);
                 while (prevOverlapTokenCount + stringBuilderTokenCount + elementTokenCount > _maxTokensPerChunk)
                 {
                     int index = _tokenizer.GetIndexByTokenCount(
