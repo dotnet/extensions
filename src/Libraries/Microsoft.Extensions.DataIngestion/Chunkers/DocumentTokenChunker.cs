@@ -47,10 +47,10 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
             string? prevOverlap = string.Empty;
             int stringBuilderTokenCount = 0;
             StringBuilder stringBuilder = new();
-            foreach (IngestionDocumentSection section in document.Sections)
+            foreach (IngestionDocumentElement element in document.EnumerateContent())
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string? semanticContentToProcess = section.GetSemanticContent();
+                string? semanticContentToProcess = element.GetSemanticContent();
                 if (string.IsNullOrEmpty(semanticContentToProcess))
                 {
                     continue;
