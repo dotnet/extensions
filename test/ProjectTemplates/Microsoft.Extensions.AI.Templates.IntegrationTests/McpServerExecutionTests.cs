@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Shared.ProjectTemplates.Tests;
-using Microsoft.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 using static Microsoft.Shared.ProjectTemplates.Tests.TemplateTestUtilities;
@@ -22,9 +21,9 @@ namespace Microsoft.Extensions.AI.Templates.Tests;
 /// Therefore, it's *critical* that these tests remain in a working state,
 /// as disabling them will also disable CG reporting.
 /// </remarks>
-public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecutionTests>, ITemplateExecutionTestConfigurationProvider
+public class McpServerExecutionTests : TemplateExecutionTestBase<McpServerExecutionTests>, ITemplateExecutionTestConfigurationProvider
 {
-    public AIChatWebExecutionTests(TemplateExecutionTestFixture fixture, ITestOutputHelper outputHelper)
+    public McpServerExecutionTests(TemplateExecutionTestFixture fixture, ITestOutputHelper outputHelper)
         : base(fixture, outputHelper)
     {
     }
@@ -32,17 +31,15 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     public static TemplateExecutionTestConfiguration Configuration { get; } = new()
     {
         TemplatePackageName = "Microsoft.Extensions.AI.Templates",
-        TemplateName = "aichatweb"
+        TemplateName = "mcpserver"
     };
 
     public static IEnumerable<object[]> GetSupportedProjectConfigurations()
     {
         (string name, string[] values)[] allOptionValues = [
-            ("--provider",          ["azureopenai", "githubmodels", "ollama", "openai" /*, "azureaifoundry" */]),
-            ("--vector-store",      ["azureaisearch", "local", "qdrant"]),
-            ("--aspire",            ["true", "false"]),
-            ("--managed-identity",  ["true", "false"]),
-            ("--Framework",         ["net9.0", "net10.0"])
+            ("--aot",               ["true", "false"]),
+            ("--self-contained",    ["true", "false"]),
+            ("--framework",         ["net8.0", "net9.0", "net10.0"])
         ];
 
         foreach (var args in GetPossibleOptions(allOptionValues))
@@ -78,45 +75,7 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     [MemberData(nameof(GetSupportedProjectConfigurations))]
     public async Task TestAllSupportedConfigurations(params string[] args)
     {
-        string projectName = GetProjectNameForArgs(args, prefix: "AIChatWeb");
-        string? startupProjectRelativePath = HasOption(args, "--aspire") ? $"{projectName}.AppHost" : null;
-
-        await CreateRestoreAndBuild(projectName, args, startupProjectRelativePath);
-    }
-
-    /// <summary>
-    /// Runs a single test with --aspire and a project name that will trigger the class name
-    /// normalization bug reported in https://github.com/dotnet/extensions/issues/6811.
-    /// </summary>
-    [Fact]
-    public async Task CreateRestoreAndBuild_AspireProjectName()
-    {
-        await CreateRestoreAndBuild("mix.ed-dash_name 123", ["--aspire", "--provider", "azureopenai"]);
-    }
-
-    /// <summary>
-    /// Tests build for various project name formats, including dots and other
-    /// separators, to trigger the class name normalization bug described
-    /// in https://github.com/dotnet/extensions/issues/6811
-    /// </summary>
-    /// <remarks>
-    /// Because this test takes a few minutes to run and is only needed for regression
-    /// testing of project name handing integration with Aspire, it is skipped by default.
-    /// Set the environment variable <c>AI_TEMPLATES_TEST_PROJECT_NAMES</c> to "true" or "1"
-    /// to enable it.
-    /// </remarks>
-    [ConditionalTheory]
-    [EnvironmentVariableCondition("AI_TEMPLATES_TEST_PROJECT_NAMES", "true", "1")]
-    [InlineData("dot.name")]
-    [InlineData("project.123")]
-    [InlineData("space name")]
-    [InlineData(".1My.Projec-")]
-    [InlineData("1Project123")]
-    [InlineData("11double")]
-    [InlineData("1")]
-    [InlineData("nomatch")]
-    public async Task CreateRestoreAndBuild_AspireProjectName_Variants(string projectName)
-    {
-        await CreateRestoreAndBuild(projectName, ["--aspire", "--provider", "azureopenai"]);
+        string projectName = GetProjectNameForArgs(args, prefix: "McpServer");
+        await CreateRestoreAndBuild(projectName, args);
     }
 }

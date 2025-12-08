@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
@@ -10,18 +10,13 @@ using Xunit;
 using Xunit.Abstractions;
 using static Microsoft.Shared.ProjectTemplates.Tests.TemplateTestUtilities;
 
-namespace Microsoft.Extensions.AI.Templates.Tests;
+namespace Microsoft.Agents.AI.ProjectTemplates.Tests;
 
-public class AIChatWebSnapshotTests : TemplateSnapshotTestBase
+public class AIAgentWebAPISnapshotTests : TemplateSnapshotTestBase
 {
-    // The wwwroot folder contains static content
-    private static readonly string[] _verificationExcludePatterns = [
-        "**/wwwroot/**"
-    ];
-
     private readonly ILogger _log;
 
-    public AIChatWebSnapshotTests(ITestOutputHelper log)
+    public AIAgentWebAPISnapshotTests(ITestOutputHelper log)
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
         _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
@@ -29,25 +24,23 @@ public class AIChatWebSnapshotTests : TemplateSnapshotTestBase
     }
 
     [Theory]
-    [InlineData /* Defaults: --provider=githubmodels --vector-store=local */]
-    [InlineData("--provider=ollama", "--vector-store=qdrant")]
-    [InlineData("--provider=openai", "--vector-store=azureaisearch")]
-    [InlineData("--aspire")]
-    [InlineData("--aspire", "--provider=azureopenai", "--vector-store=azureaisearch")]
+    [InlineData /* Defaults: --provider=githubmodels */]
+    [InlineData("--provider=ollama")]
+    [InlineData("--provider=openai")]
+    [InlineData("--provider=azureopenai", "--managed-identity=true")]
+    [InlineData("--provider=azureopenai", "--managed-identity=false")]
     public async Task RunSnapshotTests(params string[] templateArgs)
     {
-        string projectNamePrefix = "AIChatWeb";
-        string templatePackageName = "Microsoft.Extensions.AI.Templates";
-        string templateName = "aichatweb";
+        string projectNamePrefix = "AIAgentWebApi";
+        string templatePackageName = "Microsoft.Agents.AI.ProjectTemplates";
+        string templateName = "aiagent-webapi";
 
         TemplateVerifierOptions options = PrepareSnapshotVerifier(
             projectNamePrefix,
             templatePackageName,
             templateName,
-            templateArgs,
-            _verificationExcludePatterns)
+            templateArgs)
         .WithCustomScrubbers(ScrubbersDefinition.Empty
-            .AddSolutionFileGuidScrubber()
             .AddUserSecretsScrubber()
             .AddPackageReferenceScrubber()
             .AddLocalhostPortScrubber());
