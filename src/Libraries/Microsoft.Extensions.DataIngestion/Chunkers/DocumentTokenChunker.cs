@@ -95,7 +95,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
                 IngestionChunk<string> chunk = new IngestionChunk<string>(
                     content: stringBuilder.ToString(),
                     document: document,
-                    context: null);
+                    context: string.Empty);
                 stringBuilder.Clear();
                 stringBuilderTokenCount = 0;
 
