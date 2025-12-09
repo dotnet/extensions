@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using Microsoft.ML.Tokenizers;
@@ -43,60 +44,58 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
         {
             _ = Throw.IfNull(document);
 
-            int prevOverlapTokenCount = 0;
-            string? prevOverlap = string.Empty;
             int stringBuilderTokenCount = 0;
             StringBuilder stringBuilder = new();
             foreach (IngestionDocumentElement element in document.EnumerateContent())
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string? semanticContentToProcess = element.GetSemanticContent();
-                if (string.IsNullOrEmpty(semanticContentToProcess))
+                string? elementContent = element.GetSemanticContent();
+                if (string.IsNullOrEmpty(elementContent))
                 {
                     continue;
                 }
 
-                int elementTokenCount = _tokenizer.CountTokens(semanticContentToProcess!, considerNormalization: false);
-                while (prevOverlapTokenCount + stringBuilderTokenCount + elementTokenCount > _maxTokensPerChunk)
+                int contentToProcessTokenCount = _tokenizer.CountTokens(elementContent!, considerNormalization: false);
+                ReadOnlyMemory<char> contentToProcess = elementContent.AsMemory();
+                while (stringBuilderTokenCount + contentToProcessTokenCount >= _maxTokensPerChunk)
                 {
                     int index = _tokenizer.GetIndexByTokenCount(
-                        text: semanticContentToProcess!,
-                        maxTokenCount: _maxTokensPerChunk - prevOverlapTokenCount - stringBuilderTokenCount,
+                        text: contentToProcess.Span,
+                        maxTokenCount: _maxTokensPerChunk - stringBuilderTokenCount,
                         out string? _,
                         out int _,
                         considerNormalization: false);
 
-                    ReadOnlySpan<char> spanToAppend = semanticContentToProcess.AsSpan(0, index);
-#if NET
-                    stringBuilder.Append(spanToAppend);
-#else
-                    stringBuilder.Append(spanToAppend.ToString());
-#endif
-                    yield return FinaliseChunk();
+                    unsafe
+                    {
+                        fixed (char* ptr = &MemoryMarshal.GetReference(contentToProcess.Span))
+                        {
+                            _ = stringBuilder.Append(ptr, index);
+                        }
+                    }
+                    yield return FinalizeChunk();
 
-                    semanticContentToProcess = semanticContentToProcess!.Substring(index);
-                    elementTokenCount = _tokenizer.CountTokens(semanticContentToProcess);
-
+                    contentToProcess = contentToProcess.Slice(index);
+                    contentToProcessTokenCount = _tokenizer.CountTokens(contentToProcess.Span, considerNormalization: false);
                 }
 
-                stringBuilder.Append(semanticContentToProcess);
-                stringBuilderTokenCount += elementTokenCount;
+                _ = stringBuilder.Append(contentToProcess);
+                stringBuilderTokenCount += contentToProcessTokenCount;
             }
 
             if (stringBuilder.Length > 0)
             {
-                yield return FinaliseChunk();
+                yield return FinalizeChunk();
             }
             yield break;
 
-            IngestionChunk<string> FinaliseChunk()
+            IngestionChunk<string> FinalizeChunk()
             {
-                stringBuilder.Insert(0, prevOverlap);
                 IngestionChunk<string> chunk = new IngestionChunk<string>(
                     content: stringBuilder.ToString(),
                     document: document,
                     context: string.Empty);
-                stringBuilder.Clear();
+                _ = stringBuilder.Clear();
                 stringBuilderTokenCount = 0;
 
                 if (_chunkOverlap > 0)
@@ -105,9 +104,17 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
                         text: chunk.Content,
                         maxTokenCount: _chunkOverlap,
                         out string? _,
-                        out prevOverlapTokenCount,
+                        out stringBuilderTokenCount,
                         considerNormalization: false);
-                    prevOverlap = chunk.Content.Substring(index);
+
+                    ReadOnlySpan<char> overlapContent = chunk.Content.AsSpan().Slice(index);
+                    unsafe
+                    {
+                        fixed (char* ptr = &MemoryMarshal.GetReference(overlapContent))
+                        {
+                            _ = stringBuilder.Append(ptr, overlapContent.Length);
+                        }
+                    }
                 }
 
                 return chunk;
