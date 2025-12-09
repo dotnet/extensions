@@ -16,6 +16,7 @@
 
     <!-- https://github.com/dotnet/extensions/issues/5623 -->
     <IsAotCompatible>false</IsAotCompatible>
+    <!-- CS0436: Allows the ExperimentalAttribute.Message polyfill -->
     <NoWarn>$(NoWarn);CS0436;IL2026</NoWarn>
   </PropertyGroup>
 
