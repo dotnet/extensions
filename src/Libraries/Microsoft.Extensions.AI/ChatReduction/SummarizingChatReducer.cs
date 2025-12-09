@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 /// count. The reducer maintains system messages and excludes messages containing function call or function
 /// result content from summarization.
 /// </remarks>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ChatReduction, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ChatReduction, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ChatReductionMessage)]
 public sealed class SummarizingChatReducer : IChatReducer
 {
     private const string SummaryKey = "__summary__";

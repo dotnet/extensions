@@ -12,7 +12,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="LoggingImageGenerator"/> instances.</summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ImageGenerationMessage)]
 public static class LoggingImageGeneratorBuilderExtensions
 {
     /// <summary>Adds logging to the image generator pipeline.</summary>

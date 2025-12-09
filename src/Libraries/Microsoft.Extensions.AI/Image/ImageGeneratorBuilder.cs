@@ -10,7 +10,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>A builder for creating pipelines of <see cref="IImageGenerator"/>.</summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ImageGenerationMessage)]
 public sealed class ImageGeneratorBuilder
 {
     private readonly Func<IServiceProvider, IImageGenerator> _innerGeneratorFactory;

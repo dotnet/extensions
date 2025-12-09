@@ -10,7 +10,7 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the options for an image generation request.</summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ImageGenerationMessage)]
 public class ImageGenerationOptions
 {
     /// <summary>Initializes a new instance of the <see cref="ImageGenerationOptions"/> class.</summary>
@@ -101,7 +101,7 @@ public class ImageGenerationOptions
 /// <remarks>
 /// Not all implementations support all response formats and this value might be ignored by the implementation if not supported.
 /// </remarks>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ImageGenerationMessage)]
 public enum ImageGenerationResponseFormat
 {
     /// <summary>

@@ -9,7 +9,7 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an image generation request.</summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ImageGenerationMessage)]
 public class ImageGenerationResponse
 {
     /// <summary>Initializes a new instance of the <see cref="ImageGenerationResponse"/> class.</summary>

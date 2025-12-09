@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 /// messages. Messages containing function call or function result content are excluded from the reduced
 /// output.
 /// </remarks>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ChatReduction, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ChatReduction, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ChatReductionMessage)]
 public sealed class MessageCountingChatReducer : IChatReducer
 {
     private readonly int _targetCount;

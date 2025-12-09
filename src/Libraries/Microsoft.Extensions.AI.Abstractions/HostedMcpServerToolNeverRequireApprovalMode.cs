@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// Use <see cref="HostedMcpServerToolApprovalMode.NeverRequire"/> to get an instance of <see cref="HostedMcpServerToolNeverRequireApprovalMode"/>.
 /// </remarks>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.McpServers, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.McpServers, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.McpServersMessage)]
 [DebuggerDisplay(nameof(NeverRequire))]
 public sealed class HostedMcpServerToolNeverRequireApprovalMode : HostedMcpServerToolApprovalMode
 {

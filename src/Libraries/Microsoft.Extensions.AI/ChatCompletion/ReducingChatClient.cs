@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// A chat client that reduces the size of a message list.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ChatReduction, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ChatReduction, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ChatReductionMessage)]
 public sealed class ReducingChatClient : DelegatingChatClient
 {
     private readonly IChatReducer _reducer;

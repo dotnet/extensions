@@ -8,7 +8,7 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides metadata about an <see cref="ISpeechToTextClient"/>.</summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
 public class SpeechToTextClientMetadata
 {
     /// <summary>Initializes a new instance of the <see cref="SpeechToTextClientMetadata"/> class.</summary>

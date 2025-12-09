@@ -11,7 +11,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an speech to text request.</summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
 public class SpeechToTextResponse
 {
     /// <summary>The content items in the generated text response.</summary>

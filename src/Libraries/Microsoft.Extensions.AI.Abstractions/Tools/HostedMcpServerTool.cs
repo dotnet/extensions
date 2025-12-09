@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a hosted MCP server tool that can be specified to an AI service.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.McpServers, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.McpServers, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.McpServersMessage)]
 public class HostedMcpServerTool : AITool
 {
     /// <summary>

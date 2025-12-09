@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI;
 /// This content type is used to represent an invocation of an MCP server tool by a hosted service.
 /// It is informational only.
 /// </remarks>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.McpServers, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.McpServers, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.McpServersMessage)]
 public sealed class McpServerToolCallContent : AIContent
 {
     /// <summary>

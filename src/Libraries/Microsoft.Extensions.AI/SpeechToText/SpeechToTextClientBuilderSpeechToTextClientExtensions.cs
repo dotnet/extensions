@@ -8,7 +8,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extension methods for working with <see cref="ISpeechToTextClient"/> in the context of <see cref="SpeechToTextClientBuilder"/>.</summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
 public static class SpeechToTextClientBuilderSpeechToTextClientExtensions
 {
     /// <summary>Creates a new <see cref="SpeechToTextClientBuilder"/> using <paramref name="innerClient"/> as its inner client.</summary>

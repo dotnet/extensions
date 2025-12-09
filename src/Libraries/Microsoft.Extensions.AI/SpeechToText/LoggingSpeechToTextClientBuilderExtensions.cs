@@ -12,7 +12,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="LoggingSpeechToTextClient"/> instances.</summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
 public static class LoggingSpeechToTextClientBuilderExtensions
 {
     /// <summary>Adds logging to the speech-to-text client pipeline.</summary>

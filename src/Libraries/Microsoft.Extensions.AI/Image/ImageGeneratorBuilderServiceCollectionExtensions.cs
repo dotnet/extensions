@@ -10,7 +10,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>Provides extension methods for registering <see cref="IImageGenerator"/> with a <see cref="IServiceCollection"/>.</summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ImageGenerationMessage)]
 public static class ImageGeneratorBuilderServiceCollectionExtensions
 {
     /// <summary>Registers a singleton <see cref="IImageGenerator"/> in the <see cref="IServiceCollection"/>.</summary>

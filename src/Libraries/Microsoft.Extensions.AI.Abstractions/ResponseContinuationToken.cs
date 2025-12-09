@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 /// Subclasses of this class encapsulate all necessary information within the token to facilitate these actions.
 /// </summary>
 [JsonConverter(typeof(Converter))]
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ResponseContinuationsMessage)]
 public class ResponseContinuationToken
 {
     /// <summary>Bytes representing this token.</summary>
@@ -48,7 +48,7 @@ public class ResponseContinuationToken
 
     /// <summary>Provides a <see cref="JsonConverter{ResponseContinuationToken}"/> for serializing <see cref="ResponseContinuationToken"/> instances.</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
+    [Experimental(DiagnosticIds.Experiments.ResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ResponseContinuationsMessage)]
     public sealed class Converter : JsonConverter<ResponseContinuationToken>
     {
         /// <inheritdoc/>

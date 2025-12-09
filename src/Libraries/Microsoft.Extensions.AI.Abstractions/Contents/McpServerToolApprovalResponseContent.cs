@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a response to an MCP server tool approval request.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.McpServers, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.McpServers, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.McpServersMessage)]
 public sealed class McpServerToolApprovalResponseContent : UserInputResponseContent
 {
     /// <summary>

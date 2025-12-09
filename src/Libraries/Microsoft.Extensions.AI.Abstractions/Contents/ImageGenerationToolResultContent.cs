@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// This content type represents when a hosted AI service invokes an image generation tool.
 /// It is informational only and represents the call itself, not the result.
 /// </remarks>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ImageGenerationMessage)]
 public sealed class ImageGenerationToolResultContent : AIContent
 {
     /// <summary>

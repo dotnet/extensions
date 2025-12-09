@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a reducer capable of shrinking the size of a list of chat messages.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ChatReduction, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ChatReduction, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ChatReductionMessage)]
 public interface IChatReducer
 {
     /// <summary>Reduces the size of a list of chat messages.</summary>

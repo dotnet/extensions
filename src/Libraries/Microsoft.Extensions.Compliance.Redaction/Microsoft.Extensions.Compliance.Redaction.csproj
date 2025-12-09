@@ -16,7 +16,7 @@
 
     <!-- https://github.com/dotnet/extensions/issues/5623 -->
     <IsAotCompatible>false</IsAotCompatible>
-    <NoWarn>$(NoWarn);IL2026</NoWarn>
+    <NoWarn>$(NoWarn);CS0436;IL2026</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

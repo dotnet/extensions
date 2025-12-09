@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.AI;
 /// The audio speech stream passed to these methods will not be closed or disposed by the implementation.
 /// </para>
 /// </remarks>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
 public interface ISpeechToTextClient : IDisposable
 {
     /// <summary>Sends audio speech content to the model and returns the generated text.</summary>

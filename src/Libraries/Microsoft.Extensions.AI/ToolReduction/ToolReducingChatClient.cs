@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.AI;
 /// Insert this into a pipeline (typically before function invocation middleware) to automatically
 /// reduce the tool list carried on <see cref="ChatOptions"/> for each request.
 /// </remarks>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ToolReduction, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ToolReduction, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ToolReductionMessage)]
 public sealed class ToolReducingChatClient : DelegatingChatClient
 {
     private readonly IToolReductionStrategy _strategy;

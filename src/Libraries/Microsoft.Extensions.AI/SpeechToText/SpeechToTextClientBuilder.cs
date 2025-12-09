@@ -10,7 +10,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>A builder for creating pipelines of <see cref="ISpeechToTextClient"/>.</summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
 public sealed class SpeechToTextClientBuilder
 {
     private readonly Func<IServiceProvider, ISpeechToTextClient> _innerClientFactory;

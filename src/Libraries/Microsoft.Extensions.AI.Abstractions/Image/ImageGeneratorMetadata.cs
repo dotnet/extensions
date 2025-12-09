@@ -8,7 +8,7 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides metadata about an <see cref="IImageGenerator"/>.</summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ImageGenerationMessage)]
 public class ImageGeneratorMetadata
 {
     /// <summary>Initializes a new instance of the <see cref="ImageGeneratorMetadata"/> class.</summary>

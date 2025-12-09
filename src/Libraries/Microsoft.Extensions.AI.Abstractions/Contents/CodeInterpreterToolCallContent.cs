@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// This content type represents when a hosted AI service invokes a code interpreter tool.
 /// It is informational only and represents the call itself, not the result.
 /// </remarks>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.CodeInterpreter, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.CodeInterpreter, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.CodeInterpreterMessage)]
 public sealed class CodeInterpreterToolCallContent : AIContent
 {
     /// <summary>
