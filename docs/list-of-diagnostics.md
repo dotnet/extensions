@@ -41,6 +41,14 @@ if desired.
 | `EXTEXP0016` | Hosting integration testing experiments |
 | `EXTEXP0017` | Contextual options experiments |
 | `EXTEXP0018` | HybridCache experiments |
+| `MEAI0001` | Image generation experiments |
+| `MEAI0002` | Speech-to-text experiments |
+| `MEAI0003` | Hosted MCP server experiments |
+| `MEAI0004` | Function approval experiments |
+| `MEAI0005` | Tool reduction experiments |
+| `MEAI0006` | Chat reduction experiments |
+| `MEAI0007` | Response continuations experiments |
+| `MEAI0008` | Code interpreter experiments |
 
 # Obsoletions
 

@@ -3,7 +3,7 @@
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.AI.OpenAI</Description>
     <NoWarn>$(NoWarn);S104</NoWarn>
-    <NoWarn>$(NoWarn);OPENAI001;OPENAICUA001;MEAI001;MEAI0001;MEAI0002;MEAI0003;MEAI0004;MEAI0005;MEAI0006;MEAI0007;MEAI0008</NoWarn>
+    <NoWarn>$(NoWarn);OPENAI001;OPENAICUA001;MEAI0001;MEAI0002;MEAI0003;MEAI0004;MEAI0005;MEAI0006;MEAI0007;MEAI0008</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
