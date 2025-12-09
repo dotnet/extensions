@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a response to a function approval request.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.FunctionApprovals, Message = DiagnosticIds.Experiments.FunctionApprovalsMessage, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.FunctionApprovals, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class FunctionApprovalResponseContent : UserInputResponseContent
 {
     /// <summary>

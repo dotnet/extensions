@@ -11,7 +11,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating image generator that configures a <see cref="ImageGenerationOptions"/> instance used by the remainder of the pipeline.</summary>
-[Experimental(DiagnosticIds.Experiments.ImageGeneration, Message = DiagnosticIds.Experiments.ImageGenerationMessage, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ConfigureOptionsImageGenerator : DelegatingImageGenerator
 {
     /// <summary>The callback delegate used to configure options.</summary>

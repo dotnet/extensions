@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a request for user input.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.FunctionApprovals, Message = DiagnosticIds.Experiments.FunctionApprovalsMessage, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.FunctionApprovals, UrlFormat = DiagnosticIds.UrlFormat)]
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(FunctionApprovalRequestContent), "functionApprovalRequest")]
 [JsonDerivedType(typeof(McpServerToolApprovalRequestContent), "mcpServerToolApprovalRequest")]

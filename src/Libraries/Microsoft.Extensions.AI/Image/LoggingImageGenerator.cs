@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.AI;
 /// Prompts and options are not logged at other logging levels.
 /// </para>
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.ImageGeneration, Message = DiagnosticIds.Experiments.ImageGenerationMessage, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public partial class LoggingImageGenerator : DelegatingImageGenerator
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>

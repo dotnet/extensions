@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.AI;
 /// This tool does not itself implement image generation. It is a marker that can be used to inform a service
 /// that the service is allowed to perform image generation if the service is capable of doing so.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.ImageGeneration, Message = DiagnosticIds.Experiments.ImageGenerationMessage, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public class HostedImageGenerationTool : AITool
 {
     /// <summary>

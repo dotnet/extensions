@@ -13,7 +13,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Extensions for <see cref="ISpeechToTextClient"/>.</summary>
-[Experimental(DiagnosticIds.Experiments.SpeechToText, Message = DiagnosticIds.Experiments.SpeechToTextMessage, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class SpeechToTextClientExtensions
 {
     /// <summary>Asks the <see cref="ISpeechToTextClient"/> for an object of type <typeparamref name="TService"/>.</summary>

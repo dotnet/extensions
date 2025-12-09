@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// Use <see cref="HostedMcpServerToolApprovalMode.AlwaysRequire"/> to get an instance of <see cref="HostedMcpServerToolAlwaysRequireApprovalMode"/>.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.McpServers, Message = DiagnosticIds.Experiments.McpServersMessage, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.McpServers, UrlFormat = DiagnosticIds.UrlFormat)]
 [DebuggerDisplay(nameof(AlwaysRequire))]
 public sealed class HostedMcpServerToolAlwaysRequireApprovalMode : HostedMcpServerToolApprovalMode
 {

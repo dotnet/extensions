@@ -47,28 +47,13 @@ internal static class DiagnosticIds
         internal const string HttpLogging = "EXTEXP0013";
 
         internal const string ImageGeneration = "MEAI0001";
-        internal const string ImageGenerationMessage = "The image generation APIs are experimental and subject to change or removal in future versions.";
-
         internal const string SpeechToText = "MEAI0002";
-        internal const string SpeechToTextMessage = "The speech-to-text APIs are experimental and subject to change or removal in future versions.";
-
         internal const string McpServers = "MEAI0003";
-        internal const string McpServersMessage = "The hosted MCP server APIs are experimental and subject to change or removal in future versions.";
-
         internal const string FunctionApprovals = "MEAI0004";
-        internal const string FunctionApprovalsMessage = "The function approval APIs are experimental and subject to change or removal in future versions.";
-
         internal const string ToolReduction = "MEAI0005";
-        internal const string ToolReductionMessage = "The tool reduction APIs are experimental and subject to change or removal in future versions.";
-
         internal const string ChatReduction = "MEAI0006";
-        internal const string ChatReductionMessage = "The chat reduction APIs are experimental and subject to change or removal in future versions.";
-
         internal const string ResponseContinuations = "MEAI0007";
-        internal const string ResponseContinuationsMessage = "The response continuations APIs are experimental and subject to change or removal in future versions.";
-
         internal const string CodeInterpreter = "MEAI0008";
-        internal const string CodeInterpreterMessage = "The code interpreter APIs are experimental and subject to change or removal in future versions.";
     }
 
     internal static class LoggerMessage

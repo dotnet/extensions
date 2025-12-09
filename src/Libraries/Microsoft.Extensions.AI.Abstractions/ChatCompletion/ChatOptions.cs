@@ -181,7 +181,7 @@ public class ChatOptions
     /// If the implementation does not support background responses, this property will be ignored.
     /// </para>
     /// </remarks>
-    [Experimental(DiagnosticIds.Experiments.ResponseContinuations, Message = DiagnosticIds.Experiments.ResponseContinuationsMessage, UrlFormat = DiagnosticIds.UrlFormat)]
+    [Experimental(DiagnosticIds.Experiments.ResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
     public bool? AllowBackgroundResponses { get; set; }
 
@@ -196,7 +196,7 @@ public class ChatOptions
     /// can be polled for completion by obtaining the token from the <see cref="ChatResponse.ContinuationToken"/> property
     /// and passing it to this property on subsequent calls to <see cref="IChatClient.GetResponseAsync"/>.
     /// </remarks>
-    [Experimental(DiagnosticIds.Experiments.ResponseContinuations, Message = DiagnosticIds.Experiments.ResponseContinuationsMessage, UrlFormat = DiagnosticIds.UrlFormat)]
+    [Experimental(DiagnosticIds.Experiments.ResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
     public ResponseContinuationToken? ContinuationToken { get; set; }
 

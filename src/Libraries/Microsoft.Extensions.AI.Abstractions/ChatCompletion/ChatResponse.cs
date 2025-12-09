@@ -101,7 +101,7 @@ public class ChatResponse
     /// to poll for completion.
     /// </para>
     /// </remarks>
-    [Experimental(DiagnosticIds.Experiments.ResponseContinuations, Message = DiagnosticIds.Experiments.ResponseContinuationsMessage, UrlFormat = DiagnosticIds.UrlFormat)]
+    [Experimental(DiagnosticIds.Experiments.ResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
     public ResponseContinuationToken? ContinuationToken { get; set; }
 
