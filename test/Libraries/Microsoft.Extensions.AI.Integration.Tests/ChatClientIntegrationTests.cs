@@ -1157,7 +1157,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         // The summarizer should have reduced the conversation
         Assert.Equal(1, chatClient.SummarizerCallCount);
         Assert.NotNull(chatClient.LastSummarizedConversation);
-        Assert.Equal(3, chatClient.LastSummarizedConversation.Count);
+        Assert.Equal(4, chatClient.LastSummarizedConversation.Count);
         Assert.Collection(chatClient.LastSummarizedConversation,
             m =>
             {
