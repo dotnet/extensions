@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -10,7 +11,7 @@ namespace Microsoft.Extensions.AI;
 /// This tool does not itself implement image generation. It is a marker that can be used to inform a service
 /// that the service is allowed to perform image generation if the service is capable of doing so.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public class HostedImageGenerationTool : AITool
 {
     /// <summary>

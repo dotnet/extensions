@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -24,7 +25,7 @@ namespace Microsoft.Extensions.AI;
 /// and replaces them with equivalent function tools that the chat client can invoke to perform image generation and editing operations.
 /// </para>
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ImageGeneratingChatClient : DelegatingChatClient
 {
     /// <summary>

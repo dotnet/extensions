@@ -3,12 +3,13 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="ConfigureOptionsImageGenerator"/> instances.</summary>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class ConfigureOptionsImageGeneratorBuilderExtensions
 {
     /// <summary>

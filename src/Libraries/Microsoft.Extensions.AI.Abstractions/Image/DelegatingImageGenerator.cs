@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -16,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 /// This is recommended as a base type when building generators that can be chained in any order around an underlying <see cref="IImageGenerator"/>.
 /// The default implementation simply passes each call to the inner generator instance.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public class DelegatingImageGenerator : IImageGenerator
 {
     /// <summary>

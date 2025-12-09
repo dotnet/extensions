@@ -4,12 +4,13 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>Provides extension methods for registering <see cref="IImageGenerator"/> with a <see cref="IServiceCollection"/>.</summary>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class ImageGeneratorBuilderServiceCollectionExtensions
 {
     /// <summary>Registers a singleton <see cref="IImageGenerator"/> in the <see cref="IServiceCollection"/>.</summary>

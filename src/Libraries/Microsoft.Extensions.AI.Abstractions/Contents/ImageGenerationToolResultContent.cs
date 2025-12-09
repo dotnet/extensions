@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -13,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// This content type represents when a hosted AI service invokes an image generation tool.
 /// It is informational only and represents the call itself, not the result.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ImageGenerationToolResultContent : AIContent
 {
     /// <summary>

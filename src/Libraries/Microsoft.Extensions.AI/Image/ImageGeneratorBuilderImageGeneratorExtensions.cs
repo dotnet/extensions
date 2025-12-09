@@ -3,12 +3,13 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extension methods for working with <see cref="IImageGenerator"/> in the context of <see cref="ImageGeneratorBuilder"/>.</summary>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class ImageGeneratorBuilderImageGeneratorExtensions
 {
     /// <summary>Creates a new <see cref="ImageGeneratorBuilder"/> using <paramref name="innerGenerator"/> as its inner generator.</summary>
