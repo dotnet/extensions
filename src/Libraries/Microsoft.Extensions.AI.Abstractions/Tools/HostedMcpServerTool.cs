@@ -14,6 +14,9 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public class HostedMcpServerTool : AITool
 {
+    /// <summary>Any additional properties associated with the tool.</summary>
+    private IReadOnlyDictionary<string, object?>? _additionalProperties;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
     /// </summary>
@@ -31,6 +34,20 @@ public class HostedMcpServerTool : AITool
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
+    /// <param name="serverAddress">The address of the remote MCP server. This may be a URL, or in the case of a service providing built-in MCP servers with known names, it can be such a name.</param>
+    /// <param name="additionalProperties">Any additional properties associated with the tool.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is empty or composed entirely of whitespace.</exception>
+    public HostedMcpServerTool(string serverName, string serverAddress, IReadOnlyDictionary<string, object?>? additionalProperties)
+        : this(serverName, serverAddress)
+    {
+        _additionalProperties = additionalProperties;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
+    /// </summary>
+    /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="serverUrl">The URL of the remote MCP server.</param>
     /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
@@ -38,6 +55,21 @@ public class HostedMcpServerTool : AITool
     public HostedMcpServerTool(string serverName, Uri serverUrl)
         : this(serverName, ValidateUrl(serverUrl))
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
+    /// </summary>
+    /// <param name="serverName">The name of the remote MCP server.</param>
+    /// <param name="serverUrl">The URL of the remote MCP server.</param>
+    /// <param name="additionalProperties">Any additional properties associated with the tool.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentException"><paramref name="serverUrl"/> is not an absolute URL.</exception>
+    public HostedMcpServerTool(string serverName, Uri serverUrl, IReadOnlyDictionary<string, object?>? additionalProperties)
+        : this(serverName, ValidateUrl(serverUrl))
+    {
+        _additionalProperties = additionalProperties;
     }
 
     private static string ValidateUrl(Uri serverUrl)
@@ -54,6 +86,9 @@ public class HostedMcpServerTool : AITool
 
     /// <inheritdoc />
     public override string Name => "mcp";
+
+    /// <inheritdoc />
+    public override IReadOnlyDictionary<string, object?> AdditionalProperties => _additionalProperties ?? base.AdditionalProperties;
 
     /// <summary>
     /// Gets the name of the remote MCP server that is used to identify it.

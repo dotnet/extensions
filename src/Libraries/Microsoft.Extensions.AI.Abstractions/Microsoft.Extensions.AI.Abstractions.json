@@ -1918,9 +1918,17 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedCodeInterpreterTool.HostedCodeInterpreterTool();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedCodeInterpreterTool.HostedCodeInterpreterTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedCodeInterpreterTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedCodeInterpreterTool.Inputs { get; set; }",
           "Stage": "Stable"
@@ -1938,9 +1946,17 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedFileSearchTool.HostedFileSearchTool();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileSearchTool.HostedFileSearchTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedFileSearchTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedFileSearchTool.Inputs { get; set; }",
           "Stage": "Stable"
@@ -1962,9 +1978,17 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedWebSearchTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "override string Microsoft.Extensions.AI.HostedWebSearchTool.Name { get; }",
           "Stage": "Stable"

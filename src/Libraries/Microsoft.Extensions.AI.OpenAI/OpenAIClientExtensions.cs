@@ -242,6 +242,10 @@ public static class OpenAIClientExtensions
         }
     }
 
+    /// <summary>Gets the typed property of the specified name from the tool's <see cref="AITool.AdditionalProperties"/>.</summary>
+    internal static T? GetProperty<T>(this AITool tool, string name) =>
+        tool.AdditionalProperties?.TryGetValue(name, out object? value) is true && value is T tValue ? tValue : default;
+
     /// <summary>Used to create the JSON payload for an OpenAI tool description.</summary>
     internal sealed class ToolJson
     {
