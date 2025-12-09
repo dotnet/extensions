@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.AI;
 /// only one slot for such an object available in <see cref="SpeechToTextResponse.RawRepresentation"/>.
 /// </para>
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, Message = DiagnosticIds.Experiments.SpeechToTextMessage, UrlFormat = DiagnosticIds.UrlFormat)]
 public class SpeechToTextResponseUpdate
 {
     private IList<AIContent>? _contents;

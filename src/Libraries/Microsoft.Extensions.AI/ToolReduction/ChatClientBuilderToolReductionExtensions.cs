@@ -9,7 +9,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Extension methods for adding tool reduction middleware to a chat client pipeline.</summary>
-[Experimental(DiagnosticIds.Experiments.ToolReduction, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ToolReductionMessage)]
+[Experimental(DiagnosticIds.Experiments.ToolReduction, Message = DiagnosticIds.Experiments.ToolReductionMessage, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class ChatClientBuilderToolReductionExtensions
 {
     /// <summary>

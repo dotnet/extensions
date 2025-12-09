@@ -10,7 +10,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="ImageGeneratingChatClient"/> instances.</summary>
-[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ImageGenerationMessage)]
+[Experimental(DiagnosticIds.Experiments.ImageGeneration, Message = DiagnosticIds.Experiments.ImageGenerationMessage, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class ImageGeneratingChatClientBuilderExtensions
 {
     /// <summary>Adds image generation capabilities to the chat client pipeline.</summary>

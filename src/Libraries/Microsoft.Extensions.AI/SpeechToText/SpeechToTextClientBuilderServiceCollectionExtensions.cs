@@ -10,7 +10,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>Provides extension methods for registering <see cref="ISpeechToTextClient"/> with a <see cref="IServiceCollection"/>.</summary>
-[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, Message = DiagnosticIds.Experiments.SpeechToTextMessage, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class SpeechToTextClientBuilderServiceCollectionExtensions
 {
     /// <summary>Registers a singleton <see cref="ISpeechToTextClient"/> in the <see cref="IServiceCollection"/>.</summary>

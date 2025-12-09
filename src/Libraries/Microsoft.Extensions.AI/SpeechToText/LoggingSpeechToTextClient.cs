@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.AI;
 /// Messages and options are not logged at other logging levels.
 /// </para>
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, Message = DiagnosticIds.Experiments.SpeechToTextMessage, UrlFormat = DiagnosticIds.UrlFormat)]
 public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>

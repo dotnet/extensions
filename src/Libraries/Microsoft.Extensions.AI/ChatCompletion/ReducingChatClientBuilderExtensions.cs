@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Provides extension methods for attaching a <see cref="ReducingChatClient"/> to a chat pipeline.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.ChatReduction, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ChatReductionMessage)]
+[Experimental(DiagnosticIds.Experiments.ChatReduction, Message = DiagnosticIds.Experiments.ChatReductionMessage, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class ReducingChatClientBuilderExtensions
 {
     /// <summary>

@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Describes the intended purpose of a specific update during streaming of speech to text updates.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, Message = DiagnosticIds.Experiments.SpeechToTextMessage, UrlFormat = DiagnosticIds.UrlFormat)]
 [JsonConverter(typeof(Converter))]
 public readonly struct SpeechToTextResponseUpdateKind : IEquatable<SpeechToTextResponseUpdateKind>
 {

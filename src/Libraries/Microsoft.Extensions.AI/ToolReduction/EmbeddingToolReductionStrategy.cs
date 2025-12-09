@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.AI;
 /// The strategy embeds each tool (name + description by default) once (cached) and embeds the current
 /// conversation content each request. It then selects the top <c>toolLimit</c> tools by similarity.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.ToolReduction, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ToolReductionMessage)]
+[Experimental(DiagnosticIds.Experiments.ToolReduction, Message = DiagnosticIds.Experiments.ToolReductionMessage, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
 {
     private readonly ConditionalWeakTable<AITool, Embedding<float>> _toolEmbeddingsCache = new();

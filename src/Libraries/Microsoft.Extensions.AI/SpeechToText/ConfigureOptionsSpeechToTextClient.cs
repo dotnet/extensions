@@ -14,7 +14,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that configures a <see cref="SpeechToTextOptions"/> instance used by the remainder of the pipeline.</summary>
-[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, Message = DiagnosticIds.Experiments.SpeechToTextMessage, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ConfigureOptionsSpeechToTextClient : DelegatingSpeechToTextClient
 {
     /// <summary>The callback delegate used to configure options.</summary>

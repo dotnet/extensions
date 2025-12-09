@@ -171,7 +171,7 @@ public class ChatResponseUpdate
     /// to resume streaming from the point of interruption.
     /// </para>
     /// </remarks>
-    [Experimental(DiagnosticIds.Experiments.ResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ResponseContinuationsMessage)]
+    [Experimental(DiagnosticIds.Experiments.ResponseContinuations, Message = DiagnosticIds.Experiments.ResponseContinuationsMessage, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
     public ResponseContinuationToken? ContinuationToken { get; set; }
 

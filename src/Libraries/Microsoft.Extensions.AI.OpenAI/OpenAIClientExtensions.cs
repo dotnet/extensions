@@ -152,7 +152,7 @@ public static class OpenAIClientExtensions
     /// <param name="audioClient">The client.</param>
     /// <returns>An <see cref="ISpeechToTextClient"/> that can be used to transcribe audio via the <see cref="AudioClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="audioClient"/> is <see langword="null"/>.</exception>
-    [Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
+    [Experimental(DiagnosticIds.Experiments.SpeechToText, Message = DiagnosticIds.Experiments.SpeechToTextMessage, UrlFormat = DiagnosticIds.UrlFormat)]
     public static ISpeechToTextClient AsISpeechToTextClient(this AudioClient audioClient) =>
         new OpenAISpeechToTextClient(audioClient);
 
@@ -160,7 +160,7 @@ public static class OpenAIClientExtensions
     /// <param name="imageClient">The client.</param>
     /// <returns>An <see cref="IImageGenerator"/> that can be used to generate images via the <see cref="ImageClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="imageClient"/> is <see langword="null"/>.</exception>
-    [Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.ImageGenerationMessage)]
+    [Experimental(DiagnosticIds.Experiments.ImageGeneration, Message = DiagnosticIds.Experiments.ImageGenerationMessage, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IImageGenerator AsIImageGenerator(this ImageClient imageClient) =>
         new OpenAIImageGenerator(imageClient);
 

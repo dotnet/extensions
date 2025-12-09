@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.AI;
 /// This is recommended as a base type when building clients that can be chained in any order around an underlying <see cref="ISpeechToTextClient"/>.
 /// The default implementation simply passes each call to the inner client instance.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat, Message = DiagnosticIds.Experiments.SpeechToTextMessage)]
+[Experimental(DiagnosticIds.Experiments.SpeechToText, Message = DiagnosticIds.Experiments.SpeechToTextMessage, UrlFormat = DiagnosticIds.UrlFormat)]
 public class DelegatingSpeechToTextClient : ISpeechToTextClient
 {
     /// <summary>
