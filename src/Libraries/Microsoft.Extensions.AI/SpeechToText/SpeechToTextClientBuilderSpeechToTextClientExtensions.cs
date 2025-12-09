@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extension methods for working with <see cref="ISpeechToTextClient"/> in the context of <see cref="SpeechToTextClientBuilder"/>.</summary>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class SpeechToTextClientBuilderSpeechToTextClientExtensions
 {
     /// <summary>Creates a new <see cref="SpeechToTextClientBuilder"/> using <paramref name="innerClient"/> as its inner client.</summary>

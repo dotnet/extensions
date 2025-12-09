@@ -5,12 +5,13 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="OpenTelemetrySpeechToTextClient"/> instances.</summary>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class OpenTelemetrySpeechToTextClientBuilderExtensions
 {
     /// <summary>

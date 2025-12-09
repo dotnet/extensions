@@ -7,12 +7,13 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Extensions for <see cref="ISpeechToTextClient"/>.</summary>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class SpeechToTextClientExtensions
 {
     /// <summary>Asks the <see cref="ISpeechToTextClient"/> for an object of type <typeparamref name="TService"/>.</summary>

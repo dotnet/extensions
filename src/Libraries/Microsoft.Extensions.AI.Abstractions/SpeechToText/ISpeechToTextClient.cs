@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -25,7 +26,7 @@ namespace Microsoft.Extensions.AI;
 /// The audio speech stream passed to these methods will not be closed or disposed by the implementation.
 /// </para>
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface ISpeechToTextClient : IDisposable
 {
     /// <summary>Sends audio speech content to the model and returns the generated text.</summary>
