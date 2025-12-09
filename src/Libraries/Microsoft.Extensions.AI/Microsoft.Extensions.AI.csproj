@@ -15,8 +15,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
-    <!-- CS0436: Allows the ExperimentalAttribute.Message polyfill -->
-    <NoWarn>$(NoWarn);CS0436;MEAI0001;MEAI0002;MEAI0003;MEAI0004;MEAI0005;MEAI0006;MEAI0007;MEAI0008</NoWarn>
+    <NoWarn>$(NoWarn);MEAI0001;MEAI0002;MEAI0003;MEAI0004;MEAI0005;MEAI0006;MEAI0007;MEAI0008</NoWarn>
 
     <!-- CA2007 requires use of ConfigureAwait. While in general we strive to use ConfigureAwait in all our libraries,
          the exemption is when user code that might care about SynchronizationContext is invoked as part of operation.

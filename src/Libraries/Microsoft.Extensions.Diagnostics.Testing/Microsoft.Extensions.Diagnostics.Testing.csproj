@@ -12,8 +12,7 @@
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
-    <!-- CS0436: Allows the ExperimentalAttribute.Message polyfill -->
-    <NoWarn>$(NoWarn);CS0436;SYSLIB1100;SYSLIB1101</NoWarn>
+    <NoWarn>$(NoWarn);SYSLIB1100;SYSLIB1101</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

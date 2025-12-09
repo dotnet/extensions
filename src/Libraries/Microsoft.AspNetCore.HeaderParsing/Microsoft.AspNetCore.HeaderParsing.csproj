@@ -15,8 +15,6 @@
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMetricsGenerator>true</UseMetricsGenerator>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
-    <!-- CS0436: Allows the ExperimentalAttribute.Message polyfill -->
-    <NoWarn>$(NoWarn);CS0436</NoWarn>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
 
     <IsAotCompatible Condition="'$(EnableConfigurationBindingGenerator)' != 'true'">false</IsAotCompatible>

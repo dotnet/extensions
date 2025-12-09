@@ -30,8 +30,6 @@
     <!-- Disable "Published symbols cannot be deleted to maintain compatibility" warning
          because we have different APIs for different TFMs. -->
     <NoWarn Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net462'">$(NoWarn);LA0006</NoWarn>
-    <!-- CS0436: Allows the ExperimentalAttribute.Message polyfill -->
-    <NoWarn>$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

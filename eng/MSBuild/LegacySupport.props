@@ -63,6 +63,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\ExperimentalAttribute\*.cs" LinkBase="LegacySupport\ExperimentalAttribute" />
   </ItemGroup>
 
+  <!-- CS0436: Allows the ExperimentalAttribute.Message polyfill to override the BCL type on net8.0/net9.0 -->
+  <PropertyGroup Condition="'$(InjectExperimentalAttributeOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0')">
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(InjectObsoleteAttributeOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\ObsoleteAttribute\*.cs" LinkBase="LegacySupport\ObsoleteAttribute" />
   </ItemGroup>
