@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.AI;
 /// Insert this into a pipeline (typically before function invocation middleware) to automatically
 /// reduce the tool list carried on <see cref="ChatOptions"/> for each request.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.ToolReduction, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ToolReducingChatClient : DelegatingChatClient
 {
     private readonly IToolReductionStrategy _strategy;

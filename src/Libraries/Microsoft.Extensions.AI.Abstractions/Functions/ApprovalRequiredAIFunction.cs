@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// This class simply augments an <see cref="AIFunction"/> with an indication that approval is required before invocation.
 /// It does not enforce the requirement for user approval; it is the responsibility of the invoker to obtain that approval before invoking the function.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.FunctionApprovals, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ApprovalRequiredAIFunction : DelegatingAIFunction
 {
     /// <summary>

@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -16,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 /// Subclasses of this class encapsulate all necessary information within the token to facilitate these actions.
 /// </summary>
 [JsonConverter(typeof(Converter))]
-[Experimental("MEAI001")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.ResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
 public class ResponseContinuationToken
 {
     /// <summary>Bytes representing this token.</summary>
@@ -47,7 +48,7 @@ public class ResponseContinuationToken
 
     /// <summary>Provides a <see cref="JsonConverter{ResponseContinuationToken}"/> for serializing <see cref="ResponseContinuationToken"/> instances.</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [Experimental("MEAI001")]
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
     public sealed class Converter : JsonConverter<ResponseContinuationToken>
     {
         /// <inheritdoc/>
