@@ -10,6 +10,8 @@
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <!-- CS0436: Allows the ExperimentalAttribute.Message polyfill -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
   </PropertyGroup>
 

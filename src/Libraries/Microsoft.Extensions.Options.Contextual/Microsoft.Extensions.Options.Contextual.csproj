@@ -8,6 +8,8 @@
   <PropertyGroup>
     <BuildAnalyzerReferences>true</BuildAnalyzerReferences>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <!-- CS0436: Allows the ExperimentalAttribute.Message polyfill -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

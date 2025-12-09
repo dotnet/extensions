@@ -10,6 +10,8 @@
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <!-- CS0436: Allows the ExperimentalAttribute.Message polyfill -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
     <InjectObsoleteAttributeOnLegacy>true</InjectObsoleteAttributeOnLegacy>
     <InjectSharedInstruments>true</InjectSharedInstruments>
   </PropertyGroup>
