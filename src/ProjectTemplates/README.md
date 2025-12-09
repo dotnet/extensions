@@ -11,6 +11,9 @@ To update project template JavaScript dependencies:
     npm run copy-dependencies
     ```
 
+You'll need to authenticate to the dotnet-public-npm feed (this cannot be done by a community contributor), otherwise you'll get errors like "code E401 Unable to authenticate".
+Install and run `artifacts-npm-credprovider` as described in the [Azure Artifacts docs](https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-public-npm/connect).
+
 To add a new dependency, run `npm install <package-name>` and update the `scripts` section in `package.json` to specify how the new dependency should be copied into its template.
 
 ## Component governance
