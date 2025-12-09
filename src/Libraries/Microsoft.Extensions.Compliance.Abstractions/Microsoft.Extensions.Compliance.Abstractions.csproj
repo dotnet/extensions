@@ -13,6 +13,8 @@
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- CS0436: Allows the ExperimentalAttribute.Message polyfill -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
