@@ -1164,6 +1164,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 Assert.Equal(ChatRole.Assistant, m.Role); // Indicates this is the assistant's summary
                 Assert.Contains("Alice", m.Text);
             },
+            m => Assert.StartsWith("I hiked the section", m.Text, StringComparison.Ordinal),
             m => Assert.StartsWith("The Sierra Nevada section", m.Text, StringComparison.Ordinal),
             m => Assert.StartsWith("What's my name", m.Text, StringComparison.Ordinal));
 
