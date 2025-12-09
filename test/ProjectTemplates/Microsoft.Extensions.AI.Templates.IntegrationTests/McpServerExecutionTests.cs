@@ -42,32 +42,7 @@ public class McpServerExecutionTests : TemplateExecutionTestBase<McpServerExecut
             ("--framework",         ["net8.0", "net9.0", "net10.0"])
         ];
 
-        foreach (var args in GetPossibleOptions(allOptionValues))
-        {
-            // Managed Identity only applies when using an Azure service and not using aspire
-            if (HasOption(args, "--managed-identity"))
-            {
-                if (HasOption(args, "--aspire"))
-                {
-                    continue;
-                }
-
-                if (!HasOption(args, "--provider", "azureopenai") &&
-                    !HasOption(args, "--provider", "azureaifoundry") &&
-                    !HasOption(args, "--vector-store", "azureaisearch"))
-                {
-                    continue;
-                }
-            }
-
-            // Qdrant requires using Aspire orchestration
-            if (HasOption(args, "--vector-store", "qdrant") && !HasOption(args, "--aspire"))
-            {
-                continue;
-            }
-
-            yield return args;
-        }
+        return GetPossibleOptions(allOptionValues);
     }
 
     // Do not skip. See XML docs for this test class.
