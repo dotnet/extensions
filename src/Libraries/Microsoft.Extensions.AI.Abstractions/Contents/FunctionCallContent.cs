@@ -67,7 +67,7 @@ public sealed class FunctionCallContent : AIContent
     /// should be ignored by components that process function calls, such as FunctionInvokingChatClient.
     /// </para>
     /// <para>
-    /// This property is not serialized when it has its default value of <see langword="false"/> for JSON serialization.
+    /// This property is not serialized when it has the value <see langword="false"/> (the JSON default for bool).
     /// When deserialized, if the property is not present in the JSON, it will default to <see langword="true"/>.
     /// </para>
     /// </remarks>
