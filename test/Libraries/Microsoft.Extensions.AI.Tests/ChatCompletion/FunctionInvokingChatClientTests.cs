@@ -136,6 +136,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -169,6 +170,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -219,6 +221,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -267,6 +270,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -308,6 +312,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan);
     }
 
@@ -351,6 +356,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -562,6 +568,7 @@ public class FunctionInvokingChatClientTests
 #pragma warning disable SA1005, S125
         Validate(await InvokeAndAssertAsync(options, plan));
 
+        ResetPlanFunctionCallStates(plan);
         Validate(await InvokeAndAssertStreamingAsync(options, plan));
 
         static void Validate(List<ChatMessage> finalChat)
@@ -597,6 +604,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -1077,6 +1085,7 @@ public class FunctionInvokingChatClientTests
             .UseFunctionInvocation(configure: c => { c.AllowConcurrentInvocation = true; c.IncludeDetailedErrors = true; });
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configurePipeline);
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configurePipeline);
     }
 
@@ -1110,6 +1119,7 @@ public class FunctionInvokingChatClientTests
             ];
 
             await InvokeAndAssertAsync(options, planForContinue, configurePipeline: configure);
+            ResetPlanFunctionCallStates(planForContinue);
             await InvokeAndAssertStreamingAsync(options, planForContinue, configurePipeline: configure);
         }
         else
@@ -1493,6 +1503,243 @@ public class FunctionInvokingChatClientTests
         }
     }
 
+    [Fact]
+    public async Task InvocationRequired_SetToFalseAfterProcessing()
+    {
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        var chat = await InvokeAndAssertAsync(options, plan);
+
+        // Find the FunctionCallContent in the chat history
+        var functionCallMessage = chat.First(m => m.Contents.Any(c => c is FunctionCallContent));
+        var functionCallContent = functionCallMessage.Contents.OfType<FunctionCallContent>().First();
+
+        // Verify InvocationRequired was set to false after processing
+        Assert.False(functionCallContent.InvocationRequired);
+    }
+
+    [Fact]
+    public async Task InvocationRequired_IgnoresFunctionCallsWithInvocationRequiredFalse()
+    {
+        var functionInvokedCount = 0;
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")]
+        };
+
+        // Create a function call that has already been processed
+        var alreadyProcessedFunctionCall = new FunctionCallContent("callId1", "Func1") { InvocationRequired = false };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            {
+                await Task.Yield();
+
+                // Return a response with a FunctionCallContent that has InvocationRequired = false
+                var message = new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]);
+                return new ChatResponse(message);
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+
+        // The function should not have been invoked since InvocationRequired was false
+        Assert.Equal(0, functionInvokedCount);
+
+        // The response should contain the FunctionCallContent but no FunctionResultContent
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && !fcc.InvocationRequired));
+        Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent));
+    }
+
+    [Fact]
+    public async Task InvocationRequired_IgnoresFunctionCallsWithInvocationRequiredFalse_Streaming()
+    {
+        var functionInvokedCount = 0;
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")]
+        };
+
+        // Create a function call that has already been processed
+        var alreadyProcessedFunctionCall = new FunctionCallContent("callId1", "Func1") { InvocationRequired = false };
+
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
+            {
+                // Return a response with a FunctionCallContent that has InvocationRequired = false
+                var message = new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]);
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        var updates = new List<ChatResponseUpdate>();
+        await foreach (var update in client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options))
+        {
+            updates.Add(update);
+        }
+
+        // The function should not have been invoked since InvocationRequired was false
+        Assert.Equal(0, functionInvokedCount);
+
+        // The updates should contain the FunctionCallContent but no FunctionResultContent
+        Assert.Contains(updates, u => u.Contents.Any(c => c is FunctionCallContent fcc && !fcc.InvocationRequired));
+        Assert.DoesNotContain(updates, u => u.Contents.Any(c => c is FunctionResultContent));
+    }
+
+    [Fact]
+    public async Task InvocationRequired_ProcessesMixedFunctionCalls()
+    {
+        var func1InvokedCount = 0;
+        var func2InvokedCount = 0;
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => { func1InvokedCount++; return "Result 1"; }, "Func1"),
+                AIFunctionFactory.Create(() => { func2InvokedCount++; return "Result 2"; }, "Func2"),
+            ]
+        };
+
+        // Create one function call that needs processing and one that doesn't
+        var needsProcessing = new FunctionCallContent("callId1", "Func1") { InvocationRequired = true };
+        var alreadyProcessed = new FunctionCallContent("callId2", "Func2") { InvocationRequired = false };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            {
+                await Task.Yield();
+
+                if (contents.Count() == 1)
+                {
+                    // First call - return both function calls
+                    var message = new ChatMessage(ChatRole.Assistant, [needsProcessing, alreadyProcessed]);
+                    return new ChatResponse(message);
+                }
+                else
+                {
+                    // Second call - return final response after processing
+                    var message = new ChatMessage(ChatRole.Assistant, "done");
+                    return new ChatResponse(message);
+                }
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+
+        // Only Func1 should have been invoked (the one with InvocationRequired = true)
+        Assert.Equal(1, func1InvokedCount);
+        Assert.Equal(0, func2InvokedCount);
+
+        // The response should contain FunctionResultContent for Func1 but not Func2
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId1"));
+        Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId2"));
+    }
+
+    [Fact]
+    public async Task InvocationRequired_InnerClientWithInvocationRequiredFalsePassesThroughUnprocessed()
+    {
+        // Test that FunctionCallContent with InvocationRequired=false from inner client passes through without being processed
+        var functionInvokedCount = 0;
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")]
+        };
+
+        var functionCallWithInvocationRequiredFalse = new FunctionCallContent("callId1", "Func1") { InvocationRequired = false };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            {
+                await Task.Yield();
+
+                // Inner client returns a FunctionCallContent with InvocationRequired = false
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, [functionCallWithInvocationRequiredFalse]));
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+
+        // The function should NOT have been invoked since InvocationRequired was false
+        Assert.Equal(0, functionInvokedCount);
+
+        // The response should contain the FunctionCallContent with InvocationRequired = false
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && fcc.CallId == "callId1" && !fcc.InvocationRequired));
+
+        // There should be NO FunctionResultContent since we didn't process the function call
+        Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent));
+    }
+
+    [Fact]
+    public async Task InvocationRequired_MultipleFunctionInvokingChatClientsOnlyProcessOnce()
+    {
+        // Test that when multiple FunctionInvokingChatClients are in a pipeline,
+        // each FunctionCallContent is only processed once (by the first one that sees it)
+        var functionInvokedCount = 0;
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")]
+        };
+
+        var callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            {
+                await Task.Yield();
+
+                // First call: return a FunctionCallContent that needs processing
+                // Second call: return a final text response
+                if (callCount++ == 0)
+                {
+                    return new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]));
+                }
+                else
+                {
+                    return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Done"));
+                }
+            }
+        };
+
+        // Create a pipeline with two FunctionInvokingChatClients
+        using var client1 = new FunctionInvokingChatClient(innerClient);
+        using var client2 = new FunctionInvokingChatClient(client1);
+
+        var response = await client2.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+
+        // The function should have been invoked EXACTLY ONCE, not twice (once per FICC)
+        Assert.Equal(1, functionInvokedCount);
+
+        // The response should contain the FunctionCallContent with InvocationRequired = false
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && fcc.CallId == "callId1" && !fcc.InvocationRequired));
+
+        // There should be a FunctionResultContent since the function was processed
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId1"));
+    }
+
     private sealed class CustomSynchronizationContext : SynchronizationContext
     {
         public override void Post(SendOrPostCallback d, object? state)
@@ -1513,6 +1760,9 @@ public class FunctionInvokingChatClientTests
         IServiceProvider? services = null)
     {
         Assert.NotEmpty(plan);
+
+        // Reset InvocationRequired for all FunctionCallContent in the plan to allow reuse
+        ResetPlanFunctionCallStates(plan);
 
         configurePipeline ??= static b => b.UseFunctionInvocation();
 
@@ -1584,6 +1834,9 @@ public class FunctionInvokingChatClientTests
     {
         Assert.NotEmpty(plan);
 
+        // Reset InvocationRequired for all FunctionCallContent in the plan to allow reuse
+        ResetPlanFunctionCallStates(plan);
+
         configurePipeline ??= static b => b.UseFunctionInvocation();
 
         using CancellationTokenSource cts = new();
@@ -1622,6 +1875,24 @@ public class FunctionInvokingChatClientTests
         foreach (var item in items)
         {
             yield return item;
+        }
+    }
+
+    /// <summary>
+    /// Resets InvocationRequired to true for all FunctionCallContent in the plan.
+    /// This is needed when reusing a plan across multiple test invocations.
+    /// </summary>
+    private static void ResetPlanFunctionCallStates(List<ChatMessage> plan)
+    {
+        foreach (var message in plan)
+        {
+            foreach (var content in message.Contents)
+            {
+                if (content is FunctionCallContent fcc)
+                {
+                    fcc.InvocationRequired = true;
+                }
+            }
         }
     }
 }

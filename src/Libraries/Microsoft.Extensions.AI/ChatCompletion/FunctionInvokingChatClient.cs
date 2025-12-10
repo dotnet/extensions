@@ -775,7 +775,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         int count = content.Count;
         for (int i = 0; i < count; i++)
         {
-            if (content[i] is FunctionCallContent functionCall)
+            if (content[i] is FunctionCallContent functionCall && functionCall.InvocationRequired)
             {
                 (functionCalls ??= []).Add(functionCall);
                 any = true;
@@ -1018,6 +1018,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         var callContent = callContents[functionCallIndex];
 
+        // Mark the function call as no longer requiring invocation since we're handling it
+        callContent.InvocationRequired = false;
+
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
         if (toolMap is null ||
             !toolMap.TryGetValue(callContent.Name, out AITool? tool) ||
@@ -1106,6 +1109,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 functionResult = message;
             }
+
+            // Mark the function call as having been processed
+            result.CallContent.InvocationRequired = false;
 
             return new FunctionResultContent(result.CallContent.CallId, functionResult) { Exception = result.Exception };
         }
@@ -1426,7 +1432,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <returns>The <see cref="AIContent"/> for the rejected function calls.</returns>
     private static List<AIContent>? GenerateRejectedFunctionResults(List<ApprovalResultWithRequestMessage>? rejections) =>
         rejections is { Count: > 0 } ?
-            rejections.ConvertAll(m =>
+            rejections.ConvertAll(static m =>
             {
                 string result = "Tool call invocation rejected.";
                 if (!string.IsNullOrWhiteSpace(m.Response.Reason))
@@ -1434,6 +1440,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     result = $"{result} {m.Response.Reason}";
                 }
 
+                // Mark the function call as no longer requiring invocation since we're handling it (by rejecting it)
+                m.Response.FunctionCall.InvocationRequired = false;
                 return (AIContent)new FunctionResultContent(m.Response.FunctionCall.CallId, result);
             }) :
             null;
