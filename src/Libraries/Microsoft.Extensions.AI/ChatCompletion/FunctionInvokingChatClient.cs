@@ -1210,15 +1210,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 if (enableSensitiveData)
                 {
-                    // For string results, store the raw value to avoid double-encoding.
-                    // For other types, use the JSON-serialized representation.
-                    // Check the actual type to debug
-                    bool isString = result is string;
-                    string resultType = result?.GetType().FullName ?? "null";
-                    object? tagValue = isString ? result : functionResult;
-                    _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Result, tagValue);
-                    _ = activity?.SetTag("debug.result.type", resultType);
-                    _ = activity?.SetTag("debug.is.string", isString);
+                    // Store the result value directly without JSON serialization.
+                    // The OpenTelemetry exporter will handle serialization when creating the trace.
+                    _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Result, result);
                 }
 
                 if (traceLoggingEnabled)
