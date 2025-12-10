@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
@@ -66,10 +67,12 @@ public sealed class FunctionCallContent : AIContent
     /// should be ignored by components that process function calls, such as FunctionInvokingChatClient.
     /// </para>
     /// <para>
-    /// This property is not serialized when it has its default value of <see langword="true"/>.
+    /// This property is not serialized when it has its default value of <see langword="false"/> for JSON serialization.
+    /// When deserialized, if the property is not present in the JSON, it will default to <see langword="true"/>.
     /// </para>
     /// </remarks>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [Experimental("MEAI001")]
     public bool InvocationRequired { get; set; } = true;
 
     /// <summary>

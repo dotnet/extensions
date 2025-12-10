@@ -1523,16 +1523,11 @@ public class FunctionInvokingChatClientTests
 
         using var innerClient = new TestChatClient
         {
-            GetStreamingResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            GetStreamingResponseAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
             {
-                await Task.Yield();
-
                 // Return a response with a FunctionCallContent that has InvocationRequired = false
                 var message = new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]);
-                await foreach (var update in new ChatResponse(message).ToChatResponseUpdates())
-                {
-                    yield return update;
-                }
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
             }
         };
 
