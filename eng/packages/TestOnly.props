@@ -6,6 +6,7 @@
     <PackageVersion Include="BenchmarkDotNet" Version="0.13.5" />
     <PackageVersion Include="AwesomeAssertions" Version="8.0.2" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.65.0" />
+    <PackageVersion Include="System.IO.Packaging" Version="8.0.1" />
     <PackageVersion Include="JsonSchema.Net" Version="7.2.3" />
     <PackageVersion Include="DocumentFormat.OpenXml" version="3.0.1" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
