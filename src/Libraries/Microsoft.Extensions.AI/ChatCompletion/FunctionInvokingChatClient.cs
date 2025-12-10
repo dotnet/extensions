@@ -1223,7 +1223,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                         tagValue = jsonElement.ValueKind switch
                         {
                             JsonValueKind.String => jsonElement.GetString(),
-                            JsonValueKind.Number => jsonElement.GetDouble(),
+                            JsonValueKind.Number => jsonElement.TryGetInt64(out long longValue) ? longValue :
+                                                     jsonElement.TryGetDecimal(out decimal decimalValue) ? decimalValue :
+                                                     jsonElement.GetDouble(),
                             JsonValueKind.True => true,
                             JsonValueKind.False => false,
                             JsonValueKind.Null => null,

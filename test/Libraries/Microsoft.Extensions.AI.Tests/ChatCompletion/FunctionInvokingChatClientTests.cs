@@ -774,8 +774,7 @@ public class FunctionInvokingChatClientTests
         var executeToolActivity = activities.FirstOrDefault(a => a.DisplayName != null && a.DisplayName.StartsWith("execute_tool"));
         Assert.NotNull(executeToolActivity);
 
-        var resultTag = executeToolActivity.Tags.FirstOrDefault(t => t.Key == "gen_ai.tool.call.result");
-        Assert.NotNull(resultTag.Key);
+        var resultTag = Assert.Single(executeToolActivity.Tags, t => t.Key == "gen_ai.tool.call.result");
 
         // The result should be the raw string value, not JSON-encoded
         // If it were double-encoded, we would see escaped quotes and double-escaped newlines like:
@@ -788,6 +787,8 @@ public class FunctionInvokingChatClientTests
         Assert.DoesNotContain("\\r\\n", resultStr); // Should not have double-escaped newlines
         Assert.DoesNotContain("\\\"", resultStr); // Should not have escaped quotes
     }
+
+
 
     [Fact]
     public async Task SupportsConsecutiveStreamingUpdatesWithFunctionCalls()
