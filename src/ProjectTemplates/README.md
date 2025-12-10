@@ -7,12 +7,9 @@ To update project template JavaScript dependencies:
 2. Update the `package.json` file with added or updated dependencies
 3. Run the following commands from this directory:
     ```sh
-    npm install
+    ../../scripts/UpdateNpmDependencies.ps1
     npm run copy-dependencies
     ```
-
-You'll need to authenticate to the dotnet-public-npm feed (this cannot be done by a community contributor), otherwise you'll get errors like "code E401 Unable to authenticate".
-Install and run `artifacts-npm-credprovider` as described in the [Azure Artifacts docs](https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-public-npm/connect).
 
 To add a new dependency, run `npm install <package-name>` and update the `scripts` section in `package.json` to specify how the new dependency should be copied into its template.
 
