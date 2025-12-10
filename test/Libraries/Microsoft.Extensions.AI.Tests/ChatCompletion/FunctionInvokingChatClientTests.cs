@@ -136,6 +136,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -169,6 +170,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -219,6 +221,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -267,6 +270,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -308,6 +312,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan);
     }
 
@@ -351,6 +356,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -562,6 +568,7 @@ public class FunctionInvokingChatClientTests
 #pragma warning disable SA1005, S125
         Validate(await InvokeAndAssertAsync(options, plan));
 
+        ResetPlanFunctionCallStates(plan);
         Validate(await InvokeAndAssertStreamingAsync(options, plan));
 
         static void Validate(List<ChatMessage> finalChat)
@@ -597,6 +604,7 @@ public class FunctionInvokingChatClientTests
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
@@ -1077,6 +1085,7 @@ public class FunctionInvokingChatClientTests
             .UseFunctionInvocation(configure: c => { c.AllowConcurrentInvocation = true; c.IncludeDetailedErrors = true; });
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configurePipeline);
+        ResetPlanFunctionCallStates(plan);
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configurePipeline);
     }
 
@@ -1110,6 +1119,7 @@ public class FunctionInvokingChatClientTests
             ];
 
             await InvokeAndAssertAsync(options, planForContinue, configurePipeline: configure);
+            ResetPlanFunctionCallStates(planForContinue);
             await InvokeAndAssertStreamingAsync(options, planForContinue, configurePipeline: configure);
         }
         else
@@ -1621,6 +1631,9 @@ public class FunctionInvokingChatClientTests
     {
         Assert.NotEmpty(plan);
 
+        // Reset InvocationRequired for all FunctionCallContent in the plan to allow reuse
+        ResetPlanFunctionCallStates(plan);
+
         configurePipeline ??= static b => b.UseFunctionInvocation();
 
         using CancellationTokenSource cts = new();
@@ -1691,6 +1704,9 @@ public class FunctionInvokingChatClientTests
     {
         Assert.NotEmpty(plan);
 
+        // Reset InvocationRequired for all FunctionCallContent in the plan to allow reuse
+        ResetPlanFunctionCallStates(plan);
+
         configurePipeline ??= static b => b.UseFunctionInvocation();
 
         using CancellationTokenSource cts = new();
@@ -1729,6 +1745,24 @@ public class FunctionInvokingChatClientTests
         foreach (var item in items)
         {
             yield return item;
+        }
+    }
+
+    /// <summary>
+    /// Resets InvocationRequired to true for all FunctionCallContent in the plan.
+    /// This is needed when reusing a plan across multiple test invocations.
+    /// </summary>
+    private static void ResetPlanFunctionCallStates(List<ChatMessage> plan)
+    {
+        foreach (var message in plan)
+        {
+            foreach (var content in message.Contents)
+            {
+                if (content is FunctionCallContent fcc)
+                {
+                    fcc.InvocationRequired = true;
+                }
+            }
         }
     }
 }
