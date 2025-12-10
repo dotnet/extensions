@@ -385,9 +385,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
-            // Mark the function calls that were just processed as no longer requiring invocation
-            MarkFunctionCallsAsProcessed(responseMessages, modeAndMessages.MessagesAdded);
-
             if (modeAndMessages.ShouldTerminate)
             {
                 break;
@@ -610,9 +607,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, toolMap, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: true, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
-
-            // Mark the function calls that were just processed as no longer requiring invocation
-            MarkFunctionCallsAsProcessed(responseMessages, modeAndMessages.MessagesAdded);
 
             // Stream any generated function results. This mirrors what's done for GetResponseAsync, where the returned messages
             // includes all activities, including generated function results.
@@ -1032,6 +1026,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             return new(terminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
+        // Mark the function call as no longer requiring invocation since we're about to handle it
+        callContent.InvocationRequired = false;
+
         FunctionInvocationContext context = new()
         {
             Function = aiFunction,
@@ -1112,6 +1109,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 functionResult = message;
             }
+
+            // Mark the function call as having been processed
+            result.CallContent.InvocationRequired = false;
 
             return new FunctionResultContent(result.CallContent.CallId, functionResult) { Exception = result.Exception };
         }
@@ -1623,43 +1623,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         return outputMessages;
-    }
-
-    /// <summary>
-    /// Marks FunctionCallContent objects in allMessages as processed (InvocationRequired = false) 
-    /// if they have corresponding FunctionResultContent in the newly added messages.
-    /// </summary>
-    /// <param name="allMessages">All messages accumulated so far.</param>
-    /// <param name="newlyAddedMessages">The messages that were just added containing FunctionResultContent.</param>
-    private static void MarkFunctionCallsAsProcessed(List<ChatMessage> allMessages, IList<ChatMessage> newlyAddedMessages)
-    {
-        // Build a set of call IDs from the newly added FunctionResultContent
-        HashSet<string>? processedCallIds = null;
-        foreach (var message in newlyAddedMessages)
-        {
-            foreach (var content in message.Contents)
-            {
-                if (content is FunctionResultContent frc)
-                {
-                    _ = (processedCallIds ??= []).Add(frc.CallId);
-                }
-            }
-        }
-
-        // Mark FunctionCallContent with matching call IDs as processed
-        if (processedCallIds is not null)
-        {
-            foreach (var message in allMessages)
-            {
-                foreach (var content in message.Contents)
-                {
-                    if (content is FunctionCallContent fcc && processedCallIds.Contains(fcc.CallId))
-                    {
-                        fcc.InvocationRequired = false;
-                    }
-                }
-            }
-        }
     }
 
     private static TimeSpan GetElapsedTime(long startingTimestamp) =>
