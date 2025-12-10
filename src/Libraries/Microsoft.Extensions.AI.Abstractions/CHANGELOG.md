@@ -1,6 +1,6 @@
 # Microsoft.Extensions.AI.Abstractions Release History
 
-## NOT YET RELEASED
+## 10.1.0
 
 - Fixed package references for net10.0 asset.
 - Added `AIJsonSchemaCreateOptions.ParameterDescriptions`.

@@ -1,10 +1,11 @@
 # Microsoft.Extensions.AI.OpenAI Release History
 
-## NOT YET RELEASED
+## 10.1.0-preview.1.25608.1
 
 - Fixed package references for net10.0 asset.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 - Updated the OpenAI Responses `IChatClient` to ensure all `ResponseItem`s are yielded in `AIContent`.
+- Added workaround to the OpenAI Responses `IChatClient` for OpenAI service sometimes sending error data in a manner different from how it's documented.
 
 ## 10.0.1-preview.1.25571.5
 
