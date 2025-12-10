@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -1210,9 +1211,35 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 if (enableSensitiveData)
                 {
-                    // Store the result value directly without JSON serialization.
-                    // The OpenTelemetry exporter will handle serialization when creating the trace.
-                    _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Result, result);
+                    // For string results, store the raw value to avoid double-encoding.
+                    // For other types, use JSON serialization.
+                    // The OpenTelemetry exporter will handle the final encoding for the trace.
+
+                    // Handle JsonElement which may wrap primitive types
+                    object? tagValue;
+                    if (result is JsonElement jsonElement)
+                    {
+                        // Extract the value from JsonElement based on its type
+                        tagValue = jsonElement.ValueKind switch
+                        {
+                            JsonValueKind.String => jsonElement.GetString(),
+                            JsonValueKind.Number => jsonElement.GetDouble(),
+                            JsonValueKind.True => true,
+                            JsonValueKind.False => false,
+                            JsonValueKind.Null => null,
+                            _ => functionResult // For objects/arrays, use JSON representation
+                        };
+                    }
+                    else if (result is string)
+                    {
+                        tagValue = result;
+                    }
+                    else
+                    {
+                        tagValue = functionResult;
+                    }
+
+                    _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Result, tagValue);
                 }
 
                 if (traceLoggingEnabled)

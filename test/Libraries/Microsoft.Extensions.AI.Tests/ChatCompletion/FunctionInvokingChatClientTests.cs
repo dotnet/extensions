@@ -713,7 +713,7 @@ public class FunctionInvokingChatClientTests
 
                     var result = Assert.Single(executeTool.Tags, t => t.Key == "gen_ai.tool.call.result");
 
-                    // The result should be the raw value
+                    // The result should be the raw string value, not JSON-serialized
                     Assert.Equal("Result 1", result.Value);
                 }
                 else
@@ -733,6 +733,60 @@ public class FunctionInvokingChatClientTests
                 Assert.Empty(activities);
             }
         }
+    }
+
+    [Fact]
+    public async Task ToolCallResultNotDoubleEncoded()
+    {
+        // This test validates the fix for https://github.com/microsoft/agent-framework/issues/2231
+        // String results with special characters (like newlines) should not be double-encoded
+
+        string sourceName = Guid.NewGuid().ToString();
+
+        // Create a result string with newlines and special characters (similar to the bug report)
+        string expectedResult = "OUTPUT:\r\nFile1.txt\r\nFile2.dll\r\n\r\nEXIT CODE: 0";
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "list files"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "ListFiles")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: expectedResult)]),
+            new ChatMessage(ChatRole.Assistant, "done"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => expectedResult, "ListFiles")]
+        };
+
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName) { EnableSensitiveData = true }));
+
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+
+        // Verify the execute_tool activity has the correct result without double-encoding
+        var executeToolActivity = activities.FirstOrDefault(a => a.DisplayName != null && a.DisplayName.StartsWith("execute_tool"));
+        Assert.NotNull(executeToolActivity);
+
+        var resultTag = executeToolActivity.Tags.FirstOrDefault(t => t.Key == "gen_ai.tool.call.result");
+        Assert.NotNull(resultTag.Key);
+
+        // The result should be the raw string value, not JSON-encoded
+        // If it were double-encoded, we would see escaped quotes and double-escaped newlines like:
+        // "\"OUTPUT:\\r\\nFile1.txt\\r\\nFile2.dll\\r\\n\\r\\nEXIT CODE: 0\""
+        Assert.Equal(expectedResult, resultTag.Value);
+
+        // Verify we have actual newlines in the value, not escaped sequences
+        string resultStr = resultTag.Value?.ToString() ?? string.Empty;
+        Assert.Contains("\r\n", resultStr);
+        Assert.DoesNotContain("\\r\\n", resultStr); // Should not have double-escaped newlines
+        Assert.DoesNotContain("\\\"", resultStr); // Should not have escaped quotes
     }
 
     [Fact]
