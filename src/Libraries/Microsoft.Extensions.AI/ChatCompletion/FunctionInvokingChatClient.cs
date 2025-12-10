@@ -775,7 +775,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         int count = content.Count;
         for (int i = 0; i < count; i++)
         {
-            if (content[i] is FunctionCallContent functionCall)
+            if (content[i] is FunctionCallContent functionCall && functionCall.InvocationRequired)
             {
                 (functionCalls ??= []).Add(functionCall);
                 any = true;
@@ -1106,6 +1106,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 functionResult = message;
             }
+
+            // Mark the function call as having been processed
+            result.CallContent.InvocationRequired = false;
 
             return new FunctionResultContent(result.CallContent.CallId, functionResult) { Exception = result.Exception };
         }

@@ -57,6 +57,22 @@ public sealed class FunctionCallContent : AIContent
     public Exception? Exception { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether this function call requires invocation.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This property defaults to <see langword="true"/>, indicating that the function call should be processed.
+    /// When set to <see langword="false"/>, it indicates that the function has already been processed and
+    /// should be ignored by components that process function calls, such as FunctionInvokingChatClient.
+    /// </para>
+    /// <para>
+    /// This property is not serialized when it has its default value of <see langword="true"/>.
+    /// </para>
+    /// </remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool InvocationRequired { get; set; } = true;
+
+    /// <summary>
     /// Creates a new instance of <see cref="FunctionCallContent"/> parsing arguments using a specified encoding and parser.
     /// </summary>
     /// <typeparam name="TEncoding">The encoding format from which to parse function call arguments.</typeparam>
