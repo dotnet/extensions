@@ -1207,11 +1207,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             bool loggedResult = false;
             if (enableSensitiveData || traceLoggingEnabled)
             {
-                string functionResult = TelemetryHelpers.AsJson(result, context.Function.JsonSerializerOptions);
+                string serializedResult = TelemetryHelpers.AsJson(result, context.Function.JsonSerializerOptions);
 
                 if (enableSensitiveData)
                 {
-                    // For string results, store the raw value to avoid double-encoding.
+                    // For primitive results, store the raw value to avoid double-encoding.
                     // For other types, use JSON serialization.
                     // The OpenTelemetry exporter will handle the final encoding for the trace.
 
@@ -1227,16 +1227,17 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                             JsonValueKind.True => true,
                             JsonValueKind.False => false,
                             JsonValueKind.Null => null,
-                            _ => functionResult // For objects/arrays, use JSON representation
+                            _ => serializedResult // For objects/arrays, use JSON representation
                         };
                     }
-                    else if (result is string)
+                    else if (result is string or int or long or double or float or bool)
                     {
+                        // Result is already a primitive type, use it directly
                         tagValue = result;
                     }
                     else
                     {
-                        tagValue = functionResult;
+                        tagValue = serializedResult;
                     }
 
                     _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Result, tagValue);
@@ -1244,7 +1245,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 if (traceLoggingEnabled)
                 {
-                    LogInvocationCompletedSensitive(context.Function.Name, GetElapsedTime(startingTimestamp), functionResult);
+                    LogInvocationCompletedSensitive(context.Function.Name, GetElapsedTime(startingTimestamp), serializedResult);
                     loggedResult = true;
                 }
             }
