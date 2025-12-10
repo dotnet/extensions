@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
@@ -61,18 +60,10 @@ public sealed class FunctionCallContent : AIContent
     /// Gets or sets a value indicating whether this function call requires invocation.
     /// </summary>
     /// <remarks>
-    /// <para>
     /// This property defaults to <see langword="true"/>, indicating that the function call should be processed.
     /// When set to <see langword="false"/>, it indicates that the function has already been processed and
-    /// should be ignored by components that process function calls, such as FunctionInvokingChatClient.
-    /// </para>
-    /// <para>
-    /// This property is not serialized when it has the value <see langword="false"/> (the JSON default for bool).
-    /// When deserialized, if the property is not present in the JSON, it will default to <see langword="true"/>.
-    /// </para>
+    /// should be ignored by components that process function calls.
     /// </remarks>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [Experimental("MEAI001")]
     public bool InvocationRequired { get; set; } = true;
 
     /// <summary>

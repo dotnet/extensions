@@ -1610,6 +1610,90 @@ public class FunctionInvokingChatClientTests
         Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId2"));
     }
 
+    [Fact]
+    public async Task InvocationRequired_InnerClientWithInvocationRequiredFalsePassesThroughUnprocessed()
+    {
+        // Test that FunctionCallContent with InvocationRequired=false from inner client passes through without being processed
+        var functionInvokedCount = 0;
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")]
+        };
+
+        var functionCallWithInvocationRequiredFalse = new FunctionCallContent("callId1", "Func1") { InvocationRequired = false };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            {
+                await Task.Yield();
+
+                // Inner client returns a FunctionCallContent with InvocationRequired = false
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, [functionCallWithInvocationRequiredFalse]));
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+
+        // The function should NOT have been invoked since InvocationRequired was false
+        Assert.Equal(0, functionInvokedCount);
+
+        // The response should contain the FunctionCallContent with InvocationRequired = false
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && fcc.CallId == "callId1" && !fcc.InvocationRequired));
+
+        // There should be NO FunctionResultContent since we didn't process the function call
+        Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent));
+    }
+
+    [Fact]
+    public async Task InvocationRequired_MultipleFunctionInvokingChatClientsOnlyProcessOnce()
+    {
+        // Test that when multiple FunctionInvokingChatClients are in a pipeline,
+        // each FunctionCallContent is only processed once (by the first one that sees it)
+        var functionInvokedCount = 0;
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")]
+        };
+
+        var callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            {
+                await Task.Yield();
+
+                // First call: return a FunctionCallContent that needs processing
+                // Second call: return a final text response
+                if (callCount++ == 0)
+                {
+                    return new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]));
+                }
+                else
+                {
+                    return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Done"));
+                }
+            }
+        };
+
+        // Create a pipeline with two FunctionInvokingChatClients
+        using var client1 = new FunctionInvokingChatClient(innerClient);
+        using var client2 = new FunctionInvokingChatClient(client1);
+
+        var response = await client2.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+
+        // The function should have been invoked EXACTLY ONCE, not twice (once per FICC)
+        Assert.Equal(1, functionInvokedCount);
+
+        // The response should contain the FunctionCallContent with InvocationRequired = false
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && fcc.CallId == "callId1" && !fcc.InvocationRequired));
+
+        // There should be a FunctionResultContent since the function was processed
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId1"));
+    }
+
     private sealed class CustomSynchronizationContext : SynchronizationContext
     {
         public override void Post(SendOrPostCallback d, object? state)
