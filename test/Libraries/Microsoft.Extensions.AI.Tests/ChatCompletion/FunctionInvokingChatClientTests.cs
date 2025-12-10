@@ -712,7 +712,12 @@ public class FunctionInvokingChatClientTests
                         args.Value);
 
                     var result = Assert.Single(executeTool.Tags, t => t.Key == "gen_ai.tool.call.result");
-                    Assert.Equal("Result 1", JsonSerializer.Deserialize<string>(result.Value!, AIJsonUtilities.DefaultOptions));
+
+                    // Check the actual type of the value
+                    Assert.IsType<string>(result.Value);
+
+                    // The result should be the raw string value, not JSON-serialized
+                    Assert.Equal("Result 1", result.Value);
                 }
                 else
                 {
