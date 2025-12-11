@@ -151,6 +151,26 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
         Assert.Contains("out of memory exception object", paragraph.Text);
     }
 
+    [ConditionalFact]
+    public async Task SupportsMultipleInlineHtmlElements()
+    {
+        string markdownContent = """
+        This text has <strong>bold</strong> and <em>italic</em> HTML tags, plus a <span style="color:red">span</span> element.
+        It also includes <sub>subscript</sub> and <sup>superscript</sup> tags.
+        """;
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        Assert.NotNull(document);
+        var paragraph = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentParagraph>());
+        Assert.NotNull(paragraph.Text);
+        Assert.Contains("<strong>bold</strong>", paragraph.Text);
+        Assert.Contains("<em>italic</em>", paragraph.Text);
+        Assert.Contains("<span style=\"color:red\">span</span>", paragraph.Text);
+        Assert.Contains("<sub>subscript</sub>", paragraph.Text);
+        Assert.Contains("<sup>superscript</sup>", paragraph.Text);
+    }
+
     private async Task<IngestionDocument> ReadAsync(string content)
     {
         using MemoryStream stream = new(System.Text.Encoding.UTF8.GetBytes(content));
