@@ -1,5 +1,10 @@
 # Microsoft.Extensions.AI.OpenAI Release History
 
+## 10.1.1-preview.1.?
+
+- Updated to depend on OpenAI 2.8.0.
+- Updated public API signatures in `OpenAIClientExtensions` and `MicrosoftExtensionsAIResponsesExtensions` to match the corresponding breaking changes in OpenAI's Responses APIs.
+
 ## 10.1.0-preview.1.25608.1
 
 - Fixed package references for net10.0 asset.

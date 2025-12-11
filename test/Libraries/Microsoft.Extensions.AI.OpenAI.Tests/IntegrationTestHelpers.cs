@@ -17,8 +17,8 @@ internal static class IntegrationTestHelpers
     {
         var configuration = TestRunnerConfiguration.Instance;
 
-        string? apiKey = configuration["OpenAI:Key"];
-        string? mode = configuration["OpenAI:Mode"];
+        string? apiKey = Environment.GetEnvironmentVariable("AI:OpenAI:ApiKey");
+        string? mode = Environment.GetEnvironmentVariable("AI:OpenAI:Mode");
 
         if (string.Equals(mode, "AzureOpenAI", StringComparison.OrdinalIgnoreCase))
         {

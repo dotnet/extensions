@@ -11,7 +11,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -28,7 +27,7 @@ public class OpenAIResponseClientTests
     [Fact]
     public void AsIChatClient_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("responseClient", () => ((OpenAIResponseClient)null!).AsIChatClient());
+        Assert.Throws<ArgumentNullException>("responseClient", () => ((ResponsesClient)null!).AsIChatClient());
     }
 
     [Fact]
@@ -39,7 +38,7 @@ public class OpenAIResponseClientTests
 
         var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
-        IChatClient chatClient = client.GetOpenAIResponseClient(model).AsIChatClient();
+        IChatClient chatClient = client.GetResponsesClient(model).AsIChatClient();
         var metadata = chatClient.GetService<ChatClientMetadata>();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
@@ -49,11 +48,11 @@ public class OpenAIResponseClientTests
     [Fact]
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
-        OpenAIResponseClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetOpenAIResponseClient("model");
+        ResponsesClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetResponsesClient("model");
         IChatClient chatClient = openAIClient.AsIChatClient();
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
-        Assert.Same(openAIClient, chatClient.GetService<OpenAIResponseClient>());
+        Assert.Same(openAIClient, chatClient.GetService<ResponsesClient>());
 
         using IChatClient pipeline = chatClient
             .AsBuilder()
@@ -67,7 +66,7 @@ public class OpenAIResponseClientTests
         Assert.NotNull(pipeline.GetService<CachingChatClient>());
         Assert.NotNull(pipeline.GetService<OpenTelemetryChatClient>());
 
-        Assert.Same(openAIClient, pipeline.GetService<OpenAIResponseClient>());
+        Assert.Same(openAIClient, pipeline.GetService<ResponsesClient>());
         Assert.IsType<FunctionInvokingChatClient>(pipeline.GetService<IChatClient>());
     }
 
@@ -295,7 +294,7 @@ public class OpenAIResponseClientTests
         List<ChatResponseUpdate> updates = [];
         await foreach (var update in client.GetStreamingResponseAsync("Calculate the sum of the first 5 positive integers.", new()
         {
-            RawRepresentationFactory = options => new ResponseCreationOptions
+            RawRepresentationFactory = options => new CreateResponseOptions
             {
                 ReasoningOptions = new()
                 {
@@ -428,7 +427,7 @@ public class OpenAIResponseClientTests
         List<ChatResponseUpdate> updates = [];
         await foreach (var update in client.GetStreamingResponseAsync("Solve this problem step by step.", new()
         {
-            RawRepresentationFactory = options => new ResponseCreationOptions
+            RawRepresentationFactory = options => new CreateResponseOptions
             {
                 ReasoningOptions = new()
                 {
@@ -609,7 +608,6 @@ public class OpenAIResponseClientTests
                         "display_height": 768
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "message",
@@ -700,7 +698,7 @@ public class OpenAIResponseClientTests
         ChatOptions chatOptions = new()
         {
             Tools = [ResponseTool.CreateComputerTool(ComputerToolEnvironment.Browser, 1024, 768).AsAITool()],
-            RawRepresentationFactory = options => new ResponseCreationOptions
+            RawRepresentationFactory = options => new CreateResponseOptions
             {
                 ReasoningOptions = new() { ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Concise },
             }
@@ -745,7 +743,6 @@ public class OpenAIResponseClientTests
                         "display_height": 768
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "message",
@@ -789,7 +786,7 @@ public class OpenAIResponseClientTests
         ChatOptions chatOptions = new()
         {
             Tools = [ResponseTool.CreateComputerTool(ComputerToolEnvironment.Browser, 1024, 768).AsAITool()],
-            RawRepresentationFactory = options => new ResponseCreationOptions
+            RawRepresentationFactory = options => new CreateResponseOptions
             {
                 ReasoningOptions = new() { ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Concise },
             }
@@ -843,7 +840,6 @@ public class OpenAIResponseClientTests
                         ]
                     }
                 ],
-                "tool_choice": "auto",
                 "tools": [
                     {
                         "type": "function",
@@ -894,7 +890,7 @@ public class OpenAIResponseClientTests
             Tools = [AIFunctionFactory.Create(() => 42, "GetPersonAge", "Gets the age of the specified person.")],
             AdditionalProperties = new()
             {
-                ["strictJsonSchema"] = true,
+                ["strict"] = true,
             },
         });
         Assert.NotNull(response);
@@ -1039,7 +1035,7 @@ public class OpenAIResponseClientTests
         {
             RawRepresentationFactory = (c) =>
             {
-                ResponseCreationOptions openAIOptions = new()
+                CreateResponseOptions openAIOptions = new()
                 {
                     MaxOutputTokenCount = 10,
                     PreviousResponseId = "resp_42",
@@ -1202,7 +1198,6 @@ public class OpenAIResponseClientTests
                   "server_url": "https://mcp.deepwiki.com/mcp"
                 }
               ],
-              "tool_choice": "auto",
               "input": [
                 {
                   "type": "message",
@@ -1257,7 +1252,6 @@ public class OpenAIResponseClientTests
                 },
                 "verbosity": "medium"
               },
-              "tool_choice": "auto",
               "tools": [
                 {
                   "type": "mcp",
@@ -1317,7 +1311,6 @@ public class OpenAIResponseClientTests
                         "server_url": "https://mcp.deepwiki.com/mcp"
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "mcp_approval_response",
@@ -1474,7 +1467,6 @@ public class OpenAIResponseClientTests
                         "require_approval": "never"
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "message",
@@ -1739,7 +1731,6 @@ public class OpenAIResponseClientTests
                         "require_approval": "never"
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "message",
@@ -2610,7 +2601,6 @@ public class OpenAIResponseClientTests
                     "role":"user",
                     "content":[{"type":"input_text","text":"Calculate the sum of numbers from 1 to 5"}]
                 }],
-                "tool_choice":"auto",
                 "tools":[{
                     "type":"code_interpreter",
                     "container":{"type":"auto"}
@@ -2739,7 +2729,6 @@ public class OpenAIResponseClientTests
                     "role":"user",
                     "content":[{"type":"input_text","text":"Calculate the sum of numbers from 1 to 10 using Python"}]
                 }],
-                "tool_choice":"auto",
                 "tools":[{
                     "type":"code_interpreter",
                     "container":{"type":"auto"}
@@ -3032,7 +3021,7 @@ public class OpenAIResponseClientTests
             {
                 "temperature":0.5,
                 "model":"gpt-4o-mini",
-                "conversation":"conv_12345",
+                "conversation":{"id":"conv_12345"},
                 "input": [{
                     "type":"message",
                     "role":"user",
@@ -3134,7 +3123,7 @@ public class OpenAIResponseClientTests
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 StoredOutputEnabled = false
             }
@@ -3196,7 +3185,7 @@ public class OpenAIResponseClientTests
             MaxOutputTokens = 20,
             Temperature = 0.5f,
             ConversationId = "resp_override",
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 PreviousResponseId = null
             }
@@ -3258,7 +3247,7 @@ public class OpenAIResponseClientTests
             MaxOutputTokens = 20,
             Temperature = 0.5f,
             ConversationId = "conv_ignored",
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 PreviousResponseId = "resp_fromraw"
             }
@@ -3320,7 +3309,7 @@ public class OpenAIResponseClientTests
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 StoredOutputEnabled = true
             }
@@ -3394,7 +3383,7 @@ public class OpenAIResponseClientTests
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 StoredOutputEnabled = true
             }
@@ -3475,7 +3464,7 @@ public class OpenAIResponseClientTests
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 StoredOutputEnabled = false
             }
@@ -3500,7 +3489,7 @@ public class OpenAIResponseClientTests
             {
                 "temperature":0.5,
                 "model":"gpt-4o-mini",
-                "conversation":"conv_12345",
+                "conversation":{"id":"conv_12345"},
                 "input":[
                     {
                         "type":"message",
@@ -3656,7 +3645,7 @@ public class OpenAIResponseClientTests
         {
             "temperature":0.5,
             "model":"gpt-4o-mini",
-            "conversation":"conv_12345",
+            "conversation":{"id":"conv_12345"},
             "input": [{
                 "type":"message",
                 "role":"user",
@@ -3695,20 +3684,15 @@ public class OpenAIResponseClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
 
-        var rcoJsonModel = (IJsonModel<ResponseCreationOptions>)new ResponseCreationOptions();
-        BinaryData rcoJsonBinaryData = rcoJsonModel.Write(ModelReaderWriterOptions.Json);
-        JsonObject rcoJsonObject = Assert.IsType<JsonObject>(JsonNode.Parse(rcoJsonBinaryData.ToMemory().Span));
-        Assert.Null(rcoJsonObject["conversation"]);
-        rcoJsonObject["conversation"] = "conv_12345";
-
         var response = await client.GetResponseAsync("hello", new()
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
             ConversationId = "conv_ignored",
-            RawRepresentationFactory = (c) => rcoJsonModel.Create(
-                new BinaryData(JsonSerializer.SerializeToUtf8Bytes(rcoJsonObject)),
-                ModelReaderWriterOptions.Json)
+            RawRepresentationFactory = _ => new CreateResponseOptions
+            {
+                ConversationOptions = new("conv_12345"),
+            }
         });
 
         Assert.NotNull(response);
@@ -5146,7 +5130,6 @@ public class OpenAIResponseClientTests
                         "output_format": "png"
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "message",
@@ -5240,7 +5223,6 @@ public class OpenAIResponseClientTests
                         "output_format": "png"
                     }
                 ],
-                "tool_choice": "auto",
                 "stream": true,
                 "input": [
                     {
@@ -5352,7 +5334,6 @@ public class OpenAIResponseClientTests
                         "partial_images": 3
                     }
                 ],
-                "tool_choice": "auto",
                 "stream": true,
                 "input": [
                     {
@@ -5486,7 +5467,7 @@ public class OpenAIResponseClientTests
         new OpenAIClient(
             new ApiKeyCredential("apikey"),
             new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
-        .GetOpenAIResponseClient(modelId)
+        .GetResponsesClient(modelId)
         .AsIChatClient();
 
     private static string ResponseStatusToRequestValue(ResponseStatus status)
