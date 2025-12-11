@@ -60,6 +60,47 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
     }
 
     [ConditionalFact]
+    public async Task SupportsTablesWithoutTrailingPipes()
+    {
+        // Markdown tables without trailing pipes (|) at the end of each row should be parsed correctly.
+        // This was causing IndexOutOfRangeException before the fix.
+        string markdownContent = """
+        # ReadyToRun Flags
+        
+        | Flag                                       |      Value | Description
+        |:-------------------------------------------|-----------:|:-----------
+        | READYTORUN_FLAG_PLATFORM_NEUTRAL_SOURCE    | 0x00000001 | Set if the original IL image was platform neutral.
+        | READYTORUN_FLAG_COMPOSITE                  | 0x00000002 | The image represents a composite R2R file.
+        | READYTORUN_FLAG_PARTIAL                    | 0x00000004 |
+        | READYTORUN_FLAG_NONSHARED_PINVOKE_STUBS    | 0x00000008 | PInvoke stubs compiled into image are non-shareable.
+        | READYTORUN_FLAG_EMBEDDED_MSIL              | 0x00000010 | Input MSIL is embedded in the R2R image.
+        | READYTORUN_FLAG_COMPONENT                  | 0x00000020 | This is a component assembly of a composite R2R image
+        | READYTORUN_FLAG_MULTIMODULE_VERSION_BUBBLE | 0x00000040 | This R2R module has multiple modules within its version bubble.
+        | READYTORUN_FLAG_UNRELATED_R2R_CODE         | 0x00000080 | This R2R module has code in it that would not be naturally encoded.
+        | READYTORUN_FLAG_PLATFORM_NATIVE_IMAGE      | 0x00000100 | The owning composite executable is in the platform native format
+        """;
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        IngestionDocumentTable documentTable = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentTable>());
+        Assert.Equal(10, documentTable.Cells.GetLength(0)); // 10 rows (1 header + 9 data rows)
+        Assert.Equal(3, documentTable.Cells.GetLength(1));  // 3 columns
+
+        // Verify a few key cells
+        Assert.Equal("Flag", documentTable.Cells[0, 0]!.GetMarkdown().Trim());
+        Assert.Equal("Value", documentTable.Cells[0, 1]!.GetMarkdown().Trim());
+        Assert.Equal("Description", documentTable.Cells[0, 2]!.GetMarkdown().Trim());
+
+        Assert.Equal("READYTORUN_FLAG_PLATFORM_NEUTRAL_SOURCE", documentTable.Cells[1, 0]!.GetMarkdown().Trim());
+        Assert.Equal("0x00000001", documentTable.Cells[1, 1]!.GetMarkdown().Trim());
+        Assert.Contains("platform neutral", documentTable.Cells[1, 2]!.GetMarkdown().Trim());
+
+        Assert.Equal("READYTORUN_FLAG_PARTIAL", documentTable.Cells[3, 0]!.GetMarkdown().Trim());
+        Assert.Equal("0x00000004", documentTable.Cells[3, 1]!.GetMarkdown().Trim());
+        Assert.Null(documentTable.Cells[3, 2]); // Empty description cell is null
+    }
+
+    [ConditionalFact]
     public override async Task SupportsImages()
     {
         string contentType1 = "image/png";
