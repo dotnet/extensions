@@ -788,8 +788,6 @@ public class FunctionInvokingChatClientTests
         Assert.DoesNotContain("\\\"", resultStr); // Should not have escaped quotes
     }
 
-
-
     [Fact]
     public async Task SupportsConsecutiveStreamingUpdatesWithFunctionCalls()
     {

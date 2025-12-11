@@ -659,6 +659,24 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
     }
 
+    private static object GetNumberValue(JsonElement jsonElement)
+    {
+        // Try to preserve integer precision
+        if (jsonElement.TryGetInt64(out long longValue))
+        {
+            return longValue;
+        }
+
+        // Try to preserve decimal precision
+        if (jsonElement.TryGetDecimal(out decimal decimalValue))
+        {
+            return decimalValue;
+        }
+
+        // Fall back to double
+        return jsonElement.GetDouble();
+    }
+
     /// <summary>Prepares the various chat message lists after a response from the inner client and before invoking functions.</summary>
     /// <param name="originalMessages">The original messages provided by the caller.</param>
     /// <param name="messages">The messages reference passed to the inner client.</param>
@@ -1223,9 +1241,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                         tagValue = jsonElement.ValueKind switch
                         {
                             JsonValueKind.String => jsonElement.GetString(),
-                            JsonValueKind.Number => jsonElement.TryGetInt64(out long longValue) ? longValue :
-                                                     jsonElement.TryGetDecimal(out decimal decimalValue) ? decimalValue :
-                                                     jsonElement.GetDouble(),
+                            JsonValueKind.Number => GetNumberValue(jsonElement),
                             JsonValueKind.True => true,
                             JsonValueKind.False => false,
                             JsonValueKind.Null => null,
