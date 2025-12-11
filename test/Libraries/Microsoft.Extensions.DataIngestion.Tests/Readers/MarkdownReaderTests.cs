@@ -62,8 +62,8 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
     [ConditionalFact]
     public async Task SupportsTablesWithoutTrailingPipes()
     {
-        // This test validates the fix for: https://github.com/dotnet/extensions/issues/XXXX
         // Markdown tables without trailing pipes (|) at the end of each row should be parsed correctly.
+        // This was causing IndexOutOfRangeException before the fix.
         string markdownContent = """
         # ReadyToRun Flags
         

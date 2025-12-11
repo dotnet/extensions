@@ -274,7 +274,6 @@ internal static class MarkdownParser
 
         return cells;
 
-        // Calculate the actual number of columns by finding the maximum column count across all rows.
         static int GetColumnCount(Table table, int firstRowIndex)
         {
             int maxColumns = 0;
