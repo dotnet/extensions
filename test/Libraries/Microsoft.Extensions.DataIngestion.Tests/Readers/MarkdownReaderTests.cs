@@ -133,6 +133,24 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
         Assert.Equal("Latest logo", img.AlternativeText);
     }
 
+    [ConditionalFact]
+    public async Task SupportsInlineHtml()
+    {
+        string markdownContent = """
+        When getting the managed exception object for this exception, the runtime will first try to allocate a new managed object <sup>[1]</sup>,
+        and if that fails, will return a pre-allocated, shared, global out of memory exception object.
+        """;
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        Assert.NotNull(document);
+        var paragraph = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentParagraph>());
+        Assert.NotNull(paragraph.Text);
+        Assert.Contains("allocate a new managed object", paragraph.Text);
+        Assert.Contains("<sup>[1]</sup>", paragraph.Text);
+        Assert.Contains("out of memory exception object", paragraph.Text);
+    }
+
     private async Task<IngestionDocument> ReadAsync(string content)
     {
         using MemoryStream stream = new(System.Text.Encoding.UTF8.GetBytes(content));
