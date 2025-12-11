@@ -24,6 +24,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!--
+      Internal packages referenced by the templates that don't match the `.\build.cmd -vs AI` filter.
+      We include these references here so that local NuGet packages get generated for use by the templates.
+
+      These must be declared as <ProjectReference> items rather than using an MSBuild target to collect
+      them from <TemplatePackageVersion> items, as SlnGen doesn't invoke the targets.
+    -->
+    <ProjectReference
+      Include="..\..\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
     <TemplatePackageVersion Include="Microsoft.Extensions.AI"
                             Project="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
     <TemplatePackageVersion Include="Microsoft.Extensions.AI.OpenAI"
