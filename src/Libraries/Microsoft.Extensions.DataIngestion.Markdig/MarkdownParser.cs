@@ -244,8 +244,11 @@ internal static class MarkdownParser
     {
         int firstRowIndex = SkipFirstRow(table, outputContent) ? 1 : 0;
 
-        // For some reason, table.ColumnDefinitions.Count returns one extra column.
-        var cells = new IngestionDocumentElement?[table.Count - firstRowIndex, table.ColumnDefinitions.Count - 1];
+        // Calculate the actual number of columns by examining the rows.
+        // table.ColumnDefinitions.Count can vary: for tables WITH trailing pipes it's (columns + 1),
+        // but for tables WITHOUT trailing pipes it's equal to the actual column count.
+        int columnCount = GetColumnCount(table, firstRowIndex);
+        var cells = new IngestionDocumentElement?[table.Count - firstRowIndex, columnCount];
 
         for (int rowIndex = firstRowIndex; rowIndex < table.Count; rowIndex++)
         {
@@ -270,6 +273,26 @@ internal static class MarkdownParser
         }
 
         return cells;
+
+        // Calculate the actual number of columns by finding the maximum column count across all rows.
+        static int GetColumnCount(Table table, int firstRowIndex)
+        {
+            int maxColumns = 0;
+            for (int rowIndex = firstRowIndex; rowIndex < table.Count; rowIndex++)
+            {
+                var tableRow = (TableRow)table[rowIndex];
+                int columnCount = 0;
+                for (int cellIndex = 0; cellIndex < tableRow.Count; cellIndex++)
+                {
+                    var tableCell = (TableCell)tableRow[cellIndex];
+                    columnCount += tableCell.ColumnSpan;
+                }
+
+                maxColumns = Math.Max(maxColumns, columnCount);
+            }
+
+            return maxColumns;
+        }
 
         // Some parsers like MarkItDown include a row with invalid markdown before the separator row:
         // |  |  |  |  |
