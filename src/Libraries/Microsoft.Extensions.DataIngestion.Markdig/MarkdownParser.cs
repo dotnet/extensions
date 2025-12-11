@@ -228,6 +228,10 @@ internal static class MarkdownParser
             {
                 content.Append(codeInline.Content);
             }
+            else if (inline is HtmlInline htmlInline)
+            {
+                content.Append(htmlInline.Tag);
+            }
             else
             {
                 throw new NotSupportedException($"Inline type '{inline.GetType().Name}' is not supported.");

@@ -133,6 +133,32 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
         Assert.Equal("Latest logo", img.AlternativeText);
     }
 
+    [ConditionalFact]
+    public async Task SupportsInlineHtml()
+    {
+        string markdownContent = "This has <sup>[1]</sup> inline HTML.";
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        var paragraph = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentParagraph>());
+        Assert.Equal("This has <sup>[1]</sup> inline HTML.", paragraph.Text);
+        Assert.Equal(markdownContent, paragraph.GetMarkdown());
+    }
+
+    [ConditionalFact]
+    public async Task SupportsMultipleInlineHtmlElements()
+    {
+        string markdownContent = """
+        Text with <strong>bold</strong>, <em>italic</em>, <sub>subscript</sub>, and <sup>superscript</sup> tags.
+        """;
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        var paragraph = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentParagraph>());
+        Assert.Equal("Text with <strong>bold</strong>, <em>italic</em>, <sub>subscript</sub>, and <sup>superscript</sup> tags.", paragraph.Text);
+        Assert.Equal(markdownContent, paragraph.GetMarkdown());
+    }
+
     private async Task<IngestionDocument> ReadAsync(string content)
     {
         using MemoryStream stream = new(System.Text.Encoding.UTF8.GetBytes(content));
