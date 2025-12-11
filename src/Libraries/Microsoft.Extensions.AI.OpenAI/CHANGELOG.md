@@ -1,4 +1,23 @@
-# Release History
+# Microsoft.Extensions.AI.OpenAI Release History
+
+## 10.1.0-preview.1.25608.1
+
+- Fixed package references for net10.0 asset.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated the OpenAI Responses `IChatClient` to ensure all `ResponseItem`s are yielded in `AIContent`.
+- Added workaround to the OpenAI Responses `IChatClient` for OpenAI service sometimes sending error data in a manner different from how it's documented.
+
+## 10.0.1-preview.1.25571.5
+
+- Updated to depend on OpenAI 2.7.0.
+- Added support for image detail in OpenAI Responses `IChatClient`.
+- Fixed IEmbeddingGenerator implementation to correctly handle missing usage data.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 10.0.0-preview.1.25560.10
+
+- Added support for `HostedImageGenerationTool` in the OpenAI Responses `IChatClient`.
+- Updated .NET dependencies to 10.0.0 versions.
 
 ## 9.10.2-preview.1.25552.1
 

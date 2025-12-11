@@ -112,7 +112,7 @@ public static class MicrosoftExtensionsAIChatExtensions
                     }
                     else
                     {
-                        yield return OpenAIChatModelFactory.ChatMessageAnnotation(0, 0, citation.Url, citation.Title);
+                        yield return OpenAIChatModelFactory.ChatMessageAnnotation(webResourceUri: citation.Url, webResourceTitle: citation.Title);
                     }
                 }
             }
@@ -149,8 +149,10 @@ public static class MicrosoftExtensionsAIChatExtensions
 
             var toolCallUpdates = update.Contents.OfType<FunctionCallContent>().Select((fcc, index) =>
                 OpenAIChatModelFactory.StreamingChatToolCallUpdate(
-                    index, fcc.CallId, ChatToolCallKind.Function, fcc.Name,
-                    new(JsonSerializer.SerializeToUtf8Bytes(fcc.Arguments, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))))
+                    index,
+                    fcc.CallId,
+                    functionName: fcc.Name,
+                    functionArgumentsUpdate: new(JsonSerializer.SerializeToUtf8Bytes(fcc.Arguments, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))))
                 .ToList();
 
             yield return OpenAIChatModelFactory.StreamingChatCompletionUpdate(
@@ -234,7 +236,7 @@ public static class MicrosoftExtensionsAIChatExtensions
                             part.Write(writer, ModelReaderWriterOptions.Json);
                         }
 
-                        return JsonSerializer.Deserialize(ms.GetBuffer().AsSpan(0, (int)ms.Position), AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)))!;
+                        return JsonElement.Parse(ms.GetBuffer().AsSpan(0, (int)ms.Position));
                     }
 
                     break;

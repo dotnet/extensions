@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
+#pragma warning disable S2219 // Runtime type checking should be simplified
 #pragma warning disable S3353 // Unchanged local variables should be "const"
 
 namespace Microsoft.Extensions.AI;
@@ -268,8 +269,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         _ = Throw.IfNull(messages);
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
-        // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
+        // Create an activity to group them together for better observability. If there's already a genai "invoke_agent"
+        // span that's current, however, we just consider that the group and don't add a new one.
+        using Activity? activity = CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
@@ -407,8 +409,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         _ = Throw.IfNull(messages);
 
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
-        // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
+        // Create an activity to group them together for better observability. If there's already a genai "invoke_agent"
+        // span that's current, however, we just consider that the group and don't add a new one.
+        using Activity? activity = CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
         UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
@@ -748,7 +751,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// Gets whether <paramref name="messages"/> contains any <see cref="FunctionApprovalRequestContent"/> or <see cref="FunctionApprovalResponseContent"/> instances.
     /// </summary>
     private static bool HasAnyApprovalContent(List<ChatMessage> messages) =>
-        messages.Any(static m => m.Contents.Any(static c => c is FunctionApprovalRequestContent or FunctionApprovalResponseContent));
+        messages.Exists(static m => m.Contents.Any(static c => c is FunctionApprovalRequestContent or FunctionApprovalResponseContent));
 
     /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="messages"/> to <paramref name="functionCalls"/>.</summary>
     private static bool CopyFunctionCalls(
@@ -922,7 +925,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                         messages, options, toolMap, functionCallContents,
                         iteration, callIndex, captureExceptions: true, isStreaming, cancellationToken)));
 
-                shouldTerminate = results.Any(r => r.Terminate);
+                shouldTerminate = results.Exists(static r => r.Terminate);
             }
             else
             {
@@ -1108,6 +1111,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
     }
 
+    /// <summary>Gets a value indicating whether <see cref="Activity.Current"/> represents an "invoke_agent" span.</summary>
+    private static bool CurrentActivityIsInvokeAgent =>
+        Activity.Current?.DisplayName == OpenTelemetryConsts.GenAI.InvokeAgentName;
+
     /// <summary>Invokes the function asynchronously.</summary>
     /// <param name="context">
     /// The function invocation context detailing the function to be invoked and its arguments along with additional request information.
@@ -1119,7 +1126,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         _ = Throw.IfNull(context);
 
-        using Activity? activity = _activitySource?.StartActivity(
+        // We have multiple possible ActivitySource's we could use. In a chat scenario, we ask the inner client whether it has an ActivitySource.
+        // In an agent scenario, we use the ActivitySource from the surrounding "invoke_agent" activity.
+        Activity? invokeAgentActivity = CurrentActivityIsInvokeAgent ? Activity.Current : null;
+        ActivitySource? source = invokeAgentActivity?.Source ?? _activitySource;
+
+        using Activity? activity = source?.StartActivity(
             $"{OpenTelemetryConsts.GenAI.ExecuteToolName} {context.Function.Name}",
             ActivityKind.Internal,
             default(ActivityContext),
@@ -1133,7 +1145,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         long startingTimestamp = Stopwatch.GetTimestamp();
 
-        bool enableSensitiveData = activity is { IsAllDataRequested: true } && InnerClient.GetService<OpenTelemetryChatClient>()?.EnableSensitiveData is true;
+        // If we're in the chat scenario, we determine whether sensitive data is enabled by querying the inner chat client.
+        // If we're in the agent scenario, we determine whether sensitive data is enabled by checking for the relevant custom property on the activity.
+        bool enableSensitiveData =
+            activity is { IsAllDataRequested: true } &&
+            (invokeAgentActivity is not null ?
+             invokeAgentActivity.GetCustomProperty(OpenTelemetryChatClient.SensitiveDataEnabledCustomKey) as string is OpenTelemetryChatClient.SensitiveDataEnabledTrueValue :
+             InnerClient.GetService<OpenTelemetryChatClient>()?.EnableSensitiveData is true);
+
         bool traceLoggingEnabled = _logger.IsEnabled(LogLevel.Trace);
         bool loggedInvoke = false;
         if (enableSensitiveData || traceLoggingEnabled)

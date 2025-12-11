@@ -518,7 +518,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         public override string Name => name;
         public override IReadOnlyDictionary<string, object?> AdditionalProperties => additionalProperties;
-        public override JsonElement JsonSchema { get; } = JsonSerializer.Deserialize<JsonElement>(jsonSchema, AIJsonUtilities.DefaultOptions);
+        public override JsonElement JsonSchema { get; } = JsonElement.Parse(jsonSchema);
         protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) => throw new NotSupportedException();
     }
 
@@ -1157,13 +1157,14 @@ public abstract class ChatClientIntegrationTests : IDisposable
         // The summarizer should have reduced the conversation
         Assert.Equal(1, chatClient.SummarizerCallCount);
         Assert.NotNull(chatClient.LastSummarizedConversation);
-        Assert.Equal(3, chatClient.LastSummarizedConversation.Count);
+        Assert.Equal(4, chatClient.LastSummarizedConversation.Count);
         Assert.Collection(chatClient.LastSummarizedConversation,
             m =>
             {
                 Assert.Equal(ChatRole.Assistant, m.Role); // Indicates this is the assistant's summary
                 Assert.Contains("Alice", m.Text);
             },
+            m => Assert.StartsWith("I hiked the section", m.Text, StringComparison.Ordinal),
             m => Assert.StartsWith("The Sierra Nevada section", m.Text, StringComparison.Ordinal),
             m => Assert.StartsWith("What's my name", m.Text, StringComparison.Ordinal));
 

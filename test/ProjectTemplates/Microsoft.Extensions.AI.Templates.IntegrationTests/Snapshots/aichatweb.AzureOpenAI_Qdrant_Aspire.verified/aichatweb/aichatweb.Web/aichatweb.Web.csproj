@@ -8,15 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="9.5.1-preview.1.25502.11" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.1.0" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="10.1.0" />
-    <PackageReference Include="Microsoft.Extensions.DataIngestion" Version="10.1.0" />
-    <PackageReference Include="Microsoft.Extensions.DataIngestion.Markdig" Version="10.1.0" />
-    <PackageReference Include="Microsoft.Extensions.DataIngestion.MarkItDown" Version="10.1.0" />
-    <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="2.0.0-preview.25503.2" />
-    <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="2.0.0-preview.25503.2" />
-    <PackageReference Include="Aspire.Azure.Search.Documents" Version="9.5.1" />
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="13.0.0-preview.1.25560.3" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.2.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DataIngestion" Version="10.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DataIngestion.Markdig" Version="10.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DataIngestion.MarkItDown" Version="10.2.0" />
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="2.0.0" />
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="2.0.0" />
+    <PackageReference Include="Aspire.Azure.Search.Documents" Version="13.0.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.67.1-preview" />
   </ItemGroup>
 

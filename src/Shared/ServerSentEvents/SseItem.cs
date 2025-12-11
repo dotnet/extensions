@@ -23,7 +23,7 @@ namespace System.Net.ServerSentEvents
         /// <exception cref="ArgumentException">Thrown when <paramref name="eventType"/> contains a line break.</exception>
         public SseItem(T data, string? eventType = null)
         {
-            if (eventType.AsSpan().ContainsLineBreaks() is true)
+            if (eventType.AsSpan().ContainsLineBreaks())
             {
                 ThrowHelper.ThrowArgumentException_CannotContainLineBreaks(nameof(eventType));
             }
@@ -45,7 +45,7 @@ namespace System.Net.ServerSentEvents
             get;
             init
             {
-                if (value.AsSpan().ContainsLineBreaks() is true)
+                if (value.AsSpan().ContainsLineBreaks())
                 {
                     ThrowHelper.ThrowArgumentException_CannotContainLineBreaks(nameof(EventId));
                 }

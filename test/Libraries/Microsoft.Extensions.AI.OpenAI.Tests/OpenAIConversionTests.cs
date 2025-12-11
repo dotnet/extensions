@@ -485,7 +485,7 @@ public class OpenAIConversionTests
         {
             ["param1"] = "value1",
             ["param2"] = 42
-        }), JsonSerializer.Deserialize<JsonElement>(tc.FunctionArguments.ToMemory().Span)));
+        }), JsonElement.Parse(tc.FunctionArguments.ToMemory().Span)));
         Assert.Equal("JohnSmith", m2.ParticipantName);
 
         ToolChatMessage m3 = Assert.IsType<ToolChatMessage>(convertedMessages[index + 3], exactMatch: false);
@@ -541,7 +541,7 @@ public class OpenAIConversionTests
         {
             ["param1"] = "value1",
             ["param2"] = 42
-        }), JsonSerializer.Deserialize<JsonElement>(m3.FunctionArguments.ToMemory().Span)));
+        }), JsonElement.Parse(m3.FunctionArguments.ToMemory().Span)));
 
         FunctionCallOutputResponseItem m4 = Assert.IsAssignableFrom<FunctionCallOutputResponseItem>(convertedItems[4]);
         Assert.Equal("callid123", m4.CallId);
