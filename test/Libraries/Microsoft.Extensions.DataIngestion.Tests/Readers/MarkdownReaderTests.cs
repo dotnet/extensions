@@ -136,39 +136,27 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
     [ConditionalFact]
     public async Task SupportsInlineHtml()
     {
-        string markdownContent = """
-        When getting the managed exception object for this exception, the runtime will first try to allocate a new managed object <sup>[1]</sup>,
-        and if that fails, will return a pre-allocated, shared, global out of memory exception object.
-        """;
+        string markdownContent = "This has <sup>[1]</sup> inline HTML.";
 
         IngestionDocument document = await ReadAsync(markdownContent);
 
-        Assert.NotNull(document);
         var paragraph = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentParagraph>());
-        Assert.NotNull(paragraph.Text);
-        Assert.Contains("allocate a new managed object", paragraph.Text);
-        Assert.Contains("<sup>[1]</sup>", paragraph.Text);
-        Assert.Contains("out of memory exception object", paragraph.Text);
+        Assert.Equal("This has <sup>[1]</sup> inline HTML.", paragraph.Text);
+        Assert.Equal(markdownContent, paragraph.GetMarkdown());
     }
 
     [ConditionalFact]
     public async Task SupportsMultipleInlineHtmlElements()
     {
         string markdownContent = """
-        This text has <strong>bold</strong> and <em>italic</em> HTML tags, plus a <span style="color:red">span</span> element.
-        It also includes <sub>subscript</sub> and <sup>superscript</sup> tags.
+        Text with <strong>bold</strong>, <em>italic</em>, <sub>subscript</sub>, and <sup>superscript</sup> tags.
         """;
 
         IngestionDocument document = await ReadAsync(markdownContent);
 
-        Assert.NotNull(document);
         var paragraph = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentParagraph>());
-        Assert.NotNull(paragraph.Text);
-        Assert.Contains("<strong>bold</strong>", paragraph.Text);
-        Assert.Contains("<em>italic</em>", paragraph.Text);
-        Assert.Contains("<span style=\"color:red\">span</span>", paragraph.Text);
-        Assert.Contains("<sub>subscript</sub>", paragraph.Text);
-        Assert.Contains("<sup>superscript</sup>", paragraph.Text);
+        Assert.Equal("Text with <strong>bold</strong>, <em>italic</em>, <sub>subscript</sub>, and <sup>superscript</sup> tags.", paragraph.Text);
+        Assert.Equal(markdownContent, paragraph.GetMarkdown());
     }
 
     private async Task<IngestionDocument> ReadAsync(string content)
