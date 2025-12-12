@@ -7,7 +7,7 @@ To update project template JavaScript dependencies:
 2. Update the `package.json` file with added or updated dependencies
 3. Run the following commands from this directory:
     ```sh
-    npm install
+    ../../scripts/UpdateNpmDependencies.ps1
     npm run copy-dependencies
     ```
 
