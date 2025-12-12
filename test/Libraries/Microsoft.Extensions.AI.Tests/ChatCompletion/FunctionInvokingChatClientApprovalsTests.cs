@@ -278,8 +278,8 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user."),
-                new FunctionResultContent("callId2", result: "Error: Tool call invocation was rejected by user.")
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected."),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected.")
             ]),
         ];
 
@@ -293,8 +293,8 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user."),
-                new FunctionResultContent("callId2", result: "Error: Tool call invocation was rejected by user.")
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected."),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected.")
             ]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
@@ -335,7 +335,7 @@ public class FunctionInvokingChatClientApprovalsTests
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user.")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Tool call invocation rejected.")]),
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
         ];
 
@@ -347,7 +347,7 @@ public class FunctionInvokingChatClientApprovalsTests
         List<ChatMessage> nonStreamingOutput =
         [
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user.")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Tool call invocation rejected.")]),
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
@@ -357,7 +357,7 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user."),
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected."),
                 new FunctionResultContent("callId2", result: "Result 2: 42")
             ]),
             new ChatMessage(ChatRole.Assistant, "world"),
@@ -407,8 +407,8 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", result: "User denied permission for this operation"),
-                new FunctionResultContent("callId2", result: "Function Func2 is not allowed at this time")
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. User denied permission for this operation"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected. Function Func2 is not allowed at this time")
             ]),
         ];
 
@@ -422,8 +422,8 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", result: "User denied permission for this operation"),
-                new FunctionResultContent("callId2", result: "Function Func2 is not allowed at this time")
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. User denied permission for this operation"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected. Function Func2 is not allowed at this time")
             ]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
@@ -474,8 +474,8 @@ public class FunctionInvokingChatClientApprovalsTests
             ]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", result: "Custom rejection for Func1"),
-                new FunctionResultContent("callId2", result: "Error: Tool call invocation was rejected by user.")
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. Custom rejection for Func1"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected.")
             ]),
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Result 3: test")]),
         ];
@@ -495,8 +495,8 @@ public class FunctionInvokingChatClientApprovalsTests
             ]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", result: "Custom rejection for Func1"),
-                new FunctionResultContent("callId2", result: "Error: Tool call invocation was rejected by user.")
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. Custom rejection for Func1"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected.")
             ]),
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Result 3: test")]),
             new ChatMessage(ChatRole.Assistant, "world"),
@@ -512,8 +512,8 @@ public class FunctionInvokingChatClientApprovalsTests
             ]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", result: "Custom rejection for Func1"),
-                new FunctionResultContent("callId2", result: "Error: Tool call invocation was rejected by user."),
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. Custom rejection for Func1"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected."),
                 new FunctionResultContent("callId3", result: "Result 3: test")
             ]),
             new ChatMessage(ChatRole.Assistant, "world"),

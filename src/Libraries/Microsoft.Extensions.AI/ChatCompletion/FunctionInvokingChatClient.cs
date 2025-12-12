@@ -1420,7 +1420,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         rejections is { Count: > 0 } ?
             rejections.ConvertAll(m =>
             {
-                string result = m.Response.Reason ?? "Error: Tool call invocation was rejected by user.";
+                string result = "Tool call invocation rejected.";
+                if (!string.IsNullOrWhiteSpace(m.Response.Reason))
+                {
+                    result = $"{result} {m.Response.Reason}";
+                }
+
                 return (AIContent)new FunctionResultContent(m.Response.FunctionCall.CallId, result);
             }) :
             null;

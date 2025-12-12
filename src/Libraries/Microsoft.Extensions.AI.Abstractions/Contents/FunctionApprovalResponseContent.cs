@@ -40,13 +40,7 @@ public sealed class FunctionApprovalResponseContent : UserInputResponseContent
     public FunctionCallContent FunctionCall { get; }
 
     /// <summary>
-    /// Gets or sets the reason for the approval or rejection.
+    /// Gets or sets the optional reason for the approval or rejection.
     /// </summary>
-    /// <remarks>
-    /// When <see cref="Approved"/> is <see langword="false"/>, this can be used to provide
-    /// a custom rejection message. If not set, a default rejection message will be used.
-    /// When <see cref="Approved"/> is <see langword="true"/>, this may be used for logging,
-    /// tracing, or other informational purposes.
-    /// </remarks>
     public string? Reason { get; set; }
 }
