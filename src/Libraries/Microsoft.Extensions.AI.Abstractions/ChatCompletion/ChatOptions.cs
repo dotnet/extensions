@@ -182,7 +182,7 @@ public class ChatOptions
     /// </remarks>
     [Experimental("MEAI001")]
     [JsonIgnore]
-    public bool? AllowBackgroundResponses { get; set; }
+    public bool AllowBackgroundResponses { get; set; }
 
     /// <summary>Gets or sets the continuation token for resuming and getting the result of the chat response identified by this token.</summary>
     /// <remarks>
