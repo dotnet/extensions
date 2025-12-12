@@ -15,12 +15,12 @@ public sealed class McpServerToolApprovalResponseContent : UserInputResponseCont
     /// <summary>
     /// Initializes a new instance of the <see cref="McpServerToolApprovalResponseContent"/> class.
     /// </summary>
-    /// <param name="id">The ID that uniquely identifies the MCP server tool approval request/response pair.</param>
+    /// <param name="requestId">The identifier of the <see cref="McpServerToolApprovalRequestContent"/> associated with this response.</param>
     /// <param name="approved"><see langword="true"/> if the MCP server tool call is approved; otherwise, <see langword="false"/>.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="id"/> is empty or composed entirely of whitespace.</exception>
-    public McpServerToolApprovalResponseContent(string id, bool approved)
-        : base(id)
+    /// <exception cref="ArgumentNullException"><paramref name="requestId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="requestId"/> is empty or composed entirely of whitespace.</exception>
+    public McpServerToolApprovalResponseContent(string requestId, bool approved)
+        : base(requestId)
     {
         Approved = approved;
     }

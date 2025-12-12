@@ -16,13 +16,13 @@ public sealed class FunctionApprovalRequestContent : UserInputRequestContent
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionApprovalRequestContent"/> class.
     /// </summary>
-    /// <param name="id">The ID that uniquely identifies the function approval request/response pair.</param>
+    /// <param name="requestId">The identifier of this request.</param>
     /// <param name="functionCall">The function call that requires user approval.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="id"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="requestId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="requestId"/> is empty or composed entirely of whitespace.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functionCall"/> is <see langword="null"/>.</exception>
-    public FunctionApprovalRequestContent(string id, FunctionCallContent functionCall)
-        : base(id)
+    public FunctionApprovalRequestContent(string requestId, FunctionCallContent functionCall)
+        : base(requestId)
     {
         FunctionCall = Throw.IfNull(functionCall);
     }
@@ -37,5 +37,5 @@ public sealed class FunctionApprovalRequestContent : UserInputRequestContent
     /// </summary>
     /// <param name="approved"><see langword="true"/> if the function call is approved; otherwise, <see langword="false"/>.</param>
     /// <returns>The <see cref="FunctionApprovalResponseContent"/> representing the approval response.</returns>
-    public FunctionApprovalResponseContent CreateResponse(bool approved) => new(Id, approved, FunctionCall);
+    public FunctionApprovalResponseContent CreateResponse(bool approved) => new(RequestId, approved, FunctionCall);
 }
