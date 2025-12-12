@@ -17,8 +17,8 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 var openAIClient = new OpenAIClient(
     new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key. See the README for details.")));
 
-#pragma warning disable OPENAI001 // GetOpenAIResponseClient(string) is experimental and subject to change or removal in future updates.
-var chatClient = openAIClient.GetOpenAIResponseClient("gpt-4o-mini").AsIChatClient();
+#pragma warning disable OPENAI001 // GetResponsesClient(string) is experimental and subject to change or removal in future updates.
+var chatClient = openAIClient.GetResponsesClient("gpt-4o-mini").AsIChatClient();
 #pragma warning restore OPENAI001
 
 var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();

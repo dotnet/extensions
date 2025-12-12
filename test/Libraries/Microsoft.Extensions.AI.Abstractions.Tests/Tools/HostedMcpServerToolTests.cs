@@ -27,6 +27,36 @@ public class HostedMcpServerToolTests
     }
 
     [Fact]
+    public void Constructor_AdditionalProperties_String_Roundtrips()
+    {
+        var props = new Dictionary<string, object?> { ["key"] = "value" };
+        HostedMcpServerTool tool = new("serverName", "connector_id", props);
+
+        Assert.Equal("serverName", tool.ServerName);
+        Assert.Equal("connector_id", tool.ServerAddress);
+        Assert.Same(props, tool.AdditionalProperties);
+    }
+
+    [Fact]
+    public void Constructor_AdditionalProperties_Uri_Roundtrips()
+    {
+        var props = new Dictionary<string, object?> { ["key"] = "value" };
+        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"), props);
+
+        Assert.Equal("serverName", tool.ServerName);
+        Assert.Equal("https://localhost/", tool.ServerAddress);
+        Assert.Same(props, tool.AdditionalProperties);
+    }
+
+    [Fact]
+    public void Constructor_NullAdditionalProperties_UsesEmpty()
+    {
+        HostedMcpServerTool tool = new("serverName", "connector_id", null);
+
+        Assert.Empty(tool.AdditionalProperties);
+    }
+
+    [Fact]
     public void Constructor_Roundtrips()
     {
         HostedMcpServerTool tool = new("serverName", "connector_id");
