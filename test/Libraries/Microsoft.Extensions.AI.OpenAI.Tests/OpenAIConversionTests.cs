@@ -141,8 +141,8 @@ public class OpenAIConversionTests
         var location = WebSearchToolLocation.CreateApproximateLocation("US", "Region", "City", "UTC");
         var webSearchTool = new HostedWebSearchToolWithProperties(new Dictionary<string, object?>
         {
-            [nameof(WebSearchToolLocation)] = location,
-            [nameof(WebSearchToolContextSize)] = WebSearchToolContextSize.High
+            [nameof(WebSearchTool.UserLocation)] = location,
+            [nameof(WebSearchTool.SearchContextSize)] = WebSearchToolContextSize.High
         });
 
         var result = webSearchTool.AsOpenAIResponseTool();
@@ -206,6 +206,30 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseTool_WithHostedFileSearchToolWithAdditionalProperties_ProducesValidFileSearchTool()
+    {
+        var rankingOptions = new FileSearchToolRankingOptions { ScoreThreshold = 0.5f };
+        var filters = BinaryData.FromString("{\"type\":\"eq\",\"key\":\"status\",\"value\":\"published\"}");
+        var fileSearchTool = new HostedFileSearchTool(new Dictionary<string, object?>
+        {
+            [nameof(FileSearchTool.RankingOptions)] = rankingOptions,
+            [nameof(FileSearchTool.Filters)] = filters
+        })
+        {
+            MaximumResultCount = 15
+        };
+
+        var result = fileSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<FileSearchTool>(result);
+        Assert.NotNull(tool.RankingOptions);
+        Assert.Equal(0.5f, tool.RankingOptions.ScoreThreshold);
+        Assert.NotNull(tool.Filters);
+        Assert.Equal(15, tool.MaxResultCount);
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_WithHostedCodeInterpreterTool_ProducesValidCodeInterpreterTool()
     {
         var codeTool = new HostedCodeInterpreterTool();
@@ -234,6 +258,99 @@ public class OpenAIConversionTests
         var autoContainerConfig = Assert.IsType<AutomaticCodeInterpreterToolContainerConfiguration>(tool.Container.ContainerConfiguration);
         Assert.Single(autoContainerConfig.FileIds);
         Assert.Equal(fileContent.FileId, autoContainerConfig.FileIds[0]);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationTool_ProducesValidImageGenerationTool()
+    {
+        var imageGenTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions { MediaType = "image/png" }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.NotNull(tool);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithOptions_ProducesValidImageGenerationTool()
+    {
+        var imageGenTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                MediaType = "image/png",
+                ImageSize = new System.Drawing.Size(1024, 1024),
+                StreamingCount = 2
+            }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.Equal("gpt-image-1", tool.Model);
+        Assert.Equal(ImageGenerationToolOutputFileFormat.Png, tool.OutputFileFormat);
+        Assert.NotNull(tool.Size);
+        Assert.Equal(2, tool.PartialImageCount);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithAdditionalProperties_ProducesValidImageGenerationTool()
+    {
+        var imageGenTool = new HostedImageGenerationTool(new Dictionary<string, object?>
+        {
+            [nameof(ImageGenerationTool.Background)] = ImageGenerationToolBackground.Transparent,
+            [nameof(ImageGenerationTool.InputFidelity)] = ImageGenerationToolInputFidelity.High,
+            [nameof(ImageGenerationTool.ModerationLevel)] = ImageGenerationToolModerationLevel.Low,
+            [nameof(ImageGenerationTool.OutputCompressionFactor)] = 50,
+            [nameof(ImageGenerationTool.Quality)] = ImageGenerationToolQuality.High
+        })
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                MediaType = "image/jpeg",
+            }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.Equal("gpt-image-1", tool.Model);
+        Assert.Equal(ImageGenerationToolOutputFileFormat.Jpeg, tool.OutputFileFormat);
+        Assert.Equal(ImageGenerationToolBackground.Transparent, tool.Background);
+        Assert.Equal(ImageGenerationToolInputFidelity.High, tool.InputFidelity);
+        Assert.Equal(ImageGenerationToolModerationLevel.Low, tool.ModerationLevel);
+        Assert.Equal(50, tool.OutputCompressionFactor);
+        Assert.Equal(ImageGenerationToolQuality.High, tool.Quality);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithInputImageMask_ProducesValidImageGenerationTool()
+    {
+        var inputImageMask = new ImageGenerationToolInputImageMask(
+            BinaryData.FromBytes([0x89, 0x50, 0x4E, 0x47]),
+            "image/png");
+
+        var imageGenTool = new HostedImageGenerationTool(new Dictionary<string, object?>
+        {
+            [nameof(ImageGenerationTool.InputImageMask)] = inputImageMask
+        })
+        {
+            Options = new ImageGenerationOptions { MediaType = "image/png" }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.NotNull(tool.InputImageMask);
     }
 
     [Fact]
