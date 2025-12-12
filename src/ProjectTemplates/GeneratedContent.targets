@@ -21,11 +21,14 @@
       "TemplatePackageVersion_{PackageName}"
       where {PackageName} is the package ID with '.' characters removed.
       The value of each property will be the computed package version.
+
+      IMPORTANT: Internal packages that ship at a different cadence than these project templates should
+                 be referenced using explicit package versions instead (see the "ComputeGeneratedContentProperties"
+                 target below).
     -->
     <ItemGroup>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj"></PackageVersionVariableReference>
-      <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion.Markdig\Microsoft.Extensions.DataIngestion.Markdig.csproj"></PackageVersionVariableReference>
       <PackageVersionVariableReference Include="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion.MarkItDown\Microsoft.Extensions.DataIngestion.MarkItDown.csproj"></PackageVersionVariableReference>
@@ -46,6 +49,7 @@
       <TemplatePackageVersion_AzureSearchDocuments>11.7.0</TemplatePackageVersion_AzureSearchDocuments>
       <TemplatePackageVersion_CommunityToolkitAspire>13.0.0-beta.444</TemplatePackageVersion_CommunityToolkitAspire>
       <TemplatePackageVersion_MicrosoftExtensionsHosting>10.0.0</TemplatePackageVersion_MicrosoftExtensionsHosting>
+      <TemplatePackageVersion_MicrosoftExtensionsHttpResilience>10.1.0</TemplatePackageVersion_MicrosoftExtensionsHttpResilience>
       <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>10.0.0</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
       <TemplatePackageVersion_MicrosoftMLTokenizers>2.0.0</TemplatePackageVersion_MicrosoftMLTokenizers>
       <TemplatePackageVersion_MicrosoftSemanticKernel>1.67.1</TemplatePackageVersion_MicrosoftSemanticKernel>
@@ -75,6 +79,7 @@
         TemplatePackageVersion_AzureSearchDocuments=$(TemplatePackageVersion_AzureSearchDocuments);
         TemplatePackageVersion_CommunityToolkitAspire=$(TemplatePackageVersion_CommunityToolkitAspire);
         TemplatePackageVersion_MicrosoftExtensionsHosting=$(TemplatePackageVersion_MicrosoftExtensionsHosting);
+        TemplatePackageVersion_MicrosoftExtensionsHttpResilience=$(TemplatePackageVersion_MicrosoftExtensionsHttpResilience);
         TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery=$(TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery);
         TemplatePackageVersion_MicrosoftMLTokenizers=$(TemplatePackageVersion_MicrosoftMLTokenizers);
         TemplatePackageVersion_MicrosoftSemanticKernel=$(TemplatePackageVersion_MicrosoftSemanticKernel);
