@@ -13,8 +13,8 @@ public class McpServerToolResultContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        McpServerToolResultContent c = new("callId");
-        Assert.Equal("callId", c.CallId);
+        McpServerToolResultContent c = new("call123");
+        Assert.Equal("call123", c.Id);
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
         Assert.Null(c.Output);
@@ -23,7 +23,7 @@ public class McpServerToolResultContentTests
     [Fact]
     public void Constructor_PropsRoundtrip()
     {
-        McpServerToolResultContent c = new("callId");
+        McpServerToolResultContent c = new("call123");
 
         Assert.Null(c.RawRepresentation);
         object raw = new();
@@ -35,7 +35,7 @@ public class McpServerToolResultContentTests
         c.AdditionalProperties = props;
         Assert.Same(props, c.AdditionalProperties);
 
-        Assert.Equal("callId", c.CallId);
+        Assert.Equal("call123", c.Id);
 
         Assert.Null(c.Output);
         IList<AIContent> output = [];
@@ -46,8 +46,8 @@ public class McpServerToolResultContentTests
     [Fact]
     public void Constructor_Throws()
     {
-        Assert.Throws<ArgumentException>("callId", () => new McpServerToolResultContent(string.Empty));
-        Assert.Throws<ArgumentNullException>("callId", () => new McpServerToolResultContent(null!));
+        Assert.Throws<ArgumentException>("id", () => new McpServerToolResultContent(string.Empty));
+        Assert.Throws<ArgumentNullException>("id", () => new McpServerToolResultContent(null!));
     }
 
     [Fact]
@@ -62,7 +62,9 @@ public class McpServerToolResultContentTests
         var deserializedContent = JsonSerializer.Deserialize<McpServerToolResultContent>(json, AIJsonUtilities.DefaultOptions);
 
         Assert.NotNull(deserializedContent);
-        Assert.Equal(content.CallId, deserializedContent.CallId);
+        Assert.Equal(content.Id, deserializedContent.Id);
         Assert.NotNull(deserializedContent.Output);
+        Assert.IsType<TextContent>(deserializedContent.Output[0]);
+        Assert.Equal("result", ((TextContent)deserializedContent.Output[0]).Text);
     }
 }
