@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Reads documents by converting them to Markdown using the <see href="https://github.com/microsoft/markitdown">MarkItDown</see> MCP server.
 /// </summary>
-public class MarkItDownMcpReader : IngestionDocumentReader
+public class MarkItDownMcpReader : IngestionDocumentReader, IIngestionDocumentReader<DataContent>
 {
     private readonly Uri _mcpServerUri;
     private readonly McpClientOptions? _options;
@@ -65,7 +65,7 @@ public class MarkItDownMcpReader : IngestionDocumentReader
     }
 
     /// <inheritdoc/>
-    public override async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default)
+    public override async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(source);
         _ = Throw.IfNullOrEmpty(identifier);
@@ -79,10 +79,18 @@ public class MarkItDownMcpReader : IngestionDocumentReader
 #endif
         DataContent dataContent = new(
             ms.GetBuffer().AsMemory(0, (int)ms.Length),
-            string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType);
+            string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType!);
 
-        string markdown = await ConvertToMarkdownAsync(dataContent, cancellationToken).ConfigureAwait(false);
+        return await ReadAsync(dataContent, identifier, mediaType, cancellationToken).ConfigureAwait(false);
+    }
 
+    /// <inheritdoc/>
+    public async Task<IngestionDocument> ReadAsync(DataContent source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(source);
+        _ = Throw.IfNullOrEmpty(identifier);
+
+        string markdown = await ConvertToMarkdownAsync(source, cancellationToken).ConfigureAwait(false);
         return MarkdownParser.Parse(markdown, identifier);
     }
 

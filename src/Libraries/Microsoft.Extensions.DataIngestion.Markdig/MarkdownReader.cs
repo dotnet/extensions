@@ -29,7 +29,7 @@ public sealed class MarkdownReader : IngestionDocumentReader
     }
 
     /// <inheritdoc/>
-    public override async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default)
+    public override async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(source);
         _ = Throw.IfNullOrEmpty(identifier);
