@@ -819,29 +819,118 @@ public class FunctionInvokingChatClientApprovalsTests
                     Assert.Equal("callId1", approvalRequest1.FunctionCall.CallId);
                     Assert.Equal("Func1", approvalRequest1.FunctionCall.Name);
 
-                    // Third content should have been buffered, since we have not yet encountered a function call that requires approval.
-                    Assert.Equal(4, updateYieldCount);
+                    // Third content is now yielded after the full stream is collected
+                    // (to properly filter FCCs that have matching FRCs).
+                    Assert.Equal(5, updateYieldCount);
                     break;
                 case 3:
                     var approvalRequest2 = update.Contents.OfType<FunctionApprovalRequestContent>().First();
                     Assert.Equal("callId2", approvalRequest2.FunctionCall.CallId);
                     Assert.Equal("Func2", approvalRequest2.FunctionCall.Name);
 
-                    // Fourth content can be yielded immediately, since it is the first function call that requires approval.
-                    Assert.Equal(4, updateYieldCount);
+                    // Fourth content is yielded after the full stream is collected.
+                    Assert.Equal(5, updateYieldCount);
                     break;
                 case 4:
                     var approvalRequest3 = update.Contents.OfType<FunctionApprovalRequestContent>().First();
                     Assert.Equal("callId1", approvalRequest3.FunctionCall.CallId);
                     Assert.Equal("Func3", approvalRequest3.FunctionCall.Name);
 
-                    // Fifth content can be yielded immediately, since we previously encountered a function call that requires approval.
+                    // Fifth content is yielded after the full stream is collected.
                     Assert.Equal(5, updateYieldCount);
                     break;
             }
 
             updateCount++;
         }
+    }
+
+    [Fact]
+    public async Task IgnoresApprovalRequiredFunctionCallsWithMatchingFunctionResults_NonStreaming()
+    {
+        // When an approval-required function has already been handled (FRC exists),
+        // it should not be converted to an approval request.
+        int funcInvocationCount = 0;
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => { funcInvocationCount++; return "should not be invoked"; }, "Func1")),
+            ]
+        };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+            {
+                // Inner client handles function calling itself and returns both FCC and FRC
+                var response = new ChatResponse(new ChatMessage(ChatRole.Assistant,
+                [
+                    new FunctionCallContent("callId1", "Func1"),
+                    new FunctionResultContent("callId1", result: "Already handled"),
+                    new TextContent("Response based on result")
+                ]));
+
+                return Task.FromResult(response);
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+
+        // The function should NOT have been invoked
+        Assert.Equal(0, funcInvocationCount);
+
+        // The response should NOT contain approval requests since the function was already handled
+        Assert.DoesNotContain(result.Messages.SelectMany(m => m.Contents), c => c is FunctionApprovalRequestContent);
+
+        // Should contain the original FCC and FRC
+        Assert.Contains(result.Messages.SelectMany(m => m.Contents), c => c is FunctionCallContent);
+        Assert.Contains(result.Messages.SelectMany(m => m.Contents), c => c is FunctionResultContent);
+    }
+
+    [Fact]
+    public async Task IgnoresApprovalRequiredFunctionCallsWithMatchingFunctionResults_Streaming()
+    {
+        // When an approval-required function has already been handled (FRC exists),
+        // it should not be converted to an approval request.
+        int funcInvocationCount = 0;
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => { funcInvocationCount++; return "should not be invoked"; }, "Func1")),
+            ]
+        };
+
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+            {
+                // Inner client handles function calling itself and returns both FCC and FRC in streaming updates
+                ChatResponseUpdate[] updates =
+                [
+                    new() { Contents = [new FunctionCallContent("callId1", "Func1")], MessageId = "msg1", Role = ChatRole.Assistant },
+                    new() { Contents = [new FunctionResultContent("callId1", result: "Already handled")], MessageId = "msg1", Role = ChatRole.Assistant },
+                    new() { Contents = [new TextContent("Response based on result")], MessageId = "msg1", Role = ChatRole.Assistant }
+                ];
+
+                return YieldAsync(updates);
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync();
+
+        // The function should NOT have been invoked
+        Assert.Equal(0, funcInvocationCount);
+
+        // The response should NOT contain approval requests since the function was already handled
+        Assert.DoesNotContain(result.Messages.SelectMany(m => m.Contents), c => c is FunctionApprovalRequestContent);
     }
 
     private static Task<List<ChatMessage>> InvokeAndAssertAsync(
