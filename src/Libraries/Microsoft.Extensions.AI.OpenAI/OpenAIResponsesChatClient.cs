@@ -527,7 +527,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     /// <inheritdoc />
     void IDisposable.Dispose()
     {
-        // Nothing to dispose. Implementation required for the IChatClient interface.
+        // Nothing to dispose.
     }
 
     internal static ResponseTool? ToResponseTool(AITool tool, ChatOptions? options = null)
@@ -541,26 +541,52 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 return ToResponseTool(aiFunction, options);
 
             case HostedWebSearchTool webSearchTool:
-                return ResponseTool.CreateWebSearchTool(
-                    webSearchTool.GetProperty<WebSearchToolLocation?>(nameof(WebSearchTool.UserLocation)),
-                    webSearchTool.GetProperty<WebSearchToolContextSize?>(nameof(WebSearchTool.SearchContextSize)),
-                    webSearchTool.GetProperty<WebSearchToolFilters?>(nameof(WebSearchTool.Filters)));
+                return new WebSearchTool
+                {
+                    Filters = webSearchTool.GetProperty<WebSearchToolFilters?>(nameof(WebSearchTool.Filters)),
+                    SearchContextSize = webSearchTool.GetProperty<WebSearchToolContextSize?>(nameof(WebSearchTool.SearchContextSize)),
+                    UserLocation = webSearchTool.GetProperty<WebSearchToolLocation?>(nameof(WebSearchTool.UserLocation)),
+                };
 
             case HostedFileSearchTool fileSearchTool:
-                return ResponseTool.CreateFileSearchTool(
-                    fileSearchTool.Inputs?.OfType<HostedVectorStoreContent>().Select(c => c.VectorStoreId) ?? [],
-                    fileSearchTool.MaximumResultCount,
-                    fileSearchTool.GetProperty<FileSearchToolRankingOptions?>(nameof(FileSearchTool.RankingOptions)),
-                    fileSearchTool.GetProperty<BinaryData?>(nameof(FileSearchTool.Filters)));
-
-            case HostedImageGenerationTool imageGenerationTool:
-                return AsImageResponseTool(imageGenerationTool);
+                return new FileSearchTool(fileSearchTool.Inputs?.OfType<HostedVectorStoreContent>().Select(c => c.VectorStoreId) ?? [])
+                {
+                    Filters = fileSearchTool.GetProperty<BinaryData?>(nameof(FileSearchTool.Filters)),
+                    MaxResultCount = fileSearchTool.MaximumResultCount,
+                    RankingOptions = fileSearchTool.GetProperty<FileSearchToolRankingOptions?>(nameof(FileSearchTool.RankingOptions)),
+                };
 
             case HostedCodeInterpreterTool codeTool:
                 return new CodeInterpreterTool(
                     new(codeTool.Inputs?.OfType<HostedFileContent>().Select(f => f.FileId).ToList() is { Count: > 0 } ids ?
                         CodeInterpreterToolContainerConfiguration.CreateAutomaticContainerConfiguration(ids) :
                         new()));
+
+            case HostedImageGenerationTool imageGenerationTool:
+                ImageGenerationOptions? igo = imageGenerationTool.Options;
+                return new ImageGenerationTool
+                {
+                    Background = imageGenerationTool.GetProperty<ImageGenerationToolBackground?>(nameof(ImageGenerationTool.Background)),
+                    InputFidelity = imageGenerationTool.GetProperty<ImageGenerationToolInputFidelity?>(nameof(ImageGenerationTool.InputFidelity)),
+                    InputImageMask = imageGenerationTool.GetProperty<ImageGenerationToolInputImageMask?>(nameof(ImageGenerationTool.InputImageMask)),
+                    Model = igo?.ModelId,
+                    ModerationLevel = imageGenerationTool.GetProperty<ImageGenerationToolModerationLevel?>(nameof(ImageGenerationTool.ModerationLevel)),
+                    OutputCompressionFactor = imageGenerationTool.GetProperty<int?>(nameof(ImageGenerationTool.OutputCompressionFactor)),
+                    OutputFileFormat = igo?.MediaType is { } mediaType ?
+                        mediaType switch
+                        {
+                            "image/png" => ImageGenerationToolOutputFileFormat.Png,
+                            "image/jpeg" => ImageGenerationToolOutputFileFormat.Jpeg,
+                            "image/webp" => ImageGenerationToolOutputFileFormat.Webp,
+                            _ => null,
+                        } :
+                        null,
+                    PartialImageCount = igo?.StreamingCount,
+                    Quality = imageGenerationTool.GetProperty<ImageGenerationToolQuality?>(nameof(ImageGenerationTool.Quality)),
+                    Size = igo?.ImageSize is { } size ?
+                        new ImageGenerationToolSize(size.Width, size.Height) :
+                        null,
+                };
 
             case HostedMcpServerTool mcpTool:
                 McpTool responsesMcpTool = Uri.TryCreate(mcpTool.ServerAddress, UriKind.Absolute, out Uri? serverAddressUrl) ?
@@ -623,35 +649,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             strictModeEnabled)
         {
             FunctionDescription = aiFunction.Description,
-        };
-    }
-
-    internal static ImageGenerationTool AsImageResponseTool(HostedImageGenerationTool imageGenerationTool)
-    {
-        ImageGenerationOptions? options = imageGenerationTool.Options;
-
-        return new()
-        {
-            Background = imageGenerationTool.GetProperty<ImageGenerationToolBackground?>(nameof(ImageGenerationTool.Background)),
-            InputFidelity = imageGenerationTool.GetProperty<ImageGenerationToolInputFidelity?>(nameof(ImageGenerationTool.InputFidelity)),
-            InputImageMask = imageGenerationTool.GetProperty<ImageGenerationToolInputImageMask?>(nameof(ImageGenerationTool.InputImageMask)),
-            Model = options?.ModelId,
-            ModerationLevel = imageGenerationTool.GetProperty<ImageGenerationToolModerationLevel?>(nameof(ImageGenerationTool.ModerationLevel)),
-            OutputCompressionFactor = imageGenerationTool.GetProperty<int?>(nameof(ImageGenerationTool.OutputCompressionFactor)),
-            OutputFileFormat = options?.MediaType is not null ?
-                options.MediaType switch
-                {
-                    "image/png" => ImageGenerationToolOutputFileFormat.Png,
-                    "image/jpeg" => ImageGenerationToolOutputFileFormat.Jpeg,
-                    "image/webp" => ImageGenerationToolOutputFileFormat.Webp,
-                    _ => null,
-                } :
-                null,
-            PartialImageCount = options?.StreamingCount,
-            Quality = imageGenerationTool.GetProperty<ImageGenerationToolQuality?>(nameof(ImageGenerationTool.Quality)),
-            Size = options?.ImageSize is not null ?
-                new ImageGenerationToolSize(options.ImageSize.Value.Width, options.ImageSize.Value.Height) :
-                null
         };
     }
 
@@ -1171,45 +1168,39 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         foreach (ResponseContentPart part in contents)
         {
+            AIContent? content;
             switch (part.Kind)
             {
                 case ResponseContentPartKind.InputText or ResponseContentPartKind.OutputText:
-                    TextContent text = new(part.Text) { RawRepresentation = part };
+                    TextContent text = new(part.Text);
                     PopulateAnnotations(part, text);
-                    results.Add(text);
+                    content = text;
                     break;
 
-                case ResponseContentPartKind.InputFile:
-                    if (!string.IsNullOrWhiteSpace(part.InputImageFileId))
-                    {
-                        results.Add(new HostedFileContent(part.InputImageFileId) { MediaType = "image/*", RawRepresentation = part });
-                    }
-                    else if (!string.IsNullOrWhiteSpace(part.InputFileId))
-                    {
-                        results.Add(new HostedFileContent(part.InputFileId) { Name = part.InputFilename, RawRepresentation = part });
-                    }
-                    else if (part.InputFileBytes is not null)
-                    {
-                        results.Add(new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream")
-                        {
-                            Name = part.InputFilename,
-                            RawRepresentation = part,
-                        });
-                    }
-
+                case ResponseContentPartKind.InputFile or ResponseContentPartKind.InputImage:
+                    content =
+                        !string.IsNullOrWhiteSpace(part.InputImageFileId) ? new HostedFileContent(part.InputImageFileId) { MediaType = "image/*" } :
+                        !string.IsNullOrWhiteSpace(part.InputFileId) ? new HostedFileContent(part.InputFileId) { Name = part.InputFilename } :
+                        part.InputFileBytes is not null ? new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream") { Name = part.InputFilename } :
+                        null;
                     break;
 
                 case ResponseContentPartKind.Refusal:
-                    results.Add(new ErrorContent(part.Refusal)
+                    content = new ErrorContent(part.Refusal)
                     {
                         ErrorCode = nameof(ResponseContentPartKind.Refusal),
-                        RawRepresentation = part,
-                    });
+                    };
                     break;
 
                 default:
-                    results.Add(new() { RawRepresentation = part });
+                    content = new();
                     break;
+            }
+
+            if (content is not null)
+            {
+                content.RawRepresentation = part;
+                results.Add(content);
             }
         }
 
@@ -1328,10 +1319,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             ImageId = outputItem.Id,
             RawRepresentation = outputItem,
-            Outputs = new List<AIContent>
-            {
-                new DataContent(outputItem.ImageResultBytes, $"image/{outputFormat}")
-            }
+            Outputs = [new DataContent(outputItem.ImageResultBytes, $"image/{outputFormat}")]
         });
     }
 
