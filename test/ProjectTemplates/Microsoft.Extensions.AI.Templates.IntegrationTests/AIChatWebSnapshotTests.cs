@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.ProjectTemplates.Tests;
@@ -11,26 +8,15 @@ using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 using Xunit.Abstractions;
+using static Microsoft.Shared.ProjectTemplates.Tests.TemplateTestUtilities;
 
 namespace Microsoft.Extensions.AI.Templates.Tests;
 
-public class AIChatWebSnapshotTests
+public class AIChatWebSnapshotTests : TemplateSnapshotTestBase
 {
-    // Keep the exclude patterns below in sync with those in Microsoft.Extensions.AI.Templates.csproj.
+    // The wwwroot folder contains static content
     private static readonly string[] _verificationExcludePatterns = [
-        "**/bin/**",
-        "**/obj/**",
-        "**/.vs/**",
-        "**/node_modules/**",
-        "**/*.user",
-        "**/*.in",
-        "**/*.out.js",
-        "**/*.generated.css",
-        "**/package-lock.json",
-        "**/ingestioncache.*",
-        "**/NuGet.config",
-        "**/Directory.Build.targets",
-        "**/Directory.Build.props",
+        "**/wwwroot/**"
     ];
 
     private readonly ILogger _log;
@@ -42,97 +28,31 @@ public class AIChatWebSnapshotTests
 #pragma warning restore CA2000 // Dispose objects before losing scope
     }
 
-    [Fact]
-    public async Task BasicTest()
+    [Theory]
+    [InlineData /* Defaults: --provider=githubmodels --vector-store=local */]
+    [InlineData("--provider=ollama", "--vector-store=qdrant")]
+    [InlineData("--provider=openai", "--vector-store=azureaisearch")]
+    [InlineData("--aspire")]
+    [InlineData("--aspire", "--provider=azureopenai", "--vector-store=azureaisearch")]
+    public async Task RunSnapshotTests(params string[] templateArgs)
     {
-        await TestTemplateCoreAsync(scenarioName: "Basic");
-    }
+        string projectNamePrefix = "AIChatWeb";
+        string templatePackageName = "Microsoft.Extensions.AI.Templates";
+        string templateName = "aichatweb";
 
-    [Fact]
-    public async Task Ollama_Qdrant()
-    {
-        await TestTemplateCoreAsync(scenarioName: "Ollama_Qdrant", templateArgs: ["--provider", "ollama", "--vector-store", "qdrant"]);
-    }
-
-    [Fact]
-    public async Task OpenAI_AzureAISearch()
-    {
-        await TestTemplateCoreAsync(scenarioName: "OpenAI_AzureAISearch", templateArgs: ["--provider", "openai", "--vector-store", "azureaisearch"]);
-    }
-
-    [Fact]
-    public async Task BasicAspireTest()
-    {
-        await TestTemplateCoreAsync(scenarioName: "BasicAspire", templateArgs: ["--aspire"]);
-    }
-
-    [Fact]
-    public async Task AzureOpenAI_AzureAISearch_Aspire()
-    {
-        await TestTemplateCoreAsync(scenarioName: "AzureOpenAI_Qdrant_Aspire", templateArgs: ["--provider", "azureopenai", "--vector-store", "azureaisearch", "--aspire"]);
-    }
-
-    private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
-    {
-        string workingDir = TestUtils.CreateTemporaryFolder();
-        string templateShortName = "aichatweb";
-
-        // Get the template location
-        string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Extensions.AI.Templates", "src", "ChatWithCustomData");
-
-        var verificationExcludePatterns = Path.DirectorySeparatorChar is '/'
-            ? _verificationExcludePatterns
-            : _verificationExcludePatterns.Select(p => p.Replace('/', Path.DirectorySeparatorChar)).ToArray();
-
-        TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
-        {
-            TemplatePath = templateLocation,
-            TemplateSpecificArgs = templateArgs,
-            SnapshotsDirectory = "Snapshots",
-            OutputDirectory = workingDir,
-            DoNotPrependCallerMethodNameToScenarioName = true,
-            DoNotAppendTemplateArgsToScenarioName = true,
-            ScenarioName = scenarioName,
-            VerificationExcludePatterns = verificationExcludePatterns,
-        }
-        .WithCustomScrubbers(
-            ScrubbersDefinition.Empty.AddScrubber((path, content) =>
-            {
-                string filePath = path.UnixifyDirSeparators();
-                if (filePath.EndsWith(".sln"))
-                {
-                    // Scrub .sln file GUIDs.
-                    content.ScrubByRegex(pattern: @"\{.{36}\}", replacement: "{00000000-0000-0000-0000-000000000000}");
-                }
-
-                if (filePath.EndsWith(".csproj"))
-                {
-                    content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
-
-                    // Scrub references to just-built packages and remove the suffix, if it exists.
-                    // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
-                    var pattern = @"(?<=<PackageReference\s+Include=""Microsoft\.Extensions\..*""\s+Version="")(\d+\.\d+\.\d+)(?:-[^""]*)?(?=""\s*/>)";
-                    content.ScrubByRegex(pattern, replacement: "$1");
-                }
-
-                if (filePath.EndsWith("launchSettings.json"))
-                {
-                    content.ScrubByRegex("(http(s?):\\/\\/localhost)\\:(\\d*)", "$1:9999");
-                }
-            }));
+        TemplateVerifierOptions options = PrepareSnapshotVerifier(
+            projectNamePrefix,
+            templatePackageName,
+            templateName,
+            templateArgs,
+            _verificationExcludePatterns)
+        .WithCustomScrubbers(ScrubbersDefinition.Empty
+            .AddSolutionFileGuidScrubber()
+            .AddUserSecretsScrubber()
+            .AddPackageReferenceScrubber()
+            .AddLocalhostPortScrubber());
 
         VerificationEngine engine = new VerificationEngine(_log);
         await engine.Execute(options);
-
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
-        {
-            Directory.Delete(workingDir, recursive: true);
-        }
-        catch
-        {
-            /* don't care */
-        }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 }

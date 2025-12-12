@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 [CollectionDefinition(name: Name)]
-public sealed class TemplateExecutionTestCollection : ICollectionFixture<TemplateExecutionTestCollectionFixture>
+public sealed class TemplateExecutionTestCollection
 {
     public const string Name = "Template execution test";
 }

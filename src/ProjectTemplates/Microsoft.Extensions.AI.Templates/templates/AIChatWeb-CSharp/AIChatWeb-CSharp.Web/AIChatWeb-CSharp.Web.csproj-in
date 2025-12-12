@@ -1,0 +1,66 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>d5681fae-b21b-4114-b781-48180f08c0c4</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+<!--#if (IsOllama && IsAspire)
+    <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="{TemplatePackageVersion:CommunityToolkit.Aspire}" />
+#endif -->
+<!--#if (IsOllama)
+    <PackageReference Include="OllamaSharp" Version="{TemplatePackageVersion:OllamaSharp}" />
+#elif ((IsGHModels || IsOpenAI) && !IsAspire)
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="{TemplatePackageVersion:Microsoft.Extensions.AI.OpenAI}" />
+#elif (IsAzureAIFoundry)
+    <PackageReference Include="Azure.AI.Projects" Version="{TemplatePackageVersion:Azure.AI.Projects}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="{TemplatePackageVersion:Microsoft.Extensions.AI.OpenAI}" />
+#endif -->
+<!--#if ((IsAzureOpenAI || IsOpenAI || IsGHModels) && IsAspire) -->
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="{TemplatePackageVersion:Aspire-Preview}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="{TemplatePackageVersion:Microsoft.Extensions.AI.OpenAI}" />
+<!--#endif -->
+<!--#if (IsAzureOpenAI && !IsAspire) -->
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="{TemplatePackageVersion:Microsoft.Extensions.AI.OpenAI}" />
+<!--#endif -->
+<!--#if (IsManagedIdentity) -->
+    <PackageReference Include="Azure.Identity" Version="{TemplatePackageVersion:Azure.Identity}" />
+<!--#endif -->
+    <PackageReference Include="Microsoft.Extensions.AI" Version="{TemplatePackageVersion:Microsoft.Extensions.AI}" />
+    <PackageReference Include="Microsoft.Extensions.DataIngestion" Version="{TemplatePackageVersion:Microsoft.Extensions.DataIngestion}" />
+    <PackageReference Include="Microsoft.Extensions.DataIngestion.Markdig" Version="{TemplatePackageVersion:Microsoft.Extensions.DataIngestion.Markdig}" />
+<!--#if (IsAspire) -->
+    <PackageReference Include="Microsoft.Extensions.DataIngestion.MarkItDown" Version="{TemplatePackageVersion:Microsoft.Extensions.DataIngestion.MarkItDown}" />
+<!--#else -->
+    <PackageReference Include="PdfPig" Version="{TemplatePackageVersion:PdfPig}" />
+<!--#endif -->
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="{TemplatePackageVersion:Microsoft.ML.Tokenizers}" />
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="{TemplatePackageVersion:Microsoft.ML.Tokenizers}" />
+<!--#if (IsNET9) -->
+    <PackageReference Include="System.Linq.AsyncEnumerable" Version="{TemplatePackageVersion:System.Linq.AsyncEnumerable}" />
+<!--#endif -->
+<!--#if (IsAzureAISearch && IsAspire)
+    <PackageReference Include="Aspire.Azure.Search.Documents" Version="{TemplatePackageVersion:Aspire}" />
+#elif (IsAzureAISearch && !IsAspire)
+    <PackageReference Include="Azure.Search.Documents" Version="{TemplatePackageVersion:Azure.Search.Documents}" />
+#endif -->
+<!--#if (IsAzureAISearch)
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="{TemplatePackageVersion:Microsoft.SemanticKernel-Preview}" />
+#elif (IsQdrant)-->
+    <PackageReference Include="Aspire.Qdrant.Client" Version="{TemplatePackageVersion:Aspire}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="{TemplatePackageVersion:Microsoft.SemanticKernel-Preview}" />
+<!--#elif (IsLocalVectorStore)-->
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="{TemplatePackageVersion:Microsoft.SemanticKernel-Preview}" />
+<!--#endif -->
+  </ItemGroup>
+<!--#if (IsAspire) -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\AIChatWeb-CSharp.ServiceDefaults\AIChatWeb-CSharp.ServiceDefaults.csproj" />
+  </ItemGroup>
+<!--#endif -->
+
+</Project>

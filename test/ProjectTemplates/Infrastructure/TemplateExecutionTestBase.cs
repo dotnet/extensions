@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -27,6 +28,18 @@ public abstract class TemplateExecutionTestBase<TConfiguration> : IClassFixture<
         Fixture.SetCurrentTestOutputHelper(outputHelper);
 
         OutputHelper = outputHelper;
+    }
+
+    protected async Task CreateRestoreAndBuild(string projectName, string[] args, string? startupProjectRelativePath = null)
+    {
+        var project = await Fixture.CreateProjectAsync(
+            TConfiguration.Configuration.TemplateName,
+            projectName,
+            startupProjectRelativePath,
+            args);
+
+        await Fixture.RestoreProjectAsync(project);
+        await Fixture.BuildProjectAsync(project);
     }
 
     protected virtual void Dispose(bool disposing)
