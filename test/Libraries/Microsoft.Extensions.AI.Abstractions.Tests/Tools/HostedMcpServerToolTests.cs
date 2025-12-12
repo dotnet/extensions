@@ -96,7 +96,7 @@ public class HostedMcpServerToolTests
         tool.ApprovalMode = customApprovalMode;
         Assert.Same(customApprovalMode, tool.ApprovalMode);
 
-        Assert.Null(tool.Headers);
+        Assert.NotNull(tool.Headers);
         IDictionary<string, string> headers = new Dictionary<string, string>
         {
             ["X-Custom-Header"] = "value1",
