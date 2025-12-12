@@ -25,6 +25,8 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" />
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+    <!-- Override transitive dependency to fix vulnerability in 8.0.0 -->
+    <PackageReference Include="System.IO.Packaging" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2260,6 +2260,14 @@
         {
           "Member": "long? Microsoft.Extensions.AI.UsageDetails.TotalTokenCount { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.CachedInputTokenCount { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.ReasoningTokenCount { get; set; }",
+          "Stage": "Stable"
         }
       ]
     }
