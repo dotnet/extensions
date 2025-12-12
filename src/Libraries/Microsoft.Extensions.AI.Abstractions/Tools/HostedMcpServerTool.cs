@@ -103,7 +103,29 @@ public class HostedMcpServerTool : AITool
     /// <summary>
     /// Gets or sets the OAuth authorization token that the AI service should use when calling the remote MCP server.
     /// </summary>
-    public string? AuthorizationToken { get; set; }
+    /// <remarks>
+    /// When set, this value is automatically added to the <see cref="Headers"/> dictionary with the key "Authorization" 
+    /// and the value "Bearer {token}". Setting this property will overwrite any existing "Authorization" header in <see cref="Headers"/>.
+    /// Setting this property to <see langword="null"/> will remove the "Authorization" header from <see cref="Headers"/>.
+    /// </remarks>
+    public string? AuthorizationToken
+    {
+        get;
+        set
+        {
+            field = value;
+
+            if (value is not null)
+            {
+                Headers ??= new Dictionary<string, string>();
+                Headers["Authorization"] = $"Bearer {value}";
+            }
+            else if (Headers is not null)
+            {
+                _ = Headers.Remove("Authorization");
+            }
+        }
+    }
 
     /// <summary>
     /// Gets or sets the description of the remote MCP server, used to provide more context to the AI service.
