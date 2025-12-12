@@ -2,6 +2,8 @@
 
 ## 10.1.1-preview.1.? (NOT YET RELEASED)
 
+- Updated to depend on OpenAI 2.8.0.
+- Updated public API signatures in `OpenAIClientExtensions` and `MicrosoftExtensionsAIResponsesExtensions` to match the corresponding breaking changes in OpenAI's Responses APIs.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 - Updated the OpenAI Responses and Chat Completion `IChatClient`s to populate `UsageDetails`'s `InputCachedTokenCount` and `ReasoningTokenCount`.
 - Updated handling of `HostedWebSearchTool`, `HostedFileSearchTool`, and `HostedImageGenerationTool` to pull OpenAI-specific

@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.AI;
 public static class OpenAIClientExtensions
 {
     /// <summary>Key into AdditionalProperties used to store a strict option.</summary>
-    private const string StrictKey = "strictJsonSchema";
+    private const string StrictKey = "strict";
 
     /// <summary>Gets the default OpenAI endpoint.</summary>
     internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
@@ -111,11 +111,11 @@ public static class OpenAIClientExtensions
     public static IChatClient AsIChatClient(this ChatClient chatClient) =>
         new OpenAIChatClient(chatClient);
 
-    /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="OpenAIResponseClient"/>.</summary>
+    /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="ResponsesClient"/>.</summary>
     /// <param name="responseClient">The client.</param>
-    /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="OpenAIResponseClient"/>.</returns>
+    /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ResponsesClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="responseClient"/> is <see langword="null"/>.</exception>
-    public static IChatClient AsIChatClient(this OpenAIResponseClient responseClient) =>
+    public static IChatClient AsIChatClient(this ResponsesClient responseClient) =>
         new OpenAIResponsesChatClient(responseClient);
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="AssistantClient"/>.</summary>
@@ -245,6 +245,14 @@ public static class OpenAIClientExtensions
     /// <summary>Gets the typed property of the specified name from the tool's <see cref="AITool.AdditionalProperties"/>.</summary>
     internal static T? GetProperty<T>(this AITool tool, string name) =>
         tool.AdditionalProperties?.TryGetValue(name, out object? value) is true && value is T tValue ? tValue : default;
+
+    /// <summary>Gets whether an ID is an OpenAI conversation ID.</summary>
+    /// <remarks>
+    /// Technically, OpenAI's IDs are opaque. However, by convention conversation IDs start with "conv_" and
+    /// we can use that to disambiguate whether we're looking at a conversation ID or something else, like a response ID.
+    /// </remarks>
+    internal static bool IsConversationId(string? id) =>
+        id?.StartsWith("conv_", StringComparison.OrdinalIgnoreCase) is true;
 
     /// <summary>Used to create the JSON payload for an OpenAI tool description.</summary>
     internal sealed class ToolJson

@@ -47,7 +47,7 @@ public class OpenAIConversionTests
             """), RemoveWhitespace(((IJsonModel<OpenAI.Chat.ChatResponseFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
 
         jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIChatResponseFormat(
-            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strictJsonSchema"] = true } });
+            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strict"] = true } });
         Assert.NotNull(jsonSchema);
         Assert.Equal(RemoveWhitespace("""
             {
@@ -82,7 +82,7 @@ public class OpenAIConversionTests
             """), RemoveWhitespace(((IJsonModel<ResponseTextFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
 
         jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIResponseTextFormat(
-            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strictJsonSchema"] = true } });
+            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strict"] = true } });
         Assert.NotNull(jsonSchema);
         Assert.Equal(ResponseTextFormatKind.JsonSchema, jsonSchema.Kind);
         Assert.Equal(RemoveWhitespace("""
@@ -788,7 +788,7 @@ public class OpenAIConversionTests
     [Fact]
     public void AsChatResponse_ConvertsOpenAIResponse()
     {
-        Assert.Throws<ArgumentNullException>("response", () => ((OpenAIResponse)null!).AsChatResponse());
+        Assert.Throws<ArgumentNullException>("response", () => ((ResponseResult)null!).AsChatResponse());
 
         // The OpenAI library currently doesn't provide any way to create an OpenAIResponse instance,
         // as all constructors/factory methods currently are internal. Update this test when such functionality is available.
@@ -1355,32 +1355,32 @@ public class OpenAIConversionTests
     [Fact]
     public void AsOpenAIResponse_WithNullArgument_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>("response", () => ((ChatResponse)null!).AsOpenAIResponse());
+        Assert.Throws<ArgumentNullException>("response", () => ((ChatResponse)null!).AsOpenAIResponseResult());
     }
 
     [Fact]
     public void AsOpenAIResponse_WithRawRepresentation_ReturnsOriginal()
     {
-        var originalOpenAIResponse = OpenAIResponsesModelFactory.OpenAIResponse(
-            "original-response-id",
-            new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
-            ResponseStatus.Completed,
-            usage: null,
-            maxOutputTokenCount: 100,
-            outputItems: [],
-            parallelToolCallsEnabled: false,
-            model: "gpt-4",
-            temperature: 0.7f,
-            topP: 0.9f,
-            previousResponseId: "prev-id",
-            instructions: "Test instructions");
+        ResponseResult originalOpenAIResponse = new()
+        {
+            Id = "original-response-id",
+            CreatedAt = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            Status = ResponseStatus.Completed,
+            MaxOutputTokenCount = 100,
+            ParallelToolCallsEnabled = false,
+            Model = "gpt-4",
+            Temperature = 0.7f,
+            TopP = 0.9f,
+            PreviousResponseId = "prev-id",
+            Instructions = "Test instructions"
+        };
 
         var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Test"))
         {
             RawRepresentation = originalOpenAIResponse
         };
 
-        var result = chatResponse.AsOpenAIResponse();
+        var result = chatResponse.AsOpenAIResponseResult();
 
         Assert.Same(originalOpenAIResponse, result);
     }
@@ -1396,7 +1396,7 @@ public class OpenAIConversionTests
             FinishReason = ChatFinishReason.Stop
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.NotNull(openAIResponse);
         Assert.Equal("test-response-id", openAIResponse.Id);
@@ -1415,6 +1415,7 @@ public class OpenAIConversionTests
     {
         var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Test message"))
         {
+            ConversationId = "conv_123",
             ResponseId = "options-test",
             ModelId = "gpt-3.5-turbo"
         };
@@ -1423,20 +1424,19 @@ public class OpenAIConversionTests
         {
             MaxOutputTokens = 500,
             AllowMultipleToolCalls = true,
-            ConversationId = "conversation-123",
             Instructions = "You are a helpful assistant.",
             Temperature = 0.8f,
             TopP = 0.95f,
             ModelId = "override-model"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+        var openAIResponse = chatResponse.AsOpenAIResponseResult(options);
 
         Assert.Equal("options-test", openAIResponse.Id);
         Assert.Equal("gpt-3.5-turbo", openAIResponse.Model);
         Assert.Equal(500, openAIResponse.MaxOutputTokenCount);
         Assert.True(openAIResponse.ParallelToolCallsEnabled);
-        Assert.Equal("conversation-123", openAIResponse.PreviousResponseId);
+        Assert.Equal("conv_123", openAIResponse.ConversationOptions?.ConversationId);
         Assert.Equal("You are a helpful assistant.", openAIResponse.Instructions);
         Assert.Equal(0.8f, openAIResponse.Temperature);
         Assert.Equal(0.95f, openAIResponse.TopP);
@@ -1451,7 +1451,7 @@ public class OpenAIConversionTests
             ModelId = "gpt-4"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.Equal("empty-response", openAIResponse.Id);
         Assert.Equal("gpt-4", openAIResponse.Model);
@@ -1477,7 +1477,7 @@ public class OpenAIConversionTests
             ResponseId = "multi-message-response"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.Equal(4, openAIResponse.OutputItems.Count);
 
@@ -1514,7 +1514,7 @@ public class OpenAIConversionTests
             ResponseId = "tool-message-test"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         var outputItems = openAIResponse.OutputItems.ToArray();
         Assert.Equal(4, outputItems.Length);
@@ -1545,7 +1545,7 @@ public class OpenAIConversionTests
             ResponseId = "system-user-test"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         var outputItems = openAIResponse.OutputItems.ToArray();
         Assert.Equal(3, outputItems.Length);
@@ -1564,15 +1564,15 @@ public class OpenAIConversionTests
     {
         var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Default test"));
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.NotNull(openAIResponse);
         Assert.Equal(ResponseStatus.Completed, openAIResponse.Status);
-        Assert.False(openAIResponse.ParallelToolCallsEnabled);
+        Assert.True(openAIResponse.ParallelToolCallsEnabled);
         Assert.Null(openAIResponse.MaxOutputTokenCount);
         Assert.Null(openAIResponse.Temperature);
         Assert.Null(openAIResponse.TopP);
-        Assert.Null(openAIResponse.PreviousResponseId);
+        Assert.Null(openAIResponse.ConversationOptions);
         Assert.Null(openAIResponse.Instructions);
         Assert.NotNull(openAIResponse.OutputItems);
     }
@@ -1587,7 +1587,7 @@ public class OpenAIConversionTests
             ModelId = "options-model-id"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+        var openAIResponse = chatResponse.AsOpenAIResponseResult(options);
 
         Assert.Equal("options-model-id", openAIResponse.Model);
     }
@@ -1605,7 +1605,7 @@ public class OpenAIConversionTests
             ModelId = "options-model-id"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+        var openAIResponse = chatResponse.AsOpenAIResponseResult(options);
 
         Assert.Equal("response-model-id", openAIResponse.Model);
     }

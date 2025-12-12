@@ -13,10 +13,10 @@ namespace Microsoft.Extensions.AI;
 /// The token is used for resuming streamed background responses and continuing
 /// non-streamed background responses until completion.
 /// </remarks>
-internal sealed class OpenAIResponsesContinuationToken : ResponseContinuationToken
+internal sealed class ResponsesClientContinuationToken : ResponseContinuationToken
 {
-    /// <summary>Initializes a new instance of the <see cref="OpenAIResponsesContinuationToken"/> class.</summary>
-    internal OpenAIResponsesContinuationToken(string responseId)
+    /// <summary>Initializes a new instance of the <see cref="ResponsesClientContinuationToken"/> class.</summary>
+    internal ResponsesClientContinuationToken(string responseId)
     {
         ResponseId = responseId;
     }
@@ -49,13 +49,13 @@ internal sealed class OpenAIResponsesContinuationToken : ResponseContinuationTok
         return stream.ToArray();
     }
 
-    /// <summary>Create a new instance of <see cref="OpenAIResponsesContinuationToken"/> from the provided <paramref name="token"/>.
+    /// <summary>Create a new instance of <see cref="ResponsesClientContinuationToken"/> from the provided <paramref name="token"/>.
     /// </summary>
-    /// <param name="token">The token to create the <see cref="OpenAIResponsesContinuationToken"/> from.</param>
-    /// <returns>A <see cref="OpenAIResponsesContinuationToken"/> equivalent of the provided <paramref name="token"/>.</returns>
-    internal static OpenAIResponsesContinuationToken FromToken(ResponseContinuationToken token)
+    /// <param name="token">The token to create the <see cref="ResponsesClientContinuationToken"/> from.</param>
+    /// <returns>A <see cref="ResponsesClientContinuationToken"/> equivalent of the provided <paramref name="token"/>.</returns>
+    internal static ResponsesClientContinuationToken FromToken(ResponseContinuationToken token)
     {
-        if (token is OpenAIResponsesContinuationToken openAIResponsesContinuationToken)
+        if (token is ResponsesClientContinuationToken openAIResponsesContinuationToken)
         {
             return openAIResponsesContinuationToken;
         }
