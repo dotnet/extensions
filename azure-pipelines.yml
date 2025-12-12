@@ -364,7 +364,8 @@ extends:
         parameters:
           validateDependsOn:
           - build
-          - codecoverage
+          - ${{ if eq(parameters.runTests, true) }}:
+            - codecoverage
           - correctness
           publishingInfraVersion: 3
           enableSymbolValidation: false
