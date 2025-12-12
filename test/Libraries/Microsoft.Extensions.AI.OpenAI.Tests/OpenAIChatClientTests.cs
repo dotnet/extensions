@@ -171,11 +171,11 @@ public class OpenAIChatClientTests
         Assert.Equal(8, response.Usage.InputTokenCount);
         Assert.Equal(9, response.Usage.OutputTokenCount);
         Assert.Equal(17, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -258,12 +258,12 @@ public class OpenAIChatClientTests
         Assert.Equal(8, usage.Details.InputTokenCount);
         Assert.Equal(9, usage.Details.OutputTokenCount);
         Assert.Equal(17, usage.Details.TotalTokenCount);
+        Assert.Equal(5, usage.Details.CachedInputTokenCount);
+        Assert.Equal(90, usage.Details.ReasoningTokenCount);
 
         Assert.Equal(new AdditionalPropertiesDictionary<long>
         {
             { "InputTokenDetails.AudioTokenCount", 123 },
-            { "InputTokenDetails.CachedTokenCount", 5 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 456 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -845,11 +845,11 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 123 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 456 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -942,11 +942,11 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1040,11 +1040,11 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1151,12 +1151,12 @@ public class OpenAIChatClientTests
         Assert.Equal(61, response.Usage.InputTokenCount);
         Assert.Equal(16, response.Usage.OutputTokenCount);
         Assert.Equal(77, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
 
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1235,12 +1235,12 @@ public class OpenAIChatClientTests
         Assert.Equal(61, response.Usage.InputTokenCount);
         Assert.Equal(16, response.Usage.OutputTokenCount);
         Assert.Equal(77, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
 
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1351,12 +1351,12 @@ public class OpenAIChatClientTests
         Assert.Equal(61, usage.Details.InputTokenCount);
         Assert.Equal(16, usage.Details.OutputTokenCount);
         Assert.Equal(77, usage.Details.TotalTokenCount);
+        Assert.Equal(0, usage.Details.CachedInputTokenCount);
+        Assert.Equal(90, usage.Details.ReasoningTokenCount);
 
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1493,11 +1493,11 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
+        Assert.Equal(20, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 20 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1608,11 +1608,11 @@ public class OpenAIChatClientTests
         Assert.Equal(8513, response.Usage.InputTokenCount);
         Assert.Equal(56, response.Usage.OutputTokenCount);
         Assert.Equal(8569, response.Usage.TotalTokenCount);
+        Assert.Equal(0, response.Usage.CachedInputTokenCount);
+        Assert.Equal(0, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 0 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },

@@ -1143,19 +1143,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 InputTokenCount = usage.InputTokenCount,
                 OutputTokenCount = usage.OutputTokenCount,
                 TotalTokenCount = usage.TotalTokenCount,
+                CachedInputTokenCount = usage.InputTokenDetails?.CachedTokenCount,
+                ReasoningTokenCount = usage.OutputTokenDetails?.ReasoningTokenCount,
             };
-
-            if (usage.InputTokenDetails is { } inputDetails)
-            {
-                ud.AdditionalCounts ??= [];
-                ud.AdditionalCounts.Add($"{nameof(usage.InputTokenDetails)}.{nameof(inputDetails.CachedTokenCount)}", inputDetails.CachedTokenCount);
-            }
-
-            if (usage.OutputTokenDetails is { } outputDetails)
-            {
-                ud.AdditionalCounts ??= [];
-                ud.AdditionalCounts.Add($"{nameof(usage.OutputTokenDetails)}.{nameof(outputDetails.ReasoningTokenCount)}", outputDetails.ReasoningTokenCount);
-            }
         }
 
         return ud;

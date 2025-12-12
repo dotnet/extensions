@@ -4584,12 +4584,12 @@ public class OpenAIResponseClientTests
         var response = await client.GetResponseAsync("test");
 
         Assert.NotNull(response.Usage);
+        Assert.Null(response.Usage.AdditionalCounts);
         Assert.Equal(50, response.Usage.InputTokenCount);
         Assert.Equal(25, response.Usage.OutputTokenCount);
         Assert.Equal(75, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalCounts);
-        Assert.Equal(10, response.Usage.AdditionalCounts["InputTokenDetails.CachedTokenCount"]);
-        Assert.Equal(5, response.Usage.AdditionalCounts["OutputTokenDetails.ReasoningTokenCount"]);
+        Assert.Equal(10, response.Usage.CachedInputTokenCount);
+        Assert.Equal(5, response.Usage.ReasoningTokenCount);
     }
 
     [Fact]
