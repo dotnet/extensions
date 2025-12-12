@@ -1,5 +1,11 @@
 # Microsoft.Extensions.AI.Abstractions Release History
 
+## 10.1.1 (NOT YET RELEASED)
+
+- Added `InputCachedTokenCount` and `ReasoningTokenCount` to `UsageDetails`.
+- Added constructors to `HostedCodeInterpreterTool`, `HostedFileSearchTool`, `HostedImageGeneratorTool`, `HostedMcpServerTool`,
+  and `HostedWebSearchTool` that accept a dictionary for `AdditionalProperties`.
+
 ## 10.1.0
 
 - Fixed package references for net10.0 asset.

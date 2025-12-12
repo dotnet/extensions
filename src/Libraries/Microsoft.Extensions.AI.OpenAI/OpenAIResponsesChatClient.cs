@@ -541,30 +541,17 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 return ToResponseTool(aiFunction, options);
 
             case HostedWebSearchTool webSearchTool:
-                WebSearchToolLocation? location = null;
-                if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchToolLocation), out object? objLocation))
-                {
-                    location = objLocation as WebSearchToolLocation;
-                }
-
-                WebSearchToolContextSize? size = null;
-                if (webSearchTool.AdditionalProperties.TryGetValue(nameof(WebSearchToolContextSize), out object? objSize) &&
-                    objSize is WebSearchToolContextSize)
-                {
-                    size = (WebSearchToolContextSize)objSize;
-                }
-
-                return new WebSearchTool
-                {
-                    UserLocation = location,
-                    SearchContextSize = size,
-                };
+                return ResponseTool.CreateWebSearchTool(
+                    webSearchTool.GetProperty<WebSearchToolLocation?>(nameof(WebSearchTool.UserLocation)),
+                    webSearchTool.GetProperty<WebSearchToolContextSize?>(nameof(WebSearchTool.SearchContextSize)),
+                    webSearchTool.GetProperty<WebSearchToolFilters?>(nameof(WebSearchTool.Filters)));
 
             case HostedFileSearchTool fileSearchTool:
-                return new FileSearchTool(fileSearchTool.Inputs?.OfType<HostedVectorStoreContent>().Select(c => c.VectorStoreId) ?? [])
-                {
-                    MaxResultCount = fileSearchTool.MaximumResultCount,
-                };
+                return ResponseTool.CreateFileSearchTool(
+                    fileSearchTool.Inputs?.OfType<HostedVectorStoreContent>().Select(c => c.VectorStoreId) ?? [],
+                    fileSearchTool.MaximumResultCount,
+                    fileSearchTool.GetProperty<FileSearchToolRankingOptions?>(nameof(FileSearchTool.RankingOptions)),
+                    fileSearchTool.GetProperty<BinaryData?>(nameof(FileSearchTool.Filters)));
 
             case HostedImageGenerationTool imageGenerationTool:
                 return AsImageResponseTool(imageGenerationTool);
@@ -641,36 +628,31 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
     internal static ImageGenerationTool AsImageResponseTool(HostedImageGenerationTool imageGenerationTool)
     {
-        ImageGenerationTool result = new();
-        ImageGenerationOptions? imageGenerationOptions = imageGenerationTool.Options;
+        ImageGenerationOptions? options = imageGenerationTool.Options;
 
-        // Model: Image generation model
-        result.Model = imageGenerationOptions?.ModelId;
-
-        // Size: Image dimensions (e.g., 1024x1024, 1024x1536)
-        if (imageGenerationOptions?.ImageSize is not null)
+        return new()
         {
-            result.Size = new ImageGenerationToolSize(
-                imageGenerationOptions.ImageSize.Value.Width,
-                imageGenerationOptions.ImageSize.Value.Height);
-        }
-
-        // OutputFileFormat: File output format
-        if (imageGenerationOptions?.MediaType is not null)
-        {
-            result.OutputFileFormat = imageGenerationOptions.MediaType switch
-            {
-                "image/png" => ImageGenerationToolOutputFileFormat.Png,
-                "image/jpeg" => ImageGenerationToolOutputFileFormat.Jpeg,
-                "image/webp" => ImageGenerationToolOutputFileFormat.Webp,
-                _ => null,
-            };
-        }
-
-        // PartialImageCount: Whether to return partial images during generation
-        result.PartialImageCount ??= imageGenerationOptions?.StreamingCount;
-
-        return result;
+            Background = imageGenerationTool.GetProperty<ImageGenerationToolBackground?>(nameof(ImageGenerationTool.Background)),
+            InputFidelity = imageGenerationTool.GetProperty<ImageGenerationToolInputFidelity?>(nameof(ImageGenerationTool.InputFidelity)),
+            InputImageMask = imageGenerationTool.GetProperty<ImageGenerationToolInputImageMask?>(nameof(ImageGenerationTool.InputImageMask)),
+            Model = options?.ModelId,
+            ModerationLevel = imageGenerationTool.GetProperty<ImageGenerationToolModerationLevel?>(nameof(ImageGenerationTool.ModerationLevel)),
+            OutputCompressionFactor = imageGenerationTool.GetProperty<int?>(nameof(ImageGenerationTool.OutputCompressionFactor)),
+            OutputFileFormat = options?.MediaType is not null ?
+                options.MediaType switch
+                {
+                    "image/png" => ImageGenerationToolOutputFileFormat.Png,
+                    "image/jpeg" => ImageGenerationToolOutputFileFormat.Jpeg,
+                    "image/webp" => ImageGenerationToolOutputFileFormat.Webp,
+                    _ => null,
+                } :
+                null,
+            PartialImageCount = options?.StreamingCount,
+            Quality = imageGenerationTool.GetProperty<ImageGenerationToolQuality?>(nameof(ImageGenerationTool.Quality)),
+            Size = options?.ImageSize is not null ?
+                new ImageGenerationToolSize(options.ImageSize.Value.Width, options.ImageSize.Value.Height) :
+                null
+        };
     }
 
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
@@ -1142,19 +1124,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 InputTokenCount = usage.InputTokenCount,
                 OutputTokenCount = usage.OutputTokenCount,
                 TotalTokenCount = usage.TotalTokenCount,
+                CachedInputTokenCount = usage.InputTokenDetails?.CachedTokenCount,
+                ReasoningTokenCount = usage.OutputTokenDetails?.ReasoningTokenCount,
             };
-
-            if (usage.InputTokenDetails is { } inputDetails)
-            {
-                ud.AdditionalCounts ??= [];
-                ud.AdditionalCounts.Add($"{nameof(usage.InputTokenDetails)}.{nameof(inputDetails.CachedTokenCount)}", inputDetails.CachedTokenCount);
-            }
-
-            if (usage.OutputTokenDetails is { } outputDetails)
-            {
-                ud.AdditionalCounts ??= [];
-                ud.AdditionalCounts.Add($"{nameof(usage.OutputTokenDetails)}.{nameof(outputDetails.ReasoningTokenCount)}", outputDetails.ReasoningTokenCount);
-            }
         }
 
         return ud;
