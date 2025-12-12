@@ -48,6 +48,12 @@ pr:
       - PATENTS.TXT
       - THIRD-PARTY-NOTICES.TXT
 
+parameters:
+  - name: runTests
+    displayName: Run Tests
+    type: boolean
+    default: false
+
 variables:
   - name: _TeamName
     value: dotnet-extensions
@@ -223,6 +229,7 @@ extends:
                 buildConfig: $(_BuildConfig)
                 repoLogPath: $(Build.Arcade.LogsPath)
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                skipTests: ${{ not(parameters.runTests) }}
                 skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
                 isWindows: true
 
@@ -253,6 +260,7 @@ extends:
                 buildConfig: $(_BuildConfig)
                 repoLogPath: $(Build.Arcade.LogsPath)
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                skipTests: ${{ not(parameters.runTests) }}
                 skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
                 isWindows: false
 
@@ -263,7 +271,7 @@ extends:
       displayName: CodeCoverage
       dependsOn:
       - build
-      condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'))
+      condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'), eq(parameters.runTests, true))
       variables:
       - template: /eng/common/templates-official/variables/pool-providers.yml@self
       jobs:
@@ -356,7 +364,8 @@ extends:
         parameters:
           validateDependsOn:
           - build
-          - codecoverage
+          - ${{ if eq(parameters.runTests, true) }}:
+            - codecoverage
           - correctness
           publishingInfraVersion: 3
           enableSymbolValidation: false
