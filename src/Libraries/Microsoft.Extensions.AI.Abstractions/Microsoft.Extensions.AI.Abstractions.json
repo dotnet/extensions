@@ -1806,6 +1806,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "bool Microsoft.Extensions.AI.FunctionCallContent.InvocationRequired { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "string Microsoft.Extensions.AI.FunctionCallContent.Name { get; }",
           "Stage": "Stable"
         }
