@@ -20,8 +20,6 @@
     <Stage>normal</Stage>
     <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>
-    <!-- Disable automatic generation of TFM-specific buildTransitive files - we use generic ones instead -->
-    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
   </PropertyGroup>
 
   <ItemGroup>
