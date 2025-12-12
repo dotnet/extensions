@@ -18,6 +18,7 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'" >
     <!-- Direct dependencies as Microsoft.AspNetCore.Mvc.Testing references vulnerable versions. -->
     <PackageReference Include="Microsoft.AspNetCore.Http" />
+    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.IO.Pipelines" />
   </ItemGroup>
 </Project>

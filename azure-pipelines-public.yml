@@ -57,7 +57,7 @@ variables:
   - name: SkipQualityGates
     value: false
   - name: _TeamName
-    value: dotnet-r9
+    value: dotnet-extensions
   - name: NativeToolsOnMachine
     value: true
   - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE

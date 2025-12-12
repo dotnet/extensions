@@ -409,7 +409,10 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                             break;
 
                         case HostedFileSearchTool fileSearchTool:
-                            _ = toolsOverride.Add(ToolDefinition.CreateFileSearch(fileSearchTool.MaximumResultCount));
+                            var fst = ToolDefinition.CreateFileSearch(fileSearchTool.MaximumResultCount);
+                            fst.RankingOptions = fileSearchTool.GetProperty<FileSearchRankingOptions>(nameof(FileSearchToolDefinition.RankingOptions));
+                            _ = toolsOverride.Add(fst);
+
                             if (fileSearchTool.Inputs is { Count: > 0 } fileSearchInputs)
                             {
                                 foreach (var input in fileSearchInputs)
