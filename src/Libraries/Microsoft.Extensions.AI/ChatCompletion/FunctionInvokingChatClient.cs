@@ -1418,7 +1418,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <returns>The <see cref="AIContent"/> for the rejected function calls.</returns>
     private static List<AIContent>? GenerateRejectedFunctionResults(List<ApprovalResultWithRequestMessage>? rejections) =>
         rejections is { Count: > 0 } ?
-            rejections.ConvertAll(static m => (AIContent)new FunctionResultContent(m.Response.FunctionCall.CallId, "Error: Tool call invocation was rejected by user.")) :
+            rejections.ConvertAll(m =>
+            {
+                string result = m.Response.Reason ?? "Error: Tool call invocation was rejected by user.";
+                return (AIContent)new FunctionResultContent(m.Response.FunctionCall.CallId, result);
+            }) :
             null;
 
     /// <summary>
