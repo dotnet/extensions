@@ -22,12 +22,14 @@ public class HostedMcpServerTool : AITool
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="serverAddress">The address of the remote MCP server. This may be a URL, or in the case of a service providing built-in MCP servers with known names, it can be such a name.</param>
+    /// <param name="headers">HTTP headers to include when calling the remote MCP server. If <see langword="null"/>, an empty dictionary is created.</param>
     /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is empty or composed entirely of whitespace.</exception>
-    public HostedMcpServerTool(string serverName, string serverAddress)
+    public HostedMcpServerTool(string serverName, string serverAddress, IDictionary<string, string>? headers = null)
     {
         ServerName = Throw.IfNullOrWhitespace(serverName);
         ServerAddress = Throw.IfNullOrWhitespace(serverAddress);
+        Headers = headers ?? new Dictionary<string, string>();
     }
 
     /// <summary>
@@ -35,11 +37,12 @@ public class HostedMcpServerTool : AITool
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="serverAddress">The address of the remote MCP server. This may be a URL, or in the case of a service providing built-in MCP servers with known names, it can be such a name.</param>
+    /// <param name="headers">HTTP headers to include when calling the remote MCP server. If <see langword="null"/>, an empty dictionary is created.</param>
     /// <param name="additionalProperties">Any additional properties associated with the tool.</param>
     /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is empty or composed entirely of whitespace.</exception>
-    public HostedMcpServerTool(string serverName, string serverAddress, IReadOnlyDictionary<string, object?>? additionalProperties)
-        : this(serverName, serverAddress)
+    public HostedMcpServerTool(string serverName, string serverAddress, IDictionary<string, string>? headers, IReadOnlyDictionary<string, object?>? additionalProperties)
+        : this(serverName, serverAddress, headers)
     {
         _additionalProperties = additionalProperties;
     }
@@ -49,11 +52,12 @@ public class HostedMcpServerTool : AITool
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="serverUrl">The URL of the remote MCP server.</param>
+    /// <param name="headers">HTTP headers to include when calling the remote MCP server. If <see langword="null"/>, an empty dictionary is created.</param>
     /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverUrl"/> is not an absolute URL.</exception>
-    public HostedMcpServerTool(string serverName, Uri serverUrl)
-        : this(serverName, ValidateUrl(serverUrl))
+    public HostedMcpServerTool(string serverName, Uri serverUrl, IDictionary<string, string>? headers = null)
+        : this(serverName, ValidateUrl(serverUrl), headers)
     {
     }
 
@@ -62,12 +66,13 @@ public class HostedMcpServerTool : AITool
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="serverUrl">The URL of the remote MCP server.</param>
+    /// <param name="headers">HTTP headers to include when calling the remote MCP server. If <see langword="null"/>, an empty dictionary is created.</param>
     /// <param name="additionalProperties">Any additional properties associated with the tool.</param>
     /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverUrl"/> is not an absolute URL.</exception>
-    public HostedMcpServerTool(string serverName, Uri serverUrl, IReadOnlyDictionary<string, object?>? additionalProperties)
-        : this(serverName, ValidateUrl(serverUrl))
+    public HostedMcpServerTool(string serverName, Uri serverUrl, IDictionary<string, string>? headers, IReadOnlyDictionary<string, object?>? additionalProperties)
+        : this(serverName, ValidateUrl(serverUrl), headers)
     {
         _additionalProperties = additionalProperties;
     }
@@ -117,10 +122,9 @@ public class HostedMcpServerTool : AITool
 
             if (value is not null)
             {
-                Headers ??= new Dictionary<string, string>();
                 Headers["Authorization"] = $"Bearer {value}";
             }
-            else if (Headers is not null)
+            else
             {
                 _ = Headers.Remove("Authorization");
             }
@@ -158,15 +162,12 @@ public class HostedMcpServerTool : AITool
     public HostedMcpServerToolApprovalMode? ApprovalMode { get; set; }
 
     /// <summary>
-    /// Gets or sets HTTP headers to include when calling the remote MCP server.
+    /// Gets a mutable dictionary of HTTP headers to include when calling the remote MCP server.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// The underlying provider may respond with an error if <see cref="AuthorizationToken"/> is set and an Authorization header is included.
-    /// </para>
     /// <para>
     /// The underlying provider is not guaranteed to support or honor the headers.
     /// </para>
     /// </remarks>
-    public IDictionary<string, string>? Headers { get; set; }
+    public IDictionary<string, string> Headers { get; }
 }

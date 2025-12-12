@@ -24,13 +24,15 @@ public class HostedMcpServerToolTests
         Assert.Null(tool.ServerDescription);
         Assert.Null(tool.AllowedTools);
         Assert.Null(tool.ApprovalMode);
+        Assert.NotNull(tool.Headers);
+        Assert.Empty(tool.Headers);
     }
 
     [Fact]
     public void Constructor_AdditionalProperties_String_Roundtrips()
     {
         var props = new Dictionary<string, object?> { ["key"] = "value" };
-        HostedMcpServerTool tool = new("serverName", "connector_id", props);
+        HostedMcpServerTool tool = new("serverName", "connector_id", null, props);
 
         Assert.Equal("serverName", tool.ServerName);
         Assert.Equal("connector_id", tool.ServerAddress);
@@ -41,7 +43,7 @@ public class HostedMcpServerToolTests
     public void Constructor_AdditionalProperties_Uri_Roundtrips()
     {
         var props = new Dictionary<string, object?> { ["key"] = "value" };
-        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"), props);
+        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"), null, props);
 
         Assert.Equal("serverName", tool.ServerName);
         Assert.Equal("https://localhost/", tool.ServerAddress);
@@ -51,7 +53,7 @@ public class HostedMcpServerToolTests
     [Fact]
     public void Constructor_NullAdditionalProperties_UsesEmpty()
     {
-        HostedMcpServerTool tool = new("serverName", "connector_id", null);
+        HostedMcpServerTool tool = new("serverName", "connector_id", null, null);
 
         Assert.Empty(tool.AdditionalProperties);
     }
@@ -97,15 +99,124 @@ public class HostedMcpServerToolTests
         Assert.Same(customApprovalMode, tool.ApprovalMode);
 
         Assert.NotNull(tool.Headers);
-        IDictionary<string, string> headers = new Dictionary<string, string>
-        {
-            ["X-Custom-Header"] = "value1",
-        };
-        tool.Headers = headers;
-        Assert.Same(headers, tool.Headers);
+        Assert.Empty(tool.Headers);
+        tool.Headers["X-Custom-Header"] = "value1";
+        Assert.Single(tool.Headers);
+        Assert.Equal("value1", tool.Headers["X-Custom-Header"]);
+    }
 
-        tool.Headers = null;
-        Assert.Null(tool.Headers);
+    [Fact]
+    public void Constructor_WithHeaders_String_Roundtrips()
+    {
+        var headers = new Dictionary<string, string>
+        {
+            ["Authorization"] = "Bearer token123",
+            ["X-Custom"] = "value1"
+        };
+        HostedMcpServerTool tool = new("serverName", "connector_id", headers);
+
+        Assert.Equal("serverName", tool.ServerName);
+        Assert.Equal("connector_id", tool.ServerAddress);
+        Assert.Same(headers, tool.Headers);
+        Assert.Equal(2, tool.Headers.Count);
+        Assert.Equal("Bearer token123", tool.Headers["Authorization"]);
+        Assert.Equal("value1", tool.Headers["X-Custom"]);
+    }
+
+    [Fact]
+    public void Constructor_WithHeaders_Uri_Roundtrips()
+    {
+        var headers = new Dictionary<string, string>
+        {
+            ["Authorization"] = "Bearer token456",
+            ["X-Custom"] = "value2"
+        };
+        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"), headers);
+
+        Assert.Equal("serverName", tool.ServerName);
+        Assert.Equal("https://localhost/", tool.ServerAddress);
+        Assert.Same(headers, tool.Headers);
+        Assert.Equal(2, tool.Headers.Count);
+        Assert.Equal("Bearer token456", tool.Headers["Authorization"]);
+        Assert.Equal("value2", tool.Headers["X-Custom"]);
+    }
+
+    [Fact]
+    public void Constructor_WithHeaders_And_AdditionalProperties_String_Roundtrips()
+    {
+        var headers = new Dictionary<string, string>
+        {
+            ["X-Header"] = "headerValue"
+        };
+        var props = new Dictionary<string, object?> { ["key"] = "value" };
+        HostedMcpServerTool tool = new("serverName", "connector_id", headers, props);
+
+        Assert.Equal("serverName", tool.ServerName);
+        Assert.Equal("connector_id", tool.ServerAddress);
+        Assert.Same(headers, tool.Headers);
+        Assert.Same(props, tool.AdditionalProperties);
+        Assert.Single(tool.Headers);
+        Assert.Equal("headerValue", tool.Headers["X-Header"]);
+    }
+
+    [Fact]
+    public void Constructor_WithHeaders_And_AdditionalProperties_Uri_Roundtrips()
+    {
+        var headers = new Dictionary<string, string>
+        {
+            ["X-Header"] = "headerValue"
+        };
+        var props = new Dictionary<string, object?> { ["key"] = "value" };
+        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"), headers, props);
+
+        Assert.Equal("serverName", tool.ServerName);
+        Assert.Equal("https://localhost/", tool.ServerAddress);
+        Assert.Same(headers, tool.Headers);
+        Assert.Same(props, tool.AdditionalProperties);
+        Assert.Single(tool.Headers);
+        Assert.Equal("headerValue", tool.Headers["X-Header"]);
+    }
+
+    [Fact]
+    public void Constructor_WithNullHeaders_CreatesEmptyDictionary()
+    {
+        HostedMcpServerTool tool1 = new("serverName", "connector_id", headers: null);
+        Assert.NotNull(tool1.Headers);
+        Assert.Empty(tool1.Headers);
+
+        HostedMcpServerTool tool2 = new("serverName", new Uri("https://localhost/"), headers: null);
+        Assert.NotNull(tool2.Headers);
+        Assert.Empty(tool2.Headers);
+    }
+
+    [Fact]
+    public void AuthorizationToken_And_Headers_NoOrderingIssues()
+    {
+        // Verify that setting AuthorizationToken followed by adding to Headers works
+        var tool1 = new HostedMcpServerTool("server", "https://localhost/")
+        {
+            AuthorizationToken = "token123"
+        };
+        tool1.Headers["X-Custom"] = "value1";
+
+        Assert.Equal(2, tool1.Headers.Count);
+        Assert.Equal("Bearer token123", tool1.Headers["Authorization"]);
+        Assert.Equal("value1", tool1.Headers["X-Custom"]);
+
+        // Verify that adding to Headers followed by setting AuthorizationToken works the same
+        var tool2 = new HostedMcpServerTool("server", "https://localhost/");
+        tool2.Headers["X-Custom"] = "value1";
+        tool2.AuthorizationToken = "token123";
+
+        Assert.Equal(2, tool2.Headers.Count);
+        Assert.Equal("Bearer token123", tool2.Headers["Authorization"]);
+        Assert.Equal("value1", tool2.Headers["X-Custom"]);
+
+        // Verify setting AuthorizationToken to null removes only Authorization header
+        tool2.AuthorizationToken = null;
+        Assert.Single(tool2.Headers);
+        Assert.False(tool2.Headers.ContainsKey("Authorization"));
+        Assert.Equal("value1", tool2.Headers["X-Custom"]);
     }
 
     [Fact]
@@ -122,3 +233,4 @@ public class HostedMcpServerToolTests
         Assert.Throws<ArgumentNullException>("serverUrl", () => new HostedMcpServerTool("name", (Uri)null!));
     }
 }
+
