@@ -545,15 +545,16 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             case HostedWebSearchTool webSearchTool:
                 return ResponseTool.CreateWebSearchTool(
-                    webSearchTool.GetProperty<WebSearchToolLocation>(nameof(WebSearchTool.UserLocation)),
-                    webSearchTool.GetProperty<WebSearchToolContextSize?>(nameof(WebSearchTool.SearchContextSize)));
+                    webSearchTool.GetProperty<WebSearchToolLocation?>(nameof(WebSearchTool.UserLocation)),
+                    webSearchTool.GetProperty<WebSearchToolContextSize?>(nameof(WebSearchTool.SearchContextSize)),
+                    webSearchTool.GetProperty<WebSearchToolFilters?>(nameof(WebSearchTool.Filters)));
 
             case HostedFileSearchTool fileSearchTool:
                 return ResponseTool.CreateFileSearchTool(
                     fileSearchTool.Inputs?.OfType<HostedVectorStoreContent>().Select(c => c.VectorStoreId) ?? [],
                     fileSearchTool.MaximumResultCount,
-                    fileSearchTool.GetProperty<FileSearchToolRankingOptions>(nameof(FileSearchTool.RankingOptions)),
-                    fileSearchTool.GetProperty<BinaryData>(nameof(FileSearchTool.Filters)));
+                    fileSearchTool.GetProperty<FileSearchToolRankingOptions?>(nameof(FileSearchTool.RankingOptions)),
+                    fileSearchTool.GetProperty<BinaryData?>(nameof(FileSearchTool.Filters)));
 
             case HostedImageGenerationTool imageGenerationTool:
                 return ToImageResponseTool(imageGenerationTool);
@@ -639,7 +640,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             Background = imageGenerationTool.GetProperty<ImageGenerationToolBackground?>(nameof(ImageGenerationTool.Background)),
             InputFidelity = imageGenerationTool.GetProperty<ImageGenerationToolInputFidelity?>(nameof(ImageGenerationTool.InputFidelity)),
-            InputImageMask = imageGenerationTool.GetProperty<ImageGenerationToolInputImageMask>(nameof(ImageGenerationTool.InputImageMask)),
+            InputImageMask = imageGenerationTool.GetProperty<ImageGenerationToolInputImageMask?>(nameof(ImageGenerationTool.InputImageMask)),
             Model = options?.ModelId,
             ModerationLevel = imageGenerationTool.GetProperty<ImageGenerationToolModerationLevel?>(nameof(ImageGenerationTool.ModerationLevel)),
             OutputCompressionFactor = imageGenerationTool.GetProperty<int?>(nameof(ImageGenerationTool.OutputCompressionFactor)),
