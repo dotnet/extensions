@@ -186,6 +186,69 @@ public class FunctionInvokingChatClientApprovalsTests
         await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
     }
 
+    /// <summary>
+    /// Regression test: When messages containing FunctionApprovalRequestContent and FunctionApprovalResponseContent
+    /// have null MessageId, all approvals from the same original message should still be grouped into a single
+    /// FunctionCallContent message when sent to the downstream client.
+    ///
+    /// Previously, a bug in ConvertToFunctionCallContentMessages caused a key mismatch when MessageId was null:
+    /// - Messages were stored in a dictionary under the fallbackMessageId key
+    /// - But lookups used (RequestMessage?.MessageId ?? "") which resolved to ""
+    /// - This caused each FCC to be placed in a separate message instead of being grouped
+    /// </summary>
+    [Fact]
+    public async Task ApprovedApprovalResponsesAreGroupedWhenMessageIdIsNullAsync()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2")),
+            ]
+        };
+
+        // Key difference from other tests: MessageId is NOT set on the assistant message
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+            ]), // Note: No MessageId set - this is the bug trigger
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalResponseContent("callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+            ]),
+        ];
+
+        // Both FCCs should be in a SINGLE assistant message, not split across multiple messages
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1"), new FunctionResultContent("callId2", result: "Result 2: 42")]),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1"), new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+    }
+
     [Fact]
     public async Task ApprovedApprovalResponsesFromSeparateFCCMessagesAreExecutedAsync()
     {
