@@ -595,6 +595,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 responsesMcpTool.ServerDescription = mcpTool.ServerDescription;
                 responsesMcpTool.AuthorizationToken = mcpTool.AuthorizationToken;
+                if (mcpTool.Headers.Count > 0)
+                {
+                    responsesMcpTool.Headers = mcpTool.Headers;
+                }
 
                 if (mcpTool.AllowedTools is not null)
                 {
