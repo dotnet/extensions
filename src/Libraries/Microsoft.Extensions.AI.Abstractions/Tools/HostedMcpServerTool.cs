@@ -16,33 +16,45 @@ public class HostedMcpServerTool : AITool
 {
     /// <summary>Any additional properties associated with the tool.</summary>
     private IReadOnlyDictionary<string, object?>? _additionalProperties;
+    // <summary>Backing field for the <see cref="Headers"/> property.</summary>
+    private IDictionary<string, string>? _headers;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="serverAddress">The address of the remote MCP server. This may be a URL, or in the case of a service providing built-in MCP servers with known names, it can be such a name.</param>
-    /// <param name="headers">HTTP headers to include when calling the remote MCP server. If <see langword="null"/>, an empty dictionary is created.</param>
     /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is empty or composed entirely of whitespace.</exception>
-    public HostedMcpServerTool(string serverName, string serverAddress, IDictionary<string, string>? headers = null)
+    public HostedMcpServerTool(string serverName, string serverAddress)
     {
         ServerName = Throw.IfNullOrWhitespace(serverName);
         ServerAddress = Throw.IfNullOrWhitespace(serverAddress);
-        Headers = headers ?? new Dictionary<string, string>();
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
+    /// <param name="serverUrl">The URL of the remote MCP server.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentException"><paramref name="serverUrl"/> is not an absolute URL.</exception>
+    public HostedMcpServerTool(string serverName, Uri serverUrl)
+        : this(serverName, ValidateUrl(serverUrl))
+    {
+    }
+    
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
+    /// </summary>
+    /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="serverAddress">The address of the remote MCP server. This may be a URL, or in the case of a service providing built-in MCP servers with known names, it can be such a name.</param>
-    /// <param name="headers">HTTP headers to include when calling the remote MCP server. If <see langword="null"/>, an empty dictionary is created.</param>
     /// <param name="additionalProperties">Any additional properties associated with the tool.</param>
     /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is empty or composed entirely of whitespace.</exception>
-    public HostedMcpServerTool(string serverName, string serverAddress, IDictionary<string, string>? headers, IReadOnlyDictionary<string, object?>? additionalProperties)
-        : this(serverName, serverAddress, headers)
+    public HostedMcpServerTool(string serverName, string serverAddress, IReadOnlyDictionary<string, object?>? additionalProperties)
+        : this(serverName, serverAddress)
     {
         _additionalProperties = additionalProperties;
     }
@@ -52,27 +64,12 @@ public class HostedMcpServerTool : AITool
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
     /// <param name="serverUrl">The URL of the remote MCP server.</param>
-    /// <param name="headers">HTTP headers to include when calling the remote MCP server. If <see langword="null"/>, an empty dictionary is created.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="ArgumentException"><paramref name="serverUrl"/> is not an absolute URL.</exception>
-    public HostedMcpServerTool(string serverName, Uri serverUrl, IDictionary<string, string>? headers = null)
-        : this(serverName, ValidateUrl(serverUrl), headers)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
-    /// </summary>
-    /// <param name="serverName">The name of the remote MCP server.</param>
-    /// <param name="serverUrl">The URL of the remote MCP server.</param>
-    /// <param name="headers">HTTP headers to include when calling the remote MCP server. If <see langword="null"/>, an empty dictionary is created.</param>
     /// <param name="additionalProperties">Any additional properties associated with the tool.</param>
     /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverUrl"/> is not an absolute URL.</exception>
-    public HostedMcpServerTool(string serverName, Uri serverUrl, IDictionary<string, string>? headers, IReadOnlyDictionary<string, object?>? additionalProperties)
-        : this(serverName, ValidateUrl(serverUrl), headers)
+    public HostedMcpServerTool(string serverName, Uri serverUrl, IReadOnlyDictionary<string, object?>? additionalProperties)
+        : this(serverName, ValidateUrl(serverUrl))
     {
         _additionalProperties = additionalProperties;
     }
@@ -115,11 +112,17 @@ public class HostedMcpServerTool : AITool
     /// </remarks>
     public string? AuthorizationToken
     {
-        get;
+        get
+        {
+            if (Headers.TryGetValue("Authorization", out string? value) && value.StartsWith("Bearer ", StringComparison.Ordinal))
+            {
+                return value.Substring("Bearer ".Length);
+            }
+
+            return null;
+        }
         set
         {
-            field = value;
-
             if (value is not null)
             {
                 Headers["Authorization"] = $"Bearer {value}";
@@ -169,5 +172,9 @@ public class HostedMcpServerTool : AITool
     /// The underlying provider is not guaranteed to support or honor the headers.
     /// </para>
     /// </remarks>
-    public IDictionary<string, string> Headers { get; }
+    public IDictionary<string, string> Headers
+    {
+        get => _headers ??= new Dictionary<string, string>();
+        set => _headers = value;
+    }
 }
