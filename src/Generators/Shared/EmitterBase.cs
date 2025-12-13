@@ -13,6 +13,9 @@ namespace Microsoft.Gen.Shared;
 #endif
 internal class EmitterBase
 {
+    protected readonly Stack<int> ItemCounts = new();
+    protected int ItemCount;
+
     private const int DefaultStringBuilderCapacity = 1024;
     private const int IndentChars = 4;
 
@@ -34,16 +37,33 @@ internal class EmitterBase
         }
     }
 
-    protected void OutOpenBrace()
+    protected void OutOpenBrace(bool isRoot = false) // isRoot is used to neglect any extra indentation before the brace, root has no indentation, defaulted to false for backward compatibility.
     {
-        OutLn("{");
+        if (isRoot)
+        {
+            Out("{");
+        }
+        else
+        {
+            OutLn("{");
+        }
+
         Indent();
     }
 
-    protected void OutCloseBrace()
+    protected void OutCloseBrace(bool isRoot = false)// isRoot is used to neglect any extra indentation before the brace, root has no indentation, defaulted to false for backward compatibility.
     {
         Unindent();
-        OutLn("}");
+
+        if (isRoot)
+        {
+            Out("}");
+        }
+        else
+        {
+            OutLn("}");
+        }
+
     }
 
     protected void OutCloseBraceWithExtra(string extra)
@@ -98,8 +118,8 @@ internal class EmitterBase
 
     protected void Out(string text) => _ = _sb.Append(text);
     protected void Out(char ch) => _ = _sb.Append(ch);
-    protected void Indent() => _indent++;
-    protected void Unindent() => _indent--;
+    protected void Indent(int times = 1) => _indent += times;
+    protected void Unindent(int times = 1) => _indent -= times;
     protected void OutGeneratedCodeAttribute() => OutLn($"[{GeneratorUtilities.GeneratedCodeAttribute}]");
     protected string Capture() => _sb.ToString();
 }
