@@ -99,9 +99,9 @@ public class HostedMcpServerToolTests
         Assert.Same(customApprovalMode, tool.ApprovalMode);
 
         Assert.NotNull(tool.Headers);
-        Assert.Empty(tool.Headers);
-        tool.Headers["X-Custom-Header"] = "value1";
         Assert.Single(tool.Headers);
+        tool.Headers["X-Custom-Header"] = "value1";
+        Assert.True(tool.Headers.Count == 2);
         Assert.Equal("value1", tool.Headers["X-Custom-Header"]);
     }
 
@@ -113,8 +113,7 @@ public class HostedMcpServerToolTests
             ["Authorization"] = "Bearer token123",
             ["X-Custom"] = "value1"
         };
-        HostedMcpServerTool tool = new("serverName", "connector_id");
-        tool.Headers = headers;
+        HostedMcpServerTool tool = new("serverName", "connector_id") { Headers = headers };
 
         Assert.Equal("serverName", tool.ServerName);
         Assert.Equal("connector_id", tool.ServerAddress);
@@ -132,8 +131,7 @@ public class HostedMcpServerToolTests
             ["Authorization"] = "Bearer token456",
             ["X-Custom"] = "value2"
         };
-        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"));
-        tool.Headers = headers;
+        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/")) { Headers = headers };
 
         Assert.Equal("serverName", tool.ServerName);
         Assert.Equal("https://localhost/", tool.ServerAddress);
@@ -151,8 +149,7 @@ public class HostedMcpServerToolTests
             ["X-Header"] = "headerValue"
         };
         var props = new Dictionary<string, object?> { ["key"] = "value" };
-        HostedMcpServerTool tool = new("serverName", "connector_id", props);
-        tool.Headers = headers;
+        HostedMcpServerTool tool = new("serverName", "connector_id", props) { Headers = headers };
 
         Assert.Equal("serverName", tool.ServerName);
         Assert.Equal("connector_id", tool.ServerAddress);
@@ -170,8 +167,7 @@ public class HostedMcpServerToolTests
             ["X-Header"] = "headerValue"
         };
         var props = new Dictionary<string, object?> { ["key"] = "value" };
-        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"), props);
-        tool.Headers = headers;
+        HostedMcpServerTool tool = new("serverName", new Uri("https://localhost/"), props) { Headers = headers };
 
         Assert.Equal("serverName", tool.ServerName);
         Assert.Equal("https://localhost/", tool.ServerAddress);

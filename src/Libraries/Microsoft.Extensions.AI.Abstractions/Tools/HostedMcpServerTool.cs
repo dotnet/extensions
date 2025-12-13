@@ -16,8 +16,6 @@ public class HostedMcpServerTool : AITool
 {
     /// <summary>Any additional properties associated with the tool.</summary>
     private IReadOnlyDictionary<string, object?>? _additionalProperties;
-    // <summary>Backing field for the <see cref="Headers"/> property.</summary>
-    private IDictionary<string, string>? _headers;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
@@ -44,7 +42,7 @@ public class HostedMcpServerTool : AITool
         : this(serverName, ValidateUrl(serverUrl))
     {
     }
-    
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
     /// </summary>
@@ -165,7 +163,7 @@ public class HostedMcpServerTool : AITool
     public HostedMcpServerToolApprovalMode? ApprovalMode { get; set; }
 
     /// <summary>
-    /// Gets a mutable dictionary of HTTP headers to include when calling the remote MCP server.
+    /// Gets or sets a mutable dictionary of HTTP headers to include when calling the remote MCP server.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -174,7 +172,7 @@ public class HostedMcpServerTool : AITool
     /// </remarks>
     public IDictionary<string, string> Headers
     {
-        get => _headers ??= new Dictionary<string, string>();
-        set => _headers = value;
+        get => field ??= new Dictionary<string, string>();
+        set;
     }
 }
