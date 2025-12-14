@@ -2141,7 +2141,6 @@ public class OpenAIResponseClientTests
                         "type": "mcp",
                         "server_label": "deepwiki",
                         "server_url": "https://mcp.deepwiki.com/mcp",
-                        "authorization": "test-auth-token-12345",
                         "headers": {
                             "Authorization": "Bearer test-auth-token-12345",
                             "X-Custom-Header": "custom-value"
