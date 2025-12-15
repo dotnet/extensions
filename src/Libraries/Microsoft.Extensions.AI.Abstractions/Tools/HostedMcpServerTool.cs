@@ -118,10 +118,8 @@ public class HostedMcpServerTool : AITool
     {
         get
         {
-            if (_headers is not null &&
-                _headers.TryGetValue(AuthorizationHeaderName, out string? value) &&
-                value is not null &&
-                value.StartsWith("Bearer ", StringComparison.Ordinal))
+            if (_headers?.TryGetValue(AuthorizationHeaderName, out string? value) is true &&
+                value?.StartsWith("Bearer ", StringComparison.Ordinal) is true)
             {
                 return value.Substring("Bearer ".Length);
             }

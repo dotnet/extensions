@@ -123,6 +123,7 @@ public class HostedMcpServerToolTests
         Assert.Equal("https://localhost/", tool.ServerAddress);
         Assert.Equal(2, tool.Headers.Count);
         Assert.Equal("Bearer token456", tool.Headers["Authorization"]);
+        Assert.Equal("token456", tool.AuthorizationToken);
         Assert.Equal("value2", tool.Headers["X-Custom"]);
     }
 
@@ -150,6 +151,7 @@ public class HostedMcpServerToolTests
 
         Assert.Equal(2, tool1.Headers.Count);
         Assert.Equal("Bearer token123", tool1.Headers["Authorization"]);
+        Assert.Equal("token123", tool1.AuthorizationToken);
         Assert.Equal("value1", tool1.Headers["X-Custom"]);
 
         // Verify that adding to Headers followed by setting AuthorizationToken works the same
@@ -159,13 +161,27 @@ public class HostedMcpServerToolTests
 
         Assert.Equal(2, tool2.Headers.Count);
         Assert.Equal("Bearer token123", tool2.Headers["Authorization"]);
+        Assert.Equal("token123", tool2.AuthorizationToken);
         Assert.Equal("value1", tool2.Headers["X-Custom"]);
 
         // Verify setting AuthorizationToken to null removes only Authorization header
         tool2.AuthorizationToken = null;
         Assert.Single(tool2.Headers);
         Assert.False(tool2.Headers.ContainsKey("Authorization"));
+        Assert.Null(tool2.AuthorizationToken);
         Assert.Equal("value1", tool2.Headers["X-Custom"]);
+    }
+
+    [Fact]
+    public void Headers_WithNullAuthorization()
+    {
+        var tool = new HostedMcpServerTool("server", "https://localhost/");
+        tool.Headers["Authorization"] = null!;
+        tool.Headers["X-Custom"] = "value1";
+        Assert.Equal(2, tool.Headers.Count);
+        Assert.Null(tool.Headers["Authorization"]);
+        Assert.Null(tool.AuthorizationToken);
+        Assert.Equal("value1", tool.Headers["X-Custom"]);
     }
 
     [Fact]
