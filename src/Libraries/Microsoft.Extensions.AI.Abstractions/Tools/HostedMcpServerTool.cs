@@ -20,7 +20,7 @@ public class HostedMcpServerTool : AITool
     /// <summary>Any additional properties associated with the tool.</summary>
     private IReadOnlyDictionary<string, object?>? _additionalProperties;
 
-    /// <summary>Backing field for the Headers property.</summary>
+    /// <summary>Lazily-initialized collection of headers to include when calling the remote MCP server.</summary>
     private Dictionary<string, string>? _headers;
 
     /// <summary>

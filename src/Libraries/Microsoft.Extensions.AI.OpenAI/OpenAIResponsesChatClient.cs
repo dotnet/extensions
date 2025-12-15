@@ -603,10 +603,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     {
                         responsesMcpTool.Headers = mcpTool.Headers;
                     }
-                    else
-                    {
-                        responsesMcpTool.AuthorizationToken = mcpTool.AuthorizationToken;
-                    }
                 }
                 else
                 {
