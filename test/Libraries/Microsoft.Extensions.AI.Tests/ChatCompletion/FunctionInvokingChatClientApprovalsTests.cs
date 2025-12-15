@@ -186,16 +186,6 @@ public class FunctionInvokingChatClientApprovalsTests
         await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
     }
 
-    /// <summary>
-    /// Regression test: When messages containing FunctionApprovalRequestContent and FunctionApprovalResponseContent
-    /// have null MessageId, all approvals from the same original message should still be grouped into a single
-    /// FunctionCallContent message when sent to the downstream client.
-    ///
-    /// Previously, a bug in ConvertToFunctionCallContentMessages caused a key mismatch when MessageId was null:
-    /// - Messages were stored in a dictionary under the fallbackMessageId key
-    /// - But lookups used (RequestMessage?.MessageId ?? "") which resolved to ""
-    /// - This caused each FCC to be placed in a separate message instead of being grouped
-    /// </summary>
     [Fact]
     public async Task ApprovedApprovalResponsesAreGroupedWhenMessageIdIsNullAsync()
     {
