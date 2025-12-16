@@ -24,35 +24,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <TemplatePackageVersion Include="Microsoft.Extensions.AI"
-                            Project="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
-    <TemplatePackageVersion Include="Microsoft.Extensions.AI.OpenAI"
-                            Project="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj" />
-    <TemplatePackageVersion Include="Microsoft.Extensions.Http.Resilience"
-                            Project="$(RepoRoot)src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj" />
-    <TemplatePackageVersion Include="Microsoft.Extensions.DataIngestion"
-                            Project="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj" />
-    <TemplatePackageVersion Include="Microsoft.Extensions.DataIngestion.Markdig"
-                            Project="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion.Markdig\Microsoft.Extensions.DataIngestion.Markdig.csproj" />
-    <TemplatePackageVersion Include="Microsoft.Extensions.DataIngestion.MarkItDown"
-                            Project="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion.MarkItDown\Microsoft.Extensions.DataIngestion.MarkItDown.csproj" />
-
-    <TemplatePackageVersion Include="Aspire" Version="13.0.0" />
-    <TemplatePackageVersion Include="Aspire-Preview" Version="13.0.0-preview.1.25560.3" />
-    <TemplatePackageVersion Include="Azure.AI.Projects" Version="1.1.0" />
-    <TemplatePackageVersion Include="Azure.Identity" Version="1.17.1" />
-    <TemplatePackageVersion Include="Azure.Search.Documents" Version="11.7.0" />
-    <TemplatePackageVersion Include="CommunityToolkit.Aspire" Version="13.0.0-beta.444" />
-    <TemplatePackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
-    <TemplatePackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0" />
-    <TemplatePackageVersion Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
-    <TemplatePackageVersion Include="Microsoft.SemanticKernel" Version="1.67.1" />
-    <TemplatePackageVersion Include="Microsoft.SemanticKernel-Preview" Version="1.67.1-preview" />
-    <TemplatePackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />
-    <TemplatePackageVersion Include="OllamaSharp" Version="5.4.11" />
-    <TemplatePackageVersion Include="OpenTelemetry" Version="1.14.0" />
-    <TemplatePackageVersion Include="PdfPig" Version="0.1.12" />
-    <TemplatePackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.0" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.Http.Diagnostics\Microsoft.Extensions.Http.Diagnostics.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.ServiceDiscovery\Microsoft.Extensions.ServiceDiscovery.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.DataIngestion.Markdig\Microsoft.Extensions.DataIngestion.Markdig.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.DataIngestion.MarkItDown\Microsoft.Extensions.DataIngestion.MarkItDown.csproj" />
   </ItemGroup>
 
   <ItemGroup>

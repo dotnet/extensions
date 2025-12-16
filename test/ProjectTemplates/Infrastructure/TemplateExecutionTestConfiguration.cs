@@ -10,5 +10,7 @@ public sealed class TemplateExecutionTestConfiguration
     public required string TemplatePackageName { get; init; }
     public required string TemplateName { get; init; }
 
-    public string TemplateSandboxOutput => Path.Combine(WellKnownPaths.TemplateSandboxOutputRoot, TemplateName);
+    private string TemplateSandboxRoot => Path.Combine(WellKnownPaths.ProjectTemplatesArtifactsRoot, TemplatePackageName, "Sandbox");
+    public string TemplateSandboxPackages => Path.Combine(TemplateSandboxRoot, "packages");
+    public string TemplateSandboxOutput => Path.Combine(TemplateSandboxRoot, TemplateName);
 }

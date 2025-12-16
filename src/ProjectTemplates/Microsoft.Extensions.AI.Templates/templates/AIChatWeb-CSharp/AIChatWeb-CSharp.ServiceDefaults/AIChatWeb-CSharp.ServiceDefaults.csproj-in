@@ -10,13 +10,13 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="{TemplatePackageVersion:Microsoft.Extensions.Http.Resilience}" />
-    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="{TemplatePackageVersion:Microsoft.Extensions.ServiceDiscovery}" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="{TemplatePackageVersion:OpenTelemetry}" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="{TemplatePackageVersion:OpenTelemetry}" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="{TemplatePackageVersion:OpenTelemetry}" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="{TemplatePackageVersion:OpenTelemetry}" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="{TemplatePackageVersion:OpenTelemetry}" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="${PackageVersion:Microsoft.Extensions.Http.Resilience}" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="${PackageVersion:Microsoft.Extensions.ServiceDiscovery}" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="${PackageVersion:OpenTelemetry}" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="${PackageVersion:OpenTelemetry}" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="${PackageVersion:OpenTelemetry}" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="${PackageVersion:OpenTelemetry}" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="${PackageVersion:OpenTelemetry}" />
   </ItemGroup>
 
 </Project>

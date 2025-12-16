@@ -45,26 +45,35 @@ Once the library packages are built, the template packages can be built with ref
 
 The `Directory.Build.targets` file defines and configures the necessary targets for processing package references in the project template to insert the package versions into the produced `.csproj` files.
 
-Template projects can reference packages either with pinned `Version` values or have versions resolved from projects within the repository using `Project` properties. If both a `Project` and `Version` are specified, the pinned version is used.
+Template projects can reference packages either with pinned `<PackageVersion />` or have versions resolved from projects within the repository using `<ProjectReference />` items. If both a `<ProjectReference />` and `<PackageVersion />` are specified, the version from
+the `<PackageVersion />` is used.
 
 ```xml
-<!-- Define the package version to be resolved from a project -->
-<TemplatePackageVersion
-    Include="Microsoft.Extensions.AI"
-    Project="$(RepoRoot)src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
+<!--
+    Define a package version to be resolved in the template project directly.
+    This also ensures the project is built in the template project's dependencies.
+-->
+<ProjectReference Include="$(SrcLibrariesDir)Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
 
-<!-- Define a package version for an external dependency -->
-<TemplatePackageVersion Include="Azure.AI.Projects" Version="1.1.0" />
+<!--
+    Pin a project's package version to an already released version from the
+    template project directly or in /eng/packages/ProjectTemplates.props.
+-->
+<PackageVersion Include="Microsoft.Extensions.DataIngestion" Version="10.0.1-preview.1.25571.5" />
 
-<!-- Define package version values not specific to specific packages -->
-<TemplatePackageVersion Include="Aspire" Version="13.0.0" />
-<TemplatePackageVersion Include="Aspire-Preview" Version="13.0.0-preview.1.25560.3" />
+<!-- Define a package version for an external dependency in /eng/packages/ProjectTemplates.props -->
+<PackageVersion Include="Azure.AI.Projects" Version="1.1.0" />
 
-<!-- Override a project package's version with a pinned version -->
-<TemplatePackageVersion
-    Include="Microsoft.Extensions.DataIngestion"
-    Project="$(RepoRoot)src\Libraries\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj"
-    Version="10.0.1-preview.1.25571.5" />
+<!-- Define package version values not specific to specific packages in /eng/packages/ProjectTemplates.props -->
+<PackageVersion Include="Aspire" Version="13.0.0" />
+<PackageVersion Include="Aspire-Preview" Version="13.0.0-preview.1.25560.3" />
+
+<!--
+    Override a package version for an external dependency in the template project directly
+    when the package version is defined in a broader props file but needs to be overridden
+    specifically in the project template package.
+-->
+<PackageVersion Update="OllamaSharp" Version="5.4.9" />
 ```
 
 Files in the template that need to reference the resolved versions must be pre-processed as generated template content. While this works with any text file, it is typically used with `.csproj` files. This is accomplished by:
@@ -94,19 +103,19 @@ Note that for the 'ChangeExtension' behavior to work, the extension to be replac
 
 **Project template csproj-in file**
 ```xml
-<Sdk Name="Aspire.AppHost.Sdk" Version="{TemplatePackageVersion:Aspire}" />
+<Sdk Name="Aspire.AppHost.Sdk" Version="${PackageVersion:Aspire}" />
 ...
 <PackageReference
     Include="Microsoft.Extensions.AI"
-    Version="{TemplatePackageVersion:Microsoft.Extensions.AI}" />
+    Version="${PackageVersion:Microsoft.Extensions.AI}" />
 ...
 <PackageReference
     Include="Aspire.Hosting.AppHost"
-    Version="{TemplatePackageVersion:Aspire}" />
+    Version="${PackageVersion:Aspire}" />
 ...
 <PackageReference
     Include="Aspire.Azure.AI.OpenAI"
-    Version="{TemplatePackageVersion:Aspire-Preview}" />
+    Version="${PackageVersion:Aspire-Preview}" />
 ```
 
 During build, the generated content is saved into the `/artifacts/ProjectTemplates/GeneratedContent` folder, and the generated content is then added as `<Content />` included from the artifacts folder.
@@ -155,3 +164,11 @@ Finally, create a project from the template and run it:
 
 dotnet run
 ```
+
+## Cleaning ProjectTemplate build output
+
+Running the `clean` target for a Project Template project will remove its entire artifacts folder. This includes:
+
+- `/artifacts/ProjectTemplates/<package-name>/GeneratedContent` (generated template content files)
+- `/artifacts/ProjectTemplates/<package-name>/Sandbox` (execution test sandbox)
+- `/artifacts/ProjectTemplates/<package-name>/Snapshots` (snapshot test output)

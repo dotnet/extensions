@@ -16,22 +16,47 @@ public static class TemplateTestUtilities
     /// <summary>Create a sanitized and standardized project name from the supplied args</summary>
     /// <remarks>
     /// Framework name is shortened from "net10.0" to "net10", e.g.
-    /// Boolean options explicitly set to "true" use the option name followed by '_true'.
-    /// Boolean options explicitly set to "false" use the option name followed by '_false'.
+    /// Boolean options explicitly set to "true" use the option name followed by '_T'.
+    /// Boolean options explicitly set to "false" use the option name followed by '_F'.
     /// Options with names and values use only the option value.
     /// Options without values use the option name.
     /// Non-word characters are removed.
     /// Empty values are removed.
+    ///
+    /// Name parts are abbreviated to avoid path length limits
+    /// - AzureOpenAI -> aoai
+    /// - GitHubModels -> gh
+    /// - Ollama -> o
+    /// - OpenAI -> oai
+    /// - AzureAISearch -> aais
+    /// - Qdrant -> q
+    /// - Local -> l
+    /// - Aspire -> A
+    /// - ManagedIdentity -> ID
+    /// - aot -> AOT
+    /// - SelfContained -> SC
     /// </remarks>
     public static string GetProjectNameForArgs(string[] args, string? prefix = null)
     {
         IEnumerable<string> nameParts = args
             .Select(arg => Regex.Replace(arg, @"--[Ff]ramework=(net[0-9]+)\.0", "$1"))
-            .Select(arg => Regex.Replace(arg, "--(.*?)=true", "$1_true"))
-            .Select(arg => Regex.Replace(arg, "--(.*?)=false", "$1_false"))
+            .Select(arg => Regex.Replace(arg, "--(.*?)=true", "$1_T"))
+            .Select(arg => Regex.Replace(arg, "--(.*?)=false", "$1_F"))
             .Select(arg => Regex.Replace(arg, "--(.*?)=(.*)", "$2"))
             .Select(arg => Regex.Replace(arg, "--(.*)", "$1"))
             .Select(arg => Regex.Replace(arg, @"\W", ""))
+            .Select(arg => arg
+                .Replace("azureopenai", "aoai")
+                .Replace("githubmodels", "gh")
+                .Replace("ollama", "o")
+                .Replace("openai", "oai")
+                .Replace("azureaisearch", "aais")
+                .Replace("qdrant", "q")
+                .Replace("local", "l")
+                .Replace("aspire", "A")
+                .Replace("managedidentity", "ID")
+                .Replace("aot", "AOT")
+                .Replace("selfcontained", "SC"))
             .Where(arg => !string.IsNullOrEmpty(arg));
 
         return (nameParts.Any(), prefix is not null) switch

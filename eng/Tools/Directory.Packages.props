@@ -1,0 +1,6 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Packages.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Import package versions used for tools, tests, and benchmarks -->
+  <Import Project="$(MSBuildThisFileDirectory)..\packages\Tests.props" />
+</Project>

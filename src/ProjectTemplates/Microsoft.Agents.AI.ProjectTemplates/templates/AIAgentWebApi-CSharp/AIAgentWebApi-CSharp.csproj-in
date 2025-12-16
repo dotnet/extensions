@@ -9,18 +9,18 @@
 
   <ItemGroup>
 <!--#if (IsAzureOpenAI && IsManagedIdentity) -->
-    <PackageReference Include="Azure.Identity" Version="{TemplatePackageVersion:Azure.Identity}" />
+    <PackageReference Include="Azure.Identity" Version="${PackageVersion:Azure.Identity}" />
 <!--#endif -->
-    <PackageReference Include="Microsoft.Agents.AI" Version="{TemplatePackageVersion:Microsoft.Agents.AI}" />
-    <PackageReference Include="Microsoft.Agents.AI.DevUI" Version="{TemplatePackageVersion:Microsoft.Agents.AI}" />
-    <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="{TemplatePackageVersion:Microsoft.Agents.AI}" />
-    <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="{TemplatePackageVersion:Microsoft.Agents.AI.Hosting.OpenAI}" />
+    <PackageReference Include="Microsoft.Agents.AI" Version="${PackageVersion:Microsoft.Agents.AI}" />
+    <PackageReference Include="Microsoft.Agents.AI.DevUI" Version="${PackageVersion:Microsoft.Agents.AI}" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="${PackageVersion:Microsoft.Agents.AI}" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="${PackageVersion:Microsoft.Agents.AI.Hosting.OpenAI}" />
 <!--#if (IsOpenAI || IsAzureOpenAI || IsGHModels) -->
-    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="{TemplatePackageVersion:Microsoft.Agents.AI}" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="${PackageVersion:Microsoft.Agents.AI}" />
 <!--#endif -->
-    <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="{TemplatePackageVersion:Microsoft.Agents.AI}" />
+    <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="${PackageVersion:Microsoft.Agents.AI}" />
 <!--#if (IsOllama) -->
-    <PackageReference Include="OllamaSharp" Version="{TemplatePackageVersion:OllamaSharp}" />
+    <PackageReference Include="OllamaSharp" Version="${PackageVersion:OllamaSharp}" />
 <!--#endif -->
   </ItemGroup>
 

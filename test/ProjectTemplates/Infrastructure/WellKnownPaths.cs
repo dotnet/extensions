@@ -18,29 +18,23 @@ internal static class WellKnownPaths
 
     public static readonly string RepoRoot;
     public static readonly string RepoDotNetExePath;
-
-    // Snapshot Tests
-    public static readonly string TemplateSnapshotOutputRoot;
-
-    // Execution Tests
-    public static readonly string TemplateSandboxSource;
-    public static readonly string TemplateSandboxOutputRoot;
-    public static readonly string TemplateTestNuGetConfigPath;
     public static readonly string LocalShippingPackagesPath;
-    public static readonly string NuGetPackagesPath;
+    public static readonly string ProjectTemplatesArtifactsRoot;
+
+    // Execution Test Paths
+    public static readonly string TemplateSandboxSource;
+    public static readonly string TemplateTestNuGetConfigPath;
 
     static WellKnownPaths()
     {
         RepoRoot = GetRepoRoot();
         RepoDotNetExePath = GetRepoDotNetExePath();
 
-        TemplateSnapshotOutputRoot = Path.Combine(RepoRoot, "artifacts", "ProjectTemplates", "Snapshots");
+        ProjectTemplatesArtifactsRoot = Path.Combine(RepoRoot, "artifacts", "ProjectTemplates");
         TemplateSandboxSource = Path.Combine(RepoRoot, "test", "ProjectTemplates", "Infrastructure", "TemplateSandbox");
-        TemplateSandboxOutputRoot = Path.Combine(RepoRoot, "artifacts", "ProjectTemplates", "Sandbox");
         TemplateTestNuGetConfigPath = Path.Combine(TemplateSandboxSource, "nuget.config");
 
         LocalShippingPackagesPath = Path.Combine(RepoRoot, "artifacts", "packages", BuildConfigurationFolder, "Shipping");
-        NuGetPackagesPath = Path.Combine(TemplateSandboxOutputRoot, "packages");
     }
 
     private static string GetRepoRoot()

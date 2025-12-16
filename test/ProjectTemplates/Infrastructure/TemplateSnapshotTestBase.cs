@@ -23,7 +23,7 @@ public abstract class TemplateSnapshotTestBase
 
         // Create a working directory using the same prefixing approach as the TemplateVerifier
         // to improve the debugging experience
-        string workingDir = Path.Combine(WellKnownPaths.TemplateSnapshotOutputRoot, templateName, $"{templateName}.{scenarioName}");
+        string workingDir = Path.Combine(WellKnownPaths.ProjectTemplatesArtifactsRoot, templatePackageName, "Snapshots", templateName, $"{templateName}.{scenarioName}");
 
         // Ensure the working directory is clean
         if (Directory.Exists(workingDir))

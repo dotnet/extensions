@@ -1,148 +1,97 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
-  <Target Name="_ResolveTemplatePackageVersions">
+  <Target Name="_ResolveTemplatePackageProjectVersions">
     <!--
-      The 'GetProjectPackageVersion' target is defined in `/eng/MSBuild.Packaging.targets`, which must be imported
-      by all template project reference packages in order to extract the package id and version from the project.
+      Target "GetProjectPackageVersion" is defined in /eng/MSBuild/Packaging.targets
+      and imported by all packable projects.
+
+      Build all projects references to get their PackageId and PackageVersion values,
+      running only that target against the latest TFM. No other targets are executed.
     -->
-    <MSBuild
-      Projects="%(TemplatePackageVersion.Project)"
-      Condition="'%(TemplatePackageVersion.Project)' != '' and '%(TemplatePackageVersion.Version)' == ''"
-      Targets="GetProjectPackageVersion">
-        <!-- Each item has a its PackageId as the ItemSpec, plus Version and Project properties -->
-        <Output TaskParameter="TargetOutputs" ItemName="_ProjectVersions" />
+    <MSBuild Projects="@(ProjectReference)" Targets="GetProjectPackageVersion"
+             SkipNonexistentTargets="true" SkipNonexistentProjects="true"
+             Properties="TargetFramework=$(LatestTargetFramework)">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedTemplatePackageProjectVersion" />
     </MSBuild>
+  </Target>
 
+  <Target Name="_ResolveTemplatePackageVersions" DependsOnTargets="_ResolveTemplatePackageProjectVersions">
     <ItemGroup>
-      <!-- Resolved items where a Version was specified -->
-      <_ResolvedTemplatePackageVersion
-        Include="@(TemplatePackageVersion)"
-        Condition="'%(TemplatePackageVersion.Version)' != ''">
-        <Version>%(TemplatePackageVersion.Version)</Version>
-        <Project>%(TemplatePackageVersion.Project)</Project>
-        <VersionResolvedFromProject>false</VersionResolvedFromProject>
-      </_ResolvedTemplatePackageVersion>
+      <!-- Seed the list with all <ProjectReference> package versions -->
+      <_ResolvedTemplatePackageVersion Include="@(_ResolvedTemplatePackageProjectVersion)" />
 
-      <!-- Resolved items where the Version was resolved from its project version -->
-      <_ResolvedTemplatePackageVersion Include="%(_ProjectVersions.Identity)">
-        <Version>%(_ProjectVersions.Version)</Version>
-        <Project>%(_ProjectVersions.Project)</Project>
-        <VersionResolvedFromProject>true</VersionResolvedFromProject>
-      </_ResolvedTemplatePackageVersion>
+      <!-- Override with the any <PackageVersion> items -->
+      <_ResolvedTemplatePackageVersion Remove="@(PackageVersion)" />
+      <_ResolvedTemplatePackageVersion Include="@(PackageVersion)" />
     </ItemGroup>
   </Target>
 
-  <!-- Invoke this target before 'Build' on any project that imports this target file -->
-  <Target Name="_GenerateTemplateContent"
-    BeforeTargets="Build"
-    DependsOnTargets="_ResolveTemplatePackageVersions">
+  <Target Name="_ResolveTemplateContentPaths">
     <PropertyGroup>
-      <!-- Generated template content files are grouped by template package id to avoid collisions -->
-      <GeneratedContentDir>$([System.IO.Path]::Combine($(ArtifactsTemplateGeneratedContentDir), $(PackageId)))</GeneratedContentDir>
+      <_GeneratedContentDir>$([System.IO.Path]::Combine($(ProjectTemplateArtifactsDir), $(PackageId), 'GeneratedContent'))</_GeneratedContentDir>
     </PropertyGroup>
 
-    <!--
-      Template packages define <TemplateContent> items to pre-process for token replacements,
-      including <TemplatePackageVersion> items that define package version replacements.
+    <ItemGroup>
+      <_TemplateContentFile Include="@(TemplateContent)">
+        <OutputFileName Condition="'%(TemplateContent.ChangeExtension)' == ''">%(FileName)%(TemplateContent.Extension)</OutputFileName>
+        <OutputFileName Condition="'%(TemplateContent.ChangeExtension)' != ''">%(FileName)%(TemplateContent.ChangeExtension)</OutputFileName>
 
-      All template content files are output into the project's <Content> to ensure the output
-      files are added to the template package.
+        <PackagePathRoot Condition="'%(TemplateContent.PackagePath)' == ''">$([System.IO.Path]::Combine("content", %(TemplateContent.RelativeDir)))</PackagePathRoot>
+        <PackagePathRoot Condition="'%(TemplateContent.PackagePath)' != ''">%(TemplateContent.PackagePath)</PackagePathRoot>
+      </_TemplateContentFile>
 
-      The <TemplatePackageVersion> items have been resolved to <_ResolvedTemplatePackageVersion> items
-      to populate any Version properties needed from the Project properties.
-    -->
-    <GenerateTemplateContentFiles
-      SourceFiles="@(TemplateContent)"
-      GeneratedContentDir="$(GeneratedContentDir)"
-      PackageReferences="@(_ResolvedTemplatePackageVersion)">
-      <Output TaskParameter="GeneratedContent" ItemName="Content" />
-    </GenerateTemplateContentFiles>
+      <_ResolvedTemplateContent Include="@(_TemplateContentFile)">
+        <ArtifactPath>$([System.IO.Path]::Combine($(_GeneratedContentDir), %(_TemplateContentFile.RelativeDir), %(_TemplateContentFile.OutputFileName)))</ArtifactPath>
+        <PackagePath>$([System.IO.Path]::Combine(%(_TemplateContentFile.PackagePathRoot), %(_TemplateContentFile.RecursiveDir), %(_TemplateContentFile.OutputFileName)))</PackagePath>
+      </_ResolvedTemplateContent>
+    </ItemGroup>
   </Target>
 
-  <UsingTask TaskName="GenerateTemplateContentFiles" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <SourceFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
-      <GeneratedContentDir ParameterType="System.String" Required="true" />
-      <PackageReferences ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
-      <GeneratedContent ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System" />
-      <Using Namespace="System.Collections.Generic"/>
-      <Using Namespace="System.IO" />
-      <Using Namespace="Microsoft.Build.Framework"/>
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-          List<ITaskItem> generatedContent = new();
+  <!-- Invoke this target before 'Build' for all template projects -->
+  <Target Name="_GenerateTemplateContent" BeforeTargets="Build"
+          DependsOnTargets="_ResolveTemplatePackageVersions;_ResolveTemplateContentPaths">
 
-          foreach (ITaskItem sourceFile in SourceFiles)
-          {
-            string sourcePath = sourceFile.ItemSpec;
-            string fileContent = File.ReadAllText(sourcePath);
+    <!--
+      Template projects define <TemplateContent> items to pre-process for token replacements,
+      including <ProjectReference> and <PackageVersion> items that define package version replacements.
 
-            foreach (ITaskItem package in PackageReferences)
-            {
-              string token = package.ItemSpec;
-              string version = package.GetMetadata("Version");
+      All template content files are output into the project's <Content> to ensure the output
+      files are added to the template package, and the PackagePath is set to respect ** RecursiveDir
+      values to align with <Content> item behavior.
+    -->
+    <ItemGroup>
+      <_TemplatePackageVersionProperty
+        Include="@(_ResolvedTemplatePackageVersion->'PackageVersion:%(Identity)=%(Version)')" />
+    </ItemGroup>
 
-              if (string.IsNullOrEmpty(token))
-              {
-                Log.LogError("An empty package version ItemSpec was received");
-                return false;
-              }
+    <PropertyGroup>
+      <!--
+        Existing GeneratedContentProperties plus all template package
+        version properties, separated by semicolons (and newlines for readability).
+      -->
+      <GeneratedContentProperties>
+        $(GeneratedContentProperties);
+        @(_TemplatePackageVersionProperty, ';%0A');
+      </GeneratedContentProperties>
+    </PropertyGroup>
 
-              if (string.IsNullOrEmpty(version))
-              {
-                Log.LogError($"An empty package version was received for '{token}'.");
-                return false;
-              }
+    <!-- Also support any <TemplateContent> item specifying AdditionalProperties -->
+    <GenerateFileFromTemplate
+      TemplateFile="%(_ResolvedTemplateContent.Identity)"
+      Properties="$(GeneratedContentProperties);%(_ResolvedTemplateContent.AdditionalProperties)"
+      OutputPath="%(_ResolvedTemplateContent.ArtifactPath)" />
 
-              fileContent = fileContent.Replace($"{{TemplatePackageVersion:{token}}}", version);
-            }
+    <ItemGroup>
+      <!-- Add the generated files into the template package -->
+      <Content Include="@(_ResolvedTemplateContent->Metadata('ArtifactPath')->ClearMetadata())">
+        <PackagePath>%(_ResolvedTemplateContent.PackagePath)</PackagePath>
+      </Content>
+    </ItemGroup>
+  </Target>
 
-            // Write the artifact file, changing its extension if necessary
-            string changeExtension = sourceFile.GetMetadata("ChangeExtension");
-            string sourceFileName = Path.GetFileName(sourcePath); // Note that sourceFile.GetMetadata("Filename") excludes the extension
-            string outputFileName = string.IsNullOrEmpty(changeExtension) ? sourceFileName : Path.ChangeExtension(sourceFileName, changeExtension);
-
-            string relativeDir = sourceFile.GetMetadata("RelativeDir");
-            string artifactPath = Path.Combine(GeneratedContentDir, relativeDir, outputFileName);
-
-            new FileInfo(artifactPath).Directory.Create();
-            File.WriteAllText(artifactPath, fileContent);
-
-            string packagePath = sourceFile.GetMetadata("PackagePath");
-            string recursiveDir = sourceFile.GetMetadata("RecursiveDir");
-
-            /*
-              If a PackagePath is specified, it overrides the default 'content' root folder
-              and is used as the root before any RecursiveDir that was resolved from '**' wildcards.
-              Note that if a '**' wildcard that results in files without subfolders, the RecursiveDir
-              will be empty.
-
-              If there is no PackagePath, use a 'content' root folder combined with the file's
-              RelativeDir.
-
-              This logic matches the behavior of a traditional <Content> item, ensuring that swapping
-              between <Content> and <TemplateContent> results in the same package layout.
-            */
-            string packageContentRoot = string.IsNullOrEmpty(packagePath) ? Path.Combine("content", relativeDir) : packagePath;
-            string itemPackagePath = Path.Combine(packageContentRoot, recursiveDir, outputFileName);
-
-            ITaskItem generatedFile = new TaskItem(artifactPath);
-            sourceFile.CopyMetadataTo(generatedFile);
-            generatedFile.SetMetadata("SourceFile", sourcePath);
-            generatedFile.SetMetadata("PackagePath", itemPackagePath);
-
-            generatedContent.Add(generatedFile);
-
-            Log.LogMessage(MessageImportance.Low, $"<TemplateContent> processed for '{sourcePath}', resulting in '{artifactPath}' being added to the package as '{itemPackagePath}'.");
-          }
-
-          GeneratedContent = generatedContent.ToArray();
-          ]]>
-      </Code>
-    </Task>
-  </UsingTask>
+  <Target Name="_CleanProjectTemplates" BeforeTargets="Clean">
+    <!-- Delete the GeneratedContent, Sandbox, and Snapshots artifacts folders when cleaning the template project -->
+    <RemoveDir Directories="$([System.IO.Path]:Combine($(ProjectTemplateArtifactsDir), $(PackageId)))" />
+  </Target>
 </Project>

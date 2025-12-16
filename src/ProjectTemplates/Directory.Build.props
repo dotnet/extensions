@@ -6,8 +6,40 @@
     <SkipAnalyzers>true</SkipAnalyzers>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <Api>false</Api>
-    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
-
-    <ArtifactsTemplateGeneratedContentDir>$(ArtifactsDir)ProjectTemplates\GeneratedContent\</ArtifactsTemplateGeneratedContentDir>
+    <ProjectTemplateArtifactsDir>$([System.IO.Path]::Combine($(ArtifactsDir), 'ProjectTemplates'))</ProjectTemplateArtifactsDir>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Provides the GenerateFileFromTemplate task. -->
+    <PackageReference
+      Include="Microsoft.DotNet.Build.Tasks.Templating"
+      Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)"
+      AllowExplicitReference="true"
+      PrivateAssets="All"
+      IsImplicitlyDefined="true" />
+  </ItemGroup>
+
+  <!--
+    Template projects use <ProjectReference> items to:
+
+    1. Collect the Package ID and Version from the project for use in
+       the template using the "GetProjectPackageVersion" target defined
+       in /eng/MSBuild/Packaging.targets.
+
+    2. Ensure `build.cmd -vs AI` or `build.cmd -vs ProjectTemplates`
+       results in the referenced project being included in the SDK.sln
+       file, along with its transitive project references.
+
+    By setting IncludeAssets="none" by default for all <ProjectReference>
+    items, this prevents the assets of the project from being consumed
+    by the build, and it also prevents the project's package being
+    included as a package reference in the template package.
+
+    The referenced projects also do not need to be built when the
+    template package is built since none of its assets are consumed.
+  -->
+  <ItemDefinitionGroup>
+    <ProjectReference IncludeAssets="none" BuildReference="false" />
+  </ItemDefinitionGroup>
+
 </Project>

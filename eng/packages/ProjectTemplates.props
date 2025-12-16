@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    Define package versions that need to be referenced by projects
+    produced by project template packages. These versions are used
+    when generating project template content files.
+  -->
+  <ItemGroup>
+    <PackageVersion Include="Aspire" Version="13.0.0" />
+    <PackageVersion Include="Aspire-Preview" Version="13.0.0-preview.1.25560.3" />
+    <PackageVersion Include="Azure.AI.Projects" Version="1.1.0" />
+    <PackageVersion Include="Azure.Search.Documents" Version="11.7.0" />
+    <PackageVersion Include="CommunityToolkit.Aspire" Version="13.0.0-beta.444" />
+    <PackageVersion Include="Microsoft.Agents.AI" Version="1.0.0-preview.251114.1" />
+    <PackageVersion Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="1.0.0-alpha.251114.1" />
+    <PackageVersion Include="Microsoft.SemanticKernel-Preview" Version="1.67.1-preview" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.3" />
+    <PackageVersion Include="OllamaSharp" Version="5.4.12" />
+    <PackageVersion Include="OpenTelemetry" Version="1.14.0" />
+    <PackageVersion Include="PdfPig" Version="0.1.12" />
+  </ItemGroup>
+</Project>
