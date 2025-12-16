@@ -20,6 +20,7 @@
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
+    <InjectFilePolyfillsOnLegacy>true</InjectFilePolyfillsOnLegacy>
   </PropertyGroup>
 
   <ItemGroup>
