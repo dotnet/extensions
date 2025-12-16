@@ -10,7 +10,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-#if !NET9_0_OR_GREATER
+#if !NET
 using System.Runtime.InteropServices;
 #endif
 using System.Text;
@@ -275,7 +275,7 @@ public class DataContent : AIContent
     /// <returns>A <see cref="DataContent"/> containing the file data with the inferred or specified media type and name.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="path"/> is empty.</exception>
-    public static async Task<DataContent> LoadFromAsync(string path, string? mediaType = null, CancellationToken cancellationToken = default)
+    public static async ValueTask<DataContent> LoadFromAsync(string path, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrEmpty(path);
 
@@ -304,7 +304,7 @@ public class DataContent : AIContent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="DataContent"/> containing the stream data with the inferred or specified media type and name.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
-    public static async Task<DataContent> LoadFromAsync(Stream stream, string? mediaType = null, CancellationToken cancellationToken = default)
+    public static async ValueTask<DataContent> LoadFromAsync(Stream stream, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(stream);
 
@@ -351,7 +351,7 @@ public class DataContent : AIContent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>The actual path where the data was saved, which may include an inferred file name and/or extension.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
-    public async Task<string> SaveToAsync(string path, CancellationToken cancellationToken = default)
+    public async ValueTask<string> SaveToAsync(string path, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(path);
 
@@ -375,43 +375,7 @@ public class DataContent : AIContent
         }
 
         // Write the data to the file
-        ReadOnlyMemory<byte> data = Data;
-#if NET9_0_OR_GREATER
-        await File.WriteAllBytesAsync(actualPath, data, cancellationToken).ConfigureAwait(false);
-#elif NET
-        // Try to avoid ToArray() if the data is backed by a byte[] with offset 0 and matching length
-        byte[] bytes;
-        if (MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment) &&
-            segment.Offset == 0 &&
-            segment.Count == segment.Array!.Length)
-        {
-            bytes = segment.Array;
-        }
-        else
-        {
-            bytes = data.ToArray();
-        }
-
-        await File.WriteAllBytesAsync(actualPath, bytes, cancellationToken).ConfigureAwait(false);
-#else
-        using (var stream = new FileStream(actualPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
-        {
-            // Try to avoid ToArray() if the data is backed by a byte[] with offset 0 and matching length
-            byte[] bytes;
-            if (MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment) &&
-                segment.Offset == 0 &&
-                segment.Count == segment.Array!.Length)
-            {
-                bytes = segment.Array;
-            }
-            else
-            {
-                bytes = data.ToArray();
-            }
-
-            await stream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
-        }
-#endif
+        await File.WriteAllBytesAsync(actualPath, Data, cancellationToken).ConfigureAwait(false);
 
         return actualPath;
     }
