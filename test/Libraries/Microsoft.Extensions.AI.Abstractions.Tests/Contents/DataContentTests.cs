@@ -388,18 +388,18 @@ public sealed class DataContentTests
     }
 
     [Fact]
-    public async Task LoadFromAsync_Stream_UsesProvidedMediaTypeAndName()
+    public async Task LoadFromAsync_Stream_UsesProvidedMediaType()
     {
         // Create a MemoryStream with test data
-        byte[] testData = new byte[] { 1, 2, 3, 4 };
+        byte[] testData = [1, 2, 3, 4];
         using MemoryStream ms = new(testData);
 
-        // Load from stream with explicit media type and name
-        DataContent content = await DataContent.LoadFromAsync(ms, "video/mp4", "video.mp4");
+        // Load from stream with explicit media type
+        DataContent content = await DataContent.LoadFromAsync(ms, "video/mp4");
 
-        // Verify the explicit values are used
+        // Verify the explicit media type is used
         Assert.Equal("video/mp4", content.MediaType);
-        Assert.Equal("video.mp4", content.Name);
+        Assert.Null(content.Name); // Name can be assigned after the call if needed
         Assert.Equal(testData, content.Data.ToArray());
     }
 
