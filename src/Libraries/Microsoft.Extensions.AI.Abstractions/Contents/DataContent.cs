@@ -260,6 +260,9 @@ public class DataContent : AIContent
         }
     }
 
+    /// <summary>The default media type for unknown file extensions.</summary>
+    private const string DefaultMediaType = "application/octet-stream";
+
     /// <summary>
     /// Loads a <see cref="DataContent"/> from a file path asynchronously.
     /// </summary>
@@ -271,14 +274,13 @@ public class DataContent : AIContent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="DataContent"/> containing the file data with the inferred or specified media type and name.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="path"/> is empty or whitespace.</exception>
-    [Experimental("MEAI001")]
+    /// <exception cref="ArgumentException"><paramref name="path"/> is empty.</exception>
     public static async Task<DataContent> LoadFromAsync(string path, string? mediaType = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNullOrWhitespace(path);
+        _ = Throw.IfNullOrEmpty(path);
 
         // Infer media type from the file extension if not provided
-        mediaType ??= MediaTypeMap.GetMediaType(path) ?? MediaTypeMap.DefaultMediaType;
+        mediaType ??= System.Net.Mime.MediaTypeMap.GetMediaType(path) ?? DefaultMediaType;
 
         // Read the file contents
 #if NET
@@ -302,9 +304,10 @@ public class DataContent : AIContent
         }
 #endif
 
+        string? name = Path.GetFileName(path);
         return new DataContent(data, mediaType)
         {
-            Name = Path.GetFileName(path)
+            Name = string.IsNullOrEmpty(name) ? null : name
         };
     }
 
@@ -324,22 +327,28 @@ public class DataContent : AIContent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="DataContent"/> containing the stream data with the inferred or specified media type and name.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
-    [Experimental("MEAI001")]
     public static async Task<DataContent> LoadFromAsync(Stream stream, string? mediaType = null, string? name = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(stream);
 
         // If the stream is a FileStream, try to infer media type and name from its path
-        string? filePath = null;
         if (stream is FileStream fileStream)
         {
-            filePath = fileStream.Name;
-            name ??= Path.GetFileName(filePath);
-            mediaType ??= MediaTypeMap.GetMediaType(filePath);
+            string? filePath = fileStream.Name;
+            if (name is null)
+            {
+                string? fileName = Path.GetFileName(filePath);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    name = fileName;
+                }
+            }
+
+            mediaType ??= System.Net.Mime.MediaTypeMap.GetMediaType(filePath);
         }
 
         // Fall back to default media type if still not set
-        mediaType ??= MediaTypeMap.DefaultMediaType;
+        mediaType ??= DefaultMediaType;
 
         // Read the stream contents
         using var memoryStream = new MemoryStream();
@@ -349,7 +358,7 @@ public class DataContent : AIContent
         await stream.CopyToAsync(memoryStream, 81920, cancellationToken).ConfigureAwait(false);
 #endif
 
-        return new DataContent(memoryStream.ToArray(), mediaType)
+        return new DataContent(new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length), mediaType)
         {
             Name = name
         };
@@ -358,34 +367,42 @@ public class DataContent : AIContent
     /// <summary>
     /// Saves the data content to a file asynchronously.
     /// </summary>
-    /// <param name="path">The file path to save the data to.</param>
-    /// <param name="inferExtension">
-    /// If <see langword="true"/> and the path does not have a file extension, an extension will be
-    /// added based on the <see cref="MediaType"/>. Default is <see langword="true"/>.
+    /// <param name="path">
+    /// The path to save the data to. If the path is an existing directory, the file name will be inferred
+    /// from the <see cref="Name"/> property or a random name will be used.
+    /// If the path does not have a file extension, an extension will be added based on the <see cref="MediaType"/>.
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>The actual path where the data was saved, which may include an inferred extension.</returns>
+    /// <returns>The actual path where the data was saved, which may include an inferred file name and/or extension.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="path"/> is empty or whitespace.</exception>
-    [Experimental("MEAI001")]
-    public async Task<string> SaveToAsync(string path, bool inferExtension = true, CancellationToken cancellationToken = default)
+    public async Task<string> SaveToAsync(string path, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNullOrWhitespace(path);
+        _ = Throw.IfNull(path);
 
-        // Infer extension if requested and path has no extension
         string actualPath = path;
-        if (inferExtension && string.IsNullOrEmpty(Path.GetExtension(path)))
+
+        // If path is a directory, infer the file name from the Name property or use a random name
+        if (Directory.Exists(path))
         {
-            string? extension = MediaTypeMap.GetExtension(MediaType);
+            string fileName = Name ?? Guid.NewGuid().ToString("N");
+            actualPath = Path.Combine(path, fileName);
+        }
+
+        // Infer extension if path has no extension
+        if (string.IsNullOrEmpty(Path.GetExtension(actualPath)))
+        {
+            string? extension = System.Net.Mime.MediaTypeMap.GetExtension(MediaType);
             if (!string.IsNullOrEmpty(extension))
             {
-                actualPath = path + extension;
+                actualPath += extension;
             }
         }
 
         // Write the data to the file
         ReadOnlyMemory<byte> data = Data;
-#if NET
+#if NET9_0_OR_GREATER
+        await File.WriteAllBytesAsync(actualPath, data, cancellationToken).ConfigureAwait(false);
+#elif NET
         await File.WriteAllBytesAsync(actualPath, data.ToArray(), cancellationToken).ConfigureAwait(false);
 #else
         using (var stream = new FileStream(actualPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
