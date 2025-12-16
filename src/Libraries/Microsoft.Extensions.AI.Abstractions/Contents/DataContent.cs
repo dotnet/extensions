@@ -10,13 +10,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-#if !NET
+#if !NET9_0_OR_GREATER
 using System.Runtime.InteropServices;
 #endif
+using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable IDE0032 // Use auto property
@@ -301,28 +301,23 @@ public class DataContent : AIContent
     /// the stream is a <see cref="FileStream"/>, it will be inferred from the file extension.
     /// If it cannot be inferred, "application/octet-stream" is used.
     /// </param>
-    /// <param name="name">
-    /// The name to associate with the data. If not provided and the stream is a <see cref="FileStream"/>,
-    /// the file name will be used.
-    /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="DataContent"/> containing the stream data with the inferred or specified media type and name.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
-    public static async Task<DataContent> LoadFromAsync(Stream stream, string? mediaType = null, string? name = null, CancellationToken cancellationToken = default)
+    public static async Task<DataContent> LoadFromAsync(Stream stream, string? mediaType = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(stream);
+
+        string? name = null;
 
         // If the stream is a FileStream, try to infer media type and name from its path
         if (stream is FileStream fileStream)
         {
             string? filePath = fileStream.Name;
-            if (name is null)
+            string? fileName = Path.GetFileName(filePath);
+            if (!string.IsNullOrEmpty(fileName))
             {
-                string? fileName = Path.GetFileName(filePath);
-                if (!string.IsNullOrEmpty(fileName))
-                {
-                    name = fileName;
-                }
+                name = fileName;
             }
 
             mediaType ??= System.Net.Mime.MediaTypeMap.GetMediaType(filePath);
@@ -384,11 +379,36 @@ public class DataContent : AIContent
 #if NET9_0_OR_GREATER
         await File.WriteAllBytesAsync(actualPath, data, cancellationToken).ConfigureAwait(false);
 #elif NET
-        await File.WriteAllBytesAsync(actualPath, data.ToArray(), cancellationToken).ConfigureAwait(false);
+        // Try to avoid ToArray() if the data is backed by a byte[] with offset 0 and matching length
+        byte[] bytes;
+        if (MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment) &&
+            segment.Offset == 0 &&
+            segment.Count == segment.Array!.Length)
+        {
+            bytes = segment.Array;
+        }
+        else
+        {
+            bytes = data.ToArray();
+        }
+
+        await File.WriteAllBytesAsync(actualPath, bytes, cancellationToken).ConfigureAwait(false);
 #else
         using (var stream = new FileStream(actualPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
         {
-            byte[] bytes = data.ToArray();
+            // Try to avoid ToArray() if the data is backed by a byte[] with offset 0 and matching length
+            byte[] bytes;
+            if (MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment) &&
+                segment.Offset == 0 &&
+                segment.Count == segment.Array!.Length)
+            {
+                bytes = segment.Array;
+            }
+            else
+            {
+                bytes = data.ToArray();
+            }
+
             await stream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
         }
 #endif
