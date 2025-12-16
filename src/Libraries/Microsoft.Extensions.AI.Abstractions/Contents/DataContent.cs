@@ -283,26 +283,7 @@ public class DataContent : AIContent
         mediaType ??= System.Net.Mime.MediaTypeMap.GetMediaType(path) ?? DefaultMediaType;
 
         // Read the file contents
-#if NET
         byte[] data = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
-#else
-        byte[] data;
-        using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true))
-        {
-            data = new byte[stream.Length];
-            int totalRead = 0;
-            while (totalRead < data.Length)
-            {
-                int read = await stream.ReadAsync(data, totalRead, data.Length - totalRead, cancellationToken).ConfigureAwait(false);
-                if (read == 0)
-                {
-                    break;
-                }
-
-                totalRead += read;
-            }
-        }
-#endif
 
         string? name = Path.GetFileName(path);
         return new DataContent(data, mediaType)
