@@ -1454,7 +1454,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         // If there are already-executed function results, insert new function calls at the end instead of at the insertion index
-        // to preserve the ordering of already-present function calls and results.
+        // to preserve the ordering of already-present function calls and results. This handles scenarios where:
+        // 1. Previous approval responses have been processed and their function calls/results are present in the message list
+        // 2. New approval responses are being processed
+        // In this case, we want the new function calls to come AFTER the existing ones, not at the position
+        // where the first (already-processed) approval request was originally located.
         if (functionResultCallIds is { Count: > 0 } && insertionIndex >= 0)
         {
             insertionIndex = messages.Count;
