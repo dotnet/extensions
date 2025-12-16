@@ -313,7 +313,7 @@ public sealed class DataContentTests
         string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.bin");
         try
         {
-            byte[] testData = [1, 2, 3, 4, 5];
+            byte[] testData = new byte[] { 1, 2, 3, 4, 5 };
             await File.WriteAllBytesAsync(tempPath, testData);
 
             // Load from path with specified media type
@@ -340,7 +340,7 @@ public sealed class DataContentTests
         string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.unknownextension");
         try
         {
-            byte[] testData = [1, 2, 3];
+            byte[] testData = new byte[] { 1, 2, 3 };
             await File.WriteAllBytesAsync(tempPath, testData);
 
             // Load from path
@@ -366,7 +366,7 @@ public sealed class DataContentTests
         string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.png");
         try
         {
-            byte[] testData = [137, 80, 78, 71, 13, 10, 26, 10]; // PNG signature
+            byte[] testData = new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }; // PNG signature
             await File.WriteAllBytesAsync(tempPath, testData);
 
             // Load from FileStream
@@ -391,7 +391,7 @@ public sealed class DataContentTests
     public async Task LoadFromAsync_Stream_UsesProvidedMediaTypeAndName()
     {
         // Create a MemoryStream with test data
-        byte[] testData = [1, 2, 3, 4];
+        byte[] testData = new byte[] { 1, 2, 3, 4 };
         using MemoryStream ms = new(testData);
 
         // Load from stream with explicit media type and name
@@ -407,7 +407,7 @@ public sealed class DataContentTests
     public async Task LoadFromAsync_Stream_FallsBackToOctetStream()
     {
         // Create a MemoryStream with test data (non-FileStream, no inference possible)
-        byte[] testData = [1, 2, 3];
+        byte[] testData = new byte[] { 1, 2, 3 };
         using MemoryStream ms = new(testData);
 
         // Load from stream without media type or name
@@ -423,7 +423,7 @@ public sealed class DataContentTests
     public async Task SaveToAsync_WritesDataToFile()
     {
         // Create DataContent with known data
-        byte[] testData = [1, 2, 3, 4, 5];
+        byte[] testData = new byte[] { 1, 2, 3, 4, 5 };
         DataContent content = new(testData, "application/octet-stream");
 
         string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.bin");
