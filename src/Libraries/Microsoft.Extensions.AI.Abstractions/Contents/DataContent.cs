@@ -360,7 +360,7 @@ public class DataContent : AIContent
         // If path is a directory, infer the file name from the Name property or use a random name
         if (Directory.Exists(path))
         {
-            string fileName = Name ?? Guid.NewGuid().ToString("N");
+            string fileName = Name is not null ? Path.GetFileName(Name) : Guid.NewGuid().ToString("N");
             actualPath = Path.Combine(path, fileName);
         }
 

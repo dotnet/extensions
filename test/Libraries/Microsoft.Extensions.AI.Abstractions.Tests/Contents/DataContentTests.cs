@@ -585,4 +585,29 @@ public sealed class DataContentTests
         DataContent content = new(new byte[] { 1 }, "application/octet-stream");
         await Assert.ThrowsAsync<ArgumentNullException>("path", async () => await content.SaveToAsync(null!));
     }
+
+    [Fact]
+    public async Task SaveToAsync_WithEmptyPath_UsesCurrentDirectory()
+    {
+        // Empty string path is valid - it uses the current directory with inferred filename
+        DataContent content = new(new byte[] { 1, 2, 3 }, "application/json") { Name = "test.json" };
+        string tempDir = Path.GetTempPath();
+        string originalDir = Environment.CurrentDirectory;
+
+        try
+        {
+            Environment.CurrentDirectory = tempDir;
+            string savedPath = await content.SaveToAsync(string.Empty);
+
+            // The file should be saved in the current directory with the Name as filename
+            Assert.True(File.Exists(savedPath));
+            Assert.Equal([1, 2, 3], await File.ReadAllBytesAsync(savedPath));
+
+            File.Delete(savedPath);
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDir;
+        }
+    }
 }

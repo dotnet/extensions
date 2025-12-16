@@ -56,46 +56,6 @@ public abstract class IngestionDocumentReader
     /// <returns>A task representing the asynchronous read operation.</returns>
     public abstract Task<IngestionDocument> ReadAsync(Stream source, string identifier, string mediaType, CancellationToken cancellationToken = default);
 
-    private static string GetMediaType(FileInfo source)
-    {
-        // Use MediaTypeMap for common media types
-        var mediaType = MediaTypeMap.GetMediaType(source.Extension);
-        if (mediaType is not null)
-        {
-            return mediaType;
-        }
-
-        // Fallback to specialized media types not in MediaTypeMap
-        return source.Extension switch
-        {
-            ".123" => "application/vnd.lotus-1-2-3",
-            ".602" => "application/x-t602",
-            ".cgm" => "image/cgm",
-            ".cwk" => "application/x-cwk",
-            ".dif" => "application/x-dif",
-            ".et" => "application/vnd.ms-excel",
-            ".eth" => "application/ethos",
-            ".fods" => "application/vnd.oasis.opendocument.spreadsheet",
-            ".mcw" => "application/macwriteii",
-            ".mw" => "application/macwriteii",
-            ".pbd" => "application/x-pagemaker",
-            ".prn" => "application/x-prn",
-            ".qpw" => "application/x-quattro-pro",
-            ".sdp" => "application/sdp",
-            ".sgl" => "application/vnd.stardivision.writer",
-            ".sylk" => "text/vnd.sylk",
-            ".tiff" => "image/tiff",
-            ".uof" => "application/vnd.uoml+xml",
-            ".uop" => "application/vnd.openofficeorg.presentation",
-            ".uos1" => "application/vnd.uoml+xml",
-            ".uos2" => "application/vnd.uoml+xml",
-            ".uot" => "application/x-uo",
-            ".vor" => "application/vnd.stardivision.writer",
-            ".wq1" => "application/x-lotus",
-            ".wq2" => "application/x-lotus",
-            ".xlr" => "application/vnd.ms-works",
-            ".zabw" => "application/x-abiword",
-            _ => "application/octet-stream"
-        };
-    }
+    private static string GetMediaType(FileInfo source) =>
+        MediaTypeMap.GetMediaType(source.Extension) ?? "application/octet-stream";
 }
