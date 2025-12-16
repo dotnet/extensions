@@ -1,11 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if !NET
+#if !NET9_0_OR_GREATER
 
 #pragma warning disable CA1835 // Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,6 +20,7 @@ internal static class FilePolyfills
 {
     extension(File)
     {
+#if !NET
         /// <summary>
         /// Asynchronously reads all bytes from a file.
         /// </summary>
@@ -42,6 +44,37 @@ internal static class FilePolyfills
             }
 
             return data;
+        }
+#endif
+
+        /// <summary>
+        /// Asynchronously writes all bytes to a file.
+        /// </summary>
+        /// <param name="path">The file to write to.</param>
+        /// <param name="bytes">The bytes to write to the file.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>A task that represents the asynchronous write operation.</returns>
+        public static async Task WriteAllBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken = default)
+        {
+            // Try to avoid ToArray() if the data is backed by a byte[] with offset 0 and matching length
+            byte[] byteArray;
+            if (MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment) &&
+                segment.Offset == 0 &&
+                segment.Count == segment.Array!.Length)
+            {
+                byteArray = segment.Array;
+            }
+            else
+            {
+                byteArray = bytes.ToArray();
+            }
+
+#if NET
+            await File.WriteAllBytesAsync(path, byteArray, cancellationToken).ConfigureAwait(false);
+#else
+            using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
+            await stream.WriteAsync(byteArray, 0, byteArray.Length, cancellationToken).ConfigureAwait(false);
+#endif
         }
     }
 }

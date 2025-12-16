@@ -564,25 +564,25 @@ public sealed class DataContentTests
     [Fact]
     public async Task LoadFromAsync_Path_ThrowsOnNull()
     {
-        await Assert.ThrowsAsync<ArgumentNullException>("path", () => DataContent.LoadFromAsync((string)null!));
+        await Assert.ThrowsAsync<ArgumentNullException>("path", async () => await DataContent.LoadFromAsync((string)null!));
     }
 
     [Fact]
     public async Task LoadFromAsync_Path_ThrowsOnEmpty()
     {
-        await Assert.ThrowsAsync<ArgumentException>("path", () => DataContent.LoadFromAsync(string.Empty));
+        await Assert.ThrowsAsync<ArgumentException>("path", async () => await DataContent.LoadFromAsync(string.Empty));
     }
 
     [Fact]
     public async Task LoadFromAsync_Stream_ThrowsOnNull()
     {
-        await Assert.ThrowsAsync<ArgumentNullException>("stream", () => DataContent.LoadFromAsync((Stream)null!));
+        await Assert.ThrowsAsync<ArgumentNullException>("stream", async () => await DataContent.LoadFromAsync((Stream)null!));
     }
 
     [Fact]
     public async Task SaveToAsync_ThrowsOnNull()
     {
         DataContent content = new(new byte[] { 1 }, "application/octet-stream");
-        await Assert.ThrowsAsync<ArgumentNullException>("path", () => content.SaveToAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>("path", async () => await content.SaveToAsync(null!));
     }
 }
