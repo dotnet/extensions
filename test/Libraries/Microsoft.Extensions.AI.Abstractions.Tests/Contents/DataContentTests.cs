@@ -458,7 +458,7 @@ public sealed class DataContentTests
         try
         {
             // Save to path without extension
-            string actualPath = await content.SaveToAsync(tempPath, inferExtension: true);
+            string actualPath = await content.SaveToAsync(tempPath);
 
             // Verify extension was inferred
             Assert.Equal(expectedPath, actualPath);
@@ -475,27 +475,62 @@ public sealed class DataContentTests
     }
 
     [Fact]
-    public async Task SaveToAsync_DoesNotInferExtension_WhenFlagIsFalse()
+    public async Task SaveToAsync_UsesDirectoryAndInfersNameFromNameProperty()
     {
-        // Create DataContent with JSON media type
+        // Create DataContent with JSON media type and a name
         byte[] testData = Encoding.UTF8.GetBytes("{}");
-        DataContent content = new(testData, "application/json");
+        DataContent content = new(testData, "application/json")
+        {
+            Name = "myfile.json"
+        };
 
-        string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}");
+        string tempDir = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+        string expectedPath = Path.Combine(tempDir, "myfile.json");
         try
         {
-            // Save to path without extension, with inference disabled
-            string actualPath = await content.SaveToAsync(tempPath, inferExtension: false);
+            // Save to directory path
+            string actualPath = await content.SaveToAsync(tempDir);
 
-            // Verify no extension was added
-            Assert.Equal(tempPath, actualPath);
+            // Verify the name was used
+            Assert.Equal(expectedPath, actualPath);
             Assert.True(File.Exists(actualPath));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(actualPath));
         }
         finally
         {
-            if (File.Exists(tempPath))
+            if (Directory.Exists(tempDir))
             {
-                File.Delete(tempPath);
+                Directory.Delete(tempDir, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SaveToAsync_UsesRandomNameWhenDirectoryProvidedAndNoName()
+    {
+        // Create DataContent with JSON media type but no name
+        byte[] testData = Encoding.UTF8.GetBytes("{}");
+        DataContent content = new(testData, "application/json");
+
+        string tempDir = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            // Save to directory path
+            string actualPath = await content.SaveToAsync(tempDir);
+
+            // Verify a file was created with .json extension
+            Assert.StartsWith(tempDir, actualPath);
+            Assert.EndsWith(".json", actualPath);
+            Assert.True(File.Exists(actualPath));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(actualPath));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, true);
             }
         }
     }
@@ -511,7 +546,7 @@ public sealed class DataContentTests
         try
         {
             // Save to path that already has an extension
-            string actualPath = await content.SaveToAsync(tempPath, inferExtension: true);
+            string actualPath = await content.SaveToAsync(tempPath);
 
             // Verify the original extension was preserved, not replaced
             Assert.Equal(tempPath, actualPath);
@@ -549,12 +584,5 @@ public sealed class DataContentTests
     {
         DataContent content = new(new byte[] { 1 }, "application/octet-stream");
         await Assert.ThrowsAsync<ArgumentNullException>("path", () => content.SaveToAsync(null!));
-    }
-
-    [Fact]
-    public async Task SaveToAsync_ThrowsOnEmpty()
-    {
-        DataContent content = new(new byte[] { 1 }, "application/octet-stream");
-        await Assert.ThrowsAsync<ArgumentException>("path", () => content.SaveToAsync(string.Empty));
     }
 }
