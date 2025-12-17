@@ -367,11 +367,7 @@ public class DataContent : AIContent
         // Infer extension if path has no extension
         if (string.IsNullOrEmpty(Path.GetExtension(actualPath)))
         {
-            string? extension = System.Net.Mime.MediaTypeMap.GetExtension(MediaType);
-            if (!string.IsNullOrEmpty(extension))
-            {
-                actualPath += extension;
-            }
+            actualPath += System.Net.Mime.MediaTypeMap.GetExtension(MediaType);
         }
 
         // Write the data to the file
