@@ -43,14 +43,8 @@ public class MarkItDownMcpReader : IngestionDocumentReader
             throw new FileNotFoundException("The specified file does not exist.", source.FullName);
         }
 
-        // Read file content and create DataContent
-        DataContent dataContent = await DataContent.LoadFromAsync(source.FullName, cancellationToken).ConfigureAwait(false);
-
-        // Override media type if explicitly provided
-        if (!string.IsNullOrEmpty(mediaType))
-        {
-            dataContent = new DataContent(dataContent.Data, mediaType!) { Name = dataContent.Name };
-        }
+        // Read file content and create DataContent (media type is inferred from extension if not provided)
+        DataContent dataContent = await DataContent.LoadFromAsync(source.FullName, mediaType, cancellationToken).ConfigureAwait(false);
 
         string markdown = await ConvertToMarkdownAsync(dataContent, cancellationToken).ConfigureAwait(false);
 
@@ -63,14 +57,8 @@ public class MarkItDownMcpReader : IngestionDocumentReader
         _ = Throw.IfNull(source);
         _ = Throw.IfNullOrEmpty(identifier);
 
-        // Read stream content and create DataContent
-        DataContent dataContent = await DataContent.LoadFromAsync(source, cancellationToken).ConfigureAwait(false);
-
-        // Override media type if explicitly provided
-        if (!string.IsNullOrEmpty(mediaType))
-        {
-            dataContent = new DataContent(dataContent.Data, mediaType) { Name = dataContent.Name };
-        }
+        // Read stream content and create DataContent (media type is inferred from FileStream path if applicable)
+        DataContent dataContent = await DataContent.LoadFromAsync(source, mediaType, cancellationToken).ConfigureAwait(false);
 
         string markdown = await ConvertToMarkdownAsync(dataContent, cancellationToken).ConfigureAwait(false);
 
