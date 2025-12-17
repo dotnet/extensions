@@ -2131,6 +2131,88 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task McpToolCall_WithAuthorizationTokenAndCustomHeaders_IncludesInRequest()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "server_label": "deepwiki",
+                        "server_url": "https://mcp.deepwiki.com/mcp",
+                        "headers": {
+                            "Authorization": "Bearer test-auth-token-12345",
+                            "X-Custom-Header": "custom-value"
+                        },
+                        "require_approval": "never"
+                    }
+                ],
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+                "id": "resp_auth01",
+                "object": "response",
+                "created_at": 1757299043,
+                "status": "completed",
+                "model": "gpt-4o-mini-2024-07-18",
+                "output": [
+                    {
+                        "id": "msg_auth01",
+                        "type": "message",
+                        "status": "completed",
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "text": "Hi!"
+                            }
+                        ]
+                    }
+                ],
+                "usage": {
+                    "input_tokens": 10,
+                    "output_tokens": 2,
+                    "total_tokens": 12
+                }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var mcpTool = new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
+        {
+            ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+            AuthorizationToken = "test-auth-token-12345"
+        };
+
+        mcpTool.Headers!["X-Custom-Header"] = "custom-value";
+
+        var response = await client.GetResponseAsync("hello", new ChatOptions { Tools = [mcpTool] });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_auth01", response.ResponseId);
+        var message = Assert.Single(response.Messages);
+        Assert.Equal("Hi!", message.Text);
+    }
+
+    [Fact]
     public async Task GetResponseAsync_BackgroundResponses_FirstCall()
     {
         const string Input = """
