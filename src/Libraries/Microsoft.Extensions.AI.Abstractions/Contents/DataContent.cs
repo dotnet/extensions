@@ -327,7 +327,7 @@ public class DataContent : AIContent
         mediaType ??= DefaultMediaType;
 
         // Read the stream contents
-        using var memoryStream = new MemoryStream();
+        using MemoryStream memoryStream = stream.CanSeek ? new((int)Math.Min(stream.Length, int.MaxValue)) : new();
 #if NET
         await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 #else
