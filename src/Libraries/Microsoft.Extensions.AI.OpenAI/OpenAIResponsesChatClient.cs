@@ -589,12 +589,26 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 };
 
             case HostedMcpServerTool mcpTool:
-                McpTool responsesMcpTool = Uri.TryCreate(mcpTool.ServerAddress, UriKind.Absolute, out Uri? serverAddressUrl) ?
-                    new McpTool(mcpTool.ServerName, serverAddressUrl) :
+                bool isUrl = Uri.TryCreate(mcpTool.ServerAddress, UriKind.Absolute, out Uri? serverAddressUrl);
+                McpTool responsesMcpTool = isUrl ?
+                    new McpTool(mcpTool.ServerName, serverAddressUrl!) :
                     new McpTool(mcpTool.ServerName, new McpToolConnectorId(mcpTool.ServerAddress));
 
                 responsesMcpTool.ServerDescription = mcpTool.ServerDescription;
-                responsesMcpTool.AuthorizationToken = mcpTool.AuthorizationToken;
+
+                if (isUrl)
+                {
+                    // For http: favor headers over authorization token. 
+                    if (mcpTool.Headers.Count > 0)
+                    {
+                        responsesMcpTool.Headers = mcpTool.Headers;
+                    }
+                }
+                else
+                {
+                    // For connectors: Only set AuthorizationToken, do not include headers.
+                    responsesMcpTool.AuthorizationToken = mcpTool.AuthorizationToken;
+                }
 
                 if (mcpTool.AllowedTools is not null)
                 {
