@@ -1459,6 +1459,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // 2. New approval responses are being processed
         // In this case, we want the new function calls to come AFTER the existing ones, not at the position
         // where the first (already-processed) approval request was originally located.
+        //
+        // Example:
+        //   Before:
+        //     [User, FunctionApprovalRequest(A), FunctionApprovalResponse(A), FunctionResult(A), FunctionApprovalRequest(B)]
+        //   After processing approval for B, if we inserted at the original index of B, we'd get:
+        //     [User, FunctionApprovalRequest(A), FunctionApprovalResponse(A), FunctionResult(A), FunctionCall(B), FunctionResult(B)]
+        //   But if there are already function results present (e.g., for A), we want to append new function calls/results for B at the end:
+        //     [User, FunctionApprovalRequest(A), FunctionApprovalResponse(A), FunctionResult(A), FunctionApprovalRequest(B), FunctionCall(B), FunctionResult(B)]
+        //   This preserves the correct chronological order of function calls and results.
         if (functionResultCallIds is { Count: > 0 } && insertionIndex >= 0)
         {
             insertionIndex = messages.Count;
