@@ -9,7 +9,7 @@
 
   <ItemGroup>
 <!--#if (IsOllama && IsAspire)
-    <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="${PackageVersion:CommunityToolkit.Aspire}" />
+    <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="${PackageVersion:CommunityToolkit.Aspire.OllamaSharp}" />
 #endif -->
 <!--#if (IsOllama)
     <PackageReference Include="OllamaSharp" Version="${PackageVersion:OllamaSharp}" />
@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
 #endif -->
 <!--#if ((IsAzureOpenAI || IsOpenAI || IsGHModels) && IsAspire) -->
-    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="${PackageVersion:Aspire-Preview}" />
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="${PackageVersion:Aspire.Azure.AI.OpenAI}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
 <!--#endif -->
 <!--#if (IsAzureOpenAI && !IsAspire) -->
@@ -37,23 +37,23 @@
 <!--#else -->
     <PackageReference Include="PdfPig" Version="${PackageVersion:PdfPig}" />
 <!--#endif -->
-    <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="${PackageVersion:Microsoft.ML.Tokenizers}" />
-    <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="${PackageVersion:Microsoft.ML.Tokenizers}" />
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="${PackageVersion:Microsoft.ML.Tokenizers.Data.Cl100kBase}" />
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="${PackageVersion:Microsoft.ML.Tokenizers.Data.O200kBase}" />
 <!--#if (IsNET9) -->
     <PackageReference Include="System.Linq.AsyncEnumerable" Version="${PackageVersion:System.Linq.AsyncEnumerable}" />
 <!--#endif -->
 <!--#if (IsAzureAISearch && IsAspire)
-    <PackageReference Include="Aspire.Azure.Search.Documents" Version="${PackageVersion:Aspire}" />
+    <PackageReference Include="Aspire.Azure.Search.Documents" Version="${PackageVersion:Aspire.Azure.Search.Documents}" />
 #elif (IsAzureAISearch && !IsAspire)
     <PackageReference Include="Azure.Search.Documents" Version="${PackageVersion:Azure.Search.Documents}" />
 #endif -->
 <!--#if (IsAzureAISearch)
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="${PackageVersion:Microsoft.SemanticKernel-Preview}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="${PackageVersion:Microsoft.SemanticKernel.Connectors.AzureAISearch}" />
 #elif (IsQdrant)-->
-    <PackageReference Include="Aspire.Qdrant.Client" Version="${PackageVersion:Aspire}" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="${PackageVersion:Microsoft.SemanticKernel-Preview}" />
+    <PackageReference Include="Aspire.Qdrant.Client" Version="${PackageVersion:Aspire.Qdrant.Client}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="${PackageVersion:Microsoft.SemanticKernel.Connectors.Qdrant}" />
 <!--#elif (IsLocalVectorStore)-->
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="${PackageVersion:Microsoft.SemanticKernel-Preview}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="${PackageVersion:Microsoft.SemanticKernel.Connectors.SqliteVec}" />
 <!--#endif -->
   </ItemGroup>
 <!--#if (IsAspire) -->

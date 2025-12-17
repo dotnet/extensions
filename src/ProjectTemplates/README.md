@@ -64,10 +64,6 @@ the `<PackageVersion />` is used.
 <!-- Define a package version for an external dependency in /eng/packages/ProjectTemplates.props -->
 <PackageVersion Include="Azure.AI.Projects" Version="1.1.0" />
 
-<!-- Define package version values not specific to specific packages in /eng/packages/ProjectTemplates.props -->
-<PackageVersion Include="Aspire" Version="13.0.0" />
-<PackageVersion Include="Aspire-Preview" Version="13.0.0-preview.1.25560.3" />
-
 <!--
     Override a package version for an external dependency in the template project directly
     when the package version is defined in a broader props file but needs to be overridden

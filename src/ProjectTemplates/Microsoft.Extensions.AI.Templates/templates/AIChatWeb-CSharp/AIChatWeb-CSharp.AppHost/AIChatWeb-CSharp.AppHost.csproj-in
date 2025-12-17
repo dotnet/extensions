@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Sdk Name="Aspire.AppHost.Sdk" Version="${PackageVersion:Aspire}" />
+  <Sdk Name="Aspire.AppHost.Sdk" Version="${PackageVersion:Aspire.AppHost.Sdk}" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,16 +11,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="${PackageVersion:Aspire}" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="${PackageVersion:Aspire.Hosting.AppHost}" />
 <!--#if (IsQdrant)
-    <PackageReference Include="Aspire.Hosting.Qdrant" Version="${PackageVersion:Aspire}" />
+    <PackageReference Include="Aspire.Hosting.Qdrant" Version="${PackageVersion:Aspire.Hosting.Qdrant}" />
 #elif (IsAzureAISearch)
-    <PackageReference Include="Aspire.Hosting.Azure.Search" Version="${PackageVersion:Aspire}" />
+    <PackageReference Include="Aspire.Hosting.Azure.Search" Version="${PackageVersion:Aspire.Hosting.Azure.Search}" />
 #endif -->
 <!--#if (IsAzureOpenAI) -->
-    <PackageReference Include="Aspire.Hosting.Azure.CognitiveServices" Version="${PackageVersion:Aspire}" />
+    <PackageReference Include="Aspire.Hosting.Azure.CognitiveServices" Version="${PackageVersion:Aspire.Hosting.Azure.CognitiveServices}" />
 <!--#elif (IsOllama)
-    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="${PackageVersion:CommunityToolkit.Aspire}" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="${PackageVersion:CommunityToolkit.Aspire.Hosting.Ollama}" />
 #endif -->
   </ItemGroup>
 
