@@ -44,20 +44,13 @@ public class MarkItDownMcpReader : IngestionDocumentReader
         }
 
         // Read file content and create DataContent
-#if NET
-        ReadOnlyMemory<byte> fileBytes = await File.ReadAllBytesAsync(source.FullName, cancellationToken).ConfigureAwait(false);
-#else
-        ReadOnlyMemory<byte> fileBytes;
-        using (FileStream fs = new(source.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1, FileOptions.Asynchronous))
+        DataContent dataContent = await DataContent.LoadFromAsync(source.FullName, cancellationToken).ConfigureAwait(false);
+
+        // Override media type if explicitly provided
+        if (!string.IsNullOrEmpty(mediaType))
         {
-            using MemoryStream ms = new((int)Math.Min(int.MaxValue, fs.Length));
-            await fs.CopyToAsync(ms).ConfigureAwait(false);
-            fileBytes = ms.GetBuffer().AsMemory(0, (int)ms.Length);
+            dataContent = new DataContent(dataContent.Data, mediaType!) { Name = dataContent.Name };
         }
-#endif
-        DataContent dataContent = new(
-            fileBytes,
-            string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType!);
 
         string markdown = await ConvertToMarkdownAsync(dataContent, cancellationToken).ConfigureAwait(false);
 
@@ -71,15 +64,13 @@ public class MarkItDownMcpReader : IngestionDocumentReader
         _ = Throw.IfNullOrEmpty(identifier);
 
         // Read stream content and create DataContent
-        using MemoryStream ms = source.CanSeek ? new((int)Math.Min(int.MaxValue, source.Length)) : new();
-#if NET
-        await source.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
-#else
-        await source.CopyToAsync(ms).ConfigureAwait(false);
-#endif
-        DataContent dataContent = new(
-            ms.GetBuffer().AsMemory(0, (int)ms.Length),
-            string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType);
+        DataContent dataContent = await DataContent.LoadFromAsync(source, cancellationToken).ConfigureAwait(false);
+
+        // Override media type if explicitly provided
+        if (!string.IsNullOrEmpty(mediaType))
+        {
+            dataContent = new DataContent(dataContent.Data, mediaType) { Name = dataContent.Name };
+        }
 
         string markdown = await ConvertToMarkdownAsync(dataContent, cancellationToken).ConfigureAwait(false);
 
