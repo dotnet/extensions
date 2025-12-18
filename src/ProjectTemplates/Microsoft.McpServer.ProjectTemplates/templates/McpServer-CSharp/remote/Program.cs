@@ -8,5 +8,8 @@ builder.Services
 
 var app = builder.Build();
 app.MapMcp();
+#if (hostIdentifier == "vs")
+app.UseHttpsRedirection();
+#endif
 
 app.Run();

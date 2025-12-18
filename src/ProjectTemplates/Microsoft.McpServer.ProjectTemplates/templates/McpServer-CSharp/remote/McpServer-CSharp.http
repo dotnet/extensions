@@ -1,6 +1,10 @@
 # For more info on HTTP files go to https://aka.ms/vs/httpfile
 
+#if (hostIdentifier == "vs")
+@HostAddress = https://localhost:9995
+#else
 @HostAddress = http://localhost:9996
+#endif
 
 POST {{HostAddress}}/
 Accept: application/json, text/event-stream

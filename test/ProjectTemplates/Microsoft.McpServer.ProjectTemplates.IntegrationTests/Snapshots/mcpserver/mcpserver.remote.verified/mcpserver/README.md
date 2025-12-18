@@ -32,9 +32,21 @@ To test this MCP server from source code (locally), you can configure your IDE t
 }
 ```
 
+Refer to the VS Code or Visual Studio documentation for more information on configuring and using MCP servers:
+
+- [Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
+- [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers)
+
 ## Testing the MCP Server
 
 Once configured, you can ask Copilot Chat for a random number, for example, `Give me 3 random numbers`. It should prompt you to use the `get_random_number` tool on the `mcpserver` MCP server and show you the results.
+
+## Known issues
+
+1. When using VS Code, connecting to `https://localhost:9995` fails.
+  * This is related to using a self-signed developer certificate, even when the certificate is trusted by the system.
+  * Connecting with `http://localhost:9996` succeeds.
+  * See [Cannot connect to MCP server via SSE using trusted developer certificate (microsoft/vscode#248170)](https://github.com/microsoft/vscode/issues/248170) for more information.
 
 ## More information
 
@@ -44,8 +56,3 @@ ASP.NET Core MCP servers use the [ModelContextProtocol.AspNetCore](https://www.n
 - [Protocol Specification](https://spec.modelcontextprotocol.io/)
 - [GitHub Organization](https://github.com/modelcontextprotocol)
 - [MCP C# SDK](https://modelcontextprotocol.github.io/csharp-sdk)
-
-Refer to the VS Code or Visual Studio documentation for more information on configuring and using MCP servers:
-
-- [Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
-- [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers)
