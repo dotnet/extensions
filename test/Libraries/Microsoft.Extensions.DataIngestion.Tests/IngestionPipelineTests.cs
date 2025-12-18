@@ -86,7 +86,7 @@ public sealed class IngestionPipelineTests : IDisposable
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
         using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
 
-        using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
+        using IngestionPipeline<FileInfo, string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
         List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(_sampleFiles).ToListAsync();
 
         Assert.Equal(_sampleFiles.Count, ingestionResults.Count);
@@ -119,7 +119,7 @@ public sealed class IngestionPipelineTests : IDisposable
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
         using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
 
-        using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
+        using IngestionPipeline<FileInfo, string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
 
         DirectoryInfo directory = new("TestFiles");
         List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(directory, "*.md").ToListAsync();
@@ -152,7 +152,7 @@ public sealed class IngestionPipelineTests : IDisposable
         TestEmbeddingGenerator<DataContent> embeddingGenerator = new();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
         using VectorStoreWriter<DataContent> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<DataContent>.DimensionCount);
-        using IngestionPipeline<DataContent> pipeline = new(CreateReader(), new ImageChunker(), vectorStoreWriter);
+        using IngestionPipeline<FileInfo, DataContent> pipeline = new(CreateReader(), new ImageChunker(), vectorStoreWriter);
 
         Assert.False(embeddingGenerator.WasCalled);
         var ingestionResults = await pipeline.ProcessAsync(_sampleFiles).ToListAsync();
@@ -189,7 +189,7 @@ public sealed class IngestionPipelineTests : IDisposable
     {
         int failed = 0;
         MarkdownReader workingReader = new();
-        TestReader failingForFirstReader = new(
+        TestReader<FileInfo> failingForFirstReader = new(
             (source, identifier, mediaType, cancellationToken) => failed++ == 0
                     ? Task.FromException<IngestionDocument>(new ExpectedException())
                     : workingReader.ReadAsync(source, identifier, mediaType, cancellationToken));
@@ -201,7 +201,7 @@ public sealed class IngestionPipelineTests : IDisposable
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
         using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
 
-        using IngestionPipeline<string> pipeline = new(failingForFirstReader, CreateChunker(), vectorStoreWriter);
+        using IngestionPipeline<FileInfo, string> pipeline = new(failingForFirstReader, CreateChunker(), vectorStoreWriter);
 
         await Verify(pipeline.ProcessAsync(_sampleFiles));
         await Verify(pipeline.ProcessAsync(_sampleDirectory));
@@ -218,6 +218,40 @@ public sealed class IngestionPipelineTests : IDisposable
 
             activities.Clear();
             failed = 0;
+        }
+    }
+
+    [Fact]
+    public async Task SourceCanBeAnything()
+    {
+        TestReader<int> testReader = new((index, id, mediaType, ct) =>
+        {
+            return new MarkdownReader().ReadAsync(_sampleFiles[index], _sampleFiles[index].FullName, mediaType, ct);
+        });
+
+        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
+        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
+
+        using IngestionPipeline<int, string> pipeline = new(testReader, CreateChunker(), vectorStoreWriter);
+
+        for (int i = 0; i < _sampleFiles.Count; i++)
+        {
+            await pipeline.ProcessAsync(i, _sampleFiles[i].FullName);
+        }
+
+        Assert.True(embeddingGenerator.WasCalled, "Embedding generator should have been called.");
+
+        var retrieved = await vectorStoreWriter.VectorStoreCollection
+            .GetAsync(record => _sampleFiles.Any(info => info.FullName == (string)record["documentid"]!), top: 1000)
+            .ToListAsync();
+
+        Assert.NotEmpty(retrieved);
+        for (int i = 0; i < retrieved.Count; i++)
+        {
+            Assert.NotEqual(Guid.Empty, (Guid)retrieved[i]["key"]!);
+            Assert.NotEmpty((string)retrieved[i]["content"]!);
+            Assert.Contains((string)retrieved[i]["documentid"]!, _sampleFiles.Select(info => info.FullName));
         }
     }
 
