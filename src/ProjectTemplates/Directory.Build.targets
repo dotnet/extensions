@@ -32,14 +32,9 @@
                       Private="false" />
   </ItemDefinitionGroup>
 
-  <PropertyGroup>
-    <_ProjectTemplateArtifactsDir>$([System.IO.Path]::Combine($(ArtifactsDir), 'ProjectTemplates', $(PackageId)))</_ProjectTemplateArtifactsDir>
-    <_GeneratedContentDir>$([System.IO.Path]::Combine($(_ProjectTemplateArtifactsDir), 'GeneratedContent'))</_GeneratedContentDir>
-  </PropertyGroup>
-
   <Target Name="_CleanProjectTemplates" BeforeTargets="Clean">
     <!-- Delete the GeneratedContent, Sandbox, and Snapshots artifacts folders when cleaning the template project -->
-    <RemoveDir Directories="$(_ProjectTemplateArtifactsDir)" />
+    <RemoveDir Directories="$([System.IO.Path]::Combine($(ArtifactsDir), 'ProjectTemplates', $(PackageId)))" />
   </Target>
 
   <!--
@@ -102,6 +97,10 @@
   </Target>
 
   <Target Name="_ResolveTemplateContentPaths">
+    <PropertyGroup>
+      <_GeneratedContentDir>$([System.IO.Path]::Combine($(ArtifactsDir), 'ProjectTemplates', $(PackageId), 'GeneratedContent'))</_GeneratedContentDir>
+    </PropertyGroup>
+
     <ItemGroup>
       <_TemplateContentFile Include="@(TemplateContent)">
         <OutputFileName Condition="'%(TemplateContent.ChangeExtension)' == ''">%(FileName)%(TemplateContent.Extension)</OutputFileName>
