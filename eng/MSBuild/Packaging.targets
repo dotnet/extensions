@@ -103,12 +103,11 @@
   </Target>
 
   <!-- Extract the PackageId and PackageVersion. Used to resolve the version in project templates builds. -->
-  <Target Name="GetProjectPackageVersion"
-          Returns="@(_PackageVersion)">
+  <Target Name="GetProjectPackageVersion" Returns="@(ProjectPackageVersion)">
     <ItemGroup>
-      <_PackageVersion Include="$(PackageId)"
-                       Version="$(PackageVersion)"
-                       Project="$(MSBuildProjectFullPath)" />
+      <ProjectPackageVersion Include="$(PackageId)"
+                             Version="$(Version)"
+                             Project="$(MSBuildProjectFullPath)" />
     </ItemGroup>
   </Target>
 

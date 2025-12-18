@@ -1,54 +1,51 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
-  <Target Name="_ResolveTemplatePackageProjectVersions">
-    <!--
-      Target "GetProjectPackageVersion" is defined in /eng/MSBuild/Packaging.targets
-      and imported by all packable projects.
+  <!--
+    Template projects use <ProjectReference> items to:
 
-      Build all projects references to get their PackageId and PackageVersion values,
-      running only that target against the latest TFM. No other targets are executed.
-    -->
-    <MSBuild Projects="@(ProjectReference)" Targets="GetProjectPackageVersion"
-             SkipNonexistentTargets="true" SkipNonexistentProjects="true"
-             Properties="TargetFramework=$(LatestTargetFramework)">
-      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedTemplatePackageProjectVersion" />
-    </MSBuild>
+    1. Ensure `build.cmd -vs AI` or `build.cmd -vs ProjectTemplates`
+       results in the referenced project being included in the SDK.sln
+       file, along with its transitive project references.
+
+    2. Collect the Package ID and Version from the project for use in
+       the template using the "GetProjectPackageVersion" target defined
+       in /eng/MSBuild/Packaging.targets.
+
+    This <ItemDefinitionGroup> must be defined in targets after
+    Microsoft.Common.CurrentVersion.Targets  so that it can override the
+    <ItemDefinitionGroup> defined there.
+
+    - ReferenceOutputAssembly - don't pass to the compiler
+    - Targets - use this target instead of the default GetTargetPath
+    - SetTargetFramework - only a single framework build is needed
+    - SkipGetTargetFrameworkProperties - no need to handle multi-targeting
+    - OutputItemType - the name of the item to output from the target
+    - Private - false means don't copy to output directory, not private
+  -->
+  <ItemDefinitionGroup>
+    <ProjectReference ReferenceOutputAssembly="false"
+                      Targets="GetProjectPackageVersion"
+                      SetTargetFramework="TargetFramework=$(LatestTargetFramework)"
+                      SkipGetTargetFrameworkProperties="true"
+                      OutputItemType="ProjectPackageVersion"
+                      Private="false" />
+  </ItemDefinitionGroup>
+
+  <PropertyGroup>
+    <_ProjectTemplateArtifactsDir>$([System.IO.Path]::Combine($(ArtifactsDir), 'ProjectTemplates', $(PackageId)))</_ProjectTemplateArtifactsDir>
+    <_GeneratedContentDir>$([System.IO.Path]::Combine($(_ProjectTemplateArtifactsDir), 'GeneratedContent'))</_GeneratedContentDir>
+  </PropertyGroup>
+
+  <Target Name="_CleanProjectTemplates" BeforeTargets="Clean">
+    <!-- Delete the GeneratedContent, Sandbox, and Snapshots artifacts folders when cleaning the template project -->
+    <RemoveDir Directories="$(_ProjectTemplateArtifactsDir)" />
   </Target>
 
-  <Target Name="_ResolveTemplatePackageVersions" DependsOnTargets="_ResolveTemplatePackageProjectVersions">
-    <ItemGroup>
-      <!-- Seed the list with all <ProjectReference> package versions -->
-      <_ResolvedTemplatePackageVersion Include="@(_ResolvedTemplatePackageProjectVersion)" />
-
-      <!-- Override with the any <PackageVersion> items -->
-      <_ResolvedTemplatePackageVersion Remove="@(PackageVersion)" />
-      <_ResolvedTemplatePackageVersion Include="@(PackageVersion)" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_ResolveTemplateContentPaths">
-    <PropertyGroup>
-      <_GeneratedContentDir>$([System.IO.Path]::Combine($(ProjectTemplateArtifactsDir), $(PackageId), 'GeneratedContent'))</_GeneratedContentDir>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <_TemplateContentFile Include="@(TemplateContent)">
-        <OutputFileName Condition="'%(TemplateContent.ChangeExtension)' == ''">%(FileName)%(TemplateContent.Extension)</OutputFileName>
-        <OutputFileName Condition="'%(TemplateContent.ChangeExtension)' != ''">%(FileName)%(TemplateContent.ChangeExtension)</OutputFileName>
-
-        <PackagePathRoot Condition="'%(TemplateContent.PackagePath)' == ''">$([System.IO.Path]::Combine("content", %(TemplateContent.RelativeDir)))</PackagePathRoot>
-        <PackagePathRoot Condition="'%(TemplateContent.PackagePath)' != ''">%(TemplateContent.PackagePath)</PackagePathRoot>
-      </_TemplateContentFile>
-
-      <_ResolvedTemplateContent Include="@(_TemplateContentFile)">
-        <ArtifactPath>$([System.IO.Path]::Combine($(_GeneratedContentDir), %(_TemplateContentFile.RelativeDir), %(_TemplateContentFile.OutputFileName)))</ArtifactPath>
-        <PackagePath>$([System.IO.Path]::Combine(%(_TemplateContentFile.PackagePathRoot), %(_TemplateContentFile.RecursiveDir), %(_TemplateContentFile.OutputFileName)))</PackagePath>
-      </_ResolvedTemplateContent>
-    </ItemGroup>
-  </Target>
-
-  <!-- Invoke this target before 'Build' for all template projects -->
+  <!--
+    Invoke this target before both "Build" and "Pack" for all template projects.
+    This ensures the template content is generated during either a Build
+  -->
   <Target Name="_GenerateTemplateContent" BeforeTargets="Build"
           DependsOnTargets="_ResolveTemplatePackageVersions;_ResolveTemplateContentPaths">
 
@@ -90,8 +87,35 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_CleanProjectTemplates" BeforeTargets="Clean">
-    <!-- Delete the GeneratedContent, Sandbox, and Snapshots artifacts folders when cleaning the template project -->
-    <RemoveDir Directories="$([System.IO.Path]:Combine($(ProjectTemplateArtifactsDir), $(PackageId)))" />
+  <Target Name="_ResolveTemplatePackageVersions" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <!--
+        Seed the list with all <ProjectReference> package versions, which depends
+        on "ResolveReferences" to invoke the "GetProjectPackageVersion" target.
+      -->
+      <_ResolvedTemplatePackageVersion Include="@(ProjectPackageVersion)" />
+
+      <!-- Override with the any <PackageVersion> items -->
+      <_ResolvedTemplatePackageVersion Remove="@(PackageVersion)" />
+      <_ResolvedTemplatePackageVersion Include="@(PackageVersion)" />
+    </ItemGroup>
   </Target>
+
+  <Target Name="_ResolveTemplateContentPaths">
+    <ItemGroup>
+      <_TemplateContentFile Include="@(TemplateContent)">
+        <OutputFileName Condition="'%(TemplateContent.ChangeExtension)' == ''">%(FileName)%(TemplateContent.Extension)</OutputFileName>
+        <OutputFileName Condition="'%(TemplateContent.ChangeExtension)' != ''">%(FileName)%(TemplateContent.ChangeExtension)</OutputFileName>
+
+        <PackagePathRoot Condition="'%(TemplateContent.PackagePath)' == ''">$([System.IO.Path]::Combine("content", %(TemplateContent.RelativeDir)))</PackagePathRoot>
+        <PackagePathRoot Condition="'%(TemplateContent.PackagePath)' != ''">%(TemplateContent.PackagePath)</PackagePathRoot>
+      </_TemplateContentFile>
+
+      <_ResolvedTemplateContent Include="@(_TemplateContentFile)">
+        <ArtifactPath>$([System.IO.Path]::Combine($(_GeneratedContentDir), %(_TemplateContentFile.RelativeDir), %(_TemplateContentFile.OutputFileName)))</ArtifactPath>
+        <PackagePath>$([System.IO.Path]::Combine(%(_TemplateContentFile.PackagePathRoot), %(_TemplateContentFile.RecursiveDir), %(_TemplateContentFile.OutputFileName)))</PackagePath>
+      </_ResolvedTemplateContent>
+    </ItemGroup>
+  </Target>
+
 </Project>
