@@ -10,13 +10,12 @@
   <PropertyGroup>
     <BuildAnalyzerReferences>true</BuildAnalyzerReferences>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>dev</Stage>
-    <StageDevDiagnosticId>EXTEXP0009</StageDevDiagnosticId>
+    <Stage>normal</Stage>
     <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>
   </PropertyGroup>
