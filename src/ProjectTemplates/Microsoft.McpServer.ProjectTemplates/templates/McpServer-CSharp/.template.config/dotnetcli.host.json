@@ -1,11 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
-    "TargetFrameworkOverride": {
-      "isHidden": "true",
-      "longName": "target-framework-override",
-      "shortName": ""
-    },
     "Framework": {
       "longName": "framework"
     },

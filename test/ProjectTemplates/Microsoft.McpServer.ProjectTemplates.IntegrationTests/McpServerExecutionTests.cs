@@ -30,7 +30,7 @@ public class McpServerExecutionTests : TemplateExecutionTestBase<McpServerExecut
 
     public static TemplateExecutionTestConfiguration Configuration { get; } = new()
     {
-        TemplatePackageName = "Microsoft.Extensions.AI.Templates",
+        TemplatePackageName = "Microsoft.McpServer.ProjectTemplates",
         TemplateName = "mcpserver"
     };
 

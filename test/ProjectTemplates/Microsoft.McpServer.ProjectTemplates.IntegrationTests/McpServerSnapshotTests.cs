@@ -30,7 +30,7 @@ public class McpServerSnapshotTests : TemplateSnapshotTestBase
     public async Task TestSnapshots(params string[] templateArgs)
     {
         string projectNamePrefix = "McpServer";
-        string templatePackageName = "Microsoft.Extensions.AI.Templates";
+        string templatePackageName = "Microsoft.McpServer.ProjectTemplates";
         string templateName = "mcpserver";
 
         TemplateVerifierOptions options = PrepareSnapshotVerifier(

@@ -6,8 +6,8 @@
     "AI",
     "MCP"
   ],
-  "identity": "Microsoft.Extensions.AI.Templates.McpServer.CSharp",
-  "name": "Local MCP Server Console App",
+  "identity": "Microsoft.McpServer.ProjectTemplates.McpServer.CSharp",
+  "name": "MCP Server App",
   "description": "A project template for creating a Model Context Protocol (MCP) server using C# and the ModelContextProtocol package.",
   "shortName": "mcpserver",
   "defaultName": "McpServer",
@@ -18,14 +18,6 @@
     "type": "project"
   },
   "symbols": {
-    "TargetFrameworkOverride": {
-      "type": "parameter",
-      "description": "Overrides the target framework",
-      "displayName": "Target framework override",
-      "replaces": "TargetFrameworkOverride",
-      "datatype": "string",
-      "defaultValue": ""
-    },
     "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
