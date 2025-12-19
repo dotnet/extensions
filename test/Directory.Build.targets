@@ -14,8 +14,4 @@
     <Content Include="$(MSBuildThisFileDirectory)\..\eng\xunit.runner.json" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <!-- Stop complaining about enabling /doc for tests -->
-    <NoWarn>$(NoWarn);RT0000</NoWarn>
-  </PropertyGroup>
 </Project>

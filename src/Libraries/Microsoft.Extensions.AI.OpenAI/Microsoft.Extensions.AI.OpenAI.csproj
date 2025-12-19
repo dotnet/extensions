@@ -19,7 +19,7 @@
     <NoWarn>$(NoWarn);CA1063</NoWarn>
     <NoWarn>$(NoWarn);OPENAI001;OPENAI002;MEAI001;SCME0001</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
+    <DisableMinimumSupportedTfmCompatErrors>true</DisableMinimumSupportedTfmCompatErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 

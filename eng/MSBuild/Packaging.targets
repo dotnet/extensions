@@ -40,16 +40,16 @@
     <PackageValidationBaselineVersion Condition="'$(Stage)' == 'normal' and '$(PackageValidationBaselineVersion)' == ''">9.10.0</PackageValidationBaselineVersion>
   </PropertyGroup>
 
-  <!-- Verify that the minimum supported TFM is actually used. -->
+  <!-- Verify that the minimum supported TFM is actually used. Not applicable for project template packages. -->
   <Target Name="_VerifyMinimumSupportedTfmForPackagingIsUsed"
-          Condition="'$(IsPackable)' == 'true' and '$(DisableNETStandardCompatErrors)' != 'true'">
-    <Error Text="$TargetFrameworks ('$(TargetFrameworks)') does not contain $MinimumSupportedTfmForPackaging ('$(MinimumSupportedTfmForPackaging)')."
+          Condition="'$(IsPackable)' == 'true' and '$(PackageType)' != 'Template' and '$(DisableMinimumSupportedTfmCompatErrors)' != 'true'">
+    <Error Text="$TargetFrameworks ('$(TargetFrameworks)') does not contain $MinimumSupportedTfmForPackaging ('$(MinimumSupportedTfmForPackaging)'). This is ignored for PackageType=Template or if DisableMinimumSupportedTfmCompatErrors=true."
            Condition="!$(TargetFrameworks.Contains('$(MinimumSupportedTfmForPackaging)'))" />
   </Target>
 
   <!-- Add targets file that marks selected TFMs as unsupported. -->
   <Target Name="_AddNETStandardCompatErrorFileForPackaging"
-          Condition="'@(NETStandardCompatError)' != '' and '$(DisableNETStandardCompatErrors)' != 'true'"
+          Condition="'@(NETStandardCompatError)' != '' and '$(DisableMinimumSupportedTfmCompatErrors)' != 'true'"
           Inputs="%(NETStandardCompatError.Identity)"
           Outputs="unused">
     <PropertyGroup>
@@ -102,14 +102,12 @@
     </ItemGroup>
   </Target>
 
-  <!-- This target is used to get the package versions of projects. -->
-  <Target Name="_GetPackageVersionInfo"
-          Returns="@(_PackageVersionInfo)">
+  <!-- Extract the PackageId and PackageVersion. Used to resolve the version in project templates builds. -->
+  <Target Name="GetProjectPackageVersion" Returns="@(ProjectPackageVersion)">
     <ItemGroup>
-      <_PackageVersionInfo Include="$(MSBuildProjectFullPath)">
-        <PackageVersion>$(PackageVersion)</PackageVersion>
-        <PackageId>$(PackageId)</PackageId>
-      </_PackageVersionInfo>
+      <ProjectPackageVersion Include="$(PackageId)"
+                             Version="$(Version)"
+                             Project="$(MSBuildProjectFullPath)" />
     </ItemGroup>
   </Target>
 
