@@ -13,7 +13,6 @@
     <PackageReference
       Include="Microsoft.DotNet.Build.Tasks.Templating"
       Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)"
-      AllowExplicitReference="true"
       PrivateAssets="All"
       IsImplicitlyDefined="true" />
   </ItemGroup>

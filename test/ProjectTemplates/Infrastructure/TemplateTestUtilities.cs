@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 
 namespace Microsoft.Shared.ProjectTemplates.Tests;
 
@@ -95,44 +92,4 @@ public static class TemplateTestUtilities
     /// <summary>Checks for a boolean option to be specified</summary>
     public static bool HasOption(string[] args, string option) =>
         args.Contains(option) || args.Contains($"{option}=true");
-
-    public static ScrubbersDefinition AddSolutionFileGuidScrubber(this ScrubbersDefinition scrubbers) => scrubbers
-        .AddScrubber(
-            content => content.ScrubByRegex(pattern: @"\{.{36}\}", replacement: "{00000000-0000-0000-0000-000000000000}"),
-            extension: "sln");
-
-    public static ScrubbersDefinition AddUserSecretsScrubber(this ScrubbersDefinition scrubbers) => scrubbers
-        .AddScrubber(
-            content => content.ScrubByRegex(pattern: "<UserSecretsId>.{36}</UserSecretsId>", replacement: "<UserSecretsId>{00000000-0000-0000-0000-000000000000}</UserSecretsId>"),
-            extension: "csproj");
-
-    public static ScrubbersDefinition AddPackageReferenceScrubber(this ScrubbersDefinition scrubbers) => scrubbers
-        .AddScrubber(
-            content => content.ScrubByRegex(pattern: "<PackageReference Include=\"(.*)\" Version=\"(.*?)\" />", replacement: "<PackageReference Include=\"$1\" Version=\"{VERSION}\" />"),
-            extension: "csproj");
-
-    public static ScrubbersDefinition AddLocalhostPortScrubber(
-        this ScrubbersDefinition scrubbers,
-        (string pattern, string replacement)? https = null,
-        (string pattern, string replacement)? http = null)
-    {
-        https ??= (@"\d{4,5}", "9995");
-        http ??= (@"\d{4,5}", "9996");
-
-        Action<StringBuilder> scrubPorts = content =>
-        {
-            content.ScrubByRegex($@"(https://localhost):({https.Value.pattern})", $"$1:{https.Value.replacement}");
-            content.ScrubByRegex($@"(http://localhost):({http.Value.pattern})", $"$1:{http.Value.replacement}");
-        };
-
-        return scrubbers
-            .AddScrubber(scrubPorts, extension: "md")
-            .AddScrubber((path, content) =>
-                {
-                    if (Path.GetFileName(path).Equals("launchSettings.json", StringComparison.OrdinalIgnoreCase))
-                    {
-                        scrubPorts(content);
-                    }
-                });
-    }
 }
