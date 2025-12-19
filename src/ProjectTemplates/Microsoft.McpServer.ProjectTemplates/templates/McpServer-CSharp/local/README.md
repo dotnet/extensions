@@ -98,6 +98,7 @@ For both VS Code and Visual Studio, the configuration file uses the following se
 - [Official Documentation](https://modelcontextprotocol.io/)
 - [Protocol Specification](https://spec.modelcontextprotocol.io/)
 - [GitHub Organization](https://github.com/modelcontextprotocol)
+- [MCP C# SDK](https://modelcontextprotocol.github.io/csharp-sdk)
 
 Refer to the VS Code or Visual Studio documentation for more information on configuring and using MCP servers:
 

@@ -44,6 +44,7 @@ internal static class VerifyScrubbers
 
         return scrubbers
             .AddScrubber(scrubPorts, extension: "md")
+            .AddScrubber(scrubPorts, extension: "http")
             .AddScrubber((path, content) =>
                 {
                     if (Path.GetFileName(path).Equals("launchSettings.json", StringComparison.OrdinalIgnoreCase))

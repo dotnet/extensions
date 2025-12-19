@@ -4,6 +4,10 @@
   "icon": "ide/icon.ico",
   "symbolInfo": [
     {
+      "id": "Transport",
+      "isVisible": true
+    },
+    {
       "id": "NativeAot",
       "isVisible": true
     },

@@ -39,6 +39,7 @@ public class McpServerExecutionTests : TemplateExecutionTestBase<McpServerExecut
         (string name, string[] values)[] allOptionValues = [
             ("--aot",               ["true", "false"]),
             ("--self-contained",    ["true", "false"]),
+            ("--transport",         ["local", "remote"]),
             ("--framework",         ["net8.0", "net9.0", "net10.0"])
         ];
 

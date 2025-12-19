@@ -1,8 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
-    "Framework": {
-      "longName": "framework"
+    "Transport": {
+      "longName": "transport",
+      "shortName": "t"
     },
     "NativeAot": {
       "longName": "aot",
@@ -11,6 +12,15 @@
     "SelfContained": {
       "longName": "self-contained",
       "shortName": ""
+    },
+    "Framework": {
+      "longName": "framework"
+    },
+    "httpPort": {
+      "isHidden": true
+    },
+    "httpsPort": {
+      "isHidden": true
     }
   },
   "usageExamples": [
