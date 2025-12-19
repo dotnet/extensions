@@ -163,6 +163,64 @@ public class ChatMessageTests
     }
 
     [Fact]
+    public void Text_ConcatsAllTextReasoningContent()
+    {
+        ChatMessage message = new(ChatRole.User,
+        [
+            new DataContent("data:text/image;base64,aGVsbG8="),
+            new DataContent("data:text/plain;base64,aGVsbG8="),
+            new FunctionCallContent("callId1", "fc1"),
+            new TextReasoningContent("reason-1"),
+            new TextReasoningContent("reason-2"),
+            new FunctionResultContent("callId1", "result"),
+        ]);
+
+        TextReasoningContent textReasoningContent = Assert.IsType<TextReasoningContent>(message.Contents[3]);
+        Assert.Equal("reason-1", textReasoningContent.Text);
+        Assert.Equal("reason-1reason-2", message.Text);
+        Assert.Equal("reason-1reason-2", message.ToString());
+
+        ((TextReasoningContent)message.Contents[3]).Text = "reason-3";
+        Assert.Equal("reason-3", textReasoningContent.Text);
+        Assert.Equal("reason-3reason-2", message.Text);
+        Assert.Equal("reason-3reason-2", message.ToString());
+    }
+
+    [Fact]
+    public void Text_ConcatsAllTextContentAndTextReasoningContent()
+    {
+        ChatMessage message = new(ChatRole.User,
+        [
+            new DataContent("data:text/image;base64,aGVsbG8="),
+            new DataContent("data:text/plain;base64,aGVsbG8="),
+            new FunctionCallContent("callId1", "fc1"),
+            new TextContent("text-1"),
+            new TextReasoningContent("reason-1"),
+            new FunctionResultContent("callId1", "result"),
+        ]);
+
+        TextContent textContent = Assert.IsType<TextContent>(message.Contents[3]);
+        Assert.Equal("text-1", textContent.Text);
+        Assert.Equal("text-1reason-1", message.Text);
+        Assert.Equal("text-1reason-1", message.ToString());
+
+        TextReasoningContent textReasoningContent = Assert.IsType<TextReasoningContent>(message.Contents[4]);
+        Assert.Equal("reason-1", textReasoningContent.Text);
+        Assert.Equal("text-1reason-1", message.Text);
+        Assert.Equal("text-1reason-1", message.ToString());
+
+        ((TextContent)message.Contents[3]).Text = "text-2";
+        Assert.Equal("text-2", textContent.Text);
+        Assert.Equal("text-2reason-1", message.Text);
+        Assert.Equal("text-2reason-1", message.ToString());
+
+        ((TextReasoningContent)message.Contents[4]).Text = "reason-2";
+        Assert.Equal("reason-2", textReasoningContent.Text);
+        Assert.Equal("text-2reason-2", message.Text);
+        Assert.Equal("text-2reason-2", message.ToString());
+    }
+
+    [Fact]
     public void Contents_InitializesToList()
     {
         // This is an implementation detail, but if this test starts failing, we need to ensure
