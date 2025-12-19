@@ -13,7 +13,7 @@ By default, the template is configured to build for:
 * `linux-arm64`
 * `linux-musl-x64`
 
-If your require more platforms to be supported, update the list of runtime identifiers in the project's `<RuntimeIdentifiers />` element.
+If you require more platforms to be supported, update the list of runtime identifiers in the project's `<RuntimeIdentifiers />` element.
 
 Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](http://aka.ms/dotnet-mcp-template-survey).
 
