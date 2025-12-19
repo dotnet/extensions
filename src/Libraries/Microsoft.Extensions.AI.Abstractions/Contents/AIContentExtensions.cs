@@ -27,7 +27,9 @@ internal static class AIContentExtensions
                     return string.Empty;
 
                 case 1:
-                    return (list[0] as TextContent)?.Text ?? string.Empty;
+                    return (list[0] as TextContent)?.Text
+                           ?? (list[0] as TextReasoningContent)?.Text
+                           ?? string.Empty;
 
                 default:
 #if NET
@@ -37,6 +39,10 @@ internal static class AIContentExtensions
                         if (list[i] is TextContent text)
                         {
                             builder.AppendLiteral(text.Text);
+                        }
+                        if (list[i] is TextReasoningContent reasoningText)
+                        {
+                            builder.AppendLiteral(reasoningText.Text);
                         }
                     }
 
@@ -48,6 +54,10 @@ internal static class AIContentExtensions
                         if (list[i] is TextContent text)
                         {
                             builder.Append(text.Text);
+                        }
+                        if (list[i] is TextReasoningContent reasoningText)
+                        {
+                            builder.Append(reasoningText.Text);
                         }
                     }
 
