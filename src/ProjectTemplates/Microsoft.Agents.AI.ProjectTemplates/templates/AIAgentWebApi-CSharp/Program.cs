@@ -87,9 +87,12 @@ builder.AddAIAgent("editor", (sp, key) => new ChatClientAgent(
 
 builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequential(
     workflowName: key,
-    sp.GetRequiredKeyedService<AIAgent>("writer"),
-    sp.GetRequiredKeyedService<AIAgent>("editor")
-)).AddAsAIAgent();
+    agents:
+    [
+        sp.GetRequiredKeyedService<AIAgent>("writer"),
+        sp.GetRequiredKeyedService<AIAgent>("editor")
+    ]
+)).AddAsAIAgent("publisher-agent");
 
 // Register services for OpenAI responses and conversations (also required for DevUI)
 builder.Services.AddOpenAIResponses();
