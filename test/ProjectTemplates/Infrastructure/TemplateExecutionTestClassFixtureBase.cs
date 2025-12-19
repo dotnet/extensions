@@ -15,9 +15,12 @@ namespace Microsoft.Shared.ProjectTemplates.Tests;
 /// </summary>
 public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
 {
-    private readonly TemplateExecutionTestConfiguration _configuration;
-    private readonly string _templateTestOutputPath;
-    private readonly string _customHivePath;
+    private readonly string _templatePackageName;
+    private readonly string _sandboxPackages;
+    private readonly string _sandboxOutput;
+    private readonly string _sandboxInstallPath;
+    private readonly string _sandboxProjectsPath;
+
     private readonly MessageSinkTestOutputHelper _messageSinkTestOutputHelper;
     private ITestOutputHelper? _currentTestOutputHelper;
 
@@ -30,46 +33,66 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
 
     protected TemplateExecutionTestClassFixtureBase(TemplateExecutionTestConfiguration configuration, IMessageSink messageSink)
     {
-        _configuration = configuration;
         _messageSinkTestOutputHelper = new(messageSink);
 
-        var outputFolderName = GetRandomizedFileName(prefix: _configuration.TestOutputFolderPrefix);
-        _templateTestOutputPath = Path.Combine(WellKnownPaths.TemplateSandboxOutputRoot, outputFolderName);
-        _customHivePath = Path.Combine(_templateTestOutputPath, "hive");
-    }
+        _templatePackageName = configuration.TemplatePackageName;
+        _sandboxPackages = configuration.TemplateSandboxPackages;
+        _sandboxOutput = configuration.TemplateSandboxOutput;
 
-    private static string GetRandomizedFileName(string prefix)
-        => prefix + "_" + Guid.NewGuid().ToString("N").Substring(0, 10).ToLowerInvariant();
+        _sandboxInstallPath = Path.Combine(_sandboxOutput, "install");
+        _sandboxProjectsPath = Path.Combine(_sandboxOutput, "projects");
+    }
 
     public async Task InitializeAsync()
     {
-        Directory.CreateDirectory(_templateTestOutputPath);
+        // Here, we clear execution test output from the previous test run, if it exists.
+        // It's critical that this clearing happens *before* the tests start, *not* after they complete.
+        //
+        // This is because:
+        // 1. This enables debugging the previous test run by building/running generated projects manually.
+        // 2. The existence of a project.assets.json file on disk is what allows template content to get discovered
+        //    for component governance reporting.
+        // Copy the template sandbox infrastructure to the output location for use during tests
+        CopySandboxDirectory(WellKnownPaths.TemplateSandboxSource, _sandboxOutput);
 
-        await InstallTemplatesAsync();
+        var installResult = await new DotNetNewCommand("install", _templatePackageName)
+            .WithWorkingDirectory(_sandboxInstallPath)
+            .WithEnvironmentVariable("LOCAL_SHIPPING_PATH", WellKnownPaths.LocalShippingPackagesPath)
+            .WithEnvironmentVariable("NUGET_PACKAGES", _sandboxPackages)
+            .WithCustomHive(_sandboxInstallPath)
+            .ExecuteAsync(OutputHelper);
 
-        async Task InstallTemplatesAsync()
+        installResult.AssertSucceeded($"dotnet new install {_templatePackageName}");
+
+        // Create the sub-directory for the generated projects
+        Directory.CreateDirectory(_sandboxProjectsPath);
+    }
+
+    private static void CopySandboxDirectory(string sandboxSource, string testSandbox)
+    {
+        if (Directory.Exists(testSandbox))
         {
-            var installSandboxPath = Path.Combine(_templateTestOutputPath, "install");
-            Directory.CreateDirectory(installSandboxPath);
+            Directory.Delete(testSandbox, recursive: true);
+        }
 
-            var installNuGetConfigPath = Path.Combine(installSandboxPath, "nuget.config");
-            File.Copy(WellKnownPaths.TemplateInstallNuGetConfigPath, installNuGetConfigPath);
+        Directory.CreateDirectory(testSandbox);
 
-            var installResult = await new DotNetNewCommand("install", _configuration.TemplatePackageName)
-                .WithWorkingDirectory(installSandboxPath)
-                .WithEnvironmentVariable("LOCAL_SHIPPING_PATH", WellKnownPaths.LocalShippingPackagesPath)
-                .WithEnvironmentVariable("NUGET_PACKAGES", WellKnownPaths.NuGetPackagesPath)
-                .WithCustomHive(_customHivePath)
-                .ExecuteAsync(OutputHelper);
+        var source = new DirectoryInfo(sandboxSource);
 
-            installResult.AssertSucceeded($"dotnet new install {_configuration.TemplatePackageName}");
+        foreach (FileInfo file in source.GetFiles())
+        {
+            file.CopyTo(Path.Combine(testSandbox, file.Name));
+        }
+
+        foreach (DirectoryInfo subDir in source.GetDirectories())
+        {
+            CopySandboxDirectory(subDir.FullName, Path.Combine(testSandbox, subDir.Name));
         }
     }
 
-    public async Task<Project> CreateProjectAsync(string templateName, string projectName, params string[] args)
+    public async Task<Project> CreateProjectAsync(string templateName, string projectName, string? startupProjectRelativePath, params string[] args)
     {
-        var outputFolderName = GetRandomizedFileName(projectName);
-        var outputFolderPath = Path.Combine(_templateTestOutputPath, outputFolderName);
+        var outputFolderPath = Path.Combine(_sandboxProjectsPath, projectName);
 
         ReadOnlySpan<string> dotNetNewCommandArgs = [
             templateName,
@@ -82,16 +105,13 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
         var testDescription = string.Join(' ', dotNetNewCommandArgs);
 
         var newProjectResult = await new DotNetNewCommand(dotNetNewCommandArgs)
-            .WithWorkingDirectory(_templateTestOutputPath)
-            .WithCustomHive(_customHivePath)
+            .WithWorkingDirectory(_sandboxProjectsPath)
+            .WithCustomHive(_sandboxInstallPath)
             .ExecuteAsync(OutputHelper);
 
         newProjectResult.AssertSucceeded(testDescription);
 
-        var templateNuGetConfigPath = Path.Combine(outputFolderPath, "nuget.config");
-        File.Copy(WellKnownPaths.TemplateTestNuGetConfigPath, templateNuGetConfigPath);
-
-        return new Project(outputFolderPath, projectName);
+        return new Project(outputFolderPath, projectName) { StartupProjectRelativePath = startupProjectRelativePath };
     }
 
     public async Task RestoreProjectAsync(Project project)
@@ -99,7 +119,7 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
         var restoreResult = await new DotNetCommand("restore")
             .WithWorkingDirectory(project.StartupProjectFullPath)
             .WithEnvironmentVariable("LOCAL_SHIPPING_PATH", WellKnownPaths.LocalShippingPackagesPath)
-            .WithEnvironmentVariable("NUGET_PACKAGES", WellKnownPaths.NuGetPackagesPath)
+            .WithEnvironmentVariable("NUGET_PACKAGES", _sandboxPackages)
             .ExecuteAsync(OutputHelper);
 
         restoreResult.AssertSucceeded($"""
@@ -107,7 +127,7 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
 
             Working Directory: {project.StartupProjectFullPath}
             Local Shipping Path: {WellKnownPaths.LocalShippingPackagesPath}
-            NuGet Packages Path: {WellKnownPaths.NuGetPackagesPath}
+            NuGet Packages Path: {_sandboxPackages}
             """);
     }
 
