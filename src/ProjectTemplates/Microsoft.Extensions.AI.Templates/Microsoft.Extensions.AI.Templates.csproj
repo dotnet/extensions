@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Project templates for Microsoft.Extensions.AI.</Description>
     <PackageTags>dotnet-new;templates;ai</PackageTags>
 
@@ -24,55 +24,42 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--
-      Reference the GenerateTemplateContent project so that template content gets generated prior
-      to building this project.
-    -->
-    <ProjectReference
-      Include="..\GenerateTemplateContent\GenerateTemplateContent.csproj"
-      ReferenceOutputAssembly="false"
-      PrivateAssets="all" />
-
-    <!--
-      Internal packages referenced by the templates that aren't in the AI workstream.
-      We include these references here so that local NuGet packages get generated for use by the templates.
-    -->
-    <ProjectReference
-      Include="..\..\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj"
-      ReferenceOutputAssembly="false"
-      PrivateAssets="all" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.Http.Diagnostics\Microsoft.Extensions.Http.Diagnostics.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.ServiceDiscovery\Microsoft.Extensions.ServiceDiscovery.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.DataIngestion.Markdig\Microsoft.Extensions.DataIngestion.Markdig.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.DataIngestion.MarkItDown\Microsoft.Extensions.DataIngestion.MarkItDown.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Keep the exclude patterns below in sync with those in AIChatWebSnapshotTests.cs -->
-    <Content
-      Include="src\ChatWithCustomData\**\*"
-      Exclude="
-        **\bin\**;
-        **\obj\**;
-        **\.vs\**;
-        **\node_modules\**;
-        **\*.user;
-        **\*.in;
-        **\*.out.js;
-        **\*.generated.css;
-        **\package-lock.json;
-        **\ingestioncache.*;
-        **\NuGet.config;
-        **\Directory.Build.targets;
-        **\Directory.Build.props;" />
-
-    <!-- Keep the exclude patterns below in sync with those in McpServerSnapshotTests.cs -->
-    <Content
-      Include="src\McpServer\**\*"
-      Exclude="
-        **\bin\**;
-        **\obj\**;
-        **\.vs\**;
-        **\*.sln;
-        **\*.in;" />
-    <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
     <Compile Remove="**\*" />
-  </ItemGroup>
 
+    <Content
+      Include="templates\AIChatWeb-CSharp\**\*"
+      Exclude="templates\AIChatWeb-CSharp\**\*.csproj-in"
+      PackagePath="content\AIChatWeb-CSharp" />
+
+    <TemplateContent
+      Include="templates\AIChatWeb-CSharp\**\*.csproj-in"
+      ChangeExtension=".csproj"
+      PackagePath="content\AIChatWeb-CSharp" />
+
+    <Content
+      Include="templates\McpServer-CSharp\**\*"
+      Exclude="templates\McpServer-CSharp\**\*.csproj-in"
+      PackagePath="content\McpServer-CSharp" />
+
+    <TemplateContent
+      Include="templates\McpServer-CSharp\**\*.csproj-in"
+      ChangeExtension=".csproj"
+      PackagePath="content\McpServer-CSharp" />
+
+    <None
+      Include="THIRD-PARTY-NOTICES.TXT"
+      Pack="true"
+      PackagePath="." />
+  </ItemGroup>
 </Project>

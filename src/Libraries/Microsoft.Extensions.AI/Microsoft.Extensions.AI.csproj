@@ -27,7 +27,7 @@
     <NoWarn>$(NoWarn);CA2007</NoWarn>
 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
+    <DisableMinimumSupportedTfmCompatErrors>true</DisableMinimumSupportedTfmCompatErrors>
   </PropertyGroup>
 
   <PropertyGroup>
