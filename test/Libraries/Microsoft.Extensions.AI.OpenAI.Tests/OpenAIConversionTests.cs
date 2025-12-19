@@ -393,7 +393,30 @@ public class OpenAIConversionTests
 
         Assert.NotNull(result);
         var tool = Assert.IsType<McpTool>(result);
-        Assert.Equal("test-token", tool.AuthorizationToken);
+        Assert.Null(tool.AuthorizationToken);
+        Assert.NotNull(tool.Headers);
+        Assert.Single(tool.Headers);
+        Assert.Equal("Bearer test-token", tool.Headers["Authorization"]);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithAuthTokenAndCustomHeaders_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            AuthorizationToken = "test-token"
+        };
+        mcpTool.Headers["X-Custom-Header"] = "custom-value";
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Null(tool.AuthorizationToken);
+        Assert.NotNull(tool.Headers);
+        Assert.Equal(2, tool.Headers.Count);
+        Assert.Equal("Bearer test-token", tool.Headers["Authorization"]);
+        Assert.Equal("custom-value", tool.Headers["X-Custom-Header"]);
     }
 
     [Fact]
@@ -488,6 +511,24 @@ public class OpenAIConversionTests
         Assert.Contains("tool1", tool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval.ToolNames);
         Assert.Contains("tool2", tool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval.ToolNames);
         Assert.Contains("tool3", tool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval.ToolNames);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolConnector_OnlySetsAuthToken()
+    {
+        var mcpTool = new HostedMcpServerTool("calendar", "connector_googlecalendar")
+        {
+            AuthorizationToken = "connector-token"
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Equal("connector-token", tool.AuthorizationToken);
+
+        // For connectors, headers should not be set even though AuthorizationToken adds to Headers internally
+        Assert.Empty(tool.Headers);
     }
 
     [Fact]

@@ -24,13 +24,6 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.HostedMcpServerTool.get_Headers</Target>
-    <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.AI.HostedMcpServerTool.get_Url</Target>
     <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
@@ -60,13 +53,6 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.AI.ChatResponseUpdate.get_ContinuationToken</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.HostedMcpServerTool.get_Headers</Target>
     <Left>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -108,13 +94,6 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.HostedMcpServerTool.get_Headers</Target>
-    <Left>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.AI.HostedMcpServerTool.get_Url</Target>
     <Left>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
     <Right>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
@@ -144,13 +123,6 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.AI.ChatResponseUpdate.get_ContinuationToken</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.HostedMcpServerTool.get_Headers</Target>
     <Left>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
