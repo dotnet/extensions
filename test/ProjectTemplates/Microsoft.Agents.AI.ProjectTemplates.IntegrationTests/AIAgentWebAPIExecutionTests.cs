@@ -39,7 +39,7 @@ public class AIAgentWebAPIExecutionTests : TemplateExecutionTestBase<AIAgentWebA
         (string name, string[] values)[] allOptionValues = [
             ("--provider",          ["azureopenai", "githubmodels", "ollama", "openai"]),
             ("--managed-identity",  ["true", "false"]),
-            ("--framework",         [/* net8.0 is not supported until 1.0.0-preview.251125.1 */ "net9.0", "net10.0"])
+            ("--framework",         ["net8.0", "net9.0", "net10.0"])
         ];
 
         foreach (var args in GetPossibleOptions(allOptionValues))
