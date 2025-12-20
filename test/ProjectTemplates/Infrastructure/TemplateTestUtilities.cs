@@ -36,7 +36,7 @@ public static class TemplateTestUtilities
     public static string GetProjectNameForArgs(string[] args, string? prefix = null)
     {
         IEnumerable<string> nameParts = args
-            .Select(arg => Regex.Replace(arg, @"--[Ff]ramework=(net[0-9]+)\.0", "$1"))
+            .Select(arg => Regex.Replace(arg, @"-(?:f|-[Ff]ramework)=(net[0-9]+)\.0", "$1"))
             .Select(arg => Regex.Replace(arg, "--(.*?)=true", "$1_T"))
             .Select(arg => Regex.Replace(arg, "--(.*?)=false", "$1_F"))
             .Select(arg => Regex.Replace(arg, "--(.*?)=(.*)", "$2"))
