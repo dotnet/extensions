@@ -271,7 +271,7 @@ extends:
       displayName: CodeCoverage
       dependsOn:
       - build
-      condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'), eq(parameters.runTests, true))
+      condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'), ${{ eq(parameters.runTests, true) }})
       variables:
       - template: /eng/common/templates-official/variables/pool-providers.yml@self
       jobs:
