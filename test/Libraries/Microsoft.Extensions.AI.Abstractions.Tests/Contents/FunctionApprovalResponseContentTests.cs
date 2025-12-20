@@ -35,10 +35,15 @@ public class FunctionApprovalResponseContentTests
         Assert.Same(functionCall, content.FunctionCall);
     }
 
-    [Fact]
-    public void Serialization_Roundtrips()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("Custom rejection reason")]
+    public void Serialization_Roundtrips(string? reason)
     {
-        var content = new FunctionApprovalResponseContent("request123", true, new FunctionCallContent("call123", "functionName"));
+        var content = new FunctionApprovalResponseContent("request123", true, new FunctionCallContent("call123", "functionName"))
+        {
+            Reason = reason
+        };
 
         var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
         var deserializedContent = JsonSerializer.Deserialize<FunctionApprovalResponseContent>(json, AIJsonUtilities.DefaultOptions);
@@ -46,6 +51,7 @@ public class FunctionApprovalResponseContentTests
         Assert.NotNull(deserializedContent);
         Assert.Equal(content.Id, deserializedContent.Id);
         Assert.Equal(content.Approved, deserializedContent.Approved);
+        Assert.Equal(content.Reason, deserializedContent.Reason);
         Assert.NotNull(deserializedContent.FunctionCall);
         Assert.Equal(content.FunctionCall.CallId, deserializedContent.FunctionCall.CallId);
         Assert.Equal(content.FunctionCall.Name, deserializedContent.FunctionCall.Name);
