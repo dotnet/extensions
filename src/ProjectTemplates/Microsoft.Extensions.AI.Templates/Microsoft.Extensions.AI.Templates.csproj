@@ -34,6 +34,18 @@
     <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.DataIngestion.MarkItDown\Microsoft.Extensions.DataIngestion.MarkItDown.csproj" />
   </ItemGroup>
 
+  <!-- Pin to published package versions -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Extensions.AI" Version="10.1.1" />
+    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.1.1-preview.1.25612.2" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Diagnostics" Version="10.1.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.1.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.1.0" />
+    <PackageVersion Include="Microsoft.Extensions.DataIngestion" Version="10.1.1-preview.1.25612.2" />
+    <PackageVersion Include="Microsoft.Extensions.DataIngestion.Markdig" Version="10.1.1-preview.1.25612.2" />
+    <PackageVersion Include="Microsoft.Extensions.DataIngestion.MarkItDown" Version="10.1.1-preview.1.25612.2" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Remove="**\*" />
 
