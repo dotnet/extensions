@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -275,5 +277,337 @@ public sealed class DataContentTests
         Assert.Null(content.Name);
         content.Name = "test.bin";
         Assert.Equal("test.bin", content.Name);
+    }
+
+    [Fact]
+    public async Task LoadFromAsync_Path_InfersMediaTypeAndName()
+    {
+        // Create a temporary file with known content
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.json");
+        try
+        {
+            byte[] testData = Encoding.UTF8.GetBytes("{\"key\": \"value\"}");
+            await File.WriteAllBytesAsync(tempPath, testData);
+
+            // Load from path
+            DataContent content = await DataContent.LoadFromAsync(tempPath);
+
+            // Verify the content
+            Assert.Equal("application/json", content.MediaType);
+            Assert.Equal(Path.GetFileName(tempPath), content.Name);
+            Assert.Equal(testData, content.Data.ToArray());
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadFromAsync_Path_UsesProvidedMediaType()
+    {
+        // Create a temporary file with known content
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.bin");
+        try
+        {
+            byte[] testData = new byte[] { 1, 2, 3, 4, 5 };
+            await File.WriteAllBytesAsync(tempPath, testData);
+
+            // Load from path with specified media type
+            DataContent content = await DataContent.LoadFromAsync(tempPath, "custom/type");
+
+            // Verify the content uses the provided media type, not inferred
+            Assert.Equal("custom/type", content.MediaType);
+            Assert.Equal(Path.GetFileName(tempPath), content.Name);
+            Assert.Equal(testData, content.Data.ToArray());
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadFromAsync_Path_FallsBackToOctetStream()
+    {
+        // Create a temporary file with unknown extension
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.unknownextension");
+        try
+        {
+            byte[] testData = new byte[] { 1, 2, 3 };
+            await File.WriteAllBytesAsync(tempPath, testData);
+
+            // Load from path
+            DataContent content = await DataContent.LoadFromAsync(tempPath);
+
+            // Verify the content falls back to octet-stream
+            Assert.Equal("application/octet-stream", content.MediaType);
+            Assert.Equal(testData, content.Data.ToArray());
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadFromAsync_Stream_InfersFromFileStream()
+    {
+        // Create a temporary file
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.png");
+        try
+        {
+            byte[] testData = new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }; // PNG signature
+            await File.WriteAllBytesAsync(tempPath, testData);
+
+            // Load from FileStream
+            using FileStream fs = new(tempPath, FileMode.Open, FileAccess.Read);
+            DataContent content = await DataContent.LoadFromAsync(fs);
+
+            // Verify inference from FileStream path
+            Assert.Equal("image/png", content.MediaType);
+            Assert.Equal(Path.GetFileName(tempPath), content.Name);
+            Assert.Equal(testData, content.Data.ToArray());
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadFromAsync_Stream_UsesProvidedMediaType()
+    {
+        // Create a MemoryStream with test data
+        byte[] testData = [1, 2, 3, 4];
+        using MemoryStream ms = new(testData);
+
+        // Load from stream with explicit media type
+        DataContent content = await DataContent.LoadFromAsync(ms, "video/mp4");
+
+        // Verify the explicit media type is used
+        Assert.Equal("video/mp4", content.MediaType);
+        Assert.Null(content.Name); // Name can be assigned after the call if needed
+        Assert.Equal(testData, content.Data.ToArray());
+    }
+
+    [Fact]
+    public async Task LoadFromAsync_Stream_FallsBackToOctetStream()
+    {
+        // Create a MemoryStream with test data (non-FileStream, no inference possible)
+        byte[] testData = new byte[] { 1, 2, 3 };
+        using MemoryStream ms = new(testData);
+
+        // Load from stream without media type or name
+        DataContent content = await DataContent.LoadFromAsync(ms);
+
+        // Verify fallback to octet-stream
+        Assert.Equal("application/octet-stream", content.MediaType);
+        Assert.Null(content.Name);
+        Assert.Equal(testData, content.Data.ToArray());
+    }
+
+    [Fact]
+    public async Task SaveToAsync_WritesDataToFile()
+    {
+        // Create DataContent with known data
+        byte[] testData = new byte[] { 1, 2, 3, 4, 5 };
+        DataContent content = new(testData, "application/octet-stream");
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.bin");
+        try
+        {
+            // Save to path
+            string actualPath = await content.SaveToAsync(tempPath);
+
+            // Verify data was written
+            Assert.Equal(tempPath, actualPath);
+            Assert.True(File.Exists(actualPath));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(actualPath));
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SaveToAsync_InfersExtension_WhenPathHasNoExtension()
+    {
+        // Create DataContent with JSON media type
+        byte[] testData = Encoding.UTF8.GetBytes("{}");
+        DataContent content = new(testData, "application/json");
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}");
+        string expectedPath = tempPath + ".json";
+        try
+        {
+            // Save to path without extension
+            string actualPath = await content.SaveToAsync(tempPath);
+
+            // Verify extension was inferred
+            Assert.Equal(expectedPath, actualPath);
+            Assert.True(File.Exists(actualPath));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(actualPath));
+        }
+        finally
+        {
+            if (File.Exists(expectedPath))
+            {
+                File.Delete(expectedPath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SaveToAsync_UsesDirectoryAndInfersNameFromNameProperty()
+    {
+        // Create DataContent with JSON media type and a name
+        byte[] testData = Encoding.UTF8.GetBytes("{}");
+        DataContent content = new(testData, "application/json")
+        {
+            Name = "myfile.json"
+        };
+
+        string tempDir = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+        string expectedPath = Path.Combine(tempDir, "myfile.json");
+        try
+        {
+            // Save to directory path
+            string actualPath = await content.SaveToAsync(tempDir);
+
+            // Verify the name was used
+            Assert.Equal(expectedPath, actualPath);
+            Assert.True(File.Exists(actualPath));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(actualPath));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SaveToAsync_UsesRandomNameWhenDirectoryProvidedAndNoName()
+    {
+        // Create DataContent with JSON media type but no name
+        byte[] testData = Encoding.UTF8.GetBytes("{}");
+        DataContent content = new(testData, "application/json");
+
+        string tempDir = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            // Save to directory path
+            string actualPath = await content.SaveToAsync(tempDir);
+
+            // Verify a file was created with .json extension
+            Assert.StartsWith(tempDir, actualPath);
+            Assert.EndsWith(".json", actualPath);
+            Assert.True(File.Exists(actualPath));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(actualPath));
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SaveToAsync_DoesNotInferExtension_WhenPathAlreadyHasExtension()
+    {
+        // Create DataContent with JSON media type
+        byte[] testData = Encoding.UTF8.GetBytes("{}");
+        DataContent content = new(testData, "application/json");
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.txt");
+        try
+        {
+            // Save to path that already has an extension
+            string actualPath = await content.SaveToAsync(tempPath);
+
+            // Verify the original extension was preserved, not replaced
+            Assert.Equal(tempPath, actualPath);
+            Assert.True(File.Exists(actualPath));
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadFromAsync_Path_ThrowsOnNull()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>("path", async () => await DataContent.LoadFromAsync((string)null!));
+    }
+
+    [Fact]
+    public async Task LoadFromAsync_Path_ThrowsOnEmpty()
+    {
+        await Assert.ThrowsAsync<ArgumentException>("path", async () => await DataContent.LoadFromAsync(string.Empty));
+    }
+
+    [Fact]
+    public async Task LoadFromAsync_Stream_ThrowsOnNull()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>("stream", async () => await DataContent.LoadFromAsync((Stream)null!));
+    }
+
+    [Fact]
+    public async Task SaveToAsync_ThrowsOnNull()
+    {
+        DataContent content = new(new byte[] { 1 }, "application/octet-stream");
+        await Assert.ThrowsAsync<ArgumentNullException>("path", async () => await content.SaveToAsync(null!));
+    }
+
+    [Fact]
+    public async Task SaveToAsync_WithEmptyPath_UsesCurrentDirectory()
+    {
+        // Empty string path is valid - it uses the current directory with inferred filename
+        DataContent content = new(new byte[] { 1, 2, 3 }, "application/json") { Name = "test.json" };
+        string tempDir = Path.GetTempPath();
+        string originalDir = Environment.CurrentDirectory;
+
+        try
+        {
+            Environment.CurrentDirectory = tempDir;
+            string savedPath = await content.SaveToAsync(string.Empty);
+
+            // The file should be saved in the current directory with the Name as filename
+            Assert.True(File.Exists(savedPath));
+            Assert.Equal([1, 2, 3], await File.ReadAllBytesAsync(savedPath));
+
+            File.Delete(savedPath);
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDir;
+        }
     }
 }

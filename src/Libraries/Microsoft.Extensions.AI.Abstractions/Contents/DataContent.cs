@@ -9,11 +9,14 @@ using System.ComponentModel;
 #endif
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
+using System.IO;
 #if !NET
 using System.Runtime.InteropServices;
 #endif
+using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable IDE0032 // Use auto property
@@ -255,5 +258,121 @@ public class DataContent : AIContent
                 $"Data = {uri}" :
                 $"Data = {uri.Substring(0, MaxLength)}...";
         }
+    }
+
+    /// <summary>The default media type for unknown file extensions.</summary>
+    private const string DefaultMediaType = "application/octet-stream";
+
+    /// <summary>
+    /// Loads a <see cref="DataContent"/> from a file path asynchronously.
+    /// </summary>
+    /// <param name="path">The file path to load the data from.</param>
+    /// <param name="mediaType">
+    /// The media type (also known as MIME type) represented by the content. If not provided,
+    /// it will be inferred from the file extension. If it cannot be inferred, "application/octet-stream" is used.
+    /// </param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>A <see cref="DataContent"/> containing the file data with the inferred or specified media type and name.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="path"/> is empty.</exception>
+    public static async ValueTask<DataContent> LoadFromAsync(string path, string? mediaType = null, CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNullOrEmpty(path);
+
+        // Infer media type from the file extension if not provided
+        mediaType ??= System.Net.Mime.MediaTypeMap.GetMediaType(path) ?? DefaultMediaType;
+
+        // Read the file contents
+        byte[] data = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
+
+        string? name = Path.GetFileName(path);
+        return new DataContent(data, mediaType)
+        {
+            Name = string.IsNullOrEmpty(name) ? null : name
+        };
+    }
+
+    /// <summary>
+    /// Loads a <see cref="DataContent"/> from a stream asynchronously.
+    /// </summary>
+    /// <param name="stream">The stream to load the data from.</param>
+    /// <param name="mediaType">
+    /// The media type (also known as MIME type) represented by the content. If not provided and
+    /// the stream is a <see cref="FileStream"/>, it will be inferred from the file extension.
+    /// If it cannot be inferred, "application/octet-stream" is used.
+    /// </param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>A <see cref="DataContent"/> containing the stream data with the inferred or specified media type and name.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    public static async ValueTask<DataContent> LoadFromAsync(Stream stream, string? mediaType = null, CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(stream);
+
+        string? name = null;
+
+        // If the stream is a FileStream, try to infer media type and name from its path
+        if (stream is FileStream fileStream)
+        {
+            string? filePath = fileStream.Name;
+            string? fileName = Path.GetFileName(filePath);
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                name = fileName;
+            }
+
+            mediaType ??= System.Net.Mime.MediaTypeMap.GetMediaType(filePath);
+        }
+
+        // Fall back to default media type if still not set
+        mediaType ??= DefaultMediaType;
+
+        // Read the stream contents
+        using MemoryStream memoryStream = stream.CanSeek ? new((int)Math.Min(stream.Length, int.MaxValue)) : new();
+#if NET
+        await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+#else
+        await stream.CopyToAsync(memoryStream, 81920, cancellationToken).ConfigureAwait(false);
+#endif
+
+        return new DataContent(new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length), mediaType)
+        {
+            Name = name
+        };
+    }
+
+    /// <summary>
+    /// Saves the data content to a file asynchronously.
+    /// </summary>
+    /// <param name="path">
+    /// The path to save the data to. If the path is an existing directory, the file name will be inferred
+    /// from the <see cref="Name"/> property or a random name will be used.
+    /// If the path does not have a file extension, an extension will be added based on the <see cref="MediaType"/>.
+    /// </param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>The actual path where the data was saved, which may include an inferred file name and/or extension.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
+    public async ValueTask<string> SaveToAsync(string path, CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(path);
+
+        string actualPath = path;
+
+        // If path is a directory, infer the file name from the Name property or use a random name
+        if (Directory.Exists(path))
+        {
+            string fileName = Name is not null ? Path.GetFileName(Name) : Guid.NewGuid().ToString("N");
+            actualPath = Path.Combine(path, fileName);
+        }
+
+        // Infer extension if path has no extension
+        if (string.IsNullOrEmpty(Path.GetExtension(actualPath)))
+        {
+            actualPath += System.Net.Mime.MediaTypeMap.GetExtension(MediaType);
+        }
+
+        // Write the data to the file
+        await File.WriteAllBytesAsync(actualPath, Data, cancellationToken).ConfigureAwait(false);
+
+        return actualPath;
     }
 }
