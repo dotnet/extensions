@@ -16,27 +16,22 @@ namespace Microsoft.Extensions.AI;
 /// It is informational only.
 /// </remarks>
 [Experimental("MEAI001")]
-public sealed class McpServerToolCallContent : AIContent
+public sealed class McpServerToolCallContent : ServiceActionContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="McpServerToolCallContent"/> class.
     /// </summary>
-    /// <param name="callId">The tool call ID.</param>
+    /// <param name="id">The tool call ID.</param>
     /// <param name="toolName">The tool name.</param>
     /// <param name="serverName">The MCP server name that hosts the tool.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="callId"/> or <paramref name="toolName"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="callId"/> or <paramref name="toolName"/> is empty or composed entirely of whitespace.</exception>
-    public McpServerToolCallContent(string callId, string toolName, string? serverName)
+    /// <exception cref="ArgumentNullException"><paramref name="id"/> or <paramref name="toolName"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="id"/> or <paramref name="toolName"/> is empty or composed entirely of whitespace.</exception>
+    public McpServerToolCallContent(string id, string toolName, string? serverName)
+        : base(id)
     {
-        CallId = Throw.IfNullOrWhitespace(callId);
         ToolName = Throw.IfNullOrWhitespace(toolName);
         ServerName = serverName;
     }
-
-    /// <summary>
-    /// Gets the tool call ID.
-    /// </summary>
-    public string CallId { get; }
 
     /// <summary>
     /// Gets the name of the tool called.
