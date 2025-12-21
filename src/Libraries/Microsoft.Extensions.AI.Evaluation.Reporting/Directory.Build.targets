@@ -9,7 +9,7 @@
   <Target Name="NpmInstall"
           Inputs="$(_TypescriptRootPath)\package.json"
           Outputs="$(_NpmInstallStampFile)">
-    <Exec Command="npm install" WorkingDirectory="$(_TypescriptRootPath)" />
+    <Exec Command="npm ci" WorkingDirectory="$(_TypescriptRootPath)" />
     <Touch Files="$(_NpmInstallStampFile)" AlwaysCreate="true" />
   </Target>
 
