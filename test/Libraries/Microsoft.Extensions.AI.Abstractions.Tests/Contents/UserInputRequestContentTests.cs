@@ -14,20 +14,20 @@ public class UserInputRequestContentTests
     [Fact]
     public void Constructor_InvalidArguments_Throws()
     {
-        Assert.Throws<ArgumentNullException>("id", () => new TestUserInputRequestContent(null!));
-        Assert.Throws<ArgumentException>("id", () => new TestUserInputRequestContent(""));
-        Assert.Throws<ArgumentException>("id", () => new TestUserInputRequestContent("\r\t\n "));
+        Assert.Throws<ArgumentNullException>("requestId", () => new TestUserInputRequestContent(null!));
+        Assert.Throws<ArgumentException>("requestId", () => new TestUserInputRequestContent(""));
+        Assert.Throws<ArgumentException>("requestId", () => new TestUserInputRequestContent("\r\t\n "));
     }
 
     [Theory]
     [InlineData("abc")]
     [InlineData("123")]
     [InlineData("!@#")]
-    public void Constructor_Roundtrips(string id)
+    public void Constructor_Roundtrips(string requestId)
     {
-        TestUserInputRequestContent content = new(id);
+        TestUserInputRequestContent content = new(requestId);
 
-        Assert.Equal(id, content.Id);
+        Assert.Equal(requestId, content.RequestId);
     }
 
     [Fact]
@@ -59,8 +59,8 @@ public class UserInputRequestContentTests
 
     private sealed class TestUserInputRequestContent : UserInputRequestContent
     {
-        public TestUserInputRequestContent(string id)
-            : base(id)
+        public TestUserInputRequestContent(string requestId)
+            : base(requestId)
         {
         }
     }
