@@ -45,6 +45,15 @@ internal static class DiagnosticIds
         internal const string DocumentDb = "EXTEXP0011";
         internal const string AutoActivation = "EXTEXP0012";
         internal const string HttpLogging = "EXTEXP0013";
+
+        internal const string ImageGeneration = "MEAI0001";
+        internal const string SpeechToText = "MEAI0002";
+        internal const string McpServers = "MEAI0003";
+        internal const string FunctionApprovals = "MEAI0004";
+        internal const string ToolReduction = "MEAI0005";
+        internal const string ChatReduction = "MEAI0006";
+        internal const string ResponseContinuations = "MEAI0007";
+        internal const string CodeInterpreter = "MEAI0008";
     }
 
     internal static class LoggerMessage
