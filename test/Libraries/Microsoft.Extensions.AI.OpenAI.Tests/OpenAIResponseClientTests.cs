@@ -5545,6 +5545,50 @@ public class OpenAIResponseClientTests
         Assert.Equal("img_call_ghi789", toolCall.ImageId);
     }
 
+    [Fact]
+    public void AsChatMessage_FromMessageResponseItemWithImageUrl()
+    {
+        ResponseItem messageItem =
+            ResponseItem.CreateUserMessageItem(
+                [
+                    ResponseContentPart.CreateInputTextPart("Test message"),
+                    ResponseContentPart.CreateInputImagePart(new Uri("https://example.com/image.png")),
+                ]);
+
+        IEnumerable<ResponseItem> messageItems = [messageItem];
+
+        var chatMessages = messageItems.AsChatMessages();
+        ChatMessage chatMessage = Assert.Single(chatMessages);
+        Assert.Equal(ChatRole.User, chatMessage.Role);
+        Assert.Equal(2, chatMessage.Contents.Count);
+        TextContent textContent = Assert.IsType<TextContent>(chatMessage.Contents[0]);
+        Assert.Equal("Test message", textContent.Text);
+        UriContent uriContent = Assert.IsType<UriContent>(chatMessage.Contents[1]);
+        Assert.Equal("https://example.com/image.png", uriContent.Uri.ToString());
+    }
+
+    [Fact]
+    public void AsChatMessage_FromMessageResponseItemWithImageContent()
+    {
+        ResponseItem messageItem =
+            ResponseItem.CreateUserMessageItem(
+                [
+                    ResponseContentPart.CreateInputTextPart("Test message"),
+                    ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(Encoding.UTF8.GetBytes("image data")), "image/png"),
+                ]);
+
+        IEnumerable<ResponseItem> messageItems = [messageItem];
+
+        var chatMessages = messageItems.AsChatMessages();
+        ChatMessage chatMessage = Assert.Single(chatMessages);
+        Assert.Equal(ChatRole.User, chatMessage.Role);
+        Assert.Equal(2, chatMessage.Contents.Count);
+        TextContent textContent = Assert.IsType<TextContent>(chatMessage.Contents[0]);
+        Assert.Equal("Test message", textContent.Text);
+        UriContent uriContent = Assert.IsType<UriContent>(chatMessage.Contents[1]);
+        Assert.Equal($"data:image/png;base64,{Convert.ToBase64String(Encoding.UTF8.GetBytes("image data"))}", uriContent.Uri.ToString());
+    }
+
     private static IChatClient CreateResponseClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(
             new ApiKeyCredential("apikey"),
