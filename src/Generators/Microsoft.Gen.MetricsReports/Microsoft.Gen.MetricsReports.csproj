@@ -22,6 +22,7 @@
     <Compile Include="..\Shared\StringBuilderPool.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\ClassDeclarationSyntaxReceiver.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\EmitterBase.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\JsonEmitterBase.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\GeneratorUtilities.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\ParserUtilities.cs" LinkBase="Shared" />
     <Compile Include="..\Microsoft.Gen.Metrics\Exceptions\*.cs" LinkBase="Microsoft.Gen.Metrics" />
