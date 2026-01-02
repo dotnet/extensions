@@ -656,6 +656,92 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIChatMessages_FunctionResultContentInUserMessage_ProducesToolMessage()
+    {
+        // When a User message contains a FunctionResultContent, it should produce:
+        // 1. A ToolChatMessage for each FunctionResultContent
+        // 2. A UserChatMessage with the remaining content
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User,
+            [
+                new TextContent("Here is the result from the function"),
+                new FunctionResultContent("callid123", "theresult"),
+            ]),
+        ];
+
+        var convertedMessages = messages.AsOpenAIChatMessages().ToArray();
+
+        Assert.Equal(2, convertedMessages.Length);
+
+        // First message should be the ToolChatMessage from the FunctionResultContent
+        ToolChatMessage toolMsg = Assert.IsType<ToolChatMessage>(convertedMessages[0], exactMatch: false);
+        Assert.Equal("callid123", toolMsg.ToolCallId);
+        Assert.Equal("theresult", Assert.Single(toolMsg.Content).Text);
+
+        // Second message should be the UserChatMessage with the text content
+        UserChatMessage userMsg = Assert.IsType<UserChatMessage>(convertedMessages[1], exactMatch: false);
+        Assert.Equal("Here is the result from the function", Assert.Single(userMsg.Content).Text);
+    }
+
+    [Fact]
+    public void AsOpenAIChatMessages_MultipleFunctionResultContentInUserMessage_ProducesMultipleToolMessages()
+    {
+        // When a User message contains multiple FunctionResultContent items, each should produce a ToolChatMessage
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User,
+            [
+                new FunctionResultContent("callid1", "result1"),
+                new FunctionResultContent("callid2", "result2"),
+                new TextContent("All done"),
+            ]),
+        ];
+
+        var convertedMessages = messages.AsOpenAIChatMessages().ToArray();
+
+        Assert.Equal(3, convertedMessages.Length);
+
+        // First two messages should be ToolChatMessages
+        ToolChatMessage toolMsg1 = Assert.IsType<ToolChatMessage>(convertedMessages[0], exactMatch: false);
+        Assert.Equal("callid1", toolMsg1.ToolCallId);
+        Assert.Equal("result1", Assert.Single(toolMsg1.Content).Text);
+
+        ToolChatMessage toolMsg2 = Assert.IsType<ToolChatMessage>(convertedMessages[1], exactMatch: false);
+        Assert.Equal("callid2", toolMsg2.ToolCallId);
+        Assert.Equal("result2", Assert.Single(toolMsg2.Content).Text);
+
+        // Last message should be the UserChatMessage
+        UserChatMessage userMsg = Assert.IsType<UserChatMessage>(convertedMessages[2], exactMatch: false);
+        Assert.Equal("All done", Assert.Single(userMsg.Content).Text);
+    }
+
+    [Fact]
+    public void AsOpenAIChatMessages_FunctionResultContentOnlyInUserMessage_ProducesToolMessageAndEmptyUserMessage()
+    {
+        // When a User message contains only FunctionResultContent (no other content),
+        // it should produce a ToolChatMessage and a UserChatMessage with empty content
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, [new FunctionResultContent("callid123", "theresult")]),
+        ];
+
+        var convertedMessages = messages.AsOpenAIChatMessages().ToArray();
+
+        Assert.Equal(2, convertedMessages.Length);
+
+        ToolChatMessage toolMsg = Assert.IsType<ToolChatMessage>(convertedMessages[0], exactMatch: false);
+        Assert.Equal("callid123", toolMsg.ToolCallId);
+        Assert.Equal("theresult", Assert.Single(toolMsg.Content).Text);
+
+        UserChatMessage userMsg = Assert.IsType<UserChatMessage>(convertedMessages[1], exactMatch: false);
+        Assert.Equal(string.Empty, Assert.Single(userMsg.Content).Text);
+    }
+
+    [Fact]
     public void AsOpenAIResponseItems_ProducesExpectedOutput()
     {
         Assert.Throws<ArgumentNullException>("messages", () => ((IEnumerable<ChatMessage>)null!).AsOpenAIResponseItems());
