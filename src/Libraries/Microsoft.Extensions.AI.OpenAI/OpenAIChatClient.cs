@@ -154,6 +154,20 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 input.Role == ChatRole.User ||
                 input.Role == OpenAIClientExtensions.ChatRoleDeveloper)
             {
+                // First, yield ToolChatMessage for any FunctionResultContent items
+                // FunctionResultContent can be in User/System/Developer messages when the client wants
+                // to provide function results in a non-Tool message context.
+                foreach (AIContent item in input.Contents)
+                {
+                    if (item is FunctionResultContent resultContent)
+                    {
+                        yield return CreateToolChatMessage(resultContent);
+                    }
+                }
+
+                // Then yield the System/User/Developer message for other content.
+                // Note: ToOpenAIChatContent ignores FunctionResultContent (returns null for them via ToChatMessageContentPart),
+                // so only non-function-result content is included in the message.
                 var parts = ToOpenAIChatContent(input.Contents);
                 string? name = SanitizeAuthorName(input.AuthorName);
                 yield return
@@ -167,20 +181,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 {
                     if (item is FunctionResultContent resultContent)
                     {
-                        string? result = resultContent.Result as string;
-                        if (result is null && resultContent.Result is not null)
-                        {
-                            try
-                            {
-                                result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
-                            }
-                            catch (NotSupportedException)
-                            {
-                                // If the type can't be serialized, skip it.
-                            }
-                        }
-
-                        yield return new ToolChatMessage(resultContent.CallId, result ?? string.Empty);
+                        yield return CreateToolChatMessage(resultContent);
                     }
                 }
             }
@@ -752,6 +753,25 @@ internal sealed partial class OpenAIChatClient : IChatClient
             OpenAI.Chat.ChatFinishReason.ToolCalls or OpenAI.Chat.ChatFinishReason.FunctionCall => ChatFinishReason.ToolCalls,
             _ => new ChatFinishReason(s),
         };
+
+    /// <summary>Creates a ToolChatMessage from a FunctionResultContent.</summary>
+    private static ToolChatMessage CreateToolChatMessage(FunctionResultContent resultContent)
+    {
+        string? result = resultContent.Result as string;
+        if (result is null && resultContent.Result is not null)
+        {
+            try
+            {
+                result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
+            }
+            catch (NotSupportedException)
+            {
+                // If the type can't be serialized, skip it.
+            }
+        }
+
+        return new ToolChatMessage(resultContent.CallId, result ?? string.Empty);
+    }
 
     /// <summary>Sanitizes the author name to be appropriate for including as an OpenAI participant name.</summary>
     private static string? SanitizeAuthorName(string? name)
