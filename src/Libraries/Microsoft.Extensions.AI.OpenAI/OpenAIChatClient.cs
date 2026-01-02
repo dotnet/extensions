@@ -155,6 +155,8 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 input.Role == OpenAIClientExtensions.ChatRoleDeveloper)
             {
                 // First, yield ToolChatMessage for any FunctionResultContent items
+                // FunctionResultContent can be in User/System/Developer messages when the client wants
+                // to provide function results in a non-Tool message context.
                 foreach (AIContent item in input.Contents)
                 {
                     if (item is FunctionResultContent resultContent)
@@ -163,7 +165,9 @@ internal sealed partial class OpenAIChatClient : IChatClient
                     }
                 }
 
-                // Then yield the System/User/Developer message for other content
+                // Then yield the System/User/Developer message for other content.
+                // Note: ToOpenAIChatContent ignores FunctionResultContent (returns null for them via ToChatMessageContentPart),
+                // so only non-function-result content is included in the message.
                 var parts = ToOpenAIChatContent(input.Contents);
                 string? name = SanitizeAuthorName(input.AuthorName);
                 yield return
