@@ -719,10 +719,10 @@ public class OpenAIConversionTests
     }
 
     [Fact]
-    public void AsOpenAIChatMessages_FunctionResultContentOnlyInUserMessage_ProducesToolMessageAndEmptyUserMessage()
+    public void AsOpenAIChatMessages_FunctionResultContentOnlyInUserMessage_ProducesOnlyToolMessage()
     {
         // When a User message contains only FunctionResultContent (no other content),
-        // it should produce a ToolChatMessage and a UserChatMessage with empty content
+        // it should only produce a ToolChatMessage, not an additional empty UserChatMessage
 
         List<ChatMessage> messages =
         [
@@ -731,14 +731,61 @@ public class OpenAIConversionTests
 
         var convertedMessages = messages.AsOpenAIChatMessages().ToArray();
 
-        Assert.Equal(2, convertedMessages.Length);
+        Assert.Single(convertedMessages);
 
         ToolChatMessage toolMsg = Assert.IsType<ToolChatMessage>(convertedMessages[0], exactMatch: false);
         Assert.Equal("callid123", toolMsg.ToolCallId);
         Assert.Equal("theresult", Assert.Single(toolMsg.Content).Text);
+    }
 
-        UserChatMessage userMsg = Assert.IsType<UserChatMessage>(convertedMessages[1], exactMatch: false);
-        Assert.Equal(string.Empty, Assert.Single(userMsg.Content).Text);
+    [Fact]
+    public void AsOpenAIChatMessages_FunctionResultContentInSystemMessage_ProducesToolMessage()
+    {
+        // When a System message contains a FunctionResultContent, it should produce:
+        // 1. A ToolChatMessage for each FunctionResultContent
+        // 2. A SystemChatMessage with the remaining content (if any)
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.System,
+            [
+                new TextContent("System instructions"),
+                new FunctionResultContent("syscallid", "sysresult"),
+            ]),
+        ];
+
+        var convertedMessages = messages.AsOpenAIChatMessages().ToArray();
+
+        Assert.Equal(2, convertedMessages.Length);
+
+        // First message should be the ToolChatMessage from the FunctionResultContent
+        ToolChatMessage toolMsg = Assert.IsType<ToolChatMessage>(convertedMessages[0], exactMatch: false);
+        Assert.Equal("syscallid", toolMsg.ToolCallId);
+        Assert.Equal("sysresult", Assert.Single(toolMsg.Content).Text);
+
+        // Second message should be the SystemChatMessage with the text content
+        SystemChatMessage sysMsg = Assert.IsType<SystemChatMessage>(convertedMessages[1], exactMatch: false);
+        Assert.Equal("System instructions", Assert.Single(sysMsg.Content).Text);
+    }
+
+    [Fact]
+    public void AsOpenAIChatMessages_FunctionResultContentOnlyInSystemMessage_ProducesOnlyToolMessage()
+    {
+        // When a System message contains only FunctionResultContent (no other content),
+        // it should only produce a ToolChatMessage, not an additional empty SystemChatMessage
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.System, [new FunctionResultContent("syscallid", "sysresult")]),
+        ];
+
+        var convertedMessages = messages.AsOpenAIChatMessages().ToArray();
+
+        Assert.Single(convertedMessages);
+
+        ToolChatMessage toolMsg = Assert.IsType<ToolChatMessage>(convertedMessages[0], exactMatch: false);
+        Assert.Equal("syscallid", toolMsg.ToolCallId);
+        Assert.Equal("sysresult", Assert.Single(toolMsg.Content).Text);
     }
 
     [Fact]

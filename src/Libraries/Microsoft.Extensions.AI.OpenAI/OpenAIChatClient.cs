@@ -156,23 +156,34 @@ internal sealed partial class OpenAIChatClient : IChatClient
             {
                 // FunctionResultContent can be in User/System/Developer messages when the client wants
                 // to provide function results in a non-Tool message context.
+                bool hasFunctionResult = false;
+                bool hasNonFunctionResultContent = false;
                 foreach (AIContent item in input.Contents)
                 {
                     if (item is FunctionResultContent resultContent)
                     {
+                        hasFunctionResult = true;
                         yield return CreateToolChatMessage(resultContent);
+                    }
+                    else
+                    {
+                        hasNonFunctionResultContent = true;
                     }
                 }
 
-                // Then yield the System/User/Developer message for other content.
+                // Yield the System/User/Developer message only if there's non-FunctionResultContent content,
+                // or if there was no FunctionResultContent at all (to preserve original behavior for normal messages).
                 // Note: ToOpenAIChatContent ignores FunctionResultContent (returns null for them via ToChatMessageContentPart),
                 // so only non-function-result content is included in the message.
-                var parts = ToOpenAIChatContent(input.Contents);
-                string? name = SanitizeAuthorName(input.AuthorName);
-                yield return
-                    input.Role == ChatRole.System ? new SystemChatMessage(parts) { ParticipantName = name } :
-                    input.Role == OpenAIClientExtensions.ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = name } :
-                    new UserChatMessage(parts) { ParticipantName = name };
+                if (hasNonFunctionResultContent || !hasFunctionResult)
+                {
+                    var parts = ToOpenAIChatContent(input.Contents);
+                    string? name = SanitizeAuthorName(input.AuthorName);
+                    yield return
+                        input.Role == ChatRole.System ? new SystemChatMessage(parts) { ParticipantName = name } :
+                        input.Role == OpenAIClientExtensions.ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = name } :
+                        new UserChatMessage(parts) { ParticipantName = name };
+                }
             }
             else if (input.Role == ChatRole.Tool)
             {
