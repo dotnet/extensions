@@ -154,7 +154,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 input.Role == ChatRole.User ||
                 input.Role == OpenAIClientExtensions.ChatRoleDeveloper)
             {
-                // First, yield ToolChatMessage for any FunctionResultContent items
                 // FunctionResultContent can be in User/System/Developer messages when the client wants
                 // to provide function results in a non-Tool message context.
                 foreach (AIContent item in input.Contents)
