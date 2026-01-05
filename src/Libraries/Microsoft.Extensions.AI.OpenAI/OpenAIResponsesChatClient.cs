@@ -1208,8 +1208,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         !string.IsNullOrWhiteSpace(part.InputImageFileId) ? new HostedFileContent(part.InputImageFileId) { MediaType = "image/*" } :
                         !string.IsNullOrWhiteSpace(part.InputFileId) ? new HostedFileContent(part.InputFileId) { Name = part.InputFilename } :
                         part.InputFileBytes is not null ? new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream") { Name = part.InputFilename } :
-                        _inputImageUrlProperty?.GetValue(part) is string inputImageUrl && !string.IsNullOrWhiteSpace(inputImageUrl) ?
-                            new UriContent(new Uri(inputImageUrl), "image/*") :
+                        _inputImageUrlProperty?.GetValue(part) is string inputImageUrl && !string.IsNullOrWhiteSpace(inputImageUrl) && Uri.TryCreate(inputImageUrl, UriKind.Absolute, out var inputImageUri) ?
+                            new UriContent(inputImageUri, "image/*") :
                         GetInputImageUrlFromAdditionalRawData(part);
                     break;
 
@@ -1247,9 +1247,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             var stringJsonTypeInfo = (JsonTypeInfo<string>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(string));
             string? imageUrl = JsonSerializer.Deserialize(imageUrlData, stringJsonTypeInfo);
-            if (!string.IsNullOrWhiteSpace(imageUrl))
+            if (!string.IsNullOrWhiteSpace(imageUrl) && Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri))
             {
-                return new UriContent(new Uri(imageUrl), "image/*");
+                return new UriContent(uri, "image/*");
             }
         }
 
@@ -1267,9 +1267,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 imageUrlElement.ValueKind == JsonValueKind.String)
             {
                 string? imageUrl = imageUrlElement.GetString();
-                if (!string.IsNullOrWhiteSpace(imageUrl))
+                if (!string.IsNullOrWhiteSpace(imageUrl) && Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri))
                 {
-                    return new UriContent(new Uri(imageUrl), "image/*");
+                    return new UriContent(uri, "image/*");
                 }
             }
         }
