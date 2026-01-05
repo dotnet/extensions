@@ -518,7 +518,7 @@ public static class ChatResponseExtensions
             message.AuthorName = update.AuthorName;
         }
 
-        if (message.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > message.CreatedAt))
+        if (message.CreatedAt is null && IsValidCreatedAt(update.CreatedAt))
         {
             message.CreatedAt = update.CreatedAt;
         }
@@ -563,7 +563,7 @@ public static class ChatResponseExtensions
             response.ConversationId = update.ConversationId;
         }
 
-        if (response.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > response.CreatedAt))
+        if (response.CreatedAt is null && IsValidCreatedAt(update.CreatedAt))
         {
             response.CreatedAt = update.CreatedAt;
         }
@@ -598,4 +598,12 @@ public static class ChatResponseExtensions
     /// <summary>Gets whether two roles are not null and not the same as each other.</summary>
     private static bool NotNullOrEqual(ChatRole? r1, ChatRole? r2) =>
         r1.HasValue && r2.HasValue && r1.Value != r2.Value;
+
+    /// <summary>The Unix epoch (1970-01-01T00:00:00Z).</summary>
+    private static readonly DateTimeOffset _unixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+    /// <summary>Gets whether the specified <see cref="DateTimeOffset"/> is a valid <c>CreatedAt</c> value.</summary>
+    /// <remarks>Values that are <see langword="null"/> or less than or equal to the Unix epoch are treated as invalid.</remarks>
+    private static bool IsValidCreatedAt(DateTimeOffset? createdAt) =>
+        createdAt is { } dto && dto > _unixEpoch;
 }

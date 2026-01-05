@@ -29,9 +29,9 @@ public class ChatResponseUpdateExtensionsTests
     {
         ChatResponseUpdate[] updates =
         [
-            new(ChatRole.Assistant, "Hello") { ResponseId = "someResponse", MessageId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
+            new(ChatRole.Assistant, "Hello") { ResponseId = "someResponse", MessageId = "12345", CreatedAt = new DateTimeOffset(2024, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
             new(ChatRole.Assistant, ", ") { AuthorName = "Someone", AdditionalProperties = new() { ["a"] = "b" } },
-            new(null, "world!") { CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), ConversationId = "123", AdditionalProperties = new() { ["c"] = "d" } },
+            new(null, "world!") { CreatedAt = new DateTimeOffset(2025, 2, 3, 4, 5, 6, TimeSpan.Zero), ConversationId = "123", AdditionalProperties = new() { ["c"] = "d" } },
 
             new() { Contents = [new UsageContent(new() { InputTokenCount = 1, OutputTokenCount = 2 })] },
             new() { Contents = [new UsageContent(new() { InputTokenCount = 4, OutputTokenCount = 5 })] },
@@ -47,7 +47,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(7, response.Usage.OutputTokenCount);
 
         Assert.Equal("someResponse", response.ResponseId);
-        Assert.Equal(new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
+        Assert.Equal(new DateTimeOffset(2024, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
         Assert.Equal("model123", response.ModelId);
 
         Assert.Equal("123", response.ConversationId);
@@ -456,7 +456,7 @@ public class ChatResponseUpdateExtensionsTests
             // First message - ID "msg1", AuthorName "Assistant"
             new(null, "Hi! ") { CreatedAt = new DateTimeOffset(2023, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
             new(ChatRole.Assistant, "Hello") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
-            new(null, " from") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 1, 0, TimeSpan.Zero) }, // Later CreatedAt should win
+            new(null, " from") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 1, 0, TimeSpan.Zero) }, // Later CreatedAt should not overwrite first
             new(null, " AI") { MessageId = "msg1", AuthorName = "Assistant" }, // Keep same AuthorName to avoid creating new message
 
             // Second message - ID "msg1" changes to "msg2", still AuthorName "Assistant" 
@@ -469,7 +469,7 @@ public class ChatResponseUpdateExtensionsTests
 
             // Fourth message - ID "msg4", Role changes back to Assistant
             new(ChatRole.Assistant, "I'm doing well,") { MessageId = "msg4", CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero) },
-            new(null, " thank you!") { MessageId = "msg4", CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 2, 0, TimeSpan.Zero) }, // Later CreatedAt should win
+            new(null, " thank you!") { MessageId = "msg4", CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 2, 0, TimeSpan.Zero) }, // Later CreatedAt should not overwrite first
 
             // Updates without MessageId should continue the last message (msg4)
             new(null, " How can I help?"),
@@ -487,7 +487,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("msg1", message1.MessageId);
         Assert.Equal(ChatRole.Assistant, message1.Role);
         Assert.Equal("Assistant", message1.AuthorName);
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 10, 1, 0, TimeSpan.Zero), message1.CreatedAt); // Last value should win
+        Assert.Equal(new DateTimeOffset(2023, 1, 1, 10, 0, 0, TimeSpan.Zero), message1.CreatedAt); // First value should win
         Assert.Equal("Hi! Hello from AI", message1.Text);
 
         // Verify second message  
@@ -503,7 +503,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("msg3", message3.MessageId);
         Assert.Equal(ChatRole.User, message3.Role);
         Assert.Equal("User", message3.AuthorName);
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 11, 1, 0, TimeSpan.Zero), message3.CreatedAt); // Last value should win
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 11, 0, 0, TimeSpan.Zero), message3.CreatedAt); // First value should win
         Assert.Equal("How are you?", message3.Text);
 
         // Verify fourth message
@@ -511,7 +511,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("msg4", message4.MessageId);
         Assert.Equal(ChatRole.Assistant, message4.Role);
         Assert.Null(message4.AuthorName); // No AuthorName set
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 12, 2, 0, TimeSpan.Zero), message4.CreatedAt); // Last value should win
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero), message4.CreatedAt); // First value should win
         Assert.Equal("I'm doing well, thank you! How can I help?", message4.Text);
     }
 
@@ -751,13 +751,13 @@ public class ChatResponseUpdateExtensionsTests
             // Unix epoch (as "null") should not overwrite
             new(null, "b") { CreatedAt = unixEpoch },
 
-            // Newer timestamp should overwrite
+            // Newer timestamp should not overwrite (first value wins)
             new(null, "c") { CreatedAt = middle },
 
             // Older timestamp should not overwrite
             new(null, "d") { CreatedAt = early },
 
-            // Even newer timestamp should overwrite
+            // Even newer timestamp should not overwrite (first value wins)
             new(null, "e") { CreatedAt = late },
 
             // Unix epoch should not overwrite again
@@ -774,22 +774,22 @@ public class ChatResponseUpdateExtensionsTests
 
         Assert.Equal("abcdefg", response.Messages[0].Text);
         Assert.Equal(ChatRole.Tool, response.Messages[0].Role);
-        Assert.Equal(late, response.Messages[0].CreatedAt);
-        Assert.Equal(late, response.CreatedAt);
+        Assert.Equal(early, response.Messages[0].CreatedAt);
+        Assert.Equal(early, response.CreatedAt);
     }
 
     public static IEnumerable<object?[]> ToChatResponse_TimestampFolding_MemberData()
     {
-        // Base test cases
+        // Base test cases (first valid timestamp wins)
         var testCases = new (string? timestamp1, string? timestamp2, string? expectedTimestamp)[]
         {
             (null, null, null),
             ("2024-01-01T10:00:00Z", null, "2024-01-01T10:00:00Z"),
             (null, "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"),
-            ("2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z", "2024-01-01T11:00:00Z"),
-            ("2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z"),
+            ("2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z"), // First wins
+            ("2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z"), // First wins
             ("2024-01-01T10:00:00Z", "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z"),
-            ("1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"),
+            ("1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"), // Unix epoch treated as null, second is first valid
         };
 
         // Yield each test case twice, once for useAsync = false and once for useAsync = true
