@@ -6,12 +6,14 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -45,6 +47,16 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             nameof(ResponsesClient.GetResponseStreamingAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
             null, [typeof(GetResponseOptions), typeof(RequestOptions)], null)
         ?.CreateDelegate(typeof(Func<ResponsesClient, GetResponseOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>));
+
+    // Workaround for https://github.com/openai/openai-dotnet/pull/874.
+    // The OpenAI library doesn't yet expose InputImageUrl as a public property, so we access it via reflection.
+    // Replace this with the actual public property once it's available (e.g., part.InputImageUrl).
+    private static readonly PropertyInfo? _inputImageUrlProperty =
+        typeof(ResponseContentPart).GetProperty("ImageUrl", BindingFlags.Public | BindingFlags.Instance);
+
+    // Fallback property for cases where ImageUrl is not yet exposed as a public property but is stored in internal data.
+    private static readonly PropertyInfo? _serializedAdditionalRawDataProperty =
+        typeof(ResponseContentPart).GetProperty("SerializedAdditionalRawData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
@@ -1196,7 +1208,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         !string.IsNullOrWhiteSpace(part.InputImageFileId) ? new HostedFileContent(part.InputImageFileId) { MediaType = "image/*" } :
                         !string.IsNullOrWhiteSpace(part.InputFileId) ? new HostedFileContent(part.InputFileId) { Name = part.InputFilename } :
                         part.InputFileBytes is not null ? new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream") { Name = part.InputFilename } :
-                        null;
+                        _inputImageUrlProperty?.GetValue(part) is string inputImageUrl && !string.IsNullOrWhiteSpace(inputImageUrl) ?
+                            new UriContent(new Uri(inputImageUrl), "image/*") :
+                        GetInputImageUrlFromAdditionalRawData(part);
                     break;
 
                 case ResponseContentPartKind.Refusal:
@@ -1219,6 +1233,48 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// Attempts to extract the input image URL from a <see cref="ResponseContentPart"/>.
+    /// This is a workaround for https://github.com/openai/openai-dotnet/pull/874 until the property is publicly exposed.
+    /// </summary>
+    private static UriContent? GetInputImageUrlFromAdditionalRawData(ResponseContentPart part)
+    {
+        // Try to get the image URL from SerializedAdditionalRawData first
+        if (_serializedAdditionalRawDataProperty?.GetValue(part) is IDictionary<string, BinaryData> additionalData &&
+            additionalData.TryGetValue("image_url", out var imageUrlData))
+        {
+            var stringJsonTypeInfo = (JsonTypeInfo<string>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(string));
+            string? imageUrl = JsonSerializer.Deserialize(imageUrlData, stringJsonTypeInfo);
+            if (!string.IsNullOrWhiteSpace(imageUrl))
+            {
+                return new UriContent(new Uri(imageUrl), "image/*");
+            }
+        }
+
+        // Fallback: Serialize the part back to JSON and extract the image_url property
+        if (part is IJsonModel<ResponseContentPart> jsonModel)
+        {
+            using var stream = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(stream))
+            {
+                jsonModel.Write(writer, ModelReaderWriterOptions.Json);
+            }
+
+            using var doc = JsonDocument.Parse(stream.ToArray());
+            if (doc.RootElement.TryGetProperty("image_url", out var imageUrlElement) &&
+                imageUrlElement.ValueKind == JsonValueKind.String)
+            {
+                string? imageUrl = imageUrlElement.GetString();
+                if (!string.IsNullOrWhiteSpace(imageUrl))
+                {
+                    return new UriContent(new Uri(imageUrl), "image/*");
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>Converts any annotations from <paramref name="source"/> and stores them in <paramref name="destination"/>.</summary>

@@ -5199,6 +5199,72 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task ResponseWithInputImageUrl_ParsesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"What is in this image?"}]}]
+            }
+            """;
+
+        // The output includes a message with input_image content that has an image_url property.
+        // This simulates a response that echoes back the image URL that was sent as part of the request.
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_001",
+                  "status":"completed",
+                  "role":"user",
+                  "content":[
+                    {"type":"input_image","image_url":"https://example.com/image.png"}
+                  ]
+                },
+                {
+                  "type":"message",
+                  "id":"msg_002",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[
+                    {"type":"output_text","text":"This is a cat.","annotations":[]}
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("What is in this image?");
+
+        Assert.NotNull(response);
+
+        // Check what contents we have in the first message
+        var userMessage = response.Messages.FirstOrDefault(m => m.Role == ChatRole.User);
+        Assert.NotNull(userMessage);
+
+        // The image content should be returned as a UriContent with the URL from the response
+        var imageContent = userMessage.Contents.OfType<UriContent>().FirstOrDefault();
+        Assert.NotNull(imageContent);
+        Assert.Equal("https://example.com/image.png", imageContent.Uri.ToString());
+        Assert.Equal("image/*", imageContent.MediaType);
+
+        // The second message should contain the assistant's response
+        var assistantMessage = response.Messages.LastOrDefault(m => m.Role == ChatRole.Assistant);
+        Assert.NotNull(assistantMessage);
+        Assert.Equal("This is a cat.", assistantMessage.Text);
+    }
+
+    [Fact]
     public async Task HostedImageGenerationTool_NonStreaming()
     {
         const string Input = """
