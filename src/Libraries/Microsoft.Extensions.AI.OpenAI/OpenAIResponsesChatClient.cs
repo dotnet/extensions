@@ -1203,6 +1203,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         !string.IsNullOrWhiteSpace(part.InputFileId) ? new HostedFileContent(part.InputFileId) { Name = part.InputFilename } :
                         part.InputFileBytes is not null ? new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream") { Name = part.InputFilename } :
                         _inputImageUrlProperty?.GetValue(part) is string inputImageUrl && !string.IsNullOrWhiteSpace(inputImageUrl) ?
+                            inputImageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ? new DataContent(inputImageUrl) :
                             new UriContent(new Uri(inputImageUrl), "image/*") :
                         null;
                     break;
