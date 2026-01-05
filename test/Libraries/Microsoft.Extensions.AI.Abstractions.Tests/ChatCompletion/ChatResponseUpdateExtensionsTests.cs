@@ -497,6 +497,42 @@ public class ChatResponseUpdateExtensionsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ToChatResponse_AdditionalPropertiesRoutingBasedOnMessageId(bool useAsync)
+    {
+        // This test explicitly verifies that:
+        // - Updates WITH MessageId route AdditionalProperties to the message
+        // - Updates WITHOUT MessageId route AdditionalProperties to the response
+        ChatResponseUpdate[] updates =
+        [
+
+            // Update with MessageId - properties should go to message
+            new(ChatRole.Assistant, "Hello") { MessageId = "msg1", AdditionalProperties = new() { ["messageKey"] = "messageValue" } },
+
+            // Update without MessageId - properties should go to response
+            new() { AdditionalProperties = new() { ["responseKey"] = "responseValue" } },
+        ];
+
+        ChatResponse response = useAsync ?
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
+
+        // Verify message-scoped properties (update had MessageId)
+        var message = Assert.Single(response.Messages);
+        Assert.NotNull(message.AdditionalProperties);
+        Assert.Single(message.AdditionalProperties);
+        Assert.Equal("messageValue", message.AdditionalProperties["messageKey"]);
+        Assert.False(message.AdditionalProperties.ContainsKey("responseKey"));
+
+        // Verify response-scoped properties (update had no MessageId)
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Single(response.AdditionalProperties);
+        Assert.Equal("responseValue", response.AdditionalProperties["responseKey"]);
+        Assert.False(response.AdditionalProperties.ContainsKey("messageKey"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ToChatResponse_UpdatesProduceMultipleResponseMessages(bool useAsync)
     {
         ChatResponseUpdate[] updates =
