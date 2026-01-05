@@ -535,6 +535,18 @@ public static class ChatResponseExtensions
             message.MessageId = update.MessageId;
         }
 
+        if (update.AdditionalProperties is not null)
+        {
+            if (message.AdditionalProperties is null)
+            {
+                message.AdditionalProperties = new(update.AdditionalProperties);
+            }
+            else
+            {
+                message.AdditionalProperties.SetAll(update.AdditionalProperties);
+            }
+        }
+
         foreach (var content in update.Contents)
         {
             switch (content)
@@ -576,18 +588,6 @@ public static class ChatResponseExtensions
         if (update.ModelId is not null)
         {
             response.ModelId = update.ModelId;
-        }
-
-        if (update.AdditionalProperties is not null)
-        {
-            if (response.AdditionalProperties is null)
-            {
-                response.AdditionalProperties = new(update.AdditionalProperties);
-            }
-            else
-            {
-                response.AdditionalProperties.SetAll(update.AdditionalProperties);
-            }
         }
     }
 

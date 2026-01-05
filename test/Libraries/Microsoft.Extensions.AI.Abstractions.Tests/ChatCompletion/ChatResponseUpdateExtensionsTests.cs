@@ -56,12 +56,13 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("12345", message.MessageId);
         Assert.Equal(ChatRole.Assistant, message.Role);
         Assert.Equal("Someone", message.AuthorName);
-        Assert.Null(message.AdditionalProperties);
 
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal(2, response.AdditionalProperties.Count);
-        Assert.Equal("b", response.AdditionalProperties["a"]);
-        Assert.Equal("d", response.AdditionalProperties["c"]);
+        Assert.NotNull(message.AdditionalProperties);
+        Assert.Equal(2, message.AdditionalProperties.Count);
+        Assert.Equal("b", message.AdditionalProperties["a"]);
+        Assert.Equal("d", message.AdditionalProperties["c"]);
+
+        Assert.Null(response.AdditionalProperties);
 
         Assert.Equal("Hello, world!", response.Text);
     }
@@ -443,6 +444,55 @@ public class ChatResponseUpdateExtensionsTests
 
         Assert.Equal("Assistant here", response.Messages[2].Text);
         Assert.Equal(ChatRole.Assistant, response.Messages[2].Role);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_AdditionalPropertiesGoToMessages(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        [
+
+            // First message with AdditionalProperties
+            new(ChatRole.Assistant, "First message") { MessageId = "msg1", AdditionalProperties = new() { ["key1"] = "value1" } },
+            new(null, " part 2") { AdditionalProperties = new() { ["key2"] = "value2" } },
+
+            // Second message with different AdditionalProperties (same keys, different values)
+            new(ChatRole.User, "Second message") { MessageId = "msg2", AdditionalProperties = new() { ["key1"] = "different_value1" } },
+            new(null, " part 2") { AdditionalProperties = new() { ["key3"] = "value3" } },
+
+            // Third message with no AdditionalProperties
+            new(ChatRole.Assistant, "Third message") { MessageId = "msg3" },
+        ];
+
+        ChatResponse response = useAsync ?
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
+
+        Assert.Equal(3, response.Messages.Count);
+        Assert.Null(response.AdditionalProperties);
+
+        // First message should have its own AdditionalProperties
+        var msg1 = response.Messages[0];
+        Assert.Equal("First message part 2", msg1.Text);
+        Assert.NotNull(msg1.AdditionalProperties);
+        Assert.Equal(2, msg1.AdditionalProperties.Count);
+        Assert.Equal("value1", msg1.AdditionalProperties["key1"]);
+        Assert.Equal("value2", msg1.AdditionalProperties["key2"]);
+
+        // Second message should have its own AdditionalProperties (with different value for key1)
+        var msg2 = response.Messages[1];
+        Assert.Equal("Second message part 2", msg2.Text);
+        Assert.NotNull(msg2.AdditionalProperties);
+        Assert.Equal(2, msg2.AdditionalProperties.Count);
+        Assert.Equal("different_value1", msg2.AdditionalProperties["key1"]);
+        Assert.Equal("value3", msg2.AdditionalProperties["key3"]);
+
+        // Third message should have no AdditionalProperties
+        var msg3 = response.Messages[2];
+        Assert.Equal("Third message", msg3.Text);
+        Assert.Null(msg3.AdditionalProperties);
     }
 
     [Theory]
