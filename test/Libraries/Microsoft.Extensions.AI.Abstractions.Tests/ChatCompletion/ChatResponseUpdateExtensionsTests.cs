@@ -56,13 +56,12 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("12345", message.MessageId);
         Assert.Equal(ChatRole.Assistant, message.Role);
         Assert.Equal("Someone", message.AuthorName);
+        Assert.Null(message.AdditionalProperties);
 
-        Assert.NotNull(message.AdditionalProperties);
-        Assert.Equal(2, message.AdditionalProperties.Count);
-        Assert.Equal("b", message.AdditionalProperties["a"]);
-        Assert.Equal("d", message.AdditionalProperties["c"]);
-
-        Assert.Null(response.AdditionalProperties);
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Equal(2, response.AdditionalProperties.Count);
+        Assert.Equal("b", response.AdditionalProperties["a"]);
+        Assert.Equal("d", response.AdditionalProperties["c"]);
 
         Assert.Equal("Hello, world!", response.Text);
     }
@@ -454,13 +453,13 @@ public class ChatResponseUpdateExtensionsTests
         ChatResponseUpdate[] updates =
         [
 
-            // First message with AdditionalProperties
+            // First message with AdditionalProperties (MessageId makes properties go to message)
             new(ChatRole.Assistant, "First message") { MessageId = "msg1", AdditionalProperties = new() { ["key1"] = "value1" } },
-            new(null, " part 2") { AdditionalProperties = new() { ["key2"] = "value2" } },
+            new(null, " part 2") { MessageId = "msg1", AdditionalProperties = new() { ["key2"] = "value2" } },
 
             // Second message with different AdditionalProperties (same keys, different values)
             new(ChatRole.User, "Second message") { MessageId = "msg2", AdditionalProperties = new() { ["key1"] = "different_value1" } },
-            new(null, " part 2") { AdditionalProperties = new() { ["key3"] = "value3" } },
+            new(null, " part 2") { MessageId = "msg2", AdditionalProperties = new() { ["key3"] = "value3" } },
 
             // Third message with no AdditionalProperties
             new(ChatRole.Assistant, "Third message") { MessageId = "msg3" },

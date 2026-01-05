@@ -535,15 +535,31 @@ public static class ChatResponseExtensions
             message.MessageId = update.MessageId;
         }
 
+        // AdditionalProperties are scoped to the message if the update has a MessageId,
+        // otherwise they're scoped to the response.
         if (update.AdditionalProperties is not null)
         {
-            if (message.AdditionalProperties is null)
+            if (update.MessageId is { Length: > 0 })
             {
-                message.AdditionalProperties = new(update.AdditionalProperties);
+                if (message.AdditionalProperties is null)
+                {
+                    message.AdditionalProperties = new(update.AdditionalProperties);
+                }
+                else
+                {
+                    message.AdditionalProperties.SetAll(update.AdditionalProperties);
+                }
             }
             else
             {
-                message.AdditionalProperties.SetAll(update.AdditionalProperties);
+                if (response.AdditionalProperties is null)
+                {
+                    response.AdditionalProperties = new(update.AdditionalProperties);
+                }
+                else
+                {
+                    response.AdditionalProperties.SetAll(update.AdditionalProperties);
+                }
             }
         }
 
