@@ -605,7 +605,7 @@ public static class ChatResponseExtensions
     /// <summary>Gets whether the specified <see cref="DateTimeOffset"/> is a valid <c>CreatedAt</c> value.</summary>
     /// <remarks>Values that are <see langword="null"/> or less than or equal to the Unix epoch are treated as invalid.</remarks>
     private static bool IsValidCreatedAt(DateTimeOffset? createdAt) =>
-        createdAt is { } dto && dto > DateTimeOffset.UnixEpoch;
+        createdAt > DateTimeOffset.UnixEpoch;
 #else
     /// <summary>The Unix epoch (1970-01-01T00:00:00Z).</summary>
     private static readonly DateTimeOffset _unixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
@@ -613,6 +613,6 @@ public static class ChatResponseExtensions
     /// <summary>Gets whether the specified <see cref="DateTimeOffset"/> is a valid <c>CreatedAt</c> value.</summary>
     /// <remarks>Values that are <see langword="null"/> or less than or equal to the Unix epoch are treated as invalid.</remarks>
     private static bool IsValidCreatedAt(DateTimeOffset? createdAt) =>
-        createdAt is { } dto && dto > _unixEpoch;
+        createdAt > _unixEpoch;
 #endif
 }
