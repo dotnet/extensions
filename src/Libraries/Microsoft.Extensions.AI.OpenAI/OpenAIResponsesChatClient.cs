@@ -1198,14 +1198,38 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case ResponseContentPartKind.InputFile or ResponseContentPartKind.InputImage:
-                    content =
-                        !string.IsNullOrWhiteSpace(part.InputImageFileId) ? new HostedFileContent(part.InputImageFileId) { MediaType = "image/*" } :
-                        !string.IsNullOrWhiteSpace(part.InputFileId) ? new HostedFileContent(part.InputFileId) { Name = part.InputFilename } :
-                        part.InputFileBytes is not null ? new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream") { Name = part.InputFilename } :
-                        _inputImageUrlProperty?.GetValue(part) is string inputImageUrl && !string.IsNullOrWhiteSpace(inputImageUrl) ?
-                            inputImageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ? new DataContent(inputImageUrl) :
-                            new UriContent(new Uri(inputImageUrl), "image/*") :
-                        null;
+                    if (!string.IsNullOrWhiteSpace(part.InputImageFileId))
+                    {
+                        content = new HostedFileContent(part.InputImageFileId) { MediaType = "image/*" };
+                    }
+                    else if (!string.IsNullOrWhiteSpace(part.InputFileId))
+                    {
+                        content = new HostedFileContent(part.InputFileId) { Name = part.InputFilename };
+                    }
+                    else if (part.InputFileBytes is not null)
+                    {
+                        content = new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream") { Name = part.InputFilename };
+                    }
+                    else if (_inputImageUrlProperty?.GetValue(part) is string inputImageUrl && !string.IsNullOrWhiteSpace(inputImageUrl))
+                    {
+                        if (inputImageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            content = new DataContent(inputImageUrl);
+                        }
+                        else if (Uri.TryCreate(inputImageUrl, UriKind.Absolute, out Uri? imageUri))
+                        {
+                            content = new UriContent(imageUri, "image/*");
+                        }
+                        else
+                        {
+                            content = null;
+                        }
+                    }
+                    else
+                    {
+                        content = null;
+                    }
+
                     break;
 
                 case ResponseContentPartKind.Refusal:
