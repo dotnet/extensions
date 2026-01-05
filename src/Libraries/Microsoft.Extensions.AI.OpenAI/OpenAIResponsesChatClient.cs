@@ -21,7 +21,6 @@ using OpenAI.Responses;
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable S3254 // Default parameter values should not be passed as arguments
 #pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties' in call to 'System.Type.GetProperty(String)'
 
 namespace Microsoft.Extensions.AI;
 
@@ -46,6 +45,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             nameof(ResponsesClient.GetResponseStreamingAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
             null, [typeof(GetResponseOptions), typeof(RequestOptions)], null)
         ?.CreateDelegate(typeof(Func<ResponsesClient, GetResponseOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>));
+
+    // Workaround for https://github.com/openai/openai-dotnet/pull/874.
+    // The OpenAI library doesn't yet expose InputImageUrl as a public property, so we access it via reflection.
+    // Replace this with the actual public property once it's available (e.g., part.InputImageUrl).
+    private static readonly PropertyInfo? _inputImageUrlProperty =
+        Type.GetType("OpenAI.Responses.InternalItemContentInputImage, OpenAI")?.GetProperty("ImageUrl");
 
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
@@ -1197,10 +1202,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         !string.IsNullOrWhiteSpace(part.InputImageFileId) ? new HostedFileContent(part.InputImageFileId) { MediaType = "image/*" } :
                         !string.IsNullOrWhiteSpace(part.InputFileId) ? new HostedFileContent(part.InputFileId) { Name = part.InputFilename } :
                         part.InputFileBytes is not null ? new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream") { Name = part.InputFilename } :
-
-                        // Workaround for https://github.com/openai/openai-dotnet/pull/874.
-                        // Replace with the public property once it's available (e.g., part.InputImageUrl).
-                        part.GetType().GetProperty("ImageUrl")?.GetValue(part, null) is string inputImageUrl && !string.IsNullOrWhiteSpace(inputImageUrl) ?
+                        _inputImageUrlProperty?.GetValue(part) is string inputImageUrl && !string.IsNullOrWhiteSpace(inputImageUrl) ?
                             new UriContent(new Uri(inputImageUrl), "image/*") :
                         null;
                     break;
