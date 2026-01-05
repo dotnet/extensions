@@ -741,6 +741,7 @@ public class ChatResponseUpdateExtensionsTests
         DateTimeOffset middle = new(2024, 1, 1, 11, 0, 0, TimeSpan.Zero);
         DateTimeOffset late = new(2024, 1, 1, 12, 0, 0, TimeSpan.Zero);
         DateTimeOffset unixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        DateTimeOffset beforeEpoch = new(1969, 12, 31, 23, 59, 59, TimeSpan.Zero);
 
         ChatResponseUpdate[] updates =
         [
@@ -751,20 +752,23 @@ public class ChatResponseUpdateExtensionsTests
             // Unix epoch (as "null") should not overwrite
             new(null, "b") { CreatedAt = unixEpoch },
 
+            // Before Unix epoch (as "null") should not overwrite
+            new(null, "c") { CreatedAt = beforeEpoch },
+
             // Newer timestamp should not overwrite (first value wins)
-            new(null, "c") { CreatedAt = middle },
+            new(null, "d") { CreatedAt = middle },
 
             // Older timestamp should not overwrite
-            new(null, "d") { CreatedAt = early },
+            new(null, "e") { CreatedAt = early },
 
             // Even newer timestamp should not overwrite (first value wins)
-            new(null, "e") { CreatedAt = late },
+            new(null, "f") { CreatedAt = late },
 
             // Unix epoch should not overwrite again
-            new(null, "f") { CreatedAt = unixEpoch },
+            new(null, "g") { CreatedAt = unixEpoch },
 
             // null should not overwrite
-            new(null, "g") { CreatedAt = null },
+            new(null, "h") { CreatedAt = null },
         ];
 
         ChatResponse response = useAsync ?
@@ -772,7 +776,7 @@ public class ChatResponseUpdateExtensionsTests
             updates.ToChatResponse();
         Assert.Single(response.Messages);
 
-        Assert.Equal("abcdefg", response.Messages[0].Text);
+        Assert.Equal("abcdefgh", response.Messages[0].Text);
         Assert.Equal(ChatRole.Tool, response.Messages[0].Role);
         Assert.Equal(early, response.Messages[0].CreatedAt);
         Assert.Equal(early, response.CreatedAt);
@@ -790,6 +794,8 @@ public class ChatResponseUpdateExtensionsTests
             ("2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z"), // First wins
             ("2024-01-01T10:00:00Z", "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z"),
             ("1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"), // Unix epoch treated as null, second is first valid
+            ("1969-12-31T23:59:59Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"), // Before Unix epoch treated as null, second is first valid
+            ("1960-01-01T00:00:00Z", "1965-06-15T12:00:00Z", null), // Both before Unix epoch treated as null
         };
 
         // Yield each test case twice, once for useAsync = false and once for useAsync = true
