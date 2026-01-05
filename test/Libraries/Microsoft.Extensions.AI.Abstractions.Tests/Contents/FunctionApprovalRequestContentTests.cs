@@ -52,6 +52,28 @@ public class FunctionApprovalRequestContentTests
         Assert.Same(id, response.Id);
         Assert.Equal(approved, response.Approved);
         Assert.Same(functionCall, response.FunctionCall);
+        Assert.Null(response.Reason);
+    }
+
+    [Theory]
+    [InlineData(true, "Approved for testing")]
+    [InlineData(false, "Rejected due to security concerns")]
+    [InlineData(true, null)]
+    [InlineData(false, null)]
+    public void CreateResponse_WithReason_ReturnsExpectedResponse(bool approved, string? reason)
+    {
+        string id = "req-1";
+        FunctionCallContent functionCall = new("FCC1", "TestFunction");
+
+        FunctionApprovalRequestContent content = new(id, functionCall);
+
+        var response = content.CreateResponse(approved, reason);
+
+        Assert.NotNull(response);
+        Assert.Same(id, response.Id);
+        Assert.Equal(approved, response.Approved);
+        Assert.Same(functionCall, response.FunctionCall);
+        Assert.Equal(reason, response.Reason);
     }
 
     [Fact]
