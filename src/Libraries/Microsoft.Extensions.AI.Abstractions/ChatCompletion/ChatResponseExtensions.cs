@@ -509,9 +509,10 @@ public static class ChatResponseExtensions
         }
 
         // Some members on ChatResponseUpdate map to members of ChatMessage.
-        // Incorporate those into the latest message; in cases where the message
-        // stores a single value, prefer the latest update's value over anything
-        // stored in the message.
+        // Incorporate those into the latest message. In most cases the message
+        // stores a single value, and we prefer the latest update's value over
+        // anything stored in the message, except for CreatedAt which prefers
+        // the first valid value.
 
         if (update.AuthorName is not null)
         {
@@ -551,7 +552,8 @@ public static class ChatResponseExtensions
         }
 
         // Other members on a ChatResponseUpdate map to members of the ChatResponse.
-        // Update the response object with those, preferring the values from later updates.
+        // Update the response object with those, preferring the values from later updates
+        // except for CreatedAt which prefers the first valid value.
 
         if (update.ResponseId is { Length: > 0 })
         {
@@ -599,6 +601,12 @@ public static class ChatResponseExtensions
     private static bool NotNullOrEqual(ChatRole? r1, ChatRole? r2) =>
         r1.HasValue && r2.HasValue && r1.Value != r2.Value;
 
+#if NET
+    /// <summary>Gets whether the specified <see cref="DateTimeOffset"/> is a valid <c>CreatedAt</c> value.</summary>
+    /// <remarks>Values that are <see langword="null"/> or less than or equal to the Unix epoch are treated as invalid.</remarks>
+    private static bool IsValidCreatedAt(DateTimeOffset? createdAt) =>
+        createdAt is { } dto && dto > DateTimeOffset.UnixEpoch;
+#else
     /// <summary>The Unix epoch (1970-01-01T00:00:00Z).</summary>
     private static readonly DateTimeOffset _unixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
@@ -606,4 +614,5 @@ public static class ChatResponseExtensions
     /// <remarks>Values that are <see langword="null"/> or less than or equal to the Unix epoch are treated as invalid.</remarks>
     private static bool IsValidCreatedAt(DateTimeOffset? createdAt) =>
         createdAt is { } dto && dto > _unixEpoch;
+#endif
 }
