@@ -1316,8 +1316,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             (preDownstreamCallHistory ??= []).Add(rejectedPreDownstreamCallResultsMessage);
 
             // Calculate the insertion position: right after the FCC messages we just inserted
+            // Only add the FCC count if they were actually inserted (!hasConversationId)
             int rejectedInsertionIndex = insertionIndex >= 0 && insertionIndex <= originalMessages.Count
-                ? insertionIndex + (allPreDownstreamCallMessages?.Count ?? 0)
+                ? insertionIndex + (!hasConversationId ? (allPreDownstreamCallMessages?.Count ?? 0) : 0)
                 : originalMessages.Count;
 
             if (rejectedInsertionIndex >= 0 && rejectedInsertionIndex <= originalMessages.Count)
@@ -1461,13 +1462,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // where the first (already-processed) approval request was originally located.
         //
         // Example:
-        //   Before:
-        //     [User, FunctionApprovalRequest(A), FunctionApprovalResponse(A), FunctionResult(A), FunctionApprovalRequest(B)]
-        //   After processing approval for B, if we inserted at the original index of B, we'd get:
-        //     [User, FunctionApprovalRequest(A), FunctionApprovalResponse(A), FunctionResult(A), FunctionCall(B), FunctionResult(B)]
-        //   But if there are already function results present (e.g., for A), we want to append new function calls/results for B at the end:
-        //     [User, FunctionApprovalRequest(A), FunctionApprovalResponse(A), FunctionResult(A), FunctionApprovalRequest(B), FunctionCall(B), FunctionResult(B)]
-        //   This preserves the correct chronological order of function calls and results.
+        //   Before extraction (original user input with approval messages):
+        //     [User, FunctionApprovalRequest(A), FunctionApprovalResponse(A), FunctionResult(A), FunctionApprovalRequest(B), FunctionApprovalResponse(B)]
+        //   After extraction of approval requests/responses (state of 'messages' at this point):
+        //     [User, FunctionResult(A)]
+        //   After processing approval for B, if we inserted at the original index where B's approval request was,
+        //   we'd incorrectly interleave new calls with existing results:
+        //     [User, FunctionCall(B), FunctionResult(B), FunctionResult(A)]  // Wrong order
+        //   But if there are already function results present (e.g., for A), we instead append new function calls/results
+        //   for B at the end to preserve chronological ordering:
+        //     [User, FunctionResult(A), FunctionCall(B), FunctionResult(B)]  // Correct order
         if (functionResultCallIds is { Count: > 0 } && insertionIndex >= 0)
         {
             insertionIndex = messages.Count;
