@@ -63,21 +63,9 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
                 imageStream = MemoryMarshal.TryGetArray(dataContent.Data, out var array) ?
                     new MemoryStream(array.Array!, array.Offset, array.Count) :
                     new MemoryStream(dataContent.Data.ToArray());
-                fileName = dataContent.Name;
-
-                if (fileName is null)
-                {
-                    // If no file name is provided, use the default based on the content type.
-                    var extension = MediaTypeMap.GetExtension(dataContent.MediaType);
-                    if (extension is not null)
-                    {
-                        fileName = $"image{extension}";
-                    }
-                    else
-                    {
-                        fileName = "image.png"; // Default to PNG if no content type is available.
-                    }
-                }
+                fileName =
+                    dataContent.Name ??
+                    $"{Guid.NewGuid():N}{MediaTypeMap.GetExtension(dataContent.MediaType) ?? ".png"}"; // Default to PNG if no content type is available.
             }
 
             GeneratedImageCollection editResult = await _imageClient.GenerateImageEditsAsync(
