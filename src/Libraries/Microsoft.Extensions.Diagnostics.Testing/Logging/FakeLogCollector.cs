@@ -54,9 +54,14 @@ public partial class FakeLogCollector
     {
         lock (_records)
         {
-            _records.Clear();
-            _recordCollectionVersion++;
+            ClearRecordsCore();
         }
+    }
+
+    private void ClearRecordsCore()
+    {
+        _records.Clear();
+        _recordCollectionVersion++;
     }
 
     /// <summary>
@@ -73,7 +78,7 @@ public partial class FakeLogCollector
             var records = _records.ToArray();
             if (clear)
             {
-                _records.Clear();
+                ClearRecordsCore();
             }
 
             return records;

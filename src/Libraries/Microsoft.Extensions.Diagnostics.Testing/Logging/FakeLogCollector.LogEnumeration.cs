@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Logging.Testing;
 
@@ -17,6 +19,7 @@ public partial class FakeLogCollector
 
     private int _waitingEnumeratorCount;
 
+    [Experimental(DiagnosticIds.Experiments.Telemetry)]
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(CancellationToken cancellationToken = default)
         => new LogAsyncEnumerable(this, cancellationToken);
 
@@ -42,8 +45,6 @@ public partial class FakeLogCollector
     {
         private readonly FakeLogCollector _collector;
         private readonly CancellationTokenSource _mainCts;
-
-        private FakeLogRecord? _current;
         private int _index;
         private bool _disposed;
         private int _observedRecordCollectionVersion;
@@ -58,12 +59,16 @@ public partial class FakeLogCollector
         {
             _collector = collector;
             _mainCts = enumerableCancellationToken.CanBeCanceled || enumeratorCancellationToken.CanBeCanceled
-                ? CancellationTokenSource.CreateLinkedTokenSource([enumerableCancellationToken, enumeratorCancellationToken])
+                ? CancellationTokenSource.CreateLinkedTokenSource(enumerableCancellationToken, enumeratorCancellationToken)
                 : new CancellationTokenSource();
             _observedRecordCollectionVersion = collector._recordCollectionVersion;
         }
 
-        public FakeLogRecord Current => _current ?? throw new InvalidOperationException("Enumeration not started.");
+        public FakeLogRecord Current
+        {
+            get => field ?? throw new InvalidOperationException("Enumeration not started.");
+            private set;
+        }
 
         public async ValueTask<bool> MoveNextAsync()
         {
@@ -76,9 +81,9 @@ public partial class FakeLogCollector
             {
                 ThrowIfDisposed();
 
-                var masterCancellationToken = _mainCts.Token;
+                var mainCancellationToken = _mainCts.Token;
 
-                masterCancellationToken.ThrowIfCancellationRequested();
+                mainCancellationToken.ThrowIfCancellationRequested();
 
                 while (true)
                 {
@@ -86,7 +91,7 @@ public partial class FakeLogCollector
 
                     try
                     {
-                        masterCancellationToken.ThrowIfCancellationRequested();
+                        mainCancellationToken.ThrowIfCancellationRequested();
 
                         lock (_collector._records)
                         {
@@ -98,7 +103,7 @@ public partial class FakeLogCollector
 
                             if (_index < _collector._records.Count)
                             {
-                                _current = _collector._records[_index++];
+                                Current = _collector._records[_index++];
                                 return true;
                             }
 
@@ -108,9 +113,8 @@ public partial class FakeLogCollector
                             _collector._waitingEnumeratorCount++;
                         }
 
-                        // Compatibility path for net462: emulate Task.WaitAsync(cancellationToken).
                         // After the wait is complete in normal flow, no need to decrement because the shared waiter will be swapped and counter reset.
-                        await AwaitWithCancellationAsync(waiter.Task, masterCancellationToken).ConfigureAwait(false);
+                        _ = await waiter.Task.WaitAsync(mainCancellationToken).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException)
                     {
@@ -152,30 +156,6 @@ public partial class FakeLogCollector
             _mainCts.Dispose();
 
             return default;
-        }
-
-        private static async Task AwaitWithCancellationAsync(Task task, CancellationToken cancellationToken)
-        {
-            if (!cancellationToken.CanBeCanceled || task.IsCompleted)
-            {
-                await task.ConfigureAwait(false);
-                return;
-            }
-
-            var cancelTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            CancellationTokenRegistration ctr = default;
-            try
-            {
-                ctr = cancellationToken.Register(static s =>
-                    ((TaskCompletionSource<bool>)s!).TrySetCanceled(), cancelTcs);
-
-                var completed = await Task.WhenAny(task, cancelTcs.Task).ConfigureAwait(false);
-                await completed.ConfigureAwait(false);
-            }
-            finally
-            {
-                ctr.Dispose();
-            }
         }
 
         private void ThrowIfDisposed()
