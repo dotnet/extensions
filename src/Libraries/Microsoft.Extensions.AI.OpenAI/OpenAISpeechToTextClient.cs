@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +12,6 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Audio;
 
-#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
@@ -37,18 +35,9 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     /// <param name="audioClient">The underlying client.</param>
     public OpenAISpeechToTextClient(AudioClient audioClient)
     {
-        _ = Throw.IfNull(audioClient);
+        _audioClient = Throw.IfNull(audioClient);
 
-        _audioClient = audioClient;
-
-        // https://github.com/openai/openai-dotnet/issues/215
-        // The endpoint and model aren't currently exposed, so use reflection to get at them, temporarily. Once packages
-        // implement the abstractions directly rather than providing adapters on top of the public APIs,
-        // the package can provide such implementations separate from what's exposed in the public API.
-        Uri providerUrl = typeof(AudioClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(audioClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
-
-        _metadata = new("openai", providerUrl, _audioClient.Model);
+        _metadata = new("openai", audioClient.Endpoint, _audioClient.Model);
     }
 
     /// <inheritdoc />

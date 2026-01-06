@@ -19,7 +19,6 @@ internal static class FakeSslCertificateFactory
     /// Creates a self-signed <see cref="X509Certificate2"/> instance for testing.
     /// </summary>
     /// <returns>An <see cref="X509Certificate2"/> instance for testing.</returns>
-    [SuppressMessage("Reliability", "EA0002:Use System.TimeProvider when dealing with time in your code.", Justification = "declarations")]
     public static X509Certificate2 CreateSslCertificate()
     {
         var request = new CertificateRequest(

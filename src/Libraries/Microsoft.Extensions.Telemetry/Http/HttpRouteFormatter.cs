@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
-using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Http.Diagnostics;

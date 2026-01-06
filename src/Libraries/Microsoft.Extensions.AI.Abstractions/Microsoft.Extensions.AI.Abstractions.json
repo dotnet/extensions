@@ -172,7 +172,7 @@
       ]
     },
     {
-      "Type": "abstract class Microsoft.Extensions.AI.AIFunction : Microsoft.Extensions.AI.AITool",
+      "Type": "abstract class Microsoft.Extensions.AI.AIFunction : Microsoft.Extensions.AI.AIFunctionDeclaration",
       "Stage": "Stable",
       "Methods": [
         {
@@ -186,23 +186,39 @@
         {
           "Member": "abstract System.Threading.Tasks.ValueTask<object?> Microsoft.Extensions.AI.AIFunction.InvokeCoreAsync(Microsoft.Extensions.AI.AIFunctionArguments arguments, System.Threading.CancellationToken cancellationToken);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunctionDeclaration Microsoft.Extensions.AI.AIFunction.AsDeclarationOnly();",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
-        {
-          "Member": "virtual System.Text.Json.JsonElement Microsoft.Extensions.AI.AIFunction.JsonSchema { get; }",
-          "Stage": "Stable"
-        },
         {
           "Member": "virtual System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.AIFunction.JsonSerializerOptions { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "virtual System.Text.Json.JsonElement? Microsoft.Extensions.AI.AIFunction.ReturnJsonSchema { get; }",
+          "Member": "virtual System.Reflection.MethodInfo? Microsoft.Extensions.AI.AIFunction.UnderlyingMethod { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.AI.AIFunctionDeclaration : Microsoft.Extensions.AI.AITool",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunctionDeclaration.AIFunctionDeclaration();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual System.Text.Json.JsonElement Microsoft.Extensions.AI.AIFunctionDeclaration.JsonSchema { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "virtual System.Reflection.MethodInfo? Microsoft.Extensions.AI.AIFunction.UnderlyingMethod { get; }",
+          "Member": "virtual System.Text.Json.JsonElement? Microsoft.Extensions.AI.AIFunctionDeclaration.ReturnJsonSchema { get; }",
           "Stage": "Stable"
         }
       ]
@@ -305,6 +321,10 @@
         },
         {
           "Member": "static Microsoft.Extensions.AI.AIFunction Microsoft.Extensions.AI.AIFunctionFactory.Create(System.Reflection.MethodInfo method, System.Func<Microsoft.Extensions.AI.AIFunctionArguments, object> createInstanceFunc, Microsoft.Extensions.AI.AIFunctionFactoryOptions? options = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.AIFunctionDeclaration Microsoft.Extensions.AI.AIFunctionFactory.CreateDeclaration(string name, string? description, System.Text.Json.JsonElement jsonSchema, System.Text.Json.JsonElement? returnJsonSchema = null);",
           "Stage": "Stable"
         }
       ]
@@ -492,6 +512,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "System.Func<System.Reflection.ParameterInfo, string?>? Microsoft.Extensions.AI.AIJsonSchemaCreateOptions.ParameterDescriptionProvider { get; init; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "Microsoft.Extensions.AI.AIJsonSchemaTransformOptions? Microsoft.Extensions.AI.AIJsonSchemaCreateOptions.TransformOptions { get; init; }",
           "Stage": "Stable"
         },
@@ -511,6 +535,10 @@
         },
         {
           "Member": "System.Text.Json.JsonElement Microsoft.Extensions.AI.AIJsonSchemaTransformCache.GetOrCreateTransformedSchema(Microsoft.Extensions.AI.AIFunction function);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Text.Json.JsonElement Microsoft.Extensions.AI.AIJsonSchemaTransformCache.GetOrCreateTransformedSchema(Microsoft.Extensions.AI.AIFunctionDeclaration function);",
           "Stage": "Stable"
         },
         {
@@ -659,6 +687,14 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.AITool.AITool();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual object? Microsoft.Extensions.AI.AITool.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TService? Microsoft.Extensions.AI.AITool.GetService<TService>(object? serviceKey = null);",
           "Stage": "Stable"
         },
         {
@@ -952,6 +988,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "Microsoft.Extensions.AI.ChatOptions.ChatOptions(Microsoft.Extensions.AI.ChatOptions? other);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "virtual Microsoft.Extensions.AI.ChatOptions Microsoft.Extensions.AI.ChatOptions.Clone();",
           "Stage": "Stable"
         }
@@ -1132,6 +1172,14 @@
         {
           "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(System.Text.Json.JsonElement schema, string? schemaName = null, string? schemaDescription = null);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema<T>(System.Text.Json.JsonSerializerOptions? serializerOptions = null, string? schemaName = null, string? schemaDescription = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatResponseFormatJson Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(System.Type schemaType, System.Text.Json.JsonSerializerOptions? serializerOptions = null, string? schemaName = null, string? schemaDescription = null);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
@@ -1201,6 +1249,10 @@
         },
         {
           "Member": "Microsoft.Extensions.AI.ChatResponseUpdate.ChatResponseUpdate(Microsoft.Extensions.AI.ChatRole? role, System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? contents);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatResponseUpdate Microsoft.Extensions.AI.ChatResponseUpdate.Clone();",
           "Stage": "Stable"
         },
         {
@@ -1446,12 +1498,16 @@
           "Stage": "Stable"
         },
         {
+          "Member": "override object? Microsoft.Extensions.AI.DelegatingAIFunction.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "override System.Threading.Tasks.ValueTask<object?> Microsoft.Extensions.AI.DelegatingAIFunction.InvokeCoreAsync(Microsoft.Extensions.AI.AIFunctionArguments arguments, System.Threading.CancellationToken cancellationToken);",
           "Stage": "Stable"
         },
         {
           "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunction.ToString();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
@@ -1558,42 +1614,6 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.DelegatingSpeechToTextClient : Microsoft.Extensions.AI.ISpeechToTextClient, System.IDisposable",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.DelegatingSpeechToTextClient.DelegatingSpeechToTextClient(Microsoft.Extensions.AI.ISpeechToTextClient innerClient);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "void Microsoft.Extensions.AI.DelegatingSpeechToTextClient.Dispose();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "virtual void Microsoft.Extensions.AI.DelegatingSpeechToTextClient.Dispose(bool disposing);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "virtual object? Microsoft.Extensions.AI.DelegatingSpeechToTextClient.GetService(System.Type serviceType, object? serviceKey = null);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "virtual System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.SpeechToTextResponseUpdate> Microsoft.Extensions.AI.DelegatingSpeechToTextClient.GetStreamingTextAsync(System.IO.Stream audioSpeechStream, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.SpeechToTextResponse> Microsoft.Extensions.AI.DelegatingSpeechToTextClient.GetTextAsync(System.IO.Stream audioSpeechStream, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.ISpeechToTextClient Microsoft.Extensions.AI.DelegatingSpeechToTextClient.InnerClient { get; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.Extensions.AI.Embedding",
       "Stage": "Stable",
       "Methods": [
@@ -1647,6 +1667,10 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.EmbeddingGenerationOptions.EmbeddingGenerationOptions();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.EmbeddingGenerationOptions.EmbeddingGenerationOptions(Microsoft.Extensions.AI.EmbeddingGenerationOptions? other);",
           "Stage": "Stable"
         },
         {
@@ -1894,11 +1918,23 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedCodeInterpreterTool.HostedCodeInterpreterTool();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedCodeInterpreterTool.HostedCodeInterpreterTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedCodeInterpreterTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedCodeInterpreterTool.Inputs { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedCodeInterpreterTool.Name { get; }",
           "Stage": "Stable"
         }
       ]
@@ -1910,15 +1946,27 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedFileSearchTool.HostedFileSearchTool();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileSearchTool.HostedFileSearchTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedFileSearchTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedFileSearchTool.Inputs { get; set; }",
           "Stage": "Stable"
         },
         {
           "Member": "int? Microsoft.Extensions.AI.HostedFileSearchTool.MaximumResultCount { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedFileSearchTool.Name { get; }",
           "Stage": "Stable"
         }
       ]
@@ -1930,6 +1978,20 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedWebSearchTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedWebSearchTool.Name { get; }",
+          "Stage": "Stable"
         }
       ]
     },
@@ -1940,11 +2002,23 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedFileContent.HostedFileContent(string fileId);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.HostedFileContent.HasTopLevelMediaType(string topLevelType);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.AI.HostedFileContent.FileId { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileContent.MediaType { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileContent.Name { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -2004,24 +2078,6 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.AI.ISpeechToTextClient : System.IDisposable",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "object? Microsoft.Extensions.AI.ISpeechToTextClient.GetService(System.Type serviceType, object? serviceKey = null);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.SpeechToTextResponseUpdate> Microsoft.Extensions.AI.ISpeechToTextClient.GetStreamingTextAsync(System.IO.Stream audioSpeechStream, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.SpeechToTextResponse> Microsoft.Extensions.AI.ISpeechToTextClient.GetTextAsync(System.IO.Stream audioSpeechStream, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "sealed class Microsoft.Extensions.AI.NoneChatToolMode : Microsoft.Extensions.AI.ChatToolMode",
       "Stage": "Stable",
       "Methods": [
@@ -2064,304 +2120,6 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.AI.SpeechToTextClientExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static TService? Microsoft.Extensions.AI.SpeechToTextClientExtensions.GetService<TService>(this Microsoft.Extensions.AI.ISpeechToTextClient client, object? serviceKey = null);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.SpeechToTextResponseUpdate> Microsoft.Extensions.AI.SpeechToTextClientExtensions.GetStreamingTextAsync(this Microsoft.Extensions.AI.ISpeechToTextClient client, Microsoft.Extensions.AI.DataContent audioSpeechContent, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.SpeechToTextResponse> Microsoft.Extensions.AI.SpeechToTextClientExtensions.GetTextAsync(this Microsoft.Extensions.AI.ISpeechToTextClient client, Microsoft.Extensions.AI.DataContent audioSpeechContent, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.AI.SpeechToTextClientMetadata",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextClientMetadata.SpeechToTextClientMetadata(string? providerName = null, System.Uri? providerUri = null, string? defaultModelId = null);",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "string? Microsoft.Extensions.AI.SpeechToTextClientMetadata.DefaultModelId { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.SpeechToTextClientMetadata.ProviderName { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Uri? Microsoft.Extensions.AI.SpeechToTextClientMetadata.ProviderUri { get; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.AI.SpeechToTextOptions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextOptions.SpeechToTextOptions();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "virtual Microsoft.Extensions.AI.SpeechToTextOptions Microsoft.Extensions.AI.SpeechToTextOptions.Clone();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.SpeechToTextOptions.AdditionalProperties { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.SpeechToTextOptions.ModelId { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Func<Microsoft.Extensions.AI.ISpeechToTextClient, object?>? Microsoft.Extensions.AI.SpeechToTextOptions.RawRepresentationFactory { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.SpeechToTextOptions.SpeechLanguage { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "int? Microsoft.Extensions.AI.SpeechToTextOptions.SpeechSampleRate { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.SpeechToTextOptions.TextLanguage { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.AI.SpeechToTextResponse",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextResponse.SpeechToTextResponse();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextResponse.SpeechToTextResponse(System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> contents);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextResponse.SpeechToTextResponse(string? content);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextResponseUpdate[] Microsoft.Extensions.AI.SpeechToTextResponse.ToSpeechToTextResponseUpdates();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override string Microsoft.Extensions.AI.SpeechToTextResponse.ToString();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.SpeechToTextResponse.AdditionalProperties { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> Microsoft.Extensions.AI.SpeechToTextResponse.Contents { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.TimeSpan? Microsoft.Extensions.AI.SpeechToTextResponse.EndTime { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.SpeechToTextResponse.ModelId { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "object? Microsoft.Extensions.AI.SpeechToTextResponse.RawRepresentation { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.SpeechToTextResponse.ResponseId { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.TimeSpan? Microsoft.Extensions.AI.SpeechToTextResponse.StartTime { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string Microsoft.Extensions.AI.SpeechToTextResponse.Text { get; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.AI.SpeechToTextResponseUpdate",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextResponseUpdate.SpeechToTextResponseUpdate();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextResponseUpdate.SpeechToTextResponseUpdate(System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> contents);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextResponseUpdate.SpeechToTextResponseUpdate(string? content);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override string Microsoft.Extensions.AI.SpeechToTextResponseUpdate.ToString();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.SpeechToTextResponseUpdate.AdditionalProperties { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> Microsoft.Extensions.AI.SpeechToTextResponseUpdate.Contents { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.TimeSpan? Microsoft.Extensions.AI.SpeechToTextResponseUpdate.EndTime { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind Microsoft.Extensions.AI.SpeechToTextResponseUpdate.Kind { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.SpeechToTextResponseUpdate.ModelId { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "object? Microsoft.Extensions.AI.SpeechToTextResponseUpdate.RawRepresentation { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.SpeechToTextResponseUpdate.ResponseId { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.TimeSpan? Microsoft.Extensions.AI.SpeechToTextResponseUpdate.StartTime { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string Microsoft.Extensions.AI.SpeechToTextResponseUpdate.Text { get; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.AI.SpeechToTextResponseUpdateExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.AI.SpeechToTextResponse Microsoft.Extensions.AI.SpeechToTextResponseUpdateExtensions.ToSpeechToTextResponse(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.SpeechToTextResponseUpdate> updates);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.SpeechToTextResponse> Microsoft.Extensions.AI.SpeechToTextResponseUpdateExtensions.ToSpeechToTextResponseAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.SpeechToTextResponseUpdate> updates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "readonly struct Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind : System.IEquatable<Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind>",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.SpeechToTextResponseUpdateKind(string value);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.SpeechToTextResponseUpdateKind();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override bool Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.Equals(object? obj);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.Equals(Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind other);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override int Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.GetHashCode();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static bool Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.operator ==(Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind left, Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind right);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static bool Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.operator !=(Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind left, Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind right);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override string Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.ToString();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "static Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.Error { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.SessionClose { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.SessionOpen { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.TextUpdated { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.TextUpdating { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.Value { get; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.Converter",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.Converter.Converter();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override void Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.SpeechToTextResponseUpdateKind value, System.Text.Json.JsonSerializerOptions options);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "sealed class Microsoft.Extensions.AI.TextContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
@@ -2397,6 +2155,10 @@
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.AI.TextReasoningContent.Text { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextReasoningContent.ProtectedData { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -2497,6 +2259,14 @@
         },
         {
           "Member": "long? Microsoft.Extensions.AI.UsageDetails.TotalTokenCount { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.CachedInputTokenCount { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.ReasoningTokenCount { get; set; }",
           "Stage": "Stable"
         }
       ]

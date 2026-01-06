@@ -26,6 +26,7 @@ The services can be registered using any of the following methods:
 
 ```csharp
 public static IHostBuilder UseApplicationMetadata(this IHostBuilder builder, string sectionName = DefaultSectionName)
+public static TBuilder UseApplicationMetadata<TBuilder>(this TBuilder builder, string sectionName = DefaultSectionName) where TBuilder : IHostApplicationBuilder
 public static IServiceCollection AddApplicationMetadata(this IServiceCollection services, Action<ApplicationMetadata> configure)
 ```
 

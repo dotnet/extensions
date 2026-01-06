@@ -19,12 +19,21 @@ namespace OpenAI.Chat;
 /// <summary>Provides extension methods for working with content associated with OpenAI.Chat.</summary>
 public static class MicrosoftExtensionsAIChatExtensions
 {
-    /// <summary>Creates an OpenAI <see cref="ChatTool"/> from an <see cref="AIFunction"/>.</summary>
+    /// <summary>Creates an OpenAI <see cref="ChatTool"/> from an <see cref="AIFunctionDeclaration"/>.</summary>
     /// <param name="function">The function to convert.</param>
     /// <returns>An OpenAI <see cref="ChatTool"/> representing <paramref name="function"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-    public static ChatTool AsOpenAIChatTool(this AIFunction function) =>
+    public static ChatTool AsOpenAIChatTool(this AIFunctionDeclaration function) =>
         OpenAIChatClient.ToOpenAIChatTool(Throw.IfNull(function));
+
+    /// <summary>
+    /// Creates an OpenAI <see cref="ChatResponseFormat"/> from a <see cref="Microsoft.Extensions.AI.ChatResponseFormat"/>.
+    /// </summary>
+    /// <param name="format">The format.</param>
+    /// <param name="options">The options to use when interpreting the format.</param>
+    /// <returns>The converted OpenAI <see cref="ChatResponseFormat"/>.</returns>
+    public static ChatResponseFormat? AsOpenAIChatResponseFormat(this Microsoft.Extensions.AI.ChatResponseFormat? format, ChatOptions? options = null) =>
+        OpenAIChatClient.ToOpenAIChatResponseFormat(format, options);
 
     /// <summary>Creates a sequence of OpenAI <see cref="ChatMessage"/> instances from the specified input messages.</summary>
     /// <param name="messages">The input messages to convert.</param>
@@ -103,7 +112,7 @@ public static class MicrosoftExtensionsAIChatExtensions
                     }
                     else
                     {
-                        yield return OpenAIChatModelFactory.ChatMessageAnnotation(0, 0, citation.Url, citation.Title);
+                        yield return OpenAIChatModelFactory.ChatMessageAnnotation(webResourceUri: citation.Url, webResourceTitle: citation.Title);
                     }
                 }
             }
@@ -140,8 +149,10 @@ public static class MicrosoftExtensionsAIChatExtensions
 
             var toolCallUpdates = update.Contents.OfType<FunctionCallContent>().Select((fcc, index) =>
                 OpenAIChatModelFactory.StreamingChatToolCallUpdate(
-                    index, fcc.CallId, ChatToolCallKind.Function, fcc.Name,
-                    new(JsonSerializer.SerializeToUtf8Bytes(fcc.Arguments, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))))
+                    index,
+                    fcc.CallId,
+                    functionName: fcc.Name,
+                    functionArgumentsUpdate: new(JsonSerializer.SerializeToUtf8Bytes(fcc.Arguments, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))))
                 .ToList();
 
             yield return OpenAIChatModelFactory.StreamingChatCompletionUpdate(
@@ -174,6 +185,7 @@ public static class MicrosoftExtensionsAIChatExtensions
             switch (message)
             {
                 case AssistantChatMessage acm:
+                    resultMessage.Role = ChatRole.Assistant;
                     resultMessage.AuthorName = acm.ParticipantName;
                     OpenAIChatClient.ConvertContentParts(acm.Content, resultMessage.Contents);
                     foreach (var toolCall in acm.ToolCalls)
@@ -186,21 +198,25 @@ public static class MicrosoftExtensionsAIChatExtensions
                     break;
 
                 case UserChatMessage ucm:
+                    resultMessage.Role = ChatRole.User;
                     resultMessage.AuthorName = ucm.ParticipantName;
                     OpenAIChatClient.ConvertContentParts(ucm.Content, resultMessage.Contents);
                     break;
 
                 case DeveloperChatMessage dcm:
+                    resultMessage.Role = ChatRole.System;
                     resultMessage.AuthorName = dcm.ParticipantName;
                     OpenAIChatClient.ConvertContentParts(dcm.Content, resultMessage.Contents);
                     break;
 
                 case SystemChatMessage scm:
+                    resultMessage.Role = ChatRole.System;
                     resultMessage.AuthorName = scm.ParticipantName;
                     OpenAIChatClient.ConvertContentParts(scm.Content, resultMessage.Contents);
                     break;
 
                 case ToolChatMessage tcm:
+                    resultMessage.Role = ChatRole.Tool;
                     resultMessage.Contents.Add(new FunctionResultContent(tcm.ToolCallId, ToToolResult(tcm.Content))
                     {
                         RawRepresentation = tcm,
@@ -220,7 +236,7 @@ public static class MicrosoftExtensionsAIChatExtensions
                             part.Write(writer, ModelReaderWriterOptions.Json);
                         }
 
-                        return JsonSerializer.Deserialize(ms.GetBuffer().AsSpan(0, (int)ms.Position), AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)))!;
+                        return JsonElement.Parse(ms.GetBuffer().AsSpan(0, (int)ms.Position));
                     }
 
                     break;

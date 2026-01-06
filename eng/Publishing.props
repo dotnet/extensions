@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
+  <ItemGroup>
+    <PackageDownload Include="Microsoft.DotNet.Build.Tasks.Feed" Version="[$(MicrosoftDotNetBuildTasksFeedVersion)]" />
+  </ItemGroup>
+
   <PropertyGroup>
     <PublishingVersion>3</PublishingVersion>
     <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>

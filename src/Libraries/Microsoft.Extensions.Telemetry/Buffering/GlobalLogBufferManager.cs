@@ -44,12 +44,22 @@ internal sealed class GlobalLogBufferManager : GlobalLogBuffer
     public override bool TryEnqueue<TState>(IBufferedLogger bufferedLogger, in LogEntry<TState> logEntry)
     {
         string category = logEntry.Category;
-        GlobalBuffer buffer = Buffers.GetOrAdd(category, _ => new GlobalBuffer(
+#if NET
+        GlobalBuffer buffer = Buffers.GetOrAdd(category, static (category, state) => new GlobalBuffer(
+            state.bufferedLogger,
+            category,
+            state._ruleSelector,
+            state._options,
+            state._timeProvider),
+            (bufferedLogger, _ruleSelector, _options, _timeProvider));
+#else
+        GlobalBuffer buffer = Buffers.GetOrAdd(category, category => new GlobalBuffer(
             bufferedLogger,
             category,
             _ruleSelector,
             _options,
             _timeProvider));
+#endif
         return buffer.TryEnqueue(logEntry);
     }
 }

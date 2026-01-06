@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Primitives;
 
-#pragma warning disable CA2227 // Collection properties should be read only
-
 namespace Microsoft.AspNetCore.HeaderParsing;
 
 /// <summary>

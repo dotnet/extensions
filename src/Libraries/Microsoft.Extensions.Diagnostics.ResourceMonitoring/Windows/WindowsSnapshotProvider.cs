@@ -5,7 +5,6 @@ using System;
 #if !NET9_0_OR_GREATER
 using System.Diagnostics;
 #endif
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
@@ -46,7 +45,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
     {
     }
 
-    [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Dependencies for testing")]
+#pragma warning disable S107 // Methods should not have too many parameters
     internal WindowsSnapshotProvider(
         ILogger<WindowsSnapshotProvider>? logger,
         IMeterFactory meterFactory,
@@ -56,6 +55,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         Func<long> getCpuTicksFunc,
         Func<long> getMemoryUsageFunc,
         Func<ulong> getTotalMemoryInBytesFunc)
+#pragma warning restore S107 // Methods should not have too many parameters
     {
         _logger = logger ?? NullLogger<WindowsSnapshotProvider>.Instance;
 

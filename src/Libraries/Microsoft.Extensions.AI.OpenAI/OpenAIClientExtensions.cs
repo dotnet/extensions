@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -16,7 +17,6 @@ using OpenAI.Embeddings;
 using OpenAI.Images;
 using OpenAI.Responses;
 
-#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 
 namespace Microsoft.Extensions.AI;
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.AI;
 public static class OpenAIClientExtensions
 {
     /// <summary>Key into AdditionalProperties used to store a strict option.</summary>
-    private const string StrictKey = "strictJsonSchema";
+    private const string StrictKey = "strict";
 
     /// <summary>Gets the default OpenAI endpoint.</summary>
     internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
@@ -111,11 +111,11 @@ public static class OpenAIClientExtensions
     public static IChatClient AsIChatClient(this ChatClient chatClient) =>
         new OpenAIChatClient(chatClient);
 
-    /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="OpenAIResponseClient"/>.</summary>
+    /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="ResponsesClient"/>.</summary>
     /// <param name="responseClient">The client.</param>
-    /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="OpenAIResponseClient"/>.</returns>
+    /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ResponsesClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="responseClient"/> is <see langword="null"/>.</exception>
-    public static IChatClient AsIChatClient(this OpenAIResponseClient responseClient) =>
+    public static IChatClient AsIChatClient(this ResponsesClient responseClient) =>
         new OpenAIResponsesChatClient(responseClient);
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="AssistantClient"/>.</summary>
@@ -177,8 +177,8 @@ public static class OpenAIClientExtensions
         strictObj is bool strictValue ?
         strictValue : null;
 
-    /// <summary>Extracts from an <see cref="AIFunction"/> the parameters and strictness setting for use with OpenAI's APIs.</summary>
-    internal static BinaryData ToOpenAIFunctionParameters(AIFunction aiFunction, bool? strict)
+    /// <summary>Extracts from an <see cref="AIFunctionDeclaration"/> the parameters and strictness setting for use with OpenAI's APIs.</summary>
+    internal static BinaryData ToOpenAIFunctionParameters(AIFunctionDeclaration aiFunction, bool? strict)
     {
         // Perform any desirable transformations on the function's JSON schema, if it'll be used in a strict setting.
         JsonElement jsonSchema = strict is true ?
@@ -214,6 +214,45 @@ public static class OpenAIClientExtensions
     internal static FunctionCallContent ParseCallContent(BinaryData utf8json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(utf8json, callId, name,
             static utf8json => JsonSerializer.Deserialize(utf8json, OpenAIJsonContext.Default.IDictionaryStringObject)!);
+
+    /// <summary>Gets a media type for an image based on the file extension in the provided URI.</summary>
+    internal static string ImageUriToMediaType(Uri uri)
+    {
+        string absoluteUri = uri.AbsoluteUri;
+        return
+            absoluteUri.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" :
+            absoluteUri.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg" :
+            absoluteUri.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg" :
+            absoluteUri.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ? "image/gif" :
+            absoluteUri.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ? "image/bmp" :
+            absoluteUri.EndsWith(".webp", StringComparison.OrdinalIgnoreCase) ? "image/webp" :
+            "image/*";
+    }
+
+    /// <summary>Sets $.model in <paramref name="patch"/> to <paramref name="modelId"/> if not already set.</summary>
+    internal static void PatchModelIfNotSet(ref JsonPatch patch, string? modelId)
+    {
+        if (modelId is not null)
+        {
+            _ = patch.TryGetValue("$.model"u8, out string? existingModel);
+            if (existingModel is null)
+            {
+                patch.Set("$.model"u8, modelId);
+            }
+        }
+    }
+
+    /// <summary>Gets the typed property of the specified name from the tool's <see cref="AITool.AdditionalProperties"/>.</summary>
+    internal static T? GetProperty<T>(this AITool tool, string name) =>
+        tool.AdditionalProperties?.TryGetValue(name, out object? value) is true && value is T tValue ? tValue : default;
+
+    /// <summary>Gets whether an ID is an OpenAI conversation ID.</summary>
+    /// <remarks>
+    /// Technically, OpenAI's IDs are opaque. However, by convention conversation IDs start with "conv_" and
+    /// we can use that to disambiguate whether we're looking at a conversation ID or something else, like a response ID.
+    /// </remarks>
+    internal static bool IsConversationId(string? id) =>
+        id?.StartsWith("conv_", StringComparison.OrdinalIgnoreCase) is true;
 
     /// <summary>Used to create the JSON payload for an OpenAI tool description.</summary>
     internal sealed class ToolJson

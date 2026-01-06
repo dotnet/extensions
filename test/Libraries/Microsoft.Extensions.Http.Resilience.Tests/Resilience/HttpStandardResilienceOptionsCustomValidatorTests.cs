@@ -16,6 +16,7 @@ using Polly.Retry;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.Test.Resilience;
+
 public class HttpStandardResilienceOptionsCustomValidatorTests
 {
     [Fact]

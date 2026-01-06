@@ -479,11 +479,6 @@ dotnet_diagnostic.CA1507.severity = warning
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508
 dotnet_diagnostic.CA1508.severity = warning
 
-# Title    : Avoid dead conditional code
-# Category : Maintainability
-# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508
-dotnet_diagnostic.CA1508.severity = warning
-
 # Title    : Invalid entry in code metrics rule specification file
 # Category : Maintainability
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1509
@@ -2936,7 +2931,7 @@ dotnet_diagnostic.S1067.severity = warning
 # Title    : Methods should not have too many parameters
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-107
-dotnet_diagnostic.S107.severity = warning
+dotnet_diagnostic.S107.severity = none
 
 # Title    : URIs should not be hardcoded
 # Category : Minor Code Smell
@@ -3969,7 +3964,7 @@ dotnet_diagnostic.S3246.severity = warning
 # Title    : Duplicate casts should not be made
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3247
-dotnet_diagnostic.S3247.severity = warning
+dotnet_diagnostic.S3247.severity = none
 
 # Title    : Classes directly extending "object" should not call "base" in "GetHashCode" or "Equals"
 # Category : Major Bug
@@ -5089,7 +5084,7 @@ dotnet_diagnostic.S6585.severity = none
 # Title    : Use the "UnixEpoch" field instead of creating "DateTime" instances that point to the beginning of the Unix epoch
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-6588
-dotnet_diagnostic.S6588.severity = warning
+dotnet_diagnostic.S6588.severity = none
 
 # Title    : "Find" method should be used instead of the "FirstOrDefault" extension
 # Category : Minor Code Smell
@@ -5150,6 +5145,21 @@ dotnet_diagnostic.S6618.severity = none
 # Category : Major Security Hotspot
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-6640
 dotnet_diagnostic.S6640.severity = warning
+
+# Title    : Generic logger injection should match enclosing type
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6672
+dotnet_diagnostic.S6672.severity = none
+
+# Title    : Awaitable method should be used
+# Category : Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6966
+dotnet_diagnostic.S6966.severity = none
+
+# Title    : ModelState.IsValid should be called in controller actions
+# Category : Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6967
+dotnet_diagnostic.S6967.severity = none
 
 # Title    : Literal suffixes should be upper case
 # Category : Minor Code Smell

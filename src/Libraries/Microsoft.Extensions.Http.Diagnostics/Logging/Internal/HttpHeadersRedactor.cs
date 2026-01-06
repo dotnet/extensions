@@ -29,6 +29,11 @@ internal sealed class HttpHeadersRedactor : IHttpHeadersRedactor
             _ => TelemetryConstants.Unknown
         };
 
+    public string Redact(string value, DataClassification classification)
+    {
+        return _redactorProvider.GetRedactor(classification).Redact(value);
+    }
+
     private string RedactIEnumerable(IEnumerable<string> input, DataClassification classification)
     {
         var redactor = _redactorProvider.GetRedactor(classification);

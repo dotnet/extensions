@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -19,7 +18,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating embedding generator that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.36, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.38, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 /// <typeparam name="TInput">The type of input used to produce embeddings.</typeparam>
@@ -33,10 +32,9 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     private readonly Histogram<int> _tokenUsageHistogram;
     private readonly Histogram<double> _operationDurationHistogram;
 
-    private readonly string? _system;
+    private readonly string? _providerName;
     private readonly string? _defaultModelId;
     private readonly int? _defaultModelDimensions;
-    private readonly string? _modelProvider;
     private readonly string? _endpointAddress;
     private readonly int _endpointPort;
 
@@ -44,7 +42,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     /// Initializes a new instance of the <see cref="OpenTelemetryEmbeddingGenerator{TInput, TEmbedding}"/> class.
     /// </summary>
     /// <param name="innerGenerator">The underlying <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>, which is the next stage of the pipeline.</param>
-    /// <param name="logger">The <see cref="ILogger"/> to use for emitting events.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for emitting any logging data from the generator.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
 #pragma warning disable IDE0060 // Remove unused parameter; it exists for future use and consistency with OpenTelemetryChatClient
     public OpenTelemetryEmbeddingGenerator(IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, ILogger? logger = null, string? sourceName = null)
@@ -55,11 +53,10 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 
         if (innerGenerator!.GetService<EmbeddingGeneratorMetadata>() is EmbeddingGeneratorMetadata metadata)
         {
-            _system = metadata.ProviderName;
             _defaultModelId = metadata.DefaultModelId;
             _defaultModelDimensions = metadata.DefaultModelDimensions;
-            _modelProvider = metadata.ProviderName;
-            _endpointAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
+            _providerName = metadata.ProviderName;
+            _endpointAddress = metadata.ProviderUri?.Host;
             _endpointPort = metadata.ProviderUri?.Port ?? 0;
         }
 
@@ -70,19 +67,15 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
         _tokenUsageHistogram = _meter.CreateHistogram<int>(
             OpenTelemetryConsts.GenAI.Client.TokenUsage.Name,
             OpenTelemetryConsts.TokensUnit,
-            OpenTelemetryConsts.GenAI.Client.TokenUsage.Description
-#if NET9_0_OR_GREATER
-            , advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TokenUsage.ExplicitBucketBoundaries }
-#endif
+            OpenTelemetryConsts.GenAI.Client.TokenUsage.Description,
+            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TokenUsage.ExplicitBucketBoundaries }
             );
 
         _operationDurationHistogram = _meter.CreateHistogram<double>(
             OpenTelemetryConsts.GenAI.Client.OperationDuration.Name,
             OpenTelemetryConsts.SecondsUnit,
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description
-#if NET9_0_OR_GREATER
-            , advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
-#endif
+            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description,
+            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
             );
     }
 
@@ -92,13 +85,16 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     /// <value>
     /// <see langword="true"/> if potentially sensitive information should be included in telemetry;
     /// <see langword="false"/> if telemetry shouldn't include raw inputs and outputs.
-    /// The default value is <see langword="false"/>.
+    /// The default value is <see langword="false"/>, unless the <c>OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT</c>
+    /// environment variable is set to "true" (case-insensitive).
     /// </value>
     /// <remarks>
     /// By default, telemetry includes metadata, such as token counts, but not raw inputs
     /// and outputs or additional options data.
+    /// The default value can be overridden by setting the <c>OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT</c>
+    /// environment variable to "true". Explicitly setting this property will override the environment variable.
     /// </remarks>
-    public bool EnableSensitiveData { get; set; }
+    public bool EnableSensitiveData { get; set; } = TelemetryHelpers.EnableSensitiveDataDefault;
 
     /// <inheritdoc/>
     public override object? GetService(Type serviceType, object? serviceKey = null) =>
@@ -154,13 +150,13 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             string? modelId = options?.ModelId ?? _defaultModelId;
 
             activity = _activitySource.StartActivity(
-                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.Embeddings : $"{OpenTelemetryConsts.GenAI.Embeddings} {modelId}",
+                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.EmbeddingsName : $"{OpenTelemetryConsts.GenAI.EmbeddingsName} {modelId}",
                 ActivityKind.Client,
                 default(ActivityContext),
                 [
-                    new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Embeddings),
+                    new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.EmbeddingsName),
                     new(OpenTelemetryConsts.GenAI.Request.Model, modelId),
-                    new(OpenTelemetryConsts.GenAI.SystemName, _modelProvider),
+                    new(OpenTelemetryConsts.GenAI.Provider.Name, _providerName),
                 ]);
 
             if (activity is not null)
@@ -174,22 +170,16 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 
                 if ((options?.Dimensions ?? _defaultModelDimensions) is int dimensionsValue)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.EmbeddingDimensions, dimensionsValue);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Embeddings.Dimension.Count, dimensionsValue);
                 }
 
-                // Log all additional request options as per-provider tags. This is non-normative, but it covers cases where
-                // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.request.service_tier),
-                // and more generally cases where there's additional useful information to be logged.
+                // Log all additional request options as raw values on the span.
                 // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
-                if (EnableSensitiveData &&
-                    _system is not null &&
-                    options?.AdditionalProperties is { } props)
+                if (EnableSensitiveData && options?.AdditionalProperties is { } props)
                 {
                     foreach (KeyValuePair<string, object?> prop in props)
                     {
-                        _ = activity.AddTag(
-                            OpenTelemetryConsts.GenAI.Request.PerProvider(_system, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)),
-                            prop.Value);
+                        _ = activity.AddTag(prop.Key, prop.Value);
                     }
                 }
             }
@@ -232,10 +222,10 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
         if (_tokenUsageHistogram.Enabled && inputTokens.HasValue)
         {
             TagList tags = default;
-            tags.Add(OpenTelemetryConsts.GenAI.Token.Type, "input");
+            tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeInput);
             AddMetricTags(ref tags, requestModelId, responseModelId);
 
-            _tokenUsageHistogram.Record(inputTokens.Value);
+            _tokenUsageHistogram.Record(inputTokens.Value, tags);
         }
 
         if (activity is not null)
@@ -257,18 +247,13 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
                 _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Model, responseModelId);
             }
 
-            // Log all additional response properties as per-provider tags. This is non-normative, but it covers cases where
-            // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.response.system_fingerprint),
-            // and more generally cases where there's additional useful information to be logged.
-            if (EnableSensitiveData &&
-                _system is not null &&
-                embeddings?.AdditionalProperties is { } props)
+            // Log all additional response properties as raw values on the span.
+            // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
+            if (EnableSensitiveData && embeddings?.AdditionalProperties is { } props)
             {
                 foreach (KeyValuePair<string, object?> prop in props)
                 {
-                    _ = activity.AddTag(
-                        OpenTelemetryConsts.GenAI.Response.PerProvider(_system, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)),
-                        prop.Value);
+                    _ = activity.AddTag(prop.Key, prop.Value);
                 }
             }
         }
@@ -276,14 +261,14 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 
     private void AddMetricTags(ref TagList tags, string? requestModelId, string? responseModelId)
     {
-        tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Embeddings);
+        tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.EmbeddingsName);
 
         if (requestModelId is not null)
         {
             tags.Add(OpenTelemetryConsts.GenAI.Request.Model, requestModelId);
         }
 
-        tags.Add(OpenTelemetryConsts.GenAI.SystemName, _modelProvider);
+        tags.Add(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
 
         if (_endpointAddress is string endpointAddress)
         {

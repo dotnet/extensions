@@ -22,9 +22,7 @@ public class ChatResponse<T> : ChatResponse
 {
     private static readonly JsonReaderOptions _allowMultipleValuesJsonReaderOptions = new()
     {
-#if NET9_0_OR_GREATER
         AllowMultipleValues = true
-#endif
     };
     private readonly JsonSerializerOptions _serializerOptions;
 
@@ -82,13 +80,11 @@ public class ChatResponse<T> : ChatResponse
             result = GetResultCore(out var failureReason);
             return failureReason is null;
         }
-#pragma warning disable CA1031 // Do not catch general exception types
         catch
         {
             result = default;
             return false;
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     private static T? DeserializeFirstTopLevelObject(string json, JsonTypeInfo<T> typeInfo)
@@ -127,7 +123,7 @@ public class ChatResponse<T> : ChatResponse
             return _deserializedResult;
         }
 
-        var json = Text;
+        var json = Messages.Count > 0 ? Messages[Messages.Count - 1].Text : string.Empty;
         if (string.IsNullOrEmpty(json))
         {
             failureReason = FailureReason.ResultDidNotContainJson;

@@ -17,19 +17,13 @@ namespace System.Net.ServerSentEvents
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal readonly string? _eventType;
 
-        /// <summary>The event's id.</summary>
-        private readonly string? _eventId;
-
-        /// <summary>The event's reconnection interval.</summary>
-        private readonly TimeSpan? _reconnectionInterval;
-
         /// <summary>Initializes a new instance of the <see cref="SseItem{T}"/> struct.</summary>
         /// <param name="data">The event's payload.</param>
         /// <param name="eventType">The event's type.</param>
         /// <exception cref="ArgumentException">Thrown when <paramref name="eventType"/> contains a line break.</exception>
         public SseItem(T data, string? eventType = null)
         {
-            if (eventType.AsSpan().ContainsLineBreaks() is true)
+            if (eventType.AsSpan().ContainsLineBreaks())
             {
                 ThrowHelper.ThrowArgumentException_CannotContainLineBreaks(nameof(eventType));
             }
@@ -48,15 +42,15 @@ namespace System.Net.ServerSentEvents
         /// <exception cref="ArgumentException">Thrown when the value contains a line break.</exception>
         public string? EventId
         {
-            get => _eventId;
+            get;
             init
             {
-                if (value.AsSpan().ContainsLineBreaks() is true)
+                if (value.AsSpan().ContainsLineBreaks())
                 {
                     ThrowHelper.ThrowArgumentException_CannotContainLineBreaks(nameof(EventId));
                 }
 
-                _eventId = value;
+                field = value;
             }
         }
 
@@ -66,7 +60,7 @@ namespace System.Net.ServerSentEvents
         /// </remarks>
         public TimeSpan? ReconnectionInterval
         {
-            get => _reconnectionInterval;
+            get;
             init
             {
                 if (value < TimeSpan.Zero)
@@ -74,7 +68,7 @@ namespace System.Net.ServerSentEvents
                     ThrowHelper.ThrowArgumentException_CannotBeNegative(nameof(ReconnectionInterval));
                 }
 
-                _reconnectionInterval = value;
+                field = value;
             }
         }
     }

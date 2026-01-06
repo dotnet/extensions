@@ -173,7 +173,7 @@ internal sealed class JsonObject : IEnumerable<KeyValuePair<string, JsonValue>>,
             }
         }
 
-        [DebuggerDisplay("{value.ToString(),nq}", Name = "{key}", Type = "JsonValue({Type})")]
+        [DebuggerDisplay("{_value,nq}", Name = "{_key}")]
         public sealed class KeyValuePair
         {
             [DebuggerBrowsable(DebuggerBrowsableState.Never)]

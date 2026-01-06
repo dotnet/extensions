@@ -1,10 +1,75 @@
-# Release History
+# Microsoft.Extensions.AI.OpenAI Release History
+
+## 10.1.1-preview.1.? (NOT YET RELEASED)
+
+- Updated to depend on OpenAI 2.8.0.
+- Updated public API signatures in `OpenAIClientExtensions` and `MicrosoftExtensionsAIResponsesExtensions` to match the corresponding breaking changes in OpenAI's Responses APIs.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated the OpenAI Responses and Chat Completion `IChatClient`s to populate `UsageDetails`'s `InputCachedTokenCount` and `ReasoningTokenCount`.
+- Updated handling of `HostedWebSearchTool`, `HostedFileSearchTool`, and `HostedImageGenerationTool` to pull OpenAI-specific
+  options from `AdditionalProperties`.
+
+## 10.1.0-preview.1.25608.1
+
+- Fixed package references for net10.0 asset.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated the OpenAI Responses `IChatClient` to ensure all `ResponseItem`s are yielded in `AIContent`.
+- Added workaround to the OpenAI Responses `IChatClient` for OpenAI service sometimes sending error data in a manner different from how it's documented.
+
+## 10.0.1-preview.1.25571.5
+
+- Updated to depend on OpenAI 2.7.0.
+- Added support for image detail in OpenAI Responses `IChatClient`.
+- Fixed IEmbeddingGenerator implementation to correctly handle missing usage data.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 10.0.0-preview.1.25560.10
+
+- Added support for `HostedImageGenerationTool` in the OpenAI Responses `IChatClient`.
+- Updated .NET dependencies to 10.0.0 versions.
+
+## 9.10.2-preview.1.25552.1
+
+- Updated to depend on OpenAI 2.6.0.
+- Updated the OpenAI Responses `IChatClient` to allow either conversation or response ID for `ChatOptions.ConversationId`.
+- Updated the OpenAI Responses `IChatClient` to support `AIFunction`s that return `AIContent` like `DataContent`.
+- Updated the OpenAI Chat Completion `IChatClient`, the Responses `IChatClient`, and the `IEmbeddingGenerator` to support per-request `ModelId` overrides.
+- Added an `AITool` to `ResponseTool` conversion utility.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.10.1-preview.1.25521.4
+
+- Updated the OpenAI Responses `IChatClient` to support connectors with `HostedMcpServerTool`.
+- Fixed the OpenAI Responses `IChatClient` to roundtrip a `ResponseItem` stored in an `AIContent` in a `ChatRole.User` message.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.10.0-preview.1.25513.3
+
+- Fixed issue with the OpenAI Assistants `IChatClient` where a chat history including unrelated function calls would cause an exception.
+- Fixed issue with the OpenAI Assistants `IChatClient` sending a tool in `ChatOptions.Tools` that had the same name as a function configured with the Assistant would cause an exception.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.9.1-preview.1.25474.6
+
+- Updated to depend on OpenAI 2.5.0.
+- Added M.E.AI to OpenAI conversions for response format types.
+- Added `ResponseTool` to `AITool` conversions.
+- Fixed the handling of `HostedCodeInterpreterTool` with Responses when no file IDs were provided.
+- Fixed an issue where requests would fail when AllowMultipleToolCalls was set with no tools provided.
+- Fixed an issue where requests would fail when an AuthorName was provided containing invalid characters.
+
+## 9.9.0-preview.1.25458.4
+
+- Updated to depend on OpenAI 2.4.0.
+- Updated tool mappings to recognize any `AIFunctionDeclaration`.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Fixed handling of annotated but empty content in the `AsIChatClient` for `AssistantClient`.
 
 ## 9.8.0-preview.1.25412.6
 
 - Updated to depend on OpenAI 2.3.0.
 - Added more conversion helpers for converting bidirectionally between Microsoft.Extensions.AI messages and OpenAI messages.
-- Fixed handling of multiple response messages in the Responses `IChatClient`.
+- Fixed handling of multiple response messages in the OpenAI Responses `IChatClient`.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.7.1-preview.1.25365.4

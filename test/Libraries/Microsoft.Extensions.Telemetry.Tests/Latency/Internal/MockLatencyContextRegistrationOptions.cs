@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Microsoft.Extensions.Diagnostics.Latency.Test;
+
 internal static class MockLatencyContextRegistrationOptions
 {
     public static IOptions<LatencyContextRegistrationOptions> GetLatencyContextRegistrationOptions(

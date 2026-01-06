@@ -33,6 +33,9 @@ parameters:
   #   container and pool.
   platform: {}
 
+  # Optional list of directories to ignore for component governance scans.
+  componentGovernanceIgnoreDirectories: []
+
   is1ESPipeline: ''
 
   # If set to true and running on a non-public project,
@@ -62,7 +65,7 @@ jobs:
           demands: ImageOverride -equals build.ubuntu.2004.amd64
         ${{ if eq(variables['System.TeamProject'], 'internal') }}:
           name: $[replace(replace(eq(contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release'), 'true'), True, 'NetCore1ESPool-Svc-Internal'), False, 'NetCore1ESPool-Internal')]
-          image: 1es-mariner-2
+          image: 1es-azurelinux-3
           os: linux
     ${{ else }}:
       pool:
@@ -93,3 +96,4 @@ jobs:
     parameters:
       is1ESPipeline: ${{ parameters.is1ESPipeline }}
       platform: ${{ parameters.platform }}
+      componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}

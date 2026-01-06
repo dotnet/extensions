@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Microsoft.Extensions.ObjectPool;
@@ -24,6 +23,8 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     private const string CpuStat = "cpu.stat"; // File containing CPU usage in nanoseconds.
     private const string CpuLimit = "cpu.max"; // File with amount of CPU time available to the group along with the accounting period in microseconds.
     private const string CpuRequest = "cpu.weight"; // CPU weights, also known as shares in cgroup v1, is used for resource allocation.
+    private const string MemoryMin = "memory.min"; // File contains min memory, set for QoS by K8s
+    private const string MemoryLow = "memory.low"; // File contains min memory, set if there was memory reservation for container
     private static readonly ObjectPool<BufferWriter<char>> _sharedBufferWriterPool = BufferWriterPool.CreateBufferWriterPool<char>();
 
     /// <remarks>
@@ -132,7 +133,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
         // Extract the part after the last colon and cache it for future use
         ReadOnlySpan<char> trimmedPath = fileContent[(colonIndex + 1)..];
-        _cachedCgroupPath = "/sys/fs/cgroup" + trimmedPath.ToString().TrimEnd('/') + "/";
+        _cachedCgroupPath = $"/sys/fs/cgroup{trimmedPath.TrimEnd('/')}/";
 
         return $"{_cachedCgroupPath}{filename}";
     }
@@ -400,8 +401,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         return (ulong)memoryUsageTotal;
     }
 
-    [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used",
-        Justification = "Shifting bits left by number n is multiplying the value by 2 to the power of n.")]
     public ulong GetHostAvailableMemory()
     {
         // The value we are interested in starts with this. We just want to make sure it is true.
@@ -516,6 +515,50 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
                 $"Could not parse '{_cpuSetCpus}'. Expected comma-separated list of integers, with dashes (\"-\") based ranges (\"0\", \"2-6,12\") but got '{new string(content)}'.");
     }
 
+    public ulong GetMinMemoryInBytes()
+    {
+        FileInfo memoryMinFile = new(GetCgroupPath(MemoryMin));
+        if (_fileSystem.Exists(memoryMinFile))
+        {
+            using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+            _fileSystem.ReadAll(memoryMinFile, bufferWriter.Buffer);
+
+            ReadOnlySpan<char> memoryMinBuffer = bufferWriter.Buffer.WrittenSpan;
+
+            _ = GetNextNumber(memoryMinBuffer, out long memoryMin);
+
+            if (memoryMin == -1)
+            {
+                Throw.InvalidOperationException($"Could not parse '{memoryMinFile}' content. Expected to find memory minimum in bytes but got '{new string(memoryMinBuffer)}' instead.");
+            }
+
+            if (memoryMin != 0)
+            {
+                return (ulong)memoryMin;
+            }
+        }
+
+        FileInfo memoryLowFile = new(GetCgroupPath(MemoryLow));
+        if (_fileSystem.Exists(memoryLowFile))
+        {
+            using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+            _fileSystem.ReadAll(memoryLowFile, bufferWriter.Buffer);
+
+            ReadOnlySpan<char> memoryLowBuffer = bufferWriter.Buffer.WrittenSpan;
+
+            _ = GetNextNumber(memoryLowBuffer, out long memoryLow);
+
+            if (memoryLow == -1)
+            {
+                Throw.InvalidOperationException($"Could not parse '{memoryLowFile}' content. Expected to find memory low in bytes but got '{new string(memoryLowBuffer)}' instead.");
+            }
+
+            return (ulong)memoryLow;
+        }
+
+        return 0;
+    }
+
     private static (long cpuUsageNanoseconds, long nrPeriods) ParseCpuUsageFromFile(IFileSystem fileSystem, FileInfo cpuUsageFile)
     {
         // The values we are interested in start with these prefixes
@@ -564,8 +607,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// <remarks>
     /// The input must contain only number. If there is something more than whitespace before the number, it will return failure (-1).
     /// </remarks>
-    [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used",
-        Justification = "We are adding another digit, so we need to multiply by ten.")]
     private static int GetNextNumber(ReadOnlySpan<char> buffer, out long number)
     {
         int numberStart = 0;
@@ -788,9 +829,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         // where y is the CPU pod weight (e.g. cpuPodWeight) and x is the CPU share of cgroup v1 (e.g. cpuUnits).
         // https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2
         // We invert the formula to calculate CPU share from CPU pod weight:
-#pragma warning disable S109 // Magic numbers should not be used - using the formula, forgive.
         cpuUnits = ((cpuPodWeight - 1) * 262142 / 9999) + 2;
-#pragma warning restore S109 // Magic numbers should not be used
 
         return true;
     }

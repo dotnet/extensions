@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes.</Description>
+    <EnablePackageValidation>false</EnablePackageValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.Testing\Microsoft.Extensions.Diagnostics.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.TimeProvider.Testing\Microsoft.Extensions.TimeProvider.Testing.csproj" />
+    <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <Compile Remove="Linux\**\*.cs" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+  
+</Project>

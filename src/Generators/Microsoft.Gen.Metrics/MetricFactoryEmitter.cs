@@ -146,7 +146,15 @@ internal sealed class MetricFactoryEmitter : EmitterBase
         OutOpenBrace();
         OutLn($"return {GetMetricDictionaryName(metricMethod)}.GetOrAdd({meterParam.Name}, static _meter =>");
         OutLn("    {");
-        OutLn($"        var instrument = _meter.{createMethodName}(@\"{metricMethod.MetricName}\");");
+        if (string.IsNullOrEmpty(metricMethod.MetricUnit))
+        {
+            OutLn($"        var instrument = _meter.{createMethodName}(@\"{metricMethod.MetricName}\");");
+        }
+        else
+        {
+            OutLn($"        var instrument = _meter.{createMethodName}(@\"{metricMethod.MetricName}\", @\"{metricMethod.MetricUnit}\");");
+        }
+
         OutLn($"        return new {nsprefix}{metricMethod.MetricTypeName}(instrument);");
         OutLn("    });");
         OutCloseBrace();

@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable S3604
-// S3604: Member initializer values should not be redundant.
-// We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
-// constructor syntax.
-
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -25,15 +20,10 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
     private const string APIVersionForServiceDiscoveryInHubBasedProjects = "?api-version=2023-08-01-preview";
     private const string APIVersionForNonHubBasedProjects = "?api-version=2025-05-15-preview";
 
-    private static HttpClient? _sharedHttpClient;
-    private static HttpClient SharedHttpClient
-    {
-        get
-        {
-            _sharedHttpClient ??= new HttpClient();
-            return _sharedHttpClient;
-        }
-    }
+    private static HttpClient SharedHttpClient =>
+        field ??
+        Interlocked.CompareExchange(ref field, new(), null) ??
+        field;
 
     private static readonly ConcurrentDictionary<UrlCacheKey, string> _serviceUrlCache =
         new ConcurrentDictionary<UrlCacheKey, string>();
@@ -44,7 +34,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
     internal static EvaluationResult ParseAnnotationResult(string annotationResponse)
     {
-#pragma warning disable S125 // Sections of code should not be commented out
+#pragma warning disable S125 // Sections of code should not be commented out.
         // Example annotation response:
         // [
         //   {
@@ -392,9 +382,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
                     }
                     else
                     {
-#pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
                         await Task.Delay(InitialDelayInMilliseconds * attempts, cancellationToken).ConfigureAwait(false);
-#pragma warning restore EA0002
                     }
                 }
             }
@@ -452,9 +440,8 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
         httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
 
-        if (httpRequestMessage.Content is not null)
-        {
-            httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        }
+#pragma warning disable IDE0058 // Temporary workaround for Roslyn analyzer issue (see https://github.com/dotnet/roslyn/issues/80499).
+        httpRequestMessage.Content?.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+#pragma warning restore IDE0058
     }
 }
