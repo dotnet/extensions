@@ -26,6 +26,7 @@
   <PropertyGroup>
     <InjectCompilerFeatureRequiredOnLegacy>true</InjectCompilerFeatureRequiredOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectMediaTypeMapOnLegacy>true</InjectMediaTypeMapOnLegacy>
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
   </PropertyGroup>

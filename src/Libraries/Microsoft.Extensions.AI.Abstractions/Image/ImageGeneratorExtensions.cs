@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -15,18 +15,6 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public static class ImageGeneratorExtensions
 {
-    private static readonly Dictionary<string, string> _extensionToMimeType = new(StringComparer.OrdinalIgnoreCase)
-    {
-        [".png"] = "image/png",
-        [".jpg"] = "image/jpeg",
-        [".jpeg"] = "image/jpeg",
-        [".webp"] = "image/webp",
-        [".gif"] = "image/gif",
-        [".bmp"] = "image/bmp",
-        [".tiff"] = "image/tiff",
-        [".tif"] = "image/tiff",
-    };
-
     /// <summary>Asks the <see cref="IImageGenerator"/> for an object of type <typeparamref name="TService"/>.</summary>
     /// <typeparam name="TService">The type of the object to be retrieved.</typeparam>
     /// <param name="generator">The generator.</param>
@@ -203,13 +191,6 @@ public static class ImageGeneratorExtensions
     /// <returns>The inferred media type.</returns>
     private static string GetMediaTypeFromFileName(string fileName)
     {
-        string extension = Path.GetExtension(fileName);
-
-        if (_extensionToMimeType.TryGetValue(extension, out string? mediaType))
-        {
-            return mediaType;
-        }
-
-        return "image/png"; // Default to PNG if unknown extension
+        return MediaTypeMap.GetMediaType(fileName) ?? "image/png"; // Default to PNG if unknown extension
     }
 }
