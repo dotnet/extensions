@@ -31,6 +31,46 @@ internal class LogCollector : ILoggerProvider
         }
     }
 
+    public async Task WaitForLogsAsync(int[] expectedErrorIds, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            lock (_items)
+            {
+                // Check for exact match to avoid race conditions with AssertErrors
+                if (_items.Count == expectedErrorIds.Length)
+                {
+                    bool match = true;
+                    for (int i = 0; i < expectedErrorIds.Length; i++)
+                    {
+                        if (_items[i].eventId.Id != expectedErrorIds[i])
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+
+                    if (match)
+                    {
+                        return; // Success
+                    }
+                }
+
+                // If we have more logs than expected, something unexpected happened
+                // Stop waiting to let AssertErrors report the mismatch
+                if (_items.Count > expectedErrorIds.Length)
+                {
+                    return;
+                }
+            }
+
+            await Task.Delay(10);
+        }
+
+        // Timeout reached, will fail in AssertErrors
+    }
+
     public void AssertErrors(int[] errorIds)
     {
         lock (_items)
