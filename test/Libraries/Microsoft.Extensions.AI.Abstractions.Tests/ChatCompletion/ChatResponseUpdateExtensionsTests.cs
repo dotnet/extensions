@@ -448,6 +448,91 @@ public class ChatResponseUpdateExtensionsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ToChatResponse_AdditionalPropertiesGoToMessages(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        [
+
+            // First message with AdditionalProperties (MessageId makes properties go to message)
+            new(ChatRole.Assistant, "First message") { MessageId = "msg1", AdditionalProperties = new() { ["key1"] = "value1" } },
+            new(null, " part 2") { MessageId = "msg1", AdditionalProperties = new() { ["key2"] = "value2" } },
+
+            // Second message with different AdditionalProperties (same keys, different values)
+            new(ChatRole.User, "Second message") { MessageId = "msg2", AdditionalProperties = new() { ["key1"] = "different_value1" } },
+            new(null, " part 2") { MessageId = "msg2", AdditionalProperties = new() { ["key3"] = "value3" } },
+
+            // Third message with no AdditionalProperties
+            new(ChatRole.Assistant, "Third message") { MessageId = "msg3" },
+        ];
+
+        ChatResponse response = useAsync ?
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
+
+        Assert.Equal(3, response.Messages.Count);
+        Assert.Null(response.AdditionalProperties);
+
+        // First message should have its own AdditionalProperties
+        var msg1 = response.Messages[0];
+        Assert.Equal("First message part 2", msg1.Text);
+        Assert.NotNull(msg1.AdditionalProperties);
+        Assert.Equal(2, msg1.AdditionalProperties.Count);
+        Assert.Equal("value1", msg1.AdditionalProperties["key1"]);
+        Assert.Equal("value2", msg1.AdditionalProperties["key2"]);
+
+        // Second message should have its own AdditionalProperties (with different value for key1)
+        var msg2 = response.Messages[1];
+        Assert.Equal("Second message part 2", msg2.Text);
+        Assert.NotNull(msg2.AdditionalProperties);
+        Assert.Equal(2, msg2.AdditionalProperties.Count);
+        Assert.Equal("different_value1", msg2.AdditionalProperties["key1"]);
+        Assert.Equal("value3", msg2.AdditionalProperties["key3"]);
+
+        // Third message should have no AdditionalProperties
+        var msg3 = response.Messages[2];
+        Assert.Equal("Third message", msg3.Text);
+        Assert.Null(msg3.AdditionalProperties);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_AdditionalPropertiesRoutingBasedOnMessageId(bool useAsync)
+    {
+        // This test explicitly verifies that:
+        // - Updates WITH MessageId route AdditionalProperties to the message
+        // - Updates WITHOUT MessageId route AdditionalProperties to the response
+        ChatResponseUpdate[] updates =
+        [
+
+            // Update with MessageId - properties should go to message
+            new(ChatRole.Assistant, "Hello") { MessageId = "msg1", AdditionalProperties = new() { ["messageKey"] = "messageValue" } },
+
+            // Update without MessageId - properties should go to response
+            new() { AdditionalProperties = new() { ["responseKey"] = "responseValue" } },
+        ];
+
+        ChatResponse response = useAsync ?
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
+
+        // Verify message-scoped properties (update had MessageId)
+        var message = Assert.Single(response.Messages);
+        Assert.NotNull(message.AdditionalProperties);
+        Assert.Single(message.AdditionalProperties);
+        Assert.Equal("messageValue", message.AdditionalProperties["messageKey"]);
+        Assert.False(message.AdditionalProperties.ContainsKey("responseKey"));
+
+        // Verify response-scoped properties (update had no MessageId)
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Single(response.AdditionalProperties);
+        Assert.Equal("responseValue", response.AdditionalProperties["responseKey"]);
+        Assert.False(response.AdditionalProperties.ContainsKey("messageKey"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ToChatResponse_UpdatesProduceMultipleResponseMessages(bool useAsync)
     {
         ChatResponseUpdate[] updates =
