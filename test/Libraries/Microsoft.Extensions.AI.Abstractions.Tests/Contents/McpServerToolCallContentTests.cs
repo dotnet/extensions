@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -12,12 +13,12 @@ public class McpServerToolCallContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        McpServerToolCallContent c = new("callId1", "toolName", null);
+        McpServerToolCallContent c = new("call123", "toolName", null);
 
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
 
-        Assert.Equal("callId1", c.CallId);
+        Assert.Equal("call123", c.Id);
         Assert.Equal("toolName", c.ToolName);
         Assert.Null(c.ServerName);
         Assert.Null(c.Arguments);
@@ -26,7 +27,7 @@ public class McpServerToolCallContentTests
     [Fact]
     public void Constructor_PropsRoundtrip()
     {
-        McpServerToolCallContent c = new("callId1", "toolName", "serverName");
+        McpServerToolCallContent c = new("call123", "toolName", "serverName");
 
         Assert.Null(c.RawRepresentation);
         object raw = new();
@@ -43,7 +44,7 @@ public class McpServerToolCallContentTests
         c.Arguments = args;
         Assert.Same(args, c.Arguments);
 
-        Assert.Equal("callId1", c.CallId);
+        Assert.Equal("call123", c.Id);
         Assert.Equal("toolName", c.ToolName);
         Assert.Equal("serverName", c.ServerName);
     }
@@ -51,10 +52,44 @@ public class McpServerToolCallContentTests
     [Fact]
     public void Constructor_Throws()
     {
-        Assert.Throws<ArgumentException>("callId", () => new McpServerToolCallContent(string.Empty, "name", null));
+        Assert.Throws<ArgumentException>("id", () => new McpServerToolCallContent(string.Empty, "name", null));
         Assert.Throws<ArgumentException>("toolName", () => new McpServerToolCallContent("callId1", string.Empty, null));
 
-        Assert.Throws<ArgumentNullException>("callId", () => new McpServerToolCallContent(null!, "name", null));
+        Assert.Throws<ArgumentNullException>("id", () => new McpServerToolCallContent(null!, "name", null));
         Assert.Throws<ArgumentNullException>("toolName", () => new McpServerToolCallContent("callId1", null!, null));
+    }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new McpServerToolCallContent("call123", "toolName", "serverName")
+        {
+            Arguments = new Dictionary<string, object?>
+            {
+                { "arg1", 123 },
+                { "arg2", "456" }
+            }
+        };
+
+        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+        var deserializedContent = JsonSerializer.Deserialize<McpServerToolCallContent>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(deserializedContent);
+        Assert.Equal(content.Id, deserializedContent.Id);
+        Assert.Equal(content.ToolName, deserializedContent.ToolName);
+        Assert.Equal(content.ServerName, deserializedContent.ServerName);
+        Assert.NotNull(deserializedContent.Arguments);
+        Assert.Equal(2, deserializedContent.Arguments.Count);
+        Assert.Collection(deserializedContent.Arguments,
+            kvp =>
+            {
+                Assert.Equal("arg1", kvp.Key);
+                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.Number });
+            },
+            kvp =>
+            {
+                Assert.Equal("arg2", kvp.Key);
+                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.String });
+            });
     }
 }

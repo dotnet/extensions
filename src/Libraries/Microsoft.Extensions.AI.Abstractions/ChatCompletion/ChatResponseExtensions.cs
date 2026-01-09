@@ -293,7 +293,7 @@ public static class ChatResponseExtensions
         Coalesce<CodeInterpreterToolCallContent>(
             contents,
             mergeSingle: true,
-            canMerge: static (r1, r2) => r1.CallId == r2.CallId,
+            canMerge: static (r1, r2) => r1.Id == r2.Id,
             static (contents, start, end) =>
             {
                 var firstContent = (CodeInterpreterToolCallContent)contents[start];
@@ -320,9 +320,8 @@ public static class ChatResponseExtensions
                     CoalesceContent(inputs);
                 }
 
-                return new()
+                return new(firstContent.Id)
                 {
-                    CallId = firstContent.CallId,
                     Inputs = inputs,
                     AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
                 };
@@ -331,7 +330,7 @@ public static class ChatResponseExtensions
         Coalesce<CodeInterpreterToolResultContent>(
             contents,
             mergeSingle: true,
-            canMerge: static (r1, r2) => r1.CallId is not null && r2.CallId is not null && r1.CallId == r2.CallId,
+            canMerge: static (r1, r2) => r1.Id == r2.Id,
             static (contents, start, end) =>
             {
                 var firstContent = (CodeInterpreterToolResultContent)contents[start];
@@ -358,9 +357,8 @@ public static class ChatResponseExtensions
                     CoalesceContent(output);
                 }
 
-                return new()
+                return new(firstContent.Id)
                 {
-                    CallId = firstContent.CallId,
                     Outputs = output,
                     AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
                 };
