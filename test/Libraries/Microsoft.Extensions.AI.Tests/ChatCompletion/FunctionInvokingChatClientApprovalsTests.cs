@@ -1151,7 +1151,7 @@ public class FunctionInvokingChatClientApprovalsTests
         [
             new ChatMessage(ChatRole.User, "1st message"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user.")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Tool call invocation rejected.")]),
             new ChatMessage(ChatRole.User, "2nd message"),
         ];
 
@@ -1163,7 +1163,7 @@ public class FunctionInvokingChatClientApprovalsTests
         List<ChatMessage> output =
         [
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user.")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Tool call invocation rejected.")]),
             new ChatMessage(ChatRole.Assistant, "Final response"),
         ];
 

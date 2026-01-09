@@ -1454,7 +1454,42 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             }
         }
 
-        // If there are already-executed function results, insert new function calls at the end instead of at the insertion index
+        // Validation: If we got an approval for each request, we should have no call ids left.
+        if (approvalRequestCallIds is { Count: > 0 })
+        {
+            Throw.InvalidOperationException(
+                $"FunctionApprovalRequestContent found with FunctionCall.CallId(s) '{string.Join(", ", approvalRequestCallIds)}' that have no matching FunctionApprovalResponseContent.");
+        }
+
+        // 2nd iteration, over all approval responses:
+        // - Filter out any approval responses that already have a matching function result (i.e. already executed).
+        // - Find the matching function approval request for any response (where available).
+        // - Split the approval responses into two lists: approved and rejected, with their request messages (where available).
+        List<ApprovalResultWithRequestMessage>? approvedFunctionCalls = null, rejectedFunctionCalls = null;
+        bool hasAlreadyExecutedApprovals = false;
+        if (allApprovalResponses is { Count: > 0 })
+        {
+            foreach (var approvalResponse in allApprovalResponses)
+            {
+                // Skip any approval responses that have already been processed.
+                if (functionResultCallIds?.Contains(approvalResponse.FunctionCall.CallId) is true)
+                {
+                    hasAlreadyExecutedApprovals = true;
+                    continue;
+                }
+
+                // Split the responses into approved and rejected.
+                ref List<ApprovalResultWithRequestMessage>? targetList = ref approvalResponse.Approved ? ref approvedFunctionCalls : ref rejectedFunctionCalls;
+
+                ChatMessage? requestMessage = null;
+                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.FunctionCall.CallId, out requestMessage);
+
+                (targetList ??= []).Add(new() { Response = approvalResponse, RequestMessage = requestMessage });
+            }
+        }
+
+        // If there are already-executed function results for the approval requests we're processing,
+        // insert new function calls at the end instead of at the insertion index
         // to preserve the ordering of already-present function calls and results. This handles scenarios where:
         // 1. Previous approval responses have been processed and their function calls/results are present in the message list
         // 2. New approval responses are being processed
@@ -1472,41 +1507,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         //   But if there are already function results present (e.g., for A), we instead append new function calls/results
         //   for B at the end to preserve chronological ordering:
         //     [User, FunctionResult(A), FunctionCall(B), FunctionResult(B)]  // Correct order
-        if (functionResultCallIds is { Count: > 0 } && insertionIndex >= 0)
+        if (hasAlreadyExecutedApprovals && insertionIndex >= 0)
         {
             insertionIndex = messages.Count;
-        }
-
-        // Validation: If we got an approval for each request, we should have no call ids left.
-        if (approvalRequestCallIds is { Count: > 0 })
-        {
-            Throw.InvalidOperationException(
-                $"FunctionApprovalRequestContent found with FunctionCall.CallId(s) '{string.Join(", ", approvalRequestCallIds)}' that have no matching FunctionApprovalResponseContent.");
-        }
-
-        // 2nd iteration, over all approval responses:
-        // - Filter out any approval responses that already have a matching function result (i.e. already executed).
-        // - Find the matching function approval request for any response (where available).
-        // - Split the approval responses into two lists: approved and rejected, with their request messages (where available).
-        List<ApprovalResultWithRequestMessage>? approvedFunctionCalls = null, rejectedFunctionCalls = null;
-        if (allApprovalResponses is { Count: > 0 })
-        {
-            foreach (var approvalResponse in allApprovalResponses)
-            {
-                // Skip any approval responses that have already been processed.
-                if (functionResultCallIds?.Contains(approvalResponse.FunctionCall.CallId) is true)
-                {
-                    continue;
-                }
-
-                // Split the responses into approved and rejected.
-                ref List<ApprovalResultWithRequestMessage>? targetList = ref approvalResponse.Approved ? ref approvedFunctionCalls : ref rejectedFunctionCalls;
-
-                ChatMessage? requestMessage = null;
-                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.FunctionCall.CallId, out requestMessage);
-
-                (targetList ??= []).Add(new() { Response = approvalResponse, RequestMessage = requestMessage });
-            }
         }
 
         return (approvedFunctionCalls, rejectedFunctionCalls, insertionIndex);
