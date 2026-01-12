@@ -83,6 +83,7 @@ public static partial class AIJsonUtilities
         title ??= method.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? method.Name;
         description ??= method.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
+        NullabilityInfoContext nullabilityContext = new();
         JsonObject parameterSchemas = new();
         JsonArray? requiredProperties = null;
         foreach (ParameterInfo parameter in method.GetParameters())
@@ -118,6 +119,7 @@ public static partial class AIJsonUtilities
             JsonNode parameterSchema = CreateJsonSchemaCore(
                 type: parameter.ParameterType,
                 parameter: parameter,
+                nullabilityContext: nullabilityContext,
                 description: parameterDescription,
                 hasDefaultValue: hasDefaultValue,
                 defaultValue: defaultValue,
@@ -182,7 +184,7 @@ public static partial class AIJsonUtilities
     {
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
-        JsonNode schema = CreateJsonSchemaCore(type, parameter: null, description, hasDefaultValue, defaultValue, serializerOptions, inferenceOptions);
+        JsonNode schema = CreateJsonSchemaCore(type, parameter: null, nullabilityContext: null, description, hasDefaultValue, defaultValue, serializerOptions, inferenceOptions);
 
         // Finally, apply any schema transformations if specified.
         if (inferenceOptions.TransformOptions is { } options)
@@ -208,6 +210,7 @@ public static partial class AIJsonUtilities
     private static JsonNode CreateJsonSchemaCore(
         Type? type,
         ParameterInfo? parameter,
+        NullabilityInfoContext? nullabilityContext,
         string? description,
         bool hasDefaultValue,
         object? defaultValue,
@@ -336,6 +339,21 @@ public static partial class AIJsonUtilities
                     if (nullableElement.IsEnum && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
                     {
                         objSchema.InsertAtStart(TypePropertyName, new JsonArray { (JsonNode)"string", (JsonNode)"null" });
+                    }
+                }
+                else if (parameter is not null &&
+                    !ctx.TypeInfo.Type.IsValueType &&
+                    nullabilityContext?.Create(parameter).WriteState is NullabilityState.Nullable)
+                {
+                    // Handle nullable reference type parameters (e.g., string?).
+                    if (objSchema.TryGetPropertyValue(TypePropertyName, out JsonNode? typeKeyWord) &&
+                        typeKeyWord?.GetValueKind() is JsonValueKind.String)
+                    {
+                        string typeValue = typeKeyWord.GetValue<string>()!;
+                        if (typeValue is not "null")
+                        {
+                            objSchema[TypePropertyName] = new JsonArray { (JsonNode)typeValue, (JsonNode)"null" };
+                        }
                     }
                 }
             }
