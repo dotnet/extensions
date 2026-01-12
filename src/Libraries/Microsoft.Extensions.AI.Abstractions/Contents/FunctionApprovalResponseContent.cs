@@ -16,17 +16,17 @@ public sealed class FunctionApprovalResponseContent : UserInputResponseContent
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionApprovalResponseContent"/> class.
     /// </summary>
-    /// <param name="id">The ID that uniquely identifies the approval request/response pair.</param>
-    /// <param name="approved"><see langword="true"/> if the call is approved; otherwise, <see langword="false"/>.</param>
-    /// <param name="callContent">The call content that requires user approval.</param>
+    /// <param name="id">The ID that uniquely identifies the function approval request/response pair.</param>
+    /// <param name="approved"><see langword="true"/> if the function call is approved; otherwise, <see langword="false"/>.</param>
+    /// <param name="functionCall">The function call that requires user approval.</param>
     /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="id"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="callContent"/> is <see langword="null"/>.</exception>
-    public FunctionApprovalResponseContent(string id, bool approved, AIContent callContent)
+    /// <exception cref="ArgumentNullException"><paramref name="functionCall"/> is <see langword="null"/>.</exception>
+    public FunctionApprovalResponseContent(string id, bool approved, FunctionCallContent functionCall)
         : base(id)
     {
         Approved = approved;
-        CallContent = Throw.IfNull(callContent);
+        FunctionCall = Throw.IfNull(functionCall);
     }
 
     /// <summary>
@@ -35,9 +35,9 @@ public sealed class FunctionApprovalResponseContent : UserInputResponseContent
     public bool Approved { get; }
 
     /// <summary>
-    /// Gets the call content for which approval was requested.
+    /// Gets the function call for which approval was requested.
     /// </summary>
-    public AIContent CallContent { get; }
+    public FunctionCallContent FunctionCall { get; }
 
     /// <summary>
     /// Gets or sets the optional reason for the approval or rejection.

@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.Extensions.AI.ChatCompletion;
+namespace Microsoft.Extensions.AI;
 
 public class FunctionInvokingChatClientApprovalsTests
 {

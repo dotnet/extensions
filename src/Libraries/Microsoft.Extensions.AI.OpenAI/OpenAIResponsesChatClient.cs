@@ -217,11 +217,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     });
                     break;
 
-                case McpToolCallApprovalResponseItem mtcari:
-                    // Approval responses are processed separately when converting tool messages (see ConvertToResponseItems).
-                    // They are not included in assistant message contents.
-                    break;
-
                 case CodeInterpreterCallResponseItem cicri:
                     AddCodeInterpreterContents(cicri, message.Contents);
                     break;
@@ -820,7 +815,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         _ = options; // currently unused
 
-        Dictionary<string, AIContent>? idToContentMapping = null;
+        Dictionary<string, McpServerToolCallContent>? idToContentMapping = null;
 
         foreach (ChatMessage input in inputs)
         {
@@ -853,7 +848,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     ResponseItem? directItem = item switch
                     {
                         { RawRepresentation: ResponseItem rawRep } => rawRep,
-                        FunctionApprovalResponseContent { CallContent: McpServerToolCallContent mcpCall } farc => ResponseItem.CreateMcpApprovalResponseItem(mcpCall.CallId, farc.Approved),
+                        FunctionApprovalResponseContent { FunctionCall: McpServerToolCallContent mcpCall } farc => ResponseItem.CreateMcpApprovalResponseItem(mcpCall.CallId, farc.Approved),
                         _ => null
                     };
 
@@ -1050,7 +1045,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             }
                             break;
 
-                        case FunctionApprovalResponseContent { CallContent: McpServerToolCallContent mcpCall } farc:
+                        case FunctionApprovalResponseContent { FunctionCall: McpServerToolCallContent mcpCall } farc:
                             yield return ResponseItem.CreateMcpApprovalResponseItem(mcpCall.CallId, farc.Approved);
                             break;
                     }
@@ -1080,7 +1075,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             };
                             break;
 
-                        case FunctionApprovalRequestContent { CallContent: McpServerToolCallContent mcpCall }:
+                        case FunctionApprovalRequestContent { FunctionCall: McpServerToolCallContent mcpCall }:
                             yield return ResponseItem.CreateMcpApprovalRequestItem(
                                 mcpCall.CallId,
                                 mcpCall.ServerName,
@@ -1102,21 +1097,20 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case McpServerToolResultContent mstrc:
-                            if (idToContentMapping?.TryGetValue(mstrc.CallId, out AIContent? callContentFromMapping) is true &&
-                                callContentFromMapping is McpServerToolCallContent associatedCall)
+                            if (idToContentMapping?.TryGetValue(mstrc.CallId, out McpServerToolCallContent? associatedCall) is true)
                             {
                                 _ = idToContentMapping.Remove(mstrc.CallId);
                                 McpToolCallItem mtci = ResponseItem.CreateMcpToolCallItem(
                                     associatedCall.ServerName,
                                     associatedCall.ToolName,
                                     BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(associatedCall.Arguments!, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)));
-                                if (mstrc.Output?.OfType<ErrorContent>().FirstOrDefault() is ErrorContent errorContent)
+                                if (mstrc.Result is IList<AIContent> output && output.OfType<ErrorContent>().FirstOrDefault() is ErrorContent errorContent)
                                 {
                                     mtci.Error = BinaryData.FromString(errorContent.Message);
                                 }
-                                else
+                                else if (mstrc.Result is IList<AIContent> outputList)
                                 {
-                                    mtci.ToolOutput = string.Concat(mstrc.Output?.OfType<TextContent>() ?? []);
+                                    mtci.ToolOutput = string.Concat(outputList.OfType<TextContent>());
                                 }
 
                                 yield return mtci;

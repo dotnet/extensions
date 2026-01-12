@@ -42,14 +42,4 @@ public sealed class McpServerToolCallContent : FunctionCallContent
     /// Gets the name of the MCP server that hosts the tool.
     /// </summary>
     public string? ServerName { get; }
-
-    /// <summary>
-    /// Gets or sets the arguments used for the tool call.
-    /// </summary>
-    [JsonIgnore]
-    public new IReadOnlyDictionary<string, object?>? Arguments
-    {
-        get => base.Arguments as IReadOnlyDictionary<string, object?>;
-        set => base.Arguments = value as IDictionary<string, object?>;
-    }
 }

@@ -32,7 +32,7 @@ public class FunctionApprovalResponseContentTests
 
         Assert.Same(id, content.Id);
         Assert.Equal(approved, content.Approved);
-        Assert.Same(functionCall, content.CallContent);
+        Assert.Same(functionCall, content.FunctionCall);
     }
 
     [Theory]
@@ -52,11 +52,8 @@ public class FunctionApprovalResponseContentTests
         Assert.Equal(content.Id, deserializedContent.Id);
         Assert.Equal(content.Approved, deserializedContent.Approved);
         Assert.Equal(content.Reason, deserializedContent.Reason);
-        Assert.NotNull(deserializedContent.CallContent);
-
-        var deserializedFunctionCall = Assert.IsType<FunctionCallContent>(deserializedContent.CallContent);
-        var originalFunctionCall = (FunctionCallContent)content.CallContent;
-        Assert.Equal(originalFunctionCall.CallId, deserializedFunctionCall.CallId);
-        Assert.Equal(originalFunctionCall.Name, deserializedFunctionCall.Name);
+        Assert.NotNull(deserializedContent.FunctionCall);
+        Assert.Equal(content.FunctionCall.CallId, deserializedContent.FunctionCall.CallId);
+        Assert.Equal(content.FunctionCall.Name, deserializedContent.FunctionCall.Name);
     }
 }

@@ -29,14 +29,4 @@ public sealed class McpServerToolResultContent : FunctionResultContent
         : base(callId, result: null)
     {
     }
-
-    /// <summary>
-    /// Gets or sets the output of the tool call.
-    /// </summary>
-    [JsonIgnore]
-    public IList<AIContent>? Output
-    {
-        get => Result as IList<AIContent>;
-        set => Result = value;
-    }
 }
