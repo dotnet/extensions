@@ -1079,15 +1079,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             };
                             break;
 
-                        case FunctionCallContent callContent:
-                            yield return ResponseItem.CreateFunctionCallItem(
-                                callContent.CallId,
-                                callContent.Name,
-                                BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
-                                    callContent.Arguments,
-                                    AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
-                            break;
-
                         case FunctionApprovalRequestContent { CallContent: McpServerToolCallContent mcpCall }:
                             yield return ResponseItem.CreateMcpApprovalRequestItem(
                                 mcpCall.CallId,
@@ -1098,6 +1089,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         case McpServerToolCallContent mstcc:
                             (idToContentMapping ??= [])[mstcc.CallId] = mstcc;
+                            break;
+
+                        case FunctionCallContent callContent:
+                            yield return ResponseItem.CreateFunctionCallItem(
+                                callContent.CallId,
+                                callContent.Name,
+                                BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
+                                    callContent.Arguments,
+                                    AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                             break;
 
                         case McpServerToolResultContent mstrc:
