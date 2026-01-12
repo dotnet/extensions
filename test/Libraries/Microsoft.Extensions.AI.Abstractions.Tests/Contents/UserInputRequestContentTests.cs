@@ -33,16 +33,19 @@ public class UserInputRequestContentTests
     [Fact]
     public void Serialization_DerivedTypes_Roundtrips()
     {
-        UserInputRequestContent content = new FunctionApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } }));
+        FunctionApprovalRequestContent content = new FunctionApprovalRequestContent(
+            "request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } }));
         var serializedContent = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
-        var deserializedContent = JsonSerializer.Deserialize<UserInputRequestContent>(serializedContent, AIJsonUtilities.DefaultOptions);
+        var deserializedContent = JsonSerializer.Deserialize<FunctionApprovalRequestContent>(serializedContent, AIJsonUtilities.DefaultOptions);
         Assert.NotNull(deserializedContent);
         Assert.Equal(content.GetType(), deserializedContent.GetType());
 
         UserInputRequestContent[] contents =
         [
             new FunctionApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
-            new McpServerToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
+
+            // Uncomment once McpServerToolCallContent is no longer experimental.
+            // new FunctionApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
         ];
 
         var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.UserInputRequestContentArray);

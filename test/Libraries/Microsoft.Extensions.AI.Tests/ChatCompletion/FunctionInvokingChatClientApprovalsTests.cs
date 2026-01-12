@@ -840,11 +840,11 @@ public class FunctionInvokingChatClientApprovalsTests
 
         var invokeException = await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await InvokeAndAssertAsync(options, input, [], [], []));
-        Assert.Equal("FunctionApprovalRequestContent found with FunctionCall.CallId(s) 'callId1' that have no matching FunctionApprovalResponseContent.", invokeException.Message);
+        Assert.Equal("FunctionApprovalRequestContent found with CallId(s) 'callId1' that have no matching FunctionApprovalResponseContent.", invokeException.Message);
 
         var invokeStreamingException = await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await InvokeAndAssertStreamingAsync(options, input, [], [], []));
-        Assert.Equal("FunctionApprovalRequestContent found with FunctionCall.CallId(s) 'callId1' that have no matching FunctionApprovalResponseContent.", invokeStreamingException.Message);
+        Assert.Equal("FunctionApprovalRequestContent found with CallId(s) 'callId1' that have no matching FunctionApprovalResponseContent.", invokeStreamingException.Message);
     }
 
     [Fact]
@@ -1085,24 +1085,27 @@ public class FunctionInvokingChatClientApprovalsTests
                     break;
                 case 2:
                     var approvalRequest1 = update.Contents.OfType<FunctionApprovalRequestContent>().First();
-                    Assert.Equal("callId1", approvalRequest1.FunctionCall.CallId);
-                    Assert.Equal("Func1", approvalRequest1.FunctionCall.Name);
+                    var functionCall1 = Assert.IsType<FunctionCallContent>(approvalRequest1.CallContent);
+                    Assert.Equal("callId1", functionCall1.CallId);
+                    Assert.Equal("Func1", functionCall1.Name);
 
                     // Third content should have been buffered, since we have not yet encountered a function call that requires approval.
                     Assert.Equal(4, updateYieldCount);
                     break;
                 case 3:
                     var approvalRequest2 = update.Contents.OfType<FunctionApprovalRequestContent>().First();
-                    Assert.Equal("callId2", approvalRequest2.FunctionCall.CallId);
-                    Assert.Equal("Func2", approvalRequest2.FunctionCall.Name);
+                    var functionCall2 = Assert.IsType<FunctionCallContent>(approvalRequest2.CallContent);
+                    Assert.Equal("callId2", functionCall2.CallId);
+                    Assert.Equal("Func2", functionCall2.Name);
 
                     // Fourth content can be yielded immediately, since it is the first function call that requires approval.
                     Assert.Equal(4, updateYieldCount);
                     break;
                 case 4:
                     var approvalRequest3 = update.Contents.OfType<FunctionApprovalRequestContent>().First();
-                    Assert.Equal("callId1", approvalRequest3.FunctionCall.CallId);
-                    Assert.Equal("Func3", approvalRequest3.FunctionCall.Name);
+                    var functionCall3 = Assert.IsType<FunctionCallContent>(approvalRequest3.CallContent);
+                    Assert.Equal("callId1", functionCall3.CallId);
+                    Assert.Equal("Func3", functionCall3.Name);
 
                     // Fifth content can be yielded immediately, since we previously encountered a function call that requires approval.
                     Assert.Equal(5, updateYieldCount);

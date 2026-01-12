@@ -40,7 +40,9 @@ public class UserInputResponseContentTests
         UserInputResponseContent[] contents =
         [
             new FunctionApprovalResponseContent("request123", true, new FunctionCallContent("call123", "functionName")),
-            new McpServerToolApprovalResponseContent("request123", true),
+
+            // Uncomment once McpServerToolCallContent is no longer experimental.
+            // new FunctionApprovalResponseContent("request123", true, new McpServerToolCallContent("call123", "myTool", "myServer")),
         ];
 
         var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.UserInputResponseContentArray);
