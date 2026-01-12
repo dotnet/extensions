@@ -1085,7 +1085,7 @@ public class FunctionInvokingChatClientApprovalsTests
                     break;
                 case 2:
                     var approvalRequest1 = update.Contents.OfType<FunctionApprovalRequestContent>().First();
-                    var functionCall1 = Assert.IsType<FunctionCallContent>(approvalRequest1.CallContent);
+                    var functionCall1 = approvalRequest1.FunctionCall;
                     Assert.Equal("callId1", functionCall1.CallId);
                     Assert.Equal("Func1", functionCall1.Name);
 
@@ -1094,7 +1094,7 @@ public class FunctionInvokingChatClientApprovalsTests
                     break;
                 case 3:
                     var approvalRequest2 = update.Contents.OfType<FunctionApprovalRequestContent>().First();
-                    var functionCall2 = Assert.IsType<FunctionCallContent>(approvalRequest2.CallContent);
+                    var functionCall2 = approvalRequest2.FunctionCall;
                     Assert.Equal("callId2", functionCall2.CallId);
                     Assert.Equal("Func2", functionCall2.Name);
 
@@ -1103,7 +1103,7 @@ public class FunctionInvokingChatClientApprovalsTests
                     break;
                 case 4:
                     var approvalRequest3 = update.Contents.OfType<FunctionApprovalRequestContent>().First();
-                    var functionCall3 = Assert.IsType<FunctionCallContent>(approvalRequest3.CallContent);
+                    var functionCall3 = approvalRequest3.FunctionCall;
                     Assert.Equal("callId1", functionCall3.CallId);
                     Assert.Equal("Func3", functionCall3.Name);
 

@@ -1749,7 +1749,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         public FunctionApprovalResponseContent Response { get; init; }
         public ChatMessage? RequestMessage { get; init; }
-        
+
         /// <summary>
         /// Gets the FunctionCallContent from the response.
         /// </summary>

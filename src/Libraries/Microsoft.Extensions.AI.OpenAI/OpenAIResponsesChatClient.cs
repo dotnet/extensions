@@ -209,7 +209,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case McpToolCallApprovalRequestItem mtcari:
                     message.Contents.Add(new FunctionApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
                     {
-                        Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
+                        Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject) as IDictionary<string, object?>,
                         RawRepresentation = mtcari,
                     })
                     {
@@ -423,7 +423,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         case McpToolCallApprovalRequestItem mtcari:
                             yield return CreateUpdate(new FunctionApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
                             {
-                                Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
+                                Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject) as IDictionary<string, object?>,
                                 RawRepresentation = mtcari,
                             })
                             {
@@ -1295,7 +1295,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         contents.Add(new McpServerToolCallContent(mtci.Id, mtci.ToolName, mtci.ServerLabel)
         {
-            Arguments = JsonSerializer.Deserialize(mtci.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
+            Arguments = JsonSerializer.Deserialize(mtci.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject) as IDictionary<string, object?>,
 
             // We purposefully do not set the RawRepresentation on the McpServerToolCallContent, only on the McpServerToolResultContent, to avoid
             // the same McpToolCallItem being included on two different AIContent instances. When these are roundtripped, we want only one
@@ -1305,9 +1305,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         contents.Add(new McpServerToolResultContent(mtci.Id)
         {
             RawRepresentation = mtci,
-            Output = [mtci.Error is not null ?
-                new ErrorContent(mtci.Error.ToString()) :
-                new TextContent(mtci.ToolOutput)],
+            Result = new List<AIContent>
+            {
+                mtci.Error is not null ?
+                    new ErrorContent(mtci.Error.ToString()) :
+                    new TextContent(mtci.ToolOutput)
+            },
         });
     }
 
