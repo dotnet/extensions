@@ -1742,10 +1742,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         Exception,
     }
 
+    /// <summary>
+    /// Pairs a FunctionApprovalResponseContent with its corresponding request message.
+    /// The CallContent is guaranteed to be FunctionCallContent due to validation in the calling code.
+    /// </summary>
     private readonly struct ApprovalResultWithRequestMessage
     {
         public FunctionApprovalResponseContent Response { get; init; }
         public ChatMessage? RequestMessage { get; init; }
+        
+        /// <summary>
+        /// Gets the FunctionCallContent from the response. This cast is safe because the calling code
+        /// validates that CallContent is FunctionCallContent before creating instances of this struct.
+        /// </summary>
         public FunctionCallContent FunctionCallContent => (FunctionCallContent)Response.CallContent;
     }
 }

@@ -218,7 +218,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case McpToolCallApprovalResponseItem mtcari:
-                    // Skipped - approval responses are processed separately
+                    // Approval responses are processed separately when converting tool messages (see ConvertToResponseItems).
+                    // They are not included in assistant message contents.
                     break;
 
                 case CodeInterpreterCallResponseItem cicri:
