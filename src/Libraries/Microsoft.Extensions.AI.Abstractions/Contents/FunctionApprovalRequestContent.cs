@@ -8,7 +8,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents a request for user approval of a function call.
+/// Represents a request for user approval of a call content.
 /// </summary>
 [Experimental("MEAI001")]
 public sealed class FunctionApprovalRequestContent : UserInputRequestContent
@@ -17,26 +17,26 @@ public sealed class FunctionApprovalRequestContent : UserInputRequestContent
     /// Initializes a new instance of the <see cref="FunctionApprovalRequestContent"/> class.
     /// </summary>
     /// <param name="id">The ID that uniquely identifies the function approval request/response pair.</param>
-    /// <param name="functionCall">The function call that requires user approval.</param>
+    /// <param name="callContent">The call content that requires user approval.</param>
     /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="id"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="functionCall"/> is <see langword="null"/>.</exception>
-    public FunctionApprovalRequestContent(string id, FunctionCallContent functionCall)
+    /// <exception cref="ArgumentNullException"><paramref name="callContent"/> is <see langword="null"/>.</exception>
+    public FunctionApprovalRequestContent(string id, AIContent callContent)
         : base(id)
     {
-        FunctionCall = Throw.IfNull(functionCall);
+        CallContent = Throw.IfNull(callContent);
     }
 
     /// <summary>
-    /// Gets the function call that pre-invoke approval is required for.
+    /// Gets the call content that pre-invoke approval is required for.
     /// </summary>
-    public FunctionCallContent FunctionCall { get; }
+    public AIContent CallContent { get; }
 
     /// <summary>
-    /// Creates a <see cref="FunctionApprovalResponseContent"/> to indicate whether the function call is approved or rejected based on the value of <paramref name="approved"/>.
+    /// Creates a <see cref="FunctionApprovalResponseContent"/> to indicate whether the call is approved or rejected based on the value of <paramref name="approved"/>.
     /// </summary>
-    /// <param name="approved"><see langword="true"/> if the function call is approved; otherwise, <see langword="false"/>.</param>
+    /// <param name="approved"><see langword="true"/> if the call is approved; otherwise, <see langword="false"/>.</param>
     /// <param name="reason">An optional reason for the approval or rejection.</param>
     /// <returns>The <see cref="FunctionApprovalResponseContent"/> representing the approval response.</returns>
-    public FunctionApprovalResponseContent CreateResponse(bool approved, string? reason = null) => new(Id, approved, FunctionCall) { Reason = reason };
+    public FunctionApprovalResponseContent CreateResponse(bool approved, string? reason = null) => new(Id, approved, CallContent) { Reason = reason };
 }
