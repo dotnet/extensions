@@ -22,70 +22,92 @@ public partial class FakeLogCollectorTests
     }
 
     [Theory]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    public async Task LogAwaitingDemo(bool arrivesInAwaitedOrder, bool expectedToCancel)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetLogsAsync_EnumeratesNewLogsAsynchronouslyWithCancellationSupport(bool isWaitCancelled)
     {
-        var collector = FakeLogCollector.Create(new FakeLogCollectorOptions());
+        var fakeLogCollector = FakeLogCollector.Create(new FakeLogCollectorOptions());
+        var logger = new FakeLogger(fakeLogCollector);
         var eventTracker = new ConcurrentQueue<string>();
 
-        var waitingTimeout = TimeSpan.FromMilliseconds(1_000);
+        using var cts = new CancellationTokenSource();
+        var cancellationToken = cts.Token;
 
-        string[] logsToEmit = arrivesInAwaitedOrder
-            ? ["Sync", "Log A", "LogC", "Sync", "Sync", "Log B", "Sync", "Sync", "Log C", "Sync", "Sync", "Sync"]
-            : ["Sync", "Log A", "LogC", "Sync", "Sync", "Log B", "Sync", "Sync", "Log C", "Log D"] // Log C after A, B, C progression is not followed by Sync
-        ;
-
-        var logEmittingTask = EmitLogs(collector, logsToEmit, eventTracker);
-
-        var res = await AwaitSequence(
+        var awaitSequenceTask = AwaitSequence(
             new Queue<string>(["Log A", "Log B", "Sync"]), // Wait for event A and B followed by Sync
             fromIndex: 0,
-            collector,
+            fakeLogCollector,
             eventTracker,
-            timeout: waitingTimeout);
+            cancellationToken: cancellationToken);
+        await AssertAwaitingTaskCompleted(false, awaitSequenceTask);
+
+        EmitLogs(logger, ["Sync", "Log A", "Log C", "Sync", "Sync", "Log B"], eventTracker);
+        await AssertAwaitingTaskCompleted(false, awaitSequenceTask);
+
+        EmitLogs(logger, ["Sync", "Sync"], eventTracker);
+        await AssertAwaitingTaskCompleted(true, awaitSequenceTask);
+
+        var res = await awaitSequenceTask;
 
         Assert.False(res.wasCancelled);
         Assert.Equal(6, res.index);
 
-        // This gap simulates an action on the tested running code expected to trigger event C followed by Sync
-        await Task.Delay(2_000);
-
-        res = await AwaitSequence(
-            new Queue<string>(["Log C", "Sync"]), // Wait for Log C followed by Sync
-            fromIndex: res.index + 1,
-            collector,
+        awaitSequenceTask = AwaitSequence(
+            new Queue<string>(["Log C", "Sync"]), // Wait for another Log C followed by Sync
+            fromIndex: res.index + 1, // Starting from previously asserted state
+            fakeLogCollector,
             eventTracker,
-            timeout: waitingTimeout);
+            cancellationToken: cancellationToken);
+        await AssertAwaitingTaskCompleted(false, awaitSequenceTask);
 
-        Assert.Equal(expectedToCancel, res.wasCancelled);
-        Assert.Equal(expectedToCancel ? -1 : 9, res.index);
-
-        await logEmittingTask;
-
-        if (!expectedToCancel)
+        if (isWaitCancelled)
         {
-            // The user may want to await partial states to perform actions, but then perform a sanity check on the whole history
-            var snapshot = collector.GetSnapshot();
+            cts.Cancel();
+        }
+        else
+        {
+            EmitLogs(logger, ["Log C", "Sync"], eventTracker);
+        }
 
-            var expectedProgression = new Queue<string>(["Log A", "Log B", "Sync", "Log C", "Sync"]);
-            foreach (var item in snapshot.Select(x => x.Message))
-            {
-                if (expectedProgression.Count == 0)
-                {
-                    break;
-                }
+        await AssertAwaitingTaskCompleted(true, awaitSequenceTask);
 
-                if (item == expectedProgression.Peek())
-                {
-                    expectedProgression.Dequeue();
-                }
-            }
+        res = await awaitSequenceTask;
+        Assert.Equal(isWaitCancelled, res.wasCancelled);
+        Assert.Equal(isWaitCancelled ? -1 : 9, res.index);
 
-            Assert.Empty(expectedProgression);
+        if (!isWaitCancelled)
+        {
+            // The user may want to await partial states, but then perform a sanity check on the whole expected history
+            var snapshot = fakeLogCollector.GetSnapshot().Select(x => x.Message);
+            var containsSequence = ContainsNonContinuousSequence(snapshot, new Queue<string>(["Log A", "Log B", "Sync", "Log C", "Sync"]));
+            Assert.True(containsSequence);
         }
 
         OutputEventTracker(_outputHelper, eventTracker);
+    }
+
+    private static async Task AssertAwaitingTaskCompleted(bool expectedCompleted, Task task)
+    {
+        await Task.Delay(100, CancellationToken.None); // Give brief time to finish the waiting
+        Assert.Equal(expectedCompleted, task.IsCompleted);
+    }
+
+    private static bool ContainsNonContinuousSequence(IEnumerable<string> orderedEnumeration, Queue<string> sequence)
+    {
+        foreach (var item in orderedEnumeration)
+        {
+            if (sequence.Count == 0)
+            {
+                break;
+            }
+
+            if (item == sequence.Peek())
+            {
+                sequence.Dequeue();
+            }
+        }
+
+        return sequence.Count == 0;
     }
 
     private static async Task<(bool wasCancelled, int index)> AwaitSequence(
@@ -93,13 +115,14 @@ public partial class FakeLogCollectorTests
         int fromIndex,
         FakeLogCollector collector,
         ConcurrentQueue<string> eventTracker,
-        TimeSpan? timeout = null)
+        CancellationToken cancellationToken)
     {
-        using var cts = timeout.HasValue ? new CancellationTokenSource(timeout.Value) : new CancellationTokenSource();
+        eventTracker.Enqueue("New sequence awaiter started at " + DateTime.Now + $", waiting for items: {string.Join(", ", sequence)} from index {fromIndex}.");
+
         try
         {
             int index = -1;
-            var enumeration = collector.GetLogsAsync(cancellationToken: cts.Token);
+            var enumeration = collector.GetLogsAsync(cancellationToken: cancellationToken);
             await foreach (var log in enumeration)
             {
                 index++;
@@ -112,7 +135,7 @@ public partial class FakeLogCollectorTests
                 var msg = log.Message;
                 var currentExpectation = sequence.Peek();
 
-                eventTracker.Enqueue($"Checking log: \"{msg}\".");
+                eventTracker.Enqueue($"Sequence awaiter checks log: \"{msg}\".");
 
                 if (msg == currentExpectation)
                 {
@@ -123,15 +146,14 @@ public partial class FakeLogCollectorTests
                         continue;
                     }
 
-                    eventTracker.Enqueue($"Sequence satisfied at {DateTime.Now}");
-
+                    eventTracker.Enqueue($"Sequence awaiter satisfied at {DateTime.Now}");
                     return (false, index);
                 }
             }
         }
         catch (OperationCanceledException)
         {
-            eventTracker.Enqueue($"Operation cancelled at {DateTime.Now}");
+            eventTracker.Enqueue($"Sequence awaiter cancelled at {DateTime.Now}");
             return (true, -1);
         }
 
@@ -146,30 +168,15 @@ public partial class FakeLogCollectorTests
         }
     }
 
-    private async Task EmitLogs(
-        FakeLogCollector fakeLogCollector,
+    private static void EmitLogs(
+        FakeLogger logger,
         IEnumerable<string> logsToEmit,
-        ConcurrentQueue<string> eventTracker,
-        TimeSpan? delayBetweenEmissions = null)
+        ConcurrentQueue<string> eventTracker)
     {
-        var logger = new FakeLogger(fakeLogCollector);
-
-        await Task.Run(async () =>
+        foreach(var log in logsToEmit)
         {
-            eventTracker.Enqueue($"Started emitting logs at {DateTime.Now}");
-
-            foreach(var log in logsToEmit)
-            {
-                eventTracker.Enqueue($"Emitting item: \"{log}\" at {DateTime.Now}, currently items: {logger.Collector.Count}");
-                logger.Log(LogLevel.Debug, log);
-
-                if (delayBetweenEmissions.HasValue)
-                {
-                    await Task.Delay(delayBetweenEmissions.Value, CancellationToken.None);
-                }
-            }
-        });
-
-        eventTracker.Enqueue($"Finished emitting logs at {DateTime.Now}");
+            eventTracker.Enqueue($"Emitting log: \"{log}\" at {DateTime.Now}, current log count: {logger.Collector.Count}");
+            logger.Log(LogLevel.Debug, log);
+        }
     }
 }
