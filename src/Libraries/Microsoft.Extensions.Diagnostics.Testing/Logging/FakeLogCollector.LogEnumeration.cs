@@ -19,6 +19,39 @@ public partial class FakeLogCollector
 
     private int _waitingEnumeratorCount;
 
+    /// <summary>
+    /// Asynchronously enumerates the <see cref="FakeLogRecord"/> instances collected by this <see cref="FakeLogCollector"/>.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// A token that can be used to cancel the asynchronous enumeration. This token is observed while creating
+    /// and iterating the asynchronous sequence.
+    /// </param>
+    /// <returns>
+    /// An <see cref="IAsyncEnumerable{T}"/> that yields <see cref="FakeLogRecord"/> instances as they are written.
+    /// The sequence completes when the underlying <see cref="FakeLogCollector"/> stops producing logs or when
+    /// cancellation is requested.
+    /// </returns>
+    /// <remarks>
+    /// The returned sequence is <c>hot</c>: it streams log records as they become available and may block between
+    /// elements while waiting for additional logs to be written. Multiple independent enumerations can be created
+    /// by calling this method multiple times.
+    /// </remarks>
+    /// <exception cref="OperationCanceledException">
+    /// Thrown when the provided <paramref name="cancellationToken"/> or the enumerator's own cancellation token
+    /// is canceled while waiting for the next log record.
+    /// </exception>
+    /// <example>
+    /// The following example shows how to consume logs asynchronously:
+    /// <code language="csharp"><![CDATA[
+    /// var collector = new FakeLogCollector();
+    /// using var cts = new CancellationTokenSource();
+    /// 
+    /// await foreach (var record in collector.GetLogsAsync(cts.Token))
+    /// {
+    ///     Console.WriteLine($"{record.Level}: {record.Message}");
+    /// }
+    /// ]]></code>
+    /// </example>
     [Experimental(DiagnosticIds.Experiments.Telemetry)]
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(CancellationToken cancellationToken = default)
         => new LogAsyncEnumerable(this, cancellationToken);
