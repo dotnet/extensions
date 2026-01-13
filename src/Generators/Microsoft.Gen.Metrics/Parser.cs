@@ -410,12 +410,6 @@ internal sealed class Parser
             return (null, false);
         }
 
-        if (instrumentKind == InstrumentKind.Gauge)
-        {
-            Diag(DiagDescriptors.ErrorGaugeNotSupported, methodSymbol.GetLocation());
-            return (null, false);
-        }
-
         bool keepMethod = CheckMethodReturnType(methodSymbol);
         if (!_allowedGenericAttributeTypeArgs.Contains(genericType.SpecialType))
         {
