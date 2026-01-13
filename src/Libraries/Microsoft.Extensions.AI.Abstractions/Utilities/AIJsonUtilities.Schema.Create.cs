@@ -345,7 +345,7 @@ public static partial class AIJsonUtilities
                     !ctx.TypeInfo.Type.IsValueType &&
                     nullabilityContext?.Create(parameter).WriteState is NullabilityState.Nullable)
                 {
-                    // Handle nullable reference type parameters (e.g., string?).
+                    // Handle nullable reference type parameters (e.g., object?).
                     if (objSchema.TryGetPropertyValue(TypePropertyName, out JsonNode? typeKeyWord) &&
                         typeKeyWord?.GetValueKind() is JsonValueKind.String)
                     {
