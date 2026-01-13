@@ -128,10 +128,11 @@ public partial class FakeLogCollector
 
                         lock (_collector._records)
                         {
-                            if (_observedRecordCollectionVersion != _collector._recordCollectionVersion)
+                            int currentVersion = Volatile.Read(ref _collector._recordCollectionVersion);
+                            if (_observedRecordCollectionVersion != currentVersion)
                             {
                                 _index = 0; // based on assumption that version changed on full collection clear
-                                _observedRecordCollectionVersion = _collector._recordCollectionVersion;
+                                _observedRecordCollectionVersion = currentVersion;
                             }
 
                             if (_index < _collector._records.Count)
