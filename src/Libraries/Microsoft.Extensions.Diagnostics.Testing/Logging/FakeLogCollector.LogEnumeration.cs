@@ -28,8 +28,8 @@ public partial class FakeLogCollector
     /// </param>
     /// <returns>
     /// An <see cref="IAsyncEnumerable{T}"/> that yields <see cref="FakeLogRecord"/> instances as they are written.
-    /// The sequence completes when the underlying <see cref="FakeLogCollector"/> stops producing logs or when
-    /// cancellation is requested.
+    /// The sequence does not have a completion state defined and awaits subsequent elements indefinitely, 
+    /// or stops when cancellation is requested.
     /// </returns>
     /// <remarks>
     /// The returned sequence is <c>hot</c>: it streams log records as they become available and may block between
