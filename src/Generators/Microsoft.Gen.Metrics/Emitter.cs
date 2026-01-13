@@ -155,7 +155,6 @@ internal sealed class Emitter : EmitterBase
         const string HistogramRecordStatement = "Record";
         const string GaugeRecordStatement = "Record";
 
-
         const string CounterOfTTypeDefinitionTemplate = "global::System.Diagnostics.Metrics.Counter<{0}>";
         const string HistogramOfTTypeDefinitionTemplate = "global::System.Diagnostics.Metrics.Histogram<{0}>";
         const string GaugeOfTTypeDefinitionTemplate = "global::System.Diagnostics.Metrics.Gauge<{0}>";
