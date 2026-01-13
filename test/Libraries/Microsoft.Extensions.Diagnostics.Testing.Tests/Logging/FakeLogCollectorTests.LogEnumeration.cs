@@ -86,6 +86,38 @@ public partial class FakeLogCollectorTests
         OutputEventTracker(_outputHelper, eventTracker);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetLogsAsync_RegardlessOfClearDuringWait_SuppliesNextLogWhenRecorded(bool clearIsCalledDuringWait)
+    {
+        var fakeLogCollector = FakeLogCollector.Create(new FakeLogCollectorOptions());
+        var logger = new FakeLogger(fakeLogCollector);
+        int moveNextCounter = 0;
+
+        var awaitSequenceTask = AwaitSequence(
+            new Queue<string>(["A", "B", "C"]),
+            fromIndex: 0,
+            fakeLogCollector,
+            null,
+            cancellationToken: CancellationToken.None,
+            () => Interlocked.Increment(ref moveNextCounter));
+        await AssertAwaitingTaskCompleted(false, awaitSequenceTask);
+
+        EmitLogs(logger, ["A", "B"], null);
+        await AssertAwaitingTaskCompleted(false, awaitSequenceTask);
+        Assert.Equal(2, moveNextCounter);
+
+        if (clearIsCalledDuringWait)
+        {
+            fakeLogCollector.Clear();
+        }
+
+        EmitLogs(logger, ["C"], null);
+        await AssertAwaitingTaskCompleted(true, awaitSequenceTask);
+        Assert.Equal(3, moveNextCounter);
+    }
+
     private static async Task AssertAwaitingTaskCompleted(bool expectedCompleted, Task task)
     {
         await Task.Delay(100, CancellationToken.None); // Give brief time to finish the waiting
@@ -114,10 +146,11 @@ public partial class FakeLogCollectorTests
         Queue<string> sequence,
         int fromIndex,
         FakeLogCollector collector,
-        ConcurrentQueue<string> eventTracker,
-        CancellationToken cancellationToken)
+        ConcurrentQueue<string>? eventTracker,
+        CancellationToken cancellationToken,
+        Action? onMoveNextCalled = null)
     {
-        eventTracker.Enqueue("New sequence awaiter started at " + DateTime.Now + $", waiting for items: {string.Join(", ", sequence)} from index {fromIndex}.");
+        eventTracker?.Enqueue("New sequence awaiter started at " + DateTime.Now + $", waiting for items: {string.Join(", ", sequence)} from index {fromIndex}.");
 
         try
         {
@@ -125,6 +158,7 @@ public partial class FakeLogCollectorTests
             var enumeration = collector.GetLogsAsync(cancellationToken: cancellationToken);
             await foreach (var log in enumeration)
             {
+                onMoveNextCalled?.Invoke();
                 index++;
 
                 if (index < fromIndex)
@@ -135,7 +169,7 @@ public partial class FakeLogCollectorTests
                 var msg = log.Message;
                 var currentExpectation = sequence.Peek();
 
-                eventTracker.Enqueue($"Sequence awaiter checks log: \"{msg}\".");
+                eventTracker?.Enqueue($"Sequence awaiter checks log: \"{msg}\".");
 
                 if (msg == currentExpectation)
                 {
@@ -146,14 +180,14 @@ public partial class FakeLogCollectorTests
                         continue;
                     }
 
-                    eventTracker.Enqueue($"Sequence awaiter satisfied at {DateTime.Now}");
+                    eventTracker?.Enqueue($"Sequence awaiter satisfied at {DateTime.Now}");
                     return (false, index);
                 }
             }
         }
         catch (OperationCanceledException)
         {
-            eventTracker.Enqueue($"Sequence awaiter cancelled at {DateTime.Now}");
+            eventTracker?.Enqueue($"Sequence awaiter cancelled at {DateTime.Now}");
             return (true, -1);
         }
 
@@ -171,11 +205,11 @@ public partial class FakeLogCollectorTests
     private static void EmitLogs(
         FakeLogger logger,
         IEnumerable<string> logsToEmit,
-        ConcurrentQueue<string> eventTracker)
+        ConcurrentQueue<string>? eventTracker)
     {
         foreach (var log in logsToEmit)
         {
-            eventTracker.Enqueue($"Emitting log: \"{log}\" at {DateTime.Now}, current log count: {logger.Collector.Count}");
+            eventTracker?.Enqueue($"Emitting log: \"{log}\" at {DateTime.Now}, current log count: {logger.Collector.Count}");
             logger.Log(LogLevel.Debug, log);
         }
     }
