@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
@@ -61,7 +62,7 @@ public partial class FakeLogCollector
     private void ClearRecordsCore()
     {
         _records.Clear();
-        _recordCollectionVersion++;
+        _ = Interlocked.Increment(ref _recordCollectionVersion);
     }
 
     /// <summary>

@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Logging.Testing;
 
 public partial class FakeLogCollector
 {
-    private int _recordCollectionVersion;
+    private volatile int _recordCollectionVersion;
 
     private TaskCompletionSource<object?> _logEnumerationSharedWaiter =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -128,7 +128,7 @@ public partial class FakeLogCollector
 
                         lock (_collector._records)
                         {
-                            int currentVersion = Volatile.Read(ref _collector._recordCollectionVersion);
+                            int currentVersion = _collector._recordCollectionVersion;
                             if (_observedRecordCollectionVersion != currentVersion)
                             {
                                 _index = 0; // based on assumption that version changed on full collection clear
