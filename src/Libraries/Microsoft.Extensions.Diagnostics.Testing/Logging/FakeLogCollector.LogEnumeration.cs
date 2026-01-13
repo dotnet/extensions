@@ -178,12 +178,10 @@ public partial class FakeLogCollector
 
         public ValueTask DisposeAsync()
         {
-            if (_disposed)
+            if (Interlocked.Exchange(ref _disposed, true))
             {
                 return default;
             }
-
-            _disposed = true;
 
             _mainCts.Cancel();
             _mainCts.Dispose();
