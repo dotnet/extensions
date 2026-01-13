@@ -173,7 +173,7 @@ public partial class FakeLogCollectorTests
         IEnumerable<string> logsToEmit,
         ConcurrentQueue<string> eventTracker)
     {
-        foreach(var log in logsToEmit)
+        foreach (var log in logsToEmit)
         {
             eventTracker.Enqueue($"Emitting log: \"{log}\" at {DateTime.Now}, current log count: {logger.Collector.Count}");
             logger.Log(LogLevel.Debug, log);
