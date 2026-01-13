@@ -56,7 +56,7 @@ public partial class FakeLogCollector
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(CancellationToken cancellationToken = default)
         => new LogAsyncEnumerable(this, cancellationToken);
 
-    private class LogAsyncEnumerable : IAsyncEnumerable<FakeLogRecord>
+    private sealed class LogAsyncEnumerable : IAsyncEnumerable<FakeLogRecord>
     {
         private readonly FakeLogCollector _collector;
         private readonly CancellationToken _enumerableCancellationToken;
@@ -177,6 +177,7 @@ public partial class FakeLogCollector
             }
         }
 
+#if !NETCOREAPP
         public ValueTask DisposeAsync()
         {
             if (Interlocked.Exchange(ref _disposed, 1) == 1)
@@ -189,6 +190,18 @@ public partial class FakeLogCollector
 
             return default;
         }
+#else
+        public async ValueTask DisposeAsync()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) == 1)
+            {
+                return;
+            }
+
+            await _mainCts.CancelAsync().ConfigureAwait(false);
+            _mainCts.Dispose();
+        }
+#endif
 
         private void ThrowIfDisposed()
         {

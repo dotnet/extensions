@@ -191,7 +191,7 @@ public partial class FakeLogCollectorTests
             return (true, -1);
         }
 
-        throw new Exception("Enumeration was supposed to be unbound.");
+        throw new InvalidOperationException("Enumeration was supposed to be unbound.");
     }
 
     private static void OutputEventTracker(ITestOutputHelper testOutputHelper, ConcurrentQueue<string> eventTracker)
