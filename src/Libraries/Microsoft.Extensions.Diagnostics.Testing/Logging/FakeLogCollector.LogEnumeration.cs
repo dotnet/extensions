@@ -79,7 +79,7 @@ public partial class FakeLogCollector
         private readonly FakeLogCollector _collector;
         private readonly CancellationTokenSource _mainCts;
         private int _index;
-        private bool _disposed;
+        private int _disposed; // 0 = false, 1 = true (int type used for net462 compatibility)
         private int _observedRecordCollectionVersion;
 
         // Concurrent MoveNextAsync guard
@@ -178,7 +178,7 @@ public partial class FakeLogCollector
 
         public ValueTask DisposeAsync()
         {
-            if (Interlocked.Exchange(ref _disposed, true))
+            if (Interlocked.Exchange(ref _disposed, 1) == 1)
             {
                 return default;
             }
@@ -191,7 +191,7 @@ public partial class FakeLogCollector
 
         private void ThrowIfDisposed()
         {
-            if (_disposed)
+            if (Volatile.Read(ref _disposed) == 1)
             {
                 throw new ObjectDisposedException(nameof(StreamEnumerator));
             }
