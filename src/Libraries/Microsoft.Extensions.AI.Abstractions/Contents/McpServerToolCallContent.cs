@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -27,7 +28,7 @@ public sealed class McpServerToolCallContent : FunctionCallContent
     /// <exception cref="ArgumentException"><paramref name="callId"/> or <paramref name="toolName"/> is empty or composed entirely of whitespace.</exception>
     [JsonConstructor]
     public McpServerToolCallContent(string callId, string toolName, string? serverName)
-        : base(callId, toolName)
+        : base(Throw.IfNullOrWhitespace(callId), Throw.IfNullOrWhitespace(toolName))
     {
         ServerName = serverName;
     }

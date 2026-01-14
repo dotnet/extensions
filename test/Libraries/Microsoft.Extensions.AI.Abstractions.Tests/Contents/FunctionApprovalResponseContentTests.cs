@@ -18,7 +18,7 @@ public class FunctionApprovalResponseContentTests
         Assert.Throws<ArgumentException>("id", () => new FunctionApprovalResponseContent("", true, functionCall));
         Assert.Throws<ArgumentException>("id", () => new FunctionApprovalResponseContent("\r\t\n ", true, functionCall));
 
-        Assert.Throws<ArgumentNullException>("callContent", () => new FunctionApprovalResponseContent("id", true, null!));
+        Assert.Throws<ArgumentNullException>("functionCall", () => new FunctionApprovalResponseContent("id", true, null!));
     }
 
     [Theory]

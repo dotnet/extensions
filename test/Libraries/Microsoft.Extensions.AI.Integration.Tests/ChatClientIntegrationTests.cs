@@ -1742,6 +1742,14 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
     }
 
+    protected static void SkipIfRateLimitedResponse(ChatResponse response)
+    {
+        if (response.Messages.Any(m => m.Contents.OfType<ErrorContent>().Any(e => e.ErrorCode == "rate_limit_exceeded")))
+        {
+            throw new SkipTestException("Rate limit exceeded. Test cannot continue.");
+        }
+    }
+
     [MemberNotNull(nameof(ChatClient))]
     protected void SkipIfNotEnabled()
     {

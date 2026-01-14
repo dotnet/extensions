@@ -1085,27 +1085,24 @@ public class FunctionInvokingChatClientApprovalsTests
                     break;
                 case 2:
                     var approvalRequest1 = update.Contents.OfType<FunctionApprovalRequestContent>().First();
-                    var functionCall1 = approvalRequest1.FunctionCall;
-                    Assert.Equal("callId1", functionCall1.CallId);
-                    Assert.Equal("Func1", functionCall1.Name);
+                    Assert.Equal("callId1", approvalRequest1.FunctionCall.CallId);
+                    Assert.Equal("Func1", approvalRequest1.FunctionCall.Name);
 
                     // Third content should have been buffered, since we have not yet encountered a function call that requires approval.
                     Assert.Equal(4, updateYieldCount);
                     break;
                 case 3:
                     var approvalRequest2 = update.Contents.OfType<FunctionApprovalRequestContent>().First();
-                    var functionCall2 = approvalRequest2.FunctionCall;
-                    Assert.Equal("callId2", functionCall2.CallId);
-                    Assert.Equal("Func2", functionCall2.Name);
+                    Assert.Equal("callId2", approvalRequest2.FunctionCall.CallId);
+                    Assert.Equal("Func2", approvalRequest2.FunctionCall.Name);
 
                     // Fourth content can be yielded immediately, since it is the first function call that requires approval.
                     Assert.Equal(4, updateYieldCount);
                     break;
                 case 4:
                     var approvalRequest3 = update.Contents.OfType<FunctionApprovalRequestContent>().First();
-                    var functionCall3 = approvalRequest3.FunctionCall;
-                    Assert.Equal("callId1", functionCall3.CallId);
-                    Assert.Equal("Func3", functionCall3.Name);
+                    Assert.Equal("callId1", approvalRequest3.FunctionCall.CallId);
+                    Assert.Equal("Func3", approvalRequest3.FunctionCall.Name);
 
                     // Fifth content can be yielded immediately, since we previously encountered a function call that requires approval.
                     Assert.Equal(5, updateYieldCount);
@@ -1240,12 +1237,14 @@ public class FunctionInvokingChatClientApprovalsTests
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task RejectedApprovalResponses_MixedWithMcpApprovalAsync(bool useAdditionalTools, bool approveMcp)
+    [InlineData(false, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    public async Task RejectedApprovalResponses_MixedWithMcpApprovalAsync(bool useAdditionalTools, bool approveFuncCall, bool approveMcpCall)
     {
+        Assert.NotEqual(approveFuncCall, approveMcpCall);
+
         AITool[] tools =
         [
             new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func")),
@@ -1267,8 +1266,8 @@ public class FunctionInvokingChatClientApprovalsTests
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", !approveMcp, new FunctionCallContent("callId1", "Func")),
-                new FunctionApprovalResponseContent("callId2", approveMcp, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+                new FunctionApprovalResponseContent("callId1", approveFuncCall, new FunctionCallContent("callId1", "Func")),
+                new FunctionApprovalResponseContent("callId2", approveMcpCall, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
             ]),
         ];
 
@@ -1280,7 +1279,7 @@ public class FunctionInvokingChatClientApprovalsTests
                 ]),
                 new ChatMessage(ChatRole.User,
                 [
-                    new FunctionApprovalResponseContent("callId2", approveMcp, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+                    new FunctionApprovalResponseContent("callId2", approveMcpCall, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
                 ]),
                 new ChatMessage(ChatRole.Assistant,
                 [
@@ -1288,9 +1287,9 @@ public class FunctionInvokingChatClientApprovalsTests
                 ]),
                 new ChatMessage(ChatRole.Tool,
                 [
-                    approveMcp ?
-                        new FunctionResultContent("callId1", result: "Tool call invocation rejected.") :
-                        new FunctionResultContent("callId1", result: "Result 1")
+                    approveFuncCall ?
+                        new FunctionResultContent("callId1", result: "Result 1") :
+                        new FunctionResultContent("callId1", result: "Tool call invocation rejected.")
                 ]),
             ];
 
@@ -1298,7 +1297,7 @@ public class FunctionInvokingChatClientApprovalsTests
         [
             new ChatMessage(ChatRole.Assistant, [
                 new TextContent("world"),
-                .. approveMcp ?
+                .. approveMcpCall ?
                     [new McpServerToolResultContent("callId2") { Result = new List<AIContent> { new TextContent("Result 2") } }] :
                     Array.Empty<AIContent>()
             ])
@@ -1311,13 +1310,13 @@ public class FunctionInvokingChatClientApprovalsTests
             ]),
             new ChatMessage(ChatRole.Tool,
             [
-                approveMcp ?
-                    new FunctionResultContent("callId1", result: "Tool call invocation rejected.") :
-                    new FunctionResultContent("callId1", result: "Result 1")
+                approveFuncCall ?
+                    new FunctionResultContent("callId1", result: "Result 1") :
+                    new FunctionResultContent("callId1", result: "Tool call invocation rejected.")
             ]),
             new ChatMessage(ChatRole.Assistant, [
                 new TextContent("world"),
-                .. approveMcp ?
+                .. approveMcpCall ?
                     [new McpServerToolResultContent("callId2") { Result = new List<AIContent> { new TextContent("Result 2") } }] :
                     Array.Empty<AIContent>()
             ])

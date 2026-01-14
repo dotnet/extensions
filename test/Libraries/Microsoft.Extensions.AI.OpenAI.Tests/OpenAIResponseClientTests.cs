@@ -1441,8 +1441,8 @@ public class OpenAIResponseClientTests
 
             var result = Assert.IsType<McpServerToolResultContent>(message.Contents[1]);
             Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", result.CallId);
-            Assert.NotNull(result.Output);
-            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(result.Output)).Text);
+            Assert.NotNull(result.Result);
+            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(Assert.IsAssignableFrom<IList<AIContent>>(result.Result))).Text);
 
             Assert.NotNull(response.Usage);
             Assert.Equal(542, response.Usage.InputTokenCount);
@@ -1695,8 +1695,8 @@ public class OpenAIResponseClientTests
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstResult.CallId);
-        Assert.NotNull(firstResult.Output);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Output)).Text);
+        Assert.NotNull(firstResult.Result);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(Assert.IsAssignableFrom<IList<AIContent>>(firstResult.Result))).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondCall.CallId);
@@ -1708,8 +1708,8 @@ public class OpenAIResponseClientTests
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondResult.CallId);
-        Assert.NotNull(secondResult.Output);
-        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(secondResult.Output)).Text);
+        Assert.NotNull(secondResult.Result);
+        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(Assert.IsAssignableFrom<IList<AIContent>>(secondResult.Result))).Text);
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1329, response.Usage.InputTokenCount);
@@ -2108,8 +2108,8 @@ public class OpenAIResponseClientTests
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstResult.CallId);
-        Assert.NotNull(firstResult.Output);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Output)).Text);
+        Assert.NotNull(firstResult.Result);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(Assert.IsAssignableFrom<IList<AIContent>>(firstResult.Result))).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondCall.CallId);
@@ -2121,8 +2121,8 @@ public class OpenAIResponseClientTests
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondResult.CallId);
-        Assert.NotNull(secondResult.Output);
-        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(Assert.Single(secondResult.Output)).Text);
+        Assert.NotNull(secondResult.Result);
+        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(Assert.Single(Assert.IsAssignableFrom<IList<AIContent>>(secondResult.Result))).Text);
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1420, response.Usage.InputTokenCount);

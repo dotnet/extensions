@@ -1080,7 +1080,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 mcpCall.CallId,
                                 mcpCall.ServerName,
                                 mcpCall.ToolName,
-                                BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(mcpCall.Arguments!, OpenAIJsonContext.Default.IDictionaryStringObject)));
+                                BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
+                                    mcpCall.Arguments!,
+                                    AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                             break;
 
                         case McpServerToolCallContent mstcc:
@@ -1093,7 +1095,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 callContent.Name,
                                 BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
                                     callContent.Arguments,
-                                    OpenAIJsonContext.Default.IDictionaryStringObject)));
+                                    AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                             break;
 
                         case McpServerToolResultContent mstrc:
@@ -1103,7 +1105,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 McpToolCallItem mtci = ResponseItem.CreateMcpToolCallItem(
                                     associatedCall.ServerName,
                                     associatedCall.ToolName,
-                                    BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(associatedCall.Arguments!, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)));
+                                    BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
+                                        associatedCall.Arguments!,
+                                        AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                                 if (mstrc.Result is IList<AIContent> output && output.OfType<ErrorContent>().FirstOrDefault() is ErrorContent errorContent)
                                 {
                                     mtci.Error = BinaryData.FromString(errorContent.Message);
@@ -1111,6 +1115,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 else if (mstrc.Result is IList<AIContent> outputList)
                                 {
                                     mtci.ToolOutput = string.Concat(outputList.OfType<TextContent>());
+                                }
+                                else
+                                {
+                                    mtci.ToolOutput = mstrc.Result?.ToString();
                                 }
 
                                 yield return mtci;
