@@ -4,7 +4,6 @@
 
 - Updated `FunctionInvokingChatClient` to respect `FunctionApprovalResponseContent.Reason`.
 - Improved `FunctionInvokingChatClient`'s handling of `FunctionApprovalResponseContent` items from messages with null `MessageId`s.
- 
 ## 10.1.1
 
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
