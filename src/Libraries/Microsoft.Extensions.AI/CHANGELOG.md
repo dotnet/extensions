@@ -1,6 +1,11 @@
 # Microsoft.Extensions.AI Release History
 
-## 10.1.1 (NOT YET RELEASED)
+## 10.2.0
+
+- Updated `FunctionInvokingChatClient` to respect `FunctionApprovalResponseContent.Reason`.
+- Improved `FunctionInvokingChatClient`'s handling of `FunctionApprovalResponseContent` items from messages with null `MessageId`s.
+ 
+## 10.1.1
 
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
