@@ -395,6 +395,213 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(maxIterations, actualCallCount);
     }
 
+    [Fact]
+    public async Task LastIteration_RemovesFunctionDeclarationTools_NonStreaming()
+    {
+        // Arrange: Set up tracking of options passed to inner client
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 2;
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                // Capture a clone of the options to avoid mutation
+                capturedOptions.Add(options?.Clone());
+
+                // Always return a function call to keep the loop going
+                var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent($"callId{capturedOptions.Count}", "Func1")]);
+                return Task.FromResult(new ChatResponse(message));
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result", "Func1")],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        // Act
+        await client.GetResponseAsync("hello", options);
+
+        // Assert: Should have made maxIterations + 1 calls (0 through maxIterations)
+        Assert.Equal(maxIterations + 1, capturedOptions.Count);
+
+        // First maxIterations calls should have the tools
+        for (int i = 0; i < maxIterations; i++)
+        {
+            Assert.NotNull(capturedOptions[i]?.Tools);
+            Assert.Single(capturedOptions[i]!.Tools!);
+        }
+
+        // Last call (at iteration == maxIterations) should have no tools
+        Assert.True(capturedOptions[maxIterations]?.Tools is null || capturedOptions[maxIterations]!.Tools!.Count == 0);
+        Assert.Null(capturedOptions[maxIterations]?.ToolMode);
+    }
+
+    [Fact]
+    public async Task LastIteration_RemovesFunctionDeclarationTools_Streaming()
+    {
+        // Arrange: Set up tracking of options passed to inner client
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 2;
+
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                // Capture a clone of the options to avoid mutation
+                capturedOptions.Add(options?.Clone());
+
+                // Always return a function call to keep the loop going
+                var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent($"callId{capturedOptions.Count}", "Func1")]);
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result", "Func1")],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        // Act
+        await client.GetStreamingResponseAsync("hello", options).ToChatResponseAsync();
+
+        // Assert: Should have made maxIterations + 1 calls (0 through maxIterations)
+        Assert.Equal(maxIterations + 1, capturedOptions.Count);
+
+        // First maxIterations calls should have the tools
+        for (int i = 0; i < maxIterations; i++)
+        {
+            Assert.NotNull(capturedOptions[i]?.Tools);
+            Assert.Single(capturedOptions[i]!.Tools!);
+        }
+
+        // Last call (at iteration == maxIterations) should have no tools
+        Assert.True(capturedOptions[maxIterations]?.Tools is null || capturedOptions[maxIterations]!.Tools!.Count == 0);
+        Assert.Null(capturedOptions[maxIterations]?.ToolMode);
+    }
+
+    [Fact]
+    public async Task LastIteration_PreservesNonFunctionDeclarationTools()
+    {
+        // Arrange: Create a mock non-function tool
+        var mockTool = new MockNonFunctionTool("MockTool");
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 1;
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                // Capture a clone of the options
+                capturedOptions.Add(options?.Clone());
+
+                // Return a function call on first iteration, then text on second
+                if (capturedOptions.Count == 1)
+                {
+                    var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]);
+                    return Task.FromResult(new ChatResponse(message));
+                }
+                else
+                {
+                    var message = new ChatMessage(ChatRole.Assistant, "Done");
+                    return Task.FromResult(new ChatResponse(message));
+                }
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result", "Func1"), mockTool],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        // Act
+        await client.GetResponseAsync("hello", options);
+
+        // Assert: Should have made 2 calls
+        Assert.Equal(2, capturedOptions.Count);
+
+        // First call should have both tools
+        Assert.NotNull(capturedOptions[0]?.Tools);
+        Assert.Equal(2, capturedOptions[0]!.Tools!.Count);
+
+        // Last call should only have the non-function tool
+        Assert.NotNull(capturedOptions[1]?.Tools);
+        Assert.Single(capturedOptions[1]!.Tools!);
+        Assert.IsType<MockNonFunctionTool>(capturedOptions[1]!.Tools![0]);
+
+        // ToolMode should be preserved since we still have tools
+        Assert.NotNull(capturedOptions[1]?.ToolMode);
+    }
+
+    [Fact]
+    public async Task LastIteration_DoesNotModifyOriginalOptions()
+    {
+        // Arrange
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 1;
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                capturedOptions.Add(options);
+                var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]);
+                return Task.FromResult(new ChatResponse(message));
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var originalTool = AIFunctionFactory.Create(() => "Result", "Func1");
+        var originalOptions = new ChatOptions
+        {
+            Tools = [originalTool],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        // Act
+        await client.GetResponseAsync("hello", originalOptions);
+
+        // Assert: Original options should not be modified
+        Assert.NotNull(originalOptions.Tools);
+        Assert.Single(originalOptions.Tools);
+        Assert.Same(originalTool, originalOptions.Tools[0]);
+        Assert.NotNull(originalOptions.ToolMode);
+    }
+
+    private sealed class MockNonFunctionTool : AITool
+    {
+        public MockNonFunctionTool(string name)
+        {
+            Name = name;
+        }
+
+        public override string Name { get; }
+        public override string Description => "A mock tool that is not an AIFunctionDeclaration";
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

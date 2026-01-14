@@ -319,6 +319,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             functionCallContents?.Clear();
 
+            // On the last iteration, we won't be processing any function calls, so we should not
+            // include AIFunctionDeclaration tools in the request to prevent the inner client from
+            // returning tool call requests that won't be handled.
+            if (iteration >= MaximumIterationsPerRequest)
+            {
+                PrepareOptionsForLastIteration(ref options);
+            }
+
             // Make the call to the inner client.
             response = await base.GetResponseAsync(messages, options, cancellationToken);
             if (response is null)
@@ -485,6 +493,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             updates.Clear();
             functionCallContents?.Clear();
+
+            // On the last iteration, we won't be processing any function calls, so we should not
+            // include AIFunctionDeclaration tools in the request to prevent the inner client from
+            // returning tool call requests that won't be handled.
+            if (iteration >= MaximumIterationsPerRequest)
+            {
+                PrepareOptionsForLastIteration(ref options);
+            }
 
             bool hasApprovalRequiringFcc = false;
             int lastApprovalCheckedFCCIndex = 0;
@@ -821,6 +837,47 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         if (options?.ContinuationToken is not null)
         {
             options.ContinuationToken = null;
+        }
+    }
+
+    /// <summary>
+    /// Prepares options for the last iteration by removing AIFunctionDeclaration tools.
+    /// </summary>
+    /// <param name="options">The chat options to prepare.</param>
+    /// <remarks>
+    /// On the last iteration, we won't be processing any function calls, so we should not
+    /// include AIFunctionDeclaration tools in the request. This prevents the inner client
+    /// from returning tool call requests that won't be handled.
+    /// </remarks>
+    private static void PrepareOptionsForLastIteration(ref ChatOptions? options)
+    {
+        if (options?.Tools is not { Count: > 0 })
+        {
+            return;
+        }
+
+        // Filter out AIFunctionDeclaration tools, keeping only non-function tools
+        List<AITool>? remainingTools = null;
+        foreach (var tool in options.Tools)
+        {
+            if (tool is not AIFunctionDeclaration)
+            {
+                remainingTools ??= [];
+                remainingTools.Add(tool);
+            }
+        }
+
+        // Only clone and modify if we're actually removing tools
+        if (remainingTools is null || remainingTools.Count < options.Tools.Count)
+        {
+            options = options.Clone();
+            options.Tools = remainingTools;
+
+            // If no tools remain, clear the ToolMode as well
+            if (remainingTools is null || remainingTools.Count == 0)
+            {
+                options.ToolMode = null;
+            }
         }
     }
 
