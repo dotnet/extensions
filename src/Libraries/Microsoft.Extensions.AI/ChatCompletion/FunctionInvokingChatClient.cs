@@ -867,14 +867,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             }
         }
 
-        // Only clone and modify if we're actually removing tools
-        if (remainingTools is null || remainingTools.Count < options.Tools.Count)
+        // If we removed any tools (including removing all of them), clone and update options
+        int remainingCount = remainingTools?.Count ?? 0;
+        if (remainingCount < options.Tools.Count)
         {
             options = options.Clone();
             options.Tools = remainingTools;
 
             // If no tools remain, clear the ToolMode as well
-            if (remainingTools is null || remainingTools.Count == 0)
+            if (remainingCount == 0)
             {
                 options.ToolMode = null;
             }

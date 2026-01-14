@@ -439,9 +439,11 @@ public class FunctionInvokingChatClientTests
             Assert.Single(capturedOptions[i]!.Tools!);
         }
 
-        // Last call (at iteration == maxIterations) should have no tools
-        Assert.True(capturedOptions[maxIterations]?.Tools is null || capturedOptions[maxIterations]!.Tools!.Count == 0);
-        Assert.Null(capturedOptions[maxIterations]?.ToolMode);
+        // Last call (at iteration == maxIterations) should have no tools and no ToolMode
+        var lastOptions = capturedOptions[maxIterations];
+        Assert.NotNull(lastOptions);
+        Assert.Null(lastOptions!.Tools);
+        Assert.Null(lastOptions.ToolMode);
     }
 
     [Fact]
@@ -488,9 +490,11 @@ public class FunctionInvokingChatClientTests
             Assert.Single(capturedOptions[i]!.Tools!);
         }
 
-        // Last call (at iteration == maxIterations) should have no tools
-        Assert.True(capturedOptions[maxIterations]?.Tools is null || capturedOptions[maxIterations]!.Tools!.Count == 0);
-        Assert.Null(capturedOptions[maxIterations]?.ToolMode);
+        // Last call (at iteration == maxIterations) should have no tools and no ToolMode
+        var lastOptions = capturedOptions[maxIterations];
+        Assert.NotNull(lastOptions);
+        Assert.Null(lastOptions!.Tools);
+        Assert.Null(lastOptions.ToolMode);
     }
 
     [Fact]
