@@ -11,7 +11,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -28,7 +27,7 @@ public class OpenAIResponseClientTests
     [Fact]
     public void AsIChatClient_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("responseClient", () => ((OpenAIResponseClient)null!).AsIChatClient());
+        Assert.Throws<ArgumentNullException>("responseClient", () => ((ResponsesClient)null!).AsIChatClient());
     }
 
     [Fact]
@@ -39,7 +38,7 @@ public class OpenAIResponseClientTests
 
         var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
-        IChatClient chatClient = client.GetOpenAIResponseClient(model).AsIChatClient();
+        IChatClient chatClient = client.GetResponsesClient(model).AsIChatClient();
         var metadata = chatClient.GetService<ChatClientMetadata>();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
@@ -49,11 +48,11 @@ public class OpenAIResponseClientTests
     [Fact]
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
-        OpenAIResponseClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetOpenAIResponseClient("model");
+        ResponsesClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetResponsesClient("model");
         IChatClient chatClient = openAIClient.AsIChatClient();
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
-        Assert.Same(openAIClient, chatClient.GetService<OpenAIResponseClient>());
+        Assert.Same(openAIClient, chatClient.GetService<ResponsesClient>());
 
         using IChatClient pipeline = chatClient
             .AsBuilder()
@@ -67,7 +66,7 @@ public class OpenAIResponseClientTests
         Assert.NotNull(pipeline.GetService<CachingChatClient>());
         Assert.NotNull(pipeline.GetService<OpenTelemetryChatClient>());
 
-        Assert.Same(openAIClient, pipeline.GetService<OpenAIResponseClient>());
+        Assert.Same(openAIClient, pipeline.GetService<ResponsesClient>());
         Assert.IsType<FunctionInvokingChatClient>(pipeline.GetService<IChatClient>());
     }
 
@@ -295,7 +294,7 @@ public class OpenAIResponseClientTests
         List<ChatResponseUpdate> updates = [];
         await foreach (var update in client.GetStreamingResponseAsync("Calculate the sum of the first 5 positive integers.", new()
         {
-            RawRepresentationFactory = options => new ResponseCreationOptions
+            RawRepresentationFactory = options => new CreateResponseOptions
             {
                 ReasoningOptions = new()
                 {
@@ -428,7 +427,7 @@ public class OpenAIResponseClientTests
         List<ChatResponseUpdate> updates = [];
         await foreach (var update in client.GetStreamingResponseAsync("Solve this problem step by step.", new()
         {
-            RawRepresentationFactory = options => new ResponseCreationOptions
+            RawRepresentationFactory = options => new CreateResponseOptions
             {
                 ReasoningOptions = new()
                 {
@@ -609,7 +608,6 @@ public class OpenAIResponseClientTests
                         "display_height": 768
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "message",
@@ -700,7 +698,7 @@ public class OpenAIResponseClientTests
         ChatOptions chatOptions = new()
         {
             Tools = [ResponseTool.CreateComputerTool(ComputerToolEnvironment.Browser, 1024, 768).AsAITool()],
-            RawRepresentationFactory = options => new ResponseCreationOptions
+            RawRepresentationFactory = options => new CreateResponseOptions
             {
                 ReasoningOptions = new() { ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Concise },
             }
@@ -745,7 +743,6 @@ public class OpenAIResponseClientTests
                         "display_height": 768
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "message",
@@ -789,7 +786,7 @@ public class OpenAIResponseClientTests
         ChatOptions chatOptions = new()
         {
             Tools = [ResponseTool.CreateComputerTool(ComputerToolEnvironment.Browser, 1024, 768).AsAITool()],
-            RawRepresentationFactory = options => new ResponseCreationOptions
+            RawRepresentationFactory = options => new CreateResponseOptions
             {
                 ReasoningOptions = new() { ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Concise },
             }
@@ -843,7 +840,6 @@ public class OpenAIResponseClientTests
                         ]
                     }
                 ],
-                "tool_choice": "auto",
                 "tools": [
                     {
                         "type": "function",
@@ -894,7 +890,7 @@ public class OpenAIResponseClientTests
             Tools = [AIFunctionFactory.Create(() => 42, "GetPersonAge", "Gets the age of the specified person.")],
             AdditionalProperties = new()
             {
-                ["strictJsonSchema"] = true,
+                ["strict"] = true,
             },
         });
         Assert.NotNull(response);
@@ -1039,7 +1035,7 @@ public class OpenAIResponseClientTests
         {
             RawRepresentationFactory = (c) =>
             {
-                ResponseCreationOptions openAIOptions = new()
+                CreateResponseOptions openAIOptions = new()
                 {
                     MaxOutputTokenCount = 10,
                     PreviousResponseId = "resp_42",
@@ -1202,7 +1198,6 @@ public class OpenAIResponseClientTests
                   "server_url": "https://mcp.deepwiki.com/mcp"
                 }
               ],
-              "tool_choice": "auto",
               "input": [
                 {
                   "type": "message",
@@ -1257,7 +1252,6 @@ public class OpenAIResponseClientTests
                 },
                 "verbosity": "medium"
               },
-              "tool_choice": "auto",
               "tools": [
                 {
                   "type": "mcp",
@@ -1317,7 +1311,6 @@ public class OpenAIResponseClientTests
                         "server_url": "https://mcp.deepwiki.com/mcp"
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "mcp_approval_response",
@@ -1474,7 +1467,6 @@ public class OpenAIResponseClientTests
                         "require_approval": "never"
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "message",
@@ -1739,7 +1731,6 @@ public class OpenAIResponseClientTests
                         "require_approval": "never"
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "message",
@@ -2137,6 +2128,88 @@ public class OpenAIResponseClientTests
         Assert.Equal(1420, response.Usage.InputTokenCount);
         Assert.Equal(149, response.Usage.OutputTokenCount);
         Assert.Equal(1569, response.Usage.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task McpToolCall_WithAuthorizationTokenAndCustomHeaders_IncludesInRequest()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "server_label": "deepwiki",
+                        "server_url": "https://mcp.deepwiki.com/mcp",
+                        "headers": {
+                            "Authorization": "Bearer test-auth-token-12345",
+                            "X-Custom-Header": "custom-value"
+                        },
+                        "require_approval": "never"
+                    }
+                ],
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+                "id": "resp_auth01",
+                "object": "response",
+                "created_at": 1757299043,
+                "status": "completed",
+                "model": "gpt-4o-mini-2024-07-18",
+                "output": [
+                    {
+                        "id": "msg_auth01",
+                        "type": "message",
+                        "status": "completed",
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "text": "Hi!"
+                            }
+                        ]
+                    }
+                ],
+                "usage": {
+                    "input_tokens": 10,
+                    "output_tokens": 2,
+                    "total_tokens": 12
+                }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var mcpTool = new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
+        {
+            ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+            AuthorizationToken = "test-auth-token-12345"
+        };
+
+        mcpTool.Headers!["X-Custom-Header"] = "custom-value";
+
+        var response = await client.GetResponseAsync("hello", new ChatOptions { Tools = [mcpTool] });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_auth01", response.ResponseId);
+        var message = Assert.Single(response.Messages);
+        Assert.Equal("Hi!", message.Text);
     }
 
     [Fact]
@@ -2610,7 +2683,6 @@ public class OpenAIResponseClientTests
                     "role":"user",
                     "content":[{"type":"input_text","text":"Calculate the sum of numbers from 1 to 5"}]
                 }],
-                "tool_choice":"auto",
                 "tools":[{
                     "type":"code_interpreter",
                     "container":{"type":"auto"}
@@ -2739,7 +2811,6 @@ public class OpenAIResponseClientTests
                     "role":"user",
                     "content":[{"type":"input_text","text":"Calculate the sum of numbers from 1 to 10 using Python"}]
                 }],
-                "tool_choice":"auto",
                 "tools":[{
                     "type":"code_interpreter",
                     "container":{"type":"auto"}
@@ -3032,7 +3103,7 @@ public class OpenAIResponseClientTests
             {
                 "temperature":0.5,
                 "model":"gpt-4o-mini",
-                "conversation":"conv_12345",
+                "conversation":{"id":"conv_12345"},
                 "input": [{
                     "type":"message",
                     "role":"user",
@@ -3134,7 +3205,7 @@ public class OpenAIResponseClientTests
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 StoredOutputEnabled = false
             }
@@ -3196,7 +3267,7 @@ public class OpenAIResponseClientTests
             MaxOutputTokens = 20,
             Temperature = 0.5f,
             ConversationId = "resp_override",
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 PreviousResponseId = null
             }
@@ -3258,7 +3329,7 @@ public class OpenAIResponseClientTests
             MaxOutputTokens = 20,
             Temperature = 0.5f,
             ConversationId = "conv_ignored",
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 PreviousResponseId = "resp_fromraw"
             }
@@ -3320,7 +3391,7 @@ public class OpenAIResponseClientTests
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 StoredOutputEnabled = true
             }
@@ -3394,7 +3465,7 @@ public class OpenAIResponseClientTests
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 StoredOutputEnabled = true
             }
@@ -3475,7 +3546,7 @@ public class OpenAIResponseClientTests
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
-            RawRepresentationFactory = (c) => new ResponseCreationOptions
+            RawRepresentationFactory = (c) => new CreateResponseOptions
             {
                 StoredOutputEnabled = false
             }
@@ -3500,7 +3571,7 @@ public class OpenAIResponseClientTests
             {
                 "temperature":0.5,
                 "model":"gpt-4o-mini",
-                "conversation":"conv_12345",
+                "conversation":{"id":"conv_12345"},
                 "input":[
                     {
                         "type":"message",
@@ -3656,7 +3727,7 @@ public class OpenAIResponseClientTests
         {
             "temperature":0.5,
             "model":"gpt-4o-mini",
-            "conversation":"conv_12345",
+            "conversation":{"id":"conv_12345"},
             "input": [{
                 "type":"message",
                 "role":"user",
@@ -3695,20 +3766,15 @@ public class OpenAIResponseClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
 
-        var rcoJsonModel = (IJsonModel<ResponseCreationOptions>)new ResponseCreationOptions();
-        BinaryData rcoJsonBinaryData = rcoJsonModel.Write(ModelReaderWriterOptions.Json);
-        JsonObject rcoJsonObject = Assert.IsType<JsonObject>(JsonNode.Parse(rcoJsonBinaryData.ToMemory().Span));
-        Assert.Null(rcoJsonObject["conversation"]);
-        rcoJsonObject["conversation"] = "conv_12345";
-
         var response = await client.GetResponseAsync("hello", new()
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
             ConversationId = "conv_ignored",
-            RawRepresentationFactory = (c) => rcoJsonModel.Create(
-                new BinaryData(JsonSerializer.SerializeToUtf8Bytes(rcoJsonObject)),
-                ModelReaderWriterOptions.Json)
+            RawRepresentationFactory = _ => new CreateResponseOptions
+            {
+                ConversationOptions = new("conv_12345"),
+            }
         });
 
         Assert.NotNull(response);
@@ -4584,12 +4650,12 @@ public class OpenAIResponseClientTests
         var response = await client.GetResponseAsync("test");
 
         Assert.NotNull(response.Usage);
+        Assert.Null(response.Usage.AdditionalCounts);
         Assert.Equal(50, response.Usage.InputTokenCount);
         Assert.Equal(25, response.Usage.OutputTokenCount);
         Assert.Equal(75, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalCounts);
-        Assert.Equal(10, response.Usage.AdditionalCounts["InputTokenDetails.CachedTokenCount"]);
-        Assert.Equal(5, response.Usage.AdditionalCounts["OutputTokenDetails.ReasoningTokenCount"]);
+        Assert.Equal(10, response.Usage.CachedInputTokenCount);
+        Assert.Equal(5, response.Usage.ReasoningTokenCount);
     }
 
     [Fact]
@@ -5133,6 +5199,132 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task ResponseWithInputImageHttpUrl_ParsesAsUriContent()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"What is in this image?"}]}]
+            }
+            """;
+
+        // The output includes a message with input_image content that has an image_url property with HTTP URL.
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_001",
+                  "status":"completed",
+                  "role":"user",
+                  "content":[
+                    {"type":"input_image","image_url":"https://example.com/image.png"}
+                  ]
+                },
+                {
+                  "type":"message",
+                  "id":"msg_002",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[
+                    {"type":"output_text","text":"This is a cat.","annotations":[]}
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("What is in this image?");
+
+        Assert.NotNull(response);
+
+        var userMessage = response.Messages.FirstOrDefault(m => m.Role == ChatRole.User);
+        Assert.NotNull(userMessage);
+
+        // HTTP URL should be returned as UriContent
+        var imageContent = userMessage.Contents.OfType<UriContent>().FirstOrDefault();
+        Assert.NotNull(imageContent);
+        Assert.Equal("https://example.com/image.png", imageContent.Uri.ToString());
+        Assert.Equal("image/*", imageContent.MediaType);
+
+        var assistantMessage = response.Messages.LastOrDefault(m => m.Role == ChatRole.Assistant);
+        Assert.NotNull(assistantMessage);
+        Assert.Equal("This is a cat.", assistantMessage.Text);
+    }
+
+    [Fact]
+    public async Task ResponseWithInputImageDataUri_ParsesAsDataContent()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"What is in this image?"}]}]
+            }
+            """;
+
+        // The output includes a message with input_image content that has an image_url property with a data URI.
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_001",
+                  "status":"completed",
+                  "role":"user",
+                  "content":[
+                    {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}
+                  ]
+                },
+                {
+                  "type":"message",
+                  "id":"msg_002",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[
+                    {"type":"output_text","text":"This is a red pixel.","annotations":[]}
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("What is in this image?");
+
+        Assert.NotNull(response);
+
+        var userMessage = response.Messages.FirstOrDefault(m => m.Role == ChatRole.User);
+        Assert.NotNull(userMessage);
+
+        // Data URI should be returned as DataContent
+        var imageContent = userMessage.Contents.OfType<DataContent>().FirstOrDefault();
+        Assert.NotNull(imageContent);
+        Assert.Equal("image/png", imageContent.MediaType);
+        Assert.True(imageContent.Data.Length > 0);
+
+        var assistantMessage = response.Messages.LastOrDefault(m => m.Role == ChatRole.Assistant);
+        Assert.NotNull(assistantMessage);
+        Assert.Equal("This is a red pixel.", assistantMessage.Text);
+    }
+
+    [Fact]
     public async Task HostedImageGenerationTool_NonStreaming()
     {
         const string Input = """
@@ -5146,7 +5338,6 @@ public class OpenAIResponseClientTests
                         "output_format": "png"
                     }
                 ],
-                "tool_choice": "auto",
                 "input": [
                     {
                         "type": "message",
@@ -5240,7 +5431,6 @@ public class OpenAIResponseClientTests
                         "output_format": "png"
                     }
                 ],
-                "tool_choice": "auto",
                 "stream": true,
                 "input": [
                     {
@@ -5352,7 +5542,6 @@ public class OpenAIResponseClientTests
                         "partial_images": 3
                     }
                 ],
-                "tool_choice": "auto",
                 "stream": true,
                 "input": [
                     {
@@ -5486,7 +5675,7 @@ public class OpenAIResponseClientTests
         new OpenAIClient(
             new ApiKeyCredential("apikey"),
             new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
-        .GetOpenAIResponseClient(modelId)
+        .GetResponsesClient(modelId)
         .AsIChatClient();
 
     private static string ResponseStatusToRequestValue(ResponseStatus status)

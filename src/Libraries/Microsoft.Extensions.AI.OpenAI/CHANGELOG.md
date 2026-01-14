@@ -1,10 +1,20 @@
 # Microsoft.Extensions.AI.OpenAI Release History
 
-## NOT YET RELEASED
+## 10.1.1-preview.1.? (NOT YET RELEASED)
+
+- Updated to depend on OpenAI 2.8.0.
+- Updated public API signatures in `OpenAIClientExtensions` and `MicrosoftExtensionsAIResponsesExtensions` to match the corresponding breaking changes in OpenAI's Responses APIs.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated the OpenAI Responses and Chat Completion `IChatClient`s to populate `UsageDetails`'s `InputCachedTokenCount` and `ReasoningTokenCount`.
+- Updated handling of `HostedWebSearchTool`, `HostedFileSearchTool`, and `HostedImageGenerationTool` to pull OpenAI-specific
+  options from `AdditionalProperties`.
+
+## 10.1.0-preview.1.25608.1
 
 - Fixed package references for net10.0 asset.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 - Updated the OpenAI Responses `IChatClient` to ensure all `ResponseItem`s are yielded in `AIContent`.
+- Added workaround to the OpenAI Responses `IChatClient` for OpenAI service sometimes sending error data in a manner different from how it's documented.
 
 ## 10.0.1-preview.1.25571.5
 

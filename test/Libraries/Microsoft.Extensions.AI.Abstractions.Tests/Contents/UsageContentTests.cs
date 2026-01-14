@@ -66,7 +66,9 @@ public class UsageContentTests
         {
             InputTokenCount = 10,
             OutputTokenCount = 20,
-            TotalTokenCount = 30
+            TotalTokenCount = 30,
+            CachedInputTokenCount = 5,
+            ReasoningTokenCount = 8
         });
 
         var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
@@ -77,5 +79,7 @@ public class UsageContentTests
         Assert.Equal(content.Details.InputTokenCount, deserializedContent.Details.InputTokenCount);
         Assert.Equal(content.Details.OutputTokenCount, deserializedContent.Details.OutputTokenCount);
         Assert.Equal(content.Details.TotalTokenCount, deserializedContent.Details.TotalTokenCount);
+        Assert.Equal(content.Details.CachedInputTokenCount, deserializedContent.Details.CachedInputTokenCount);
+        Assert.Equal(content.Details.ReasoningTokenCount, deserializedContent.Details.ReasoningTokenCount);
     }
 }

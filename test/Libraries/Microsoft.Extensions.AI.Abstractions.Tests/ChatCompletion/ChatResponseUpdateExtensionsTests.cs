@@ -29,9 +29,9 @@ public class ChatResponseUpdateExtensionsTests
     {
         ChatResponseUpdate[] updates =
         [
-            new(ChatRole.Assistant, "Hello") { ResponseId = "someResponse", MessageId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
+            new(ChatRole.Assistant, "Hello") { ResponseId = "someResponse", MessageId = "12345", CreatedAt = new DateTimeOffset(2024, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
             new(ChatRole.Assistant, ", ") { AuthorName = "Someone", AdditionalProperties = new() { ["a"] = "b" } },
-            new(null, "world!") { CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), ConversationId = "123", AdditionalProperties = new() { ["c"] = "d" } },
+            new(null, "world!") { CreatedAt = new DateTimeOffset(2025, 2, 3, 4, 5, 6, TimeSpan.Zero), ConversationId = "123", AdditionalProperties = new() { ["c"] = "d" } },
 
             new() { Contents = [new UsageContent(new() { InputTokenCount = 1, OutputTokenCount = 2 })] },
             new() { Contents = [new UsageContent(new() { InputTokenCount = 4, OutputTokenCount = 5 })] },
@@ -47,7 +47,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(7, response.Usage.OutputTokenCount);
 
         Assert.Equal("someResponse", response.ResponseId);
-        Assert.Equal(new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
+        Assert.Equal(new DateTimeOffset(2024, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
         Assert.Equal("model123", response.ModelId);
 
         Assert.Equal("123", response.ConversationId);
@@ -448,6 +448,91 @@ public class ChatResponseUpdateExtensionsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ToChatResponse_AdditionalPropertiesGoToMessages(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        [
+
+            // First message with AdditionalProperties (MessageId makes properties go to message)
+            new(ChatRole.Assistant, "First message") { MessageId = "msg1", AdditionalProperties = new() { ["key1"] = "value1" } },
+            new(null, " part 2") { MessageId = "msg1", AdditionalProperties = new() { ["key2"] = "value2" } },
+
+            // Second message with different AdditionalProperties (same keys, different values)
+            new(ChatRole.User, "Second message") { MessageId = "msg2", AdditionalProperties = new() { ["key1"] = "different_value1" } },
+            new(null, " part 2") { MessageId = "msg2", AdditionalProperties = new() { ["key3"] = "value3" } },
+
+            // Third message with no AdditionalProperties
+            new(ChatRole.Assistant, "Third message") { MessageId = "msg3" },
+        ];
+
+        ChatResponse response = useAsync ?
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
+
+        Assert.Equal(3, response.Messages.Count);
+        Assert.Null(response.AdditionalProperties);
+
+        // First message should have its own AdditionalProperties
+        var msg1 = response.Messages[0];
+        Assert.Equal("First message part 2", msg1.Text);
+        Assert.NotNull(msg1.AdditionalProperties);
+        Assert.Equal(2, msg1.AdditionalProperties.Count);
+        Assert.Equal("value1", msg1.AdditionalProperties["key1"]);
+        Assert.Equal("value2", msg1.AdditionalProperties["key2"]);
+
+        // Second message should have its own AdditionalProperties (with different value for key1)
+        var msg2 = response.Messages[1];
+        Assert.Equal("Second message part 2", msg2.Text);
+        Assert.NotNull(msg2.AdditionalProperties);
+        Assert.Equal(2, msg2.AdditionalProperties.Count);
+        Assert.Equal("different_value1", msg2.AdditionalProperties["key1"]);
+        Assert.Equal("value3", msg2.AdditionalProperties["key3"]);
+
+        // Third message should have no AdditionalProperties
+        var msg3 = response.Messages[2];
+        Assert.Equal("Third message", msg3.Text);
+        Assert.Null(msg3.AdditionalProperties);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_AdditionalPropertiesRoutingBasedOnMessageId(bool useAsync)
+    {
+        // This test explicitly verifies that:
+        // - Updates WITH MessageId route AdditionalProperties to the message
+        // - Updates WITHOUT MessageId route AdditionalProperties to the response
+        ChatResponseUpdate[] updates =
+        [
+
+            // Update with MessageId - properties should go to message
+            new(ChatRole.Assistant, "Hello") { MessageId = "msg1", AdditionalProperties = new() { ["messageKey"] = "messageValue" } },
+
+            // Update without MessageId - properties should go to response
+            new() { AdditionalProperties = new() { ["responseKey"] = "responseValue" } },
+        ];
+
+        ChatResponse response = useAsync ?
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
+
+        // Verify message-scoped properties (update had MessageId)
+        var message = Assert.Single(response.Messages);
+        Assert.NotNull(message.AdditionalProperties);
+        Assert.Single(message.AdditionalProperties);
+        Assert.Equal("messageValue", message.AdditionalProperties["messageKey"]);
+        Assert.False(message.AdditionalProperties.ContainsKey("responseKey"));
+
+        // Verify response-scoped properties (update had no MessageId)
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Single(response.AdditionalProperties);
+        Assert.Equal("responseValue", response.AdditionalProperties["responseKey"]);
+        Assert.False(response.AdditionalProperties.ContainsKey("messageKey"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ToChatResponse_UpdatesProduceMultipleResponseMessages(bool useAsync)
     {
         ChatResponseUpdate[] updates =
@@ -456,7 +541,7 @@ public class ChatResponseUpdateExtensionsTests
             // First message - ID "msg1", AuthorName "Assistant"
             new(null, "Hi! ") { CreatedAt = new DateTimeOffset(2023, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
             new(ChatRole.Assistant, "Hello") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
-            new(null, " from") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 1, 0, TimeSpan.Zero) }, // Later CreatedAt should win
+            new(null, " from") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 1, 0, TimeSpan.Zero) }, // Later CreatedAt should not overwrite first
             new(null, " AI") { MessageId = "msg1", AuthorName = "Assistant" }, // Keep same AuthorName to avoid creating new message
 
             // Second message - ID "msg1" changes to "msg2", still AuthorName "Assistant" 
@@ -469,7 +554,7 @@ public class ChatResponseUpdateExtensionsTests
 
             // Fourth message - ID "msg4", Role changes back to Assistant
             new(ChatRole.Assistant, "I'm doing well,") { MessageId = "msg4", CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero) },
-            new(null, " thank you!") { MessageId = "msg4", CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 2, 0, TimeSpan.Zero) }, // Later CreatedAt should win
+            new(null, " thank you!") { MessageId = "msg4", CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 2, 0, TimeSpan.Zero) }, // Later CreatedAt should not overwrite first
 
             // Updates without MessageId should continue the last message (msg4)
             new(null, " How can I help?"),
@@ -487,7 +572,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("msg1", message1.MessageId);
         Assert.Equal(ChatRole.Assistant, message1.Role);
         Assert.Equal("Assistant", message1.AuthorName);
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 10, 1, 0, TimeSpan.Zero), message1.CreatedAt); // Last value should win
+        Assert.Equal(new DateTimeOffset(2023, 1, 1, 10, 0, 0, TimeSpan.Zero), message1.CreatedAt); // First value should win
         Assert.Equal("Hi! Hello from AI", message1.Text);
 
         // Verify second message  
@@ -503,7 +588,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("msg3", message3.MessageId);
         Assert.Equal(ChatRole.User, message3.Role);
         Assert.Equal("User", message3.AuthorName);
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 11, 1, 0, TimeSpan.Zero), message3.CreatedAt); // Last value should win
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 11, 0, 0, TimeSpan.Zero), message3.CreatedAt); // First value should win
         Assert.Equal("How are you?", message3.Text);
 
         // Verify fourth message
@@ -511,7 +596,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("msg4", message4.MessageId);
         Assert.Equal(ChatRole.Assistant, message4.Role);
         Assert.Null(message4.AuthorName); // No AuthorName set
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 12, 2, 0, TimeSpan.Zero), message4.CreatedAt); // Last value should win
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero), message4.CreatedAt); // First value should win
         Assert.Equal("I'm doing well, thank you! How can I help?", message4.Text);
     }
 
@@ -741,6 +826,7 @@ public class ChatResponseUpdateExtensionsTests
         DateTimeOffset middle = new(2024, 1, 1, 11, 0, 0, TimeSpan.Zero);
         DateTimeOffset late = new(2024, 1, 1, 12, 0, 0, TimeSpan.Zero);
         DateTimeOffset unixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        DateTimeOffset beforeEpoch = new(1969, 12, 31, 23, 59, 59, TimeSpan.Zero);
 
         ChatResponseUpdate[] updates =
         [
@@ -751,20 +837,23 @@ public class ChatResponseUpdateExtensionsTests
             // Unix epoch (as "null") should not overwrite
             new(null, "b") { CreatedAt = unixEpoch },
 
-            // Newer timestamp should overwrite
-            new(null, "c") { CreatedAt = middle },
+            // Before Unix epoch (as "null") should not overwrite
+            new(null, "c") { CreatedAt = beforeEpoch },
+
+            // Newer timestamp should not overwrite (first value wins)
+            new(null, "d") { CreatedAt = middle },
 
             // Older timestamp should not overwrite
-            new(null, "d") { CreatedAt = early },
+            new(null, "e") { CreatedAt = early },
 
-            // Even newer timestamp should overwrite
-            new(null, "e") { CreatedAt = late },
+            // Even newer timestamp should not overwrite (first value wins)
+            new(null, "f") { CreatedAt = late },
 
             // Unix epoch should not overwrite again
-            new(null, "f") { CreatedAt = unixEpoch },
+            new(null, "g") { CreatedAt = unixEpoch },
 
             // null should not overwrite
-            new(null, "g") { CreatedAt = null },
+            new(null, "h") { CreatedAt = null },
         ];
 
         ChatResponse response = useAsync ?
@@ -772,24 +861,26 @@ public class ChatResponseUpdateExtensionsTests
             updates.ToChatResponse();
         Assert.Single(response.Messages);
 
-        Assert.Equal("abcdefg", response.Messages[0].Text);
+        Assert.Equal("abcdefgh", response.Messages[0].Text);
         Assert.Equal(ChatRole.Tool, response.Messages[0].Role);
-        Assert.Equal(late, response.Messages[0].CreatedAt);
-        Assert.Equal(late, response.CreatedAt);
+        Assert.Equal(early, response.Messages[0].CreatedAt);
+        Assert.Equal(early, response.CreatedAt);
     }
 
     public static IEnumerable<object?[]> ToChatResponse_TimestampFolding_MemberData()
     {
-        // Base test cases
+        // Base test cases (first valid timestamp wins)
         var testCases = new (string? timestamp1, string? timestamp2, string? expectedTimestamp)[]
         {
             (null, null, null),
             ("2024-01-01T10:00:00Z", null, "2024-01-01T10:00:00Z"),
             (null, "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"),
-            ("2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z", "2024-01-01T11:00:00Z"),
-            ("2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z"),
+            ("2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z"), // First wins
+            ("2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z"), // First wins
             ("2024-01-01T10:00:00Z", "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z"),
-            ("1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"),
+            ("1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"), // Unix epoch treated as null, second is first valid
+            ("1969-12-31T23:59:59Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"), // Before Unix epoch treated as null, second is first valid
+            ("1960-01-01T00:00:00Z", "1965-06-15T12:00:00Z", null), // Both before Unix epoch treated as null
         };
 
         // Yield each test case twice, once for useAsync = false and once for useAsync = true

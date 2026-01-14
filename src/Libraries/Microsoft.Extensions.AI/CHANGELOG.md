@@ -1,6 +1,10 @@
 # Microsoft.Extensions.AI Release History
 
-## NOT YET RELEASED
+## 10.1.1 (NOT YET RELEASED)
+
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 10.1.0
 
 - Fixed package references for net10.0 asset.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
