@@ -1380,7 +1380,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         if (approvalRequestCallIds is { Count: > 0 })
         {
             Throw.InvalidOperationException(
-                $"FunctionApprovalRequestContent found with CallId(s) '{string.Join(", ", approvalRequestCallIds)}' that have no matching FunctionApprovalResponseContent.");
+                $"FunctionApprovalRequestContent found with FunctionCall.CallId(s) '{string.Join(", ", approvalRequestCallIds)}' that have no matching FunctionApprovalResponseContent.");
         }
 
         // 2nd iteration, over all approval responses:
@@ -1749,10 +1749,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         public FunctionApprovalResponseContent Response { get; init; }
         public ChatMessage? RequestMessage { get; init; }
-
-        /// <summary>
-        /// Gets the FunctionCallContent from the response.
-        /// </summary>
         public FunctionCallContent FunctionCallContent => Response.FunctionCall;
     }
 }

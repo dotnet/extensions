@@ -840,11 +840,11 @@ public class FunctionInvokingChatClientApprovalsTests
 
         var invokeException = await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await InvokeAndAssertAsync(options, input, [], [], []));
-        Assert.Equal("FunctionApprovalRequestContent found with CallId(s) 'callId1' that have no matching FunctionApprovalResponseContent.", invokeException.Message);
+        Assert.Equal("FunctionApprovalRequestContent found with FunctionCall.CallId(s) 'callId1' that have no matching FunctionApprovalResponseContent.", invokeException.Message);
 
         var invokeStreamingException = await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await InvokeAndAssertStreamingAsync(options, input, [], [], []));
-        Assert.Equal("FunctionApprovalRequestContent found with CallId(s) 'callId1' that have no matching FunctionApprovalResponseContent.", invokeStreamingException.Message);
+        Assert.Equal("FunctionApprovalRequestContent found with FunctionCall.CallId(s) 'callId1' that have no matching FunctionApprovalResponseContent.", invokeStreamingException.Message);
     }
 
     [Fact]

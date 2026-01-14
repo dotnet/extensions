@@ -27,7 +27,7 @@ public sealed class McpServerToolCallContent : FunctionCallContent
     /// <exception cref="ArgumentException"><paramref name="callId"/> or <paramref name="toolName"/> is empty or composed entirely of whitespace.</exception>
     [JsonConstructor]
     public McpServerToolCallContent(string callId, string toolName, string? serverName)
-        : base(callId, toolName, arguments: null)
+        : base(callId, toolName)
     {
         ServerName = serverName;
     }

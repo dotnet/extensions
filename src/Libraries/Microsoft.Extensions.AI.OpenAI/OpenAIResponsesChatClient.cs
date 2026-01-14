@@ -209,7 +209,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case McpToolCallApprovalRequestItem mtcari:
                     message.Contents.Add(new FunctionApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
                     {
-                        Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject) as IDictionary<string, object?>,
+                        Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
                         RawRepresentation = mtcari,
                     })
                     {
@@ -423,7 +423,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         case McpToolCallApprovalRequestItem mtcari:
                             yield return CreateUpdate(new FunctionApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
                             {
-                                Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject) as IDictionary<string, object?>,
+                                Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
                                 RawRepresentation = mtcari,
                             })
                             {
@@ -1080,7 +1080,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 mcpCall.CallId,
                                 mcpCall.ServerName,
                                 mcpCall.ToolName,
-                                BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(mcpCall.Arguments!, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)));
+                                BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(mcpCall.Arguments!, OpenAIJsonContext.Default.IDictionaryStringObject)));
                             break;
 
                         case McpServerToolCallContent mstcc:
@@ -1093,7 +1093,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 callContent.Name,
                                 BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
                                     callContent.Arguments,
-                                    AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
+                                    OpenAIJsonContext.Default.IDictionaryStringObject)));
                             break;
 
                         case McpServerToolResultContent mstrc:
@@ -1295,7 +1295,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         contents.Add(new McpServerToolCallContent(mtci.Id, mtci.ToolName, mtci.ServerLabel)
         {
-            Arguments = JsonSerializer.Deserialize(mtci.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject) as IDictionary<string, object?>,
+            Arguments = JsonSerializer.Deserialize(mtci.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
 
             // We purposefully do not set the RawRepresentation on the McpServerToolCallContent, only on the McpServerToolResultContent, to avoid
             // the same McpToolCallItem being included on two different AIContent instances. When these are roundtripped, we want only one
