@@ -32,6 +32,7 @@ namespace Microsoft.Extensions.AI;
 // [JsonDerivedType(typeof(McpServerToolApprovalResponseContent), typeDiscriminator: "mcpServerToolApprovalResponse")]
 // [JsonDerivedType(typeof(CodeInterpreterToolCallContent), typeDiscriminator: "codeInterpreterToolCall")]
 // [JsonDerivedType(typeof(CodeInterpreterToolResultContent), typeDiscriminator: "codeInterpreterToolResult")]
+// [JsonDerivedType(typeof(ServiceActionContent), typeDiscriminator: "serviceAction")]
 
 public class AIContent
 {
