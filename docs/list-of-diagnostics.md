@@ -118,7 +118,6 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `METGEN014` | A metering attribute type argument is invalid |
 | `METGEN015` | Metric methods mustn't use any external type as the return type |
 | `METGEN016` | Metric methods mustn't use any generic type as the return type |
-| `METGEN017` | Gauge is not supported yet |
 | `METGEN018` | Xml comment was not parsed correctly |
 | `METGEN019` | A metric class has cycles in its type hierarchy |
 
