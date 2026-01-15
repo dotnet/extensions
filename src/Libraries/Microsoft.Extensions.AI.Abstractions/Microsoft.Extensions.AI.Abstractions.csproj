@@ -15,7 +15,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
-    <NoWarn>$(NoWarn);MEAI0001;MEAI0002;MEAI0003;MEAI0004;MEAI0005;MEAI0006;MEAI0007;MEAI0008</NoWarn>
+    <NoWarn>$(NoWarn);MEAI001</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
   </PropertyGroup>

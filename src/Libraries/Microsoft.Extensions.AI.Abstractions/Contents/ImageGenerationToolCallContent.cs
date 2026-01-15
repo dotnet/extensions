@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents the invocation of an image generation tool call by a hosted service.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ImageGenerationToolCallContent : AIContent
 {
     /// <summary>

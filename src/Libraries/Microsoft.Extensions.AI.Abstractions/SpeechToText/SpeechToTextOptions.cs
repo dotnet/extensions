@@ -9,7 +9,7 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the options for an speech to text request.</summary>
-[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public class SpeechToTextOptions
 {
     /// <summary>Initializes a new instance of the <see cref="SpeechToTextOptions"/> class.</summary>

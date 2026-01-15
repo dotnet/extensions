@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 /// This is recommended as a base type when building generators that can be chained in any order around an underlying <see cref="IImageGenerator"/>.
 /// The default implementation simply passes each call to the inner generator instance.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public class DelegatingImageGenerator : IImageGenerator
 {
     /// <summary>

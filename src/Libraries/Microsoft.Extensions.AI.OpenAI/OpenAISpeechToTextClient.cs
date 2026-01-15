@@ -19,7 +19,7 @@ using OpenAI.Audio;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="ISpeechToTextClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Audio.AudioClient"/>.</summary>
-[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 {
     /// <summary>Filename to use when audio lacks a name.</summary>

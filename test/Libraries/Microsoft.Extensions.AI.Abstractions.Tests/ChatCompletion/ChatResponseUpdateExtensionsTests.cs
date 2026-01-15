@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Xunit;
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable MEAI0001 // Suppress experimental warnings for testing
+#pragma warning disable MEAI001 // Suppress experimental warnings for testing
 
 namespace Microsoft.Extensions.AI;
 

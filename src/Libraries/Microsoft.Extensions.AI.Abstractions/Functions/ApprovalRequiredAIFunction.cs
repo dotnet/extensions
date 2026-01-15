@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// This class simply augments an <see cref="AIFunction"/> with an indication that approval is required before invocation.
 /// It does not enforce the requirement for user approval; it is the responsibility of the invoker to obtain that approval before invoking the function.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.FunctionApprovals, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AIFunctionApprovals, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ApprovalRequiredAIFunction : DelegatingAIFunction
 {
     /// <summary>

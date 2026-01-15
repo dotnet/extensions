@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.AI;
 /// and replaces them with equivalent function tools that the chat client can invoke to perform image generation and editing operations.
 /// </para>
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ImageGeneratingChatClient : DelegatingChatClient
 {
     /// <summary>

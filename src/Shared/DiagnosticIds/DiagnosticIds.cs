@@ -46,14 +46,19 @@ internal static class DiagnosticIds
         internal const string AutoActivation = "EXTEXP0012";
         internal const string HttpLogging = "EXTEXP0013";
 
-        internal const string ImageGeneration = "MEAI0001";
-        internal const string SpeechToText = "MEAI0002";
-        internal const string McpServers = "MEAI0003";
-        internal const string FunctionApprovals = "MEAI0004";
-        internal const string ToolReduction = "MEAI0005";
-        internal const string ChatReduction = "MEAI0006";
-        internal const string ResponseContinuations = "MEAI0007";
-        internal const string CodeInterpreter = "MEAI0008";
+        // All AI experiments share a diagnostic ID but have different
+        // constants to manage which experiment each API belongs to.
+        internal const string AIImageGeneration = MEAI001;
+        internal const string AISpeechToText = MEAI001;
+        internal const string AIMcpServers = MEAI001;
+        internal const string AIFunctionApprovals = MEAI001;
+        internal const string AIToolReduction = MEAI001;
+        internal const string AIChatReduction = MEAI001;
+        internal const string AIResponseContinuations = MEAI001;
+        internal const string AICodeInterpreter = MEAI001;
+        internal const string AIRealTime = MEAI001;
+
+        private const string MEAI001 = nameof(MEAI001);
     }
 
     internal static class LoggerMessage

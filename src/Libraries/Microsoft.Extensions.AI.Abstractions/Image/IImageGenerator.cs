@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a generator of images.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.ImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IImageGenerator : IDisposable
 {
     /// <summary>

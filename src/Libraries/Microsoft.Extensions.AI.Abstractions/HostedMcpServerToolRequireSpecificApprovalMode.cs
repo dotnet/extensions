@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a mode where approval behavior is specified for individual tool names.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.McpServers, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AIMcpServers, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class HostedMcpServerToolRequireSpecificApprovalMode : HostedMcpServerToolApprovalMode
 {
     /// <summary>

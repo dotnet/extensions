@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents the result of a code interpreter tool invocation by a hosted service.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.CodeInterpreter, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AICodeInterpreter, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class CodeInterpreterToolResultContent : AIContent
 {
     /// <summary>

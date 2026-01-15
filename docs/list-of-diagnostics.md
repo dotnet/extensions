@@ -24,31 +24,24 @@ if desired.
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
-| `EXTEXP0001` | Resilience experiments |
-| `EXTEXP0002` | Compliance experiments  |
-| `EXTEXP0003` | Telemetry experiments |
-| `EXTEXP0004` | TimeProvider experiments |
-| `EXTEXP0006` | AsyncState experiments |
-| `EXTEXP0007` | Health check experiments |
-| `EXTEXP0008` | Resource monitoring experiments |
-| `EXTEXP0009` | Hosting experiments |
-| `EXTEXP0010` | Object pool experiments |
-| `EXTEXP0011` | Document database experiments |
-| `EXTEXP0012` | Auto-activation experiments |
-| `EXTEXP0013` | HttpLogging middleware experiments |
-| `EXTEXP0014` | ASP.NET Core integration testing experiments |
-| `EXTEXP0015` | Environmental probes experiments |
-| `EXTEXP0016` | Hosting integration testing experiments |
-| `EXTEXP0017` | Contextual options experiments |
-| `EXTEXP0018` | HybridCache experiments |
-| `MEAI0001` | Image generation experiments |
-| `MEAI0002` | Speech-to-text experiments |
-| `MEAI0003` | Hosted MCP server experiments |
-| `MEAI0004` | Function approval experiments |
-| `MEAI0005` | Tool reduction experiments |
-| `MEAI0006` | Chat reduction experiments |
-| `MEAI0007` | Response continuations experiments |
-| `MEAI0008` | Code interpreter experiments |
+| `EXTEXP0001`      | Resilience experiments |
+| `EXTEXP0002`      | Compliance experiments  |
+| `EXTEXP0003`      | Telemetry experiments |
+| `EXTEXP0004`      | TimeProvider experiments |
+| `EXTEXP0006`      | AsyncState experiments |
+| `EXTEXP0007`      | Health check experiments |
+| `EXTEXP0008`      | Resource monitoring experiments |
+| `EXTEXP0009`      | Hosting experiments |
+| `EXTEXP0010`      | Object pool experiments |
+| `EXTEXP0011`      | Document database experiments |
+| `EXTEXP0012`      | Auto-activation experiments |
+| `EXTEXP0013`      | HttpLogging middleware experiments |
+| `EXTEXP0014`      | ASP.NET Core integration testing experiments |
+| `EXTEXP0015`      | Environmental probes experiments |
+| `EXTEXP0016`      | Hosting integration testing experiments |
+| `EXTEXP0017`      | Contextual options experiments |
+| `EXTEXP0018`      | HybridCache experiments |
+| `MEAI001`         | AI experiments |
 
 # Obsoletions
 

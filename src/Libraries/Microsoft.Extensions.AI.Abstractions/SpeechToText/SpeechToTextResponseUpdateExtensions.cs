@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Provides extension methods for working with <see cref="SpeechToTextResponseUpdate"/> instances.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class SpeechToTextResponseUpdateExtensions
 {
     /// <summary>Combines <see cref="SpeechToTextResponseUpdate"/> instances into a single <see cref="SpeechToTextResponse"/>.</summary>

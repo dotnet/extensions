@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 /// the caller may replace the existing tool list.
 /// </para>
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.ToolReduction, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AIToolReduction, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IToolReductionStrategy
 {
     /// <summary>

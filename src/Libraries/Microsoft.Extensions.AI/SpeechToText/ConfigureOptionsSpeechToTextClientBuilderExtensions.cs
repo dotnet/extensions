@@ -9,7 +9,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="ConfigureOptionsSpeechToTextClient"/> instances.</summary>
-[Experimental(DiagnosticIds.Experiments.SpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class ConfigureOptionsSpeechToTextClientBuilderExtensions
 {
     /// <summary>
