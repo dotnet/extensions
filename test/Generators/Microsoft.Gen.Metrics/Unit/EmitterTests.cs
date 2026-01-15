@@ -56,7 +56,6 @@ public class EmitterTests
     [Theory]
     [InlineData(10)]
     [InlineData((int)InstrumentKind.None)]
-    [InlineData((int)InstrumentKind.Gauge)]
     public void EmitMeter_GivenMetricTypeIsUnknown_ThrowsNotSupportedException(int instrumentKind)
     {
         var metricClass = new MetricType

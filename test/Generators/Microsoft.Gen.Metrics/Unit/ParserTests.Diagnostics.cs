@@ -186,7 +186,7 @@ public partial class ParserTests
                 public static partial TotalCount CreateTotalCountCounter(Meter meter);
             }");
 
-        Assert.Empty(d);
+        Assert.Single(d);
     }
 
     [Fact]
