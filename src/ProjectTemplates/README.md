@@ -9,7 +9,7 @@ The AIChatWeb project template within Microsoft.Extensions.AI.Templates bundles 
 2. Update the `package.json` file with added or updated dependencies
 3. Run the following commands:
     ```sh
-    npm install
+    ../../scripts/UpdateNpmDependencies.ps1
     npm run copy-dependencies
     ```
 
