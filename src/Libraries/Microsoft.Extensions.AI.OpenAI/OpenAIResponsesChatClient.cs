@@ -1108,17 +1108,13 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                     BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
                                         associatedCall.Arguments!,
                                         AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
-                                if (mstrc.Result is IList<AIContent> output && output.OfType<ErrorContent>().FirstOrDefault() is ErrorContent errorContent)
+                                if (mstrc.Result is BinaryData errorData)
                                 {
-                                    mtci.Error = BinaryData.FromString(errorContent.Message);
+                                    mtci.Error = errorData;
                                 }
-                                else if (mstrc.Result is IList<AIContent> outputList)
+                                else if (mstrc.Result is string outputString)
                                 {
-                                    mtci.ToolOutput = string.Concat(outputList.OfType<TextContent>());
-                                }
-                                else
-                                {
-                                    mtci.ToolOutput = mstrc.Result?.ToString();
+                                    mtci.ToolOutput = outputString;
                                 }
 
                                 yield return mtci;
@@ -1313,12 +1309,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         contents.Add(new McpServerToolResultContent(mtci.Id)
         {
             RawRepresentation = mtci,
-            Result = new List<AIContent>
-            {
-                mtci.Error is not null ?
-                    new ErrorContent(mtci.Error.ToString()) :
-                    new TextContent(mtci.ToolOutput)
-            },
+            Result = mtci.Error ?? (object)mtci.ToolOutput
         });
     }
 

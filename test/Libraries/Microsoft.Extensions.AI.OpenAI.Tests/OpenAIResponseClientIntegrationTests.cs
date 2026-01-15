@@ -429,8 +429,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             Assert.Equal("search_events", toolCall.ToolName);
 
             var toolResult = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
-            var content = Assert.IsType<TextContent>(Assert.Single(Assert.IsAssignableFrom<IList<AIContent>>(toolResult.Result)));
-            Assert.Equal(@"{""events"": [], ""next_page_token"": null}", content.Text);
+            Assert.Equal(@"{""events"": [], ""next_page_token"": null}", toolResult.Result);
         }
     }
 

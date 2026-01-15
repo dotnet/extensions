@@ -1441,8 +1441,7 @@ public class OpenAIResponseClientTests
 
             var result = Assert.IsType<McpServerToolResultContent>(message.Contents[1]);
             Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", result.CallId);
-            Assert.NotNull(result.Result);
-            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(Assert.IsAssignableFrom<IList<AIContent>>(result.Result))).Text);
+            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<string>(result.Result));
 
             Assert.NotNull(response.Usage);
             Assert.Equal(542, response.Usage.InputTokenCount);
@@ -1695,8 +1694,7 @@ public class OpenAIResponseClientTests
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstResult.CallId);
-        Assert.NotNull(firstResult.Result);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(Assert.IsAssignableFrom<IList<AIContent>>(firstResult.Result))).Text);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<string>(firstResult.Result));
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondCall.CallId);
@@ -1708,13 +1706,214 @@ public class OpenAIResponseClientTests
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondResult.CallId);
-        Assert.NotNull(secondResult.Result);
-        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(Assert.IsAssignableFrom<IList<AIContent>>(secondResult.Result))).Text);
+        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<string>(secondResult.Result));
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1329, response.Usage.InputTokenCount);
         Assert.Equal(123, response.Usage.OutputTokenCount);
         Assert.Equal(1452, response.Usage.TotalTokenCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task McpToolCall_ErrorResponse_NonStreaming(bool rawTool)
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "server_label": "mymcp",
+                        "server_url": "https://mcp.example.com/mcp",
+                        "require_approval": "never"
+                    }
+                ],
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Test error handling"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+                "id": "resp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                "object": "response",
+                "created_at": 1757299100,
+                "status": "completed",
+                "background": false,
+                "error": null,
+                "incomplete_details": null,
+                "instructions": null,
+                "max_output_tokens": null,
+                "max_tool_calls": null,
+                "model": "gpt-4o-mini-2024-07-18",
+                "output": [
+                    {
+                        "id": "mcpl_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                        "type": "mcp_list_tools",
+                        "server_label": "mymcp",
+                        "tools": [
+                            {
+                                "annotations": {
+                                    "read_only": false
+                                },
+                                "description": "A tool that always errors",
+                                "input_schema": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": false,
+                                    "$schema": "http://json-schema.org/draft-07/schema#"
+                                },
+                                "name": "test_error"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                        "type": "mcp_call",
+                        "approval_request_id": null,
+                        "arguments": "{}",
+                        "error": {
+                            "type": "mcp_tool_execution_error",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": "An error occurred invoking 'test_error'.",
+                                    "annotations": null,
+                                    "meta": null
+                                }
+                            ]
+                        },
+                        "name": "test_error",
+                        "output": null,
+                        "server_label": "mymcp"
+                    },
+                    {
+                        "id": "msg_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                        "type": "message",
+                        "status": "completed",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "annotations": [],
+                                "logprobs": [],
+                                "text": "The tool encountered an error during execution."
+                            }
+                        ],
+                        "role": "assistant"
+                    }
+                ],
+                "parallel_tool_calls": true,
+                "previous_response_id": null,
+                "prompt_cache_key": null,
+                "reasoning": {
+                    "effort": null,
+                    "summary": null
+                },
+                "safety_identifier": null,
+                "service_tier": "default",
+                "store": true,
+                "temperature": 1,
+                "text": {
+                    "format": {
+                        "type": "text"
+                    },
+                    "verbosity": "medium"
+                },
+                "tool_choice": "auto",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "allowed_tools": null,
+                        "headers": null,
+                        "require_approval": "never",
+                        "server_description": null,
+                        "server_label": "mymcp",
+                        "server_url": "https://mcp.example.com/<redacted>"
+                    }
+                ],
+                "top_logprobs": 0,
+                "top_p": 1,
+                "truncation": "disabled",
+                "usage": {
+                    "input_tokens": 500,
+                    "input_tokens_details": {
+                        "cached_tokens": 0
+                    },
+                    "output_tokens": 50,
+                    "output_tokens_details": {
+                        "reasoning_tokens": 0
+                    },
+                    "total_tokens": 550
+                },
+                "user": null,
+                "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        AITool mcpTool = rawTool ?
+            ResponseTool.CreateMcpTool("mymcp", serverUri: new("https://mcp.example.com/mcp"), toolCallApprovalPolicy: new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval)).AsAITool() :
+            new HostedMcpServerTool("mymcp", new Uri("https://mcp.example.com/mcp"))
+            {
+                ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+            };
+
+        ChatOptions chatOptions = new()
+        {
+            Tools = [mcpTool],
+        };
+
+        var response = await client.GetResponseAsync("Test error handling", chatOptions);
+        Assert.NotNull(response);
+
+        Assert.Equal("resp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", response.ResponseId);
+        Assert.Equal("resp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", response.ConversationId);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_757_299_100), response.CreatedAt);
+        Assert.Null(response.FinishReason);
+
+        var message = Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
+        Assert.Equal("The tool encountered an error during execution.", response.Messages[0].Text);
+
+        Assert.Equal(4, message.Contents.Count);
+
+        var toolCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
+        Assert.Equal("mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", toolCall.CallId);
+        Assert.Equal("mymcp", toolCall.ServerName);
+        Assert.Equal("test_error", toolCall.ToolName);
+        Assert.NotNull(toolCall.Arguments);
+        Assert.Empty(toolCall.Arguments);
+
+        var toolResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
+        Assert.Equal("mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", toolResult.CallId);
+        var errorData = Assert.IsType<BinaryData>(toolResult.Result);
+        var errorJson = JsonDocument.Parse(errorData);
+        Assert.Equal("mcp_tool_execution_error", errorJson.RootElement.GetProperty("type").GetString());
+        var contentArray = errorJson.RootElement.GetProperty("content");
+        Assert.Equal(1, contentArray.GetArrayLength());
+        Assert.Equal("text", contentArray[0].GetProperty("type").GetString());
+        Assert.Equal("An error occurred invoking 'test_error'.", contentArray[0].GetProperty("text").GetString());
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(500, response.Usage.InputTokenCount);
+        Assert.Equal(50, response.Usage.OutputTokenCount);
+        Assert.Equal(550, response.Usage.TotalTokenCount);
     }
 
     [Fact]
@@ -2108,8 +2307,7 @@ public class OpenAIResponseClientTests
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstResult.CallId);
-        Assert.NotNull(firstResult.Result);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(Assert.IsAssignableFrom<IList<AIContent>>(firstResult.Result))).Text);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<string>(firstResult.Result));
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondCall.CallId);
@@ -2121,8 +2319,7 @@ public class OpenAIResponseClientTests
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondResult.CallId);
-        Assert.NotNull(secondResult.Result);
-        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(Assert.Single(Assert.IsAssignableFrom<IList<AIContent>>(secondResult.Result))).Text);
+        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<string>(secondResult.Result));
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1420, response.Usage.InputTokenCount);
