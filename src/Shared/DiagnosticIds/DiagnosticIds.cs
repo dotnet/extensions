@@ -48,17 +48,17 @@ internal static class DiagnosticIds
 
         // All AI experiments share a diagnostic ID but have different
         // constants to manage which experiment each API belongs to.
-        internal const string AIImageGeneration = MEAI001;
-        internal const string AISpeechToText = MEAI001;
-        internal const string AIMcpServers = MEAI001;
-        internal const string AIFunctionApprovals = MEAI001;
-        internal const string AIToolReduction = MEAI001;
-        internal const string AIChatReduction = MEAI001;
-        internal const string AIResponseContinuations = MEAI001;
-        internal const string AICodeInterpreter = MEAI001;
-        internal const string AIRealTime = MEAI001;
+        internal const string AIImageGeneration = AIExperiments;
+        internal const string AISpeechToText = AIExperiments;
+        internal const string AIMcpServers = AIExperiments;
+        internal const string AIFunctionApprovals = AIExperiments;
+        internal const string AIToolReduction = AIExperiments;
+        internal const string AIChatReduction = AIExperiments;
+        internal const string AIResponseContinuations = AIExperiments;
+        internal const string AICodeInterpreter = AIExperiments;
+        internal const string AIRealTime = AIExperiments;
 
-        private const string MEAI001 = nameof(MEAI001);
+        private const string AIExperiments = "MEAI001";
     }
 
     internal static class LoggerMessage
