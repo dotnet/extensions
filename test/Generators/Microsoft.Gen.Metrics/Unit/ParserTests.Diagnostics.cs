@@ -121,8 +121,7 @@ public partial class ParserTests
                 public static partial TotalCount CreateTotalCountCounter(Meter meter);
             }");
 
-        Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorGaugeNotSupported.Id, d[0].Id);
+        Assert.Empty(d);
     }
 
     [Fact]
@@ -187,8 +186,7 @@ public partial class ParserTests
                 public static partial TotalCount CreateTotalCountCounter(Meter meter);
             }");
 
-        Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorGaugeNotSupported.Id, d[0].Id);
+        Assert.Empty(d);
     }
 
     [Fact]
