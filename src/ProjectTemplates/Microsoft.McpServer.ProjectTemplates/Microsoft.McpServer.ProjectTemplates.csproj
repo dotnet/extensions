@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>MCP Server project templates.</Description>
+    <PackageTags>dotnet-new;templates;ai</PackageTags>
+
+    <Stage>preview</Stage>
+
+    <!-- Set the version info to align with ModelContextProtocol packages -->
+    <MajorVersion>0</MajorVersion>
+    <MinorVersion>5</MinorVersion>
+    <PatchVersion>0</PatchVersion>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+
+    <Workstream>AI</Workstream>
+    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinMutationScore>0</MinMutationScore>
+
+    <IsPackable>true</IsPackable>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="**\*" />
+
+    <Content
+      Include="templates\**\*"
+      Exclude="templates\**\*.csproj-in"
+      PackagePath="content" />
+
+    <TemplateContent
+      Include="templates\**\*.csproj-in"
+      ChangeExtension=".csproj"
+      PackagePath="content" />
+
+  </ItemGroup>
+</Project>

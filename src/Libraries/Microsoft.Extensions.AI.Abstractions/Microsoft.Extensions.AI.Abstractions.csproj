@@ -17,11 +17,12 @@
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);MEAI001</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
+    <DisableMinimumSupportedTfmCompatErrors>true</DisableMinimumSupportedTfmCompatErrors>
   </PropertyGroup>
 
   <PropertyGroup>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectNullabilityInfoContextOnLegacy>true</InjectNullabilityInfoContextOnLegacy>
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>

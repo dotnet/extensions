@@ -1418,7 +1418,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <returns>The <see cref="AIContent"/> for the rejected function calls.</returns>
     private static List<AIContent>? GenerateRejectedFunctionResults(List<ApprovalResultWithRequestMessage>? rejections) =>
         rejections is { Count: > 0 } ?
-            rejections.ConvertAll(static m => (AIContent)new FunctionResultContent(m.Response.FunctionCall.CallId, "Error: Tool call invocation was rejected by user.")) :
+            rejections.ConvertAll(m =>
+            {
+                string result = "Tool call invocation rejected.";
+                if (!string.IsNullOrWhiteSpace(m.Response.Reason))
+                {
+                    result = $"{result} {m.Response.Reason}";
+                }
+
+                return (AIContent)new FunctionResultContent(m.Response.FunctionCall.CallId, result);
+            }) :
             null;
 
     /// <summary>
@@ -1448,10 +1457,23 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     // The majority of the time, all FCC would be part of a single message, so no need to create a dictionary for this case.
                     // If we are dealing with multiple messages though, we need to keep track of them by their message ID.
                     messagesById = [];
-                    messagesById[currentMessage.MessageId ?? string.Empty] = currentMessage;
+
+                    // Use the effective key for the previous message, accounting for fallbackMessageId substitution.
+                    // If the message's MessageId was set to fallbackMessageId (because the original RequestMessage.MessageId was null),
+                    // we should use empty string as the key to match the lookup key used elsewhere.
+                    var previousMessageKey = currentMessage.MessageId == fallbackMessageId
+                        ? string.Empty
+                        : (currentMessage.MessageId ?? string.Empty);
+                    messagesById[previousMessageKey] = currentMessage;
                 }
 
-                _ = messagesById?.TryGetValue(resultWithRequestMessage.RequestMessage?.MessageId ?? string.Empty, out currentMessage);
+                // Use RequestMessage.MessageId for the lookup key, since that's the original message ID from the provider.
+                // We must use the same key for both lookup and storage to ensure proper grouping.
+                // Note: currentMessage.MessageId may differ from RequestMessage.MessageId because
+                // ConvertToFunctionCallContentMessage sets a fallbackMessageId when RequestMessage.MessageId is null.
+                var messageKey = resultWithRequestMessage.RequestMessage?.MessageId ?? string.Empty;
+
+                _ = messagesById?.TryGetValue(messageKey, out currentMessage);
 
                 if (currentMessage is null)
                 {
@@ -1463,7 +1485,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 }
 
 #pragma warning disable IDE0058 // Temporary workaround for Roslyn analyzer issue (see https://github.com/dotnet/roslyn/issues/80499)
-                messagesById?[currentMessage.MessageId ?? string.Empty] = currentMessage;
+                messagesById?[messageKey] = currentMessage;
 #pragma warning restore IDE0058
             }
 

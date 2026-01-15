@@ -25,9 +25,6 @@
     <Compile Remove="Snapshots\**\*.*" />
     <None Include="Snapshots\**\*.*" />
 
-    <Compile Remove="ExecutionTestSandbox\**\*.*" />
-    <None Include="ExecutionTestSandbox\**\*.*" />
-
     <None Include="README.md" />
   </ItemGroup>
 

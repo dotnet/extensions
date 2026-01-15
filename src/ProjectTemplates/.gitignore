@@ -1,22 +1,8 @@
-# We're not tracking any package-lock.json files in source control here because
-# we don't ship pre-generated NPM lockfiles in the templates. But we don't put
-# them in the project template's .gitignore file because they should be tracked
-# in source control when people actually create projects from the templates.
-package-lock.json
-
-# Don't track files generated for debugging templates locally.
-*/src/**/*.csproj
-*/src/**/*.sln
-*/src/**/NuGet.config
-*/src/**/Directory.Build.targets
-*/src/**/Directory.Build.props
-*/src/**/ingestioncache.*
-
 # The project templates include hard-coded launchSettings.json files
-!*/src/ProjectTemplates/**/Properties/launchSettings.json
+!**/templates/**/Properties/launchSettings.json
 
 # Templates include JS dependencies in dist folders.
-!**/dist/*
+!**/templates/**/dist/*
 
-# Keep the package-lock.json file for updating template dependencies.
-!package-lock.json
+# Templates include solution files for Aspire configurations
+!**/templates/**/*.sln

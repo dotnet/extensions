@@ -39,4 +39,9 @@ public sealed class FunctionApprovalResponseContent : UserInputResponseContent
     /// Gets the function call for which approval was requested.
     /// </summary>
     public FunctionCallContent FunctionCall { get; }
+
+    /// <summary>
+    /// Gets or sets the optional reason for the approval or rejection.
+    /// </summary>
+    public string? Reason { get; set; }
 }

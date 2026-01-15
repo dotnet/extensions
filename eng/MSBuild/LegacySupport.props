@@ -74,4 +74,8 @@
   <ItemGroup Condition="'$(InjectCollectionBuilderAttributesOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\CollectionBuilder\*.cs" LinkBase="LegacySupport\CollectionBuilder" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectNullabilityInfoContextOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\NullabilityInfoContext\*.cs" LinkBase="LegacySupport\NullabilityInfoContext" />
+  </ItemGroup>
 </Project>
