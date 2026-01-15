@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI;
 /// It is informational only.
 /// </remarks>
 [Experimental("MEAI001")]
-public sealed class McpServerToolResultContent : AIContent
+public sealed class McpServerToolResultContent : FunctionResultContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="McpServerToolResultContent"/> class.
@@ -24,18 +24,9 @@ public sealed class McpServerToolResultContent : AIContent
     /// <param name="callId">The tool call ID.</param>
     /// <exception cref="ArgumentNullException"><paramref name="callId"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="callId"/> is empty or composed entirely of whitespace.</exception>
+    [JsonConstructor]
     public McpServerToolResultContent(string callId)
+        : base(Throw.IfNullOrWhitespace(callId), result: null)
     {
-        CallId = Throw.IfNullOrWhitespace(callId);
     }
-
-    /// <summary>
-    /// Gets the tool call ID.
-    /// </summary>
-    public string CallId { get; }
-
-    /// <summary>
-    /// Gets or sets the output of the tool call.
-    /// </summary>
-    public IList<AIContent>? Output { get; set; }
 }

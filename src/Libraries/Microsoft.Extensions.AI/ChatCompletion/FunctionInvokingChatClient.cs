@@ -1245,7 +1245,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>
     /// 1. Remove all <see cref="FunctionApprovalRequestContent"/> and <see cref="FunctionApprovalResponseContent"/> from the <paramref name="originalMessages"/>.
     /// 2. Recreate <see cref="FunctionCallContent"/> for any <see cref="FunctionApprovalResponseContent"/> that haven't been executed yet.
-    /// 3. Genreate failed <see cref="FunctionResultContent"/> for any rejected <see cref="FunctionApprovalResponseContent"/>.
+    /// 3. Generate failed <see cref="FunctionResultContent"/> for any rejected <see cref="FunctionApprovalResponseContent"/>.
     /// 4. add all the new content items to <paramref name="originalMessages"/> and return them as the pre-invocation history.
     /// </summary>
     private static (List<ChatMessage>? preDownstreamCallHistory, List<ApprovalResultWithRequestMessage>? approvals) ProcessFunctionApprovalResponses(
@@ -1326,13 +1326,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 var content = message.Contents[j];
                 switch (content)
                 {
-                    case FunctionApprovalRequestContent farc:
+                    case FunctionApprovalRequestContent { FunctionCall: not McpServerToolCallContent } farc:
                         // Validation: Capture each call id for each approval request to ensure later we have a matching response.
                         _ = (approvalRequestCallIds ??= []).Add(farc.FunctionCall.CallId);
                         (allApprovalRequestsMessages ??= []).Add(farc.Id, message);
                         break;
 
-                    case FunctionApprovalResponseContent farc:
+                    case FunctionApprovalResponseContent { FunctionCall: not McpServerToolCallContent } farc:
                         // Validation: Remove the call id for each approval response, to check it off the list of requests we need responses for.
                         _ = approvalRequestCallIds?.Remove(farc.FunctionCall.CallId);
                         (allApprovalResponses ??= []).Add(farc);
@@ -1742,9 +1742,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         Exception,
     }
 
-    private struct ApprovalResultWithRequestMessage
+    private readonly struct ApprovalResultWithRequestMessage
     {
-        public FunctionApprovalResponseContent Response { get; set; }
-        public ChatMessage? RequestMessage { get; set; }
+        public FunctionApprovalResponseContent Response { get; init; }
+        public ChatMessage? RequestMessage { get; init; }
     }
 }

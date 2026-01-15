@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// Represents the result of a function call.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class FunctionResultContent : AIContent
+public class FunctionResultContent : AIContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResultContent"/> class.

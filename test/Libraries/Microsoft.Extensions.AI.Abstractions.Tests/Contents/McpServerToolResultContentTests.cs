@@ -17,7 +17,7 @@ public class McpServerToolResultContentTests
         Assert.Equal("callId", c.CallId);
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.Output);
+        Assert.Null(c.Result);
     }
 
     [Fact]
@@ -37,10 +37,10 @@ public class McpServerToolResultContentTests
 
         Assert.Equal("callId", c.CallId);
 
-        Assert.Null(c.Output);
+        Assert.Null(c.Result);
         IList<AIContent> output = [];
-        c.Output = output;
-        Assert.Same(output, c.Output);
+        c.Result = output;
+        Assert.Same(output, c.Result);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class McpServerToolResultContentTests
     {
         var content = new McpServerToolResultContent("call123")
         {
-            Output = new List<AIContent> { new TextContent("result") }
+            Result = new List<AIContent> { new TextContent("result") }
         };
 
         var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
@@ -63,6 +63,6 @@ public class McpServerToolResultContentTests
 
         Assert.NotNull(deserializedContent);
         Assert.Equal(content.CallId, deserializedContent.CallId);
-        Assert.NotNull(deserializedContent.Output);
+        Assert.NotNull(deserializedContent.Result);
     }
 }

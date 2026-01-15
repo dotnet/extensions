@@ -39,7 +39,7 @@ public class McpServerToolCallContentTests
         Assert.Same(props, c.AdditionalProperties);
 
         Assert.Null(c.Arguments);
-        IReadOnlyDictionary<string, object?> args = new Dictionary<string, object?>();
+        IDictionary<string, object?> args = new Dictionary<string, object?>();
         c.Arguments = args;
         Assert.Same(args, c.Arguments);
 
