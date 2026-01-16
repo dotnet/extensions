@@ -604,17 +604,16 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task GaugeNotSupported()
+    public async Task GaugeIsSDocumented()
     {
         var d = await RunGenerator(@"
             partial class C
             {
                 [Gauge(""d1"")]
-                static partial NotSupportedGauge CreateGauge(Meter meter);
+                static partial MemoryUsage CreateGauge(Meter meter);
             }");
 
-        _ = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorGaugeNotSupported.Id, d[0].Id);
+        Assert.Empty(d);
     }
 
     [Fact]
