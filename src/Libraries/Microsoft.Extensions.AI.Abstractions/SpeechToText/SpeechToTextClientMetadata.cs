@@ -3,11 +3,12 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides metadata about an <see cref="ISpeechToTextClient"/>.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public class SpeechToTextClientMetadata
 {
     /// <summary>Initializes a new instance of the <see cref="SpeechToTextClientMetadata"/> class.</summary>

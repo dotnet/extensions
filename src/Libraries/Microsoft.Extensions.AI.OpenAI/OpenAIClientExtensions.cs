@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
@@ -151,7 +152,7 @@ public static class OpenAIClientExtensions
     /// <param name="audioClient">The client.</param>
     /// <returns>An <see cref="ISpeechToTextClient"/> that can be used to transcribe audio via the <see cref="AudioClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="audioClient"/> is <see langword="null"/>.</exception>
-    [Experimental("MEAI001")]
+    [Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
     public static ISpeechToTextClient AsISpeechToTextClient(this AudioClient audioClient) =>
         new OpenAISpeechToTextClient(audioClient);
 
@@ -159,7 +160,7 @@ public static class OpenAIClientExtensions
     /// <param name="imageClient">The client.</param>
     /// <returns>An <see cref="IImageGenerator"/> that can be used to generate images via the <see cref="ImageClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="imageClient"/> is <see langword="null"/>.</exception>
-    [Experimental("MEAI001")]
+    [Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IImageGenerator AsIImageGenerator(this ImageClient imageClient) =>
         new OpenAIImageGenerator(imageClient);
 

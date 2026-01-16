@@ -3,12 +3,13 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Extension methods for adding tool reduction middleware to a chat client pipeline.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIToolReduction, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class ChatClientBuilderToolReductionExtensions
 {
     /// <summary>

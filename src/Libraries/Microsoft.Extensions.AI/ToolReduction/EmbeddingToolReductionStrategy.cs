@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -24,7 +25,7 @@ namespace Microsoft.Extensions.AI;
 /// The strategy embeds each tool (name + description by default) once (cached) and embeds the current
 /// conversation content each request. It then selects the top <c>toolLimit</c> tools by similarity.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIToolReduction, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class EmbeddingToolReductionStrategy : IToolReductionStrategy
 {
     private readonly ConditionalWeakTable<AITool, Embedding<float>> _toolEmbeddingsCache = new();
