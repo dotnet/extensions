@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -25,7 +26,7 @@ namespace Microsoft.Extensions.AI;
 /// Prompts and options are not logged at other logging levels.
 /// </para>
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public partial class LoggingImageGenerator : DelegatingImageGenerator
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>

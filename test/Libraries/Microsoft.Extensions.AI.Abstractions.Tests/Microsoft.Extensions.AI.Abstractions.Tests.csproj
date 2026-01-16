@@ -5,8 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <NoWarn>$(NoWarn);CA1063;CA1861;CA2201;VSTHRD003;S104</NoWarn>
-    <NoWarn>$(NoWarn);MEAI001</NoWarn>
+    <NoWarn>$(NoWarn);MEAI001;CA1063;CA1861;CA2201;VSTHRD003;S104</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 

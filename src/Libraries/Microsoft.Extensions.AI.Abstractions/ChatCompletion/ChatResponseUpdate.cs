@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -170,7 +171,7 @@ public class ChatResponseUpdate
     /// to resume streaming from the point of interruption.
     /// </para>
     /// </remarks>
-    [Experimental("MEAI001")]
+    [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
     public ResponseContinuationToken? ContinuationToken { get; set; }
 
