@@ -13,7 +13,6 @@
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMetricsReportsGenerator>true</UseMetricsReportsGenerator>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectGetOrAddOnLegacy>false</InjectGetOrAddOnLegacy>
     <InjectTaskWaitAsyncOnLegacy>true</InjectTaskWaitAsyncOnLegacy>
     <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
