@@ -1,6 +1,17 @@
 # Microsoft.Extensions.AI.Abstractions Release History
 
-## 10.1.1 (NOT YET RELEASED)
+## NOT YET RELEASED
+
+- Fixed JSON schema generation for nullable reference type annotations on parameters in AIFunctions.
+
+## 10.2.0
+
+- Updated `ToChatResponse{Async}`'s handling of `AdditionalProperties`, such that `ChatResponseUpdate.AdditionalProperties` is merged into `ChatMessage.AdditionalProperties` for updates that have a non-`null` `MessageId`.
+- Updated `ToChatResponse{Async}` to use the first appropriate `ChatResponseUpdate`'s `CreatedAt` timestamp rather than the last.
+- Added a `Reason` property to `FunctionApprovalResponseContent` in support of custom rejection messages.
+- Added support for custom headers to `HostedMcpServerTool`.
+
+## 10.1.1
 
 - Added `InputCachedTokenCount` and `ReasoningTokenCount` to `UsageDetails`.
 - Added constructors to `HostedCodeInterpreterTool`, `HostedFileSearchTool`, `HostedImageGeneratorTool`, `HostedMcpServerTool`,
