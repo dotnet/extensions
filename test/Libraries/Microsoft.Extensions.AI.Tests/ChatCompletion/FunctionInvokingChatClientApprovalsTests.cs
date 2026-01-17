@@ -1113,6 +1113,198 @@ public class FunctionInvokingChatClientApprovalsTests
         }
     }
 
+    [Fact]
+    public async Task RejectionWithUserMessageAfterApprovalResponsePreservesOrderingAsync()
+    {
+        // This test verifies that when a user adds a message after the approval response,
+        // the message ordering is preserved. The reconstructed FunctionCallContent and
+        // FunctionResultContent should be inserted at the position where the approval
+        // request was originally located, not at the end.
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "1st message"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1"))
+            ]),
+            new ChatMessage(ChatRole.User, "2nd message"), // This should stay at the end
+        ];
+
+        // The expected input to downstream client should have messages in this order:
+        // 1. User "1st message"
+        // 2. Assistant with FunctionCallContent
+        // 3. Tool with rejection result
+        // 4. User "2nd message" (preserved at the end)
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "1st message"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Tool call invocation rejected.")]),
+            new ChatMessage(ChatRole.User, "2nd message"),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Tool call invocation rejected.")]),
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+    }
+
+    [Fact]
+    public async Task ApprovalWithUserMessageAfterApprovalResponsePreservesOrderingAsync()
+    {
+        // This test verifies that when a user approves and adds a message after the approval response,
+        // the message ordering is preserved.
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "1st message"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1"))
+            ]),
+            new ChatMessage(ChatRole.User, "2nd message"), // This should stay at the end
+        ];
+
+        // The expected input to downstream client should have messages in this order:
+        // 1. User "1st message"
+        // 2. Assistant with FunctionCallContent
+        // 3. Tool with function result
+        // 4. User "2nd message" (preserved at the end)
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "1st message"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.User, "2nd message"),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+    }
+
+    [Fact]
+    public async Task MultipleApprovalRequestResponsePairsWithInterleavedUserMessagesPreservesOrderingAsync()
+    {
+        // This test verifies that when there are multiple approval request/response pairs
+        // in a single call with user messages interleaved between them, the message ordering
+        // is preserved correctly. All approvals are processed in one invocation.
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 2", "Func2")),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "1st user message"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1"))
+            ]),
+            new ChatMessage(ChatRole.User, "2nd user message"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2"))
+            ]) { MessageId = "resp2" },
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId2", true, new FunctionCallContent("callId2", "Func2"))
+            ]),
+            new ChatMessage(ChatRole.User, "3rd user message"),
+        ];
+
+        // The expected input to downstream client should preserve all message ordering:
+        // 1. User "1st user message" - should remain in place
+        // 2. Assistant with FunctionCallContent(callId1) - recreated from approval
+        // 3. Tool with FunctionResultContent(callId1) - from executing approved function
+        // 4. User "2nd user message" - should remain in place
+        // 5. Assistant with FunctionCallContent(callId2) - recreated from approval
+        // 6. Tool with FunctionResultContent(callId2) - from executing approved function
+        // 7. User "3rd user message" - should remain at the end
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "1st user message"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.User, "2nd user message"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2")]),
+            new ChatMessage(ChatRole.User, "3rd user message"),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2")]),
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+    }
+
     private static Task<List<ChatMessage>> InvokeAndAssertAsync(
         ChatOptions? options,
         List<ChatMessage> input,
