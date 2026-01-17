@@ -11,69 +11,70 @@ namespace Microsoft.Gen.MetricsReports;
 
 // Stryker disable all
 
-internal sealed class MetricDefinitionEmitter : EmitterBase
+internal sealed class MetricDefinitionEmitter : JsonEmitterBase
 {
     internal MetricDefinitionEmitter()
         : base(false)
     {
     }
 
-    public string GenerateReport(IReadOnlyList<ReportedMetricClass> metricClasses, CancellationToken cancellationToken)
+    /// <summary>
+    /// Generates JSON object containing the <see cref="ReportedMetricClass"/> for metrics report.
+    /// </summary>
+    /// <param name="metricClasses">The reported metric classes.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="indentationLevel">The number of indentations in case its nested in other reports like <see cref="MetadataReportsGenerator"/>.Defaulted to zero.</param>
+    /// <returns>string report as json or String.Empty.</returns>
+    public string GenerateReport(IReadOnlyList<ReportedMetricClass> metricClasses, CancellationToken cancellationToken = default, int indentationLevel = 0)
     {
         if (metricClasses == null || metricClasses.Count == 0)
         {
             return string.Empty;
         }
 
-        OutLn("[");
-
-        for (int i = 0; i < metricClasses.Count; i++)
+        if (indentationLevel > 0)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var metricClass = metricClasses[i];
-            GenMetricClassDefinition(metricClass, cancellationToken);
-
-            if (i < metricClasses.Count - 1)
-            {
-                Out(",");
-            }
-
-            OutLn();
+            Indent(indentationLevel);
         }
 
-        Out("]");
+        OutArray(string.Empty, () =>
+        {
+            for (int i = 0; i < metricClasses.Count; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var metricClass = metricClasses[i];
+                GenMetricClassDefinition(metricClass, cancellationToken);
+                if (i < metricClasses.Count - 1)
+                {
+                    OutLn(",");
+                }
+            }
+        });
+
         return Capture();
     }
 
     private void GenMetricClassDefinition(ReportedMetricClass metricClass, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        OutLn(" {");
-
-        OutLn($"  \"{metricClass.RootNamespace}\":");
-
-        if (metricClass.Methods.Length > 0)
+        OutObject(() =>
         {
-            OutLn("  [");
-
-            for (int j = 0; j < metricClass.Methods.Length; j++)
+            OutLn();
+            OutIndent();
+            Out($"\"{metricClass.RootNamespace}\":");
+            if (metricClass.Methods.Length > 0)
             {
-                var metricMethod = metricClass.Methods[j];
-
-                GenMetricMethodDefinition(metricMethod, cancellationToken);
-
-                if (j < metricClass.Methods.Length - 1)
+                OutArray(string.Empty, () =>
                 {
-                    Out(",");
-                }
+                    for (int j = 0; j < metricClass.Methods.Length; j++)
+                    {
+                        ReportedMetricMethod metricMethod = metricClass.Methods[j];
+                        GenMetricMethodDefinition(metricMethod, cancellationToken);
+                    }
 
-                OutLn();
+                }, isProprietyDependent: true);
             }
-
-            OutLn("  ]");
-        }
-
-        Out(" }");
+        });
     }
 
     private void GenMetricMethodDefinition(ReportedMetricMethod metricMethod, CancellationToken cancellationToken)
@@ -87,55 +88,39 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    OutLn("    {");
-
-                    OutLn($"     \"MetricName\": \"{metricMethod.MetricName.Replace("\\", "\\\\").Replace("\"", "\\\"")}\",");
-
-                    if (!string.IsNullOrEmpty(metricMethod.Summary))
+                    OutObject(() =>
                     {
-                        OutLn($"     \"MetricDescription\": \"{metricMethod.Summary.Replace("\\", "\\\\").Replace("\"", "\\\"")}\",");
-                    }
+                        OutNameValue("MetricName", $"{metricMethod.MetricName.Replace("\\", "\\\\").Replace("\"", "\\\"")}");
 
-                    Out($"     \"InstrumentName\": \"{metricMethod.Kind}\"");
-
-                    if (metricMethod.Dimensions.Count > 0)
-                    {
-                        OutLn(",");
-
-                        Out("     \"Dimensions\": {");
-
-                        int k = 0;
-
-                        foreach (var dimension in metricMethod.Dimensions)
+                        if (!string.IsNullOrEmpty(metricMethod.Summary))
                         {
-                            OutLn();
-                            if (metricMethod.DimensionsDescriptions.TryGetValue(dimension, out var description))
-                            {
-                                Out($"      \"{dimension}\": \"{description.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"");
-                            }
-                            else
-                            {
-                                Out($"      \"{dimension}\": \"\"");
-                            }
-
-                            if (k < metricMethod.Dimensions.Count - 1)
-                            {
-                                Out(",");
-                            }
-
-                            k++;
+                            OutNameValue("MetricDescription", $"{metricMethod.Summary.Replace("\\", "\\\\").Replace("\"", "\\\"")}");
                         }
 
-                        OutLn();
-                        Out("      }");
-                        OutLn();
-                    }
-                    else
-                    {
-                        OutLn();
-                    }
+                        if (metricMethod.Dimensions.Count == 0)
+                        {
+                            OutNameValue($"InstrumentName", $"{metricMethod.Kind}");
+                        }
 
-                    Out("    }");
+                        if (metricMethod.Dimensions.Count > 0)
+                        {
+                            Out(",");
+                            OutLn();
+                            OutIndent();
+                            Out("\"Dimensions\":");
+                            OutObject(() =>
+                            {
+                                foreach (var dimension in metricMethod.Dimensions)
+                                {
+                                    if (metricMethod.DimensionsDescriptions.TryGetValue(dimension, out var description))
+                                    {
+                                        OutNameValue($"{dimension}", $"{description.Replace("\\", "\\\\").Replace("\"", "\\\"")}");
+                                    }
+                                }
+                            }, isProprietyDependent: true);
+                        }
+                    });
+
                 }
                 catch (Exception e)
                 {

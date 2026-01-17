@@ -24,11 +24,18 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
     private readonly string _fileName;
     private string? _directory;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ComplianceReportsGenerator"/> class.
+    /// </summary>
     public ComplianceReportsGenerator()
-        : this(null)
+        : this(filePath: null)
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ComplianceReportsGenerator"/> class.
+    /// </summary>
+    /// <param name="filePath">The report path and name.</param>
     public ComplianceReportsGenerator(string? filePath)
     {
         if (filePath is not null)
@@ -76,7 +83,7 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
             return;
         }
 
-        var emitter = new Emitter();
+        var emitter = new ComplianceReportEmitter();
         string report = emitter.Emit(classifiedTypes, context.Compilation.AssemblyName!);
 
         context.CancellationToken.ThrowIfCancellationRequested();
