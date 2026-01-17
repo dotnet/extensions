@@ -43,6 +43,7 @@ public class UserInputRequestContentTests
         [
             new FunctionApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
             new McpServerToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
+            new AdditionalDetailsRequestContent("request123", new TextContent("I need more details. Where would you like to fly from and to?")),
         ];
 
         var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.UserInputRequestContentArray);
