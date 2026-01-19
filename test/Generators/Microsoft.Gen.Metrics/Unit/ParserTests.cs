@@ -804,4 +804,199 @@ public partial class ParserTests
 
         Assert.Empty(d);
     }
+
+    [Fact]
+    public async Task StrongTypeGauge_CyclicReference()
+    {
+        var d = await RunGenerator(@"
+           public class TypeA
+           {
+               public TypeB testB { get; set; }
+           }
+
+           public class TypeB
+           {
+               public TypeA testA { get; set; }
+           }
+
+           public static partial class MetricClass
+           {
+               [Gauge(typeof(TypeA), Name=""CyclicTest"")]
+               public static partial CyclicTest CreateCyclicTestGauge(Meter meter);
+           }");
+
+        Assert.NotNull(d);
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorTagTypeCycleDetected.Id, diag.Id);
+        Assert.Contains("Test.TypeB ⇆ Test.TypeA", diag.GetMessage());
+    }
+
+    [Fact]
+    public async Task GaugeDuplicateDimensionStringName()
+    {
+        var d = await RunGenerator(@"
+          public class DimensionsTest
+          {
+              public string region { get; set; }
+              public ChildDimensions childDimensions { get; set; }
+          }
+
+          public class ChildDimensions
+          {
+              public string region { get; set; }
+          }
+
+          public static partial class MetricClass
+          {
+              [Gauge(typeof(DimensionsTest), Name=""ActiveConnections"")]
+              public static partial ActiveConnections CreateActiveConnectionsGauge(Meter meter);
+          }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task GaugeDuplicateDimensionStringNameInAttribute()
+    {
+        var d = await RunGenerator(@"
+        public class DimensionsTest
+        {
+            [Dimension(""regionFromAttribute"")]
+            public string region { get; set; }
+            public ChildDimensions childDimensions { get; set; }
+        }
+
+        public class ChildDimensions
+        {
+            [Dimension(""regionFromAttribute"")]
+            public string region { get; set; }
+        }
+
+        public static partial class MetricClass
+        {
+            [Gauge<double>(typeof(DimensionsTest), Name=""MemoryUsage"")]
+            public static partial MemoryUsage CreateMemoryUsageGauge(Meter meter);
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task GaugeDuplicateDimensionEnumName()
+    {
+        var d = await RunGenerator(@"
+        public class DimensionsTest
+        {
+            public Status status { get; set; }
+            public ChildDimensions childDimensions { get; set; }
+        }
+
+        public class ChildDimensions
+        {
+            public Status status { get; set; }
+        }
+
+        public enum Status
+        {
+            Unknown = 0,
+            Active = 1,
+            Idle = 2
+        }
+
+        public static partial class MetricClass
+        {
+            [Gauge(typeof(DimensionsTest), Name=""ConnectionStatus"")]
+            public static partial ConnectionStatus CreateConnectionStatusGauge(Meter meter);
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task GaugeDuplicateDimensionEnumNameInAttribute()
+    {
+        var d = await RunGenerator(@"
+           public class DimensionsTest
+           {
+               [Dimension(""status"")]
+               public Status status { get; set; }
+               public ChildDimensions childDimensions { get; set; }
+           }
+
+           public class ChildDimensions
+           {
+               public Status status { get; set; }
+           }
+
+           public enum Status
+           {
+               Unknown = 0
+           }
+
+           public static partial class MetricClass
+           {
+               [Gauge<int>(typeof(DimensionsTest), Name=""ConnectionCount"")]
+               public static partial ConnectionCount CreateConnectionCountGauge(Meter meter);
+           }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
+    }
+
+    [Theory]
+    [InlineData("int")]
+    [InlineData("int?")]
+    [InlineData("System.Int32")]
+    [InlineData("System.Int32?")]
+    [InlineData("bool")]
+    [InlineData("bool?")]
+    [InlineData("System.Boolean")]
+    [InlineData("System.Boolean?")]
+    [InlineData("byte")]
+    [InlineData("byte?")]
+    [InlineData("char?")]
+    [InlineData("double?")]
+    [InlineData("decimal?")]
+    [InlineData("object")]
+    [InlineData("object?")]
+    [InlineData("System.Object")]
+    [InlineData("System.Object?")]
+    [InlineData("int[]")]
+    [InlineData("int?[]")]
+    [InlineData("int[]?")]
+    [InlineData("int?[]?")]
+    [InlineData("object[]")]
+    [InlineData("object[]?")]
+    [InlineData("System.Array")]
+    [InlineData("System.DateTime")]
+    [InlineData("System.DateTime?")]
+    [InlineData("System.IDisposable")]
+    [InlineData("System.Action")]
+    [InlineData("System.Action<int>")]
+    [InlineData("System.Func<double>")]
+    [InlineData("System.Nullable<int>")]
+    [InlineData("System.Nullable<char>")]
+    [InlineData("System.Nullable<System.Int32>")]
+    [InlineData("System.Nullable<System.Decimal>")]
+    [InlineData("System.Nullable<System.DateTime>")]
+    public async Task GaugeInvalidDimensionType(string type)
+    {
+        var d = await RunGenerator(@$"
+          public class DimensionsTest
+          {{
+              public {type} invalidDim {{ get; set; }}
+          }}
+
+          public static partial class MetricClass
+          {{
+              [Gauge<double>(typeof(DimensionsTest), Name=""InvalidGauge"")]
+              public static partial InvalidGauge CreateInvalidGauge(Meter meter);
+          }}");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorInvalidTagNameType.Id, diag.Id);
+    }
 }
