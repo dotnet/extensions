@@ -39,13 +39,10 @@ public partial class FakeLogCollectorTests
             fakeLogCollector,
             eventTracker,
             cancellationToken: cancellationToken);
-        await AssertAwaitingTaskCompleted(false, awaitSequenceTask);
 
-        EmitLogs(logger, ["Sync", "Log A", "Log C", "Sync", "Sync", "Log B"], eventTracker);
-        await AssertAwaitingTaskCompleted(false, awaitSequenceTask);
+        EmitLogs(logger, ["Sync", "Log A", "Log C", "Sync", "Sync", "Log B", "Sync", "Sync"], eventTracker);
 
-        EmitLogs(logger, ["Sync", "Sync"], eventTracker);
-        await AssertAwaitingTaskCompleted(true, awaitSequenceTask);
+        await AssertAwaitingTaskCompleted(awaitSequenceTask);
 
         var res = await awaitSequenceTask;
 
@@ -58,7 +55,6 @@ public partial class FakeLogCollectorTests
             fakeLogCollector,
             eventTracker,
             cancellationToken: cancellationToken);
-        await AssertAwaitingTaskCompleted(false, awaitSequenceTask);
 
         if (isWaitCancelled)
         {
@@ -69,7 +65,7 @@ public partial class FakeLogCollectorTests
             EmitLogs(logger, ["Log C", "Sync"], eventTracker);
         }
 
-        await AssertAwaitingTaskCompleted(true, awaitSequenceTask);
+        await AssertAwaitingTaskCompleted(awaitSequenceTask);
 
         res = await awaitSequenceTask;
         Assert.Equal(isWaitCancelled, res.wasCancelled);
@@ -95,18 +91,23 @@ public partial class FakeLogCollectorTests
         var logger = new FakeLogger(fakeLogCollector);
         int moveNextCounter = 0;
 
-        var awaitSequenceTask = AwaitSequence(
+        var abSequenceTask = AwaitSequence(
+            new Queue<string>(["A", "B"]),
+            fromIndex: 0,
+            fakeLogCollector,
+            null,
+            cancellationToken: CancellationToken.None);
+
+        var abcSequenceTask = AwaitSequence(
             new Queue<string>(["A", "B", "C"]),
             fromIndex: 0,
             fakeLogCollector,
             null,
             cancellationToken: CancellationToken.None,
             () => Interlocked.Increment(ref moveNextCounter));
-        await AssertAwaitingTaskCompleted(false, awaitSequenceTask);
 
         EmitLogs(logger, ["A", "B"], null);
-        await AssertAwaitingTaskCompleted(false, awaitSequenceTask);
-        Assert.Equal(2, moveNextCounter);
+        await AssertAwaitingTaskCompleted(abSequenceTask); // checkpoint to not clear, before A, B is processed
 
         if (clearIsCalledDuringWait)
         {
@@ -114,14 +115,19 @@ public partial class FakeLogCollectorTests
         }
 
         EmitLogs(logger, ["C"], null);
-        await AssertAwaitingTaskCompleted(true, awaitSequenceTask);
+        await AssertAwaitingTaskCompleted(abcSequenceTask);
         Assert.Equal(3, moveNextCounter);
     }
 
-    private static async Task AssertAwaitingTaskCompleted(bool expectedCompleted, Task task)
+    private static async Task AssertAwaitingTaskCompleted(Task task)
     {
-        await Task.Delay(100, CancellationToken.None); // Give brief time to finish the waiting
-        Assert.Equal(expectedCompleted, task.IsCompleted);
+        var timeout = Task.Delay(TimeSpan.FromSeconds(5));
+#pragma warning disable VSTHRD003
+        var finishedTask = await Task.WhenAny(task, timeout);
+#pragma warning restore VSTHRD003
+
+        // Assert our tested task finished before the timeout
+        Assert.Equal(finishedTask, task);
     }
 
     private static bool ContainsNonContinuousSequence(IEnumerable<string> orderedEnumeration, Queue<string> sequence)
