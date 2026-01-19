@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Audio;
@@ -18,7 +19,7 @@ using OpenAI.Audio;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="ISpeechToTextClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Audio.AudioClient"/>.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 {
     /// <summary>Filename to use when audio lacks a name.</summary>

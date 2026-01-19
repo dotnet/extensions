@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -21,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 /// count. The reducer maintains system messages and excludes messages containing function call or function
 /// result content from summarization.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIChatReduction, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class SummarizingChatReducer : IChatReducer
 {
     private const string SummaryKey = "__summary__";
