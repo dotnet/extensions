@@ -324,6 +324,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // returning tool call requests that won't be handled.
             if (iteration >= MaximumIterationsPerRequest)
             {
+                LogMaximumIterationsReached(MaximumIterationsPerRequest);
                 PrepareOptionsForLastIteration(ref options);
             }
 
@@ -499,6 +500,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // returning tool call requests that won't be handled.
             if (iteration >= MaximumIterationsPerRequest)
             {
+                LogMaximumIterationsReached(MaximumIterationsPerRequest);
                 PrepareOptionsForLastIteration(ref options);
             }
 
@@ -1750,6 +1752,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     [LoggerMessage(LogLevel.Error, "{MethodName} invocation failed.")]
     private partial void LogInvocationFailed(string methodName, Exception error);
+
+    [LoggerMessage(LogLevel.Debug, "Reached maximum iteration count of {MaximumIterationsPerRequest}. Stopping function invocation loop.")]
+    private partial void LogMaximumIterationsReached(int maximumIterationsPerRequest);
 
     /// <summary>Provides information about the invocation of a function call.</summary>
     public sealed class FunctionInvocationResult
