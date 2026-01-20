@@ -1760,15 +1760,19 @@ public class FunctionInvokingChatClientTests
         {
             var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
 
-            // FunctionB should result in "not found" error
+            // FunctionB should result in "not found" error - the error message format is: "Error: Requested function \"FunctionB\" not found."
             Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
-                .Any(frc => frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
+                .Any(frc => frc.Result?.ToString()?.Contains("FunctionB", StringComparison.Ordinal) == true &&
+                            frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
         }
         else
         {
             var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+
+            // FunctionB should result in "not found" error - the error message format is: "Error: Requested function \"FunctionB\" not found."
             Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
-                .Any(frc => frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
+                .Any(frc => frc.Result?.ToString()?.Contains("FunctionB", StringComparison.Ordinal) == true &&
+                            frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
         }
 
         Assert.Equal(3, callCount);
@@ -1792,11 +1796,11 @@ public class FunctionInvokingChatClientTests
                 var context = FunctionInvokingChatClient.CurrentContext!;
                 var tools = context.Options!.Tools!;
                 int index = tools.IndexOf(originalFunctionB);
-                if (index >= 0)
-                {
-                    tools[index] = replacementFunctionB;
-                    functionBReplaced = true;
-                }
+
+                // The original FunctionB should be in the tools list
+                Assert.True(index >= 0, "originalFunctionB should be in the tools list");
+                tools[index] = replacementFunctionB;
+                functionBReplaced = true;
 
                 return "FunctionA result";
             }, "FunctionA");
@@ -2241,15 +2245,19 @@ public class FunctionInvokingChatClientTests
         {
             var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
 
-            // FunctionB should result in "not found" error
+            // FunctionB should result in "not found" error - the error message format is: "Error: Requested function \"FunctionB\" not found."
             Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
-                .Any(frc => frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
+                .Any(frc => frc.Result?.ToString()?.Contains("FunctionB", StringComparison.Ordinal) == true &&
+                            frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
         }
         else
         {
             var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+
+            // FunctionB should result in "not found" error - the error message format is: "Error: Requested function \"FunctionB\" not found."
             Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
-                .Any(frc => frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
+                .Any(frc => frc.Result?.ToString()?.Contains("FunctionB", StringComparison.Ordinal) == true &&
+                            frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
         }
 
         Assert.Equal(3, callCount);

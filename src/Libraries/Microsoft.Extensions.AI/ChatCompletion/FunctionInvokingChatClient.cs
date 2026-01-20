@@ -803,6 +803,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Verify each tool in the current lists is in the map and maps to the same instance.
         // We iterate in reverse order (options.Tools before AdditionalTools) to match CreateToolsMap's
         // preference order, where later lists override earlier ones for duplicate names.
+        // We only need a HashSet when there are multiple tool lists, to track which names we've already
+        // validated (to handle the case where the same tool name appears in multiple lists).
         HashSet<string>? seenNames = toolLists.Length > 1 ? new(StringComparer.Ordinal) : null;
         for (int i = toolLists.Length - 1; i >= 0; i--)
         {
