@@ -319,6 +319,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             functionCallContents?.Clear();
 
+            // On iterations after the first, check if the tool map needs refreshing.
+            // A function invoked during a previous iteration may have modified ChatOptions.Tools.
+            if (iteration > 0 && NeedsToolMapRefresh(toolMap, AdditionalTools, options?.Tools))
+            {
+                (toolMap, anyToolsRequireApproval) = CreateToolsMap(AdditionalTools, options?.Tools);
+            }
+
             // Make the call to the inner client.
             response = await base.GetResponseAsync(messages, options, cancellationToken);
             if (response is null)
@@ -485,6 +492,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             updates.Clear();
             functionCallContents?.Clear();
+
+            // On iterations after the first, check if the tool map needs refreshing.
+            // A function invoked during a previous iteration may have modified ChatOptions.Tools.
+            if (iteration > 0 && NeedsToolMapRefresh(toolMap, AdditionalTools, options?.Tools))
+            {
+                (toolMap, anyToolsRequireApproval) = CreateToolsMap(AdditionalTools, options?.Tools);
+            }
 
             bool hasApprovalRequiringFcc = false;
             int lastApprovalCheckedFCCIndex = 0;
@@ -745,6 +759,82 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         return (map, anyRequireApproval);
+    }
+
+    /// <summary>
+    /// Checks whether the tool map needs to be refreshed because the current tools
+    /// have become inconsistent with the cached map (tools were added, removed, or replaced).
+    /// </summary>
+    /// <param name="toolMap">The current tool map to validate.</param>
+    /// <param name="toolLists">The lists of tools to validate against.</param>
+    /// <returns><see langword="true"/> if the tool map needs refreshing; otherwise, <see langword="false"/>.</returns>
+    private static bool NeedsToolMapRefresh(Dictionary<string, AITool>? toolMap, params ReadOnlySpan<IList<AITool>?> toolLists)
+    {
+        // Count the total number of tools in the current tool lists
+        int currentToolCount = 0;
+        foreach (var toolList in toolLists)
+        {
+            if (toolList?.Count is int count && count > 0)
+            {
+                currentToolCount += count;
+            }
+        }
+
+        // If the map is null but there are tools, or vice versa, we need a refresh
+        if (toolMap is null)
+        {
+            return currentToolCount > 0;
+        }
+
+        if (currentToolCount == 0)
+        {
+            return toolMap.Count > 0;
+        }
+
+        // Quick check: if the counts differ significantly, we definitely need a refresh.
+        // Note: The map may have fewer entries than currentToolCount if there are duplicates
+        // across AdditionalTools and options.Tools (since options.Tools takes precedence),
+        // but it should never have more.
+        if (toolMap.Count > currentToolCount)
+        {
+            return true;
+        }
+
+        // Verify each tool in the current lists is in the map and maps to the same instance.
+        // We iterate in reverse order (options.Tools before AdditionalTools) to match CreateToolsMap's
+        // preference order, where later lists override earlier ones for duplicate names.
+        HashSet<string>? seenNames = toolLists.Length > 1 ? new(StringComparer.Ordinal) : null;
+        for (int i = toolLists.Length - 1; i >= 0; i--)
+        {
+            var toolList = toolLists[i];
+            if (toolList?.Count is int count && count > 0)
+            {
+                for (int j = 0; j < count; j++)
+                {
+                    AITool tool = toolList[j];
+                    string name = tool.Name;
+
+                    // Skip if we've already seen this name (higher-priority list already validated it)
+                    if (seenNames is not null && !seenNames.Add(name))
+                    {
+                        continue;
+                    }
+
+                    // Check if the tool is in the map and is the same instance
+                    if (!toolMap.TryGetValue(name, out AITool? existingTool) ||
+                        !ReferenceEquals(existingTool, tool))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // Finally, check if the map has extra tools that aren't in the current lists.
+        // The seenNames set should contain all unique tool names from the current lists.
+        // If the map has the same count as seenNames, we know there are no extras.
+        int uniqueToolCount = seenNames?.Count ?? currentToolCount;
+        return toolMap.Count != uniqueToolCount;
     }
 
     /// <summary>
