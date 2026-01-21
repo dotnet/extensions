@@ -23,7 +23,7 @@ Write-Host "Using version $PackageVersion"
 
 # Write-Information "Building Report Publishing task"
 Set-Location $PSScriptRoot/tasks/PublishAIEvaluationReport
-npm install --omit=dev
+npm ci --omit=dev
 # Copy task files to dist folder
 New-Item -ItemType Directory -Path ./dist -Force
 copy-item -Path ./task.json -Destination ./dist/ -Force
@@ -39,7 +39,7 @@ remove-item -Path ./dist/node_modules/resolve/test -Recurse -Force -ErrorAction 
     
 # Write-Information "Building Extension Package" 
 Set-Location $PSScriptRoot
-npm install
+npm ci
 npx tsc -b
 npx vite build
     

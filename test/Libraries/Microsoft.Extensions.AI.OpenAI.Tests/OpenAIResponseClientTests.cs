@@ -5199,6 +5199,132 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task ResponseWithInputImageHttpUrl_ParsesAsUriContent()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"What is in this image?"}]}]
+            }
+            """;
+
+        // The output includes a message with input_image content that has an image_url property with HTTP URL.
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_001",
+                  "status":"completed",
+                  "role":"user",
+                  "content":[
+                    {"type":"input_image","image_url":"https://example.com/image.png"}
+                  ]
+                },
+                {
+                  "type":"message",
+                  "id":"msg_002",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[
+                    {"type":"output_text","text":"This is a cat.","annotations":[]}
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("What is in this image?");
+
+        Assert.NotNull(response);
+
+        var userMessage = response.Messages.FirstOrDefault(m => m.Role == ChatRole.User);
+        Assert.NotNull(userMessage);
+
+        // HTTP URL should be returned as UriContent
+        var imageContent = userMessage.Contents.OfType<UriContent>().FirstOrDefault();
+        Assert.NotNull(imageContent);
+        Assert.Equal("https://example.com/image.png", imageContent.Uri.ToString());
+        Assert.Equal("image/*", imageContent.MediaType);
+
+        var assistantMessage = response.Messages.LastOrDefault(m => m.Role == ChatRole.Assistant);
+        Assert.NotNull(assistantMessage);
+        Assert.Equal("This is a cat.", assistantMessage.Text);
+    }
+
+    [Fact]
+    public async Task ResponseWithInputImageDataUri_ParsesAsDataContent()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"What is in this image?"}]}]
+            }
+            """;
+
+        // The output includes a message with input_image content that has an image_url property with a data URI.
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_001",
+                  "status":"completed",
+                  "role":"user",
+                  "content":[
+                    {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}
+                  ]
+                },
+                {
+                  "type":"message",
+                  "id":"msg_002",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[
+                    {"type":"output_text","text":"This is a red pixel.","annotations":[]}
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("What is in this image?");
+
+        Assert.NotNull(response);
+
+        var userMessage = response.Messages.FirstOrDefault(m => m.Role == ChatRole.User);
+        Assert.NotNull(userMessage);
+
+        // Data URI should be returned as DataContent
+        var imageContent = userMessage.Contents.OfType<DataContent>().FirstOrDefault();
+        Assert.NotNull(imageContent);
+        Assert.Equal("image/png", imageContent.MediaType);
+        Assert.True(imageContent.Data.Length > 0);
+
+        var assistantMessage = response.Messages.LastOrDefault(m => m.Role == ChatRole.Assistant);
+        Assert.NotNull(assistantMessage);
+        Assert.Equal("This is a red pixel.", assistantMessage.Text);
+    }
+
+    [Fact]
     public async Task HostedImageGenerationTool_NonStreaming()
     {
         const string Input = """

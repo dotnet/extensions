@@ -1,6 +1,11 @@
 # Microsoft.Extensions.AI.OpenAI Release History
 
-## 10.1.1-preview.1.? (NOT YET RELEASED)
+## 10.2.0-preview.1.26063.2
+
+- Updated the OpenAI Responses `IChatClient` to support `ResponseItem`s with input image urls.
+- Updated the OpenAI Responses `IChatClient` to propagate custom headers on `HostedMcpServerTool`.
+
+## 10.1.1-preview.1.25612.2
 
 - Updated to depend on OpenAI 2.8.0.
 - Updated public API signatures in `OpenAIClientExtensions` and `MicrosoftExtensionsAIResponsesExtensions` to match the corresponding breaking changes in OpenAI's Responses APIs.

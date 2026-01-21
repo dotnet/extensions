@@ -46,6 +46,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             null, [typeof(GetResponseOptions), typeof(RequestOptions)], null)
         ?.CreateDelegate(typeof(Func<ResponsesClient, GetResponseOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>));
 
+    // Workaround for https://github.com/openai/openai-dotnet/pull/874.
+    // The OpenAI library doesn't yet expose InputImageUrl as a public property, so we access it via reflection.
+    // Replace this with the actual public property once it's available (e.g., part.InputImageUrl).
+    private static readonly PropertyInfo? _inputImageUrlProperty =
+        Type.GetType("OpenAI.Responses.InternalItemContentInputImage, OpenAI")?.GetProperty("ImageUrl");
+
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -1192,11 +1198,38 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case ResponseContentPartKind.InputFile or ResponseContentPartKind.InputImage:
-                    content =
-                        !string.IsNullOrWhiteSpace(part.InputImageFileId) ? new HostedFileContent(part.InputImageFileId) { MediaType = "image/*" } :
-                        !string.IsNullOrWhiteSpace(part.InputFileId) ? new HostedFileContent(part.InputFileId) { Name = part.InputFilename } :
-                        part.InputFileBytes is not null ? new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream") { Name = part.InputFilename } :
-                        null;
+                    if (!string.IsNullOrWhiteSpace(part.InputImageFileId))
+                    {
+                        content = new HostedFileContent(part.InputImageFileId) { MediaType = "image/*" };
+                    }
+                    else if (!string.IsNullOrWhiteSpace(part.InputFileId))
+                    {
+                        content = new HostedFileContent(part.InputFileId) { Name = part.InputFilename };
+                    }
+                    else if (part.InputFileBytes is not null)
+                    {
+                        content = new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream") { Name = part.InputFilename };
+                    }
+                    else if (_inputImageUrlProperty?.GetValue(part) is string inputImageUrl)
+                    {
+                        if (inputImageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            content = new DataContent(inputImageUrl);
+                        }
+                        else if (Uri.TryCreate(inputImageUrl, UriKind.Absolute, out Uri? imageUri))
+                        {
+                            content = new UriContent(imageUri, "image/*");
+                        }
+                        else
+                        {
+                            content = null;
+                        }
+                    }
+                    else
+                    {
+                        content = null;
+                    }
+
                     break;
 
                 case ResponseContentPartKind.Refusal:
