@@ -233,7 +233,7 @@ public class DataContent : AIContent
         }
 
         // Write the data to the file.
-        using FileStream fileStream = new(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1, useAsync: true);
+        using FileStream fileStream = new(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1, useAsync: true);
 
 #if NET
         await fileStream.WriteAsync(Data, cancellationToken).ConfigureAwait(false);
