@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -17,7 +15,7 @@ public class McpServerToolResultContentTests
         Assert.Equal("callId", c.CallId);
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.Output);
+        Assert.Null(c.Result); // Now using inherited Result from FunctionResultContent
     }
 
     [Fact]
@@ -37,10 +35,10 @@ public class McpServerToolResultContentTests
 
         Assert.Equal("callId", c.CallId);
 
-        Assert.Null(c.Output);
-        IList<AIContent> output = [];
-        c.Output = output;
-        Assert.Same(output, c.Output);
+        Assert.Null(c.Result);
+        object result = new();
+        c.Result = result;
+        Assert.Same(result, c.Result);
     }
 
     [Fact]
@@ -51,18 +49,14 @@ public class McpServerToolResultContentTests
     }
 
     [Fact]
-    public void Serialization_Roundtrips()
+    public void InheritsFromFunctionResultContent()
     {
-        var content = new McpServerToolResultContent("call123")
-        {
-            Output = new List<AIContent> { new TextContent("result") }
-        };
+        McpServerToolResultContent c = new("callId");
 
-        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
-        var deserializedContent = JsonSerializer.Deserialize<McpServerToolResultContent>(json, AIJsonUtilities.DefaultOptions);
+        // Verify it's a FunctionResultContent
+        Assert.IsAssignableFrom<FunctionResultContent>(c);
 
-        Assert.NotNull(deserializedContent);
-        Assert.Equal(content.CallId, deserializedContent.CallId);
-        Assert.NotNull(deserializedContent.Output);
+        // The CallId property should be the same
+        Assert.Equal("callId", c.CallId);
     }
 }

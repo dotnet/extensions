@@ -775,7 +775,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         int count = content.Count;
         for (int i = 0; i < count; i++)
         {
-            if (content[i] is FunctionCallContent functionCall)
+            if (content[i] is FunctionCallContent functionCall && functionCall.InvocationRequired)
             {
                 (functionCalls ??= []).Add(functionCall);
                 any = true;
@@ -1017,6 +1017,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         int iteration, int functionCallIndex, bool captureExceptions, bool isStreaming, CancellationToken cancellationToken)
     {
         var callContent = callContents[functionCallIndex];
+
+        // Mark the function call as no longer requiring invocation since we're handling it
+        callContent.InvocationRequired = false;
 
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
         if (toolMap is null ||
@@ -1416,19 +1419,27 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <param name="rejections">Any rejected approval responses.</param>
     /// <returns>The <see cref="AIContent"/> for the rejected function calls.</returns>
-    private static List<AIContent>? GenerateRejectedFunctionResults(List<ApprovalResultWithRequestMessage>? rejections) =>
-        rejections is { Count: > 0 } ?
-            rejections.ConvertAll(m =>
-            {
-                string result = "Tool call invocation rejected.";
-                if (!string.IsNullOrWhiteSpace(m.Response.Reason))
-                {
-                    result = $"{result} {m.Response.Reason}";
-                }
+    private static List<AIContent>? GenerateRejectedFunctionResults(List<ApprovalResultWithRequestMessage>? rejections)
+    {
+        if (rejections is not { Count: > 0 })
+        {
+            return null;
+        }
 
-                return (AIContent)new FunctionResultContent(m.Response.FunctionCall.CallId, result);
-            }) :
-            null;
+        return rejections.ConvertAll(m =>
+        {
+            // Mark the function call as no longer requiring invocation since we're handling it (by rejecting it)
+            m.Response.FunctionCall.InvocationRequired = false;
+
+            string result = "Tool call invocation rejected.";
+            if (!string.IsNullOrWhiteSpace(m.Response.Reason))
+            {
+                result = $"{result} {m.Response.Reason}";
+            }
+
+            return (AIContent)new FunctionResultContent(m.Response.FunctionCall.CallId, result);
+        });
+    }
 
     /// <summary>
     /// Extracts the <see cref="FunctionCallContent"/> from the provided <see cref="FunctionApprovalResponseContent"/> to recreate the original function call messages.

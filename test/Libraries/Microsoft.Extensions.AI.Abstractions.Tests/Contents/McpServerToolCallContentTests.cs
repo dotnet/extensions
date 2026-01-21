@@ -19,8 +19,10 @@ public class McpServerToolCallContentTests
 
         Assert.Equal("callId1", c.CallId);
         Assert.Equal("toolName", c.ToolName);
+        Assert.Equal("toolName", c.Name); // Name is inherited from FunctionCallContent
         Assert.Null(c.ServerName);
         Assert.Null(c.Arguments);
+        Assert.False(c.InvocationRequired); // Should be false for MCP server tool calls
     }
 
     [Fact]
@@ -39,7 +41,7 @@ public class McpServerToolCallContentTests
         Assert.Same(props, c.AdditionalProperties);
 
         Assert.Null(c.Arguments);
-        IReadOnlyDictionary<string, object?> args = new Dictionary<string, object?>();
+        IDictionary<string, object?> args = new Dictionary<string, object?>();
         c.Arguments = args;
         Assert.Same(args, c.Arguments);
 
@@ -56,5 +58,30 @@ public class McpServerToolCallContentTests
 
         Assert.Throws<ArgumentNullException>("callId", () => new McpServerToolCallContent(null!, "name", null));
         Assert.Throws<ArgumentNullException>("toolName", () => new McpServerToolCallContent("callId1", null!, null));
+    }
+
+    [Fact]
+    public void InheritsFromFunctionCallContent()
+    {
+        McpServerToolCallContent c = new("callId1", "toolName", "serverName");
+
+        // Verify it's a FunctionCallContent
+        Assert.IsAssignableFrom<FunctionCallContent>(c);
+
+        // InvocationRequired should be false for MCP server tool calls
+        Assert.False(c.InvocationRequired);
+
+        // The Name property should be the same as ToolName
+        Assert.Equal(c.ToolName, c.Name);
+    }
+
+    [Fact]
+    public void InvocationRequired_IsFalse()
+    {
+        // McpServerToolCallContent should always have InvocationRequired = false
+        // because it represents calls that are already handled by the service
+        McpServerToolCallContent c = new("callId1", "toolName", null);
+
+        Assert.False(c.InvocationRequired);
     }
 }
