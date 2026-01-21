@@ -208,6 +208,7 @@ public class DataContent : AIContent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>The actual path where the data was saved, which may include an inferred file name and/or extension.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
+    /// <exception cref="IOException">A file already exists at the specified path.</exception>
     public async ValueTask<string> SaveToAsync(string path, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(path);
