@@ -1286,7 +1286,7 @@ public class OpenAIResponseClientTests
         {
             Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))]
         };
-        McpServerToolApprovalRequestContent approvalRequest;
+        FunctionApprovalRequestContent approvalRequest;
 
         using (VerbatimHttpHandler handler = new(input, output))
         using (HttpClient httpClient = new(handler))
@@ -1296,7 +1296,8 @@ public class OpenAIResponseClientTests
                 "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository",
                 chatOptions);
 
-            approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
+            approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<FunctionApprovalRequestContent>());
+            Assert.IsType<McpServerToolCallContent>(approvalRequest.FunctionCall);
             chatOptions.ConversationId = response.ConversationId;
         }
 

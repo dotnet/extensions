@@ -1468,6 +1468,9 @@ public class FunctionInvokingChatClientTests
     {
         Assert.NotEmpty(plan);
 
+        // Reset InvocationRequired for all FunctionCallContent in the plan to allow reuse
+        ResetPlanFunctionCallStates(plan);
+
         configurePipeline ??= static b => b.UseFunctionInvocation();
 
         using CancellationTokenSource cts = new();
@@ -1538,6 +1541,9 @@ public class FunctionInvokingChatClientTests
     {
         Assert.NotEmpty(plan);
 
+        // Reset InvocationRequired for all FunctionCallContent in the plan to allow reuse
+        ResetPlanFunctionCallStates(plan);
+
         configurePipeline ??= static b => b.UseFunctionInvocation();
 
         using CancellationTokenSource cts = new();
@@ -1576,6 +1582,24 @@ public class FunctionInvokingChatClientTests
         foreach (var item in items)
         {
             yield return item;
+        }
+    }
+
+    /// <summary>
+    /// Resets InvocationRequired to true for all FunctionCallContent in the plan.
+    /// This is needed when reusing a plan across multiple test invocations.
+    /// </summary>
+    private static void ResetPlanFunctionCallStates(List<ChatMessage> plan)
+    {
+        foreach (var message in plan)
+        {
+            foreach (var content in message.Contents)
+            {
+                if (content is FunctionCallContent fcc)
+                {
+                    fcc.InvocationRequired = true;
+                }
+            }
         }
     }
 }
