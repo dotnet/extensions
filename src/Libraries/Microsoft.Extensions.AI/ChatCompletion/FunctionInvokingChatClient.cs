@@ -1329,13 +1329,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 var content = message.Contents[j];
                 switch (content)
                 {
-                    case FunctionApprovalRequestContent farc:
+                    case FunctionApprovalRequestContent { FunctionCall: not McpServerToolCallContent } farc:
                         // Validation: Capture each call id for each approval request to ensure later we have a matching response.
                         _ = (approvalRequestCallIds ??= []).Add(farc.FunctionCall.CallId);
                         (allApprovalRequestsMessages ??= []).Add(farc.Id, message);
                         break;
 
-                    case FunctionApprovalResponseContent farc:
+                    case FunctionApprovalResponseContent { FunctionCall: not McpServerToolCallContent } farc:
                         // Validation: Remove the call id for each approval response, to check it off the list of requests we need responses for.
                         _ = approvalRequestCallIds?.Remove(farc.FunctionCall.CallId);
                         (allApprovalResponses ??= []).Add(farc);
@@ -1753,9 +1753,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         Exception,
     }
 
-    private struct ApprovalResultWithRequestMessage
+    private readonly struct ApprovalResultWithRequestMessage
     {
-        public FunctionApprovalResponseContent Response { get; set; }
-        public ChatMessage? RequestMessage { get; set; }
+        public FunctionApprovalResponseContent Response { get; init; }
+        public ChatMessage? RequestMessage { get; init; }
     }
 }
