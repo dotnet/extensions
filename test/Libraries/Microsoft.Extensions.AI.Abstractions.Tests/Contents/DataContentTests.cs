@@ -1021,4 +1021,36 @@ public sealed class DataContentTests
             }
         }
     }
+
+    [Fact]
+    public async Task SaveToAsync_ExistingFile_ThrowsAndPreservesOriginalContent()
+    {
+        // Create a file with original content
+        byte[] originalContent = [10, 20, 30, 40, 50];
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_existing_{Guid.NewGuid()}.bin");
+
+        try
+        {
+            await File.WriteAllBytesAsync(tempPath, originalContent);
+
+            // Try to save different content to the same path
+            byte[] newContent = [1, 2, 3];
+            DataContent content = new(newContent, "application/octet-stream");
+
+            // SaveToAsync should throw because the file already exists (using FileMode.CreateNew)
+            await Assert.ThrowsAsync<IOException>(async () => await content.SaveToAsync(tempPath));
+
+            // Verify the original file was not corrupted
+            Assert.True(File.Exists(tempPath));
+            byte[] actualContent = await File.ReadAllBytesAsync(tempPath);
+            Assert.Equal(originalContent, actualContent);
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+    }
 }
