@@ -1233,57 +1233,12 @@ public class FunctionInvokingChatClientTests
         Assert.Null(actualChatOptions!.ContinuationToken);
     }
 
-    [Fact]
-    public async Task DoesNotCreateOrchestrateToolsSpanWhenInvokeAgentIsParent()
-    {
-        string agentSourceName = Guid.NewGuid().ToString();
-        string clientSourceName = Guid.NewGuid().ToString();
-
-        List<ChatMessage> plan =
-        [
-            new ChatMessage(ChatRole.User, "hello"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
-            new ChatMessage(ChatRole.Assistant, "world"),
-        ];
-
-        ChatOptions options = new()
-        {
-            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
-        };
-
-        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
-            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
-
-        var activities = new List<Activity>();
-
-        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
-            .AddSource(agentSourceName)
-            .AddSource(clientSourceName)
-            .AddInMemoryExporter(activities)
-            .Build();
-
-        using (var agentSource = new ActivitySource(agentSourceName))
-        using (var invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
-        {
-            Assert.NotNull(invokeAgentActivity);
-            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
-        }
-
-        Assert.DoesNotContain(activities, a => a.DisplayName == "orchestrate_tools");
-        Assert.Contains(activities, a => a.DisplayName == "chat");
-        Assert.Contains(activities, a => a.DisplayName == "execute_tool Func1");
-
-        var invokeAgent = Assert.Single(activities, a => a.DisplayName == "invoke_agent");
-        var childActivities = activities.Where(a => a != invokeAgent).ToList();
-        Assert.All(childActivities, activity => Assert.Same(invokeAgent, activity.Parent));
-    }
-
     [Theory]
+    [InlineData("invoke_agent")]
     [InlineData("invoke_agent my_agent")]
     [InlineData("invoke_agent_extra")]
     [InlineData("invoke_agent ")]
-    public async Task DoesNotCreateOrchestrateToolsSpanWhenInvokeAgentIsParent_WithPostfixedDisplayName(string displayName)
+    public async Task DoesNotCreateOrchestrateToolsSpanWhenInvokeAgentIsParent(string displayName)
     {
         string agentSourceName = Guid.NewGuid().ToString();
         string clientSourceName = Guid.NewGuid().ToString();
