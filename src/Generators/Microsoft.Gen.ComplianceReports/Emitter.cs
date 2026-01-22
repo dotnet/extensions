@@ -33,7 +33,7 @@ internal sealed class Emitter : EmitterBase
 
             OutArray("Types", () =>
             {
-                foreach (var classifiedType in classifiedTypes.OrderBy(ct => ct.TypeName))
+                foreach (var classifiedType in classifiedTypes.OrderBy(ct => ct.TypeName, StringComparer.Ordinal))
                 {
                     OutObject(() =>
                     {
@@ -43,7 +43,7 @@ internal sealed class Emitter : EmitterBase
                         {
                             OutArray("Members", () =>
                             {
-                                foreach (var member in classifiedType.Members.OrderBy(m => m.Name))
+                                foreach (var member in classifiedType.Members.OrderBy(m => m.Name, StringComparer.Ordinal))
                                 {
                                     OutObject(() =>
                                     {
@@ -56,7 +56,7 @@ internal sealed class Emitter : EmitterBase
                                         {
                                             OutArray("Classifications", () =>
                                             {
-                                                foreach (var c in member.Classifications.OrderBy(c => c.Name))
+                                                foreach (var c in member.Classifications.OrderBy(c => c.Name, StringComparer.Ordinal))
                                                 {
                                                     OutObject(() =>
                                                     {
@@ -79,7 +79,7 @@ internal sealed class Emitter : EmitterBase
                         {
                             OutArray("Logging Methods", () =>
                             {
-                                foreach (var method in classifiedType.LogMethods.OrderBy(m => m.MethodName))
+                                foreach (var method in classifiedType.LogMethods.OrderBy(m => m.MethodName, StringComparer.Ordinal))
                                 {
                                     OutObject(() =>
                                     {
@@ -100,7 +100,7 @@ internal sealed class Emitter : EmitterBase
                                                     {
                                                         OutArray("Classifications", () =>
                                                         {
-                                                            foreach (var c in p.Classifications.OrderBy(c => c.Name))
+                                                            foreach (var c in p.Classifications.OrderBy(c => c.Name, StringComparer.Ordinal))
                                                             {
                                                                 OutObject(() =>
                                                                 {
