@@ -1112,8 +1112,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>Gets a value indicating whether <see cref="Activity.Current"/> represents an "invoke_agent" span.</summary>
-    private static bool CurrentActivityIsInvokeAgent =>
-        Activity.Current?.DisplayName == OpenTelemetryConsts.GenAI.InvokeAgentName;
+    private static bool CurrentActivityIsInvokeAgent
+    {
+        get
+        {
+            string? name = Activity.Current?.DisplayName;
+            return
+                name?.StartsWith(OpenTelemetryConsts.GenAI.InvokeAgentName, StringComparison.Ordinal) is true &&
+                (name.Length == OpenTelemetryConsts.GenAI.InvokeAgentName.Length || name[OpenTelemetryConsts.GenAI.InvokeAgentName.Length] == ' ');
+        }
+    }
 
     /// <summary>Invokes the function asynchronously.</summary>
     /// <param name="context">
