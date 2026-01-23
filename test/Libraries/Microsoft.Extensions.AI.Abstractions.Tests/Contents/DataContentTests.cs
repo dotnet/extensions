@@ -590,6 +590,62 @@ public sealed class DataContentTests
     }
 
     [Fact]
+    public async Task SaveToAsync_WithRelativeDirectory_UsesNameFromContent()
+    {
+        // Test that providing a relative directory path uses name from content
+        byte[] testData = [4, 5, 6];
+        DataContent content = new(testData, "image/png") { Name = "myimage.png" };
+
+        string relativeDir = "subdir_" + Guid.NewGuid().ToString("N");
+        Directory.CreateDirectory(relativeDir);
+
+        try
+        {
+            string savedPath = await content.SaveToAsync(relativeDir);
+
+            // The returned path should be in the relative directory using content's name
+            Assert.Equal(content.Name, Path.GetFileName(savedPath));
+            Assert.Contains(relativeDir, savedPath);
+            Assert.True(File.Exists(savedPath));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
+        }
+        finally
+        {
+            if (Directory.Exists(relativeDir))
+            {
+                Directory.Delete(relativeDir, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SaveToAsync_WithEmptyPath_UsesCurrentDirectoryAndContentName()
+    {
+        // Test that providing an empty string path uses current directory with name from content
+        byte[] testData = [7, 8, 9];
+        DataContent content = new(testData, "text/plain") { Name = $"testfile_{Guid.NewGuid()}.txt" };
+
+        string? savedPath = null;
+
+        try
+        {
+            savedPath = await content.SaveToAsync(string.Empty);
+
+            // The returned path should be in the current directory using content's name
+            Assert.Equal(content.Name, Path.GetFileName(savedPath));
+            Assert.True(File.Exists(savedPath));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
+        }
+        finally
+        {
+            if (savedPath is not null && File.Exists(savedPath))
+            {
+                File.Delete(savedPath);
+            }
+        }
+    }
+
+    [Fact]
     public async Task LoadFromAsync_Path_ThrowsOnNull()
     {
         await Assert.ThrowsAsync<ArgumentNullException>("path", async () => await DataContent.LoadFromAsync((string)null!));
