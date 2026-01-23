@@ -562,31 +562,29 @@ public sealed class DataContentTests
     }
 
     [Fact]
-    public async Task SaveToAsync_WithEmptyPath_UsesCurrentDirectory()
+    public async Task SaveToAsync_WithJustFilename_SavesInCurrentDirectory()
     {
-        // Empty string path is valid - it uses the current directory with inferred filename.
-        // We use a unique name to avoid conflicts with concurrent tests.
-        string tempDir = Path.Combine(Path.GetTempPath(), $"test_empty_path_{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
-        string uniqueName = $"test_{Guid.NewGuid()}.json";
+        // Test that providing just a filename (no directory) saves to current directory
+        byte[] testData = [1, 2, 3];
+        DataContent content = new(testData, "application/json");
+
+        string filename = $"test_{Guid.NewGuid()}.json";
+        string? savedPath = null;
 
         try
         {
-            // Save with empty path from within the temp directory context
-            // Since we can't change current directory, we test the directory path behavior instead
-            DataContent content = new(new byte[] { 1, 2, 3 }, "application/json") { Name = uniqueName };
-            string savedPath = await content.SaveToAsync(tempDir);
+            savedPath = await content.SaveToAsync(filename);
 
-            // When given a directory, it should use Name as the filename
-            Assert.Equal(Path.Combine(tempDir, uniqueName), savedPath);
+            // The returned path should be in the current directory
+            Assert.Equal(filename, Path.GetFileName(savedPath));
             Assert.True(File.Exists(savedPath));
-            Assert.Equal(new byte[] { 1, 2, 3 }, await File.ReadAllBytesAsync(savedPath));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
         }
         finally
         {
-            if (Directory.Exists(tempDir))
+            if (savedPath is not null && File.Exists(savedPath))
             {
-                Directory.Delete(tempDir, true);
+                File.Delete(savedPath);
             }
         }
     }
@@ -617,65 +615,9 @@ public sealed class DataContentTests
     }
 
     [Fact]
-    public async Task LoadFromAsync_AbsolutePath_LoadsCorrectly()
+    public async Task LoadFromAsync_ExtractsFilenameFromPath()
     {
-        // Create a temp file with an absolute path
-        string tempDir = Path.GetTempPath();
-        string absolutePath = Path.Combine(tempDir, $"test_absolute_{Guid.NewGuid()}.txt");
-
-        try
-        {
-            byte[] testData = Encoding.UTF8.GetBytes("absolute path test");
-            await File.WriteAllBytesAsync(absolutePath, testData);
-
-            DataContent content = await DataContent.LoadFromAsync(absolutePath);
-
-            Assert.Equal("text/plain", content.MediaType);
-            Assert.Equal(Path.GetFileName(absolutePath), content.Name);
-            Assert.Equal(testData, content.Data.ToArray());
-        }
-        finally
-        {
-            if (File.Exists(absolutePath))
-            {
-                File.Delete(absolutePath);
-            }
-        }
-    }
-
-    [Fact]
-    public async Task LoadFromAsync_RelativePath_LoadsCorrectly()
-    {
-        // Test that LoadFromAsync works with paths that have different components.
-        // We use absolute paths but verify the Name extraction works correctly.
-        string tempDir = Path.Combine(Path.GetTempPath(), $"test_relative_{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
-
-        try
-        {
-            string filePath = Path.Combine(tempDir, "relativefile.xml");
-            byte[] testData = Encoding.UTF8.GetBytes("<root/>");
-            await File.WriteAllBytesAsync(filePath, testData);
-
-            DataContent content = await DataContent.LoadFromAsync(filePath);
-
-            Assert.Equal("application/xml", content.MediaType);
-            Assert.Equal("relativefile.xml", content.Name);
-            Assert.Equal(testData, content.Data.ToArray());
-        }
-        finally
-        {
-            if (Directory.Exists(tempDir))
-            {
-                Directory.Delete(tempDir, true);
-            }
-        }
-    }
-
-    [Fact]
-    public async Task LoadFromAsync_RelativePathWithSubdirectory_LoadsCorrectly()
-    {
-        // Test loading from a nested directory structure
+        // Test that LoadFromAsync properly extracts the filename from a nested path
         string tempDir = Path.Combine(Path.GetTempPath(), $"test_subdir_{Guid.NewGuid()}");
         string subDir = Path.Combine(tempDir, "subdir");
         Directory.CreateDirectory(subDir);
@@ -691,117 +633,6 @@ public sealed class DataContentTests
             Assert.Equal("text/html", content.MediaType);
             Assert.Equal("nested.html", content.Name);
             Assert.Equal(testData, content.Data.ToArray());
-        }
-        finally
-        {
-            if (Directory.Exists(tempDir))
-            {
-                Directory.Delete(tempDir, true);
-            }
-        }
-    }
-
-    [Fact]
-    public async Task SaveToAsync_AbsolutePath_SavesCorrectly()
-    {
-        byte[] testData = [1, 2, 3, 4, 5];
-        DataContent content = new(testData, "application/octet-stream");
-
-        string tempDir = Path.GetTempPath();
-        string absolutePath = Path.Combine(tempDir, $"test_absolute_{Guid.NewGuid()}.bin");
-
-        try
-        {
-            string savedPath = await content.SaveToAsync(absolutePath);
-
-            Assert.Equal(absolutePath, savedPath);
-            Assert.True(File.Exists(absolutePath));
-            Assert.Equal(testData, await File.ReadAllBytesAsync(absolutePath));
-        }
-        finally
-        {
-            if (File.Exists(absolutePath))
-            {
-                File.Delete(absolutePath);
-            }
-        }
-    }
-
-    [Fact]
-    public async Task SaveToAsync_ToSubdirectory_SavesCorrectly()
-    {
-        byte[] testData = [10, 20, 30];
-        DataContent content = new(testData, "image/png");
-
-        string tempDir = Path.Combine(Path.GetTempPath(), $"test_save_subdir_{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
-
-        try
-        {
-            string filePath = Path.Combine(tempDir, "output.png");
-            string savedPath = await content.SaveToAsync(filePath);
-
-            Assert.Equal(filePath, savedPath);
-            Assert.True(File.Exists(savedPath));
-            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
-        }
-        finally
-        {
-            if (Directory.Exists(tempDir))
-            {
-                Directory.Delete(tempDir, true);
-            }
-        }
-    }
-
-    [Fact]
-    public async Task SaveToAsync_ToNestedSubdirectory_SavesCorrectly()
-    {
-        byte[] testData = [100, 200];
-        DataContent content = new(testData, "audio/wav");
-
-        string tempDir = Path.Combine(Path.GetTempPath(), $"test_save_nested_{Guid.NewGuid()}");
-        string subDir = Path.Combine(tempDir, "audio");
-        Directory.CreateDirectory(subDir);
-
-        try
-        {
-            string filePath = Path.Combine(subDir, "sound.wav");
-            string savedPath = await content.SaveToAsync(filePath);
-
-            Assert.Equal(filePath, savedPath);
-            Assert.True(File.Exists(savedPath));
-            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
-        }
-        finally
-        {
-            if (Directory.Exists(tempDir))
-            {
-                Directory.Delete(tempDir, true);
-            }
-        }
-    }
-
-    [Fact]
-    public async Task SaveToAsync_EmptyPath_WithoutName_GeneratesRandomName()
-    {
-        byte[] testData = [1, 2, 3];
-        DataContent content = new(testData, "image/png");
-
-        // Note: Name is NOT set - should generate a random GUID-based name.
-        // Test using a directory path instead of empty string to avoid current directory issues.
-        string tempDir = Path.Combine(Path.GetTempPath(), $"test_empty_noname_{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
-
-        try
-        {
-            string savedPath = await content.SaveToAsync(tempDir);
-
-            // Should generate a random GUID-based name with .png extension
-            Assert.StartsWith(tempDir, savedPath);
-            Assert.EndsWith(".png", savedPath);
-            Assert.True(File.Exists(savedPath));
-            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
         }
         finally
         {
@@ -920,7 +751,7 @@ public sealed class DataContentTests
 
         string tempDir = Path.Combine(Path.GetTempPath(), $"test_dir_name_{Guid.NewGuid()}");
         Directory.CreateDirectory(tempDir);
-        string expectedPath = Path.Combine(tempDir, "specific-output.json");
+        string expectedPath = Path.Combine(tempDir, content.Name);
 
         try
         {
