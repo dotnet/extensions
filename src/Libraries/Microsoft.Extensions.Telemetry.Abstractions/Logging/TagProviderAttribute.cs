@@ -38,7 +38,7 @@ public sealed class TagProviderAttribute : Attribute
     ///   <item>
     ///     Second parameter of type <c>T?</c>, where <c>T</c> is the type of logging method parameter that you want to log.
     ///   </item>
-    ///   </list>
+    /// </list>
     /// </remarks>
     /// <example>
     /// <code language="csharp">

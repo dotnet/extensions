@@ -25,12 +25,12 @@ public static class ResilienceServiceCollectionExtensions
     /// <remarks>
     /// This method adds additional dimensions on top of the default ones that are built-in to the Polly library. These include:
     /// <list type="bullet">
-    /// <item>
-    /// Exception enrichment based on <see cref="IExceptionSummarizer"/>.
-    /// </item>
-    /// <item>
-    /// Request metadata enrichment based on <see cref="RequestMetadata"/>.
-    /// </item>
+    ///   <item>
+    ///   Exception enrichment based on <see cref="IExceptionSummarizer"/>.
+    ///   </item>
+    ///   <item>
+    ///   Request metadata enrichment based on <see cref="RequestMetadata"/>.
+    ///   </item>
     /// </list>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>

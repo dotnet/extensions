@@ -20,11 +20,11 @@ namespace Microsoft.Extensions.Diagnostics.Metrics;
 /// <remarks>
 /// This attribute is applied to a method that has the following constraints:
 /// <list type="bullet">
-/// <item>Must be a partial method.</item>
-/// <item>Must return <c>metricName</c> as the type. A class with that name will be generated.</item>
-/// <item>Must not be generic.</item>
-/// <item>Must have <c>System.Diagnostics.Metrics.Meter</c> as first parameter.</item>
-/// <item>Must have all the keys provided in <c>staticTags</c> as string type parameters.</item>
+///   <item>Must be a partial method.</item>
+///   <item>Must return <c>metricName</c> as the type. A class with that name will be generated.</item>
+///   <item>Must not be generic.</item>
+///   <item>Must have <c>System.Diagnostics.Metrics.Meter</c> as first parameter.</item>
+///   <item>Must have all the keys provided in <c>staticTags</c> as string type parameters.</item>
 /// </list>
 /// </remarks>
 /// <example>
