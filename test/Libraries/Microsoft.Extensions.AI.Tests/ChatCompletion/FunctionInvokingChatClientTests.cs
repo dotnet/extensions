@@ -2093,8 +2093,8 @@ public class FunctionInvokingChatClientTests
     [InlineData(true)]
     public async Task ToolMapNotRefreshedWhenToolsUnchanged(bool streaming)
     {
-        // This test validates that the tool map is not unnecessarily recreated
-        // when tools haven't been modified
+        // This test validates that function invocation works correctly across multiple
+        // iterations when tools haven't been modified
 
         int functionAInvocations = 0;
         AIFunction functionA = AIFunctionFactory.Create(

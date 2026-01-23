@@ -418,7 +418,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage> originalMessages = [.. messages];
         messages = originalMessages;
 
-        AITool[]? approvalRequiredFunctions = null; // available tools that require approval
         List<ChatMessage>? augmentedHistory = null; // the actual history of messages sent on turns other than the first
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
@@ -486,6 +485,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // Recompute anyToolsRequireApproval on each iteration because a function may have modified ChatOptions.Tools.
             bool anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
 
+            AITool[]? approvalRequiredFunctions = null; // available tools that require approval
             bool hasApprovalRequiringFcc = false;
             int lastApprovalCheckedFCCIndex = 0;
             int lastYieldedUpdateIndex = 0;
