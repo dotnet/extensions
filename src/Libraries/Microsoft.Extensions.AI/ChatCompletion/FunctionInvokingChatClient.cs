@@ -286,8 +286,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         int consecutiveErrorCount = 0;
 
-        bool anyToolsRequireApproval = AnyToolsRequireApproval(AdditionalTools, options?.Tools);
-
         if (HasAnyApprovalContent(originalMessages))
         {
             // A previous turn may have translated FunctionCallContents from the inner client into approval requests sent back to the caller,
@@ -329,10 +327,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // Before we do any function execution, make sure that any functions that require approval have been turned into
             // approval requests so that they don't get executed here. We recompute anyToolsRequireApproval on each iteration
             // because a function may have modified ChatOptions.Tools.
-            anyToolsRequireApproval = AnyToolsRequireApproval(AdditionalTools, options?.Tools);
+            bool anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
             if (anyToolsRequireApproval)
             {
-                response.Messages = ReplaceFunctionCallsWithApprovalRequests(response.Messages, AdditionalTools, options?.Tools);
+                response.Messages = ReplaceFunctionCallsWithApprovalRequests(response.Messages, options?.Tools, AdditionalTools);
             }
 
             // Any function call work to do? If yes, ensure we're tracking that work in functionCallContents.
@@ -428,8 +426,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatResponseUpdate> updates = []; // updates from the current response
         int consecutiveErrorCount = 0;
 
-        bool anyToolsRequireApproval = AnyToolsRequireApproval(AdditionalTools, options?.Tools);
-
         // This is a synthetic ID since we're generating the tool messages instead of getting them from
         // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
         // use the same message ID for all of them within a given iteration, as this is a single logical
@@ -488,7 +484,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             functionCallContents?.Clear();
 
             // Recompute anyToolsRequireApproval on each iteration because a function may have modified ChatOptions.Tools.
-            anyToolsRequireApproval = AnyToolsRequireApproval(AdditionalTools, options?.Tools);
+            bool anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
 
             bool hasApprovalRequiringFcc = false;
             int lastApprovalCheckedFCCIndex = 0;
@@ -748,22 +744,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     /// <summary>Finds a tool by name in the specified tool lists.</summary>
     /// <param name="name">The name of the tool to find.</param>
-    /// <param name="toolLists">The lists of tools to search. Tools from later lists take precedence over tools from earlier lists if they have the same name.</param>
+    /// <param name="toolLists">The lists of tools to search. Tools from earlier lists take precedence over tools from later lists if they have the same name.</param>
     /// <returns>The tool if found; otherwise, <see langword="null"/>.</returns>
     private static AITool? FindTool(string name, params ReadOnlySpan<IList<AITool>?> toolLists)
     {
-        // Search in reverse order so that tools from later lists (e.g., options.Tools)
-        // take precedence over tools from earlier lists (e.g., AdditionalTools).
-        for (int i = toolLists.Length - 1; i >= 0; i--)
+        foreach (var toolList in toolLists)
         {
-            var toolList = toolLists[i];
-            if (toolList?.Count is int count && count > 0)
+            if (toolList is not null)
             {
-                for (int j = 0; j < count; j++)
+                foreach (AITool tool in toolList)
                 {
-                    if (string.Equals(toolList[j].Name, name, StringComparison.Ordinal))
+                    if (tool is AIFunctionDeclaration && string.Equals(tool.Name, name, StringComparison.Ordinal))
                     {
-                        return toolList[j];
+                        return tool;
                     }
                 }
             }
@@ -876,7 +869,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             return true;
         }
 
-        if (!HasAnyTools(AdditionalTools, options?.Tools))
+        if (!HasAnyTools(options?.Tools, AdditionalTools))
         {
             // There are functions to call but we have no tools, so we can't handle them.
             // If we're configured to terminate on unknown call requests, do so now.
@@ -888,7 +881,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Look up each function.
         foreach (var fcc in functionCalls)
         {
-            AITool? tool = FindTool(fcc.Name, AdditionalTools, options?.Tools);
+            AITool? tool = FindTool(fcc.Name, options?.Tools, AdditionalTools);
             if (tool is not null)
             {
                 if (tool is not AIFunction)
@@ -1059,7 +1052,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         var callContent = callContents[functionCallIndex];
 
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        AITool? tool = FindTool(callContent.Name, AdditionalTools, options?.Tools);
+        AITool? tool = FindTool(callContent.Name, options?.Tools, AdditionalTools);
         if (tool is not AIFunction aiFunction)
         {
             return new(terminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
@@ -1638,14 +1631,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     (allFunctionCallContentIndices ??= []).Add((i, j));
 
-                    if (!anyApprovalRequired)
-                    {
-                        AITool? tool = FindTool(functionCall.Name, toolLists);
-                        if (tool?.GetService<ApprovalRequiredAIFunction>() is not null)
-                        {
-                            anyApprovalRequired = true;
-                        }
-                    }
+                    anyApprovalRequired |= FindTool(functionCall.Name, toolLists)?.GetService<ApprovalRequiredAIFunction>() is not null;
                 }
             }
         }

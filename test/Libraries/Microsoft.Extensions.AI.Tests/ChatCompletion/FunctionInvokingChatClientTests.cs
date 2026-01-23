@@ -2262,4 +2262,215 @@ public class FunctionInvokingChatClientTests
 
         Assert.Equal(3, callCount);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RespectsChatOptionsToolsModificationsByFunctionTool_AddApprovalRequiredTool(bool streaming)
+    {
+        // This test validates that adding an approval-required function during invocation is respected.
+        // The added function should require approval on subsequent calls.
+
+        AIFunction functionB = new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "FunctionB result", "FunctionB"));
+        bool functionBAdded = false;
+
+        AIFunction functionA = AIFunctionFactory.Create(
+            () =>
+            {
+                // Add an approval-required FunctionB during invocation
+                var context = FunctionInvokingChatClient.CurrentContext!;
+                context.Options!.Tools!.Add(functionB);
+                functionBAdded = true;
+                return "FunctionA result";
+            }, "FunctionA");
+
+        var options = new ChatOptions
+        {
+            Tools = [functionA]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")])]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBAdded, "FunctionA should have added FunctionB before second call");
+
+                    // Try to call FunctionB - it should require approval
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")])]);
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                if (callCount == 1)
+                {
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBAdded, "FunctionA should have added FunctionB before second call");
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")]);
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                }
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        if (streaming)
+        {
+            var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+
+            // FunctionB should have been converted to an approval request (not executed)
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+
+            // And FunctionA should have been executed
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>().Any(frc => frc.Result?.ToString() == "FunctionA result"));
+        }
+        else
+        {
+            var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+
+            // FunctionB should have been converted to an approval request (not executed)
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+
+            // And FunctionA should have been executed
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>().Any(frc => frc.Result?.ToString() == "FunctionA result"));
+        }
+
+        Assert.Equal(2, callCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RespectsChatOptionsToolsModificationsByFunctionTool_ReplaceWithApprovalRequiredTool(bool streaming)
+    {
+        // This test validates that replacing a regular function with an approval-required function during invocation is respected.
+
+        AIFunction originalFunctionB = AIFunctionFactory.Create(() => "Original FunctionB result", "FunctionB");
+        AIFunction replacementFunctionB = new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Replacement FunctionB result", "FunctionB"));
+        bool functionBReplaced = false;
+
+        AIFunction functionA = AIFunctionFactory.Create(
+            () =>
+            {
+                // Replace FunctionB with an approval-required version
+                var context = FunctionInvokingChatClient.CurrentContext!;
+                var tools = context.Options!.Tools!;
+                int index = tools.IndexOf(originalFunctionB);
+                Assert.True(index >= 0, "originalFunctionB should be in the tools list");
+                tools[index] = replacementFunctionB;
+                functionBReplaced = true;
+                return "FunctionA result";
+            }, "FunctionA");
+
+        var options = new ChatOptions
+        {
+            Tools = [functionA, originalFunctionB]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")])]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBReplaced, "FunctionA should have replaced FunctionB before second call");
+
+                    // Try to call FunctionB - it should now require approval
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")])]);
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                if (callCount == 1)
+                {
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBReplaced, "FunctionA should have replaced FunctionB before second call");
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")]);
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                }
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        if (streaming)
+        {
+            var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+
+            // FunctionB should have been converted to an approval request (not executed)
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+
+            // Original FunctionB result should NOT be present
+            Assert.DoesNotContain(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "Original FunctionB result"));
+        }
+        else
+        {
+            var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+
+            // FunctionB should have been converted to an approval request (not executed)
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+
+            // Original FunctionB result should NOT be present
+            Assert.DoesNotContain(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "Original FunctionB result"));
+        }
+
+        Assert.Equal(2, callCount);
+    }
 }
