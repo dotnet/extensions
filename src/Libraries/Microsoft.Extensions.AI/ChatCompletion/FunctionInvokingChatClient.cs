@@ -319,6 +319,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             functionCallContents?.Clear();
 
+            // On the last iteration, we won't be processing any function calls, so we should not
+            // include AIFunctionDeclaration tools in the request to prevent the inner client from
+            // returning tool call requests that won't be handled.
+            if (iteration >= MaximumIterationsPerRequest)
+            {
+                LogMaximumIterationsReached(MaximumIterationsPerRequest);
+                PrepareOptionsForLastIteration(ref options);
+            }
+
             // Make the call to the inner client.
             response = await base.GetResponseAsync(messages, options, cancellationToken);
             if (response is null)
@@ -485,6 +494,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             updates.Clear();
             functionCallContents?.Clear();
+
+            // On the last iteration, we won't be processing any function calls, so we should not
+            // include AIFunctionDeclaration tools in the request to prevent the inner client from
+            // returning tool call requests that won't be handled.
+            if (iteration >= MaximumIterationsPerRequest)
+            {
+                LogMaximumIterationsReached(MaximumIterationsPerRequest);
+                PrepareOptionsForLastIteration(ref options);
+            }
 
             bool hasApprovalRequiringFcc = false;
             int lastApprovalCheckedFCCIndex = 0;
@@ -821,6 +839,48 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         if (options?.ContinuationToken is not null)
         {
             options.ContinuationToken = null;
+        }
+    }
+
+    /// <summary>
+    /// Prepares options for the last iteration by removing AIFunctionDeclaration tools.
+    /// </summary>
+    /// <param name="options">The chat options to prepare.</param>
+    /// <remarks>
+    /// On the last iteration, we won't be processing any function calls, so we should not
+    /// include AIFunctionDeclaration tools in the request. This prevents the inner client
+    /// from returning tool call requests that won't be handled.
+    /// </remarks>
+    private static void PrepareOptionsForLastIteration(ref ChatOptions? options)
+    {
+        if (options?.Tools is not { Count: > 0 })
+        {
+            return;
+        }
+
+        // Filter out AIFunctionDeclaration tools, keeping only non-function tools
+        List<AITool>? remainingTools = null;
+        foreach (var tool in options.Tools)
+        {
+            if (tool is not AIFunctionDeclaration)
+            {
+                remainingTools ??= [];
+                remainingTools.Add(tool);
+            }
+        }
+
+        // If we removed any tools (including removing all of them), clone and update options
+        int remainingCount = remainingTools?.Count ?? 0;
+        if (remainingCount < options.Tools.Count)
+        {
+            options = options.Clone();
+            options.Tools = remainingTools;
+
+            // If no tools remain, clear the ToolMode as well
+            if (remainingCount == 0)
+            {
+                options.ToolMode = null;
+            }
         }
     }
 
@@ -1700,6 +1760,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     [LoggerMessage(LogLevel.Error, "{MethodName} invocation failed.")]
     private partial void LogInvocationFailed(string methodName, Exception error);
+
+    [LoggerMessage(LogLevel.Debug, "Reached maximum iteration count of {MaximumIterationsPerRequest}. Stopping function invocation loop.")]
+    private partial void LogMaximumIterationsReached(int maximumIterationsPerRequest);
 
     /// <summary>Provides information about the invocation of a function call.</summary>
     public sealed class FunctionInvocationResult
