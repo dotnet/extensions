@@ -44,14 +44,14 @@ public class RequestMetadata
     /// <remarks>
     /// Request Route is used for multiple use cases:
     /// <list type="bullet">
-    /// <item><description>
-    /// For outgoing request metrics, it is used as the request name dimension (if RequestName is not provided).</description>
+    /// <item>
+    /// For outgoing request metrics, it is used as the request name dimension (if RequestName is not provided).
     /// </item>
-    /// <item><description>
+    /// <item>
     /// For Logs and traces, it is used to identify sensitive parameters from the path and redact them in the exported path, so sensitive data leakage can be avoided.
     /// If you are using redaction, the template should be accurate for the request else redaction won't be applied to sensitive parameters.
     /// For example, the template would look something like /v1/users/{userId}/chats/{chatId}/messages. For parameters to be redacted, the sensitive parameter names should match exactly as provided
-    /// in configuration for outgoing tracing and outgoing logging autocollectors.</description>
+    /// in configuration for outgoing tracing and outgoing logging autocollectors.
     /// </item>
     /// </list>
     /// </remarks>
@@ -63,17 +63,17 @@ public class RequestMetadata
     /// <remarks>
     /// RequestName is used in the following manner by outgoing HTTP request auto collectors:
     /// <list type="bullet">
-    /// <item><description>
-    /// For outgoing request metrics: RequestName is used as the request name dimension if present. If not provided, the RequestRoute value is used instead.</description>
+    /// <item>
+    /// For outgoing request metrics: RequestName is used as the request name dimension if present. If not provided, the RequestRoute value is used instead.
     /// </item>
-    /// <item><description>
-    /// For outgoing request traces: RequestName is used as the Display name for the activity. That is, when looking at the E2E trace flow, this name is used in the Tree view of traces.</description>
+    /// <item>
+    /// For outgoing request traces: RequestName is used as the Display name for the activity. That is, when looking at the E2E trace flow, this name is used in the Tree view of traces.
     /// </item>
-    /// <item><description>
-    /// If RequestName isn't provided, the RequestRoute value is used instead.</description>
+    /// <item>
+    /// If RequestName isn't provided, the RequestRoute value is used instead.
     /// </item>
-    /// <item><description>
-    /// For outgoing request logs: When present, RequestName is added as an additional tag to logs.</description>
+    /// <item>
+    /// For outgoing request logs: When present, RequestName is added as an additional tag to logs.
     /// </item>
     /// </list>
     /// </remarks>
@@ -85,11 +85,11 @@ public class RequestMetadata
     /// <remarks>
     /// DependencyName is used in the following manner by outgoing http request auto collectors:
     /// <list type="bullet">
-    /// <item><description>
-    /// For outgoing request metrics: This is added as dependency name dimension so metrics can be pivoted based on the dependency.</description>
+    /// <item>
+    /// For outgoing request metrics: This is added as dependency name dimension so metrics can be pivoted based on the dependency.
     /// </item>
-    /// <item><description>
-    /// For outgoing request traces and logs: This is added as dependency name dimension for better diagnosability.</description>
+    /// <item>
+    /// For outgoing request traces and logs: This is added as dependency name dimension for better diagnosability.
     /// </item>
     /// </list>
     /// </remarks>

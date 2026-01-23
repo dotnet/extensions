@@ -33,12 +33,10 @@ public sealed class TagProviderAttribute : Attribute
     /// The method referenced by this constructor should be non-generic, <c>static</c>, and <c>public</c>, and it should have two parameters:
     /// <list type="bullet">
     ///   <item>
-    ///     <description>First parameter of type <see cref="ITagCollector"/>.</description>
+    ///     First parameter of type <see cref="ITagCollector"/>.
     ///   </item>
     ///   <item>
-    ///     <description>
     ///     Second parameter of type <c>T?</c>, where <c>T</c> is the type of logging method parameter that you want to log.
-    ///     </description>
     ///   </item>
     ///   </list>
     /// </remarks>
