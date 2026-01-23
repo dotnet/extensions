@@ -317,6 +317,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             functionCallContents?.Clear();
 
+            // On the last iteration, we won't be processing any function calls, so we should not
+            // include AIFunctionDeclaration tools in the request to prevent the inner client from
+            // returning tool call requests that won't be handled.
+            if (iteration >= MaximumIterationsPerRequest)
+            {
+                LogMaximumIterationsReached(MaximumIterationsPerRequest);
+                PrepareOptionsForLastIteration(ref options);
+            }
+
             // Make the call to the inner client.
             response = await base.GetResponseAsync(messages, options, cancellationToken);
             if (response is null)
@@ -481,6 +490,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             updates.Clear();
             functionCallContents?.Clear();
+            
+            // On the last iteration, we won't be processing any function calls, so we should not
+            // include AIFunctionDeclaration tools in the request to prevent the inner client from
+            // returning tool call requests that won't be handled.
+            if (iteration >= MaximumIterationsPerRequest)
+            {
+                LogMaximumIterationsReached(MaximumIterationsPerRequest);
+                PrepareOptionsForLastIteration(ref options);
+            }
 
             // Recompute anyToolsRequireApproval on each iteration because a function may have modified ChatOptions.Tools.
             bool anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
@@ -858,6 +876,48 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
     }
 
+    /// <summary>
+    /// Prepares options for the last iteration by removing AIFunctionDeclaration tools.
+    /// </summary>
+    /// <param name="options">The chat options to prepare.</param>
+    /// <remarks>
+    /// On the last iteration, we won't be processing any function calls, so we should not
+    /// include AIFunctionDeclaration tools in the request. This prevents the inner client
+    /// from returning tool call requests that won't be handled.
+    /// </remarks>
+    private static void PrepareOptionsForLastIteration(ref ChatOptions? options)
+    {
+        if (options?.Tools is not { Count: > 0 })
+        {
+            return;
+        }
+
+        // Filter out AIFunctionDeclaration tools, keeping only non-function tools
+        List<AITool>? remainingTools = null;
+        foreach (var tool in options.Tools)
+        {
+            if (tool is not AIFunctionDeclaration)
+            {
+                remainingTools ??= [];
+                remainingTools.Add(tool);
+            }
+        }
+
+        // If we removed any tools (including removing all of them), clone and update options
+        int remainingCount = remainingTools?.Count ?? 0;
+        if (remainingCount < options.Tools.Count)
+        {
+            options = options.Clone();
+            options.Tools = remainingTools;
+
+            // If no tools remain, clear the ToolMode as well
+            if (remainingCount == 0)
+            {
+                options.ToolMode = null;
+            }
+        }
+    }
+
     /// <summary>Gets whether the function calling loop should exit based on the function call requests.</summary>
     /// <param name="functionCalls">The call requests.</param>
     /// <param name="options">The options used for the response being processed.</param>
@@ -1144,8 +1204,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>Gets a value indicating whether <see cref="Activity.Current"/> represents an "invoke_agent" span.</summary>
-    private static bool CurrentActivityIsInvokeAgent =>
-        Activity.Current?.DisplayName == OpenTelemetryConsts.GenAI.InvokeAgentName;
+    private static bool CurrentActivityIsInvokeAgent
+    {
+        get
+        {
+            string? name = Activity.Current?.DisplayName;
+            return
+                name?.StartsWith(OpenTelemetryConsts.GenAI.InvokeAgentName, StringComparison.Ordinal) is true &&
+                (name.Length == OpenTelemetryConsts.GenAI.InvokeAgentName.Length || name[OpenTelemetryConsts.GenAI.InvokeAgentName.Length] == ' ');
+        }
+    }
 
     /// <summary>Invokes the function asynchronously.</summary>
     /// <param name="context">
@@ -1713,6 +1781,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     [LoggerMessage(LogLevel.Error, "{MethodName} invocation failed.")]
     private partial void LogInvocationFailed(string methodName, Exception error);
+
+    [LoggerMessage(LogLevel.Debug, "Reached maximum iteration count of {MaximumIterationsPerRequest}. Stopping function invocation loop.")]
+    private partial void LogMaximumIterationsReached(int maximumIterationsPerRequest);
 
     /// <summary>Provides information about the invocation of a function call.</summary>
     public sealed class FunctionInvocationResult

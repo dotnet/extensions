@@ -395,6 +395,179 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(maxIterations, actualCallCount);
     }
 
+    [Fact]
+    public async Task LastIteration_RemovesFunctionDeclarationTools_NonStreaming()
+    {
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 2;
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                capturedOptions.Add(options?.Clone());
+
+                var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent($"callId{capturedOptions.Count}", "Func1")]);
+                return Task.FromResult(new ChatResponse(message));
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result", "Func1")],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        await client.GetResponseAsync("hello", options);
+
+        Assert.Equal(maxIterations + 1, capturedOptions.Count);
+
+        for (int i = 0; i < maxIterations; i++)
+        {
+            Assert.NotNull(capturedOptions[i]?.Tools);
+            Assert.Single(capturedOptions[i]!.Tools!);
+        }
+
+        var lastOptions = capturedOptions[maxIterations];
+        Assert.NotNull(lastOptions);
+        Assert.Null(lastOptions!.Tools);
+        Assert.Null(lastOptions.ToolMode);
+    }
+
+    [Fact]
+    public async Task LastIteration_RemovesFunctionDeclarationTools_Streaming()
+    {
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 2;
+
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                capturedOptions.Add(options?.Clone());
+
+                var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent($"callId{capturedOptions.Count}", "Func1")]);
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result", "Func1")],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        await client.GetStreamingResponseAsync("hello", options).ToChatResponseAsync();
+
+        Assert.Equal(maxIterations + 1, capturedOptions.Count);
+
+        for (int i = 0; i < maxIterations; i++)
+        {
+            Assert.NotNull(capturedOptions[i]?.Tools);
+            Assert.Single(capturedOptions[i]!.Tools!);
+        }
+
+        var lastOptions = capturedOptions[maxIterations];
+        Assert.NotNull(lastOptions);
+        Assert.Null(lastOptions!.Tools);
+        Assert.Null(lastOptions.ToolMode);
+    }
+
+    [Fact]
+    public async Task LastIteration_PreservesNonFunctionDeclarationTools()
+    {
+        var hostedTool = new HostedWebSearchTool();
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 1;
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                capturedOptions.Add(options?.Clone());
+
+                if (capturedOptions.Count == 1)
+                {
+                    var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]);
+                    return Task.FromResult(new ChatResponse(message));
+                }
+                else
+                {
+                    var message = new ChatMessage(ChatRole.Assistant, "Done");
+                    return Task.FromResult(new ChatResponse(message));
+                }
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result", "Func1"), hostedTool],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        await client.GetResponseAsync("hello", options);
+
+        Assert.Equal(2, capturedOptions.Count);
+        Assert.NotNull(capturedOptions[0]?.Tools);
+        Assert.Equal(2, capturedOptions[0]!.Tools!.Count);
+
+        Assert.NotNull(capturedOptions[1]?.Tools);
+        Assert.Single(capturedOptions[1]!.Tools!);
+        Assert.IsType<HostedWebSearchTool>(capturedOptions[1]!.Tools![0]);
+        Assert.NotNull(capturedOptions[1]?.ToolMode);
+    }
+
+    [Fact]
+    public async Task LastIteration_DoesNotModifyOriginalOptions()
+    {
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 1;
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                capturedOptions.Add(options);
+                var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]);
+                return Task.FromResult(new ChatResponse(message));
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var originalTool = AIFunctionFactory.Create(() => "Result", "Func1");
+        var originalOptions = new ChatOptions
+        {
+            Tools = [originalTool],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        await client.GetResponseAsync("hello", originalOptions);
+
+        Assert.NotNull(originalOptions.Tools);
+        Assert.Single(originalOptions.Tools);
+        Assert.Same(originalTool, originalOptions.Tools[0]);
+        Assert.NotNull(originalOptions.ToolMode);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -1233,8 +1406,11 @@ public class FunctionInvokingChatClientTests
         Assert.Null(actualChatOptions!.ContinuationToken);
     }
 
-    [Fact]
-    public async Task DoesNotCreateOrchestrateToolsSpanWhenInvokeAgentIsParent()
+    [Theory]
+    [InlineData("invoke_agent")]
+    [InlineData("invoke_agent my_agent")]
+    [InlineData("invoke_agent ")]
+    public async Task DoesNotCreateOrchestrateToolsSpanWhenInvokeAgentIsParent(string displayName)
     {
         string agentSourceName = Guid.NewGuid().ToString();
         string clientSourceName = Guid.NewGuid().ToString();
@@ -1264,7 +1440,7 @@ public class FunctionInvokingChatClientTests
             .Build();
 
         using (var agentSource = new ActivitySource(agentSourceName))
-        using (var invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
+        using (var invokeAgentActivity = agentSource.StartActivity(displayName))
         {
             Assert.NotNull(invokeAgentActivity);
             await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
@@ -1274,9 +1450,52 @@ public class FunctionInvokingChatClientTests
         Assert.Contains(activities, a => a.DisplayName == "chat");
         Assert.Contains(activities, a => a.DisplayName == "execute_tool Func1");
 
-        var invokeAgent = Assert.Single(activities, a => a.DisplayName == "invoke_agent");
+        var invokeAgent = Assert.Single(activities, a => a.DisplayName == displayName);
         var childActivities = activities.Where(a => a != invokeAgent).ToList();
         Assert.All(childActivities, activity => Assert.Same(invokeAgent, activity.Parent));
+    }
+
+    [Theory]
+    [InlineData("invoke_agen")]
+    [InlineData("invoke_agent_extra")]
+    [InlineData("invoke_agentx")]
+    public async Task CreatesOrchestrateToolsSpanWhenParentIsNotInvokeAgent(string displayName)
+    {
+        string agentSourceName = Guid.NewGuid().ToString();
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
+
+        var activities = new List<Activity>();
+
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(agentSourceName)
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using (var agentSource = new ActivitySource(agentSourceName))
+        using (var invokeAgentActivity = agentSource.StartActivity(displayName))
+        {
+            Assert.NotNull(invokeAgentActivity);
+            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+        }
+
+        Assert.Contains(activities, a => a.DisplayName == "orchestrate_tools");
     }
 
     [Fact]
