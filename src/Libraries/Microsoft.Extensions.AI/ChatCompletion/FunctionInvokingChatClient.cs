@@ -746,7 +746,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="name">The name of the tool to find.</param>
     /// <param name="toolLists">The lists of tools to search. Tools from earlier lists take precedence over tools from later lists if they have the same name.</param>
     /// <returns>The tool if found; otherwise, <see langword="null"/>.</returns>
-    private static AITool? FindTool(string name, params ReadOnlySpan<IList<AITool>?> toolLists)
+    private static AIFunctionDeclaration? FindTool(string name, params ReadOnlySpan<IList<AITool>?> toolLists)
     {
         foreach (var toolList in toolLists)
         {
@@ -754,9 +754,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             {
                 foreach (AITool tool in toolList)
                 {
-                    if (tool is AIFunctionDeclaration && string.Equals(tool.Name, name, StringComparison.Ordinal))
+                    if (tool is AIFunctionDeclaration declaration && string.Equals(tool.Name, name, StringComparison.Ordinal))
                     {
-                        return tool;
+                        return declaration;
                     }
                 }
             }
@@ -881,7 +881,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Look up each function.
         foreach (var fcc in functionCalls)
         {
-            AITool? tool = FindTool(fcc.Name, options?.Tools, AdditionalTools);
+            AIFunctionDeclaration? tool = FindTool(fcc.Name, options?.Tools, AdditionalTools);
             if (tool is not null)
             {
                 if (tool is not AIFunction)
@@ -1052,7 +1052,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         var callContent = callContents[functionCallIndex];
 
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        AITool? tool = FindTool(callContent.Name, options?.Tools, AdditionalTools);
+        AIFunctionDeclaration? tool = FindTool(callContent.Name, options?.Tools, AdditionalTools);
         if (tool is not AIFunction aiFunction)
         {
             return new(terminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
