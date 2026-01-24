@@ -2693,15 +2693,205 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(2, callCount);
     }
 
-    // Note: Tests for the new logging functionality have been deferred.
-    // The logging implementation is complete and ready to use, but comprehensive
-    // tests that properly integrate with the test infrastructure need more time
-    // to develop correctly. Future work should add tests for:
-    // - LogsMaxConsecutiveErrorsExceeded
-    // - LogsFunctionNotFound
-    // - LogsNonInvocableFunction
-    // - LogsFunctionRequestedTermination
-    // - LogsFunctionRequiresApproval
-    // - LogsProcessingApprovalResponse
-    // - LogsFunctionRejected
+    [Fact]
+    public async Task LogsFunctionNotFound()
+    {
+        var collector = new FakeLogCollector();
+        ServiceCollection c = new();
+        c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "UnknownFunc")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Error: Unknown function 'UnknownFunc'.")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
+
+        await InvokeAndAssertAsync(options, plan, null, configure, c.BuildServiceProvider());
+
+        var logs = collector.GetSnapshot();
+        Assert.Contains(logs, e => e.Message.Contains("Function UnknownFunc not found") && e.Level == LogLevel.Warning);
+    }
+
+    [Fact]
+    public async Task LogsNonInvocableFunction()
+    {
+        var collector = new FakeLogCollector();
+        ServiceCollection c = new();
+        c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
+
+        var declarationOnly = AIFunctionFactory.Create(() => "Result 1", "Func1").AsDeclarationOnly();
+        var options = new ChatOptions
+        {
+            Tools = [declarationOnly]
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+        ];
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
+
+        await InvokeAndAssertAsync(options, plan, null, configure, c.BuildServiceProvider());
+
+        var logs = collector.GetSnapshot();
+        Assert.Contains(logs, e => e.Message.Contains("Function Func1 is not invocable (declaration only)") && e.Level == LogLevel.Debug);
+    }
+
+    [Fact]
+    public async Task LogsFunctionRequestedTermination()
+    {
+        var collector = new FakeLogCollector();
+        ServiceCollection c = new();
+        c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create((FunctionInvocationContext context) => { context.Terminate = true; return "Terminated"; }, "TerminatingFunc")]
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "TerminatingFunc")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Terminated")]),
+        ];
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
+
+        await InvokeAndAssertAsync(options, plan, null, configure, c.BuildServiceProvider());
+
+        var logs = collector.GetSnapshot();
+        Assert.Contains(logs, e => e.Message.Contains("Function TerminatingFunc requested termination of the processing loop") && e.Level == LogLevel.Debug);
+    }
+
+    [Fact]
+    public async Task LogsFunctionRequiresApproval()
+    {
+        var collector = new FakeLogCollector();
+        ServiceCollection c = new();
+        c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
+
+        var approvalFunc = new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1"));
+        var options = new ChatOptions
+        {
+            Tools = [approvalFunc]
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+
+            // The function call gets replaced with an approval request, so we expect that instead
+        ];
+
+        // Expected output includes the approval request
+        List<ChatMessage> expected =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+            ])
+        ];
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
+
+        await InvokeAndAssertAsync(options, plan, expected, configure, c.BuildServiceProvider());
+
+        var logs = collector.GetSnapshot();
+        Assert.Contains(logs, e => e.Message.Contains("Function Func1 requires approval") && e.Level == LogLevel.Debug);
+    }
+
+    [Fact]
+    public async Task LogsProcessingApprovalResponse()
+    {
+        var collector = new FakeLogCollector();
+        ServiceCollection c = new();
+        c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
+
+        var approvalFunc = new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1"));
+        var options = new ChatOptions { Tools = [approvalFunc] };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+            ]),
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1"))
+            ])
+        ];
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
+
+        await InvokeAndAssertAsync(options, [.. input, .. plan], null, configure, c.BuildServiceProvider());
+
+        var logs = collector.GetSnapshot();
+        Assert.Contains(logs, e => e.Message.Contains("Processing approval response for Func1. Approved: True") && e.Level == LogLevel.Debug);
+    }
+
+    [Fact]
+    public async Task LogsFunctionRejected()
+    {
+        var collector = new FakeLogCollector();
+        ServiceCollection c = new();
+        c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
+
+        var approvalFunc = new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1"));
+        var options = new ChatOptions { Tools = [approvalFunc] };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+            ]),
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1")) { Reason = "User denied" }
+            ])
+        ];
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Tool call invocation rejected. User denied")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
+
+        await InvokeAndAssertAsync(options, [.. input, .. plan], null, configure, c.BuildServiceProvider());
+
+        var logs = collector.GetSnapshot();
+        Assert.Contains(logs, e => e.Message.Contains("Function Func1 was rejected. Reason: User denied") && e.Level == LogLevel.Debug);
+    }
 }
