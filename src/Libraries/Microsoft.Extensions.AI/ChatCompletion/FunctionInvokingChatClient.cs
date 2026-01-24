@@ -949,6 +949,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     // The tool was found but it's not invocable. Regardless of TerminateOnUnknownCallRequests,
                     // we need to break out of the loop so that callers can handle all the call requests.
+                    LogNonInvocableFunction(fcc.Name);
                     return true;
                 }
             }
@@ -959,6 +960,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // creating a NotFound response message.
                 if (TerminateOnUnknownCalls)
                 {
+                    LogFunctionNotFound(fcc.Name, TerminateOnUnknownCalls);
                     return true;
                 }
             }
