@@ -1359,6 +1359,158 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>
+    /// Extracts the <see cref="FunctionCallContent"/> from the provided <see cref="FunctionApprovalResponseContent"/> to recreate the original function call messages.
+    /// The output messages tries to mimic the original messages that contained the <see cref="FunctionCallContent"/>, e.g. if the <see cref="FunctionCallContent"/>
+    /// had been split into separate messages, this method will recreate similarly split messages, each with their own <see cref="FunctionCallContent"/>.
+    /// </summary>
+    private static ICollection<ChatMessage>? ConvertToFunctionCallContentMessages(
+        List<ApprovalResultWithRequestMessage>? resultWithRequestMessages, string? fallbackMessageId)
+    {
+        if (resultWithRequestMessages is not null)
+        {
+            ChatMessage? currentMessage = null;
+            Dictionary<string, ChatMessage>? messagesById = null;
+
+            foreach (var resultWithRequestMessage in resultWithRequestMessages)
+            {
+                // Don't need to create a dictionary if we already have one or if it's the first iteration.
+                if (messagesById is null && currentMessage is not null
+
+                    // Everywhere we have no RequestMessage we use the fallbackMessageId, so in this case there is only one message.
+                    && !(resultWithRequestMessage.RequestMessage is null && currentMessage.MessageId == fallbackMessageId)
+
+                    // Where we do have a RequestMessage, we can check if its message id differs from the current one.
+                    && (resultWithRequestMessage.RequestMessage is not null && currentMessage.MessageId != resultWithRequestMessage.RequestMessage.MessageId))
+                {
+                    // The majority of the time, all FCC would be part of a single message, so no need to create a dictionary for this case.
+                    // If we are dealing with multiple messages though, we need to keep track of them by their message ID.
+                    messagesById = [];
+
+                    // Use the effective key for the previous message, accounting for fallbackMessageId substitution.
+                    // If the message's MessageId was set to fallbackMessageId (because the original RequestMessage.MessageId was null),
+                    // we should use empty string as the key to match the lookup key used elsewhere.
+                    var previousMessageKey = currentMessage.MessageId == fallbackMessageId
+                        ? string.Empty
+                        : (currentMessage.MessageId ?? string.Empty);
+                    messagesById[previousMessageKey] = currentMessage;
+                }
+
+                // Use RequestMessage.MessageId for the lookup key, since that's the original message ID from the provider.
+                // We must use the same key for both lookup and storage to ensure proper grouping.
+                // Note: currentMessage.MessageId may differ from RequestMessage.MessageId because
+                // ConvertToFunctionCallContentMessage sets a fallbackMessageId when RequestMessage.MessageId is null.
+                var messageKey = resultWithRequestMessage.RequestMessage?.MessageId ?? string.Empty;
+
+                _ = messagesById?.TryGetValue(messageKey, out currentMessage);
+
+                if (currentMessage is null)
+                {
+                    currentMessage = ConvertToFunctionCallContentMessage(resultWithRequestMessage, fallbackMessageId);
+                }
+                else
+                {
+                    currentMessage.Contents.Add(resultWithRequestMessage.Response.FunctionCall);
+                }
+
+#pragma warning disable IDE0058 // Temporary workaround for Roslyn analyzer issue (see https://github.com/dotnet/roslyn/issues/80499)
+                messagesById?[messageKey] = currentMessage;
+#pragma warning restore IDE0058
+            }
+
+            if (messagesById?.Values is ICollection<ChatMessage> cm)
+            {
+                return cm;
+            }
+
+            if (currentMessage is not null)
+            {
+                return [currentMessage];
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Takes the <see cref="FunctionCallContent"/> from the <paramref name="resultWithRequestMessage"/> and wraps it in a <see cref="ChatMessage"/>
+    /// using the same message id that the <see cref="FunctionCallContent"/> was originally returned with from the downstream <see cref="IChatClient"/>.
+    /// </summary>
+    private static ChatMessage ConvertToFunctionCallContentMessage(ApprovalResultWithRequestMessage resultWithRequestMessage, string? fallbackMessageId)
+    {
+        ChatMessage functionCallMessage = resultWithRequestMessage.RequestMessage?.Clone() ?? new() { Role = ChatRole.Assistant };
+        functionCallMessage.Contents = [resultWithRequestMessage.Response.FunctionCall];
+        functionCallMessage.MessageId ??= fallbackMessageId;
+        return functionCallMessage;
+    }
+
+    /// <summary>
+    /// Check if any of the provided <paramref name="functionCallContents"/> require approval.
+    /// Supports checking from a provided index up to the end of the list, to allow efficient incremental checking
+    /// when streaming.
+    /// </summary>
+    private static (bool hasApprovalRequiringFcc, int lastApprovalCheckedFCCIndex) CheckForApprovalRequiringFCC(
+        List<FunctionCallContent>? functionCallContents,
+        AITool[] approvalRequiredFunctions,
+        bool hasApprovalRequiringFcc,
+        int lastApprovalCheckedFCCIndex)
+    {
+        // If we already found an approval requiring FCC, we can skip checking the rest.
+        if (hasApprovalRequiringFcc)
+        {
+            Debug.Assert(functionCallContents is not null, "functionCallContents must not be null here, since we have already encountered approval requiring functionCallContents");
+            return (true, functionCallContents!.Count);
+        }
+
+        if (functionCallContents is not null)
+        {
+            for (; lastApprovalCheckedFCCIndex < functionCallContents.Count; lastApprovalCheckedFCCIndex++)
+            {
+                var fcc = functionCallContents![lastApprovalCheckedFCCIndex];
+                foreach (var arf in approvalRequiredFunctions)
+                {
+                    if (arf.Name == fcc.Name)
+                    {
+                        hasApprovalRequiringFcc = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return (hasApprovalRequiringFcc, lastApprovalCheckedFCCIndex);
+    }
+
+    /// <summary>
+    /// Replaces all <see cref="FunctionCallContent"/> with <see cref="FunctionApprovalRequestContent"/> and ouputs a new list if any of them were replaced.
+    /// </summary>
+    /// <returns>true if any <see cref="FunctionCallContent"/> was replaced, false otherwise.</returns>
+    private static bool TryReplaceFunctionCallsWithApprovalRequests(IList<AIContent> content, out List<AIContent>? updatedContent)
+    {
+        updatedContent = null;
+
+        if (content is { Count: > 0 })
+        {
+            for (int i = 0; i < content.Count; i++)
+            {
+                if (content[i] is FunctionCallContent fcc)
+                {
+                    updatedContent ??= [.. content]; // Clone the list if we haven't already
+                    updatedContent[i] = new FunctionApprovalRequestContent(fcc.CallId, fcc);
+                }
+            }
+        }
+
+        return updatedContent is not null;
+    }
+
+    private static TimeSpan GetElapsedTime(long startingTimestamp) =>
+#if NET
+        Stopwatch.GetElapsedTime(startingTimestamp);
+#else
+        new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
+#endif
+
+    /// <summary>
     /// 1. Remove all <see cref="FunctionApprovalRequestContent"/> and <see cref="FunctionApprovalResponseContent"/> from the <paramref name="originalMessages"/>.
     /// 2. Recreate <see cref="FunctionCallContent"/> for any <see cref="FunctionApprovalResponseContent"/> that haven't been executed yet.
     /// 3. Genreate failed <see cref="FunctionResultContent"/> for any rejected <see cref="FunctionApprovalResponseContent"/>.
@@ -1551,155 +1703,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             null;
 
     /// <summary>
-    /// Extracts the <see cref="FunctionCallContent"/> from the provided <see cref="FunctionApprovalResponseContent"/> to recreate the original function call messages.
-    /// The output messages tries to mimic the original messages that contained the <see cref="FunctionCallContent"/>, e.g. if the <see cref="FunctionCallContent"/>
-    /// had been split into separate messages, this method will recreate similarly split messages, each with their own <see cref="FunctionCallContent"/>.
-    /// </summary>
-    private static ICollection<ChatMessage>? ConvertToFunctionCallContentMessages(
-        List<ApprovalResultWithRequestMessage>? resultWithRequestMessages, string? fallbackMessageId)
-    {
-        if (resultWithRequestMessages is not null)
-        {
-            ChatMessage? currentMessage = null;
-            Dictionary<string, ChatMessage>? messagesById = null;
-
-            foreach (var resultWithRequestMessage in resultWithRequestMessages)
-            {
-                // Don't need to create a dictionary if we already have one or if it's the first iteration.
-                if (messagesById is null && currentMessage is not null
-
-                    // Everywhere we have no RequestMessage we use the fallbackMessageId, so in this case there is only one message.
-                    && !(resultWithRequestMessage.RequestMessage is null && currentMessage.MessageId == fallbackMessageId)
-
-                    // Where we do have a RequestMessage, we can check if its message id differs from the current one.
-                    && (resultWithRequestMessage.RequestMessage is not null && currentMessage.MessageId != resultWithRequestMessage.RequestMessage.MessageId))
-                {
-                    // The majority of the time, all FCC would be part of a single message, so no need to create a dictionary for this case.
-                    // If we are dealing with multiple messages though, we need to keep track of them by their message ID.
-                    messagesById = [];
-
-                    // Use the effective key for the previous message, accounting for fallbackMessageId substitution.
-                    // If the message's MessageId was set to fallbackMessageId (because the original RequestMessage.MessageId was null),
-                    // we should use empty string as the key to match the lookup key used elsewhere.
-                    var previousMessageKey = currentMessage.MessageId == fallbackMessageId
-                        ? string.Empty
-                        : (currentMessage.MessageId ?? string.Empty);
-                    messagesById[previousMessageKey] = currentMessage;
-                }
-
-                // Use RequestMessage.MessageId for the lookup key, since that's the original message ID from the provider.
-                // We must use the same key for both lookup and storage to ensure proper grouping.
-                // Note: currentMessage.MessageId may differ from RequestMessage.MessageId because
-                // ConvertToFunctionCallContentMessage sets a fallbackMessageId when RequestMessage.MessageId is null.
-                var messageKey = resultWithRequestMessage.RequestMessage?.MessageId ?? string.Empty;
-
-                _ = messagesById?.TryGetValue(messageKey, out currentMessage);
-
-                if (currentMessage is null)
-                {
-                    currentMessage = ConvertToFunctionCallContentMessage(resultWithRequestMessage, fallbackMessageId);
-                }
-                else
-                {
-                    currentMessage.Contents.Add(resultWithRequestMessage.Response.FunctionCall);
-                }
-
-#pragma warning disable IDE0058 // Temporary workaround for Roslyn analyzer issue (see https://github.com/dotnet/roslyn/issues/80499)
-                messagesById?[messageKey] = currentMessage;
-#pragma warning restore IDE0058
-            }
-
-            if (messagesById?.Values is ICollection<ChatMessage> cm)
-            {
-                return cm;
-            }
-
-            if (currentMessage is not null)
-            {
-                return [currentMessage];
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Takes the <see cref="FunctionCallContent"/> from the <paramref name="resultWithRequestMessage"/> and wraps it in a <see cref="ChatMessage"/>
-    /// using the same message id that the <see cref="FunctionCallContent"/> was originally returned with from the downstream <see cref="IChatClient"/>.
-    /// </summary>
-    private static ChatMessage ConvertToFunctionCallContentMessage(ApprovalResultWithRequestMessage resultWithRequestMessage, string? fallbackMessageId)
-    {
-        ChatMessage functionCallMessage = resultWithRequestMessage.RequestMessage?.Clone() ?? new() { Role = ChatRole.Assistant };
-        functionCallMessage.Contents = [resultWithRequestMessage.Response.FunctionCall];
-        functionCallMessage.MessageId ??= fallbackMessageId;
-        return functionCallMessage;
-    }
-
-    /// <summary>
-    /// Check if any of the provided <paramref name="functionCallContents"/> require approval.
-    /// Supports checking from a provided index up to the end of the list, to allow efficient incremental checking
-    /// when streaming.
-    /// </summary>
-    private static (bool hasApprovalRequiringFcc, int lastApprovalCheckedFCCIndex) CheckForApprovalRequiringFCC(
-        List<FunctionCallContent>? functionCallContents,
-        AITool[] approvalRequiredFunctions,
-        bool hasApprovalRequiringFcc,
-        int lastApprovalCheckedFCCIndex)
-    {
-        // If we already found an approval requiring FCC, we can skip checking the rest.
-        if (hasApprovalRequiringFcc)
-        {
-            Debug.Assert(functionCallContents is not null, "functionCallContents must not be null here, since we have already encountered approval requiring functionCallContents");
-            return (true, functionCallContents!.Count);
-        }
-
-        if (functionCallContents is not null)
-        {
-            for (; lastApprovalCheckedFCCIndex < functionCallContents.Count; lastApprovalCheckedFCCIndex++)
-            {
-                var fcc = functionCallContents![lastApprovalCheckedFCCIndex];
-                foreach (var arf in approvalRequiredFunctions)
-                {
-                    if (arf.Name == fcc.Name)
-                    {
-                        hasApprovalRequiringFcc = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        return (hasApprovalRequiringFcc, lastApprovalCheckedFCCIndex);
-    }
-
-    /// <summary>
-    /// Replaces all <see cref="FunctionCallContent"/> with <see cref="FunctionApprovalRequestContent"/> and ouputs a new list if any of them were replaced.
-    /// </summary>
-    /// <returns>true if any <see cref="FunctionCallContent"/> was replaced, false otherwise.</returns>
-    private static bool TryReplaceFunctionCallsWithApprovalRequests(IList<AIContent> content, out List<AIContent>? updatedContent)
-    {
-        updatedContent = null;
-
-        if (content is { Count: > 0 })
-        {
-            for (int i = 0; i < content.Count; i++)
-            {
-                if (content[i] is FunctionCallContent fcc)
-                {
-                    updatedContent ??= [.. content]; // Clone the list if we haven't already
-                    updatedContent[i] = new FunctionApprovalRequestContent(fcc.CallId, fcc);
-                }
-            }
-        }
-
-        return updatedContent is not null;
-    }
-
-    /// <summary>
     /// Replaces all <see cref="FunctionCallContent"/> from <paramref name="messages"/> with <see cref="FunctionApprovalRequestContent"/>
     /// if any one of them requires approval.
     /// </summary>
-    private static IList<ChatMessage> ReplaceFunctionCallsWithApprovalRequests(
+    private IList<ChatMessage> ReplaceFunctionCallsWithApprovalRequests(
         IList<ChatMessage> messages,
         params ReadOnlySpan<IList<AITool>?> toolLists)
     {
@@ -1751,13 +1758,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         return outputMessages;
     }
-
-    private static TimeSpan GetElapsedTime(long startingTimestamp) =>
-#if NET
-        Stopwatch.GetElapsedTime(startingTimestamp);
-#else
-        new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
-#endif
 
     /// <summary>
     /// Execute the provided <see cref="FunctionApprovalResponseContent"/> and return the resulting <see cref="FunctionCallContent"/>

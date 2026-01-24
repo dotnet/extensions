@@ -2709,30 +2709,19 @@ public class FunctionInvokingChatClientTests
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", exception: new InvalidOperationException("test"))]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Error") { Exception = new InvalidOperationException("test") }]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", exception: new InvalidOperationException("test"))]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Error") { Exception = new InvalidOperationException("test") }]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", exception: new InvalidOperationException("test"))]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Error") { Exception = new InvalidOperationException("test") }]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId4", "Func1")]),
         ];
 
-        using var innerClient = new TestChatClient
-        {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
-            {
-                var next = plan[messages.Count];
-                return Task.FromResult(new ChatResponse([next]));
-            }
-        };
-
-        using var client = new FunctionInvokingChatClient(innerClient, services.BuildServiceProvider().GetRequiredService<ILoggerFactory>())
-        {
-            MaximumConsecutiveErrorsPerRequest = 3
-        };
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()) { MaximumConsecutiveErrorsPerRequest = 3 });
 
         await Assert.ThrowsAsync<AggregateException>(async () =>
-            await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options));
+            await InvokeAndAssertAsync(options, plan, configurePipeline: configure, services: services.BuildServiceProvider()));
 
         var logs = collector.GetSnapshot();
         Assert.Contains(logs, e => e.Message.Contains("Maximum consecutive errors (3) exceeded"));
@@ -2759,18 +2748,10 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
-        using var innerClient = new TestChatClient
-        {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
-            {
-                var next = plan[messages.Count];
-                return Task.FromResult(new ChatResponse([next]));
-            }
-        };
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
 
-        using var client = new FunctionInvokingChatClient(innerClient, services.BuildServiceProvider().GetRequiredService<ILoggerFactory>());
-
-        await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configure, services: services.BuildServiceProvider());
 
         var logs = collector.GetSnapshot();
         Assert.Contains(logs, e => e.Message.Contains("Function UnknownFunc not found") && e.Level == LogLevel.Warning);
@@ -2794,18 +2775,10 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "NonInvocable")]),
         ];
 
-        using var innerClient = new TestChatClient
-        {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
-            {
-                var next = plan[messages.Count];
-                return Task.FromResult(new ChatResponse([next]));
-            }
-        };
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
 
-        using var client = new FunctionInvokingChatClient(innerClient, services.BuildServiceProvider().GetRequiredService<ILoggerFactory>());
-
-        var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configure, services: services.BuildServiceProvider());
 
         var logs = collector.GetSnapshot();
         Assert.Contains(logs, e => e.Message.Contains("Function NonInvocable is not invocable (declaration only)") && e.Level == LogLevel.Debug);
@@ -2830,18 +2803,10 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Terminated")]),
         ];
 
-        using var innerClient = new TestChatClient
-        {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
-            {
-                var next = plan[messages.Count];
-                return Task.FromResult(new ChatResponse([next]));
-            }
-        };
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
 
-        using var client = new FunctionInvokingChatClient(innerClient, services.BuildServiceProvider().GetRequiredService<ILoggerFactory>());
-
-        var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configure, services: services.BuildServiceProvider());
 
         var logs = collector.GetSnapshot();
         Assert.Contains(logs, e => e.Message.Contains("Function TerminatingFunc requested termination of the processing loop") && e.Level == LogLevel.Debug);
@@ -2862,18 +2827,18 @@ public class FunctionInvokingChatClientTests
         List<ChatMessage> input = [new ChatMessage(ChatRole.User, "hello")];
         List<ChatMessage> downstreamClientOutput = [new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])];
 
-        using var innerClient = new TestChatClient
-        {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
-            {
-                var response = downstreamClientOutput[0];
-                return Task.FromResult(new ChatResponse([response]));
-            }
-        };
+        List<ChatMessage> expectedOutput =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+            ])
+        ];
 
-        using var client = new FunctionInvokingChatClient(innerClient, services.BuildServiceProvider().GetRequiredService<ILoggerFactory>());
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
 
-        var result = await client.GetResponseAsync(input, options);
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput, configurePipeline: configure, services: services.BuildServiceProvider());
 
         var logs = collector.GetSnapshot();
         Assert.Contains(logs, e => e.Message.Contains("Function Func1 requires approval") && e.Level == LogLevel.Debug);
@@ -2898,24 +2863,16 @@ public class FunctionInvokingChatClientTests
             ]),
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", new FunctionCallContent("callId1", "Func1"), approved: true)
+                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1"))
             ])
         ];
 
         List<ChatMessage> downstreamClientOutput = [new ChatMessage(ChatRole.Assistant, "world")];
 
-        using var innerClient = new TestChatClient
-        {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
-            {
-                var response = downstreamClientOutput[0];
-                return Task.FromResult(new ChatResponse([response]));
-            }
-        };
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
 
-        using var client = new FunctionInvokingChatClient(innerClient, services.BuildServiceProvider().GetRequiredService<ILoggerFactory>());
-
-        var result = await client.GetResponseAsync(input, options);
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, configure: configure, services: services.BuildServiceProvider());
 
         var logs = collector.GetSnapshot();
         Assert.Contains(logs, e => e.Message.Contains("Processing approval response for Func1. Approved: True") && e.Level == LogLevel.Debug);
@@ -2940,24 +2897,16 @@ public class FunctionInvokingChatClientTests
             ]),
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", new FunctionCallContent("callId1", "Func1"), approved: false, reason: "User denied")
+                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1")) { Reason = "User denied" }
             ])
         ];
 
         List<ChatMessage> downstreamClientOutput = [new ChatMessage(ChatRole.Assistant, "world")];
 
-        using var innerClient = new TestChatClient
-        {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
-            {
-                var response = downstreamClientOutput[0];
-                return Task.FromResult(new ChatResponse([response]));
-            }
-        };
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
 
-        using var client = new FunctionInvokingChatClient(innerClient, services.BuildServiceProvider().GetRequiredService<ILoggerFactory>());
-
-        var result = await client.GetResponseAsync(input, options);
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, configure: configure, services: services.BuildServiceProvider());
 
         var logs = collector.GetSnapshot();
         Assert.Contains(logs, e => e.Message.Contains("Function Func1 was rejected. Reason: User denied") && e.Level == LogLevel.Debug);
