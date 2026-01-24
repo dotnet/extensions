@@ -960,7 +960,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // creating a NotFound response message.
                 if (TerminateOnUnknownCalls)
                 {
-                    LogFunctionNotFound(fcc.Name, TerminateOnUnknownCalls);
+                    LogFunctionNotFound(fcc.Name);
                     return true;
                 }
             }
@@ -1122,7 +1122,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             if (tool is null)
             {
-                LogFunctionNotFound(callContent.Name, TerminateOnUnknownCalls);
+                LogFunctionNotFound(callContent.Name);
             }
             else
             {
@@ -1809,25 +1809,25 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     [LoggerMessage(LogLevel.Debug, "Reached maximum iteration count of {MaximumIterationsPerRequest}. Stopping function invocation loop.")]
     private partial void LogMaximumIterationsReached(int maximumIterationsPerRequest);
 
-    [LoggerMessage(LogLevel.Debug, "Function {FunctionName} requires approval. Converting to approval request.")]
+    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' requires approval. Converting to approval request.")]
     private partial void LogFunctionRequiresApproval(string functionName);
 
-    [LoggerMessage(LogLevel.Debug, "Processing approval response for {FunctionName}. Approved: {Approved}")]
+    [LoggerMessage(LogLevel.Debug, "Processing approval response for '{FunctionName}'. Approved: {Approved}")]
     private partial void LogProcessingApprovalResponse(string functionName, bool approved);
 
-    [LoggerMessage(LogLevel.Debug, "Function {FunctionName} was rejected. Reason: {Reason}")]
+    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' was rejected. Reason: {Reason}")]
     private partial void LogFunctionRejected(string functionName, string? reason);
 
     [LoggerMessage(LogLevel.Warning, "Maximum consecutive errors ({MaxErrors}) exceeded. Throwing aggregated exceptions.")]
     private partial void LogMaxConsecutiveErrorsExceeded(int maxErrors);
 
-    [LoggerMessage(LogLevel.Warning, "Function {FunctionName} not found. TerminateOnUnknownCalls={Terminate}")]
-    private partial void LogFunctionNotFound(string functionName, bool terminate);
+    [LoggerMessage(LogLevel.Warning, "Function '{FunctionName}' not found.")]
+    private partial void LogFunctionNotFound(string functionName);
 
-    [LoggerMessage(LogLevel.Debug, "Function {FunctionName} is not invocable (declaration only). Terminating loop.")]
+    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' is not invocable (declaration only). Terminating loop.")]
     private partial void LogNonInvocableFunction(string functionName);
 
-    [LoggerMessage(LogLevel.Debug, "Function {FunctionName} requested termination of the processing loop.")]
+    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' requested termination of the processing loop.")]
     private partial void LogFunctionRequestedTermination(string functionName);
 
     /// <summary>Provides information about the invocation of a function call.</summary>

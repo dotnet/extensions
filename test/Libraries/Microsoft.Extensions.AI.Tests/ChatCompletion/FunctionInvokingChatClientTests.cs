@@ -2719,7 +2719,7 @@ public class FunctionInvokingChatClientTests
         await InvokeAndAssertAsync(options, plan, null, configure, c.BuildServiceProvider());
 
         var logs = collector.GetSnapshot();
-        Assert.Contains(logs, e => e.Message.Contains("Function UnknownFunc not found") && e.Level == LogLevel.Warning);
+        Assert.Contains(logs, e => e.Message.Contains("Function 'UnknownFunc' not found") && e.Level == LogLevel.Warning);
     }
 
     [Fact]
@@ -2751,7 +2751,7 @@ public class FunctionInvokingChatClientTests
         await InvokeAndAssertAsync(options, plan, expected, configure, c.BuildServiceProvider());
 
         var logs = collector.GetSnapshot();
-        Assert.Contains(logs, e => e.Message.Contains("Function Func1 is not invocable (declaration only)") && e.Level == LogLevel.Debug);
+        Assert.Contains(logs, e => e.Message.Contains("Function 'Func1' is not invocable (declaration only)") && e.Level == LogLevel.Debug);
     }
 
     [Fact]
@@ -2784,7 +2784,7 @@ public class FunctionInvokingChatClientTests
         await InvokeAndAssertAsync(options, plan, null, configure, c.BuildServiceProvider());
 
         var logs = collector.GetSnapshot();
-        Assert.Contains(logs, e => e.Message.Contains("Function TerminatingFunc requested termination of the processing loop") && e.Level == LogLevel.Debug);
+        Assert.Contains(logs, e => e.Message.Contains("Function 'TerminatingFunc' requested termination of the processing loop") && e.Level == LogLevel.Debug);
     }
 
     [Fact]
@@ -2822,7 +2822,7 @@ public class FunctionInvokingChatClientTests
         await InvokeAndAssertAsync(options, plan, expected, configure, c.BuildServiceProvider());
 
         var logs = collector.GetSnapshot();
-        Assert.Contains(logs, e => e.Message.Contains("Function Func1 requires approval") && e.Level == LogLevel.Debug);
+        Assert.Contains(logs, e => e.Message.Contains("Function 'Func1' requires approval") && e.Level == LogLevel.Debug);
     }
 
     [Fact]
@@ -2859,7 +2859,7 @@ public class FunctionInvokingChatClientTests
         await client.GetResponseAsync(messages, options);
 
         var logs = collector.GetSnapshot();
-        Assert.Contains(logs, e => e.Message.Contains("Processing approval response for Func1. Approved: True") && e.Level == LogLevel.Debug);
+        Assert.Contains(logs, e => e.Message.Contains("Processing approval response for 'Func1'. Approved: True") && e.Level == LogLevel.Debug);
     }
 
     [Fact]
@@ -2896,6 +2896,6 @@ public class FunctionInvokingChatClientTests
         await client.GetResponseAsync(messages, options);
 
         var logs = collector.GetSnapshot();
-        Assert.Contains(logs, e => e.Message.Contains("Function Func1 was rejected. Reason: User denied") && e.Level == LogLevel.Debug);
+        Assert.Contains(logs, e => e.Message.Contains("Function 'Func1' was rejected. Reason: User denied") && e.Level == LogLevel.Debug);
     }
 }
