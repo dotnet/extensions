@@ -2698,7 +2698,7 @@ public class FunctionInvokingChatClientTests
     // tests that properly integrate with the test infrastructure need more time
     // to develop correctly. Future work should add tests for:
     // - LogsMaxConsecutiveErrorsExceeded
-    // - LogsFunctionNotFound  
+    // - LogsFunctionNotFound
     // - LogsNonInvocableFunction
     // - LogsFunctionRequestedTermination
     // - LogsFunctionRequiresApproval

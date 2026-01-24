@@ -1481,7 +1481,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>
-    /// Replaces all <see cref="FunctionCallContent"/> with <see cref="FunctionApprovalRequestContent"/> and ouputs a new list if any of them were replaced.
+    /// Replaces all <see cref="FunctionCallContent"/> with <see cref="FunctionApprovalRequestContent"/> and outputs a new list if any of them were replaced.
     /// </summary>
     /// <returns>true if any <see cref="FunctionCallContent"/> was replaced, false otherwise.</returns>
     private static bool TryReplaceFunctionCallsWithApprovalRequests(IList<AIContent> content, out List<AIContent>? updatedContent)
