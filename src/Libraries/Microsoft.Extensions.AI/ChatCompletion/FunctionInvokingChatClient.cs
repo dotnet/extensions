@@ -490,7 +490,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             updates.Clear();
             functionCallContents?.Clear();
-            
+
             // On the last iteration, we won't be processing any function calls, so we should not
             // include AIFunctionDeclaration tools in the request to prevent the inner client from
             // returning tool call requests that won't be handled.
