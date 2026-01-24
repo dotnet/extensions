@@ -57,7 +57,7 @@ variables:
   - name: SkipQualityGates
     value: false
   - name: _TeamName
-    value: dotnet-r9
+    value: dotnet-extensions
   - name: NativeToolsOnMachine
     value: true
   - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
@@ -237,10 +237,10 @@ stages:
 
         pool:
           name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals build.ubuntu.2004.amd64.open
+          demands: ImageOverride -equals windows.vs2022preview.amd64.open
 
         variables:
-          - _buildScript: $(Build.SourcesDirectory)/build.sh --ci
+          - _buildScript: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
 
         preSteps:
           - checkout: self
@@ -257,4 +257,4 @@ stages:
               repoTestResultsPath: $(Build.Arcade.TestResultsPath)
               skipTests: true
               skipQualityGates: true
-              isWindows: false
+              isWindows: true

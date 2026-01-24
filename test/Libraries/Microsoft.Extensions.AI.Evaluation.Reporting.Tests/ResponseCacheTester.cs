@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-#pragma warning disable S1128 // Unused "using" should be removed
-using System.Linq;
-#pragma warning restore S1128
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;

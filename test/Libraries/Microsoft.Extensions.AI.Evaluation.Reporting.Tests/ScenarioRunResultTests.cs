@@ -391,7 +391,7 @@ public class ScenarioRunResultTests
     {
         public static ChatTurnDetailsComparer Instance { get; } = new ChatTurnDetailsComparer();
 
-#pragma warning disable S1067 // Expressions should not be too complex
+#pragma warning disable S1067 // Expressions should not be too complex.
         public bool Equals(ChatTurnDetails? x, ChatTurnDetails? y) =>
             x?.Latency == y?.Latency &&
             x?.Model == y?.Model &&

@@ -81,6 +81,7 @@ public partial class ParserTests
 
         _ = Assert.Single(d);
         Assert.Equal(DiagDescriptors.ErrorInvalidMethodReturnType.Id, d[0].Id);
+        Assert.Contains($"must not return '{returnType}'", d[0].GetMessage());
     }
 
     [Theory]
@@ -790,5 +791,18 @@ public partial class ParserTests
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return d;
+    }
+
+    [Fact]
+    public async Task UnitParameterTest()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                [Counter(Unit = ""s"", Name = ""myMetricName"")]
+                static partial MetricName CreateMetric(Meter meter);
+            }");
+
+        Assert.Empty(d);
     }
 }

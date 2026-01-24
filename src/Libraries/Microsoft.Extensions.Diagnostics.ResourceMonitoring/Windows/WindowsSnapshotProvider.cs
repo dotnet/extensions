@@ -45,6 +45,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
     {
     }
 
+#pragma warning disable S107 // Methods should not have too many parameters
     internal WindowsSnapshotProvider(
         ILogger<WindowsSnapshotProvider>? logger,
         IMeterFactory meterFactory,
@@ -54,6 +55,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         Func<long> getCpuTicksFunc,
         Func<long> getMemoryUsageFunc,
         Func<ulong> getTotalMemoryInBytesFunc)
+#pragma warning restore S107 // Methods should not have too many parameters
     {
         _logger = logger ?? NullLogger<WindowsSnapshotProvider>.Instance;
 

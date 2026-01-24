@@ -4,6 +4,7 @@
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Utilities for working with generative AI components.</Description>
     <Workstream>AI</Workstream>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,13 +25,14 @@
          at all then to spot ones that use false rather than true. Alternatively, we could try to avoid using ConfigureAwait(false)
          only on paths that could lead up to the invocation of an AIFunction, but that is challenging to maintain correctly. -->
     <NoWarn>$(NoWarn);CA2007</NoWarn>
-    
+
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
+    <DisableMinimumSupportedTfmCompatErrors>true</DisableMinimumSupportedTfmCompatErrors>
   </PropertyGroup>
 
   <PropertyGroup>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
@@ -44,9 +46,10 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))">
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="System.Threading.Channels" />
@@ -55,5 +58,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />
   </ItemGroup>
-  
+
 </Project>

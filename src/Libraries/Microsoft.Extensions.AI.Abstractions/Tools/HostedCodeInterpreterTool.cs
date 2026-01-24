@@ -12,10 +12,26 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 public class HostedCodeInterpreterTool : AITool
 {
+    /// <summary>Any additional properties associated with the tool.</summary>
+    private IReadOnlyDictionary<string, object?>? _additionalProperties;
+
     /// <summary>Initializes a new instance of the <see cref="HostedCodeInterpreterTool"/> class.</summary>
     public HostedCodeInterpreterTool()
     {
     }
+
+    /// <summary>Initializes a new instance of the <see cref="HostedCodeInterpreterTool"/> class.</summary>
+    /// <param name="additionalProperties">Any additional properties associated with the tool.</param>
+    public HostedCodeInterpreterTool(IReadOnlyDictionary<string, object?>? additionalProperties)
+    {
+        _additionalProperties = additionalProperties;
+    }
+
+    /// <inheritdoc />
+    public override string Name => "code_interpreter";
+
+    /// <inheritdoc />
+    public override IReadOnlyDictionary<string, object?> AdditionalProperties => _additionalProperties ?? base.AdditionalProperties;
 
     /// <summary>Gets or sets a collection of <see cref="AIContent"/> to be used as input to the code interpreter tool.</summary>
     /// <remarks>

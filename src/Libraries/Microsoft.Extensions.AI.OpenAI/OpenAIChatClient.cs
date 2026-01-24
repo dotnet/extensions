@@ -554,12 +554,12 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         if (options is null)
         {
-            return new ChatCompletionOptions();
+            return new();
         }
 
         if (options.RawRepresentationFactory?.Invoke(this) is not ChatCompletionOptions result)
         {
-            result = new ChatCompletionOptions();
+            result = new();
         }
 
         result.FrequencyPenalty ??= options.FrequencyPenalty;
@@ -568,6 +568,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         result.PresencePenalty ??= options.PresencePenalty;
         result.Temperature ??= options.Temperature;
         result.Seed ??= options.Seed;
+        OpenAIClientExtensions.PatchModelIfNotSet(ref result.Patch, options.ModelId);
 
         if (options.StopSequences is { Count: > 0 } stopSequences)
         {
@@ -643,6 +644,8 @@ internal sealed partial class OpenAIChatClient : IChatClient
             InputTokenCount = tokenUsage.InputTokenCount,
             OutputTokenCount = tokenUsage.OutputTokenCount,
             TotalTokenCount = tokenUsage.TotalTokenCount,
+            CachedInputTokenCount = tokenUsage.InputTokenDetails?.CachedTokenCount,
+            ReasoningTokenCount = tokenUsage.OutputTokenDetails?.ReasoningTokenCount,
             AdditionalCounts = [],
         };
 
@@ -652,13 +655,11 @@ internal sealed partial class OpenAIChatClient : IChatClient
         {
             const string InputDetails = nameof(ChatTokenUsage.InputTokenDetails);
             counts.Add($"{InputDetails}.{nameof(ChatInputTokenUsageDetails.AudioTokenCount)}", inputDetails.AudioTokenCount);
-            counts.Add($"{InputDetails}.{nameof(ChatInputTokenUsageDetails.CachedTokenCount)}", inputDetails.CachedTokenCount);
         }
 
         if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails outputDetails)
         {
             const string OutputDetails = nameof(ChatTokenUsage.OutputTokenDetails);
-            counts.Add($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}", outputDetails.ReasoningTokenCount);
             counts.Add($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.AudioTokenCount)}", outputDetails.AudioTokenCount);
             counts.Add($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.AcceptedPredictionTokenCount)}", outputDetails.AcceptedPredictionTokenCount);
             counts.Add($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.RejectedPredictionTokenCount)}", outputDetails.RejectedPredictionTokenCount);
@@ -708,7 +709,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
             case ChatMessageContentPartKind.Image:
                 aiContent =
-                    contentPart.ImageUri is not null ? new UriContent(contentPart.ImageUri, "image/*") :
+                    contentPart.ImageUri is not null ? new UriContent(contentPart.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(contentPart.ImageUri)) :
                     contentPart.ImageBytes is not null ? new DataContent(contentPart.ImageBytes.ToMemory(), contentPart.ImageBytesMediaType) :
                     null;
 
@@ -721,7 +722,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
             case ChatMessageContentPartKind.File:
                 aiContent =
-                    contentPart.FileId is not null ? new HostedFileContent(contentPart.FileId) :
+                    contentPart.FileId is not null ? new HostedFileContent(contentPart.FileId) { Name = contentPart.Filename } :
                     contentPart.FileBytes is not null ? new DataContent(contentPart.FileBytes.ToMemory(), contentPart.FileBytesMediaType) { Name = contentPart.Filename } :
                     null;
                 break;

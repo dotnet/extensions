@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -20,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 /// count. The reducer maintains system messages and excludes messages containing function call or function
 /// result content from summarization.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIChatReduction, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class SummarizingChatReducer : IChatReducer
 {
     private const string SummaryKey = "__summary__";
@@ -73,18 +75,24 @@ public sealed class SummarizingChatReducer : IChatReducer
     {
         _ = Throw.IfNull(messages);
 
-        var summarizedConversion = SummarizedConversation.FromChatMessages(messages);
-        if (summarizedConversion.ShouldResummarize(_targetCount, _thresholdCount))
+        var summarizedConversation = SummarizedConversation.FromChatMessages(messages);
+        var indexOfFirstMessageToKeep = summarizedConversation.FindIndexOfFirstMessageToKeep(_targetCount, _thresholdCount);
+        if (indexOfFirstMessageToKeep > 0)
         {
-            summarizedConversion = await summarizedConversion.ResummarizeAsync(
-                _chatClient, _targetCount, SummarizationPrompt, cancellationToken);
+            summarizedConversation = await summarizedConversation.ResummarizeAsync(
+                _chatClient,
+                indexOfFirstMessageToKeep,
+                SummarizationPrompt,
+                cancellationToken);
         }
 
-        return summarizedConversion.ToChatMessages();
+        return summarizedConversation.ToChatMessages();
     }
 
+    /// <summary>Represents a conversation with an optional summary.</summary>
     private readonly struct SummarizedConversation(string? summary, ChatMessage? systemMessage, IList<ChatMessage> unsummarizedMessages)
     {
+        /// <summary>Creates a <see cref="SummarizedConversation"/> from a list of chat messages.</summary>
         public static SummarizedConversation FromChatMessages(IEnumerable<ChatMessage> messages)
         {
             string? summary = null;
@@ -102,7 +110,7 @@ public sealed class SummarizingChatReducer : IChatReducer
                     unsummarizedMessages.Clear();
                     summary = summaryValue;
                 }
-                else if (!message.Contents.Any(m => m is FunctionCallContent or FunctionResultContent))
+                else
                 {
                     unsummarizedMessages.Add(message);
                 }
@@ -111,31 +119,68 @@ public sealed class SummarizingChatReducer : IChatReducer
             return new(summary, systemMessage, unsummarizedMessages);
         }
 
-        public bool ShouldResummarize(int targetCount, int thresholdCount)
-            => unsummarizedMessages.Count > targetCount + thresholdCount;
-
-        public async Task<SummarizedConversation> ResummarizeAsync(
-            IChatClient chatClient, int targetCount, string summarizationPrompt, CancellationToken cancellationToken)
+        /// <summary>Performs summarization by calling the chat client and updating the conversation state.</summary>
+        public async ValueTask<SummarizedConversation> ResummarizeAsync(
+            IChatClient chatClient, int indexOfFirstMessageToKeep, string summarizationPrompt, CancellationToken cancellationToken)
         {
-            var messagesToResummarize = unsummarizedMessages.Count - targetCount;
-            if (messagesToResummarize <= 0)
-            {
-                // We're at or below the target count - no need to resummarize.
-                return this;
-            }
+            Debug.Assert(indexOfFirstMessageToKeep > 0, "Expected positive index for first message to keep.");
 
-            var summarizerChatMessages = ToSummarizerChatMessages(messagesToResummarize, summarizationPrompt);
+            // Generate the summary by sending unsummarized messages to the chat client
+            var summarizerChatMessages = ToSummarizerChatMessages(indexOfFirstMessageToKeep, summarizationPrompt);
             var response = await chatClient.GetResponseAsync(summarizerChatMessages, cancellationToken: cancellationToken);
             var newSummary = response.Text;
 
-            var lastSummarizedMessage = unsummarizedMessages[messagesToResummarize - 1];
+            // Attach the summary metadata to the last message being summarized
+            // This is what allows us to build on previously-generated summaries
+            var lastSummarizedMessage = unsummarizedMessages[indexOfFirstMessageToKeep - 1];
             var additionalProperties = lastSummarizedMessage.AdditionalProperties ??= [];
             additionalProperties[SummaryKey] = newSummary;
 
-            var newUnsummarizedMessages = unsummarizedMessages.Skip(messagesToResummarize).ToList();
+            // Compute the new list of unsummarized messages
+            var newUnsummarizedMessages = unsummarizedMessages.Skip(indexOfFirstMessageToKeep).ToList();
             return new SummarizedConversation(newSummary, systemMessage, newUnsummarizedMessages);
         }
 
+        /// <summary>Determines the index of the first message to keep (not summarize) based on target and threshold counts.</summary>
+        public int FindIndexOfFirstMessageToKeep(int targetCount, int thresholdCount)
+        {
+            var earliestAllowedIndex = unsummarizedMessages.Count - thresholdCount - targetCount;
+            if (earliestAllowedIndex <= 0)
+            {
+                // Not enough messages to warrant summarization
+                return 0;
+            }
+
+            // Start at the ideal cut point (keeping exactly targetCount messages)
+            var indexOfFirstMessageToKeep = unsummarizedMessages.Count - targetCount;
+
+            // Move backward to skip over function call/result content at the boundary
+            // We want to keep complete function call sequences together with their responses
+            while (indexOfFirstMessageToKeep > 0)
+            {
+                if (!unsummarizedMessages[indexOfFirstMessageToKeep - 1].Contents.Any(IsToolRelatedContent))
+                {
+                    break;
+                }
+
+                indexOfFirstMessageToKeep--;
+            }
+
+            // Search backward within the threshold window to find a User message
+            // If found, cut right before it to avoid orphaning user questions from responses
+            for (var i = indexOfFirstMessageToKeep; i >= earliestAllowedIndex; i--)
+            {
+                if (unsummarizedMessages[i].Role == ChatRole.User)
+                {
+                    return i;
+                }
+            }
+
+            // No User message found within threshold - use the adjusted cut point
+            return indexOfFirstMessageToKeep;
+        }
+
+        /// <summary>Converts the summarized conversation back into a collection of chat messages.</summary>
         public IEnumerable<ChatMessage> ToChatMessages()
         {
             if (systemMessage is not null)
@@ -154,16 +199,33 @@ public sealed class SummarizingChatReducer : IChatReducer
             }
         }
 
-        private IEnumerable<ChatMessage> ToSummarizerChatMessages(int messagesToResummarize, string summarizationPrompt)
+        /// <summary>Returns whether the given <see cref="AIContent"/> relates to tool calling capabilities.</summary>
+        /// <remarks>
+        /// This method returns <see langword="true"/> for content types whose meaning depends on other related <see cref="AIContent"/> 
+        /// instances in the conversation, such as function calls that require corresponding results, or other tool interactions that span 
+        /// multiple messages. Such content should be kept together during summarization.
+        /// </remarks>
+        private static bool IsToolRelatedContent(AIContent content) => content
+            is FunctionCallContent
+            or FunctionResultContent
+            or UserInputRequestContent
+            or UserInputResponseContent;
+
+        /// <summary>Builds the list of messages to send to the chat client for summarization.</summary>
+        private IEnumerable<ChatMessage> ToSummarizerChatMessages(int indexOfFirstMessageToKeep, string summarizationPrompt)
         {
             if (summary is not null)
             {
                 yield return new ChatMessage(ChatRole.Assistant, summary);
             }
 
-            for (var i = 0; i < messagesToResummarize; i++)
+            for (var i = 0; i < indexOfFirstMessageToKeep; i++)
             {
-                yield return unsummarizedMessages[i];
+                var message = unsummarizedMessages[i];
+                if (!message.Contents.Any(IsToolRelatedContent))
+                {
+                    yield return message;
+                }
             }
 
             yield return new ChatMessage(ChatRole.System, summarizationPrompt);

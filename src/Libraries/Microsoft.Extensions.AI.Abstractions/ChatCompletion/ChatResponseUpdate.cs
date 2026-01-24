@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -20,9 +21,9 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// <para>
 /// The relationship between <see cref="ChatResponse"/> and <see cref="ChatResponseUpdate"/> is
-/// codified in the <see cref="ChatResponseExtensions.ToChatResponseAsync"/> and
+/// codified in the <see cref="ChatResponseExtensions.ToChatResponseAsync(IAsyncEnumerable{ChatResponseUpdate}, System.Threading.CancellationToken)"/> and
 /// <see cref="ChatResponse.ToChatResponseUpdates"/>, which enable bidirectional conversions
-/// between the two. Note, however, that the provided conversions may be lossy, for example if multiple
+/// between the two. Note, however, that the provided conversions might be lossy, for example, if multiple
 /// updates all have different <see cref="RawRepresentation"/> objects whereas there's only one slot for
 /// such an object available in <see cref="ChatResponse.RawRepresentation"/>. Similarly, if different
 /// updates provide different values for properties like <see cref="ModelId"/>,
@@ -57,6 +58,29 @@ public class ChatResponseUpdate
         Role = role;
         _contents = contents;
     }
+
+    /// <summary>
+    /// Creates a new ChatResponseUpdate instance that is a copy of the current object.
+    /// </summary>
+    /// <remarks>The cloned object is a shallow copy; reference-type properties will reference the same
+    /// objects as the original. Use this method to duplicate the response update for further modification without
+    /// affecting the original instance.</remarks>
+    /// <returns>A new ChatResponseUpdate object with the same property values as the current instance.</returns>
+    public ChatResponseUpdate Clone() =>
+        new()
+        {
+            AdditionalProperties = AdditionalProperties,
+            AuthorName = AuthorName,
+            Contents = Contents,
+            CreatedAt = CreatedAt,
+            ConversationId = ConversationId,
+            FinishReason = FinishReason,
+            MessageId = MessageId,
+            ModelId = ModelId,
+            RawRepresentation = RawRepresentation,
+            ResponseId = ResponseId,
+            Role = Role,
+        };
 
     /// <summary>Gets or sets the name of the author of the response update.</summary>
     public string? AuthorName
@@ -100,12 +124,12 @@ public class ChatResponseUpdate
 
     /// <summary>Gets or sets the ID of the message of which this update is a part.</summary>
     /// <remarks>
-    /// A single streaming response may be composed of multiple messages, each of which may be represented
+    /// A single streaming response might be composed of multiple messages, each of which might be represented
     /// by multiple updates. This property is used to group those updates together into messages.
     ///
-    /// Some providers may consider streaming responses to be a single message, and in that case
-    /// the value of this property may be the same as the response ID.
-    /// 
+    /// Some providers might consider streaming responses to be a single message, and in that case
+    /// the value of this property might be the same as the response ID.
+    ///
     /// This value is used when <see cref="ChatResponseExtensions.ToChatResponseAsync(IAsyncEnumerable{ChatResponseUpdate}, System.Threading.CancellationToken)"/>
     /// groups <see cref="ChatResponseUpdate"/> instances into <see cref="ChatMessage"/> instances.
     /// The value must be unique to each call to the underlying provider, and must be shared by
@@ -119,7 +143,7 @@ public class ChatResponseUpdate
     /// the input messages supplied to <see cref="IChatClient.GetStreamingResponseAsync"/> need only be the additional messages beyond
     /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
     /// and it should be used in a subsequent <see cref="ChatOptions.ConversationId"/> instead of supplying the same messages
-    /// (and this streaming message) as part of the <c>messages</c> parameter. Note that the value may or may not differ on every
+    /// (and this streaming message) as part of the <c>messages</c> parameter. Note that the value might differ on every
     /// response, depending on whether the underlying provider uses a fixed ID for each conversation or updates it for each message.
     /// </remarks>
     public string? ConversationId { get; set; }
@@ -135,6 +159,21 @@ public class ChatResponseUpdate
 
     /// <inheritdoc/>
     public override string ToString() => Text;
+
+    /// <summary>Gets or sets the continuation token for resuming the streamed chat response of which this update is a part.</summary>
+    /// <remarks>
+    /// <see cref="IChatClient"/> implementations that support background responses return
+    /// a continuation token on each update if background responses are allowed in <see cref="ChatOptions.AllowBackgroundResponses"/>.
+    /// However, for the last update, the token will be <see langword="null"/>.
+    /// <para>
+    /// This property should be used for stream resumption, where the continuation token of the latest received update should be
+    /// passed to <see cref="ChatOptions.ContinuationToken"/> on subsequent calls to <see cref="IChatClient.GetStreamingResponseAsync"/>
+    /// to resume streaming from the point of interruption.
+    /// </para>
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public ResponseContinuationToken? ContinuationToken { get; set; }
 
     /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

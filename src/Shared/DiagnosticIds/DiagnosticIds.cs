@@ -45,6 +45,20 @@ internal static class DiagnosticIds
         internal const string DocumentDb = "EXTEXP0011";
         internal const string AutoActivation = "EXTEXP0012";
         internal const string HttpLogging = "EXTEXP0013";
+
+        // All AI experiments share a diagnostic ID but have different
+        // constants to manage which experiment each API belongs to.
+        internal const string AIImageGeneration = AIExperiments;
+        internal const string AISpeechToText = AIExperiments;
+        internal const string AIMcpServers = AIExperiments;
+        internal const string AIFunctionApprovals = AIExperiments;
+        internal const string AIToolReduction = AIExperiments;
+        internal const string AIChatReduction = AIExperiments;
+        internal const string AIResponseContinuations = AIExperiments;
+        internal const string AICodeInterpreter = AIExperiments;
+        internal const string AIRealTime = AIExperiments;
+
+        private const string AIExperiments = "MEAI001";
     }
 
     internal static class LoggerMessage
@@ -123,7 +137,11 @@ internal static class DiagnosticIds
     internal static class Obsoletions
     {
         internal const string NonObservableResourceMonitoringApiDiagId = "EXTOBS0001";
-        internal const string NonObservableResourceMonitoringApiMessage = "This API is obsolete and will be removed in a future version. Consider using Resource Monitoring observable instruments.";
+        internal const string ObsoleteTelemetryApiDiagId = "EXTOBS0002";
+        internal const string NonObservableResourceMonitoringApiMessage =
+            "This API is obsolete and will be removed in a future version. Consider using Resource Monitoring observable instruments.";
+        internal const string ObsoleteTelemetryApiMessage =
+            "This API is obsolete and will be removed in a future version. Instead of the AddServiceLogEnricher() methods, consider using the respective AddApplicationLogEnricher() methods.";
     }
 }
 

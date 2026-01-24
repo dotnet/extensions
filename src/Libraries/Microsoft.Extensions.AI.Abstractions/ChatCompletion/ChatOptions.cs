@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -25,8 +27,10 @@ public class ChatOptions
         }
 
         AdditionalProperties = other.AdditionalProperties?.Clone();
+        AllowBackgroundResponses = other.AllowBackgroundResponses;
         AllowMultipleToolCalls = other.AllowMultipleToolCalls;
         ConversationId = other.ConversationId;
+        ContinuationToken = other.ContinuationToken;
         FrequencyPenalty = other.FrequencyPenalty;
         Instructions = other.Instructions;
         MaxOutputTokens = other.MaxOutputTokens;
@@ -130,24 +134,24 @@ public class ChatOptions
     public IList<string>? StopSequences { get; set; }
 
     /// <summary>
-    /// Gets or sets a flag to indicate whether a single response is allowed to include multiple tool calls.
-    /// If <see langword="false"/>, the <see cref="IChatClient"/> is asked to return a maximum of one tool call per request.
-    /// If <see langword="true"/>, there is no limit.
-    /// If <see langword="null"/>, the provider may select its own default.
+    /// Gets or sets a value that indicates whether a single response is allowed to include multiple tool calls.
     /// </summary>
+    /// <value>
+    /// <see langword="true"/> for no limit. <see langword="false"/> if the <see cref="IChatClient"/> is asked to return a maximum of one tool call per request. If <see langword="null"/>, the provider can select its own default.
+    /// </value>
     /// <remarks>
     /// <para>
     /// When used with function calling middleware, this does not affect the ability to perform multiple function calls in sequence.
     /// It only affects the number of function calls within a single iteration of the function calling loop.
     /// </para>
     /// <para>
-    /// The underlying provider is not guaranteed to support or honor this flag. For example it may choose to ignore it and return multiple tool calls regardless.
+    /// The underlying provider is not guaranteed to support or honor this flag. For example it might choose to ignore it and return multiple tool calls regardless.
     /// </para>
     /// </remarks>
     public bool? AllowMultipleToolCalls { get; set; }
 
     /// <summary>Gets or sets the tool mode for the chat request.</summary>
-    /// <remarks>The default value is <see langword="null"/>, which is treated the same as <see cref="ChatToolMode.Auto"/>.</remarks>
+    /// <value>The default is <see langword="null"/>, which is treated the same as <see cref="ChatToolMode.Auto"/>.</value>
     public ChatToolMode? ToolMode { get; set; }
 
     /// <summary>Gets or sets the list of tools to include with a chat request.</summary>
@@ -155,21 +159,62 @@ public class ChatOptions
     [JsonIgnore]
     public IList<AITool>? Tools { get; set; }
 
+    /// <summary>Gets or sets a value indicating whether the background responses are allowed.</summary>
+    /// <remarks>
+    /// <para>
+    /// Background responses allow running long-running operations or tasks asynchronously in the background that can be resumed by streaming APIs
+    /// and polled for completion by non-streaming APIs.
+    /// </para>
+    /// <para>
+    /// When this property is set to <see langword="true" />, non-streaming APIs have permission to start a background operation and return an initial
+    /// response with a continuation token. Subsequent calls to the same API should be made in a polling manner with
+    /// the continuation token to get the final result of the operation.
+    /// </para>
+    /// <para>
+    /// When this property is set to <see langword="true" />, streaming APIs are also permitted to start a background operation and begin streaming
+    /// response updates until the operation is completed. If the streaming connection is interrupted, the
+    /// continuation token obtained from the last update that has one should be supplied to a subsequent call to the same streaming API
+    /// to resume the stream from the point of interruption and continue receiving updates until the operation is completed.
+    /// </para>
+    /// <para>
+    /// This property only takes effect if the implementation it's used with supports background responses.
+    /// If the implementation does not support background responses, this property will be ignored.
+    /// </para>
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public bool? AllowBackgroundResponses { get; set; }
+
+    /// <summary>Gets or sets the continuation token for resuming and getting the result of the chat response identified by this token.</summary>
+    /// <remarks>
+    /// This property is used for background responses that can be activated via the <see cref="AllowBackgroundResponses"/>
+    /// property if the <see cref="IChatClient"/> implementation supports them.
+    /// Streamed background responses, such as those returned by default by <see cref="IChatClient.GetStreamingResponseAsync"/>,
+    /// can be resumed if interrupted. This means that a continuation token obtained from the <see cref="ChatResponseUpdate.ContinuationToken"/>
+    /// of an update just before the interruption occurred can be passed to this property to resume the stream from the point of interruption.
+    /// Non-streamed background responses, such as those returned by <see cref="IChatClient.GetResponseAsync"/>,
+    /// can be polled for completion by obtaining the token from the <see cref="ChatResponse.ContinuationToken"/> property
+    /// and passing it to this property on subsequent calls to <see cref="IChatClient.GetResponseAsync"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public ResponseContinuationToken? ContinuationToken { get; set; }
+
     /// <summary>
     /// Gets or sets a callback responsible for creating the raw representation of the chat options from an underlying implementation.
     /// </summary>
     /// <remarks>
-    /// The underlying <see cref="IChatClient" /> implementation may have its own representation of options.
+    /// The underlying <see cref="IChatClient" /> implementation might have its own representation of options.
     /// When <see cref="IChatClient.GetResponseAsync" /> or <see cref="IChatClient.GetStreamingResponseAsync" />
-    /// is invoked with a <see cref="ChatOptions" />, that implementation may convert the provided options into
+    /// is invoked with a <see cref="ChatOptions" />, that implementation might convert the provided options into
     /// its own representation in order to use it while performing the operation. For situations where a consumer knows
     /// which concrete <see cref="IChatClient" /> is being used and how it represents options, a new instance of that
-    /// implementation-specific options type may be returned by this callback, for the <see cref="IChatClient" />
-    /// implementation to use instead of creating a new instance. Such implementations may mutate the supplied options
+    /// implementation-specific options type can be returned by this callback for the <see cref="IChatClient" />
+    /// implementation to use, instead of creating a new instance. Such implementations might mutate the supplied options
     /// instance further based on other settings supplied on this <see cref="ChatOptions" /> instance or from other inputs,
-    /// like the enumerable of <see cref="ChatMessage"/>s, therefore, it is <b>strongly recommended</b> to not return shared instances
+    /// like the enumerable of <see cref="ChatMessage"/>s. Therefore, it is <b>strongly recommended</b> to not return shared instances
     /// and instead make the callback return a new instance on each call.
-    /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly-typed
+    /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly typed
     /// properties on <see cref="ChatOptions" />.
     /// </remarks>
     [JsonIgnore]

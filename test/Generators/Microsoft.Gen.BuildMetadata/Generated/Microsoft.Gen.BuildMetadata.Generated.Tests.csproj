@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.BuildMetadata.Test</RootNamespace>
+    <Description>Tests for Microsoft.Gen.BuildMetadata.</Description>
+  </PropertyGroup>
+
+   <PropertyGroup>
+    <TargetFrameworks>$(TestNetCoreTargetFrameworks)</TargetFrameworks>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
+    <NoWarn>$(NoWarn);IDE0161;S1144</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Generators\Microsoft.Gen.BuildMetadata\Microsoft.Gen.BuildMetadata.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" ProjectUnderTest="true"/>
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.AmbientMetadata.Build\Microsoft.Extensions.AmbientMetadata.Build.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />
+  </ItemGroup>
+
+   <ItemGroup>
+    <Compile Include="..\TestClasses\**\*.cs" LinkBase="TestClasses" />
+    <Compile Include="..\TestClasses\**\*.txt" LinkBase="TestClasses" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="..\TestClasses\TestStartup.cs" />
+  </ItemGroup>
+
+  <Import Project="Microsoft.Gen.BuildMetadata.Generated.Tests.props" />
+</Project>

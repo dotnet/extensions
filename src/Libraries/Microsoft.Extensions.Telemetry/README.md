@@ -126,16 +126,16 @@ revisited in future. Namely, this library uses `Microsoft.Extensions.Logging.Abs
 - `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord.ManagedThreadId`
 - `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord.MessageTemplate`
 
-### Service Log Enrichment
+### Application Log Enrichment
 
-Enriches logs with application-specific information based on `ApplicationMetadata` information. The bellow calls will add the service log enricher to the service collection.
+Enriches logs with application-specific information based on `ApplicationMetadata` information. The bellow calls will add the application log enricher to the service collection.
 
 ```csharp
 // Add service log enricher with default settings
-builder.Services.AddServiceLogEnricher();
+builder.Services.AddApplicationLogEnricher();
 
 // Or configure with options
-builder.Services.AddServiceLogEnricher(options =>
+builder.Services.AddApplicationLogEnricher(options =>
 {
     options.ApplicationName = true;
     options.BuildVersion = true;
@@ -197,7 +197,7 @@ builder.Logging.EnableEnrichment(options =>
     options.UseFileInfoForStackTraces = true;
 });
 
-builder.Services.AddServiceLogEnricher(); // <- This call is required in order for the enricher to be added into the service collection.
+builder.Services.AddApplicationLogEnricher(); // <- This call is required in order for the enricher to be added into the service collection.
 
 // Enable log redaction
 builder.Logging.EnableRedaction(options =>

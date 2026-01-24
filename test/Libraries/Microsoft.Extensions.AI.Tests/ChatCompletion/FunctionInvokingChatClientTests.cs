@@ -15,6 +15,7 @@ using OpenTelemetry.Trace;
 using Xunit;
 
 #pragma warning disable SA1118 // Parameter should not span multiple lines
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
@@ -394,6 +395,179 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(maxIterations, actualCallCount);
     }
 
+    [Fact]
+    public async Task LastIteration_RemovesFunctionDeclarationTools_NonStreaming()
+    {
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 2;
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                capturedOptions.Add(options?.Clone());
+
+                var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent($"callId{capturedOptions.Count}", "Func1")]);
+                return Task.FromResult(new ChatResponse(message));
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result", "Func1")],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        await client.GetResponseAsync("hello", options);
+
+        Assert.Equal(maxIterations + 1, capturedOptions.Count);
+
+        for (int i = 0; i < maxIterations; i++)
+        {
+            Assert.NotNull(capturedOptions[i]?.Tools);
+            Assert.Single(capturedOptions[i]!.Tools!);
+        }
+
+        var lastOptions = capturedOptions[maxIterations];
+        Assert.NotNull(lastOptions);
+        Assert.Null(lastOptions!.Tools);
+        Assert.Null(lastOptions.ToolMode);
+    }
+
+    [Fact]
+    public async Task LastIteration_RemovesFunctionDeclarationTools_Streaming()
+    {
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 2;
+
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                capturedOptions.Add(options?.Clone());
+
+                var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent($"callId{capturedOptions.Count}", "Func1")]);
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result", "Func1")],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        await client.GetStreamingResponseAsync("hello", options).ToChatResponseAsync();
+
+        Assert.Equal(maxIterations + 1, capturedOptions.Count);
+
+        for (int i = 0; i < maxIterations; i++)
+        {
+            Assert.NotNull(capturedOptions[i]?.Tools);
+            Assert.Single(capturedOptions[i]!.Tools!);
+        }
+
+        var lastOptions = capturedOptions[maxIterations];
+        Assert.NotNull(lastOptions);
+        Assert.Null(lastOptions!.Tools);
+        Assert.Null(lastOptions.ToolMode);
+    }
+
+    [Fact]
+    public async Task LastIteration_PreservesNonFunctionDeclarationTools()
+    {
+        var hostedTool = new HostedWebSearchTool();
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 1;
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                capturedOptions.Add(options?.Clone());
+
+                if (capturedOptions.Count == 1)
+                {
+                    var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]);
+                    return Task.FromResult(new ChatResponse(message));
+                }
+                else
+                {
+                    var message = new ChatMessage(ChatRole.Assistant, "Done");
+                    return Task.FromResult(new ChatResponse(message));
+                }
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result", "Func1"), hostedTool],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        await client.GetResponseAsync("hello", options);
+
+        Assert.Equal(2, capturedOptions.Count);
+        Assert.NotNull(capturedOptions[0]?.Tools);
+        Assert.Equal(2, capturedOptions[0]!.Tools!.Count);
+
+        Assert.NotNull(capturedOptions[1]?.Tools);
+        Assert.Single(capturedOptions[1]!.Tools!);
+        Assert.IsType<HostedWebSearchTool>(capturedOptions[1]!.Tools![0]);
+        Assert.NotNull(capturedOptions[1]?.ToolMode);
+    }
+
+    [Fact]
+    public async Task LastIteration_DoesNotModifyOriginalOptions()
+    {
+        List<ChatOptions?> capturedOptions = [];
+        var maxIterations = 1;
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                capturedOptions.Add(options);
+                var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]);
+                return Task.FromResult(new ChatResponse(message));
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            MaximumIterationsPerRequest = maxIterations
+        };
+
+        var originalTool = AIFunctionFactory.Create(() => "Result", "Func1");
+        var originalOptions = new ChatOptions
+        {
+            Tools = [originalTool],
+            ToolMode = ChatToolMode.Auto
+        };
+
+        await client.GetResponseAsync("hello", originalOptions);
+
+        Assert.NotNull(originalOptions.Tools);
+        Assert.Single(originalOptions.Tools);
+        Assert.Same(originalTool, originalOptions.Tools[0]);
+        Assert.NotNull(originalOptions.ToolMode);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -678,11 +852,11 @@ public class FunctionInvokingChatClientTests
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
             new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName) { EnableSensitiveData = enableSensitiveData }));
 
-        await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure), streaming: false);
+        await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure));
 
-        await InvokeAsync(() => InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure), streaming: true);
+        await InvokeAsync(() => InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure));
 
-        async Task InvokeAsync(Func<Task> work, bool streaming)
+        async Task InvokeAsync(Func<Task> work)
         {
             var activities = new List<Activity>();
             using TracerProvider? tracerProvider = enableTelemetry ?
@@ -700,7 +874,7 @@ public class FunctionInvokingChatClientTests
                     activity => Assert.Equal("chat", activity.DisplayName),
                     activity => Assert.Equal("execute_tool Func1", activity.DisplayName),
                     activity => Assert.Equal("chat", activity.DisplayName),
-                    activity => Assert.Equal(streaming ? "FunctionInvokingChatClient.GetStreamingResponseAsync" : "FunctionInvokingChatClient.GetResponseAsync", activity.DisplayName));
+                    activity => Assert.Equal("orchestrate_tools", activity.DisplayName));
 
                 var executeTool = activities[1];
                 if (enableSensitiveData)
@@ -1194,6 +1368,304 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(0, invoked);
     }
 
+    [Fact]
+    public async Task ClonesChatOptionsAndResetContinuationTokenForBackgroundResponsesAsync()
+    {
+        ChatOptions? actualChatOptions = null;
+
+        using var innerChatClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+            {
+                actualChatOptions = chatOptions;
+
+                List<ChatMessage> messages = [];
+
+                // Simulate the model returning a function call for the first call only
+                if (!chatContents.Any(m => m.Contents.OfType<FunctionCallContent>().Any()))
+                {
+                    messages.Add(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]));
+                }
+
+                return Task.FromResult(new ChatResponse { Messages = messages });
+            }
+        };
+
+        using var chatClient = new FunctionInvokingChatClient(innerChatClient);
+
+        var originalChatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { }, "Func1")],
+            ContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 }),
+        };
+
+        await chatClient.GetResponseAsync("hi", originalChatOptions);
+
+        // The original options should be cloned and have a null ContinuationToken
+        Assert.NotSame(originalChatOptions, actualChatOptions);
+        Assert.Null(actualChatOptions!.ContinuationToken);
+    }
+
+    [Theory]
+    [InlineData("invoke_agent")]
+    [InlineData("invoke_agent my_agent")]
+    [InlineData("invoke_agent ")]
+    public async Task DoesNotCreateOrchestrateToolsSpanWhenInvokeAgentIsParent(string displayName)
+    {
+        string agentSourceName = Guid.NewGuid().ToString();
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
+
+        var activities = new List<Activity>();
+
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(agentSourceName)
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using (var agentSource = new ActivitySource(agentSourceName))
+        using (var invokeAgentActivity = agentSource.StartActivity(displayName))
+        {
+            Assert.NotNull(invokeAgentActivity);
+            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+        }
+
+        Assert.DoesNotContain(activities, a => a.DisplayName == "orchestrate_tools");
+        Assert.Contains(activities, a => a.DisplayName == "chat");
+        Assert.Contains(activities, a => a.DisplayName == "execute_tool Func1");
+
+        var invokeAgent = Assert.Single(activities, a => a.DisplayName == displayName);
+        var childActivities = activities.Where(a => a != invokeAgent).ToList();
+        Assert.All(childActivities, activity => Assert.Same(invokeAgent, activity.Parent));
+    }
+
+    [Theory]
+    [InlineData("invoke_agen")]
+    [InlineData("invoke_agent_extra")]
+    [InlineData("invoke_agentx")]
+    public async Task CreatesOrchestrateToolsSpanWhenParentIsNotInvokeAgent(string displayName)
+    {
+        string agentSourceName = Guid.NewGuid().ToString();
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
+
+        var activities = new List<Activity>();
+
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(agentSourceName)
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using (var agentSource = new ActivitySource(agentSourceName))
+        using (var invokeAgentActivity = agentSource.StartActivity(displayName))
+        {
+            Assert.NotNull(invokeAgentActivity);
+            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+        }
+
+        Assert.Contains(activities, a => a.DisplayName == "orchestrate_tools");
+    }
+
+    [Fact]
+    public async Task UsesAgentActivitySourceWhenInvokeAgentIsParent()
+    {
+        string agentSourceName = Guid.NewGuid().ToString();
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
+
+        var activities = new List<Activity>();
+
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(agentSourceName)
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using (var agentSource = new ActivitySource(agentSourceName))
+        using (var invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
+        {
+            Assert.NotNull(invokeAgentActivity);
+            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+        }
+
+        var executeToolActivities = activities.Where(a => a.DisplayName == "execute_tool Func1").ToList();
+        Assert.NotEmpty(executeToolActivities);
+        Assert.All(executeToolActivities, executeTool => Assert.Equal(agentSourceName, executeTool.Source.Name));
+    }
+
+    public static IEnumerable<object[]> SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent_MemberData() =>
+        from invokeAgentSensitiveData in new bool?[] { null, false, true }
+        from innerOpenTelemetryChatClient in new bool?[] { null, false, true }
+        select new object?[] { invokeAgentSensitiveData, innerOpenTelemetryChatClient };
+
+    [Theory]
+    [MemberData(nameof(SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent_MemberData))]
+    public async Task SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent(
+        bool? invokeAgentSensitiveData, bool? innerOpenTelemetryChatClient)
+    {
+        string agentSourceName = Guid.NewGuid().ToString();
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg1"] = "secret" })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        var activities = new List<Activity>();
+
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(agentSourceName)
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using (var agentSource = new ActivitySource(agentSourceName))
+        using (var invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
+        {
+            if (invokeAgentSensitiveData is not null)
+            {
+                invokeAgentActivity?.SetCustomProperty("__EnableSensitiveData__", invokeAgentSensitiveData is true ? "true" : "false");
+            }
+
+            await InvokeAndAssertAsync(options, plan, configurePipeline: b =>
+            {
+                b.UseFunctionInvocation();
+
+                if (innerOpenTelemetryChatClient is not null)
+                {
+                    b.UseOpenTelemetry(sourceName: clientSourceName, configure: c =>
+                    {
+                        c.EnableSensitiveData = innerOpenTelemetryChatClient.Value;
+                    });
+                }
+
+                return b;
+            });
+        }
+
+        var executeToolActivity = Assert.Single(activities, a => a.DisplayName == "execute_tool Func1");
+
+        var hasArguments = executeToolActivity.Tags.Any(t => t.Key == "gen_ai.tool.call.arguments");
+        var hasResult = executeToolActivity.Tags.Any(t => t.Key == "gen_ai.tool.call.result");
+
+        if (invokeAgentSensitiveData is true)
+        {
+            Assert.True(hasArguments, "Expected arguments to be logged when agent EnableSensitiveData is true");
+            Assert.True(hasResult, "Expected result to be logged when agent EnableSensitiveData is true");
+
+            var argsTag = Assert.Single(executeToolActivity.Tags, t => t.Key == "gen_ai.tool.call.arguments");
+            Assert.Contains("arg1", argsTag.Value);
+        }
+        else
+        {
+            Assert.False(hasArguments, "Expected arguments NOT to be logged when agent EnableSensitiveData is false");
+            Assert.False(hasResult, "Expected result NOT to be logged when agent EnableSensitiveData is false");
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreatesOrchestrateToolsSpanWhenNoInvokeAgentParent(bool streaming)
+    {
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
+
+        var activities = new List<Activity>();
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        if (streaming)
+        {
+            await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
+        }
+        else
+        {
+            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+        }
+
+        var orchestrateTools = Assert.Single(activities, a => a.DisplayName == "orchestrate_tools");
+
+        var executeTools = activities.Where(a => a.DisplayName.StartsWith("execute_tool")).ToList();
+        Assert.NotEmpty(executeTools);
+        foreach (var executeTool in executeTools)
+        {
+            Assert.Same(orchestrateTools, executeTool.Parent);
+        }
+    }
+
     private sealed class CustomSynchronizationContext : SynchronizationContext
     {
         public override void Post(SendOrPostCallback d, object? state)
@@ -1324,5 +1796,900 @@ public class FunctionInvokingChatClientTests
         {
             yield return item;
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RespectsChatOptionsToolsModificationsByFunctionTool_AddTool(bool streaming)
+    {
+        // This test validates the scenario described in the issue:
+        // 1. FunctionA is called
+        // 2. FunctionA modifies ChatOptions.Tools by adding FunctionB
+        // 3. The inner client returns a call to FunctionB
+        // 4. FunctionB should be successfully invoked
+
+        AIFunction functionB = AIFunctionFactory.Create(() => "FunctionB result", "FunctionB");
+        bool functionBAdded = false;
+
+        AIFunction functionA = AIFunctionFactory.Create(
+            () =>
+            {
+                // Add FunctionB to ChatOptions.Tools during invocation
+                var context = FunctionInvokingChatClient.CurrentContext!;
+                context.Options!.Tools!.Add(functionB);
+                functionBAdded = true;
+                return "FunctionA result";
+            }, "FunctionA");
+
+        var options = new ChatOptions
+        {
+            Tools = [functionA]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    // First call - return FunctionA call
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")])]);
+                }
+                else if (callCount == 2)
+                {
+                    // Second call - after FunctionA modifies tools, return FunctionB call
+                    Assert.True(functionBAdded, "FunctionA should have added FunctionB before second call");
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")])]);
+                }
+                else
+                {
+                    // Third call - return final response
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                if (callCount == 1)
+                {
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBAdded, "FunctionA should have added FunctionB before second call");
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")]);
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                }
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        if (streaming)
+        {
+            var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>().Any(frc => frc.Result?.ToString() == "FunctionB result"));
+        }
+        else
+        {
+            var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>().Any(frc => frc.Result?.ToString() == "FunctionB result"));
+        }
+
+        Assert.Equal(3, callCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RespectsChatOptionsToolsModificationsByFunctionTool_RemoveTool(bool streaming)
+    {
+        // This test validates that removing a tool during function invocation is respected.
+        // After FunctionA removes FunctionB, calls to FunctionB should result in "not found".
+
+        AIFunction functionB = AIFunctionFactory.Create(() => "FunctionB result", "FunctionB");
+        bool functionBRemoved = false;
+
+        AIFunction functionA = AIFunctionFactory.Create(
+            () =>
+            {
+                // Remove FunctionB from ChatOptions.Tools during invocation
+                var context = FunctionInvokingChatClient.CurrentContext!;
+                context.Options!.Tools!.Remove(functionB);
+                functionBRemoved = true;
+                return "FunctionA result";
+            }, "FunctionA");
+
+        var options = new ChatOptions
+        {
+            Tools = [functionA, functionB]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    // First call - return FunctionA call
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")])]);
+                }
+                else if (callCount == 2)
+                {
+                    // Second call - after FunctionA removes FunctionB, still try to call it
+                    Assert.True(functionBRemoved, "FunctionA should have removed FunctionB before second call");
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")])]);
+                }
+                else
+                {
+                    // Third call - return final response
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                if (callCount == 1)
+                {
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBRemoved, "FunctionA should have removed FunctionB before second call");
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")]);
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                }
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        if (streaming)
+        {
+            var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+
+            // FunctionB should result in "not found" error - the error message format is: "Error: Requested function \"FunctionB\" not found."
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString()?.Contains("FunctionB", StringComparison.Ordinal) == true &&
+                            frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
+        }
+        else
+        {
+            var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+
+            // FunctionB should result in "not found" error - the error message format is: "Error: Requested function \"FunctionB\" not found."
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString()?.Contains("FunctionB", StringComparison.Ordinal) == true &&
+                            frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
+        }
+
+        Assert.Equal(3, callCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RespectsChatOptionsToolsModificationsByFunctionTool_ReplaceTool(bool streaming)
+    {
+        // This test validates that replacing a tool during function invocation is respected.
+
+        AIFunction originalFunctionB = AIFunctionFactory.Create(() => "Original FunctionB result", "FunctionB");
+        AIFunction replacementFunctionB = AIFunctionFactory.Create(() => "Replacement FunctionB result", "FunctionB");
+        bool functionBReplaced = false;
+
+        AIFunction functionA = AIFunctionFactory.Create(
+            () =>
+            {
+                // Replace FunctionB with a different implementation
+                var context = FunctionInvokingChatClient.CurrentContext!;
+                var tools = context.Options!.Tools!;
+                int index = tools.IndexOf(originalFunctionB);
+
+                // The original FunctionB should be in the tools list
+                Assert.True(index >= 0, "originalFunctionB should be in the tools list");
+                tools[index] = replacementFunctionB;
+                functionBReplaced = true;
+
+                return "FunctionA result";
+            }, "FunctionA");
+
+        var options = new ChatOptions
+        {
+            Tools = [functionA, originalFunctionB]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")])]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBReplaced, "FunctionA should have replaced FunctionB before second call");
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")])]);
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                if (callCount == 1)
+                {
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBReplaced, "FunctionA should have replaced FunctionB before second call");
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")]);
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                }
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        if (streaming)
+        {
+            var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+
+            // Should use the replacement function, not the original
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "Replacement FunctionB result"));
+            Assert.DoesNotContain(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "Original FunctionB result"));
+        }
+        else
+        {
+            var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "Replacement FunctionB result"));
+            Assert.DoesNotContain(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "Original FunctionB result"));
+        }
+
+        Assert.Equal(3, callCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RespectsChatOptionsToolsModificationsByFunctionTool_AddToolWithAdditionalTools(bool streaming)
+    {
+        // This test validates the scenario when AdditionalTools are present and a tool is added to ChatOptions.Tools
+
+        AIFunction additionalTool = AIFunctionFactory.Create(() => "AdditionalTool result", "AdditionalTool");
+        AIFunction functionB = AIFunctionFactory.Create(() => "FunctionB result", "FunctionB");
+        bool functionBAdded = false;
+
+        AIFunction functionA = AIFunctionFactory.Create(
+            () =>
+            {
+                var context = FunctionInvokingChatClient.CurrentContext!;
+                context.Options!.Tools!.Add(functionB);
+                functionBAdded = true;
+                return "FunctionA result";
+            }, "FunctionA");
+
+        var options = new ChatOptions
+        {
+            Tools = [functionA]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")])]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBAdded);
+
+                    // Call both the newly added function and the additional tool
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB"),
+                         new FunctionCallContent("callId3", "AdditionalTool")])]);
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                if (callCount == 1)
+                {
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBAdded);
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB"),
+                         new FunctionCallContent("callId3", "AdditionalTool")]);
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                }
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            AdditionalTools = [additionalTool]
+        };
+
+        if (streaming)
+        {
+            var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "FunctionB result"));
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "AdditionalTool result"));
+        }
+        else
+        {
+            var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "FunctionB result"));
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "AdditionalTool result"));
+        }
+
+        Assert.Equal(3, callCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RespectsChatOptionsToolsModificationsByFunctionTool_AddToolOverridingAdditionalTool(bool streaming)
+    {
+        // This test validates that a tool added to ChatOptions.Tools takes precedence over an AdditionalTool with the same name
+
+        AIFunction additionalToolSameName = AIFunctionFactory.Create(() => "AdditionalTool version", "SharedName");
+        AIFunction addedToolSameName = AIFunctionFactory.Create(() => "Added version", "SharedName");
+        bool toolAdded = false;
+
+        AIFunction functionA = AIFunctionFactory.Create(
+            () =>
+            {
+                // Add a tool with the same name as an additional tool - should override it
+                var context = FunctionInvokingChatClient.CurrentContext!;
+                context.Options!.Tools!.Add(addedToolSameName);
+                toolAdded = true;
+                return "FunctionA result";
+            }, "FunctionA");
+
+        var options = new ChatOptions
+        {
+            Tools = [functionA]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")])]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(toolAdded);
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "SharedName")])]);
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                if (callCount == 1)
+                {
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(toolAdded);
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "SharedName")]);
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                }
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            AdditionalTools = [additionalToolSameName]
+        };
+
+        if (streaming)
+        {
+            var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+
+            // Should use the added tool, not the additional tool
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "Added version"));
+            Assert.DoesNotContain(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "AdditionalTool version"));
+        }
+        else
+        {
+            var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "Added version"));
+            Assert.DoesNotContain(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "AdditionalTool version"));
+        }
+
+        Assert.Equal(3, callCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToolMapNotRefreshedWhenToolsUnchanged(bool streaming)
+    {
+        // This test validates that function invocation works correctly across multiple
+        // iterations when tools haven't been modified
+
+        int functionAInvocations = 0;
+        AIFunction functionA = AIFunctionFactory.Create(
+            () =>
+            {
+                functionAInvocations++;
+                return $"FunctionA result {functionAInvocations}";
+            }, "FunctionA");
+
+        var options = new ChatOptions
+        {
+            Tools = [functionA]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount <= 3)
+                {
+                    // Keep returning function calls
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent($"callId{callCount}", "FunctionA")])]);
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                if (callCount <= 3)
+                {
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent($"callId{callCount}", "FunctionA")]);
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                }
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        if (streaming)
+        {
+            var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+            Assert.Equal(3, functionAInvocations);
+        }
+        else
+        {
+            var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+            Assert.Equal(3, functionAInvocations);
+        }
+
+        Assert.Equal(4, callCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RespectsChatOptionsToolsModificationsByFunctionTool_ClearAllTools(bool streaming)
+    {
+        // This test validates that clearing all tools during function invocation is respected.
+
+        AIFunction functionB = AIFunctionFactory.Create(() => "FunctionB result", "FunctionB");
+        bool toolsCleared = false;
+
+        AIFunction functionA = AIFunctionFactory.Create(
+            () =>
+            {
+                // Clear all tools
+                var context = FunctionInvokingChatClient.CurrentContext!;
+                context.Options!.Tools!.Clear();
+                toolsCleared = true;
+                return "FunctionA result";
+            }, "FunctionA");
+
+        var options = new ChatOptions
+        {
+            Tools = [functionA, functionB]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")])]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(toolsCleared);
+
+                    // Try to call FunctionB after tools were cleared
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")])]);
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                if (callCount == 1)
+                {
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(toolsCleared);
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")]);
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                }
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        if (streaming)
+        {
+            var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+
+            // FunctionB should result in "not found" error - the error message format is: "Error: Requested function \"FunctionB\" not found."
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString()?.Contains("FunctionB", StringComparison.Ordinal) == true &&
+                            frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
+        }
+        else
+        {
+            var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+
+            // FunctionB should result in "not found" error - the error message format is: "Error: Requested function \"FunctionB\" not found."
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString()?.Contains("FunctionB", StringComparison.Ordinal) == true &&
+                            frc.Result?.ToString()?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true));
+        }
+
+        Assert.Equal(3, callCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RespectsChatOptionsToolsModificationsByFunctionTool_AddApprovalRequiredTool(bool streaming)
+    {
+        // This test validates that adding an approval-required function during invocation is respected.
+        // The added function should require approval on subsequent calls.
+
+        AIFunction functionB = new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "FunctionB result", "FunctionB"));
+        bool functionBAdded = false;
+
+        AIFunction functionA = AIFunctionFactory.Create(
+            () =>
+            {
+                // Add an approval-required FunctionB during invocation
+                var context = FunctionInvokingChatClient.CurrentContext!;
+                context.Options!.Tools!.Add(functionB);
+                functionBAdded = true;
+                return "FunctionA result";
+            }, "FunctionA");
+
+        var options = new ChatOptions
+        {
+            Tools = [functionA]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")])]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBAdded, "FunctionA should have added FunctionB before second call");
+
+                    // Try to call FunctionB - it should require approval
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")])]);
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                if (callCount == 1)
+                {
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBAdded, "FunctionA should have added FunctionB before second call");
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")]);
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                }
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        if (streaming)
+        {
+            var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+
+            // FunctionB should have been converted to an approval request (not executed)
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+
+            // And FunctionA should have been executed
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>().Any(frc => frc.Result?.ToString() == "FunctionA result"));
+        }
+        else
+        {
+            var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+
+            // FunctionB should have been converted to an approval request (not executed)
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+
+            // And FunctionA should have been executed
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>().Any(frc => frc.Result?.ToString() == "FunctionA result"));
+        }
+
+        Assert.Equal(2, callCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RespectsChatOptionsToolsModificationsByFunctionTool_ReplaceWithApprovalRequiredTool(bool streaming)
+    {
+        // This test validates that replacing a regular function with an approval-required function during invocation is respected.
+
+        AIFunction originalFunctionB = AIFunctionFactory.Create(() => "Original FunctionB result", "FunctionB");
+        AIFunction replacementFunctionB = new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Replacement FunctionB result", "FunctionB"));
+        bool functionBReplaced = false;
+
+        AIFunction functionA = AIFunctionFactory.Create(
+            () =>
+            {
+                // Replace FunctionB with an approval-required version
+                var context = FunctionInvokingChatClient.CurrentContext!;
+                var tools = context.Options!.Tools!;
+                int index = tools.IndexOf(originalFunctionB);
+                Assert.True(index >= 0, "originalFunctionB should be in the tools list");
+                tools[index] = replacementFunctionB;
+                functionBReplaced = true;
+                return "FunctionA result";
+            }, "FunctionA");
+
+        var options = new ChatOptions
+        {
+            Tools = [functionA, originalFunctionB]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")])]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBReplaced, "FunctionA should have replaced FunctionB before second call");
+
+                    // Try to call FunctionB - it should now require approval
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")])]);
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                if (callCount == 1)
+                {
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId1", "FunctionA")]);
+                }
+                else if (callCount == 2)
+                {
+                    Assert.True(functionBReplaced, "FunctionA should have replaced FunctionB before second call");
+                    message = new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent("callId2", "FunctionB")]);
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                }
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        if (streaming)
+        {
+            var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+
+            // FunctionB should have been converted to an approval request (not executed)
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+
+            // Original FunctionB result should NOT be present
+            Assert.DoesNotContain(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "Original FunctionB result"));
+        }
+        else
+        {
+            var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+
+            // FunctionB should have been converted to an approval request (not executed)
+            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+
+            // Original FunctionB result should NOT be present
+            Assert.DoesNotContain(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
+                .Any(frc => frc.Result?.ToString() == "Original FunctionB result"));
+        }
+
+        Assert.Equal(2, callCount);
     }
 }

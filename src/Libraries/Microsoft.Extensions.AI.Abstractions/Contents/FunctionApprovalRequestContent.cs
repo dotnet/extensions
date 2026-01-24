@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -10,7 +11,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a request for user approval of a function call.
 /// </summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIFunctionApprovals, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class FunctionApprovalRequestContent : UserInputRequestContent
 {
     /// <summary>
@@ -36,6 +37,7 @@ public sealed class FunctionApprovalRequestContent : UserInputRequestContent
     /// Creates a <see cref="FunctionApprovalResponseContent"/> to indicate whether the function call is approved or rejected based on the value of <paramref name="approved"/>.
     /// </summary>
     /// <param name="approved"><see langword="true"/> if the function call is approved; otherwise, <see langword="false"/>.</param>
+    /// <param name="reason">An optional reason for the approval or rejection.</param>
     /// <returns>The <see cref="FunctionApprovalResponseContent"/> representing the approval response.</returns>
-    public FunctionApprovalResponseContent CreateResponse(bool approved) => new(Id, approved, FunctionCall);
+    public FunctionApprovalResponseContent CreateResponse(bool approved, string? reason = null) => new(Id, approved, FunctionCall) { Reason = reason };
 }
