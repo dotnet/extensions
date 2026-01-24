@@ -286,8 +286,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         int consecutiveErrorCount = 0;
 
-        (Dictionary<string, AITool>? toolMap, bool anyToolsRequireApproval) = CreateToolsMap(AdditionalTools, options?.Tools); // all available tools, indexed by name
-
         if (HasAnyApprovalContent(originalMessages))
         {
             // A previous turn may have translated FunctionCallContents from the inner client into approval requests sent back to the caller,
@@ -298,7 +296,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             (responseMessages, var notInvokedApprovals) = ProcessFunctionApprovalResponses(
                 originalMessages, !string.IsNullOrWhiteSpace(options?.ConversationId), toolMessageId: null, functionCallContentFallbackMessageId: null);
             (IList<ChatMessage>? invokedApprovedFunctionApprovalResponses, bool shouldTerminate, consecutiveErrorCount) =
-                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, toolMap, originalMessages, options, consecutiveErrorCount, isStreaming: false, cancellationToken);
+                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, originalMessages, options, consecutiveErrorCount, isStreaming: false, cancellationToken);
 
             if (invokedApprovedFunctionApprovalResponses is not null)
             {
@@ -336,11 +334,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             }
 
             // Before we do any function execution, make sure that any functions that require approval have been turned into
-            // approval requests so that they don't get executed here.
+            // approval requests so that they don't get executed here. We recompute anyToolsRequireApproval on each iteration
+            // because a function may have modified ChatOptions.Tools.
+            bool anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
             if (anyToolsRequireApproval)
             {
-                Debug.Assert(toolMap is not null, "anyToolsRequireApproval can only be true if there are tools");
-                response.Messages = ReplaceFunctionCallsWithApprovalRequests(response.Messages, toolMap!);
+                response.Messages = ReplaceFunctionCallsWithApprovalRequests(response.Messages, options?.Tools, AdditionalTools);
             }
 
             // Any function call work to do? If yes, ensure we're tracking that work in functionCallContents.
@@ -380,7 +379,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // If there's nothing more to do, break out of the loop and allow the handling at the
             // end to configure the response with aggregated data from previous requests.
             if (!requiresFunctionInvocation ||
-                ShouldTerminateLoopBasedOnHandleableFunctions(functionCallContents, toolMap))
+                ShouldTerminateLoopBasedOnHandleableFunctions(functionCallContents, options))
             {
                 break;
             }
@@ -390,7 +389,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, toolMap, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: false, cancellationToken);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: false, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -428,15 +427,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage> originalMessages = [.. messages];
         messages = originalMessages;
 
-        AITool[]? approvalRequiredFunctions = null; // available tools that require approval
         List<ChatMessage>? augmentedHistory = null; // the actual history of messages sent on turns other than the first
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         List<ChatResponseUpdate> updates = []; // updates from the current response
         int consecutiveErrorCount = 0;
-
-        (Dictionary<string, AITool>? toolMap, bool anyToolsRequireApproval) = CreateToolsMap(AdditionalTools, options?.Tools); // all available tools, indexed by name
 
         // This is a synthetic ID since we're generating the tool messages instead of getting them from
         // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
@@ -469,7 +465,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Invoke approved approval responses, which generates some additional FRC wrapped in ChatMessage.
             (IList<ChatMessage>? invokedApprovedFunctionApprovalResponses, bool shouldTerminate, consecutiveErrorCount) =
-                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, toolMap, originalMessages, options, consecutiveErrorCount, isStreaming: true, cancellationToken);
+                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, originalMessages, options, consecutiveErrorCount, isStreaming: true, cancellationToken);
 
             if (invokedApprovedFunctionApprovalResponses is not null)
             {
@@ -504,6 +500,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 PrepareOptionsForLastIteration(ref options);
             }
 
+            // Recompute anyToolsRequireApproval on each iteration because a function may have modified ChatOptions.Tools.
+            bool anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
+
+            AITool[]? approvalRequiredFunctions = null; // available tools that require approval
             bool hasApprovalRequiringFcc = false;
             int lastApprovalCheckedFCCIndex = 0;
             int lastYieldedUpdateIndex = 0;
@@ -607,7 +607,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // end to configure the response with aggregated data from previous requests.
             if (iteration >= MaximumIterationsPerRequest ||
                 hasApprovalRequiringFcc ||
-                ShouldTerminateLoopBasedOnHandleableFunctions(functionCallContents, toolMap))
+                ShouldTerminateLoopBasedOnHandleableFunctions(functionCallContents, options))
             {
                 break;
             }
@@ -622,7 +622,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
 
             // Process all of the functions, adding their results into the history.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, toolMap, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: true, cancellationToken);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: true, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -738,31 +738,65 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         messages = augmentedHistory;
     }
 
-    /// <summary>Creates a mapping from tool names to the corresponding tools.</summary>
-    /// <param name="toolLists">
-    /// The lists of tools to combine into a single dictionary. Tools from later lists are preferred
-    /// over tools from earlier lists if they have the same name.
-    /// </param>
-    private static (Dictionary<string, AITool>? ToolMap, bool AnyRequireApproval) CreateToolsMap(params ReadOnlySpan<IList<AITool>?> toolLists)
+    /// <summary>Determines whether any of the tools in the specified lists require approval.</summary>
+    /// <param name="toolLists">The lists of tools to check.</param>
+    /// <returns><see langword="true"/> if any tool requires approval; otherwise, <see langword="false"/>.</returns>
+    private static bool AnyToolsRequireApproval(params ReadOnlySpan<IList<AITool>?> toolLists)
     {
-        Dictionary<string, AITool>? map = null;
-        bool anyRequireApproval = false;
-
         foreach (var toolList in toolLists)
         {
             if (toolList?.Count is int count && count > 0)
             {
-                map ??= new(StringComparer.Ordinal);
                 for (int i = 0; i < count; i++)
                 {
-                    AITool tool = toolList[i];
-                    anyRequireApproval |= tool.GetService<ApprovalRequiredAIFunction>() is not null;
-                    map[tool.Name] = tool;
+                    if (toolList[i].GetService<ApprovalRequiredAIFunction>() is not null)
+                    {
+                        return true;
+                    }
                 }
             }
         }
 
-        return (map, anyRequireApproval);
+        return false;
+    }
+
+    /// <summary>Finds a tool by name in the specified tool lists.</summary>
+    /// <param name="name">The name of the tool to find.</param>
+    /// <param name="toolLists">The lists of tools to search. Tools from earlier lists take precedence over tools from later lists if they have the same name.</param>
+    /// <returns>The tool if found; otherwise, <see langword="null"/>.</returns>
+    private static AIFunctionDeclaration? FindTool(string name, params ReadOnlySpan<IList<AITool>?> toolLists)
+    {
+        foreach (var toolList in toolLists)
+        {
+            if (toolList is not null)
+            {
+                foreach (AITool tool in toolList)
+                {
+                    if (tool is AIFunctionDeclaration declaration && string.Equals(tool.Name, name, StringComparison.Ordinal))
+                    {
+                        return declaration;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Checks whether there are any tools in the specified tool lists.</summary>
+    /// <param name="toolLists">The lists of tools to check.</param>
+    /// <returns><see langword="true"/> if there are any tools; otherwise, <see langword="false"/>.</returns>
+    private static bool HasAnyTools(params ReadOnlySpan<IList<AITool>?> toolLists)
+    {
+        foreach (var toolList in toolLists)
+        {
+            if (toolList?.Count > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -886,8 +920,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     /// <summary>Gets whether the function calling loop should exit based on the function call requests.</summary>
     /// <param name="functionCalls">The call requests.</param>
-    /// <param name="toolMap">The map from tool names to tools.</param>
-    private bool ShouldTerminateLoopBasedOnHandleableFunctions(List<FunctionCallContent>? functionCalls, Dictionary<string, AITool>? toolMap)
+    /// <param name="options">The options used for the response being processed.</param>
+    private bool ShouldTerminateLoopBasedOnHandleableFunctions(List<FunctionCallContent>? functionCalls, ChatOptions? options)
     {
         if (functionCalls is not { Count: > 0 })
         {
@@ -895,7 +929,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             return true;
         }
 
-        if (toolMap is not { Count: > 0 })
+        if (!HasAnyTools(options?.Tools, AdditionalTools))
         {
             // There are functions to call but we have no tools, so we can't handle them.
             // If we're configured to terminate on unknown call requests, do so now.
@@ -907,7 +941,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Look up each function.
         foreach (var fcc in functionCalls)
         {
-            if (toolMap.TryGetValue(fcc.Name, out var tool))
+            AIFunctionDeclaration? tool = FindTool(fcc.Name, options?.Tools, AdditionalTools);
+            if (tool is not null)
             {
                 if (tool is not AIFunction)
                 {
@@ -936,7 +971,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <param name="messages">The current chat contents, inclusive of the function call contents being processed.</param>
     /// <param name="options">The options used for the response being processed.</param>
-    /// <param name="toolMap">Map from tool name to tool.</param>
     /// <param name="functionCallContents">The function call contents representing the functions to be invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
     /// <param name="consecutiveErrorCount">The number of consecutive iterations, prior to this one, that were recorded as having function invocation errors.</param>
@@ -945,7 +979,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <returns>A value indicating how the caller should proceed.</returns>
     private async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
         List<ChatMessage> messages, ChatOptions? options,
-        Dictionary<string, AITool>? toolMap, List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount,
+        List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount,
         bool isStreaming, CancellationToken cancellationToken)
     {
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
@@ -959,7 +993,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         if (functionCallContents.Count == 1)
         {
             FunctionInvocationResult result = await ProcessFunctionCallAsync(
-                messages, options, toolMap, functionCallContents,
+                messages, options, functionCallContents,
                 iteration, 0, captureCurrentIterationExceptions, isStreaming, cancellationToken);
 
             IList<ChatMessage> addedMessages = CreateResponseMessages([result]);
@@ -982,7 +1016,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 results.AddRange(await Task.WhenAll(
                     from callIndex in Enumerable.Range(0, functionCallContents.Count)
                     select ProcessFunctionCallAsync(
-                        messages, options, toolMap, functionCallContents,
+                        messages, options, functionCallContents,
                         iteration, callIndex, captureExceptions: true, isStreaming, cancellationToken)));
 
                 shouldTerminate = results.Exists(static r => r.Terminate);
@@ -993,7 +1027,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 for (int callIndex = 0; callIndex < functionCallContents.Count; callIndex++)
                 {
                     var functionResult = await ProcessFunctionCallAsync(
-                        messages, options, toolMap, functionCallContents,
+                        messages, options, functionCallContents,
                         iteration, callIndex, captureCurrentIterationExceptions, isStreaming, cancellationToken);
 
                     results.Add(functionResult);
@@ -1060,10 +1094,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
     }
 
-    /// <summary>Processes the function call described in <paramref name="callContents"/>[<paramref name="iteration"/>].</summary>
+    /// <summary>Processes the function call described in <paramref name="callContents"/>[<paramref name="functionCallIndex"/>].</summary>
     /// <param name="messages">The current chat contents, inclusive of the function call contents being processed.</param>
     /// <param name="options">The options used for the response being processed.</param>
-    /// <param name="toolMap">Map from tool name to tool.</param>
     /// <param name="callContents">The function call contents representing all the functions being invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
     /// <param name="functionCallIndex">The 0-based index of the function being called out of <paramref name="callContents"/>.</param>
@@ -1073,15 +1106,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <returns>A value indicating how the caller should proceed.</returns>
     private async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
         List<ChatMessage> messages, ChatOptions? options,
-        Dictionary<string, AITool>? toolMap, List<FunctionCallContent> callContents,
+        List<FunctionCallContent> callContents,
         int iteration, int functionCallIndex, bool captureExceptions, bool isStreaming, CancellationToken cancellationToken)
     {
         var callContent = callContents[functionCallIndex];
 
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        if (toolMap is null ||
-            !toolMap.TryGetValue(callContent.Name, out AITool? tool) ||
-            tool is not AIFunction aiFunction)
+        AIFunctionDeclaration? tool = FindTool(callContent.Name, options?.Tools, AdditionalTools);
+        if (tool is not AIFunction aiFunction)
         {
             return new(terminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
@@ -1649,7 +1681,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     private static IList<ChatMessage> ReplaceFunctionCallsWithApprovalRequests(
         IList<ChatMessage> messages,
-        Dictionary<string, AITool> toolMap)
+        params ReadOnlySpan<IList<AITool>?> toolLists)
     {
         var outputMessages = messages;
 
@@ -1667,17 +1699,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     (allFunctionCallContentIndices ??= []).Add((i, j));
 
-                    if (!anyApprovalRequired)
-                    {
-                        foreach (var t in toolMap)
-                        {
-                            if (t.Value.GetService<ApprovalRequiredAIFunction>() is { } araf && araf.Name == functionCall.Name)
-                            {
-                                anyApprovalRequired = true;
-                                break;
-                            }
-                        }
-                    }
+                    anyApprovalRequired |= FindTool(functionCall.Name, toolLists)?.GetService<ApprovalRequiredAIFunction>() is not null;
                 }
             }
         }
@@ -1722,7 +1744,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     private async Task<(IList<ChatMessage>? FunctionResultContentMessages, bool ShouldTerminate, int ConsecutiveErrorCount)> InvokeApprovedFunctionApprovalResponsesAsync(
         List<ApprovalResultWithRequestMessage>? notInvokedApprovals,
-        Dictionary<string, AITool>? toolMap,
         List<ChatMessage> originalMessages,
         ChatOptions? options,
         int consecutiveErrorCount,
@@ -1734,7 +1755,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             // The FRC that is generated here is already added to originalMessages by ProcessFunctionCallsAsync.
             var modeAndMessages = await ProcessFunctionCallsAsync(
-                originalMessages, options, toolMap, notInvokedApprovals.Select(x => x.Response.FunctionCall).ToList(), 0, consecutiveErrorCount, isStreaming, cancellationToken);
+                originalMessages, options, notInvokedApprovals.Select(x => x.Response.FunctionCall).ToList(), 0, consecutiveErrorCount, isStreaming, cancellationToken);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
             return (modeAndMessages.MessagesAdded, modeAndMessages.ShouldTerminate, consecutiveErrorCount);
