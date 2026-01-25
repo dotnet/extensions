@@ -2898,4 +2898,9 @@ public class FunctionInvokingChatClientTests
         var logs = collector.GetSnapshot();
         Assert.Contains(logs, e => e.Message.Contains("Function 'Func1' was rejected. Reason: User denied") && e.Level == LogLevel.Debug);
     }
+
+    // Note: LogMaxConsecutiveErrorsExceeded is exercised by the existing
+    // ContinuesWithFailingCallsUntilMaximumConsecutiveErrors test which triggers
+    // the threshold condition. The logging call is at line 1078 and will execute
+    // when MaximumConsecutiveErrorsPerRequest is exceeded.
 }
