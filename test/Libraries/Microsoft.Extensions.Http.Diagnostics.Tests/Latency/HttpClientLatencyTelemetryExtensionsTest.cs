@@ -13,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Latency.Internal;
-using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -109,111 +108,99 @@ public class HttpClientLatencyTelemetryExtensionsTest
         Assert.NotNull(options);
         Assert.Equal(expectedOptions.EnableDetailedLatencyBreakdown, options.EnableDetailedLatencyBreakdown);
     }
-    
-   [Fact]
-public async Task LatencyInfo_IsPopulated_WhenLoggerWrapsHandlersPipeline()
-{
-    using var sp = new ServiceCollection()
-        .AddLatencyContext()
-        .AddRedaction()
-        .AddHttpClientLatencyTelemetry()
-        .AddHttpClient("test")
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler())
-            .ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+
+    [Fact]
+    public async Task LatencyInfo_IsPopulated_WhenLoggerWrapsHandlersPipeline()
+    {
+        using var sp = new ServiceCollection()
+            .AddLatencyContext()
+            .AddRedaction()
+            .AddHttpClientLatencyTelemetry()
+            .AddHttpClient("test")
+                .ConfigurePrimaryHttpMessageHandler(() => new ServerNameStubHandler("TestServer"))
+                .AddExtendedHttpClientLogging(wrapHandlersPipeline: true)
+            .Services
+            .AddFakeLogging()
+            .BuildServiceProvider();
+
+        var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+
+        using var response = await client.GetAsync("http://localhost/api");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var collector = sp.GetFakeLogCollector();
+        var record = collector.LatestRecord;
+        Assert.NotNull(record);
+
+        var latencyInfo = record.GetStructuredStateValue("LatencyInfo");
+        Assert.False(string.IsNullOrEmpty(latencyInfo));
+        Assert.StartsWith("v1.0,", latencyInfo);
+        Assert.Contains("TestServer", latencyInfo);
+    }
+
+    [Fact]
+    public async Task LatencyInfo_IsPopulated_WithConfigurationSection_AndWrapHandlersPipeline()
+    {
+        var configSection = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                handlers.Add(new ServerNameStubHandler("TestServer"));
+                { "Logging:LogBody", "true" }
             })
-            .AddExtendedHttpClientLogging(wrapHandlersPipeline: true)
-        .Services
-        .AddFakeLogging()
-        .BuildServiceProvider();
+            .Build()
+            .GetSection("Logging");
 
-    var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+        using var sp = new ServiceCollection()
+            .AddLatencyContext()
+            .AddRedaction()
+            .AddHttpClientLatencyTelemetry()
+            .AddHttpClient("test")
+                .ConfigurePrimaryHttpMessageHandler(() => new ServerNameStubHandler("TestServer"))
+                .AddExtendedHttpClientLogging(configSection, wrapHandlersPipeline: true)
+            .Services
+            .AddFakeLogging()
+            .BuildServiceProvider();
 
-    using var response = await client.GetAsync("http://localhost/api").ConfigureAwait(false);
-    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("test");
 
-    var collector = sp.GetFakeLogCollector();
-    var record = collector.LatestRecord;
-    Assert.NotNull(record);
+        using var response = await client.GetAsync("http://localhost/api");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-    var latencyInfo = record.GetStructuredStateValue("LatencyInfo");
-    Assert.False(string.IsNullOrEmpty(latencyInfo));
-    Assert.StartsWith("v1.0,", latencyInfo);
-    Assert.Contains("TestServer", latencyInfo);
-}
+        var collector = sp.GetFakeLogCollector();
+        var record = collector.LatestRecord;
+        Assert.NotNull(record);
 
-[Fact]
-public async Task LatencyInfo_IsPopulated_WithConfigurationSection_AndWrapHandlersPipeline()
-{
-    var configSection = new ConfigurationBuilder()
-        .AddInMemoryCollection(new Dictionary<string, string?>
-        {
-            { "Logging:LogBody", "true" }
-        })
-        .Build()
-        .GetSection("Logging");
+        var latencyInfo = record.GetStructuredStateValue("LatencyInfo");
+        Assert.False(string.IsNullOrEmpty(latencyInfo));
+        Assert.StartsWith("v1.0,", latencyInfo);
+    }
 
-    using var sp = new ServiceCollection()
-        .AddLatencyContext()
-        .AddRedaction()
-        .AddHttpClientLatencyTelemetry()  // ← Move here
-        .AddHttpClient("test")
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler())
-            .ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
-            {
-                handlers.Add(new ServerNameStubHandler("TestServer"));
-            })
-            .AddExtendedHttpClientLogging(configSection, wrapHandlersPipeline: true)
-        .Services
-        .AddFakeLogging()
-        .BuildServiceProvider();
+    [Fact]
+    public async Task LatencyInfo_IsPopulated_WithActionConfiguration_AndWrapHandlersPipeline()
+    {
+        using var sp = new ServiceCollection()
+            .AddLatencyContext()
+            .AddRedaction()
+            .AddHttpClientLatencyTelemetry()
+            .AddHttpClient("test")
+                .ConfigurePrimaryHttpMessageHandler(() => new ServerNameStubHandler("TestServer"))
+                .AddExtendedHttpClientLogging(o => o.LogBody = true, wrapHandlersPipeline: false)
+            .Services
+            .AddFakeLogging()
+            .BuildServiceProvider();
 
-    var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+        var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("test");
 
-    using var response = await client.GetAsync("http://localhost/api").ConfigureAwait(false);
-    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var response = await client.GetAsync("http://localhost/api");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-    var collector = sp.GetFakeLogCollector();
-    var record = collector.LatestRecord;
-    Assert.NotNull(record);
+        var collector = sp.GetFakeLogCollector();
+        var record = collector.LatestRecord;
+        Assert.NotNull(record);
 
-    var latencyInfo = record.GetStructuredStateValue("LatencyInfo");
-    Assert.False(string.IsNullOrEmpty(latencyInfo));
-    Assert.StartsWith("v1.0,", latencyInfo);
-}
-
-[Fact]
-public async Task LatencyInfo_IsPopulated_WithActionConfiguration_AndWrapHandlersPipeline()
-{
-    using var sp = new ServiceCollection()
-        .AddLatencyContext()
-        .AddRedaction()
-        .AddHttpClientLatencyTelemetry()  // ← Move here
-        .AddHttpClient("test")
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler())
-            .ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
-            {
-                handlers.Add(new ServerNameStubHandler("TestServer"));
-            })
-            .AddExtendedHttpClientLogging(o => o.LogBody = true, wrapHandlersPipeline: false)
-        .Services
-        .AddFakeLogging()
-        .BuildServiceProvider();
-
-    var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("test");
-
-    using var response = await client.GetAsync("http://localhost/api").ConfigureAwait(false);
-    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-    var collector = sp.GetFakeLogCollector();
-    var record = collector.LatestRecord;
-    Assert.NotNull(record);
-
-    var latencyInfo = record.GetStructuredStateValue("LatencyInfo");
-    Assert.False(string.IsNullOrEmpty(latencyInfo));
-    Assert.StartsWith("v1.0,", latencyInfo);
-}
+        var latencyInfo = record.GetStructuredStateValue("LatencyInfo");
+        Assert.False(string.IsNullOrEmpty(latencyInfo));
+        Assert.StartsWith("v1.0,", latencyInfo);
+    }
 
     [Fact]
     public async Task LatencyInfo_IsNotPresent_WhenLatencyTelemetryNotAdded()
@@ -222,18 +209,14 @@ public async Task LatencyInfo_IsPopulated_WithActionConfiguration_AndWrapHandler
             .AddRedaction()
             .AddExtendedHttpClientLogging()
             .AddHttpClient("test")
-                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler())
-                .ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
-                {
-                    handlers.Add(new ServerNameStubHandler("TestServer"));
-                })
+                .ConfigurePrimaryHttpMessageHandler(() => new ServerNameStubHandler("TestServer"))
             .Services
             .AddFakeLogging()
             .BuildServiceProvider();
 
         var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("test");
 
-        using var response = await client.GetAsync("http://localhost/api").ConfigureAwait(false);
+        using var response = await client.GetAsync("http://localhost/api");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var collector = sp.GetFakeLogCollector();
@@ -255,15 +238,12 @@ public async Task LatencyInfo_IsPopulated_WithActionConfiguration_AndWrapHandler
             .GetSection($"{nameof(HttpClientLatencyTelemetryOptions)}");
     }
 
-    private sealed class ServerNameStubHandler : DelegatingHandler
+    private sealed class ServerNameStubHandler(string serverName) : HttpMessageHandler
     {
-        private readonly string _serverName;
-        public ServerNameStubHandler(string serverName) => _serverName = serverName;
-
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var response = new HttpResponseMessage(HttpStatusCode.OK);
-            response.Headers.TryAddWithoutValidation(TelemetryConstants.ServerApplicationNameHeader, _serverName);
+            response.Headers.TryAddWithoutValidation(TelemetryConstants.ServerApplicationNameHeader, serverName);
             return Task.FromResult(response);
         }
     }
