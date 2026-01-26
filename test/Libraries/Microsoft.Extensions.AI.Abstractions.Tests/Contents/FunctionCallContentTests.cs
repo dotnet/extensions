@@ -28,6 +28,7 @@ public class FunctionCallContentTests
 
         Assert.Null(c.Arguments);
         Assert.Null(c.Exception);
+        Assert.True(c.InvocationRequired);
     }
 
     [Fact]

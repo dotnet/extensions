@@ -1554,7 +1554,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <returns>The <see cref="AIContent"/> for the rejected function calls.</returns>
     private List<AIContent>? GenerateRejectedFunctionResults(List<ApprovalResultWithRequestMessage>? rejections) =>
         rejections is { Count: > 0 } ?
-            rejections.ConvertAll(static m =>
+            rejections.ConvertAll(m =>
             {
                 LogFunctionRejected(m.Response.FunctionCall.Name, m.Response.Reason);
 

@@ -1819,7 +1819,7 @@
         },
         {
           "Member": "bool Microsoft.Extensions.AI.FunctionCallContent.InvocationRequired { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string Microsoft.Extensions.AI.FunctionCallContent.Name { get; }",

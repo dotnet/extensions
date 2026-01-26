@@ -1692,8 +1692,10 @@ public class FunctionInvokingChatClientTests
         Assert.False(functionCallContent.InvocationRequired);
     }
 
-    [Fact]
-    public async Task InvocationRequired_IgnoresFunctionCallsWithInvocationRequiredFalse()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InvocationRequired_IgnoresFunctionCallsWithInvocationRequiredFalse(bool streaming)
     {
         var functionInvokedCount = 0;
         var options = new ChatOptions
@@ -1713,35 +1715,7 @@ public class FunctionInvokingChatClientTests
                 // Return a response with a FunctionCallContent that has InvocationRequired = false
                 var message = new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]);
                 return new ChatResponse(message);
-            }
-        };
-
-        using var client = new FunctionInvokingChatClient(innerClient);
-
-        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
-
-        // The function should not have been invoked since InvocationRequired was false
-        Assert.Equal(0, functionInvokedCount);
-
-        // The response should contain the FunctionCallContent but no FunctionResultContent
-        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && !fcc.InvocationRequired));
-        Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent));
-    }
-
-    [Fact]
-    public async Task InvocationRequired_IgnoresFunctionCallsWithInvocationRequiredFalse_Streaming()
-    {
-        var functionInvokedCount = 0;
-        var options = new ChatOptions
-        {
-            Tools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")]
-        };
-
-        // Create a function call that has already been processed
-        var alreadyProcessedFunctionCall = new FunctionCallContent("callId1", "Func1") { InvocationRequired = false };
-
-        using var innerClient = new TestChatClient
-        {
+            },
             GetStreamingResponseAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
             {
                 // Return a response with a FunctionCallContent that has InvocationRequired = false
@@ -1752,22 +1726,38 @@ public class FunctionInvokingChatClientTests
 
         using var client = new FunctionInvokingChatClient(innerClient);
 
-        var updates = new List<ChatResponseUpdate>();
-        await foreach (var update in client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options))
+        if (streaming)
         {
-            updates.Add(update);
+            var updates = new List<ChatResponseUpdate>();
+            await foreach (var update in client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options))
+            {
+                updates.Add(update);
+            }
+
+            // The function should not have been invoked since InvocationRequired was false
+            Assert.Equal(0, functionInvokedCount);
+
+            // The updates should contain the FunctionCallContent but no FunctionResultContent
+            Assert.Contains(updates, u => u.Contents.Any(c => c is FunctionCallContent fcc && !fcc.InvocationRequired));
+            Assert.DoesNotContain(updates, u => u.Contents.Any(c => c is FunctionResultContent));
         }
+        else
+        {
+            var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
 
-        // The function should not have been invoked since InvocationRequired was false
-        Assert.Equal(0, functionInvokedCount);
+            // The function should not have been invoked since InvocationRequired was false
+            Assert.Equal(0, functionInvokedCount);
 
-        // The updates should contain the FunctionCallContent but no FunctionResultContent
-        Assert.Contains(updates, u => u.Contents.Any(c => c is FunctionCallContent fcc && !fcc.InvocationRequired));
-        Assert.DoesNotContain(updates, u => u.Contents.Any(c => c is FunctionResultContent));
+            // The response should contain the FunctionCallContent but no FunctionResultContent
+            Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && !fcc.InvocationRequired));
+            Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent));
+        }
     }
 
-    [Fact]
-    public async Task InvocationRequired_ProcessesMixedFunctionCalls()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InvocationRequired_ProcessesMixedFunctionCalls(bool streaming)
     {
         var func1InvokedCount = 0;
         var func2InvokedCount = 0;
@@ -1803,57 +1793,50 @@ public class FunctionInvokingChatClientTests
                     var message = new ChatMessage(ChatRole.Assistant, "done");
                     return new ChatResponse(message);
                 }
-            }
-        };
-
-        using var client = new FunctionInvokingChatClient(innerClient);
-
-        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
-
-        // Only Func1 should have been invoked (the one with InvocationRequired = true)
-        Assert.Equal(1, func1InvokedCount);
-        Assert.Equal(0, func2InvokedCount);
-
-        // The response should contain FunctionResultContent for Func1 but not Func2
-        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId1"));
-        Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId2"));
-    }
-
-    [Fact]
-    public async Task InvocationRequired_InnerClientWithInvocationRequiredFalsePassesThroughUnprocessed()
-    {
-        // Test that FunctionCallContent with InvocationRequired=false from inner client passes through without being processed
-        var functionInvokedCount = 0;
-        var options = new ChatOptions
-        {
-            Tools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")]
-        };
-
-        var functionCallWithInvocationRequiredFalse = new FunctionCallContent("callId1", "Func1") { InvocationRequired = false };
-
-        using var innerClient = new TestChatClient
-        {
-            GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            },
+            GetStreamingResponseAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
             {
-                await Task.Yield();
-
-                // Inner client returns a FunctionCallContent with InvocationRequired = false
-                return new ChatResponse(new ChatMessage(ChatRole.Assistant, [functionCallWithInvocationRequiredFalse]));
+                if (contents.Count() == 1)
+                {
+                    // First call - return both function calls
+                    var message = new ChatMessage(ChatRole.Assistant, [needsProcessing, alreadyProcessed]);
+                    return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+                }
+                else
+                {
+                    // Second call - return final response after processing
+                    var message = new ChatMessage(ChatRole.Assistant, "done");
+                    return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+                }
             }
         };
 
         using var client = new FunctionInvokingChatClient(innerClient);
 
-        var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+        if (streaming)
+        {
+            var updates = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync();
 
-        // The function should NOT have been invoked since InvocationRequired was false
-        Assert.Equal(0, functionInvokedCount);
+            // Only Func1 should have been invoked (the one with InvocationRequired = true)
+            Assert.Equal(1, func1InvokedCount);
+            Assert.Equal(0, func2InvokedCount);
 
-        // The response should contain the FunctionCallContent with InvocationRequired = false
-        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && fcc.CallId == "callId1" && !fcc.InvocationRequired));
+            // The response should contain FunctionResultContent for Func1 but not Func2
+            Assert.Contains(updates.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId1"));
+            Assert.DoesNotContain(updates.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId2"));
+        }
+        else
+        {
+            var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
 
-        // There should be NO FunctionResultContent since we didn't process the function call
-        Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent));
+            // Only Func1 should have been invoked (the one with InvocationRequired = true)
+            Assert.Equal(1, func1InvokedCount);
+            Assert.Equal(0, func2InvokedCount);
+
+            // The response should contain FunctionResultContent for Func1 but not Func2
+            Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId1"));
+            Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId2"));
+        }
     }
 
     [Fact]
