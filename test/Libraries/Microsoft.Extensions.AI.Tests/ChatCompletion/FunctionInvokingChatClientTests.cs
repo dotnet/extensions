@@ -355,6 +355,96 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
+    public async Task FunctionReturningFunctionResultContentWithMatchingCallId_UsesItDirectly()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+            ]
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Custom result from function")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        // Use FunctionInvoker to return a FunctionResultContent with matching CallId
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
+            s => new FunctionInvokingChatClient(s)
+            {
+                FunctionInvoker = (ctx, cancellationToken) =>
+                {
+                    // Return a FunctionResultContent with the same CallId that was passed in
+                    var frc = new FunctionResultContent(ctx.CallContent.CallId, "Custom result from function")
+                    {
+                        RawRepresentation = "CustomRaw"
+                    };
+                    return new ValueTask<object?>(frc);
+                }
+            });
+
+        var chat = await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+
+        // Verify that the FunctionResultContent has the custom RawRepresentation, proving it was used directly
+        var toolMessage = chat.First(m => m.Role == ChatRole.Tool);
+        var frc = Assert.Single(toolMessage.Contents.OfType<FunctionResultContent>());
+        Assert.Equal("Custom result from function", frc.Result);
+        Assert.Equal("CustomRaw", frc.RawRepresentation);
+        Assert.Equal("callId1", frc.CallId);
+    }
+
+    [Fact]
+    public async Task FunctionReturningFunctionResultContentWithMismatchedCallId_WrapsIt()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+            ]
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+
+            // The result should be wrapped, so the outer FunctionResultContent has callId1
+            // and its Result property contains the inner FunctionResultContent
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: new FunctionResultContent("differentCallId", "Result from function"))]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        // Use FunctionInvoker to return a FunctionResultContent with mismatched CallId
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
+            s => new FunctionInvokingChatClient(s)
+            {
+                FunctionInvoker = (ctx, cancellationToken) =>
+                {
+                    // Return a FunctionResultContent with a different CallId
+                    var frc = new FunctionResultContent("differentCallId", "Result from function");
+                    return new ValueTask<object?>(frc);
+                }
+            });
+
+        var chat = await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+
+        // Verify the result is wrapped - the outer FunctionResultContent has the correct CallId
+        var toolMessage = chat.First(m => m.Role == ChatRole.Tool);
+        var frc = Assert.Single(toolMessage.Contents.OfType<FunctionResultContent>());
+        Assert.Equal("callId1", frc.CallId);
+        Assert.IsType<FunctionResultContent>(frc.Result);
+        var innerFrc = (FunctionResultContent)frc.Result!;
+        Assert.Equal("differentCallId", innerFrc.CallId);
+        Assert.Equal("Result from function", innerFrc.Result);
+    }
+
+    [Fact]
     public async Task ContinuesWithSuccessfulCallsUntilMaximumIterations()
     {
         var maxIterations = 7;
