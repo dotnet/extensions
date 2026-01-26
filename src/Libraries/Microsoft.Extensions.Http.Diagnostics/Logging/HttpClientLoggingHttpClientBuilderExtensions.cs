@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -53,6 +55,7 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// you have a way of viewing structured logs in order to view this extra information.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Argument <paramref name="builder"/> is <see langword="null"/>.</exception>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, bool wrapHandlersPipeline)
     {
         _ = Throw.IfNull(builder);
@@ -97,6 +100,7 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// you have a way of viewing structured logs in order to view this extra information.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, IConfigurationSection section, bool wrapHandlersPipeline)
     {
         _ = Throw.IfNull(builder);
@@ -142,6 +146,7 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// you have a way of viewing structured logs in order to view this extra information.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, Action<LoggingOptions> configure, bool wrapHandlersPipeline)
     {
         _ = Throw.IfNull(builder);
