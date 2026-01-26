@@ -461,7 +461,9 @@ public class FunctionInvokingChatClientTests
         {
             GetResponseAsyncCallback = (msgs, opts, ct) =>
             {
-                if (msgs.Count() == 1)
+                // Check if this is the first call (no tool messages yet) or subsequent call
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
                 {
                     // First call: return a function call to trigger function invocation
                     return Task.FromResult(new ChatResponse(
@@ -470,11 +472,7 @@ public class FunctionInvokingChatClientTests
                 else
                 {
                     // Second call: capture and return final response
-                    var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
-                    if (toolMessage is not null)
-                    {
-                        capturedFrc = toolMessage.Contents.OfType<DerivedFunctionResultContent>().FirstOrDefault();
-                    }
+                    capturedFrc = toolMessage.Contents.OfType<DerivedFunctionResultContent>().FirstOrDefault();
 
                     return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
                 }
