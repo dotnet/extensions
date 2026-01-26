@@ -91,4 +91,40 @@ public class FunctionResultContentTests
         Assert.Equal(sut.Result, deserializedSut.Result?.ToString());
         Assert.Null(deserializedSut.Exception);
     }
+
+    [Fact]
+    public void DerivedFunctionResultContent_CanBeSerializedAndDeserialized()
+    {
+        // Arrange: Register the derived type
+        var options = new JsonSerializerOptions(AIJsonUtilities.DefaultOptions);
+        options.AddAIContentType<DerivedFunctionResultContent>("derivedFunctionResult");
+        options.MakeReadOnly();
+
+        var derivedContent = new DerivedFunctionResultContent("callId1", "test result")
+        {
+            CustomProperty = "customValue"
+        };
+
+        // Act: Serialize as AIContent to test polymorphic serialization
+        var json = JsonSerializer.Serialize<AIContent>(derivedContent, options);
+        var deserialized = JsonSerializer.Deserialize<AIContent>(json, options);
+
+        // Assert
+        Assert.NotNull(deserialized);
+        Assert.IsType<DerivedFunctionResultContent>(deserialized);
+        var derivedDeserialized = (DerivedFunctionResultContent)deserialized;
+        Assert.Equal("callId1", derivedDeserialized.CallId);
+        Assert.Equal("test result", derivedDeserialized.Result?.ToString());
+        Assert.Equal("customValue", derivedDeserialized.CustomProperty);
+    }
+
+    private sealed class DerivedFunctionResultContent : FunctionResultContent
+    {
+        public DerivedFunctionResultContent(string callId, object? result)
+            : base(callId, result)
+        {
+        }
+
+        public string? CustomProperty { get; set; }
+    }
 }

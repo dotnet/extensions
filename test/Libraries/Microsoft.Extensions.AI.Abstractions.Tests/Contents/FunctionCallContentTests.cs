@@ -322,4 +322,43 @@ public class FunctionCallContentTests
         Assert.Throws<ArgumentNullException>("name", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", null!, _ => null));
         Assert.Throws<ArgumentNullException>("argumentParser", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", "functionName", null!));
     }
+
+    [Fact]
+    public static void DerivedFunctionCallContent_CanBeSerializedAndDeserialized()
+    {
+        // Arrange: Register the derived type
+        var options = new JsonSerializerOptions(AIJsonUtilities.DefaultOptions);
+        options.AddAIContentType<DerivedFunctionCallContent>("derivedFunctionCall");
+        options.MakeReadOnly();
+
+        var derivedContent = new DerivedFunctionCallContent("callId1", "testFunction", new Dictionary<string, object?> { ["param1"] = "value1" })
+        {
+            CustomProperty = "customValue"
+        };
+
+        // Act: Serialize as AIContent to test polymorphic serialization
+        var json = JsonSerializer.Serialize<AIContent>(derivedContent, options);
+        var deserialized = JsonSerializer.Deserialize<AIContent>(json, options);
+
+        // Assert
+        Assert.NotNull(deserialized);
+        Assert.IsType<DerivedFunctionCallContent>(deserialized);
+        var derivedDeserialized = (DerivedFunctionCallContent)deserialized;
+        Assert.Equal("callId1", derivedDeserialized.CallId);
+        Assert.Equal("testFunction", derivedDeserialized.Name);
+        Assert.NotNull(derivedDeserialized.Arguments);
+        Assert.Single(derivedDeserialized.Arguments);
+        Assert.Equal("value1", derivedDeserialized.Arguments["param1"]?.ToString());
+        Assert.Equal("customValue", derivedDeserialized.CustomProperty);
+    }
+
+    private sealed class DerivedFunctionCallContent : FunctionCallContent
+    {
+        public DerivedFunctionCallContent(string callId, string name, IDictionary<string, object?>? arguments = null)
+            : base(callId, name, arguments)
+        {
+        }
+
+        public string? CustomProperty { get; set; }
+    }
 }
