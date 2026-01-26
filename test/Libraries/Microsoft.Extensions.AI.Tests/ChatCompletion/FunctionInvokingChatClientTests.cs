@@ -447,7 +447,7 @@ public class FunctionInvokingChatClientTests
     [Fact]
     public async Task FunctionReturningDerivedFunctionResultContent_PropagatesInstanceToInnerClient()
     {
-        DerivedFunctionResultContent? capturedFrc = null;
+        ChatMessage? capturedToolMessage = null;
 
         var options = new ChatOptions
         {
@@ -472,7 +472,7 @@ public class FunctionInvokingChatClientTests
                 else
                 {
                     // Second call: capture and return final response
-                    capturedFrc = toolMessage.Contents.OfType<DerivedFunctionResultContent>().FirstOrDefault();
+                    capturedToolMessage = toolMessage;
 
                     return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
                 }
@@ -500,11 +500,13 @@ public class FunctionInvokingChatClientTests
         await client.GetResponseAsync(messages, options);
 
         // Verify that the derived FunctionResultContent instance was propagated to the inner client
-        Assert.NotNull(capturedFrc);
+        Assert.NotNull(capturedToolMessage);
+        var capturedFrc = Assert.Single(capturedToolMessage.Contents.OfType<FunctionResultContent>());
         Assert.IsType<DerivedFunctionResultContent>(capturedFrc);
-        Assert.Equal("callId1", capturedFrc.CallId);
-        Assert.Equal("Derived result", capturedFrc.Result);
-        Assert.Equal("CustomValue", capturedFrc.CustomProperty);
+        var derivedFrc = (DerivedFunctionResultContent)capturedFrc;
+        Assert.Equal("callId1", derivedFrc.CallId);
+        Assert.Equal("Derived result", derivedFrc.Result);
+        Assert.Equal("CustomValue", derivedFrc.CustomProperty);
     }
 
     /// <summary>A derived FunctionResultContent for testing purposes.</summary>
