@@ -17,6 +17,7 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable CA2213 // Disposable fields should be disposed
 #pragma warning disable S2219 // Runtime type checking should be simplified
 #pragma warning disable S3353 // Unchanged local variables should be "const"
+#pragma warning disable SA1204 // Static members should appear before non-static members
 
 namespace Microsoft.Extensions.AI;
 
@@ -934,6 +935,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // There are functions to call but we have no tools, so we can't handle them.
             // If we're configured to terminate on unknown call requests, do so now.
             // Otherwise, ProcessFunctionCallsAsync will handle it by creating a NotFound response message.
+            if (TerminateOnUnknownCalls)
+            {
+                // Log each function call that would cause termination
+                foreach (var fcc in functionCalls)
+                {
+                    LogFunctionNotFound(fcc.Name);
+                }
+            }
+
             return TerminateOnUnknownCalls;
         }
 
@@ -948,6 +958,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     // The tool was found but it's not invocable. Regardless of TerminateOnUnknownCallRequests,
                     // we need to break out of the loop so that callers can handle all the call requests.
+                    LogNonInvocableFunction(fcc.Name);
                     return true;
                 }
             }
@@ -958,6 +969,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // creating a NotFound response message.
                 if (TerminateOnUnknownCalls)
                 {
+                    LogFunctionNotFound(fcc.Name);
                     return true;
                 }
             }
@@ -1063,6 +1075,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             consecutiveErrorCount++;
             if (consecutiveErrorCount > MaximumConsecutiveErrorsPerRequest)
             {
+                LogMaxConsecutiveErrorsExceeded(MaximumConsecutiveErrorsPerRequest);
+
                 var allExceptionsArray = added
                     .SelectMany(m => m.Contents.OfType<FunctionResultContent>())
                     .Select(frc => frc.Exception!)
@@ -1115,6 +1129,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         AIFunctionDeclaration? tool = FindTool(callContent.Name, options?.Tools, AdditionalTools);
         if (tool is not AIFunction aiFunction)
         {
+            if (tool is null)
+            {
+                LogFunctionNotFound(callContent.Name);
+            }
+            else
+            {
+                LogNonInvocableFunction(callContent.Name);
+            }
+
             return new(terminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
@@ -1149,6 +1172,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 callContent,
                 result: null,
                 exception: e);
+        }
+
+        if (context.Terminate)
+        {
+            LogFunctionRequestedTermination(callContent.Name);
         }
 
         return new(
@@ -1345,10 +1373,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>
     /// 1. Remove all <see cref="FunctionApprovalRequestContent"/> and <see cref="FunctionApprovalResponseContent"/> from the <paramref name="originalMessages"/>.
     /// 2. Recreate <see cref="FunctionCallContent"/> for any <see cref="FunctionApprovalResponseContent"/> that haven't been executed yet.
-    /// 3. Genreate failed <see cref="FunctionResultContent"/> for any rejected <see cref="FunctionApprovalResponseContent"/>.
+    /// 3. Generate failed <see cref="FunctionResultContent"/> for any rejected <see cref="FunctionApprovalResponseContent"/>.
     /// 4. add all the new content items to <paramref name="originalMessages"/> and return them as the pre-invocation history.
     /// </summary>
-    private static (List<ChatMessage>? preDownstreamCallHistory, List<ApprovalResultWithRequestMessage>? approvals) ProcessFunctionApprovalResponses(
+    private (List<ChatMessage>? preDownstreamCallHistory, List<ApprovalResultWithRequestMessage>? approvals) ProcessFunctionApprovalResponses(
         List<ChatMessage> originalMessages, bool hasConversationId, string? toolMessageId, string? functionCallContentFallbackMessageId)
     {
         // Extract any approval responses where we need to execute or reject the function calls.
@@ -1399,7 +1427,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// We can then use the metadata from these messages when we re-create the FunctionCallContent messages/updates to return to the caller. This way, when we finally do return
     /// the FuncionCallContent to users it's part of a message/update that contains the same metadata as originally returned to the downstream service.
     /// </remarks>
-    private static (List<ApprovalResultWithRequestMessage>? approvals, List<ApprovalResultWithRequestMessage>? rejections) ExtractAndRemoveApprovalRequestsAndResponses(
+    private (List<ApprovalResultWithRequestMessage>? approvals, List<ApprovalResultWithRequestMessage>? rejections) ExtractAndRemoveApprovalRequestsAndResponses(
         List<ChatMessage> messages)
     {
         Dictionary<string, ChatMessage>? allApprovalRequestsMessages = null;
@@ -1498,6 +1526,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     continue;
                 }
 
+                LogProcessingApprovalResponse(approvalResponse.FunctionCall.Name, approvalResponse.Approved);
+
                 // Split the responses into approved and rejected.
                 ref List<ApprovalResultWithRequestMessage>? targetList = ref approvalResponse.Approved ? ref approvedFunctionCalls : ref rejectedFunctionCalls;
 
@@ -1516,10 +1546,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <param name="rejections">Any rejected approval responses.</param>
     /// <returns>The <see cref="AIContent"/> for the rejected function calls.</returns>
-    private static List<AIContent>? GenerateRejectedFunctionResults(List<ApprovalResultWithRequestMessage>? rejections) =>
+    private List<AIContent>? GenerateRejectedFunctionResults(List<ApprovalResultWithRequestMessage>? rejections) =>
         rejections is { Count: > 0 } ?
             rejections.ConvertAll(m =>
             {
+                LogFunctionRejected(m.Response.FunctionCall.Name, m.Response.Reason);
+
                 string result = "Tool call invocation rejected.";
                 if (!string.IsNullOrWhiteSpace(m.Response.Reason))
                 {
@@ -1679,7 +1711,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// Replaces all <see cref="FunctionCallContent"/> from <paramref name="messages"/> with <see cref="FunctionApprovalRequestContent"/>
     /// if any one of them requires approval.
     /// </summary>
-    private static IList<ChatMessage> ReplaceFunctionCallsWithApprovalRequests(
+    private IList<ChatMessage> ReplaceFunctionCallsWithApprovalRequests(
         IList<ChatMessage> messages,
         params ReadOnlySpan<IList<AITool>?> toolLists)
     {
@@ -1721,6 +1753,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 message.Contents = [.. message.Contents];
 
                 var functionCall = (FunctionCallContent)message.Contents[contentIndex];
+                LogFunctionRequiresApproval(functionCall.Name);
                 message.Contents[contentIndex] = new FunctionApprovalRequestContent(functionCall.CallId, functionCall);
                 outputMessages[messageIndex] = message;
 
@@ -1784,6 +1817,27 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     [LoggerMessage(LogLevel.Debug, "Reached maximum iteration count of {MaximumIterationsPerRequest}. Stopping function invocation loop.")]
     private partial void LogMaximumIterationsReached(int maximumIterationsPerRequest);
+
+    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' requires approval. Converting to approval request.")]
+    private partial void LogFunctionRequiresApproval(string functionName);
+
+    [LoggerMessage(LogLevel.Debug, "Processing approval response for '{FunctionName}'. Approved: {Approved}")]
+    private partial void LogProcessingApprovalResponse(string functionName, bool approved);
+
+    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' was rejected. Reason: {Reason}")]
+    private partial void LogFunctionRejected(string functionName, string? reason);
+
+    [LoggerMessage(LogLevel.Warning, "Maximum consecutive errors ({MaxErrors}) exceeded. Throwing aggregated exceptions.")]
+    private partial void LogMaxConsecutiveErrorsExceeded(int maxErrors);
+
+    [LoggerMessage(LogLevel.Warning, "Function '{FunctionName}' not found.")]
+    private partial void LogFunctionNotFound(string functionName);
+
+    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' is not invocable (declaration only). Terminating loop.")]
+    private partial void LogNonInvocableFunction(string functionName);
+
+    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' requested termination of the processing loop.")]
+    private partial void LogFunctionRequestedTermination(string functionName);
 
     /// <summary>Provides information about the invocation of a function call.</summary>
     public sealed class FunctionInvocationResult
