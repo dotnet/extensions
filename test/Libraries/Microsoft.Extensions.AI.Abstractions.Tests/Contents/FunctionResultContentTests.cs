@@ -3,6 +3,8 @@
 
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -96,11 +98,14 @@ public class FunctionResultContentTests
     public void DerivedFunctionResultContent_CanBeSerializedAndDeserialized()
     {
         // Arrange: Register the derived type
-        var options = new JsonSerializerOptions(AIJsonUtilities.DefaultOptions);
-        options.AddAIContentType<DerivedFunctionResultContent>("derivedFunctionResult");
-        options.MakeReadOnly();
+        var options = new JsonSerializerOptions
+        {
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, FunctionCallContentTests.DerivedTypesJsonContext.Default),
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+        options.AddAIContentType<FunctionCallContentTests.DerivedFunctionResultContent>("derivedFunctionResult");
 
-        var derivedContent = new DerivedFunctionResultContent("callId1", "test result")
+        var derivedContent = new FunctionCallContentTests.DerivedFunctionResultContent("callId1", "test result")
         {
             CustomProperty = "customValue"
         };
@@ -111,20 +116,10 @@ public class FunctionResultContentTests
 
         // Assert
         Assert.NotNull(deserialized);
-        Assert.IsType<DerivedFunctionResultContent>(deserialized);
-        var derivedDeserialized = (DerivedFunctionResultContent)deserialized;
+        Assert.IsType<FunctionCallContentTests.DerivedFunctionResultContent>(deserialized);
+        var derivedDeserialized = (FunctionCallContentTests.DerivedFunctionResultContent)deserialized;
         Assert.Equal("callId1", derivedDeserialized.CallId);
         Assert.Equal("test result", derivedDeserialized.Result?.ToString());
         Assert.Equal("customValue", derivedDeserialized.CustomProperty);
-    }
-
-    private sealed class DerivedFunctionResultContent : FunctionResultContent
-    {
-        public DerivedFunctionResultContent(string callId, object? result)
-            : base(callId, result)
-        {
-        }
-
-        public string? CustomProperty { get; set; }
     }
 }

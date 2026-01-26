@@ -7,13 +7,15 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class FunctionCallContentTests
+public partial class FunctionCallContentTests
 {
     [Fact]
     public void Constructor_PropsDefault()
@@ -327,9 +329,12 @@ public class FunctionCallContentTests
     public static void DerivedFunctionCallContent_CanBeSerializedAndDeserialized()
     {
         // Arrange: Register the derived type
-        var options = new JsonSerializerOptions(AIJsonUtilities.DefaultOptions);
+        var options = new JsonSerializerOptions
+        {
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, DerivedTypesJsonContext.Default),
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
         options.AddAIContentType<DerivedFunctionCallContent>("derivedFunctionCall");
-        options.MakeReadOnly();
 
         var derivedContent = new DerivedFunctionCallContent("callId1", "testFunction", new Dictionary<string, object?> { ["param1"] = "value1" })
         {
@@ -352,7 +357,7 @@ public class FunctionCallContentTests
         Assert.Equal("customValue", derivedDeserialized.CustomProperty);
     }
 
-    private sealed class DerivedFunctionCallContent : FunctionCallContent
+    internal sealed class DerivedFunctionCallContent : FunctionCallContent
     {
         public DerivedFunctionCallContent(string callId, string name, IDictionary<string, object?>? arguments = null)
             : base(callId, name, arguments)
@@ -361,4 +366,18 @@ public class FunctionCallContentTests
 
         public string? CustomProperty { get; set; }
     }
+
+    internal sealed class DerivedFunctionResultContent : FunctionResultContent
+    {
+        public DerivedFunctionResultContent(string callId, object? result)
+            : base(callId, result)
+        {
+        }
+
+        public string? CustomProperty { get; set; }
+    }
+
+    [JsonSerializable(typeof(DerivedFunctionCallContent))]
+    [JsonSerializable(typeof(DerivedFunctionResultContent))]
+    internal sealed partial class DerivedTypesJsonContext : JsonSerializerContext;
 }
