@@ -354,99 +354,12 @@ public class FunctionInvokingChatClientTests
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
-    [Fact]
-    public async Task FunctionReturningFunctionResultContentWithMatchingCallId_UsesItDirectly()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionReturningFunctionResultContentWithMatchingCallId_UsesItDirectly(bool streaming)
     {
-        var options = new ChatOptions
-        {
-            Tools =
-            [
-                AIFunctionFactory.Create(() => "Result 1", "Func1"),
-            ]
-        };
-
-        List<ChatMessage> plan =
-        [
-            new ChatMessage(ChatRole.User, "hello"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Custom result from function")]),
-            new ChatMessage(ChatRole.Assistant, "world"),
-        ];
-
-        // Use FunctionInvoker to return a FunctionResultContent with matching CallId
-        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            s => new FunctionInvokingChatClient(s)
-            {
-                FunctionInvoker = (ctx, cancellationToken) =>
-                {
-                    // Return a FunctionResultContent with the same CallId that was passed in
-                    var frc = new FunctionResultContent(ctx.CallContent.CallId, "Custom result from function")
-                    {
-                        RawRepresentation = "CustomRaw"
-                    };
-                    return new ValueTask<object?>(frc);
-                }
-            });
-
-        var chat = await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
-
-        // Verify that the FunctionResultContent has the custom RawRepresentation, proving it was used directly
-        var toolMessage = chat.First(m => m.Role == ChatRole.Tool);
-        var frc = Assert.Single(toolMessage.Contents.OfType<FunctionResultContent>());
-        Assert.Equal("Custom result from function", frc.Result);
-        Assert.Equal("CustomRaw", frc.RawRepresentation);
-        Assert.Equal("callId1", frc.CallId);
-    }
-
-    [Fact]
-    public async Task FunctionReturningFunctionResultContentWithMismatchedCallId_WrapsIt()
-    {
-        var options = new ChatOptions
-        {
-            Tools =
-            [
-                AIFunctionFactory.Create(() => "Result 1", "Func1"),
-            ]
-        };
-
-        List<ChatMessage> plan =
-        [
-            new ChatMessage(ChatRole.User, "hello"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-
-            // The result should be wrapped, so the outer FunctionResultContent has callId1
-            // and its Result property contains the inner FunctionResultContent
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: new FunctionResultContent("differentCallId", "Result from function"))]),
-            new ChatMessage(ChatRole.Assistant, "world"),
-        ];
-
-        // Use FunctionInvoker to return a FunctionResultContent with mismatched CallId
-        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            s => new FunctionInvokingChatClient(s)
-            {
-                FunctionInvoker = (ctx, cancellationToken) =>
-                {
-                    // Return a FunctionResultContent with a different CallId
-                    var frc = new FunctionResultContent("differentCallId", "Result from function");
-                    return new ValueTask<object?>(frc);
-                }
-            });
-
-        var chat = await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
-
-        // Verify the result is wrapped - the outer FunctionResultContent has the correct CallId
-        var toolMessage = chat.First(m => m.Role == ChatRole.Tool);
-        var frc = Assert.Single(toolMessage.Contents.OfType<FunctionResultContent>());
-        Assert.Equal("callId1", frc.CallId);
-        Assert.IsType<FunctionResultContent>(frc.Result);
-        var innerFrc = (FunctionResultContent)frc.Result!;
-        Assert.Equal("differentCallId", innerFrc.CallId);
-        Assert.Equal("Result from function", innerFrc.Result);
-    }
-
-    [Fact]
-    public async Task FunctionReturningDerivedFunctionResultContent_PropagatesInstanceToInnerClient()
-    {
+        FunctionResultContent? returnedFrc = null;
         ChatMessage? capturedToolMessage = null;
 
         var options = new ChatOptions
@@ -461,20 +374,196 @@ public class FunctionInvokingChatClientTests
         {
             GetResponseAsyncCallback = (msgs, opts, ct) =>
             {
-                // Check if this is the first call (no tool messages yet) or subsequent call
                 var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
                 if (toolMessage is null)
                 {
-                    // First call: return a function call to trigger function invocation
                     return Task.FromResult(new ChatResponse(
                         new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
                 }
                 else
                 {
-                    // Second call: capture and return final response
                     capturedToolMessage = toolMessage;
-
                     return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+                }
+            },
+            GetStreamingResponseAsyncCallback = (msgs, opts, ct) =>
+            {
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
+                {
+                    return YieldAsync(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])).ToChatResponseUpdates());
+                }
+                else
+                {
+                    capturedToolMessage = toolMessage;
+                    return YieldAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")).ToChatResponseUpdates());
+                }
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            FunctionInvoker = (ctx, cancellationToken) =>
+            {
+                returnedFrc = new FunctionResultContent(ctx.CallContent.CallId, "Custom result from function")
+                {
+                    RawRepresentation = "CustomRaw"
+                };
+                return new ValueTask<object?>(returnedFrc);
+            }
+        };
+
+        var messages = new List<ChatMessage>
+        {
+            new ChatMessage(ChatRole.User, "hello"),
+        };
+
+        if (streaming)
+        {
+            await client.GetStreamingResponseAsync(messages, options).ToChatResponseAsync();
+        }
+        else
+        {
+            await client.GetResponseAsync(messages, options);
+        }
+
+        // Verify that the FunctionResultContent was used directly (same reference)
+        Assert.NotNull(capturedToolMessage);
+        var capturedFrc = Assert.Single(capturedToolMessage.Contents.OfType<FunctionResultContent>());
+        Assert.Same(returnedFrc, capturedFrc);
+        Assert.Equal("Custom result from function", capturedFrc.Result);
+        Assert.Equal("CustomRaw", capturedFrc.RawRepresentation);
+        Assert.Equal("callId1", capturedFrc.CallId);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionReturningFunctionResultContentWithMismatchedCallId_WrapsIt(bool streaming)
+    {
+        FunctionResultContent? returnedFrc = null;
+        ChatMessage? capturedToolMessage = null;
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+            ]
+        };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (msgs, opts, ct) =>
+            {
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
+                {
+                    return Task.FromResult(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
+                }
+                else
+                {
+                    capturedToolMessage = toolMessage;
+                    return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+                }
+            },
+            GetStreamingResponseAsyncCallback = (msgs, opts, ct) =>
+            {
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
+                {
+                    return YieldAsync(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])).ToChatResponseUpdates());
+                }
+                else
+                {
+                    capturedToolMessage = toolMessage;
+                    return YieldAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")).ToChatResponseUpdates());
+                }
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            FunctionInvoker = (ctx, cancellationToken) =>
+            {
+                // Return a FunctionResultContent with a different CallId
+                returnedFrc = new FunctionResultContent("differentCallId", "Result from function");
+                return new ValueTask<object?>(returnedFrc);
+            }
+        };
+
+        var messages = new List<ChatMessage>
+        {
+            new ChatMessage(ChatRole.User, "hello"),
+        };
+
+        if (streaming)
+        {
+            await client.GetStreamingResponseAsync(messages, options).ToChatResponseAsync();
+        }
+        else
+        {
+            await client.GetResponseAsync(messages, options);
+        }
+
+        // Verify the result is wrapped - the outer FunctionResultContent has the correct CallId
+        // and the inner one is reference-equal to what was returned
+        Assert.NotNull(capturedToolMessage);
+        var frc = Assert.Single(capturedToolMessage.Contents.OfType<FunctionResultContent>());
+        Assert.Equal("callId1", frc.CallId);
+        Assert.Same(returnedFrc, frc.Result);
+        var innerFrc = (FunctionResultContent)frc.Result!;
+        Assert.Equal("differentCallId", innerFrc.CallId);
+        Assert.Equal("Result from function", innerFrc.Result);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionReturningDerivedFunctionResultContent_PropagatesInstanceToInnerClient(bool streaming)
+    {
+        DerivedFunctionResultContent? returnedFrc = null;
+        ChatMessage? capturedToolMessage = null;
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+            ]
+        };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (msgs, opts, ct) =>
+            {
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
+                {
+                    return Task.FromResult(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
+                }
+                else
+                {
+                    capturedToolMessage = toolMessage;
+                    return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+                }
+            },
+            GetStreamingResponseAsyncCallback = (msgs, opts, ct) =>
+            {
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
+                {
+                    return YieldAsync(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])).ToChatResponseUpdates());
+                }
+                else
+                {
+                    capturedToolMessage = toolMessage;
+                    return YieldAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")).ToChatResponseUpdates());
                 }
             }
         };
@@ -484,11 +573,11 @@ public class FunctionInvokingChatClientTests
             FunctionInvoker = (ctx, cancellationToken) =>
             {
                 // Return a derived FunctionResultContent
-                var frc = new DerivedFunctionResultContent(ctx.CallContent.CallId, "Derived result")
+                returnedFrc = new DerivedFunctionResultContent(ctx.CallContent.CallId, "Derived result")
                 {
                     CustomProperty = "CustomValue"
                 };
-                return new ValueTask<object?>(frc);
+                return new ValueTask<object?>(returnedFrc);
             }
         };
 
@@ -497,11 +586,20 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.User, "hello"),
         };
 
-        await client.GetResponseAsync(messages, options);
+        if (streaming)
+        {
+            await client.GetStreamingResponseAsync(messages, options).ToChatResponseAsync();
+        }
+        else
+        {
+            await client.GetResponseAsync(messages, options);
+        }
 
         // Verify that the derived FunctionResultContent instance was propagated to the inner client
+        // and is reference-equal to what was returned
         Assert.NotNull(capturedToolMessage);
         var capturedFrc = Assert.Single(capturedToolMessage.Contents.OfType<FunctionResultContent>());
+        Assert.Same(returnedFrc, capturedFrc);
         Assert.IsType<DerivedFunctionResultContent>(capturedFrc);
         var derivedFrc = (DerivedFunctionResultContent)capturedFrc;
         Assert.Equal("callId1", derivedFrc.CallId);
