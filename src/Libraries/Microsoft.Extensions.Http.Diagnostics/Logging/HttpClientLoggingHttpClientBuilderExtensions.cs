@@ -34,7 +34,30 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        return AddExtendedHttpClientLoggingInternal(builder);
+        return AddExtendedHttpClientLoggingInternal(builder, configureOptionsBuilder: null, wrapHandlersPipeline: true);
+    }
+
+    /// <summary>
+    /// Adds an <see cref="IHttpClientAsyncLogger" /> to emit logs for outgoing requests for a named <see cref="HttpClient"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
+    /// <param name="wrapHandlersPipeline">
+    /// Determines the logging behavior when resilience strategies (like retries or hedging) are configured.
+    /// When <see langword="true"/>, logs one record per logical request with total duration including all retry attempts.
+    /// When <see langword="false"/>, logs each individual attempt separately with per-attempt duration.
+    /// </param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
+    /// <remarks>
+    /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
+    /// you have a way of viewing structured logs in order to view this extra information.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Argument <paramref name="builder"/> is <see langword="null"/>.</exception>
+    public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, bool wrapHandlersPipeline)
+    {
+        _ = Throw.IfNull(builder);
+
+        return AddExtendedHttpClientLoggingInternal(builder, configureOptionsBuilder: null, wrapHandlersPipeline);
     }
 
     /// <summary>
@@ -54,7 +77,32 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        return AddExtendedHttpClientLoggingInternal(builder, options => options.Bind(section));
+        return AddExtendedHttpClientLoggingInternal(builder, options => options.Bind(section), wrapHandlersPipeline: true);
+    }
+
+    /// <summary>
+    /// Adds an <see cref="IHttpClientAsyncLogger" /> to emit logs for outgoing requests for a named <see cref="HttpClient"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
+    /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="LoggingOptions"/>.</param>
+    /// <param name="wrapHandlersPipeline">
+    /// Determines the logging behavior when resilience strategies (like retries or hedging) are configured.
+    /// When <see langword="true"/>, logs one record per logical request with total duration including all retry attempts.
+    /// When <see langword="false"/>, logs each individual attempt separately with per-attempt duration.
+    /// </param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
+    /// <remarks>
+    /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
+    /// you have a way of viewing structured logs in order to view this extra information.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
+    public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, IConfigurationSection section, bool wrapHandlersPipeline)
+    {
+        _ = Throw.IfNull(builder);
+        _ = Throw.IfNull(section);
+
+        return AddExtendedHttpClientLoggingInternal(builder, options => options.Bind(section), wrapHandlersPipeline);
     }
 
     /// <summary>
@@ -74,10 +122,38 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        return AddExtendedHttpClientLoggingInternal(builder, options => options.Configure(configure));
+        return AddExtendedHttpClientLoggingInternal(builder, options => options.Configure(configure), wrapHandlersPipeline: true);
     }
 
-    private static IHttpClientBuilder AddExtendedHttpClientLoggingInternal(IHttpClientBuilder builder, Action<OptionsBuilder<LoggingOptions>>? configureOptionsBuilder = null)
+    /// <summary>
+    /// Adds an <see cref="IHttpClientAsyncLogger" /> to emit logs for outgoing requests for a named <see cref="HttpClient"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
+    /// <param name="configure">The delegate to configure <see cref="LoggingOptions"/> with.</param>
+    /// <param name="wrapHandlersPipeline">
+    /// Determines the logging behavior when resilience strategies (like retries or hedging) are configured.
+    /// When <see langword="true"/>, logs one record per logical request with total duration including all retry attempts.
+    /// When <see langword="false"/>, logs each individual attempt separately with per-attempt duration.
+    /// </param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
+    /// <remarks>
+    /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
+    /// you have a way of viewing structured logs in order to view this extra information.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
+    public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, Action<LoggingOptions> configure, bool wrapHandlersPipeline)
+    {
+        _ = Throw.IfNull(builder);
+        _ = Throw.IfNull(configure);
+
+        return AddExtendedHttpClientLoggingInternal(builder, options => options.Configure(configure), wrapHandlersPipeline);
+    }
+
+    private static IHttpClientBuilder AddExtendedHttpClientLoggingInternal(
+        IHttpClientBuilder builder,
+        Action<OptionsBuilder<LoggingOptions>>? configureOptionsBuilder,
+        bool wrapHandlersPipeline)
     {
         var optionsBuilder = builder.Services
             .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>(builder.Name);
@@ -97,6 +173,6 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
             .RemoveAllLoggers()
             .AddLogger(
                 serviceProvider => serviceProvider.GetRequiredKeyedService<HttpClientLogger>(builder.Name),
-                wrapHandlersPipeline: true);
+                wrapHandlersPipeline);
     }
 }
