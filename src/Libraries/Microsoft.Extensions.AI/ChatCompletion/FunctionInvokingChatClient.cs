@@ -1208,6 +1208,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             object? functionResult;
             if (result.Status == FunctionInvocationStatus.RanToCompletion)
             {
+                // If the result is already a FunctionResultContent with a matching CallId, use it directly.
+                if (result.Result is FunctionResultContent frc &&
+                    frc.CallId == result.CallContent.CallId)
+                {
+                    return frc;
+                }
+
                 functionResult = result.Result ?? "Success: Function completed.";
             }
             else

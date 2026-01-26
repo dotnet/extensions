@@ -354,6 +354,264 @@ public class FunctionInvokingChatClientTests
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionReturningFunctionResultContentWithMatchingCallId_UsesItDirectly(bool streaming)
+    {
+        FunctionResultContent? returnedFrc = null;
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+            ]
+        };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (msgs, opts, ct) =>
+            {
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
+                {
+                    return Task.FromResult(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
+                }
+                else
+                {
+                    return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+                }
+            },
+            GetStreamingResponseAsyncCallback = (msgs, opts, ct) =>
+            {
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
+                {
+                    return YieldAsync(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])).ToChatResponseUpdates());
+                }
+                else
+                {
+                    return YieldAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")).ToChatResponseUpdates());
+                }
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            FunctionInvoker = (ctx, cancellationToken) =>
+            {
+                returnedFrc = new FunctionResultContent(ctx.CallContent.CallId, "Custom result from function")
+                {
+                    RawRepresentation = "CustomRaw"
+                };
+                return new ValueTask<object?>(returnedFrc);
+            }
+        };
+
+        var messages = new List<ChatMessage>
+        {
+            new ChatMessage(ChatRole.User, "hello"),
+        };
+
+        ChatResponse response;
+        if (streaming)
+        {
+            response = await client.GetStreamingResponseAsync(messages, options).ToChatResponseAsync();
+        }
+        else
+        {
+            response = await client.GetResponseAsync(messages, options);
+        }
+
+        // Verify that the FunctionResultContent was used directly (same reference)
+        var toolMessage = response.Messages.First(m => m.Role == ChatRole.Tool);
+        var capturedFrc = Assert.Single(toolMessage.Contents.OfType<FunctionResultContent>());
+        Assert.Same(returnedFrc, capturedFrc);
+        Assert.Equal("Custom result from function", capturedFrc.Result);
+        Assert.Equal("CustomRaw", capturedFrc.RawRepresentation);
+        Assert.Equal("callId1", capturedFrc.CallId);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionReturningFunctionResultContentWithMismatchedCallId_WrapsIt(bool streaming)
+    {
+        FunctionResultContent? returnedFrc = null;
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+            ]
+        };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (msgs, opts, ct) =>
+            {
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
+                {
+                    return Task.FromResult(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
+                }
+                else
+                {
+                    return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+                }
+            },
+            GetStreamingResponseAsyncCallback = (msgs, opts, ct) =>
+            {
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
+                {
+                    return YieldAsync(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])).ToChatResponseUpdates());
+                }
+                else
+                {
+                    return YieldAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")).ToChatResponseUpdates());
+                }
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            FunctionInvoker = (ctx, cancellationToken) =>
+            {
+                // Return a FunctionResultContent with a different CallId
+                returnedFrc = new FunctionResultContent("differentCallId", "Result from function");
+                return new ValueTask<object?>(returnedFrc);
+            }
+        };
+
+        var messages = new List<ChatMessage>
+        {
+            new ChatMessage(ChatRole.User, "hello"),
+        };
+
+        ChatResponse response;
+        if (streaming)
+        {
+            response = await client.GetStreamingResponseAsync(messages, options).ToChatResponseAsync();
+        }
+        else
+        {
+            response = await client.GetResponseAsync(messages, options);
+        }
+
+        // Verify the result is wrapped - the outer FunctionResultContent has the correct CallId
+        // and the inner one is reference-equal to what was returned
+        var toolMessage = response.Messages.First(m => m.Role == ChatRole.Tool);
+        var frc = Assert.Single(toolMessage.Contents.OfType<FunctionResultContent>());
+        Assert.Equal("callId1", frc.CallId);
+        Assert.Same(returnedFrc, frc.Result);
+        var innerFrc = (FunctionResultContent)frc.Result!;
+        Assert.Equal("differentCallId", innerFrc.CallId);
+        Assert.Equal("Result from function", innerFrc.Result);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionReturningDerivedFunctionResultContent_PropagatesInstanceToInnerClient(bool streaming)
+    {
+        DerivedFunctionResultContent? returnedFrc = null;
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+            ]
+        };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (msgs, opts, ct) =>
+            {
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
+                {
+                    return Task.FromResult(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
+                }
+                else
+                {
+                    return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+                }
+            },
+            GetStreamingResponseAsyncCallback = (msgs, opts, ct) =>
+            {
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is null)
+                {
+                    return YieldAsync(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])).ToChatResponseUpdates());
+                }
+                else
+                {
+                    return YieldAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")).ToChatResponseUpdates());
+                }
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            FunctionInvoker = (ctx, cancellationToken) =>
+            {
+                // Return a derived FunctionResultContent
+                returnedFrc = new DerivedFunctionResultContent(ctx.CallContent.CallId, "Derived result")
+                {
+                    CustomProperty = "CustomValue"
+                };
+                return new ValueTask<object?>(returnedFrc);
+            }
+        };
+
+        var messages = new List<ChatMessage>
+        {
+            new ChatMessage(ChatRole.User, "hello"),
+        };
+
+        ChatResponse response;
+        if (streaming)
+        {
+            response = await client.GetStreamingResponseAsync(messages, options).ToChatResponseAsync();
+        }
+        else
+        {
+            response = await client.GetResponseAsync(messages, options);
+        }
+
+        // Verify that the derived FunctionResultContent instance was propagated to the inner client
+        // and is reference-equal to what was returned
+        var toolMessage = response.Messages.First(m => m.Role == ChatRole.Tool);
+        var capturedFrc = Assert.Single(toolMessage.Contents.OfType<FunctionResultContent>());
+        Assert.Same(returnedFrc, capturedFrc);
+        Assert.IsType<DerivedFunctionResultContent>(capturedFrc);
+        var derivedFrc = (DerivedFunctionResultContent)capturedFrc;
+        Assert.Equal("callId1", derivedFrc.CallId);
+        Assert.Equal("Derived result", derivedFrc.Result);
+        Assert.Equal("CustomValue", derivedFrc.CustomProperty);
+    }
+
+    /// <summary>A derived FunctionResultContent for testing purposes.</summary>
+    private sealed class DerivedFunctionResultContent : FunctionResultContent
+    {
+        public DerivedFunctionResultContent(string callId, object? result)
+            : base(callId, result)
+        {
+        }
+
+        public string? CustomProperty { get; set; }
+    }
+
     [Fact]
     public async Task ContinuesWithSuccessfulCallsUntilMaximumIterations()
     {
