@@ -77,33 +77,21 @@ public class FunctionCallContentTests
         Assert.False(c.InvocationRequired);
     }
 
-    [Fact]
-    public void InvocationRequired_DefaultsToTrue()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InvocationRequired_Serialization(bool invocationRequired)
     {
-        FunctionCallContent c = new("callId1", "name");
-        Assert.True(c.InvocationRequired);
-    }
-
-    [Fact]
-    public void InvocationRequired_CanBeSetToFalse()
-    {
-        FunctionCallContent c = new("callId1", "name") { InvocationRequired = false };
-        Assert.False(c.InvocationRequired);
-    }
-
-    [Fact]
-    public void InvocationRequired_SerializedWhenFalse()
-    {
-        // Arrange - Set InvocationRequired to false (to allow roundtrip, it must be serialized even when false)
+        // Arrange
         var sut = new FunctionCallContent("callId1", "functionName", new Dictionary<string, object?> { ["key"] = "value" })
         {
-            InvocationRequired = false
+            InvocationRequired = invocationRequired
         };
 
         // Act
         var json = JsonSerializer.SerializeToNode(sut, TestJsonSerializerContext.Default.Options);
 
-        // Assert - InvocationRequired should be in the JSON when it's false to allow roundtrip
+        // Assert - InvocationRequired should always be in the JSON (for roundtrip)
         Assert.NotNull(json);
         var jsonObj = json!.AsObject();
         Assert.True(jsonObj.ContainsKey("invocationRequired") || jsonObj.ContainsKey("InvocationRequired"));
@@ -119,61 +107,22 @@ public class FunctionCallContentTests
         }
 
         Assert.NotNull(invocationRequiredValue);
-        Assert.False(invocationRequiredValue!.GetValue<bool>());
+        Assert.Equal(invocationRequired, invocationRequiredValue!.GetValue<bool>());
     }
 
-    [Fact]
-    public void InvocationRequired_SerializedWhenTrue()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InvocationRequired_Deserialization(bool invocationRequired)
     {
-        // Arrange - InvocationRequired defaults to true
-        var sut = new FunctionCallContent("callId1", "functionName", new Dictionary<string, object?> { ["key"] = "value" });
-
-        // Act
-        var json = JsonSerializer.SerializeToNode(sut, TestJsonSerializerContext.Default.Options);
-
-        // Assert - InvocationRequired should be in the JSON when it's true
-        Assert.NotNull(json);
-        var jsonObj = json!.AsObject();
-        Assert.True(jsonObj.ContainsKey("invocationRequired") || jsonObj.ContainsKey("InvocationRequired"));
-
-        JsonNode? invocationRequiredValue = null;
-        if (jsonObj.TryGetPropertyValue("invocationRequired", out var value1))
-        {
-            invocationRequiredValue = value1;
-        }
-        else if (jsonObj.TryGetPropertyValue("InvocationRequired", out var value2))
-        {
-            invocationRequiredValue = value2;
-        }
-
-        Assert.NotNull(invocationRequiredValue);
-        Assert.True(invocationRequiredValue!.GetValue<bool>());
-    }
-
-    [Fact]
-    public void InvocationRequired_DeserializedCorrectlyWhenTrue()
-    {
-        // Test deserialization when InvocationRequired is true
-        var json = """{"callId":"callId1","name":"functionName","invocationRequired":true}""";
+        // Test deserialization
+        var json = $$"""{"callId":"callId1","name":"functionName","invocationRequired":{{(invocationRequired ? "true" : "false")}}}""";
         var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
 
         Assert.NotNull(deserialized);
         Assert.Equal("callId1", deserialized.CallId);
         Assert.Equal("functionName", deserialized.Name);
-        Assert.True(deserialized.InvocationRequired);
-    }
-
-    [Fact]
-    public void InvocationRequired_DeserializedCorrectlyWhenFalse()
-    {
-        // Test deserialization when InvocationRequired is false
-        var json = """{"callId":"callId1","name":"functionName","invocationRequired":false}""";
-        var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
-
-        Assert.NotNull(deserialized);
-        Assert.Equal("callId1", deserialized.CallId);
-        Assert.Equal("functionName", deserialized.Name);
-        Assert.False(deserialized.InvocationRequired);
+        Assert.Equal(invocationRequired, deserialized.InvocationRequired);
     }
 
     [Fact]
@@ -189,11 +138,13 @@ public class FunctionCallContentTests
         Assert.True(deserialized.InvocationRequired);
     }
 
-    [Fact]
-    public void InvocationRequired_RoundtripTrue()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InvocationRequired_Roundtrip(bool invocationRequired)
     {
-        // Test that InvocationRequired=true roundtrips correctly through JSON serialization
-        var original = new FunctionCallContent("callId1", "functionName") { InvocationRequired = true };
+        // Test that InvocationRequired roundtrips correctly through JSON serialization
+        var original = new FunctionCallContent("callId1", "functionName") { InvocationRequired = invocationRequired };
         var json = JsonSerializer.SerializeToNode(original, TestJsonSerializerContext.Default.Options);
         var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
 
@@ -201,22 +152,7 @@ public class FunctionCallContentTests
         Assert.Equal(original.CallId, deserialized.CallId);
         Assert.Equal(original.Name, deserialized.Name);
         Assert.Equal(original.InvocationRequired, deserialized.InvocationRequired);
-        Assert.True(deserialized.InvocationRequired);
-    }
-
-    [Fact]
-    public void InvocationRequired_RoundtripFalse()
-    {
-        // Test that InvocationRequired=false roundtrips correctly through JSON serialization
-        var original = new FunctionCallContent("callId1", "functionName") { InvocationRequired = false };
-        var json = JsonSerializer.SerializeToNode(original, TestJsonSerializerContext.Default.Options);
-        var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
-
-        Assert.NotNull(deserialized);
-        Assert.Equal(original.CallId, deserialized.CallId);
-        Assert.Equal(original.Name, deserialized.Name);
-        Assert.Equal(original.InvocationRequired, deserialized.InvocationRequired);
-        Assert.False(deserialized.InvocationRequired);
+        Assert.Equal(invocationRequired, deserialized.InvocationRequired);
     }
 
     [Fact]
