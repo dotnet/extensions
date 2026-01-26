@@ -459,17 +459,25 @@ public class FunctionInvokingChatClientTests
 
         using var innerClient = new TestChatClient
         {
-            GetResponseAsyncCallback = (messages, opts, ct) =>
+            GetResponseAsyncCallback = (msgs, opts, ct) =>
             {
-                // Capture the FunctionResultContent passed to the inner client
-                var toolMessage = messages.FirstOrDefault(m => m.Role == ChatRole.Tool);
-                if (toolMessage is not null)
+                if (msgs.Count() == 1)
                 {
-                    capturedFrc = toolMessage.Contents.OfType<DerivedFunctionResultContent>().FirstOrDefault();
+                    // First call: return a function call to trigger function invocation
+                    return Task.FromResult(new ChatResponse(
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
                 }
+                else
+                {
+                    // Second call: capture and return final response
+                    var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                    if (toolMessage is not null)
+                    {
+                        capturedFrc = toolMessage.Contents.OfType<DerivedFunctionResultContent>().FirstOrDefault();
+                    }
 
-                // Return a simple response to end the conversation
-                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+                    return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+                }
             }
         };
 
@@ -489,28 +497,6 @@ public class FunctionInvokingChatClientTests
         var messages = new List<ChatMessage>
         {
             new ChatMessage(ChatRole.User, "hello"),
-        };
-
-        // First, the client needs to return a function call to trigger function invocation
-        innerClient.GetResponseAsyncCallback = (msgs, opts, ct) =>
-        {
-            if (msgs.Count() == 1)
-            {
-                // First call: return a function call
-                return Task.FromResult(new ChatResponse(
-                    new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
-            }
-            else
-            {
-                // Second call: capture and return final response
-                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
-                if (toolMessage is not null)
-                {
-                    capturedFrc = toolMessage.Contents.OfType<DerivedFunctionResultContent>().FirstOrDefault();
-                }
-
-                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
-            }
         };
 
         await client.GetResponseAsync(messages, options);
