@@ -5,6 +5,7 @@ using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -219,15 +220,7 @@ public static class OpenAIClientExtensions
     /// <summary>Gets a media type for an image based on the file extension in the provided URI.</summary>
     internal static string ImageUriToMediaType(Uri uri)
     {
-        string absoluteUri = uri.AbsoluteUri;
-        return
-            absoluteUri.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" :
-            absoluteUri.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg" :
-            absoluteUri.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg" :
-            absoluteUri.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ? "image/gif" :
-            absoluteUri.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ? "image/bmp" :
-            absoluteUri.EndsWith(".webp", StringComparison.OrdinalIgnoreCase) ? "image/webp" :
-            "image/*";
+        return MediaTypeMap.GetMediaType(uri.AbsoluteUri) ?? "image/*";
     }
 
     /// <summary>Sets $.model in <paramref name="patch"/> to <paramref name="modelId"/> if not already set.</summary>
