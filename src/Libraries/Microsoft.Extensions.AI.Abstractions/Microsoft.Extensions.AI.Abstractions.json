@@ -1792,7 +1792,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.FunctionCallContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.FunctionCallContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
         {
@@ -1824,7 +1824,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.FunctionResultContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.FunctionResultContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
         {

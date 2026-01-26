@@ -445,6 +445,96 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
+    public async Task FunctionReturningDerivedFunctionResultContent_PropagatesInstanceToInnerClient()
+    {
+        DerivedFunctionResultContent? capturedFrc = null;
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+            ]
+        };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, opts, ct) =>
+            {
+                // Capture the FunctionResultContent passed to the inner client
+                var toolMessage = messages.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is not null)
+                {
+                    capturedFrc = toolMessage.Contents.OfType<DerivedFunctionResultContent>().FirstOrDefault();
+                }
+
+                // Return a simple response to end the conversation
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            FunctionInvoker = (ctx, cancellationToken) =>
+            {
+                // Return a derived FunctionResultContent
+                var frc = new DerivedFunctionResultContent(ctx.CallContent.CallId, "Derived result")
+                {
+                    CustomProperty = "CustomValue"
+                };
+                return new ValueTask<object?>(frc);
+            }
+        };
+
+        var messages = new List<ChatMessage>
+        {
+            new ChatMessage(ChatRole.User, "hello"),
+        };
+
+        // First, the client needs to return a function call to trigger function invocation
+        innerClient.GetResponseAsyncCallback = (msgs, opts, ct) =>
+        {
+            if (msgs.Count() == 1)
+            {
+                // First call: return a function call
+                return Task.FromResult(new ChatResponse(
+                    new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
+            }
+            else
+            {
+                // Second call: capture and return final response
+                var toolMessage = msgs.FirstOrDefault(m => m.Role == ChatRole.Tool);
+                if (toolMessage is not null)
+                {
+                    capturedFrc = toolMessage.Contents.OfType<DerivedFunctionResultContent>().FirstOrDefault();
+                }
+
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "done")));
+            }
+        };
+
+        await client.GetResponseAsync(messages, options);
+
+        // Verify that the derived FunctionResultContent instance was propagated to the inner client
+        Assert.NotNull(capturedFrc);
+        Assert.IsType<DerivedFunctionResultContent>(capturedFrc);
+        Assert.Equal("callId1", capturedFrc.CallId);
+        Assert.Equal("Derived result", capturedFrc.Result);
+        Assert.Equal("CustomValue", capturedFrc.CustomProperty);
+    }
+
+    /// <summary>A derived FunctionResultContent for testing purposes.</summary>
+    private sealed class DerivedFunctionResultContent : FunctionResultContent
+    {
+        public DerivedFunctionResultContent(string callId, object? result)
+            : base(callId, result)
+        {
+        }
+
+        public string? CustomProperty { get; set; }
+    }
+
+    [Fact]
     public async Task ContinuesWithSuccessfulCallsUntilMaximumIterations()
     {
         var maxIterations = 7;
