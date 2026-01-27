@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// Represents a function call request.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class FunctionCallContent : AIContent
+public class FunctionCallContent : AIContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionCallContent"/> class.
