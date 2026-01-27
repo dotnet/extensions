@@ -175,7 +175,7 @@ public class HttpClientLatencyTelemetryExtensionsTest
     }
 
     [Fact]
-    public async Task LatencyInfo_IsPopulated_WithActionConfiguration_AndWrapHandlersPipeline()
+    public async Task LatencyInfo_IsPopulated_WithActionConfiguration_WhenLoggerDoesNotWrapHandlersPipeline()
     {
         using var sp = new ServiceCollection()
             .AddLatencyContext()
