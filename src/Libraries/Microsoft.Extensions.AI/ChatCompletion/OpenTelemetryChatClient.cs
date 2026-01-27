@@ -528,6 +528,14 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 AddMetricTags(ref tags, requestModelId, response);
                 _tokenUsageHistogram.Record((int)outputTokens, tags);
             }
+
+            if (usage.CachedInputTokenCount is long cachedInputTokens)
+            {
+                TagList tags = default;
+                tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeCacheRead);
+                AddMetricTags(ref tags, requestModelId, response);
+                _tokenUsageHistogram.Record((int)cachedInputTokens, tags);
+            }
         }
 
         if (error is not null)
@@ -568,6 +576,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 if (response.Usage?.OutputTokenCount is long outputTokens)
                 {
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.OutputTokens, (int)outputTokens);
+                }
+
+                if (response.Usage?.CachedInputTokenCount is long cachedInputTokens)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.CacheReadInputTokens, (int)cachedInputTokens);
                 }
 
                 // Log all additional response properties as raw values on the span.
