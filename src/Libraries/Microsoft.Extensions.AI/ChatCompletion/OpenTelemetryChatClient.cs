@@ -570,6 +570,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.OutputTokens, (int)outputTokens);
                 }
 
+                if (response.Usage?.CachedInputTokenCount is long cachedInputTokens)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.CacheReadInputTokens, (int)cachedInputTokens);
+                }
+
                 // Log all additional response properties as raw values on the span.
                 // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
                 if (EnableSensitiveData && response.AdditionalProperties is { } props)
