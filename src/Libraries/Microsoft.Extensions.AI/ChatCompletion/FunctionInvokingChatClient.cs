@@ -1230,9 +1230,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 functionResult = message;
             }
 
-            // Mark the function call as having been processed
-            result.CallContent.InvocationRequired = false;
-
             return new FunctionResultContent(result.CallContent.CallId, functionResult) { Exception = result.Exception };
         }
     }
@@ -1704,7 +1701,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             for (int i = 0; i < content.Count; i++)
             {
-                if (content[i] is FunctionCallContent fcc)
+                if (content[i] is FunctionCallContent fcc && fcc.InvocationRequired)
                 {
                     updatedContent ??= [.. content]; // Clone the list if we haven't already
                     updatedContent[i] = new FunctionApprovalRequestContent(fcc.CallId, fcc);
@@ -1735,7 +1732,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             var content = messages[i].Contents;
             for (int j = 0; j < content.Count; j++)
             {
-                if (content[j] is FunctionCallContent functionCall)
+                if (content[j] is FunctionCallContent functionCall && functionCall.InvocationRequired)
                 {
                     (allFunctionCallContentIndices ??= []).Add((i, j));
 

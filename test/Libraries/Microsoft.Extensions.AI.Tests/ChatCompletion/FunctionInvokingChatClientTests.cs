@@ -1726,32 +1726,16 @@ public class FunctionInvokingChatClientTests
 
         using var client = new FunctionInvokingChatClient(innerClient);
 
-        if (streaming)
-        {
-            var updates = new List<ChatResponseUpdate>();
-            await foreach (var update in client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options))
-            {
-                updates.Add(update);
-            }
+        ChatResponse response = streaming
+            ? await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync()
+            : await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
 
-            // The function should not have been invoked since InvocationRequired was false
-            Assert.Equal(0, functionInvokedCount);
+        // The function should not have been invoked since InvocationRequired was false
+        Assert.Equal(0, functionInvokedCount);
 
-            // The updates should contain the FunctionCallContent but no FunctionResultContent
-            Assert.Contains(updates, u => u.Contents.Any(c => c is FunctionCallContent fcc && !fcc.InvocationRequired));
-            Assert.DoesNotContain(updates, u => u.Contents.Any(c => c is FunctionResultContent));
-        }
-        else
-        {
-            var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
-
-            // The function should not have been invoked since InvocationRequired was false
-            Assert.Equal(0, functionInvokedCount);
-
-            // The response should contain the FunctionCallContent but no FunctionResultContent
-            Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && !fcc.InvocationRequired));
-            Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent));
-        }
+        // The response should contain the FunctionCallContent but no FunctionResultContent
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && !fcc.InvocationRequired));
+        Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent));
     }
 
     [Theory]
@@ -1813,30 +1797,17 @@ public class FunctionInvokingChatClientTests
 
         using var client = new FunctionInvokingChatClient(innerClient);
 
-        if (streaming)
-        {
-            var updates = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync();
+        ChatResponse response = streaming
+            ? await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync()
+            : await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
 
-            // Only Func1 should have been invoked (the one with InvocationRequired = true)
-            Assert.Equal(1, func1InvokedCount);
-            Assert.Equal(0, func2InvokedCount);
+        // Only Func1 should have been invoked (the one with InvocationRequired = true)
+        Assert.Equal(1, func1InvokedCount);
+        Assert.Equal(0, func2InvokedCount);
 
-            // The response should contain FunctionResultContent for Func1 but not Func2
-            Assert.Contains(updates.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId1"));
-            Assert.DoesNotContain(updates.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId2"));
-        }
-        else
-        {
-            var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
-
-            // Only Func1 should have been invoked (the one with InvocationRequired = true)
-            Assert.Equal(1, func1InvokedCount);
-            Assert.Equal(0, func2InvokedCount);
-
-            // The response should contain FunctionResultContent for Func1 but not Func2
-            Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId1"));
-            Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId2"));
-        }
+        // The response should contain FunctionResultContent for Func1 but not Func2
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId1"));
+        Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId2"));
     }
 
     [Fact]
