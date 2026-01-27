@@ -528,14 +528,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 AddMetricTags(ref tags, requestModelId, response);
                 _tokenUsageHistogram.Record((int)outputTokens, tags);
             }
-
-            if (usage.CachedInputTokenCount is long cachedInputTokens)
-            {
-                TagList tags = default;
-                tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeCacheRead);
-                AddMetricTags(ref tags, requestModelId, response);
-                _tokenUsageHistogram.Record((int)cachedInputTokens, tags);
-            }
         }
 
         if (error is not null)

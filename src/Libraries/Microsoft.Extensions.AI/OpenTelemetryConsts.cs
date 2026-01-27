@@ -24,7 +24,6 @@ internal static class OpenTelemetryConsts
 
     public const string TokenTypeInput = "input";
     public const string TokenTypeOutput = "output";
-    public const string TokenTypeCacheRead = "cache_read";
 
     public static class Error
     {
