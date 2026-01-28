@@ -117,6 +117,7 @@ public static class OpenAIClientExtensions
     /// <param name="responseClient">The client.</param>
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ResponsesClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="responseClient"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IChatClient AsIChatClient(this ResponsesClient responseClient) =>
         new OpenAIResponsesChatClient(responseClient);
 
@@ -132,6 +133,7 @@ public static class OpenAIClientExtensions
     /// <exception cref="ArgumentNullException"><paramref name="assistantClient"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="assistantId"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="assistantId"/> is empty or composed entirely of whitespace.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IChatClient AsIChatClient(this AssistantClient assistantClient, string assistantId, string? threadId = null) =>
         new OpenAIAssistantsChatClient(assistantClient, assistantId, threadId);
 
@@ -146,6 +148,7 @@ public static class OpenAIClientExtensions
     /// <returns>An <see cref="IChatClient"/> instance configured to interact with the specified agent and thread.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="assistantClient"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="assistant"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IChatClient AsIChatClient(this AssistantClient assistantClient, Assistant assistant, string? threadId = null) =>
         new OpenAIAssistantsChatClient(assistantClient, assistant, threadId);
 
