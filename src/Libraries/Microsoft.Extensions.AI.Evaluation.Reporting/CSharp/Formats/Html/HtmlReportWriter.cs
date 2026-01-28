@@ -83,7 +83,7 @@ public sealed class HtmlReportWriter(string reportFilePath) : IEvaluationReportW
         string all = reader.ReadToEnd();
 
         // This is the placeholder in the data-dataset attribute on the root div.
-        const string SearchString = @"data-dataset=""##DATASETS##""";
+        const string SearchString = "##DATASETS##";
 
         int start = all.IndexOf(SearchString, StringComparison.Ordinal);
         if (start == -1)
@@ -91,11 +91,8 @@ public sealed class HtmlReportWriter(string reportFilePath) : IEvaluationReportW
             throw new InvalidOperationException($"Placeholder '{SearchString}' not found in the HTML template.");
         }
 
-        // Split at the placeholder markers, keeping "data-dataset="" before and "" after
-        const string PlaceholderMarker = "##DATASETS##";
-        int markerStart = start + SearchString.IndexOf(PlaceholderMarker, StringComparison.Ordinal);
-        HtmlTemplateBefore = all.Substring(0, markerStart);
-        HtmlTemplateAfter = all.Substring(markerStart + PlaceholderMarker.Length);
+        HtmlTemplateBefore = all.Substring(0, start);
+        HtmlTemplateAfter = all.Substring(start + SearchString.Length);
     }
 #pragma warning restore CA1065
 }
