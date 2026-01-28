@@ -410,12 +410,6 @@ internal sealed class Parser
             return (null, false);
         }
 
-        if (instrumentKind == InstrumentKind.Gauge)
-        {
-            Diag(DiagDescriptors.ErrorGaugeNotSupported, methodSymbol.GetLocation());
-            return (null, false);
-        }
-
         bool keepMethod = CheckMethodReturnType(methodSymbol);
         if (!_allowedGenericAttributeTypeArgs.Contains(genericType.SpecialType))
         {
@@ -728,6 +722,12 @@ internal sealed class Parser
             default:
                 _builders.ReturnStringBuilder(stringBuilder);
                 return tagConfigs;
+        }
+
+        if (typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+        {
+            Diag(DiagDescriptors.ErrorInvalidTagNameType, member.Locations[0]);
+            return tagConfigs;
         }
 
         // This one is to properly cover "Nullable<T>" cases:
