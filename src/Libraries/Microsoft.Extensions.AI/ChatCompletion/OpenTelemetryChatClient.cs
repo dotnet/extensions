@@ -370,7 +370,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                             ServerToolCall = new OtelGenericServerToolCall
                             {
                                 Type = "mcp",
-                                Arguments = mstcc.Arguments as IDictionary<string, object?>,
+                                Arguments = mstcc.Arguments,
                                 ServerName = mstcc.ServerName,
                             },
                         });
@@ -396,7 +396,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                             ServerToolCall = new OtelGenericServerToolCall
                             {
                                 Type = "mcp_approval_request",
-                                Arguments = mstarc.ToolCall.Arguments as IDictionary<string, object?>,
+                                Arguments = mstarc.ToolCall.Arguments,
                                 ServerName = mstarc.ToolCall.ServerName,
                             },
                         });
@@ -812,7 +812,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     private sealed class OtelGenericServerToolCall
     {
         public string? Type { get; set; }
-        public IDictionary<string, object?>? Arguments { get; set; }
+        public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
         public IList<AIContent>? Inputs { get; set; }
         public string? ServerName { get; set; }
     }
