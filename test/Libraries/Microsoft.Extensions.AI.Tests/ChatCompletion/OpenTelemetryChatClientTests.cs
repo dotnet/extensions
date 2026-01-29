@@ -590,6 +590,260 @@ public class OpenTelemetryChatClientTests
                 """), ReplaceWhitespace(inputMessages));
     }
 
+#pragma warning disable EXTEXP0018 // Type is for evaluation purposes only
+#pragma warning disable EXTEXP0019 // Type is for evaluation purposes only
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ServerToolCallContentTypes_SerializedCorrectly(bool streaming)
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant,
+                [
+                    new TextContent("Processing with tools..."),
+                    new CodeInterpreterToolCallContent { CallId = "ci-call-1", Inputs = [new TextContent("print('hello')")] },
+                    new CodeInterpreterToolResultContent { CallId = "ci-call-1", Outputs = [new TextContent("hello")] },
+                    new ImageGenerationToolCallContent { ImageId = "img-123" },
+                    new ImageGenerationToolResultContent { ImageId = "img-123", Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")] },
+                    new McpServerToolCallContent("mcp-call-1", "myTool", "myServer") { Arguments = new Dictionary<string, object?> { ["param1"] = "value1" } },
+                    new McpServerToolResultContent("mcp-call-1") { Output = [new TextContent("Tool result")] },
+                ]));
+            },
+            GetStreamingResponseAsyncCallback = CallbackAsync,
+        };
+
+        async static IAsyncEnumerable<ChatResponseUpdate> CallbackAsync(
+            IEnumerable<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            yield return new(ChatRole.Assistant, "Processing with tools...");
+            yield return new() { Contents = [new CodeInterpreterToolCallContent { CallId = "ci-call-1", Inputs = [new TextContent("print('hello')")] }] };
+            yield return new() { Contents = [new CodeInterpreterToolResultContent { CallId = "ci-call-1", Outputs = [new TextContent("hello")] }] };
+            yield return new() { Contents = [new ImageGenerationToolCallContent { ImageId = "img-123" }] };
+            yield return new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img-123", Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")] }] };
+            yield return new() { Contents = [new McpServerToolCallContent("mcp-call-1", "myTool", "myServer") { Arguments = new Dictionary<string, object?> { ["param1"] = "value1" } }] };
+            yield return new() { Contents = [new McpServerToolResultContent("mcp-call-1") { Output = [new TextContent("Tool result")] }] };
+        }
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName, configure: instance =>
+            {
+                instance.EnableSensitiveData = true;
+                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+            })
+            .Build();
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "Execute code and generate an image"),
+        ];
+
+        if (streaming)
+        {
+            await foreach (var update in chatClient.GetStreamingResponseAsync(messages))
+            {
+                await Task.Yield();
+            }
+        }
+        else
+        {
+            await chatClient.GetResponseAsync(messages);
+        }
+
+        var activity = Assert.Single(activities);
+        Assert.NotNull(activity);
+
+        var outputMessages = activity.Tags.First(kvp => kvp.Key == "gen_ai.output.messages").Value;
+        Assert.Equal(ReplaceWhitespace("""
+            [
+              {
+                "role": "assistant",
+                "parts": [
+                  {
+                    "type": "text",
+                    "content": "Processing with tools..."
+                  },
+                  {
+                    "type": "server_tool_call",
+                    "id": "ci-call-1",
+                    "name": "code_interpreter",
+                    "server_tool_call": {
+                      "type": "code_interpreter",
+                      "inputs": [
+                        {
+                          "$type": "text",
+                          "text": "print('hello')"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "server_tool_call_response",
+                    "id": "ci-call-1",
+                    "server_tool_call_response": {
+                      "type": "code_interpreter",
+                      "output": [
+                        {
+                          "$type": "text",
+                          "text": "hello"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "server_tool_call",
+                    "id": "img-123",
+                    "name": "image_generation",
+                    "server_tool_call": {
+                      "type": "image_generation"
+                    }
+                  },
+                  {
+                    "type": "server_tool_call_response",
+                    "id": "img-123",
+                    "server_tool_call_response": {
+                      "type": "image_generation",
+                      "output": [
+                        {
+                          "$type": "uri",
+                          "uri": "https://example.com/image.png",
+                          "media_type": "image/png"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "server_tool_call",
+                    "id": "mcp-call-1",
+                    "name": "myTool",
+                    "server_tool_call": {
+                      "type": "mcp",
+                      "arguments": {
+                        "param1": "value1"
+                      },
+                      "server_name": "myServer"
+                    }
+                  },
+                  {
+                    "type": "server_tool_call_response",
+                    "id": "mcp-call-1",
+                    "server_tool_call_response": {
+                      "type": "mcp",
+                      "output": [
+                        {
+                          "$type": "text",
+                          "text": "Tool result"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+            """), ReplaceWhitespace(outputMessages));
+    }
+
+    [Fact]
+    public async Task McpServerToolApprovalContentTypes_SerializedCorrectly()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Done"));
+            },
+        };
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName, configure: instance =>
+            {
+                instance.EnableSensitiveData = true;
+                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+            })
+            .Build();
+
+        var toolCall = new McpServerToolCallContent("mcp-call-2", "dangerousTool", "secureServer")
+        {
+            Arguments = new Dictionary<string, object?> { ["action"] = "delete" }
+        };
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.Assistant,
+            [
+                new McpServerToolApprovalRequestContent("approval-1", toolCall),
+            ]),
+            new(ChatRole.User,
+            [
+                new McpServerToolApprovalResponseContent("approval-1", true),
+            ]),
+        ];
+
+        await chatClient.GetResponseAsync(messages);
+
+        var activity = Assert.Single(activities);
+        Assert.NotNull(activity);
+
+        var inputMessages = activity.Tags.First(kvp => kvp.Key == "gen_ai.input.messages").Value;
+        Assert.Equal(ReplaceWhitespace("""
+            [
+              {
+                "role": "assistant",
+                "parts": [
+                  {
+                    "type": "server_tool_call",
+                    "id": "approval-1",
+                    "name": "dangerousTool",
+                    "server_tool_call": {
+                      "type": "mcp_approval_request",
+                      "arguments": {
+                        "action": "delete"
+                      },
+                      "server_name": "secureServer"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "user",
+                "parts": [
+                  {
+                    "type": "server_tool_call_response",
+                    "id": "approval-1",
+                    "server_tool_call_response": {
+                      "type": "mcp_approval_response",
+                      "approved": true
+                    }
+                  }
+                ]
+              }
+            ]
+            """), ReplaceWhitespace(inputMessages));
+    }
+#pragma warning restore EXTEXP0019 // Type is for evaluation purposes only
+#pragma warning restore EXTEXP0018 // Type is for evaluation purposes only
+
     private sealed class NonSerializableAIContent : AIContent;
 
     private static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
