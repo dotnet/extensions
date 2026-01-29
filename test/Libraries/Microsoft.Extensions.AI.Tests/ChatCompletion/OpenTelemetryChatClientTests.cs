@@ -44,6 +44,7 @@ public class OpenTelemetryChatClientTests
                         InputTokenCount = 10,
                         OutputTokenCount = 20,
                         TotalTokenCount = 42,
+                        CachedInputTokenCount = 5,
                     },
                     AdditionalProperties = new()
                     {
@@ -84,6 +85,7 @@ public class OpenTelemetryChatClientTests
                     InputTokenCount = 10,
                     OutputTokenCount = 20,
                     TotalTokenCount = 42,
+                    CachedInputTokenCount = 5,
                 })],
                 AdditionalProperties = new()
                 {
@@ -180,6 +182,7 @@ public class OpenTelemetryChatClientTests
         Assert.Equal("""["stop"]""", activity.GetTagItem("gen_ai.response.finish_reasons"));
         Assert.Equal(10, activity.GetTagItem("gen_ai.usage.input_tokens"));
         Assert.Equal(20, activity.GetTagItem("gen_ai.usage.output_tokens"));
+        Assert.Equal(5, activity.GetTagItem("gen_ai.usage.cache_read.input_tokens"));
         Assert.Equal(enableSensitiveData ? "abcdefgh" : null, activity.GetTagItem("system_fingerprint"));
         Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("AndSomethingElse"));
 
