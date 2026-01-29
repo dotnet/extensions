@@ -10,16 +10,25 @@ import { ReportContextProvider } from '../../components/ReportContext.tsx';
 
 let dataset: Dataset = { scenarioRunResults: [] };
 
+const rootElement = document.getElementById('root')!;
+
 if (!import.meta.env.PROD) {
-  // This only runs in development. In production the data is embedded into the dataset variable declaration above.
+  // This only runs in development. In production the data is read from the data-dataset attribute on the root element.
   // run `node init-devdata.js` to populate the data file from the most recent execution.
   const imported = await import("../devdata.json");
   dataset = imported.default as unknown as Dataset;
+} else {
+  // In production, the data is HTML-encoded and placed in a data-dataset attribute.
+  // This pattern avoids XSS vulnerabilities that can occur when embedding JSON in script blocks.
+  const datasetJson = rootElement.getAttribute('data-dataset');
+  if (datasetJson) {
+    dataset = JSON.parse(datasetJson) as Dataset;
+  }
 }
 
 const scoreSummary = createScoreSummary(dataset);
 
-createRoot(document.getElementById('root')!).render(
+createRoot(rootElement).render(
   <FluentProvider theme={webLightTheme}>
     <StrictMode>
       <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
