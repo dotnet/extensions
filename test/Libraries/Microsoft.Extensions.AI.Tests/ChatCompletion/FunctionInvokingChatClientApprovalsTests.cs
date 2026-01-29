@@ -1113,6 +1113,49 @@ public class FunctionInvokingChatClientApprovalsTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionCallsWithInvocationRequiredFalseAreNotReplacedWithApprovalsAsync(bool streaming)
+    {
+        var functionInvokedCount = 0;
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(
+                    AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")),
+            ]
+        };
+
+        List<ChatMessage> input = [new ChatMessage(ChatRole.User, "hello")];
+
+        // FunctionCallContent with InvocationRequired = false should pass through unchanged
+        var alreadyProcessedFunctionCall = new FunctionCallContent("callId1", "Func1") { InvocationRequired = false };
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]),
+        ];
+
+        // Expected output should contain the same FunctionCallContent, not a FunctionApprovalRequestContent
+        List<ChatMessage> expectedOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]),
+        ];
+
+        if (streaming)
+        {
+            await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, expectedOutput);
+        }
+        else
+        {
+            await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput);
+        }
+
+        // The function should NOT have been invoked since InvocationRequired was false
+        Assert.Equal(0, functionInvokedCount);
+    }
+
     private static Task<List<ChatMessage>> InvokeAndAssertAsync(
         ChatOptions? options,
         List<ChatMessage> input,
