@@ -61,8 +61,8 @@ public class FunctionCallContent : AIContent
     /// </summary>
     /// <remarks>
     /// This property defaults to <see langword="true"/>, indicating that the function call should be processed.
-    /// When set to <see langword="false"/>, it indicates that the function has already been processed and
-    /// should be ignored by components that process function calls.
+    /// When set to <see langword="false"/>, it indicates that the function has already been processed or is otherwise
+    /// purely informational and should be ignored by components that process function calls.
     /// </remarks>
     public bool InvocationRequired { get; set; } = true;
 
