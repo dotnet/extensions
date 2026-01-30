@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -425,8 +426,13 @@ public class FunctionCallContentTests
         }
 
         // Verify the array roundtrips
-        var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.FunctionCallContentArray);
-        var deserializedContents = JsonSerializer.Deserialize(serializedContents, TestJsonSerializerContext.Default.FunctionCallContentArray);
+        // Note: Change back to TestJsonSerializerContext.Default.FunctionCallContentArray once McpServerToolCallContent is no longer [Experimental]
+        // We need to create new options with reflection support for the array type since TestJsonSerializerContext can't include
+        // FunctionCallContent[] without also referencing the [Experimental] McpServerToolCallContent type.
+        var optionsWithArraySupport = new JsonSerializerOptions(AIJsonUtilities.DefaultOptions);
+        optionsWithArraySupport.TypeInfoResolverChain.Add(new DefaultJsonTypeInfoResolver());
+        var serializedContents = JsonSerializer.Serialize(contents, optionsWithArraySupport);
+        var deserializedContents = JsonSerializer.Deserialize<FunctionCallContent[]>(serializedContents, optionsWithArraySupport);
         Assert.NotNull(deserializedContents);
         Assert.Equal(contents.Length, deserializedContents.Length);
         for (int i = 0; i < deserializedContents.Length; i++)

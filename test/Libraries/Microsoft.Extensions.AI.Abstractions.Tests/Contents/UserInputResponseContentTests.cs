@@ -34,8 +34,6 @@ public class UserInputResponseContentTests
         UserInputResponseContent[] contents =
         [
             new FunctionApprovalResponseContent("request123", true, new FunctionCallContent("call123", "functionName")),
-            
-            // Uncomment once McpServerToolCallContent is no longer experimental.
             new FunctionApprovalResponseContent("request456", true, new McpServerToolCallContent("call456", "myTool", "myServer")),
         ];
 

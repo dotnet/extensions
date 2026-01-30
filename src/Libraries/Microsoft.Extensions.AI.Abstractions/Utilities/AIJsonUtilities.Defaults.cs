@@ -58,6 +58,13 @@ public static partial class AIJsonUtilities
         AddAIContentType(options, typeof(CodeInterpreterToolCallContent), typeDiscriminatorId: "codeInterpreterToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(CodeInterpreterToolResultContent), typeDiscriminatorId: "codeInterpreterToolResult", checkBuiltIn: false);
 
+        // Temporary workaround: McpServerToolCallContent/McpServerToolResultContent are [Experimental] and can't be
+        // added as [JsonDerivedType] on FunctionCallContent/FunctionResultContent yet. Add the polymorphism at runtime.
+        // Once they're no longer [Experimental], the [JsonPolymorphic] and [JsonDerivedType] attributes should be
+        // uncommented on FunctionCallContent/FunctionResultContent and these lines removed.
+        AddDerivedType<FunctionCallContent>(options, typeof(McpServerToolCallContent), typeDiscriminatorId: "mcpServerToolCall");
+        AddDerivedType<FunctionResultContent>(options, typeof(McpServerToolResultContent), typeDiscriminatorId: "mcpServerToolResult");
+
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
             // If reflection-based serialization is enabled by default, use it as a fallback for all other types.

@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -111,8 +112,13 @@ public class FunctionResultContentTests
         }
 
         // Verify the array roundtrips
-        var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.FunctionResultContentArray);
-        var deserializedContents = JsonSerializer.Deserialize(serializedContents, TestJsonSerializerContext.Default.FunctionResultContentArray);
+        // Note: Change back to TestJsonSerializerContext.Default.FunctionResultContentArray once McpServerToolResultContent is no longer [Experimental]
+        // We need to create new options with reflection support for the array type since TestJsonSerializerContext can't include
+        // FunctionResultContent[] without also referencing the [Experimental] McpServerToolResultContent type.
+        var optionsWithArraySupport = new JsonSerializerOptions(AIJsonUtilities.DefaultOptions);
+        optionsWithArraySupport.TypeInfoResolverChain.Add(new DefaultJsonTypeInfoResolver());
+        var serializedContents = JsonSerializer.Serialize(contents, optionsWithArraySupport);
+        var deserializedContents = JsonSerializer.Deserialize<FunctionResultContent[]>(serializedContents, optionsWithArraySupport);
         Assert.NotNull(deserializedContents);
         Assert.Equal(contents.Length, deserializedContents.Length);
         for (int i = 0; i < deserializedContents.Length; i++)
