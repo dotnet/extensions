@@ -410,7 +410,6 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<FunctionApprovalRequestContent>());
                 var mcpCallContent = Assert.IsType<McpServerToolCallContent>(approvalRequest.FunctionCall);
                 Assert.Equal("search_events", mcpCallContent.Name);
-                Assert.Equal("search_events", mcpCallContent.Name);
                 input.Add(new ChatMessage(ChatRole.Tool, [approvalRequest.CreateResponse(true)]));
 
                 response = streaming ?
