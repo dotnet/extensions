@@ -1,5 +1,9 @@
 # Microsoft.Extensions.AI.OpenAI Release History
 
+## NOT YET RELEASED
+
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 10.2.0-preview.1.26063.2
 
 - Updated the OpenAI Responses `IChatClient` to support `ResponseItem`s with input image urls.
