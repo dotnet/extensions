@@ -409,7 +409,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 input.AddRange(response.Messages);
                 var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<FunctionApprovalRequestContent>());
                 var mcpCallContent = Assert.IsType<McpServerToolCallContent>(approvalRequest.FunctionCall);
-                Assert.Equal("search_events", mcpCallContent.ToolName);
+                Assert.Equal("search_events", mcpCallContent.Name);
                 Assert.Equal("search_events", mcpCallContent.Name);
                 input.Add(new ChatMessage(ChatRole.Tool, [approvalRequest.CreateResponse(true)]));
 
@@ -420,7 +420,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
             Assert.NotNull(response);
             var toolCall = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
-            Assert.Equal("search_events", toolCall.ToolName);
+            Assert.Equal("search_events", toolCall.Name);
 
             var toolResult = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
             Assert.Equal(@"{""events"": [], ""next_page_token"": null}", toolResult.Result);

@@ -1433,7 +1433,7 @@ public class OpenAIResponseClientTests
             var call = Assert.IsType<McpServerToolCallContent>(message.Contents[0]);
             Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", call.CallId);
             Assert.Equal("deepwiki", call.ServerName);
-            Assert.Equal("ask_question", call.ToolName);
+            Assert.Equal("ask_question", call.Name);
             Assert.NotNull(call.Arguments);
             Assert.Equal(2, call.Arguments.Count);
             Assert.Equal("dotnet/extensions", ((JsonElement)call.Arguments["repoName"]!).GetString());
@@ -1687,7 +1687,7 @@ public class OpenAIResponseClientTests
         var firstCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
         Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstCall.CallId);
         Assert.Equal("deepwiki", firstCall.ServerName);
-        Assert.Equal("read_wiki_structure", firstCall.ToolName);
+        Assert.Equal("read_wiki_structure", firstCall.Name);
         Assert.NotNull(firstCall.Arguments);
         Assert.Single(firstCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)firstCall.Arguments["repoName"]!).GetString());
@@ -1699,7 +1699,7 @@ public class OpenAIResponseClientTests
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondCall.CallId);
         Assert.Equal("deepwiki", secondCall.ServerName);
-        Assert.Equal("ask_question", secondCall.ToolName);
+        Assert.Equal("ask_question", secondCall.Name);
         Assert.NotNull(secondCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)secondCall.Arguments["repoName"]!).GetString());
         Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)secondCall.Arguments["question"]!).GetString());
@@ -2098,7 +2098,7 @@ public class OpenAIResponseClientTests
         var firstCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
         Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstCall.CallId);
         Assert.Equal("deepwiki", firstCall.ServerName);
-        Assert.Equal("read_wiki_structure", firstCall.ToolName);
+        Assert.Equal("read_wiki_structure", firstCall.Name);
         Assert.NotNull(firstCall.Arguments);
         Assert.Single(firstCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)firstCall.Arguments["repoName"]!).GetString());
@@ -2110,7 +2110,7 @@ public class OpenAIResponseClientTests
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondCall.CallId);
         Assert.Equal("deepwiki", secondCall.ServerName);
-        Assert.Equal("ask_question", secondCall.ToolName);
+        Assert.Equal("ask_question", secondCall.Name);
         Assert.NotNull(secondCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)secondCall.Arguments["repoName"]!).GetString());
         Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)secondCall.Arguments["question"]!).GetString());
@@ -2307,7 +2307,7 @@ public class OpenAIResponseClientTests
         var toolCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
         Assert.Equal("mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", toolCall.CallId);
         Assert.Equal("mymcp", toolCall.ServerName);
-        Assert.Equal("test_error", toolCall.ToolName);
+        Assert.Equal("test_error", toolCall.Name);
         Assert.NotNull(toolCall.Arguments);
         Assert.Empty(toolCall.Arguments);
 

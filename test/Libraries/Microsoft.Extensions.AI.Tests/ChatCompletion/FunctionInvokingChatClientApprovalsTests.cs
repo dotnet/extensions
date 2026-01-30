@@ -1532,6 +1532,11 @@ public class FunctionInvokingChatClientApprovalsTests
 
     private static AIContent CloneFcc(AIContent c) => c switch
     {
+        McpServerToolCallContent mstcc => new McpServerToolCallContent(mstcc.CallId, mstcc.Name, mstcc.ServerName)
+        {
+            Arguments = mstcc.Arguments,
+            InvocationRequired = mstcc.InvocationRequired
+        },
         FunctionCallContent fcc => new FunctionCallContent(fcc.CallId, fcc.Name, fcc.Arguments) { InvocationRequired = fcc.InvocationRequired },
         FunctionApprovalRequestContent farc => new FunctionApprovalRequestContent(farc.Id, (FunctionCallContent)CloneFcc(farc.FunctionCall)),
         FunctionApprovalResponseContent farc => new FunctionApprovalResponseContent(farc.Id, farc.Approved, (FunctionCallContent)CloneFcc(farc.FunctionCall)) { Reason = farc.Reason },
