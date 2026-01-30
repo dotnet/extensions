@@ -2,6 +2,9 @@
 
 ## NOT YET RELEASED
 
+- Unsealed `FunctionCallContent` and `FunctionResultContent`.
+- Added `InvocationRequired` property to `FunctionCallContent` to indicate whether function invocation is required.
+- Added `LoadFromAsync` and `SaveToAsync` helper methods to `DataContent` for file I/O operations.
 - Fixed JSON schema generation for nullable reference type annotations on parameters in AIFunctions.
 
 ## 10.2.0
