@@ -2,12 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace OpenAI.Assistants;
 
 /// <summary>Provides extension methods for working with content associated with OpenAI.Assistants.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAI, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class MicrosoftExtensionsAIAssistantsExtensions
 {
     /// <summary>Creates an OpenAI <see cref="FunctionToolDefinition"/> from an <see cref="AIFunctionDeclaration"/>.</summary>
