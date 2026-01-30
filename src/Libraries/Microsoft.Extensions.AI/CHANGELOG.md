@@ -3,7 +3,7 @@
 ## NOT YET RELEASED
 
 - Fixed `FunctionInvokingChatClient` to respect `ChatOptions.Tools` modifications made by function tools.
-- Fixed `FunctionInvokingChatClient` `invoke_agent` span detection.
+- Fixed `FunctionInvokingChatClient`'s `invoke_agent` span detection.
 - Added logging to `FunctionInvokingChatClient` for approval flow, error handling, and loop control.
 - Removed `AIFunctionDeclaration` tools on last iteration in `FunctionInvokingChatClient`.
 - Allowed `FunctionResultContent` returned by `AIFunction`s to be used by `FunctionInvokingChatClient`.
