@@ -122,6 +122,7 @@ internal static class DataUriParser
             "text/html" => "text/html",
             "text/javascript" => "text/javascript",
             "text/plain" => "text/plain",
+            "text/plain;charset=US-ASCII" => DefaultMediaType,
             "text/plain;charset=UTF-8" => "text/plain;charset=UTF-8",
             "text/xml" => "text/xml",
             _ => null,
