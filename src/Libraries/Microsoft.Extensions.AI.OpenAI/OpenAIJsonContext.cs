@@ -14,7 +14,6 @@ namespace Microsoft.Extensions.AI;
     WriteIndented = true)]
 [JsonSerializable(typeof(OpenAIClientExtensions.ToolJson))]
 [JsonSerializable(typeof(IDictionary<string, object?>))]
-[JsonSerializable(typeof(IReadOnlyDictionary<string, object?>))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(IEnumerable<string>))]
 [JsonSerializable(typeof(JsonElement))]

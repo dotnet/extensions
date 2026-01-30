@@ -14,6 +14,8 @@ namespace Microsoft.Extensions.AI;
 /// Represents a function call request.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(McpServerToolCallContent), "mcpServerToolCall")]
 public class FunctionCallContent : AIContent
 {
     /// <summary>
