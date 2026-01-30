@@ -170,7 +170,7 @@ public sealed class AcceptanceTest
                 { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
                 { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-1"},
                 { new FileInfo("/sys/fs/cgroup/cpu.max"), "20000 100000"},
-                { new FileInfo("/sys/fs/cgroup/cpu.weight"), "4"},
+                { new FileInfo("/sys/fs/cgroup/cpu.weight"), "17"},
                 { new FileInfo("/sys/fs/cgroup/memory.max"), "100000" }
             }))
             .AddResourceMonitoring(x => x.ConfigureMonitor(section))
@@ -304,7 +304,7 @@ public sealed class AcceptanceTest
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
             { new FileInfo("/sys/fs/cgroup/cpu.max"), "40000 10000"},
-            { new FileInfo("/sys/fs/cgroup/cpu.weight"), "79"}, // equals to 2046,9 CPU shares (cgroups v1) which is ~2 CPU units (2 * 1024), so have to use Math.Round() in Assertions down below.
+            { new FileInfo("/sys/fs/cgroup/cpu.weight"), "173"}, // equals to ~2048 CPU shares (cgroups v1) which is ~2 CPU units (2 * 1024), so have to use Math.Round() in Assertions down below.
         });
 
         using var listener = new MeterListener();
@@ -411,7 +411,7 @@ public sealed class AcceptanceTest
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
             { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "40000 10000"},
-            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.weight"), "79"},
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.weight"), "86"},
         });
 
         using var listener = new MeterListener();
