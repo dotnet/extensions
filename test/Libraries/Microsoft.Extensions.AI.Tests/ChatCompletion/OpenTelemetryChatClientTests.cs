@@ -681,12 +681,7 @@ public class OpenTelemetryChatClientTests
                     "name": "code_interpreter",
                     "server_tool_call": {
                       "type": "code_interpreter",
-                      "inputs": [
-                        {
-                          "$type": "text",
-                          "text": "print('hello')"
-                        }
-                      ]
+                      "code": "print('hello')"
                     }
                   },
                   {
@@ -730,10 +725,10 @@ public class OpenTelemetryChatClientTests
                     "name": "myTool",
                     "server_tool_call": {
                       "type": "mcp",
+                      "server_name": "myServer",
                       "arguments": {
                         "param1": "value1"
-                      },
-                      "server_name": "myServer"
+                      }
                     }
                   },
                   {
@@ -817,10 +812,10 @@ public class OpenTelemetryChatClientTests
                     "name": "dangerousTool",
                     "server_tool_call": {
                       "type": "mcp_approval_request",
+                      "server_name": "secureServer",
                       "arguments": {
                         "action": "delete"
-                      },
-                      "server_name": "secureServer"
+                      }
                     }
                   }
                 ]
