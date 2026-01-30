@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.Extensions.AI.ChatCompletion;
+namespace Microsoft.Extensions.AI;
 
 public class FunctionInvokingChatClientApprovalsTests
 {
@@ -1156,6 +1156,219 @@ public class FunctionInvokingChatClientApprovalsTests
         Assert.Equal(0, functionInvokedCount);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionCallReplacedWithApproval_MixedWithMcpApprovalAsync(bool useAdditionalTools)
+    {
+        AITool[] tools =
+        [
+            new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func")),
+            new HostedMcpServerTool("myServer", "https://localhost/mcp")
+        ];
+
+        var options = new ChatOptions
+        {
+            Tools = useAdditionalTools ? null : tools
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func"),
+                new FunctionApprovalRequestContent("callId2", new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+            ])
+        ];
+
+        List<ChatMessage> expectedOutput =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func")),
+                new FunctionApprovalRequestContent("callId2", new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+            ])
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput, additionalTools: useAdditionalTools ? tools : null);
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, expectedOutput, additionalTools: useAdditionalTools ? tools : null);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ApprovedApprovalResponseIsExecuted_MixedWithMcpApprovalAsync(bool useAdditionalTools)
+    {
+        AITool[] tools =
+        [
+            new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func")),
+            new HostedMcpServerTool("myServer", "https://localhost/mcp")
+        ];
+
+        var options = new ChatOptions
+        {
+            Tools = useAdditionalTools ? null : tools
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func")),
+                new FunctionApprovalRequestContent("callId2", new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func")),
+                new FunctionApprovalResponseContent("callId2", true, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+            ]),
+        ];
+
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId2", new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+            ]),
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId2", true, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+            ]),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func")
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "Result 1")
+            ]),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [
+                new McpServerToolResultContent("callId2") { Result = new List<AIContent> { new TextContent("Result 2") } },
+                new TextContent("world")
+            ])
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func")
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "Result 1")
+            ]),
+            new ChatMessage(ChatRole.Assistant, [
+                new McpServerToolResultContent("callId2") { Result = new List<AIContent> { new TextContent("Result 2") } },
+                new TextContent("world")
+            ])
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput, additionalTools: useAdditionalTools ? tools : null);
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput, additionalTools: useAdditionalTools ? tools : null);
+    }
+
+    [Theory]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    public async Task RejectedApprovalResponses_MixedWithMcpApprovalAsync(bool useAdditionalTools, bool approveFuncCall, bool approveMcpCall)
+    {
+        Assert.NotEqual(approveFuncCall, approveMcpCall);
+
+        AITool[] tools =
+        [
+            new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func")),
+            new HostedMcpServerTool("myServer", "https://localhost/mcp")
+        ];
+
+        var options = new ChatOptions
+        {
+            Tools = useAdditionalTools ? null : tools
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func")),
+                new FunctionApprovalRequestContent("callId2", new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", approveFuncCall, new FunctionCallContent("callId1", "Func")),
+                new FunctionApprovalResponseContent("callId2", approveMcpCall, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+            ]),
+        ];
+
+        List<ChatMessage> expectedDownstreamClientInput = [
+                new ChatMessage(ChatRole.User, "hello"),
+                new ChatMessage(ChatRole.Assistant,
+                [
+                    new FunctionApprovalRequestContent("callId2", new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+                ]),
+                new ChatMessage(ChatRole.User,
+                [
+                    new FunctionApprovalResponseContent("callId2", approveMcpCall, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
+                ]),
+                new ChatMessage(ChatRole.Assistant,
+                [
+                    new FunctionCallContent("callId1", "Func")
+                ]),
+                new ChatMessage(ChatRole.Tool,
+                [
+                    approveFuncCall ?
+                        new FunctionResultContent("callId1", result: "Result 1") :
+                        new FunctionResultContent("callId1", result: "Tool call invocation rejected.")
+                ]),
+            ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [
+                new TextContent("world"),
+                .. approveMcpCall ?
+                    [new McpServerToolResultContent("callId2") { Result = new List<AIContent> { new TextContent("Result 2") } }] :
+                    Array.Empty<AIContent>()
+            ])
+        ];
+
+        List<ChatMessage> output = [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func"),
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                approveFuncCall ?
+                    new FunctionResultContent("callId1", result: "Result 1") :
+                    new FunctionResultContent("callId1", result: "Tool call invocation rejected.")
+            ]),
+            new ChatMessage(ChatRole.Assistant, [
+                new TextContent("world"),
+                .. approveMcpCall ?
+                    [new McpServerToolResultContent("callId2") { Result = new List<AIContent> { new TextContent("Result 2") } }] :
+                    Array.Empty<AIContent>()
+            ])
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput, additionalTools: useAdditionalTools ? tools : null);
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput, additionalTools: useAdditionalTools ? tools : null);
+    }
+
     private static Task<List<ChatMessage>> InvokeAndAssertAsync(
         ChatOptions? options,
         List<ChatMessage> input,
@@ -1212,7 +1425,7 @@ public class FunctionInvokingChatClientApprovalsTests
 
         IChatClient service = configurePipeline(innerClient.AsBuilder()).Build();
 
-        var result = await service.GetResponseAsync(new EnumeratedOnceEnumerable<ChatMessage>(input), options, cts.Token);
+        var result = await service.GetResponseAsync(new EnumeratedOnceEnumerable<ChatMessage>(CloneInput(input)), options, cts.Token);
         Assert.NotNull(result);
 
         var actualOutput = result.Messages as List<ChatMessage> ?? result.Messages.ToList();
@@ -1294,7 +1507,7 @@ public class FunctionInvokingChatClientApprovalsTests
 
         IChatClient service = configurePipeline(innerClient.AsBuilder()).Build();
 
-        var result = await service.GetStreamingResponseAsync(new EnumeratedOnceEnumerable<ChatMessage>(input), options, cts.Token).ToChatResponseAsync();
+        var result = await service.GetStreamingResponseAsync(new EnumeratedOnceEnumerable<ChatMessage>(CloneInput(input)), options, cts.Token).ToChatResponseAsync();
         Assert.NotNull(result);
 
         var actualOutput = result.Messages as List<ChatMessage> ?? result.Messages.ToList();
@@ -1313,4 +1526,15 @@ public class FunctionInvokingChatClientApprovalsTests
             yield return item;
         }
     }
+
+    private static List<ChatMessage> CloneInput(List<ChatMessage> input) =>
+        input.Select(m => new ChatMessage(m.Role, m.Contents.Select(CloneFcc).ToList()) { MessageId = m.MessageId }).ToList();
+
+    private static AIContent CloneFcc(AIContent c) => c switch
+    {
+        FunctionCallContent fcc => new FunctionCallContent(fcc.CallId, fcc.Name, fcc.Arguments) { InvocationRequired = fcc.InvocationRequired },
+        FunctionApprovalRequestContent farc => new FunctionApprovalRequestContent(farc.Id, (FunctionCallContent)CloneFcc(farc.FunctionCall)),
+        FunctionApprovalResponseContent farc => new FunctionApprovalResponseContent(farc.Id, farc.Approved, (FunctionCallContent)CloneFcc(farc.FunctionCall)) { Reason = farc.Reason },
+        _ => c
+    };
 }

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
 
@@ -17,7 +16,7 @@ public class McpServerToolResultContentTests
         Assert.Equal("callId", c.CallId);
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.Output);
+        Assert.Null(c.Result);
     }
 
     [Fact]
@@ -37,10 +36,10 @@ public class McpServerToolResultContentTests
 
         Assert.Equal("callId", c.CallId);
 
-        Assert.Null(c.Output);
-        IList<AIContent> output = [];
-        c.Output = output;
-        Assert.Same(output, c.Output);
+        Assert.Null(c.Result);
+        object result = "test result";
+        c.Result = result;
+        Assert.Same(result, c.Result);
     }
 
     [Fact]
@@ -55,7 +54,7 @@ public class McpServerToolResultContentTests
     {
         var content = new McpServerToolResultContent("call123")
         {
-            Output = new List<AIContent> { new TextContent("result") }
+            Result = "result"
         };
 
         var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
@@ -63,6 +62,6 @@ public class McpServerToolResultContentTests
 
         Assert.NotNull(deserializedContent);
         Assert.Equal(content.CallId, deserializedContent.CallId);
-        Assert.NotNull(deserializedContent.Output);
+        Assert.Equal("result", ((JsonElement)deserializedContent.Result!).GetString());
     }
 }
