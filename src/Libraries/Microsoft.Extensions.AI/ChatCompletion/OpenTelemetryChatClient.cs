@@ -465,27 +465,22 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// </remarks>
     private static string? ExtractCodeFromInputs(IList<AIContent>? inputs)
     {
-        if (inputs is null)
+        if (inputs is not null)
         {
-            return null;
-        }
-
-        foreach (var input in inputs)
-        {
-            // Check for DataContent with code MIME types
-            if (input is DataContent dc &&
-                dc.MediaType is not null &&
-                (dc.MediaType.StartsWith("text/", StringComparison.OrdinalIgnoreCase) ||
-                 dc.MediaType.Equals("application/x-python-code", StringComparison.OrdinalIgnoreCase)))
+            foreach (var input in inputs)
             {
-                // Return the data as a string (decode bytes as UTF8)
-                return Encoding.UTF8.GetString(dc.Data.ToArray());
-            }
+                // Check for DataContent with text MIME types
+                if (input is DataContent dc && dc.HasTopLevelMediaType("text"))
+                {
+                    // Return the data as a string (decode bytes as UTF8)
+                    return Encoding.UTF8.GetString(dc.Data.ToArray());
+                }
 
-            // Check for TextContent
-            if (input is TextContent tc && !string.IsNullOrEmpty(tc.Text))
-            {
-                return tc.Text;
+                // Check for TextContent
+                if (input is TextContent tc && !string.IsNullOrEmpty(tc.Text))
+                {
+                    return tc.Text;
+                }
             }
         }
 

@@ -590,8 +590,6 @@ public class OpenTelemetryChatClientTests
                 """), ReplaceWhitespace(inputMessages));
     }
 
-#pragma warning disable EXTEXP0018 // Type is for evaluation purposes only
-#pragma warning disable EXTEXP0019 // Type is for evaluation purposes only
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -836,8 +834,6 @@ public class OpenTelemetryChatClientTests
             ]
             """), ReplaceWhitespace(inputMessages));
     }
-#pragma warning restore EXTEXP0019 // Type is for evaluation purposes only
-#pragma warning restore EXTEXP0018 // Type is for evaluation purposes only
 
     private sealed class NonSerializableAIContent : AIContent;
 
