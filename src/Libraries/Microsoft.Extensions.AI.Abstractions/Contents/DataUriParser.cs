@@ -23,6 +23,11 @@ internal static class DataUriParser
 {
     public static string Scheme => "data:";
 
+    /// <summary>
+    /// The default media type per RFC 2397 when the media type is omitted.
+    /// </summary>
+    public const string DefaultMediaType = "text/plain;charset=US-ASCII";
+
     public static DataUri Parse(ReadOnlyMemory<char> dataUri)
     {
         // Validate, then trim off the "data:" scheme.
@@ -59,9 +64,14 @@ internal static class DataUriParser
         }
 
         // Validate the media type, if present.
+        // Per RFC 2397, if the media type is omitted, it defaults to "text/plain;charset=US-ASCII".
         ReadOnlySpan<char> span = metadata.Span.Trim();
         string? mediaType = null;
-        if (!span.IsEmpty && !IsValidMediaType(span, ref mediaType))
+        if (span.IsEmpty)
+        {
+            mediaType = DefaultMediaType;
+        }
+        else if (!IsValidMediaType(span, ref mediaType))
         {
             throw new UriFormatException("Invalid data URI format: the media type is not a valid.");
         }

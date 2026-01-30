@@ -110,6 +110,56 @@ public sealed class DataContentTests
     }
 
     [Fact]
+    public void Ctor_OmittedMediaType_DefaultsToTextPlain()
+    {
+        // Per RFC 2397, if the media type is omitted, it defaults to "text/plain;charset=US-ASCII"
+        DataContent content;
+
+        // Omitted media type with URL-encoded data
+        content = new DataContent("data:,hello");
+        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
+        Assert.Equal("hello", Encoding.UTF8.GetString(content.Data.ToArray()));
+
+        // Omitted media type with base64-encoded data
+        content = new DataContent("data:;base64,aGVsbG8=");
+        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
+        Assert.Equal("hello", Encoding.UTF8.GetString(content.Data.ToArray()));
+
+        // Omitted media type with URL-encoded data containing special chars
+        content = new DataContent("data:,hello%20world");
+        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
+        Assert.Equal("hello world", Encoding.UTF8.GetString(content.Data.ToArray()));
+
+        // Omitted media type with empty data
+        content = new DataContent("data:,");
+        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
+        Assert.Empty(content.Data.ToArray());
+
+        // Omitted media type with empty base64 data
+        content = new DataContent("data:;base64,");
+        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
+        Assert.Empty(content.Data.ToArray());
+
+        // Omitted media type with Uri constructor
+        content = new DataContent(new Uri("data:,hello"));
+        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
+        Assert.Equal("hello", Encoding.UTF8.GetString(content.Data.ToArray()));
+    }
+
+    [Fact]
+    public void Ctor_OmittedMediaType_CanBeOverridden()
+    {
+        // When media type is omitted in the URI but provided as a parameter, the parameter takes precedence
+        DataContent content;
+
+        content = new DataContent("data:,hello", "application/json");
+        Assert.Equal("application/json", content.MediaType);
+
+        content = new DataContent("data:;base64,aGVsbG8=", "application/octet-stream");
+        Assert.Equal("application/octet-stream", content.MediaType);
+    }
+
+    [Fact]
     public void Serialize_MatchesExpectedJson()
     {
         Assert.Equal(
