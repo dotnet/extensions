@@ -118,14 +118,14 @@ public sealed class DataContentTests
     public void Ctor_OmittedMediaType_DefaultsToTextPlain(string uri, string expectedData)
     {
         // Per RFC 2397, if the media type is omitted, it defaults to "text/plain;charset=US-ASCII"
-        var content = new DataContent(uri);
-        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
-        Assert.Equal(expectedData, Encoding.UTF8.GetString(content.Data.ToArray()));
+        static void Validate(DataContent content, string expectedData)
+        {
+            Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
+            Assert.Equal(expectedData, Encoding.UTF8.GetString(content.Data.ToArray()));
+        }
 
-        // Also test with Uri constructor
-        content = new DataContent(new Uri(uri));
-        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
-        Assert.Equal(expectedData, Encoding.UTF8.GetString(content.Data.ToArray()));
+        Validate(new DataContent(uri), expectedData);
+        Validate(new DataContent(new Uri(uri)), expectedData);
     }
 
     [Theory]
