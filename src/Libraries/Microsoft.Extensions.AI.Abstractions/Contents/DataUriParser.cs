@@ -101,6 +101,7 @@ internal static class DataUriParser
         // For common media types, we can avoid both allocating a string for the span and avoid parsing overheads.
         string? knownType = mediaTypeSpan switch
         {
+            DefaultMediaType => DefaultMediaType,
             "application/json" => "application/json",
             "application/octet-stream" => "application/octet-stream",
             "application/pdf" => "application/pdf",
@@ -122,7 +123,6 @@ internal static class DataUriParser
             "text/html" => "text/html",
             "text/javascript" => "text/javascript",
             "text/plain" => "text/plain",
-            "text/plain;charset=US-ASCII" => DefaultMediaType,
             "text/plain;charset=UTF-8" => "text/plain;charset=UTF-8",
             "text/xml" => "text/xml",
             _ => null,

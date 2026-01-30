@@ -109,54 +109,33 @@ public sealed class DataContentTests
         Assert.Equal("aGVsbG8=", content.Base64Data.ToString());
     }
 
-    [Fact]
-    public void Ctor_OmittedMediaType_DefaultsToTextPlain()
+    [Theory]
+    [InlineData("data:,hello", "hello")]
+    [InlineData("data:;base64,aGVsbG8=", "hello")]
+    [InlineData("data:,hello%20world", "hello world")]
+    [InlineData("data:,", "")]
+    [InlineData("data:;base64,", "")]
+    public void Ctor_OmittedMediaType_DefaultsToTextPlain(string uri, string expectedData)
     {
         // Per RFC 2397, if the media type is omitted, it defaults to "text/plain;charset=US-ASCII"
-        DataContent content;
-
-        // Omitted media type with URL-encoded data
-        content = new DataContent("data:,hello");
+        var content = new DataContent(uri);
         Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
-        Assert.Equal("hello", Encoding.UTF8.GetString(content.Data.ToArray()));
+        Assert.Equal(expectedData, Encoding.UTF8.GetString(content.Data.ToArray()));
 
-        // Omitted media type with base64-encoded data
-        content = new DataContent("data:;base64,aGVsbG8=");
+        // Also test with Uri constructor
+        content = new DataContent(new Uri(uri));
         Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
-        Assert.Equal("hello", Encoding.UTF8.GetString(content.Data.ToArray()));
-
-        // Omitted media type with URL-encoded data containing special chars
-        content = new DataContent("data:,hello%20world");
-        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
-        Assert.Equal("hello world", Encoding.UTF8.GetString(content.Data.ToArray()));
-
-        // Omitted media type with empty data
-        content = new DataContent("data:,");
-        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
-        Assert.Empty(content.Data.ToArray());
-
-        // Omitted media type with empty base64 data
-        content = new DataContent("data:;base64,");
-        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
-        Assert.Empty(content.Data.ToArray());
-
-        // Omitted media type with Uri constructor
-        content = new DataContent(new Uri("data:,hello"));
-        Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
-        Assert.Equal("hello", Encoding.UTF8.GetString(content.Data.ToArray()));
+        Assert.Equal(expectedData, Encoding.UTF8.GetString(content.Data.ToArray()));
     }
 
-    [Fact]
-    public void Ctor_OmittedMediaType_CanBeOverridden()
+    [Theory]
+    [InlineData("data:,hello", "application/json")]
+    [InlineData("data:;base64,aGVsbG8=", "application/octet-stream")]
+    public void Ctor_OmittedMediaType_CanBeOverridden(string uri, string mediaType)
     {
         // When media type is omitted in the URI but provided as a parameter, the parameter takes precedence
-        DataContent content;
-
-        content = new DataContent("data:,hello", "application/json");
-        Assert.Equal("application/json", content.MediaType);
-
-        content = new DataContent("data:;base64,aGVsbG8=", "application/octet-stream");
-        Assert.Equal("application/octet-stream", content.MediaType);
+        var content = new DataContent(uri, mediaType);
+        Assert.Equal(mediaType, content.MediaType);
     }
 
     [Fact]
