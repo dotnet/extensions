@@ -604,17 +604,16 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task GaugeNotSupported()
+    public async Task GaugeIsSDocumented()
     {
         var d = await RunGenerator(@"
             partial class C
             {
                 [Gauge(""d1"")]
-                static partial NotSupportedGauge CreateGauge(Meter meter);
+                static partial MemoryUsage CreateGauge(Meter meter);
             }");
 
-        _ = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorGaugeNotSupported.Id, d[0].Id);
+        Assert.Empty(d);
     }
 
     [Fact]
@@ -804,5 +803,146 @@ public partial class ParserTests
             }");
 
         Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task StrongTypeGauge_CyclicReference()
+    {
+        var d = await RunGenerator(@"
+           public class TypeA
+           {
+               public TypeB testB { get; set; }
+           }
+
+           public class TypeB
+           {
+               public TypeA testA { get; set; }
+           }
+
+           public static partial class MetricClass
+           {
+               [Gauge(typeof(TypeA), Name=""CyclicTest"")]
+               public static partial CyclicTest CreateCyclicTestGauge(Meter meter);
+           }");
+
+        Assert.NotNull(d);
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorTagTypeCycleDetected.Id, diag.Id);
+        Assert.Contains("Test.TypeB ⇆ Test.TypeA", diag.GetMessage());
+    }
+
+    [Fact]
+    public async Task GaugeDuplicateDimensionStringName()
+    {
+        var d = await RunGenerator(@"
+          public class DimensionsTest
+          {
+              public string region { get; set; }
+              public ChildDimensions childDimensions { get; set; }
+          }
+
+          public class ChildDimensions
+          {
+              public string region { get; set; }
+          }
+
+          public static partial class MetricClass
+          {
+              [Gauge(typeof(DimensionsTest), Name=""ActiveConnections"")]
+              public static partial ActiveConnections CreateActiveConnectionsGauge(Meter meter);
+          }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task GaugeDuplicateDimensionStringNameInAttribute()
+    {
+        var d = await RunGenerator(@"
+        public class DimensionsTest
+        {
+            [Dimension(""regionFromAttribute"")]
+            public string region { get; set; }
+            public ChildDimensions childDimensions { get; set; }
+        }
+
+        public class ChildDimensions
+        {
+            [Dimension(""regionFromAttribute"")]
+            public string region { get; set; }
+        }
+
+        public static partial class MetricClass
+        {
+            [Gauge<double>(typeof(DimensionsTest), Name=""MemoryUsage"")]
+            public static partial MemoryUsage CreateMemoryUsageGauge(Meter meter);
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task GaugeDuplicateDimensionEnumName()
+    {
+        var d = await RunGenerator(@"
+        public class DimensionsTest
+        {
+            public Status status { get; set; }
+            public ChildDimensions childDimensions { get; set; }
+        }
+
+        public class ChildDimensions
+        {
+            public Status status { get; set; }
+        }
+
+        public enum Status
+        {
+            Unknown = 0,
+            Active = 1,
+            Idle = 2
+        }
+
+        public static partial class MetricClass
+        {
+            [Gauge(typeof(DimensionsTest), Name=""ConnectionStatus"")]
+            public static partial ConnectionStatus CreateConnectionStatusGauge(Meter meter);
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task GaugeDuplicateDimensionEnumNameInAttribute()
+    {
+        var d = await RunGenerator(@"
+           public class DimensionsTest
+           {
+               [Dimension(""status"")]
+               public Status status { get; set; }
+               public ChildDimensions childDimensions { get; set; }
+           }
+
+           public class ChildDimensions
+           {
+               public Status status { get; set; }
+           }
+
+           public enum Status
+           {
+               Unknown = 0
+           }
+
+           public static partial class MetricClass
+           {
+               [Gauge<int>(typeof(DimensionsTest), Name=""ConnectionCount"")]
+               public static partial ConnectionCount CreateConnectionCountGauge(Meter meter);
+           }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
     }
 }

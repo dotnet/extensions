@@ -123,12 +123,6 @@
   <data name="ErrorDuplicateTagNameTitle" xml:space="preserve">
     <value>A strong type object contains duplicate tag names</value>
   </data>
-  <data name="ErrorGaugeNotSupportedMessage" xml:space="preserve">
-    <value>Gauge is not supported yet by metering generator</value>
-  </data>
-  <data name="ErrorGaugeNotSupportedTitle" xml:space="preserve">
-    <value>Gauge is not supported yet</value>
-  </data>
   <data name="ErrorInvalidAttributeGenericTypeMessage" xml:space="preserve">
     <value>A type '{0}' cannot be used as a metering attribute type argument</value>
   </data>
