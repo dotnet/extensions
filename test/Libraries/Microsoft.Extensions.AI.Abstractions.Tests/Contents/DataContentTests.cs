@@ -109,6 +109,35 @@ public sealed class DataContentTests
         Assert.Equal("aGVsbG8=", content.Base64Data.ToString());
     }
 
+    [Theory]
+    [InlineData("data:,hello", "hello")]
+    [InlineData("data:;base64,aGVsbG8=", "hello")]
+    [InlineData("data:,hello%20world", "hello world")]
+    [InlineData("data:,", "")]
+    [InlineData("data:;base64,", "")]
+    public void Ctor_OmittedMediaType_DefaultsToTextPlain(string uri, string expectedData)
+    {
+        // Per RFC 2397, if the media type is omitted, it defaults to "text/plain;charset=US-ASCII"
+        static void Validate(DataContent content, string expectedData)
+        {
+            Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
+            Assert.Equal(expectedData, Encoding.UTF8.GetString(content.Data.ToArray()));
+        }
+
+        Validate(new DataContent(uri), expectedData);
+        Validate(new DataContent(new Uri(uri)), expectedData);
+    }
+
+    [Theory]
+    [InlineData("data:,hello", "application/json")]
+    [InlineData("data:;base64,aGVsbG8=", "application/octet-stream")]
+    public void Ctor_OmittedMediaType_CanBeOverridden(string uri, string mediaType)
+    {
+        // When media type is omitted in the URI but provided as a parameter, the parameter takes precedence
+        var content = new DataContent(uri, mediaType);
+        Assert.Equal(mediaType, content.MediaType);
+    }
+
     [Fact]
     public void Serialize_MatchesExpectedJson()
     {
