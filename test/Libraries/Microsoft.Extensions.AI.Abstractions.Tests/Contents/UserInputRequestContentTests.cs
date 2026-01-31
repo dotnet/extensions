@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using Xunit;
 
@@ -33,27 +32,30 @@ public class UserInputRequestContentTests
     [Fact]
     public void Serialization_DerivedTypes_Roundtrips()
     {
-        UserInputRequestContent content = new FunctionApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } }));
-        var serializedContent = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
-        var deserializedContent = JsonSerializer.Deserialize<UserInputRequestContent>(serializedContent, AIJsonUtilities.DefaultOptions);
-        Assert.NotNull(deserializedContent);
-        Assert.Equal(content.GetType(), deserializedContent.GetType());
-
         UserInputRequestContent[] contents =
         [
             new FunctionApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
-            new McpServerToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
+            new FunctionApprovalRequestContent("request456", new McpServerToolCallContent("call456", "myTool", "myServer")),
         ];
 
+        // Verify each element roundtrips individually
+        foreach (var content in contents)
+        {
+            var serialized = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+            var deserialized = JsonSerializer.Deserialize<UserInputRequestContent>(serialized, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            Assert.Equal(content.GetType(), deserialized.GetType());
+        }
+
+        // Verify the array roundtrips
         var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.UserInputRequestContentArray);
         var deserializedContents = JsonSerializer.Deserialize(serializedContents, TestJsonSerializerContext.Default.UserInputRequestContentArray);
         Assert.NotNull(deserializedContents);
-
-        Assert.Equal(contents.Count(), deserializedContents.Length);
+        Assert.Equal(contents.Length, deserializedContents.Length);
         for (int i = 0; i < deserializedContents.Length; i++)
         {
-            Assert.NotNull(contents.ElementAt(i));
-            Assert.Equal(contents.ElementAt(i).GetType(), deserializedContents[i].GetType());
+            Assert.NotNull(deserializedContents[i]);
+            Assert.Equal(contents[i].GetType(), deserializedContents[i].GetType());
         }
     }
 

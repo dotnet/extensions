@@ -55,10 +55,15 @@ public static partial class AIJsonUtilities
         AddAIContentType(options, typeof(FunctionApprovalResponseContent), typeDiscriminatorId: "functionApprovalResponse", checkBuiltIn: false);
         AddAIContentType(options, typeof(McpServerToolCallContent), typeDiscriminatorId: "mcpServerToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(McpServerToolResultContent), typeDiscriminatorId: "mcpServerToolResult", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolApprovalRequestContent), typeDiscriminatorId: "mcpServerToolApprovalRequest", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolApprovalResponseContent), typeDiscriminatorId: "mcpServerToolApprovalResponse", checkBuiltIn: false);
         AddAIContentType(options, typeof(CodeInterpreterToolCallContent), typeDiscriminatorId: "codeInterpreterToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(CodeInterpreterToolResultContent), typeDiscriminatorId: "codeInterpreterToolResult", checkBuiltIn: false);
+
+        // Temporary workaround: McpServerToolCallContent/McpServerToolResultContent are [Experimental] and can't be
+        // added as [JsonDerivedType] on FunctionCallContent/FunctionResultContent yet. Add the polymorphism at runtime.
+        // Once they're no longer [Experimental], the [JsonPolymorphic] and [JsonDerivedType] attributes should be
+        // uncommented on FunctionCallContent/FunctionResultContent and these lines removed.
+        AddDerivedType<FunctionCallContent>(options, typeof(McpServerToolCallContent), typeDiscriminatorId: "mcpServerToolCall");
+        AddDerivedType<FunctionResultContent>(options, typeof(McpServerToolResultContent), typeDiscriminatorId: "mcpServerToolResult");
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
@@ -129,8 +134,6 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(FunctionApprovalResponseContent))]
     [JsonSerializable(typeof(McpServerToolCallContent))]
     [JsonSerializable(typeof(McpServerToolResultContent))]
-    [JsonSerializable(typeof(McpServerToolApprovalRequestContent))]
-    [JsonSerializable(typeof(McpServerToolApprovalResponseContent))]
     [JsonSerializable(typeof(CodeInterpreterToolCallContent))]
     [JsonSerializable(typeof(CodeInterpreterToolResultContent))]
     [JsonSerializable(typeof(ResponseContinuationToken))]

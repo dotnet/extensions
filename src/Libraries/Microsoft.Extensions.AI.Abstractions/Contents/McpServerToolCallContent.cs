@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -17,40 +17,26 @@ namespace Microsoft.Extensions.AI;
 /// It is informational only.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIMcpServers, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class McpServerToolCallContent : AIContent
+public sealed class McpServerToolCallContent : FunctionCallContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="McpServerToolCallContent"/> class.
     /// </summary>
     /// <param name="callId">The tool call ID.</param>
-    /// <param name="toolName">The tool name.</param>
+    /// <param name="name">The tool name.</param>
     /// <param name="serverName">The MCP server name that hosts the tool.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="callId"/> or <paramref name="toolName"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="callId"/> or <paramref name="toolName"/> is empty or composed entirely of whitespace.</exception>
-    public McpServerToolCallContent(string callId, string toolName, string? serverName)
+    /// <exception cref="ArgumentNullException"><paramref name="callId"/> or <paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="callId"/> or <paramref name="name"/> is empty or composed entirely of whitespace.</exception>
+    [JsonConstructor]
+    public McpServerToolCallContent(string callId, string name, string? serverName)
+        : base(Throw.IfNullOrWhitespace(callId), Throw.IfNullOrWhitespace(name))
     {
-        CallId = Throw.IfNullOrWhitespace(callId);
-        ToolName = Throw.IfNullOrWhitespace(toolName);
         ServerName = serverName;
+        InvocationRequired = false;
     }
-
-    /// <summary>
-    /// Gets the tool call ID.
-    /// </summary>
-    public string CallId { get; }
-
-    /// <summary>
-    /// Gets the name of the tool called.
-    /// </summary>
-    public string ToolName { get; }
 
     /// <summary>
     /// Gets the name of the MCP server that hosts the tool.
     /// </summary>
     public string? ServerName { get; }
-
-    /// <summary>
-    /// Gets or sets the arguments used for the tool call.
-    /// </summary>
-    public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
 }

@@ -41,4 +41,6 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(ResponseContinuationToken))]
 [JsonSerializable(typeof(UserInputRequestContent[]))]
 [JsonSerializable(typeof(UserInputResponseContent[]))]
+[JsonSerializable(typeof(FunctionCallContent[]))]
+[JsonSerializable(typeof(FunctionResultContent[]))]
 internal sealed partial class TestJsonSerializerContext : JsonSerializerContext;
