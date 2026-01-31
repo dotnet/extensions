@@ -262,5 +262,8 @@ public static class OpenAIClientExtensions
 
         [JsonPropertyName("additionalProperties")]
         public bool AdditionalProperties { get; set; }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement>? ExtensionData { get; set; }
     }
 }

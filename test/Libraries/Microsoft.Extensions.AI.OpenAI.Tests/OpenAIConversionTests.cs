@@ -105,6 +105,49 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIChatTool_PreservesExtraTopLevelPropertiesLikeDefs()
+    {
+        // Create a JSON schema with $defs (used for reference types)
+        var jsonSchema = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "person": { "$ref": "#/$defs/Person" }
+                },
+                "required": ["person"],
+                "$defs": {
+                    "Person": {
+                        "type": "object",
+                        "properties": {
+                            "name": { "type": "string" }
+                        }
+                    }
+                }
+            }
+            """).RootElement;
+
+        var functionWithDefs = AIFunctionFactory.CreateDeclaration(
+            "test_function_with_defs",
+            "A test function with $defs",
+            jsonSchema);
+
+        var tool = functionWithDefs.AsOpenAIChatTool();
+
+        Assert.NotNull(tool);
+        Assert.Equal("test_function_with_defs", tool.FunctionName);
+        Assert.Equal("A test function with $defs", tool.FunctionDescription);
+
+        // Verify that $defs is preserved in the function parameters
+        using var parsedParams = JsonDocument.Parse(tool.FunctionParameters);
+        var root = parsedParams.RootElement;
+
+        Assert.True(root.TryGetProperty("$defs", out var defs), "The $defs property should be preserved in the function parameters");
+        Assert.True(defs.TryGetProperty("Person", out var person), "The Person definition should exist in $defs");
+        Assert.True(person.TryGetProperty("properties", out var properties), "Person should have properties");
+        Assert.True(properties.TryGetProperty("name", out _), "Person should have a name property");
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_ProducesValidInstance()
     {
         var tool = _testFunction.AsOpenAIResponseTool();
