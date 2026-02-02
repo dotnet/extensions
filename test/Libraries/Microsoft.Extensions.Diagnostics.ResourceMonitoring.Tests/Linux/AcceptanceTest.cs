@@ -411,7 +411,7 @@ public sealed class AcceptanceTest
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
             { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "40000 10000"},
-            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.weight"), "86"},
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.weight"), "173"},
         });
 
         using var listener = new MeterListener();
@@ -461,7 +461,7 @@ public sealed class AcceptanceTest
         listener.RecordObservableInstruments();
 
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
-        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1120000\nnr_periods 56");
+        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1120800\nnr_periods 56");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.current"), "524298");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.stat"), "inactive_file 10");
 
