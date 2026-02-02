@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>stable</Stage>
+    <Stage>normal</Stage>
     <MinCodeCoverage>99</MinCodeCoverage>
     <MinMutationScore>95</MinMutationScore>
     <EnablePackageValidation>false</EnablePackageValidation> <!-- To be removed once released as stable -->
