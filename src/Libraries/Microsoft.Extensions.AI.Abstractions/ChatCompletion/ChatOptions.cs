@@ -37,7 +37,7 @@ public class ChatOptions
         ModelId = other.ModelId;
         PresencePenalty = other.PresencePenalty;
         RawRepresentationFactory = other.RawRepresentationFactory;
-        Reasoning = other.Reasoning is { } reasoning ? new ReasoningOptions { Effort = reasoning.Effort, Output = reasoning.Output } : null;
+        Reasoning = other.Reasoning?.Clone();
         ResponseFormat = other.ResponseFormat;
         Seed = other.Seed;
         Temperature = other.Temperature;

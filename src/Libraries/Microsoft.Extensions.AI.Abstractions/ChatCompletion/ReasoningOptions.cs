@@ -39,4 +39,12 @@ public sealed class ReasoningOptions
     /// The reasoning output mode, or <see langword="null"/> to use the provider's default.
     /// </value>
     public ReasoningOutput? Output { get; set; }
+
+    /// <summary>Creates a shallow clone of this <see cref="ReasoningOptions"/> instance.</summary>
+    /// <returns>A shallow clone of this instance.</returns>
+    public ReasoningOptions Clone() => new()
+    {
+        Effort = Effort,
+        Output = Output,
+    };
 }
