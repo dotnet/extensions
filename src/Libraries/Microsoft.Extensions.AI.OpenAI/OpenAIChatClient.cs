@@ -568,6 +568,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         result.PresencePenalty ??= options.PresencePenalty;
         result.Temperature ??= options.Temperature;
         result.Seed ??= options.Seed;
+        result.ReasoningEffortLevel ??= ToOpenAIChatReasoningEffortLevel(options.Reasoning?.Effort);
         OpenAIClientExtensions.PatchModelIfNotSet(ref result.Patch, options.ModelId);
 
         if (options.StopSequences is { Count: > 0 } stopSequences)
@@ -636,6 +637,23 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
             _ => null
         };
+
+    private static ChatReasoningEffortLevel? ToOpenAIChatReasoningEffortLevel(ReasoningEffort? effort)
+    {
+        if (effort is null or ReasoningEffort.None)
+        {
+            return null;
+        }
+
+        return effort switch
+        {
+            ReasoningEffort.Low => ChatReasoningEffortLevel.Low,
+            ReasoningEffort.Medium => ChatReasoningEffortLevel.Medium,
+            ReasoningEffort.High => ChatReasoningEffortLevel.High,
+            ReasoningEffort.ExtraHigh => ChatReasoningEffortLevel.High, // Map to highest available
+            _ => null,
+        };
+    }
 
     private static UsageDetails FromOpenAIUsage(ChatTokenUsage tokenUsage)
     {

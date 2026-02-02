@@ -37,6 +37,7 @@ public class ChatOptions
         ModelId = other.ModelId;
         PresencePenalty = other.PresencePenalty;
         RawRepresentationFactory = other.RawRepresentationFactory;
+        Reasoning = other.Reasoning is { } reasoning ? new ReasoningOptions { Effort = reasoning.Effort, Output = reasoning.Output } : null;
         ResponseFormat = other.ResponseFormat;
         Seed = other.Seed;
         Temperature = other.Temperature;
@@ -107,6 +108,18 @@ public class ChatOptions
 
     /// <summary>Gets or sets a seed value used by a service to control the reproducibility of results.</summary>
     public long? Seed { get; set; }
+
+    /// <summary>
+    /// Gets or sets the reasoning options for the chat request.
+    /// </summary>
+    /// <remarks>
+    /// If <see langword="null"/>, no reasoning options are specified and the client will use its default.
+    /// Not all providers support reasoning options. Implementations should make a best-effort attempt
+    /// to map the requested options to the provider's capabilities. If a provider doesn't support reasoning,
+    /// these options may be ignored.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIReasoning, UrlFormat = DiagnosticIds.UrlFormat)]
+    public ReasoningOptions? Reasoning { get; set; }
 
     /// <summary>
     /// Gets or sets the response format for the chat request.
