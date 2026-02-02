@@ -828,14 +828,14 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             ReasoningEffort.Medium => ResponseReasoningEffortLevel.Medium,
             ReasoningEffort.High => ResponseReasoningEffortLevel.High,
             ReasoningEffort.ExtraHigh => ResponseReasoningEffortLevel.High, // Map to highest available
-            _ => null, // None or null - let OpenAI use its default
+            _ => (ResponseReasoningEffortLevel?)null, // None or null - let OpenAI use its default
         };
 
         ResponseReasoningSummaryVerbosity? summary = reasoning.Output switch
         {
             ReasoningOutput.Summary => ResponseReasoningSummaryVerbosity.Concise,
             ReasoningOutput.Detailed => ResponseReasoningSummaryVerbosity.Detailed,
-            _ => null, // None or null - let OpenAI use its default
+            _ => (ResponseReasoningSummaryVerbosity?)null, // None or null - let OpenAI use its default
         };
 
         if (effortLevel is null && summary is null)

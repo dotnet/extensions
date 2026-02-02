@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// Not all providers support all reasoning options. Implementations should
 /// make a best-effort attempt to map the requested options to the provider's
-/// capabilities. If a provider doesn't support reasoning, these options may be ignored.
+/// capabilities. If a provider or model doesn't support reasoning or doesn't support the requested configuration of reasoning, these options may be ignored.
 /// </para>
 /// </remarks>
 public sealed class ReasoningOptions

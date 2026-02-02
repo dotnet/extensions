@@ -15,15 +15,15 @@ public enum ReasoningOutput
     /// <summary>
     /// No reasoning output. Do not include reasoning content in the response.
     /// </summary>
-    None = 0,
+    None,
 
     /// <summary>
     /// Summary reasoning output. Include a summary of the reasoning process.
     /// </summary>
-    Summary = 1,
+    Summary,
 
     /// <summary>
     /// Detailed reasoning output. Include detailed reasoning content in the response.
     /// </summary>
-    Detailed = 2,
+    Detailed,
 }

@@ -112,12 +112,6 @@ public class ChatOptions
     /// <summary>
     /// Gets or sets the reasoning options for the chat request.
     /// </summary>
-    /// <remarks>
-    /// If <see langword="null"/>, no reasoning options are specified and the client will use its default.
-    /// Not all providers support reasoning options. Implementations should make a best-effort attempt
-    /// to map the requested options to the provider's capabilities. If a provider doesn't support reasoning,
-    /// these options may be ignored.
-    /// </remarks>
     public ReasoningOptions? Reasoning { get; set; }
 
     /// <summary>
