@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -13,7 +10,6 @@ namespace Microsoft.Extensions.AI;
 /// Some providers support including reasoning or thinking traces in the response.
 /// This setting controls whether and how that reasoning content is exposed.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.AIReasoning, UrlFormat = DiagnosticIds.UrlFormat)]
 public enum ReasoningOutput
 {
     /// <summary>

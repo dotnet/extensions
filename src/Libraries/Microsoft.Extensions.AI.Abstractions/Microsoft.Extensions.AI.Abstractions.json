@@ -1034,6 +1034,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "Microsoft.Extensions.AI.ReasoningOptions? Microsoft.Extensions.AI.ChatOptions.Reasoning { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "Microsoft.Extensions.AI.ChatResponseFormat? Microsoft.Extensions.AI.ChatOptions.ResponseFormat { get; set; }",
           "Stage": "Stable"
         },
@@ -2108,6 +2112,90 @@
         {
           "Member": "override int Microsoft.Extensions.AI.NoneChatToolMode.GetHashCode();",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.ReasoningEffort",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ReasoningEffort.ReasoningEffort();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.None",
+          "Stage": "Stable",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.Low",
+          "Stage": "Stable",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.Medium",
+          "Stage": "Stable",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.High",
+          "Stage": "Stable",
+          "Value": "3"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.ExtraHigh",
+          "Stage": "Stable",
+          "Value": "4"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ReasoningOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ReasoningOptions.ReasoningOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.ReasoningEffort? Microsoft.Extensions.AI.ReasoningOptions.Effort { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ReasoningOutput? Microsoft.Extensions.AI.ReasoningOptions.Output { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.ReasoningOutput",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ReasoningOutput.ReasoningOutput();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.None",
+          "Stage": "Stable",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.Summary",
+          "Stage": "Stable",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.Detailed",
+          "Stage": "Stable",
+          "Value": "2"
         }
       ]
     },

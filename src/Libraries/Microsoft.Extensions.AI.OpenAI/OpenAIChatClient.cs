@@ -638,22 +638,15 @@ internal sealed partial class OpenAIChatClient : IChatClient
             _ => null
         };
 
-    private static ChatReasoningEffortLevel? ToOpenAIChatReasoningEffortLevel(ReasoningEffort? effort)
-    {
-        if (effort is null or ReasoningEffort.None)
-        {
-            return null;
-        }
-
-        return effort switch
+    private static ChatReasoningEffortLevel? ToOpenAIChatReasoningEffortLevel(ReasoningEffort? effort) =>
+        effort switch
         {
             ReasoningEffort.Low => ChatReasoningEffortLevel.Low,
             ReasoningEffort.Medium => ChatReasoningEffortLevel.Medium,
             ReasoningEffort.High => ChatReasoningEffortLevel.High,
-            ReasoningEffort.ExtraHigh => ChatReasoningEffortLevel.High, // Map to highest available
-            _ => null,
+            ReasoningEffort.ExtraHigh => ChatReasoningEffortLevel.High,
+            _ => (ChatReasoningEffortLevel?)null,
         };
-    }
 
     private static UsageDetails FromOpenAIUsage(ChatTokenUsage tokenUsage)
     {

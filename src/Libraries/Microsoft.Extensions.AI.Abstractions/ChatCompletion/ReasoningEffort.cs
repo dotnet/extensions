@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -14,7 +11,6 @@ namespace Microsoft.Extensions.AI;
 /// Higher values may result in more thoughtful responses but with increased latency and token usage.
 /// The specific interpretation and support for each level may vary between providers.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.AIReasoning, UrlFormat = DiagnosticIds.UrlFormat)]
 public enum ReasoningEffort
 {
     /// <summary>
@@ -40,9 +36,5 @@ public enum ReasoningEffort
     /// <summary>
     /// Extra high reasoning effort. Maximum reasoning for the most demanding tasks.
     /// </summary>
-    /// <remarks>
-    /// Not all providers support this level of reasoning effort. Some providers may map this to
-    /// their highest available level (such as <see cref="High"/>) if they don't have an equivalent.
-    /// </remarks>
     ExtraHigh = 4,
 }

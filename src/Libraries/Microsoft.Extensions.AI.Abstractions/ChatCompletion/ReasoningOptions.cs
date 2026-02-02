@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -21,7 +18,6 @@ namespace Microsoft.Extensions.AI;
 /// capabilities. If a provider doesn't support reasoning, these options may be ignored.
 /// </para>
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.AIReasoning, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ReasoningOptions
 {
     /// <summary>
@@ -42,7 +38,7 @@ public sealed class ReasoningOptions
 
     /// <summary>Creates a shallow clone of this <see cref="ReasoningOptions"/> instance.</summary>
     /// <returns>A shallow clone of this instance.</returns>
-    public ReasoningOptions Clone() => new()
+    internal ReasoningOptions Clone() => new()
     {
         Effort = Effort,
         Output = Output,

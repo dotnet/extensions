@@ -118,7 +118,6 @@ public class ChatOptions
     /// to map the requested options to the provider's capabilities. If a provider doesn't support reasoning,
     /// these options may be ignored.
     /// </remarks>
-    [Experimental(DiagnosticIds.Experiments.AIReasoning, UrlFormat = DiagnosticIds.UrlFormat)]
     public ReasoningOptions? Reasoning { get; set; }
 
     /// <summary>
