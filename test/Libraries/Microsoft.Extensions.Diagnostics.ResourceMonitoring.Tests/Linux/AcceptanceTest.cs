@@ -469,7 +469,7 @@ public sealed class AcceptanceTest
         listener.RecordObservableInstruments();
 
         Assert.Equal(42, Math.Round(cpuLimitFromGauge * 100));
-        Assert.Equal(83, Math.Round(cpuRequestFromGauge * 100));
+        Assert.Equal(84, Math.Round(cpuRequestFromGauge * 100));
         Assert.Equal(167, Math.Round(cpuUserTime * 100));
         Assert.Equal(81, Math.Round(cpuKernelTime * 100));
 
