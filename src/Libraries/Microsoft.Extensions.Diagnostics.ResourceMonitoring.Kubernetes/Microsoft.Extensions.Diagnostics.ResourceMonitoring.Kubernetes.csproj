@@ -10,6 +10,7 @@
     <Stage>stable</Stage>
     <MinCodeCoverage>99</MinCodeCoverage>
     <MinMutationScore>95</MinMutationScore>
+    <EnablePackageValidation>false</EnablePackageValidation> <!-- To be removed once released as stable -->
   </PropertyGroup>
 
   <ItemGroup>
