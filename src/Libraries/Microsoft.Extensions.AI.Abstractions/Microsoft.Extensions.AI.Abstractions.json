@@ -1464,6 +1464,18 @@
         {
           "Member": "bool Microsoft.Extensions.AI.DataContent.HasTopLevelMediaType(string topLevelType);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.DataContent> Microsoft.Extensions.AI.DataContent.LoadFromAsync(string path, string? mediaType = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.DataContent> Microsoft.Extensions.AI.DataContent.LoadFromAsync(System.IO.Stream stream, string? mediaType = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<string> Microsoft.Extensions.AI.DataContent.SaveToAsync(string path, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
@@ -1780,7 +1792,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.FunctionCallContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.FunctionCallContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
         {
@@ -1806,13 +1818,17 @@
           "Stage": "Stable"
         },
         {
+          "Member": "bool Microsoft.Extensions.AI.FunctionCallContent.InvocationRequired { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "string Microsoft.Extensions.AI.FunctionCallContent.Name { get; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.FunctionResultContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.FunctionResultContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
         {
@@ -1918,9 +1934,17 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedCodeInterpreterTool.HostedCodeInterpreterTool();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedCodeInterpreterTool.HostedCodeInterpreterTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedCodeInterpreterTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedCodeInterpreterTool.Inputs { get; set; }",
           "Stage": "Stable"
@@ -1938,9 +1962,17 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedFileSearchTool.HostedFileSearchTool();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileSearchTool.HostedFileSearchTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedFileSearchTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedFileSearchTool.Inputs { get; set; }",
           "Stage": "Stable"
@@ -1962,9 +1994,17 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedWebSearchTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "override string Microsoft.Extensions.AI.HostedWebSearchTool.Name { get; }",
           "Stage": "Stable"
@@ -2235,6 +2275,14 @@
         },
         {
           "Member": "long? Microsoft.Extensions.AI.UsageDetails.TotalTokenCount { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.CachedInputTokenCount { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.ReasoningTokenCount { get; set; }",
           "Stage": "Stable"
         }
       ]

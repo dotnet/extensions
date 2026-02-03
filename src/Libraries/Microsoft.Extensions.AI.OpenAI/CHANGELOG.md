@@ -1,5 +1,19 @@
 # Microsoft.Extensions.AI.OpenAI Release History
 
+## 10.2.0-preview.1.26063.2
+
+- Updated the OpenAI Responses `IChatClient` to support `ResponseItem`s with input image urls.
+- Updated the OpenAI Responses `IChatClient` to propagate custom headers on `HostedMcpServerTool`.
+
+## 10.1.1-preview.1.25612.2
+
+- Updated to depend on OpenAI 2.8.0.
+- Updated public API signatures in `OpenAIClientExtensions` and `MicrosoftExtensionsAIResponsesExtensions` to match the corresponding breaking changes in OpenAI's Responses APIs.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated the OpenAI Responses and Chat Completion `IChatClient`s to populate `UsageDetails`'s `InputCachedTokenCount` and `ReasoningTokenCount`.
+- Updated handling of `HostedWebSearchTool`, `HostedFileSearchTool`, and `HostedImageGenerationTool` to pull OpenAI-specific
+  options from `AdditionalProperties`.
+
 ## 10.1.0-preview.1.25608.1
 
 - Fixed package references for net10.0 asset.

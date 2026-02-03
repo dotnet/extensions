@@ -187,6 +187,59 @@ public class FunctionInvokingChatClientApprovalsTests
     }
 
     [Fact]
+    public async Task ApprovedApprovalResponsesAreGroupedWhenMessageIdIsNullAsync()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2")),
+            ]
+        };
+
+        // Key difference from other tests: MessageId is NOT set on the assistant message
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+            ]), // Note: No MessageId set - this is the bug trigger
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalResponseContent("callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+            ]),
+        ];
+
+        // Both FCCs should be in a SINGLE assistant message, not split across multiple messages
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1"), new FunctionResultContent("callId2", result: "Result 2: 42")]),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1"), new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+    }
+
+    [Fact]
     public async Task ApprovedApprovalResponsesFromSeparateFCCMessagesAreExecutedAsync()
     {
         var options = new ChatOptions
@@ -278,8 +331,8 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user."),
-                new FunctionResultContent("callId2", result: "Error: Tool call invocation was rejected by user.")
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected."),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected.")
             ]),
         ];
 
@@ -293,8 +346,8 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user."),
-                new FunctionResultContent("callId2", result: "Error: Tool call invocation was rejected by user.")
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected."),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected.")
             ]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
@@ -335,7 +388,7 @@ public class FunctionInvokingChatClientApprovalsTests
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user.")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Tool call invocation rejected.")]),
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
         ];
 
@@ -347,7 +400,7 @@ public class FunctionInvokingChatClientApprovalsTests
         List<ChatMessage> nonStreamingOutput =
         [
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user.")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Tool call invocation rejected.")]),
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
@@ -357,7 +410,7 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", result: "Error: Tool call invocation was rejected by user."),
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected."),
                 new FunctionResultContent("callId2", result: "Result 2: 42")
             ]),
             new ChatMessage(ChatRole.Assistant, "world"),
@@ -366,6 +419,222 @@ public class FunctionInvokingChatClientApprovalsTests
         await InvokeAndAssertAsync(options, input, downstreamClientOutput, nonStreamingOutput, expectedDownstreamClientInput);
 
         await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, streamingOutput, expectedDownstreamClientInput);
+    }
+
+    [Fact]
+    public async Task RejectedApprovalResponsesWithCustomReasonAsync()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1"))
+                {
+                    Reason = "User denied permission for this operation"
+                },
+                new FunctionApprovalResponseContent("callId2", false, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                {
+                    Reason = "Function Func2 is not allowed at this time"
+                }
+            ]),
+        ];
+
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. User denied permission for this operation"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected. Function Func2 is not allowed at this time")
+            ]),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. User denied permission for this operation"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected. Function Func2 is not allowed at this time")
+            ]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+    }
+
+    [Fact]
+    public async Task MixedApprovalResponsesWithCustomAndDefaultReasonsAsync()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+                AIFunctionFactory.Create((string s) => $"Result 3: {s}", "Func3"),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })),
+                new FunctionApprovalRequestContent("callId3", new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } }))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1")) { Reason = "Custom rejection for Func1" },
+                new FunctionApprovalResponseContent("callId2", false, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })),
+                new FunctionApprovalResponseContent("callId3", true, new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } }))
+            ]),
+        ];
+
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func1"),
+                new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }),
+                new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } })
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. Custom rejection for Func1"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected.")
+            ]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Result 3: test")]),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> nonStreamingOutput =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func1"),
+                new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }),
+                new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } })
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. Custom rejection for Func1"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected.")
+            ]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Result 3: test")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> streamingOutput =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func1"),
+                new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }),
+                new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } })
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. Custom rejection for Func1"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected."),
+                new FunctionResultContent("callId3", result: "Result 3: test")
+            ]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, nonStreamingOutput, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, streamingOutput, expectedDownstreamClientInput);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task RejectedApprovalResponsesWithEmptyOrWhitespaceReasonUsesDefaultMessageAsync(string? reason)
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1"))
+                {
+                    Reason = reason
+                },
+            ]),
+        ];
+
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected.")
+            ]),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected.")
+            ]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
     }
 
     [Fact]
@@ -842,6 +1111,49 @@ public class FunctionInvokingChatClientApprovalsTests
 
             updateCount++;
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionCallsWithInvocationRequiredFalseAreNotReplacedWithApprovalsAsync(bool streaming)
+    {
+        var functionInvokedCount = 0;
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(
+                    AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")),
+            ]
+        };
+
+        List<ChatMessage> input = [new ChatMessage(ChatRole.User, "hello")];
+
+        // FunctionCallContent with InvocationRequired = false should pass through unchanged
+        var alreadyProcessedFunctionCall = new FunctionCallContent("callId1", "Func1") { InvocationRequired = false };
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]),
+        ];
+
+        // Expected output should contain the same FunctionCallContent, not a FunctionApprovalRequestContent
+        List<ChatMessage> expectedOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]),
+        ];
+
+        if (streaming)
+        {
+            await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, expectedOutput);
+        }
+        else
+        {
+            await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput);
+        }
+
+        // The function should NOT have been invoked since InvocationRequired was false
+        Assert.Equal(0, functionInvokedCount);
     }
 
     private static Task<List<ChatMessage>> InvokeAndAssertAsync(

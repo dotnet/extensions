@@ -9,38 +9,32 @@ namespace Microsoft.Shared.ProjectTemplates.Tests;
 
 internal static class WellKnownPaths
 {
+    private const string BuildConfigurationFolder =
+#if DEBUG
+        "Debug";
+#else
+        "Release";
+#endif
+
     public static readonly string RepoRoot;
     public static readonly string RepoDotNetExePath;
-    public static readonly string ThisProjectRoot;
-
-    public static readonly string TemplateFeedLocation;
-    public static readonly string TemplateSandboxSource;
-    public static readonly string TemplateSandboxOutputRoot;
-    public static readonly string TemplateInstallNuGetConfigPath;
-    public static readonly string TemplateTestNuGetConfigPath;
     public static readonly string LocalShippingPackagesPath;
-    public static readonly string NuGetPackagesPath;
+    public static readonly string ProjectTemplatesArtifactsRoot;
+
+    // Execution Test Paths
+    public static readonly string TemplateSandboxSource;
+    public static readonly string TemplateTestNuGetConfigPath;
 
     static WellKnownPaths()
     {
         RepoRoot = GetRepoRoot();
         RepoDotNetExePath = GetRepoDotNetExePath();
-        ThisProjectRoot = ProjectRootHelper.GetThisProjectRoot();
 
-        TemplateFeedLocation = Path.Combine(RepoRoot, "src", "ProjectTemplates");
+        ProjectTemplatesArtifactsRoot = Path.Combine(RepoRoot, "artifacts", "ProjectTemplates");
         TemplateSandboxSource = Path.Combine(RepoRoot, "test", "ProjectTemplates", "Infrastructure", "TemplateSandbox");
-        TemplateSandboxOutputRoot = Path.Combine(ThisProjectRoot, "ExecutionTestSandbox");
-        TemplateInstallNuGetConfigPath = Path.Combine(TemplateSandboxSource, "nuget.template_install.config");
-        TemplateTestNuGetConfigPath = Path.Combine(TemplateSandboxSource, "nuget.template_test.config");
+        TemplateTestNuGetConfigPath = Path.Combine(TemplateSandboxSource, "nuget.config");
 
-        const string BuildConfigurationFolder =
-#if DEBUG
-            "Debug";
-#else
-            "Release";
-#endif
         LocalShippingPackagesPath = Path.Combine(RepoRoot, "artifacts", "packages", BuildConfigurationFolder, "Shipping");
-        NuGetPackagesPath = Path.Combine(TemplateSandboxOutputRoot, "packages");
     }
 
     private static string GetRepoRoot()

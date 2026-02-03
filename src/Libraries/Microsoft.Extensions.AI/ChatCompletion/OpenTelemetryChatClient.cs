@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -311,6 +312,99 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         m.Parts.Add(new OtelGenericPart { Type = "error", Content = ec.Message });
                         break;
 
+                    // Server tool call content types as specified in the OpenTelemetry semantic conventions:
+
+                    case CodeInterpreterToolCallContent citcc:
+                        m.Parts.Add(new OtelServerToolCallPart<OtelCodeInterpreterToolCall>
+                        {
+                            Id = citcc.CallId,
+                            Name = "code_interpreter",
+                            ServerToolCall = new OtelCodeInterpreterToolCall
+                            {
+                                Code = ExtractCodeFromInputs(citcc.Inputs),
+                            },
+                        });
+                        break;
+
+                    case CodeInterpreterToolResultContent citrc:
+                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelCodeInterpreterToolCallResponse>
+                        {
+                            Id = citrc.CallId,
+                            ServerToolCallResponse = new OtelCodeInterpreterToolCallResponse
+                            {
+                                Output = citrc.Outputs,
+                            },
+                        });
+                        break;
+
+                    case ImageGenerationToolCallContent igtcc:
+                        m.Parts.Add(new OtelServerToolCallPart<OtelImageGenerationToolCall>
+                        {
+                            Id = igtcc.ImageId,
+                            Name = "image_generation",
+                            ServerToolCall = new OtelImageGenerationToolCall(),
+                        });
+                        break;
+
+                    case ImageGenerationToolResultContent igtrc:
+                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelImageGenerationToolCallResponse>
+                        {
+                            Id = igtrc.ImageId,
+                            ServerToolCallResponse = new OtelImageGenerationToolCallResponse
+                            {
+                                Output = igtrc.Outputs,
+                            },
+                        });
+                        break;
+
+                    case McpServerToolCallContent mstcc:
+                        m.Parts.Add(new OtelServerToolCallPart<OtelMcpToolCall>
+                        {
+                            Id = mstcc.CallId,
+                            Name = mstcc.ToolName,
+                            ServerToolCall = new OtelMcpToolCall
+                            {
+                                Arguments = mstcc.Arguments,
+                                ServerName = mstcc.ServerName,
+                            },
+                        });
+                        break;
+
+                    case McpServerToolResultContent mstrc:
+                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelMcpToolCallResponse>
+                        {
+                            Id = mstrc.CallId,
+                            ServerToolCallResponse = new OtelMcpToolCallResponse
+                            {
+                                Output = mstrc.Output,
+                            },
+                        });
+                        break;
+
+                    case McpServerToolApprovalRequestContent mstarc:
+                        m.Parts.Add(new OtelServerToolCallPart<OtelMcpApprovalRequest>
+                        {
+                            Id = mstarc.Id,
+                            Name = mstarc.ToolCall.ToolName,
+                            ServerToolCall = new OtelMcpApprovalRequest
+                            {
+                                Arguments = mstarc.ToolCall.Arguments,
+                                ServerName = mstarc.ToolCall.ServerName,
+                            },
+                        });
+                        break;
+
+                    case McpServerToolApprovalResponseContent mstaresp:
+                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelMcpApprovalResponse>
+                        {
+                            Id = mstaresp.Id,
+                            ServerToolCallResponse = new OtelMcpApprovalResponse
+                            {
+                                Approved = mstaresp.Approved,
+                            },
+                        });
+                        break;
+
                     default:
                         JsonElement element = _emptyObject;
                         try
@@ -358,6 +452,35 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     topLevel.Equals("audio", StringComparison.OrdinalIgnoreCase) ? "audio" :
                     topLevel.Equals("video", StringComparison.OrdinalIgnoreCase) ? "video" :
                     null;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Extracts code text from code interpreter inputs.</summary>
+    /// <remarks>
+    /// Code interpreter inputs typically contain a DataContent with a "text/x-python" or similar
+    /// media type representing the code to execute.
+    /// </remarks>
+    private static string? ExtractCodeFromInputs(IList<AIContent>? inputs)
+    {
+        if (inputs is not null)
+        {
+            foreach (var input in inputs)
+            {
+                // Check for DataContent with text MIME types
+                if (input is DataContent dc && dc.HasTopLevelMediaType("text"))
+                {
+                    // Return the data as a string (decode bytes as UTF8)
+                    return Encoding.UTF8.GetString(dc.Data.ToArray());
+                }
+
+                // Check for TextContent
+                if (input is TextContent tc && !string.IsNullOrEmpty(tc.Text))
+                {
+                    return tc.Text;
+                }
             }
         }
 
@@ -570,6 +693,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.OutputTokens, (int)outputTokens);
                 }
 
+                if (response.Usage?.CachedInputTokenCount is long cachedInputTokens)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.CacheReadInputTokens, (int)cachedInputTokens);
+                }
+
                 // Log all additional response properties as raw values on the span.
                 // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
                 if (EnableSensitiveData && response.AdditionalProperties is { } props)
@@ -686,6 +814,72 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         public object? Response { get; set; }
     }
 
+    private sealed class OtelServerToolCallPart<T>
+        where T : class
+    {
+        public string Type { get; set; } = "server_tool_call";
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public T? ServerToolCall { get; set; }
+    }
+
+    private sealed class OtelServerToolCallResponsePart<T>
+        where T : class
+    {
+        public string Type { get; set; } = "server_tool_call_response";
+        public string? Id { get; set; }
+        public T? ServerToolCallResponse { get; set; }
+    }
+
+    private sealed class OtelCodeInterpreterToolCall
+    {
+        public string Type { get; set; } = "code_interpreter";
+        public string? Code { get; set; }
+    }
+
+    private sealed class OtelCodeInterpreterToolCallResponse
+    {
+        public string Type { get; set; } = "code_interpreter";
+        public object? Output { get; set; }
+    }
+
+    private sealed class OtelImageGenerationToolCall
+    {
+        public string Type { get; set; } = "image_generation";
+    }
+
+    private sealed class OtelImageGenerationToolCallResponse
+    {
+        public string Type { get; set; } = "image_generation";
+        public object? Output { get; set; }
+    }
+
+    private sealed class OtelMcpToolCall
+    {
+        public string Type { get; set; } = "mcp";
+        public string? ServerName { get; set; }
+        public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
+    }
+
+    private sealed class OtelMcpToolCallResponse
+    {
+        public string Type { get; set; } = "mcp";
+        public object? Output { get; set; }
+    }
+
+    private sealed class OtelMcpApprovalRequest
+    {
+        public string Type { get; set; } = "mcp_approval_request";
+        public string? ServerName { get; set; }
+        public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
+    }
+
+    private sealed class OtelMcpApprovalResponse
+    {
+        public string Type { get; set; } = "mcp_approval_response";
+        public bool Approved { get; set; }
+    }
+
     private sealed class OtelFunction
     {
         public string Type { get; set; } = "function";
@@ -722,6 +916,14 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     [JsonSerializable(typeof(OtelFilePart))]
     [JsonSerializable(typeof(OtelToolCallRequestPart))]
     [JsonSerializable(typeof(OtelToolCallResponsePart))]
+    [JsonSerializable(typeof(OtelServerToolCallPart<OtelCodeInterpreterToolCall>))]
+    [JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelCodeInterpreterToolCallResponse>))]
+    [JsonSerializable(typeof(OtelServerToolCallPart<OtelImageGenerationToolCall>))]
+    [JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelImageGenerationToolCallResponse>))]
+    [JsonSerializable(typeof(OtelServerToolCallPart<OtelMcpToolCall>))]
+    [JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelMcpToolCallResponse>))]
+    [JsonSerializable(typeof(OtelServerToolCallPart<OtelMcpApprovalRequest>))]
+    [JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelMcpApprovalResponse>))]
     [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
     private sealed partial class OtelContext : JsonSerializerContext;
 }

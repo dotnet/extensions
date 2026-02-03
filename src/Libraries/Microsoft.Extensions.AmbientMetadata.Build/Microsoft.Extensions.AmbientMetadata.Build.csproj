@@ -10,13 +10,11 @@
   <PropertyGroup>
     <BuildAnalyzerReferences>true</BuildAnalyzerReferences>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>dev</Stage>
-    <StageDevDiagnosticId>EXTEXP0009</StageDevDiagnosticId>
+    <Stage>normal</Stage>
     <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>
   </PropertyGroup>
@@ -31,11 +29,11 @@
   <ItemGroup>
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.BuildMetadata\Microsoft.Gen.BuildMetadata.csproj" />
   </ItemGroup>

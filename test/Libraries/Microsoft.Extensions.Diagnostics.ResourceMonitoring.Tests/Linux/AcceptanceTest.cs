@@ -170,7 +170,7 @@ public sealed class AcceptanceTest
                 { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
                 { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-1"},
                 { new FileInfo("/sys/fs/cgroup/cpu.max"), "20000 100000"},
-                { new FileInfo("/sys/fs/cgroup/cpu.weight"), "4"},
+                { new FileInfo("/sys/fs/cgroup/cpu.weight"), "17"},
                 { new FileInfo("/sys/fs/cgroup/memory.max"), "100000" }
             }))
             .AddResourceMonitoring(x => x.ConfigureMonitor(section))
@@ -304,7 +304,7 @@ public sealed class AcceptanceTest
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
             { new FileInfo("/sys/fs/cgroup/cpu.max"), "40000 10000"},
-            { new FileInfo("/sys/fs/cgroup/cpu.weight"), "79"}, // equals to 2046,9 CPU shares (cgroups v1) which is ~2 CPU units (2 * 1024), so have to use Math.Round() in Assertions down below.
+            { new FileInfo("/sys/fs/cgroup/cpu.weight"), "173"}, // equals to ~2048 CPU shares (cgroups v1) which is ~2 CPU units (2 * 1024), so have to use Math.Round() in Assertions down below.
         });
 
         using var listener = new MeterListener();
@@ -411,7 +411,7 @@ public sealed class AcceptanceTest
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
             { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "40000 10000"},
-            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.weight"), "79"},
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.weight"), "173"},
         });
 
         using var listener = new MeterListener();
@@ -461,7 +461,7 @@ public sealed class AcceptanceTest
         listener.RecordObservableInstruments();
 
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
-        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1120000\nnr_periods 56");
+        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1120800\nnr_periods 56");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.current"), "524298");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.stat"), "inactive_file 10");
 
@@ -469,8 +469,8 @@ public sealed class AcceptanceTest
         listener.RecordObservableInstruments();
 
         Assert.Equal(42, Math.Round(cpuLimitFromGauge * 100));
-        Assert.Equal(83, Math.Round(cpuRequestFromGauge * 100));
-        Assert.Equal(167, Math.Round(cpuUserTime * 100));
+        Assert.Equal(84, Math.Round(cpuRequestFromGauge * 100));
+        Assert.Equal(168, Math.Round(cpuUserTime * 100));
         Assert.Equal(81, Math.Round(cpuKernelTime * 100));
 
         return Task.CompletedTask;

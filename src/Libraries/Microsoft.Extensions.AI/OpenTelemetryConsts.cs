@@ -11,7 +11,7 @@ internal static class OpenTelemetryConsts
     public const string DefaultSourceName = "Experimental.Microsoft.Extensions.AI";
 
     public const string SecondsUnit = "s";
-    public const string TokensUnit = "token";
+    public const string TokensUnit = "{token}";
 
     /// <summary>Environment variable name for controlling whether sensitive content should be captured in telemetry by default.</summary>
     public const string GenAICaptureMessageContentEnvVar = "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT";
@@ -138,6 +138,7 @@ internal static class OpenTelemetryConsts
         {
             public const string InputTokens = "gen_ai.usage.input_tokens";
             public const string OutputTokens = "gen_ai.usage.output_tokens";
+            public const string CacheReadInputTokens = "gen_ai.usage.cache_read.input_tokens";
         }
     }
 

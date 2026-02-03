@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
 /// Represents a reducer capable of shrinking the size of a list of chat messages.
 /// </summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIChatReduction, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IChatReducer
 {
     /// <summary>Reduces the size of a list of chat messages.</summary>

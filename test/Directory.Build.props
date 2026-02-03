@@ -1,8 +1,8 @@
 <Project>
-  <Import Project="$(MSBuildThisFileDirectory)\..\eng\packages\TestOnly.props" />
-
   <PropertyGroup>
+    <!-- Do not generate documentation, and do not warn about enabling /doc for tests. -->
     <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)' == ''">false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);RT0000</NoWarn>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />

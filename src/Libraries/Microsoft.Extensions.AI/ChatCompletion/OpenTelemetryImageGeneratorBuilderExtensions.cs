@@ -5,12 +5,13 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="OpenTelemetryImageGenerator"/> instances.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class OpenTelemetryImageGeneratorBuilderExtensions
 {
     /// <summary>

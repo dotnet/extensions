@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Logging.Testing.Test.Logging;
 
-public class FakeLogCollectorTests
+public partial class FakeLogCollectorTests
 {
     private class Output : ITestOutputHelper
     {

@@ -27,11 +27,12 @@
     <NoWarn>$(NoWarn);CA2007</NoWarn>
 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
+    <DisableMinimumSupportedTfmCompatErrors>true</DisableMinimumSupportedTfmCompatErrors>
   </PropertyGroup>
 
   <PropertyGroup>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
