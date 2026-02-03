@@ -38,6 +38,7 @@ namespace Microsoft.Extensions.Diagnostics.Metrics;
 /// </example>
 [AttributeUsage(AttributeTargets.Method)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class GaugeAttribute<T> : Attribute
     where T : struct
 {

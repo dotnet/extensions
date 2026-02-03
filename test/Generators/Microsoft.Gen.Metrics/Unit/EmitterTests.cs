@@ -35,6 +35,8 @@ public class EmitterTests
                 Assembly.GetAssembly(typeof(HistogramAttribute))!,
                 Assembly.GetAssembly(typeof(CounterAttribute<>))!,
                 Assembly.GetAssembly(typeof(HistogramAttribute<>))!,
+                Assembly.GetAssembly(typeof(GaugeAttribute))!,
+                Assembly.GetAssembly(typeof(GaugeAttribute<>))!,
             },
             sources)
 ;

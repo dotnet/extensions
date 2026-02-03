@@ -604,7 +604,7 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task GaugeIsSDocumented()
+    public async Task GaugeIsDocumented()
     {
         var d = await RunGenerator(@"
             partial class C
