@@ -271,7 +271,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         m.Parts.Add(new OtelToolCallResponsePart
                         {
                             Id = frc.CallId,
-                            Result = frc.Result,
+                            Response = frc.Result,
                         });
                         break;
 
@@ -811,7 +811,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     {
         public string Type { get; set; } = "tool_call_response";
         public string? Id { get; set; }
-        public object? Result { get; set; }
+        public object? Response { get; set; }
     }
 
     private sealed class OtelServerToolCallPart<T>
