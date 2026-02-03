@@ -228,7 +228,7 @@ public class OpenTelemetryChatClientTests
                       {
                         "type": "tool_call_response",
                         "id": "12345",
-                        "response": "John"
+                        "result": "John"
                       }
                     ]
                   },
@@ -466,7 +466,7 @@ public class OpenTelemetryChatClientTests
                   {
                     "type": "tool_call_response",
                     "id": "call-456",
-                    "response": "Found 3 files"
+                    "result": "Found 3 files"
                   }
                 ]
               }
@@ -498,7 +498,7 @@ public class OpenTelemetryChatClientTests
                   {
                     "type": "tool_call_response",
                     "id": "call-123",
-                    "response": "72°F and sunny"
+                    "result": "72°F and sunny"
                   },
                   {
                     "type": "blob",
