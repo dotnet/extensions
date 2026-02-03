@@ -301,8 +301,10 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     }
 
     [ConditionalTheory]
-    [InlineData("2500", 64.0)]
-    [InlineData("10000", 256.0)]
+    [InlineData("100", 1)]
+    [InlineData("1", 0.001953125)]
+    [InlineData("10000", 256)]
+    [InlineData("102", 1.02539062)]
     public void Calculates_Cpu_Request_From_Cpu_WeightInSlices(string content, float result)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -312,7 +314,26 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         });
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
-        var r = Math.Round(p.GetCgroupRequestCpuV2());
+        var r = p.GetCgroupRequestCpuV2();
+
+        Assert.Equal(result, r);
+    }
+
+    // Based on https://github.com/kubernetes/website/blob/main/content/en/blog/_posts/2026-01-30-new-cgroup-v1-to-v2-conversion-formula/index.md#new-conversion-formula
+    [ConditionalTheory]
+    [InlineData("100", 1)]
+    [InlineData("1", 0.001953125)]
+    [InlineData("10000", 256)]
+    [InlineData("102", 1.02539062)]
+    public void Calculates_Cpu_Request_From_Cpu_Weight(string content, float result)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpu.weight"), content },
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = p.GetCgroupRequestCpu();
 
         Assert.Equal(result, r);
     }
@@ -518,22 +539,6 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var r = Record.Exception(() => p.GetCgroupRequestCpu());
 
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
-    }
-
-    [ConditionalTheory]
-    [InlineData("2500", 64.0)]
-    [InlineData("10000", 256.0)]
-    public void Calculates_Cpu_Request_From_Cpu_Weight(string content, float result)
-    {
-        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
-        {
-            { new FileInfo("/sys/fs/cgroup/cpu.weight"), content },
-        });
-
-        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
-        var r = Math.Round(p.GetCgroupRequestCpu());
-
-        Assert.Equal(result, r);
     }
 
     [ConditionalTheory]
