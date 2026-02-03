@@ -10,7 +10,7 @@
 
     <!-- Set the version info to align with ModelContextProtocol packages -->
     <MajorVersion>0</MajorVersion>
-    <MinorVersion>5</MinorVersion>
+    <MinorVersion>7</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
