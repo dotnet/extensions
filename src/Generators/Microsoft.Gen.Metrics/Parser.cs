@@ -234,10 +234,14 @@ internal sealed class Parser
             return (InstrumentKind.Histogram, symbols.LongTypeSymbol);
         }
 
-        // Gauge is not supported yet
         if (methodAttributeSymbol.Equals(symbols.GaugeAttribute, SymbolEqualityComparer.Default))
         {
             return (InstrumentKind.Gauge, symbols.LongTypeSymbol);
+        }
+
+        if (methodAttributeSymbol.Equals(symbols.GaugeOfTAttribute, SymbolEqualityComparer.Default))
+        {
+            return (InstrumentKind.GaugeT, symbols.LongTypeSymbol);
         }
 
         if (methodAttributeSymbol.OriginalDefinition.Equals(symbols.CounterOfTAttribute, SymbolEqualityComparer.Default))

@@ -945,4 +945,67 @@ public partial class ParserTests
         var diag = Assert.Single(d);
         Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
     }
+    
+    [Fact]
+    public async Task GaugeWithGenericType()
+    {
+        var d = await RunGenerator(@"
+        partial class C
+        {
+            [Gauge<double>(""d1"")]
+            static partial CpuUsage CreateCpuUsage(Meter meter);
+        }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task GaugeGenericWithTags()
+    {
+        var d = await RunGenerator(@"
+        partial class C
+        {
+            [Gauge<double>(""Region"", ""Environment"")]
+            static partial MemoryUsage CreateMemoryUsage(Meter meter);
+        }");
+
+        Assert.Empty(d);
+    }
+
+    [Theory]
+    [InlineData("byte")]
+    [InlineData("short")]
+    [InlineData("int")]
+    [InlineData("long")]
+    [InlineData("float")]
+    [InlineData("double")]
+    [InlineData("decimal")]
+    public async Task GaugeValidGenericTypes(string type)
+    {
+        var d = await RunGenerator(@$"
+        partial class C
+        {{
+            [Gauge<{type}>(""d1"")]
+            static partial TestGauge CreateTestGauge(Meter meter);
+        }}");
+
+        Assert.Empty(d);
+    }
+
+    [Theory]
+    [InlineData("uint")]
+    [InlineData("string")]
+    [InlineData("bool")]
+    public async Task GaugeInvalidGenericTypes(string type)
+    {
+        var d = await RunGenerator(@$"
+        partial class C
+        {{
+            [Gauge<{type}>(""d1"")]
+            static partial TestGauge CreateTestGauge(Meter meter);
+        }}");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorInvalidAttributeGenericType.Id, diag.Id);
+    }
 }
