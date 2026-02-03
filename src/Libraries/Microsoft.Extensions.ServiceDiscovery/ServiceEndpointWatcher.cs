@@ -135,12 +135,18 @@ internal sealed partial class ServiceEndpointWatcher(
         CacheStatus newCacheState;
         try
         {
+            // Capture the existing change token registration, if any, so we can dispose it.
+            // Disposing inside the lock can cause a deadlock since Dispose waits for any in-flight callback to complete,
+            // but the callback may be waiting to acquire _lock.
+            IDisposable? changeTokenRegistration;
             lock (_lock)
             {
-                // Dispose the existing change token registration, if any.
-                _changeTokenRegistration?.Dispose();
+                changeTokenRegistration = _changeTokenRegistration;
                 _changeTokenRegistration = null;
             }
+
+            // Dispose the existing change token registration, if any.
+            changeTokenRegistration?.Dispose();
 
             Log.ResolvingEndpoints(_logger, ServiceName);
             var builder = new ServiceEndpointBuilder();
@@ -153,6 +159,10 @@ internal sealed partial class ServiceEndpointWatcher(
             var endpoints = builder.Build();
             newCacheState = CacheStatus.Valid;
 
+            // Capture the existing timer, if any, so we can dispose it outside the lock.
+            // Disposing inside the lock can cause a deadlock.
+            ITimer? pollingTimer = null;
+
             lock (_lock)
             {
                 // Check if we need to poll for updates or if we can register for change notification callbacks.
@@ -161,8 +171,7 @@ internal sealed partial class ServiceEndpointWatcher(
                     // Initiate a background refresh when the change token fires.
                     _changeTokenRegistration = endpoints.ChangeToken.RegisterChangeCallback(static state => _ = ((ServiceEndpointWatcher)state!).RefreshAsync(force: false), this);
 
-                    // Dispose the existing timer, if any, since we are reliant on change tokens for updates.
-                    _pollingTimer?.Dispose();
+                    pollingTimer = _pollingTimer;
                     _pollingTimer = null;
                 }
                 else
@@ -174,6 +183,8 @@ internal sealed partial class ServiceEndpointWatcher(
                 newEndpoints = endpoints;
                 newCacheState = CacheStatus.Valid;
             }
+
+            pollingTimer?.Dispose();
         }
         catch (Exception exception)
         {
@@ -230,16 +241,14 @@ internal sealed partial class ServiceEndpointWatcher(
 
     private void SchedulePollingTimer()
     {
+        ITimer? timerToDispose = null;
         lock (_lock)
         {
             if (_disposalCancellation.IsCancellationRequested)
             {
-                _pollingTimer?.Dispose();
-                _pollingTimer = null;
-                return;
+                timerToDispose = Interlocked.Exchange(ref _pollingTimer, null);
             }
-
-            if (_pollingTimer is null)
+            else if (_pollingTimer is null)
             {
                 _pollingTimer = _timeProvider.CreateTimer(s_pollingAction, this, _options.RefreshPeriod, TimeSpan.Zero);
             }
@@ -248,6 +257,8 @@ internal sealed partial class ServiceEndpointWatcher(
                 _pollingTimer.Change(_options.RefreshPeriod, TimeSpan.Zero);
             }
         }
+
+        timerToDispose?.Dispose();
     }
 
     /// <inheritdoc/>
@@ -262,14 +273,21 @@ internal sealed partial class ServiceEndpointWatcher(
             _logger.LogError(exception, "Error cancelling disposal cancellation token.");
         }
 
+        // Capture the existing change token registration and polling timer so we can dispose them.
+        // Disposing _changeTokenRegistration inside the lock can cause a deadlock since Dispose waits for any in-flight
+        // callback to complete, but the callback may be waiting to acquire _lock.
+        IDisposable? changeTokenRegistration;
+        ITimer? pollingTimer;
         lock (_lock)
         {
-            _changeTokenRegistration?.Dispose();
+            changeTokenRegistration = _changeTokenRegistration;
             _changeTokenRegistration = null;
-
-            _pollingTimer?.Dispose();
+            pollingTimer = _pollingTimer;
             _pollingTimer = null;
         }
+
+        changeTokenRegistration?.Dispose();
+        pollingTimer?.Dispose();
 
         if (_refreshTask is { } task)
         {
