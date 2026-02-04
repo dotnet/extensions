@@ -3,7 +3,7 @@
 ## NOT YET RELEASED
 
 - Unsealed `FunctionCallContent` and `FunctionResultContent`.
-- Renamed `InvocationRequired` property to `InformationalOnly` on `FunctionCallContent` with inverted polarity. The property now defaults to `false` and indicates whether the function call is purely informational and should be ignored by components that process function calls.
+- Added `InformationalOnly` property to `FunctionCallContent` to indicate whether the content is informing the consumer about a call that's being made elsewhere or that is a request for the call to be performed.
 - Added `LoadFromAsync` and `SaveToAsync` helper methods to `DataContent` for file I/O operations.
 - Fixed JSON schema generation for nullable reference type annotations on parameters in AIFunctions.
 
