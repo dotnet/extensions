@@ -1159,9 +1159,6 @@ public class FunctionInvokingChatClientApprovalsTests
     [Fact]
     public async Task ApprovalResponsePreservesOriginalRequestMessageMetadata()
     {
-        var options = new ChatOptions
-        {
-            Tools =
             [
                 new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
             ]
