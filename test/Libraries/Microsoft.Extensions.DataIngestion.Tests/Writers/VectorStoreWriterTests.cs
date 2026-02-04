@@ -26,7 +26,7 @@ public abstract class VectorStoreWriterTests
         IngestionDocument document = new(documentId);
         List<IngestionChunk<string>> chunks =
         [
-            new("some content", document)
+            new("some content", document, 0)
             {
                 Metadata =
                 {
@@ -75,14 +75,14 @@ public abstract class VectorStoreWriterTests
         IngestionDocument document = new(documentId);
         List<IngestionChunk<string>> chunks =
         [
-            new("first chunk", document)
+            new("first chunk", document, 0)
             {
                 Metadata =
                 {
                     { "key1", "value1" }
                 }
             },
-            new("second chunk", document)
+            new("second chunk", document, 0)
         ];
 
         await writer.WriteAsync(chunks.ToAsyncEnumerable());
@@ -95,7 +95,7 @@ public abstract class VectorStoreWriterTests
         // Now we will do an incremental ingestion that updates the chunk(s).
         List<IngestionChunk<string>> updatedChunks =
         [
-            new("different content", document)
+            new("different content", document, 0)
             {
                 Metadata =
                 {

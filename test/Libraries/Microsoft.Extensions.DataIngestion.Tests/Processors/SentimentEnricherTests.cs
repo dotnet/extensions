@@ -106,9 +106,9 @@ public class SentimentEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        new("I love programming! It's so much fun and rewarding.", _document),
-        new("I hate bugs. They are so frustrating and time-consuming.", _document),
-        new("The weather is okay, not too bad but not great either.", _document),
-        new("I hate you. I am sorry, I actually don't. I am not sure myself what my feelings are.", _document)
+        new("I love programming! It's so much fun and rewarding.", _document, 0),
+        new("I hate bugs. They are so frustrating and time-consuming.", _document, 0),
+        new("The weather is okay, not too bad but not great either.", _document, 0),
+        new("I hate you. I am sorry, I actually don't. I am not sure myself what my feelings are.", _document, 0)
     ];
 }

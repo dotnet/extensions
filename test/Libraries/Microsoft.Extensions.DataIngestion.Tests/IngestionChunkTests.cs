@@ -12,18 +12,9 @@ public class IngestionChunkTests
     public void Constructor_SetsTokenCountProperty()
     {
         var document = new IngestionDocument("test");
-        var chunk = new IngestionChunk<string>("test content", document, context: null, tokenCount: 42);
+        var chunk = new IngestionChunk<string>("test content", document, 42);
 
         Assert.Equal(42, chunk.TokenCount);
-    }
-
-    [Fact]
-    public void Constructor_DefaultTokenCountIsZero()
-    {
-        var document = new IngestionDocument("test");
-        var chunk = new IngestionChunk<string>("test content", document);
-
-        Assert.Equal(0, chunk.TokenCount);
     }
 
     [Fact]
@@ -32,7 +23,7 @@ public class IngestionChunkTests
         var document = new IngestionDocument("test");
 
         var exception = Assert.Throws<ArgumentOutOfRangeException>(
-            () => new IngestionChunk<string>("test content", document, context: null, tokenCount: -1));
+            () => new IngestionChunk<string>("test content", document, -1));
 
         Assert.Equal("tokenCount", exception.ParamName);
     }
@@ -41,7 +32,7 @@ public class IngestionChunkTests
     public void Constructor_AcceptsZeroTokenCount()
     {
         var document = new IngestionDocument("test");
-        var chunk = new IngestionChunk<string>("test content", document, context: null, tokenCount: 0);
+        var chunk = new IngestionChunk<string>("test content", document, 0);
 
         Assert.Equal(0, chunk.TokenCount);
     }

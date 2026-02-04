@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
                         text: contentToProcess.Span,
                         maxTokenCount: _maxTokensPerChunk - stringBuilderTokenCount,
                         out string? _,
-                        out int _,
+                        out int addedTokenCount,
                         considerNormalization: false);
 
                     unsafe
@@ -73,6 +73,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
                             _ = stringBuilder.Append(ptr, index);
                         }
                     }
+                    stringBuilderTokenCount += addedTokenCount;
                     yield return FinalizeChunk();
 
                     contentToProcess = contentToProcess.Slice(index);
@@ -92,13 +93,12 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
             IngestionChunk<string> FinalizeChunk()
             {
                 string chunkContent = stringBuilder.ToString();
-                int chunkTokenCount = _tokenizer.CountTokens(chunkContent, considerNormalization: false);
 
                 IngestionChunk<string> chunk = new IngestionChunk<string>(
                     content: chunkContent,
                     document: document,
-                    context: string.Empty,
-                    tokenCount: chunkTokenCount);
+                    tokenCount: stringBuilderTokenCount,
+                    context: string.Empty);
                 _ = stringBuilder.Clear();
                 stringBuilderTokenCount = 0;
 

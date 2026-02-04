@@ -119,7 +119,7 @@ public class KeywordEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        new("The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components", _document),
-        new("Rabbits are great pets. They are friendly and make excellent companions.", _document)
+        new("The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components", _document, 0),
+        new("Rabbits are great pets. They are friendly and make excellent companions.", _document, 0)
     ];
 }

@@ -103,7 +103,7 @@ public class SummaryEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        new("I love programming! It's so much fun and rewarding.", _document),
-        new("I hate bugs. They are so frustrating and time-consuming.", _document)
+        new("I love programming! It's so much fun and rewarding.", _document, 0),
+        new("I hate bugs. They are so frustrating and time-consuming.", _document, 0)
     ];
 }
