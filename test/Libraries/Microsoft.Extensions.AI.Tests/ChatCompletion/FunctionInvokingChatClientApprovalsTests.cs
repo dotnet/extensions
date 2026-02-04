@@ -1170,7 +1170,7 @@ public class FunctionInvokingChatClientApprovalsTests
             ]
         };
 
-        const string originalMessageId = "original-message-id";
+        const string OriginalMessageId = "original-message-id";
 
         // Create input with approval request containing a known MessageId on the containing message
         List<ChatMessage> input =
@@ -1179,7 +1179,7 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant,
             [
                 new FunctionApprovalRequestContent("approval-request-id", new FunctionCallContent("function-call-id", "Func1"))
-            ]) { MessageId = originalMessageId }, // This MessageId should be preserved
+            ]) { MessageId = OriginalMessageId }, // This MessageId should be preserved
             new ChatMessage(ChatRole.User,
             [
                 new FunctionApprovalResponseContent("approval-request-id", true, new FunctionCallContent("function-call-id", "Func1"))
@@ -1194,7 +1194,7 @@ public class FunctionInvokingChatClientApprovalsTests
         // The reconstructed function call message should preserve the original MessageId
         List<ChatMessage> expectedOutput =
         [
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("function-call-id", "Func1")]) { MessageId = originalMessageId },
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("function-call-id", "Func1")]) { MessageId = OriginalMessageId },
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("function-call-id", result: "Result 1")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
@@ -1202,10 +1202,10 @@ public class FunctionInvokingChatClientApprovalsTests
         var actualOutput = await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput);
 
         // Verify that the reconstructed function call message has the original MessageId, not a synthetic one
-        Assert.Equal(originalMessageId, actualOutput[0].MessageId);
+        Assert.Equal(OriginalMessageId, actualOutput[0].MessageId);
 
         actualOutput = await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, expectedOutput);
-        Assert.Equal(originalMessageId, actualOutput[0].MessageId);
+        Assert.Equal(OriginalMessageId, actualOutput[0].MessageId);
     }
 
     private static Task<List<ChatMessage>> InvokeAndAssertAsync(
