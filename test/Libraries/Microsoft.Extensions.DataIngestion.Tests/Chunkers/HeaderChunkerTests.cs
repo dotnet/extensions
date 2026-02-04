@@ -270,6 +270,35 @@ public class HeaderChunkerTests
         }
     }
 
+    [Fact]
+    public async Task VerifyTokenCountIsSet()
+    {
+        IngestionDocument doc = new("tokenCountTest");
+        doc.Sections.Add(new()
+        {
+            Elements =
+            {
+                new IngestionDocumentHeader("Header 1") { Level = 1 },
+                new IngestionDocumentParagraph("This is a test paragraph with some content."),
+                new IngestionDocumentParagraph("This is another paragraph with more content.")
+            }
+        });
+
+        var tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
+        HeaderChunker chunker = new(new(tokenizer));
+        IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+
+        foreach (var chunk in chunks)
+        {
+            // Verify that TokenCount property is set
+            Assert.True(chunk.TokenCount > 0);
+
+            // Verify that TokenCount matches actual token count of content
+            int actualTokenCount = tokenizer.CountTokens(chunk.Content, considerNormalization: false);
+            Assert.Equal(actualTokenCount, chunk.TokenCount);
+        }
+    }
+
     // We need plenty of more tests here, especially for edge cases:
     // - sentence splitting
     // - markdown splitting (e.g. lists, code blocks etc.)

@@ -93,7 +93,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
             {
                 string chunkContent = stringBuilder.ToString();
                 int chunkTokenCount = _tokenizer.CountTokens(chunkContent, considerNormalization: false);
-                
+
                 IngestionChunk<string> chunk = new IngestionChunk<string>(
                     content: chunkContent,
                     document: document,

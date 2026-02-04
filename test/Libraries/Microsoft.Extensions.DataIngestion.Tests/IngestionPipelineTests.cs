@@ -180,7 +180,8 @@ public sealed class IngestionPipelineTests : IDisposable
                     .OfType<IngestionDocumentImage>()
                     .Select(image => new IngestionChunk<DataContent>(
                         content: new(image.Content.GetValueOrDefault(), image.MediaType!),
-                        document: document))
+                        document: document,
+                        tokenCount: 0))
                     .ToAsyncEnumerable();
     }
 
