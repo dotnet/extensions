@@ -1818,7 +1818,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "bool Microsoft.Extensions.AI.FunctionCallContent.InvocationRequired { get; set; }",
+          "Member": "bool Microsoft.Extensions.AI.FunctionCallContent.InformationalOnly { get; set; }",
           "Stage": "Stable"
         },
         {
