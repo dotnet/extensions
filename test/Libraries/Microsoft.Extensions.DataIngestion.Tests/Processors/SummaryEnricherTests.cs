@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DataIngestion.Tests;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -103,7 +104,7 @@ public class SummaryEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        new("I love programming! It's so much fun and rewarding.", _document, 0),
-        new("I hate bugs. They are so frustrating and time-consuming.", _document, 0)
+        TestHelpers.CreateChunk("I love programming! It's so much fun and rewarding.", _document),
+        TestHelpers.CreateChunk("I hate bugs. They are so frustrating and time-consuming.", _document)
     ];
 }

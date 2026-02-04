@@ -38,6 +38,11 @@ public sealed class IngestionChunk<T>
         if (typeof(T) == typeof(string))
         {
             Content = (T)(object)Throw.IfNullOrEmpty((string)(object)content!);
+            
+            if (tokenCount == 0)
+            {
+                Throw.ArgumentOutOfRangeException(nameof(tokenCount), "Token count must be greater than zero for non-empty content.");
+            }
         }
         else
         {

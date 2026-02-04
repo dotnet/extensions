@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DataIngestion.Tests;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -119,7 +120,7 @@ public class KeywordEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        new("The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components", _document, 0),
-        new("Rabbits are great pets. They are friendly and make excellent companions.", _document, 0)
+        TestHelpers.CreateChunk("The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components", _document),
+        TestHelpers.CreateChunk("Rabbits are great pets. They are friendly and make excellent companions.", _document)
     ];
 }

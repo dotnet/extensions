@@ -92,10 +92,8 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
 
             IngestionChunk<string> FinalizeChunk()
             {
-                string chunkContent = stringBuilder.ToString();
-
                 IngestionChunk<string> chunk = new IngestionChunk<string>(
-                    content: chunkContent,
+                    content: stringBuilder.ToString(),
                     document: document,
                     tokenCount: stringBuilderTokenCount,
                     context: string.Empty);
