@@ -1467,7 +1467,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     case FunctionApprovalRequestContent farc:
                         // Validation: Capture each call id for each approval request to ensure later we have a matching response.
                         _ = (approvalRequestCallIds ??= []).Add(farc.FunctionCall.CallId);
-                        (allApprovalRequestsMessages ??= []).Add(farc.FunctionCall.CallId, message);
+                        (allApprovalRequestsMessages ??= []).Add(farc.Id, message);
                         break;
 
                     case FunctionApprovalResponseContent farc:
@@ -1542,7 +1542,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 ref List<ApprovalResultWithRequestMessage>? targetList = ref approvalResponse.Approved ? ref approvedFunctionCalls : ref rejectedFunctionCalls;
 
                 ChatMessage? requestMessage = null;
-                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.FunctionCall.CallId, out requestMessage);
+                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.Id, out requestMessage);
 
                 (targetList ??= []).Add(new() { Response = approvalResponse, RequestMessage = requestMessage });
             }
