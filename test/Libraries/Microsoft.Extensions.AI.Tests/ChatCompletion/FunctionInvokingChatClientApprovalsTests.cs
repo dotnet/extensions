@@ -1116,7 +1116,7 @@ public class FunctionInvokingChatClientApprovalsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task FunctionCallsWithInvocationRequiredFalseAreNotReplacedWithApprovalsAsync(bool streaming)
+    public async Task FunctionCallsWithInformationalOnlyTrueAreNotReplacedWithApprovalsAsync(bool streaming)
     {
         var functionInvokedCount = 0;
         var options = new ChatOptions
@@ -1130,8 +1130,8 @@ public class FunctionInvokingChatClientApprovalsTests
 
         List<ChatMessage> input = [new ChatMessage(ChatRole.User, "hello")];
 
-        // FunctionCallContent with InvocationRequired = false should pass through unchanged
-        var alreadyProcessedFunctionCall = new FunctionCallContent("callId1", "Func1") { InvocationRequired = false };
+        // FunctionCallContent with InformationalOnly = true should pass through unchanged
+        var alreadyProcessedFunctionCall = new FunctionCallContent("callId1", "Func1") { InformationalOnly = true };
         List<ChatMessage> downstreamClientOutput =
         [
             new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]),
@@ -1152,7 +1152,7 @@ public class FunctionInvokingChatClientApprovalsTests
             await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput);
         }
 
-        // The function should NOT have been invoked since InvocationRequired was false
+        // The function should NOT have been invoked since InformationalOnly was true
         Assert.Equal(0, functionInvokedCount);
     }
 
