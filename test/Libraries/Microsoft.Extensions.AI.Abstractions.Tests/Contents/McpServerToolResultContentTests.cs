@@ -45,8 +45,15 @@ public class McpServerToolResultContentTests
     [Fact]
     public void Constructor_Throws()
     {
-        Assert.Throws<ArgumentException>("callId", () => new McpServerToolResultContent(string.Empty));
         Assert.Throws<ArgumentNullException>("callId", () => new McpServerToolResultContent(null!));
+    }
+
+    [Fact]
+    public void Constructor_EmptyCallId_Accepted()
+    {
+        McpServerToolResultContent c = new(string.Empty);
+
+        Assert.Equal(string.Empty, c.CallId);
     }
 
     [Fact]
