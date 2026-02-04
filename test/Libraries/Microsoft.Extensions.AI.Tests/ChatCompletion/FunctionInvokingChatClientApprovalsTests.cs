@@ -1159,9 +1159,6 @@ public class FunctionInvokingChatClientApprovalsTests
     [Fact]
     public async Task ApprovalResponsePreservesOriginalRequestMessageMetadata()
     {
-        // Regression test for approval request/response correlation bug:
-        // Previously, approval request messages were stored in a dictionary keyed by FunctionApprovalRequestContent.Id,
-        // but looked up using approvalResponse.FunctionCall.CallId, causing mismatches and loss of original message metadata.
         var options = new ChatOptions
         {
             Tools =
