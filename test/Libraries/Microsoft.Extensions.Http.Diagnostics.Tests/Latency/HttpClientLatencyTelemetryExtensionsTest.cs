@@ -4,14 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Latency.Internal;
 using Microsoft.Extensions.Options;
 using Moq;
