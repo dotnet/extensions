@@ -232,18 +232,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         // CodeInterpreterCallResponseItem sent back for the pair.
                     });
 
-                    message.Contents.Add(new CodeInterpreterToolResultContent
-                    {
-                        CallId = cicri.Id,
-                        Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
-                            o switch
-                            {
-                                CodeInterpreterCallImageOutput cicio => new UriContent(cicio.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(cicio.ImageUri)) { RawRepresentation = cicio },
-                                CodeInterpreterCallLogsOutput ciclo => new TextContent(ciclo.Logs) { RawRepresentation = ciclo },
-                                _ => null,
-                            }).OfType<AIContent>().ToList() : null,
-                        RawRepresentation = cicri,
-                    });
+                    message.Contents.Add(CreateCodeInterpreterResultContent(cicri));
                     break;
 
                 case ImageGenerationCallResponseItem imageGenItem:
@@ -468,18 +457,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         case CodeInterpreterCallResponseItem cicri:
                             // The CodeInterpreterToolCallContent has already been yielded as part of delta updates.
                             // Only yield the CodeInterpreterToolResultContent here for the outputs.
-                            yield return CreateUpdate(new CodeInterpreterToolResultContent
-                            {
-                                CallId = cicri.Id,
-                                Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
-                                    o switch
-                                    {
-                                        CodeInterpreterCallImageOutput cicio => new UriContent(cicio.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(cicio.ImageUri)) { RawRepresentation = cicio },
-                                        CodeInterpreterCallLogsOutput ciclo => new TextContent(ciclo.Logs) { RawRepresentation = ciclo },
-                                        _ => null,
-                                    }).OfType<AIContent>().ToList() : null,
-                                RawRepresentation = cicri,
-                            });
+                            yield return CreateUpdate(CreateCodeInterpreterResultContent(cicri));
                             break;
 
                         // MessageResponseItems will have already had their content yielded as part of delta updates.
@@ -1365,6 +1343,21 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             filter.ToolNames.Add(toolName);
         }
     }
+
+    /// <summary>Creates a <see cref="CodeInterpreterToolResultContent"/> for the specified <paramref name="cicri"/>.</summary>
+    private static CodeInterpreterToolResultContent CreateCodeInterpreterResultContent(CodeInterpreterCallResponseItem cicri) =>
+        new()
+        {
+            CallId = cicri.Id,
+            Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
+                o switch
+                {
+                    CodeInterpreterCallImageOutput cicio => new UriContent(cicio.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(cicio.ImageUri)) { RawRepresentation = cicio },
+                    CodeInterpreterCallLogsOutput ciclo => new TextContent(ciclo.Logs) { RawRepresentation = ciclo },
+                    _ => null,
+                }).OfType<AIContent>().ToList() : null,
+            RawRepresentation = cicri,
+        };
 
     private static void AddImageGenerationContents(ImageGenerationCallResponseItem outputItem, CreateResponseOptions? options, IList<AIContent> contents)
     {
