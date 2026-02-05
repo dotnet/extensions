@@ -35,6 +35,9 @@ public static class OpenAIClientExtensions
     /// <summary>Gets a <see cref="ChatRole"/> for "developer".</summary>
     internal static ChatRole ChatRoleDeveloper { get; } = new ChatRole("developer");
 
+    /// <summary>Gets the media type for Python code content.</summary>
+    internal const string PythonMediaType = "text/x-python";
+
     /// <summary>
     /// Gets the JSON schema transformer cache conforming to OpenAI <b>strict</b> / structured output restrictions per
     /// https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.

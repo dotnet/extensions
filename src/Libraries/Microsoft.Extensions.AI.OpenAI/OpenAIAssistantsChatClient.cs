@@ -202,7 +202,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                         CodeInterpreterToolCallContent hcitcc = new()
                         {
                             CallId = details.ToolCallId,
-                            Inputs = [new DataContent(Encoding.UTF8.GetBytes(details.CodeInterpreterInput), "text/x-python")],
+                            Inputs = [new DataContent(Encoding.UTF8.GetBytes(details.CodeInterpreterInput), OpenAIClientExtensions.PythonMediaType)],
                             RawRepresentation = details,
                         };
 
