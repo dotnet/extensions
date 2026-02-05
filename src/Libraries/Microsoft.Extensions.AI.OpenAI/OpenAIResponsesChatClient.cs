@@ -458,7 +458,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         // the RawRepresentation here to avoid duplication, as when roundtripping that
                         // raw representation will be preferred.
                         case ReasoningResponseItem rri when rri.EncryptedContent is { Length: > 0 } encryptedContent:
-                            yield return CreateUpdate(new TextReasoningContent(null) { ProtectedData = rri.EncryptedContent });
+                            yield return CreateUpdate(new TextReasoningContent(null) { ProtectedData = encryptedContent });
                             break;
 
                         // For ResponseItems where we've already yielded partial deltas for the whole content,
