@@ -452,6 +452,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             yield return CreateUpdate(annotatedContent);
                             break;
 
+                        // For ReasoningResponseItem, if there's encrypted content, we need to yield that
+                        // so that it can be coalesced with the streamed text deltas and roundtripped.
+                        // Since we may have already yielded reasoning deltas, we explicitly avoid setting
+                        // the RawRepresentation here to avoid duplication, as when roundtripping that
+                        // raw representation will be preferred.
+                        case ReasoningResponseItem rri when rri.EncryptedContent is { Length: > 0 } encryptedContent:
+                            yield return CreateUpdate(new TextReasoningContent(null) { ProtectedData = rri.EncryptedContent });
+                            break;
+
                         // For ResponseItems where we've already yielded partial deltas for the whole content,
                         // we still want to yield an update, but we don't want it to include the ResponseItem
                         // as the RawRepresentation, since if it did, when roundtripping we'd end up sending
