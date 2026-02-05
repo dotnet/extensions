@@ -74,12 +74,12 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            var tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
-            IngestionChunker<string> chunker = new DocumentTokenChunker(new(tokenizer) { MaxTokensPerChunk = 512, OverlapTokens = 0 });
+            Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
+            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 512, overlapTokens: 0);
             IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
             Assert.Equal(2, chunks.Count);
-            foreach (var chunk in chunks)
+            foreach (IngestionChunk<string> chunk in chunks)
             {
                 // Verify that TokenCount property is set
                 Assert.True(chunk.TokenCount > 0);

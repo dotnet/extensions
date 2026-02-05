@@ -107,9 +107,9 @@ public class SentimentEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        TestHelpers.CreateChunk("I love programming! It's so much fun and rewarding.", _document),
-        TestHelpers.CreateChunk("I hate bugs. They are so frustrating and time-consuming.", _document),
-        TestHelpers.CreateChunk("The weather is okay, not too bad but not great either.", _document),
-        TestHelpers.CreateChunk("I hate you. I am sorry, I actually don't. I am not sure myself what my feelings are.", _document)
+        TestChunkFactory.CreateChunk("I love programming! It's so much fun and rewarding.", _document),
+        TestChunkFactory.CreateChunk("I hate bugs. They are so frustrating and time-consuming.", _document),
+        TestChunkFactory.CreateChunk("The weather is okay, not too bad but not great either.", _document),
+        TestChunkFactory.CreateChunk("I hate you. I am sorry, I actually don't. I am not sure myself what my feelings are.", _document)
     ];
 }

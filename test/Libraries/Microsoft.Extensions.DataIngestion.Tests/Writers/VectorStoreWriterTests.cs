@@ -25,12 +25,12 @@ public abstract class VectorStoreWriterTests
             dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
 
         IngestionDocument document = new(documentId);
-        IngestionChunk<string> chunk = TestHelpers.CreateChunk("some content", document);
+        IngestionChunk<string> chunk = TestChunkFactory.CreateChunk("some content", document);
         chunk.Metadata["key1"] = "value1";
         chunk.Metadata["key2"] = 123;
         chunk.Metadata["key3"] = true;
         chunk.Metadata["key4"] = 123.45;
-        
+
         List<IngestionChunk<string>> chunks = [chunk];
 
         Assert.False(testEmbeddingGenerator.WasCalled);
@@ -68,11 +68,11 @@ public abstract class VectorStoreWriterTests
             });
 
         IngestionDocument document = new(documentId);
-        IngestionChunk<string> chunk1 = TestHelpers.CreateChunk("first chunk", document);
+        IngestionChunk<string> chunk1 = TestChunkFactory.CreateChunk("first chunk", document);
         chunk1.Metadata["key1"] = "value1";
-        
-        IngestionChunk<string> chunk2 = TestHelpers.CreateChunk("second chunk", document);
-        
+
+        IngestionChunk<string> chunk2 = TestChunkFactory.CreateChunk("second chunk", document);
+
         List<IngestionChunk<string>> chunks = [chunk1, chunk2];
 
         await writer.WriteAsync(chunks.ToAsyncEnumerable());
@@ -83,9 +83,9 @@ public abstract class VectorStoreWriterTests
         Assert.Equal(chunks.Count, recordCount);
 
         // Now we will do an incremental ingestion that updates the chunk(s).
-        IngestionChunk<string> updatedChunk = TestHelpers.CreateChunk("different content", document);
+        IngestionChunk<string> updatedChunk = TestChunkFactory.CreateChunk("different content", document);
         updatedChunk.Metadata["key1"] = "value2";
-        
+
         List<IngestionChunk<string>> updatedChunks = [updatedChunk];
 
         await writer.WriteAsync(updatedChunks.ToAsyncEnumerable());

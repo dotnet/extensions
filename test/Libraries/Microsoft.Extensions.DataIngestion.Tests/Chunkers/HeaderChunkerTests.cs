@@ -284,13 +284,13 @@ public class HeaderChunkerTests
             }
         });
 
-        var tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
+        Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
         HeaderChunker chunker = new(new(tokenizer));
         IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
-        foreach (var chunk in chunks)
+        foreach (IngestionChunk<string> chunk in chunks)
         {
-            // Verify that TokenCount property is set
+            // Verify that TokenCount property is set and greater than zero
             Assert.True(chunk.TokenCount > 0);
 
             // Verify that TokenCount matches actual token count of content

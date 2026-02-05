@@ -15,6 +15,7 @@ internal sealed class ElementsChunker
 {
     private readonly Tokenizer _tokenizer;
     private readonly int _maxTokensPerChunk;
+    private readonly int _newLineTokenCount;
     private readonly StringBuilder _currentChunk;
 
     internal ElementsChunker(IngestionChunkerOptions options)
@@ -23,9 +24,45 @@ internal sealed class ElementsChunker
 
         _tokenizer = options.Tokenizer;
         _maxTokensPerChunk = options.MaxTokensPerChunk;
+        _newLineTokenCount = options.Tokenizer.CountTokens(Environment.NewLine, considerNormalization: false);
 
         // Token count != character count, but StringBuilder will grow as needed.
         _currentChunk = new(capacity: _maxTokensPerChunk);
+    }
+
+    private static void AddMarkdownTableRow(IngestionDocumentTable table, int rowIndex, ref ValueStringBuilder vsb)
+    {
+        for (int columnIndex = 0; columnIndex < table.Cells.GetLength(1); columnIndex++)
+        {
+            vsb.Append('|');
+            vsb.Append(' ');
+            string? cellContent = table.Cells[rowIndex, columnIndex] switch
+            {
+                null => null,
+                IngestionDocumentImage img => img.AlternativeText ?? img.Text,
+                IngestionDocumentElement other => other.GetMarkdown()
+            };
+            vsb.Append(cellContent);
+            vsb.Append(' ');
+        }
+
+        vsb.Append('|');
+        vsb.Append(Environment.NewLine);
+    }
+
+    private static void AddMarkdownTableSeparatorRow(int columnCount, ref ValueStringBuilder vsb)
+    {
+        const int DashCount = 3; // The dash count does not need to match the header length.
+        for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+        {
+            vsb.Append('|');
+            vsb.Append(' ');
+            vsb.Append('-', DashCount);
+            vsb.Append(' ');
+        }
+
+        vsb.Append('|');
+        vsb.Append(Environment.NewLine);
     }
 
     // Goals:
@@ -70,8 +107,8 @@ internal sealed class ElementsChunker
             int elementTokenCount = CountTokens(semanticContent.AsSpan());
             if (elementTokenCount + totalTokenCount <= _maxTokensPerChunk)
             {
+                AppendNewLineAndSpan(_currentChunk, semanticContent.AsSpan(), ref totalTokenCount);
                 totalTokenCount += elementTokenCount;
-                AppendNewLineAndSpan(_currentChunk, semanticContent.AsSpan());
             }
             else if (element is IngestionDocumentTable table)
             {
@@ -113,7 +150,7 @@ internal sealed class ElementsChunker
                             // We append the table as long as it's not just the header.
                             if (rowIndex != 1)
                             {
-                                AppendNewLineAndSpan(_currentChunk, tableBuilder.AsSpan(0, tableLength - Environment.NewLine.Length));
+                                AppendNewLineAndSpan(_currentChunk, tableBuilder.AsSpan(0, tableLength - Environment.NewLine.Length), ref totalTokenCount);
                             }
 
                             // And commit the table we built so far.
@@ -137,7 +174,7 @@ internal sealed class ElementsChunker
                         totalTokenCount += lastRowTokens;
                     }
 
-                    AppendNewLineAndSpan(_currentChunk, tableBuilder.AsSpan(0, tableLength - Environment.NewLine.Length));
+                    AppendNewLineAndSpan(_currentChunk, tableBuilder.AsSpan(0, tableLength - Environment.NewLine.Length), ref totalTokenCount);
                 }
                 finally
                 {
@@ -172,7 +209,7 @@ internal sealed class ElementsChunker
 
                         totalTokenCount += tokenCount;
                         ReadOnlySpan<char> spanToAppend = remainingContent.Slice(0, index);
-                        AppendNewLineAndSpan(_currentChunk, spanToAppend);
+                        AppendNewLineAndSpan(_currentChunk, spanToAppend, ref totalTokenCount);
                         remainingContent = remainingContent.Slice(index);
                     }
                     else if (totalTokenCount == contextTokenCount)
@@ -222,12 +259,13 @@ internal sealed class ElementsChunker
             => throw new InvalidOperationException("Can't fit in the current chunk. Consider increasing max tokens per chunk.");
     }
 
-    private static void AppendNewLineAndSpan(StringBuilder stringBuilder, ReadOnlySpan<char> chars)
+    private void AppendNewLineAndSpan(StringBuilder stringBuilder, ReadOnlySpan<char> chars, ref int totalTokenCount)
     {
         // Don't start an empty chunk (no context provided) with a new line.
         if (stringBuilder.Length > 0)
         {
             stringBuilder.AppendLine();
+            totalTokenCount += _newLineTokenCount;
         }
 
 #if NET
@@ -235,41 +273,6 @@ internal sealed class ElementsChunker
 #else
         stringBuilder.Append(chars.ToString());
 #endif
-    }
-
-    private static void AddMarkdownTableRow(IngestionDocumentTable table, int rowIndex, ref ValueStringBuilder vsb)
-    {
-        for (int columnIndex = 0; columnIndex < table.Cells.GetLength(1); columnIndex++)
-        {
-            vsb.Append('|');
-            vsb.Append(' ');
-            string? cellContent = table.Cells[rowIndex, columnIndex] switch
-            {
-                null => null,
-                IngestionDocumentImage img => img.AlternativeText ?? img.Text,
-                IngestionDocumentElement other => other.GetMarkdown()
-            };
-            vsb.Append(cellContent);
-            vsb.Append(' ');
-        }
-
-        vsb.Append('|');
-        vsb.Append(Environment.NewLine);
-    }
-
-    private static void AddMarkdownTableSeparatorRow(int columnCount, ref ValueStringBuilder vsb)
-    {
-        const int DashCount = 3; // The dash count does not need to match the header length.
-        for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
-        {
-            vsb.Append('|');
-            vsb.Append(' ');
-            vsb.Append('-', DashCount);
-            vsb.Append(' ');
-        }
-
-        vsb.Append('|');
-        vsb.Append(Environment.NewLine);
     }
 
     private int CountTokens(ReadOnlySpan<char> input)

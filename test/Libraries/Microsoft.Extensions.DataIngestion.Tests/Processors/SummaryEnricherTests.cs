@@ -104,7 +104,7 @@ public class SummaryEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        TestHelpers.CreateChunk("I love programming! It's so much fun and rewarding.", _document),
-        TestHelpers.CreateChunk("I hate bugs. They are so frustrating and time-consuming.", _document)
+        TestChunkFactory.CreateChunk("I love programming! It's so much fun and rewarding.", _document),
+        TestChunkFactory.CreateChunk("I hate bugs. They are so frustrating and time-consuming.", _document)
     ];
 }

@@ -120,7 +120,7 @@ public class KeywordEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        TestHelpers.CreateChunk("The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components", _document),
-        TestHelpers.CreateChunk("Rabbits are great pets. They are friendly and make excellent companions.", _document)
+        TestChunkFactory.CreateChunk("The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components", _document),
+        TestChunkFactory.CreateChunk("Rabbits are great pets. They are friendly and make excellent companions.", _document)
     ];
 }

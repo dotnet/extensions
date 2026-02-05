@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.ML.Tokenizers;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Tests;
@@ -30,7 +29,7 @@ public class IngestionChunkTests
     }
 
     [Fact]
-    public void Constructor_ThrowsWhenTokenCountIsZeroForNonEmptyContent()
+    public void Constructor_ThrowsWhenTokenCountIsZero()
     {
         IngestionDocument document = new("test");
 
@@ -38,16 +37,5 @@ public class IngestionChunkTests
             () => new IngestionChunk<string>("test content", document, 0));
 
         Assert.Equal("tokenCount", exception.ParamName);
-    }
-}
-
-public static class TestHelpers
-{
-    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
-
-    public static IngestionChunk<string> CreateChunk(string content, IngestionDocument document)
-    {
-        int tokenCount = s_tokenizer.CountTokens(content, considerNormalization: false);
-        return new IngestionChunk<string>(content, document, tokenCount);
     }
 }
