@@ -23,7 +23,7 @@ public enum ReasoningOutput
     Summary,
 
     /// <summary>
-    /// Detailed reasoning output. Include detailed reasoning content in the response.
+    /// Full reasoning output. Include all reasoning content in the response.
     /// </summary>
-    Detailed,
+    Full,
 }

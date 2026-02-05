@@ -178,7 +178,7 @@ public class ChatOptionsTests
         options.FrequencyPenalty = 0.4f;
         options.PresencePenalty = 0.5f;
         options.Seed = 12345;
-        options.Reasoning = new ReasoningOptions { Effort = ReasoningEffort.High, Output = ReasoningOutput.Detailed };
+        options.Reasoning = new ReasoningOptions { Effort = ReasoningEffort.High, Output = ReasoningOutput.Full };
         options.ResponseFormat = ChatResponseFormat.Json;
         options.ModelId = "modelId";
         options.StopSequences = stopSequences;
@@ -210,7 +210,7 @@ public class ChatOptionsTests
         Assert.Equal(12345, deserialized.Seed);
         Assert.NotNull(deserialized.Reasoning);
         Assert.Equal(ReasoningEffort.High, deserialized.Reasoning.Effort);
-        Assert.Equal(ReasoningOutput.Detailed, deserialized.Reasoning.Output);
+        Assert.Equal(ReasoningOutput.Full, deserialized.Reasoning.Output);
         Assert.IsType<ChatResponseFormatJson>(deserialized.ResponseFormat);
         Assert.Equal("modelId", deserialized.ModelId);
         Assert.NotSame(stopSequences, deserialized.StopSequences);

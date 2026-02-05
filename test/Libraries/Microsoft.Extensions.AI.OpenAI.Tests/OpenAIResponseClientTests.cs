@@ -5673,9 +5673,9 @@ public class OpenAIResponseClientTests
 
     [Theory]
     [InlineData(ReasoningEffort.Low, ReasoningOutput.Summary, "low", "concise")]
-    [InlineData(ReasoningEffort.Medium, ReasoningOutput.Detailed, "medium", "detailed")]
+    [InlineData(ReasoningEffort.Medium, ReasoningOutput.Full, "medium", "detailed")]
     [InlineData(ReasoningEffort.High, ReasoningOutput.Summary, "high", "concise")]
-    [InlineData(ReasoningEffort.ExtraHigh, ReasoningOutput.Detailed, "high", "detailed")] // ExtraHigh maps to high
+    [InlineData(ReasoningEffort.ExtraHigh, ReasoningOutput.Full, "high", "detailed")] // ExtraHigh maps to high
     public async Task ReasoningOptions_EffortAndOutput_ProducesExpectedJson(
         ReasoningEffort effort,
         ReasoningOutput output,

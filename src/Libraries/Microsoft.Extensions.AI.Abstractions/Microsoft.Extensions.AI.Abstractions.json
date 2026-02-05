@@ -2193,7 +2193,7 @@
           "Value": "1"
         },
         {
-          "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.Detailed",
+          "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.Full",
           "Stage": "Stable",
           "Value": "2"
         }

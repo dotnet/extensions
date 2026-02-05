@@ -834,7 +834,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         ResponseReasoningSummaryVerbosity? summary = reasoning.Output switch
         {
             ReasoningOutput.Summary => ResponseReasoningSummaryVerbosity.Concise,
-            ReasoningOutput.Detailed => ResponseReasoningSummaryVerbosity.Detailed,
+            ReasoningOutput.Full => ResponseReasoningSummaryVerbosity.Detailed,
             _ => (ResponseReasoningSummaryVerbosity?)null, // None or null - let OpenAI use its default
         };
 

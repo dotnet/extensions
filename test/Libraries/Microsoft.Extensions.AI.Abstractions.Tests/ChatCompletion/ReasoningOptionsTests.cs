@@ -32,7 +32,7 @@ public class ReasoningOptionsTests
     [Theory]
     [InlineData(ReasoningOutput.None)]
     [InlineData(ReasoningOutput.Summary)]
-    [InlineData(ReasoningOutput.Detailed)]
+    [InlineData(ReasoningOutput.Full)]
     public void Output_Roundtrips(ReasoningOutput output)
     {
         ReasoningOptions options = new() { Output = output };
@@ -45,7 +45,7 @@ public class ReasoningOptionsTests
         ReasoningOptions options = new()
         {
             Effort = ReasoningEffort.High,
-            Output = ReasoningOutput.Detailed,
+            Output = ReasoningOutput.Full,
         };
 
         string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.ReasoningOptions);
@@ -111,7 +111,7 @@ public class ReasoningOptionsTests
     public void JsonSerialization_AllOutputValues_SerializeAsStrings()
     {
         // Test all ReasoningOutput values serialize correctly
-        foreach (ReasoningOutput output in new[] { ReasoningOutput.None, ReasoningOutput.Summary, ReasoningOutput.Detailed })
+        foreach (ReasoningOutput output in new[] { ReasoningOutput.None, ReasoningOutput.Summary, ReasoningOutput.Full })
         {
             string json = JsonSerializer.Serialize(output, TestJsonSerializerContext.Default.ReasoningOutput);
             ReasoningOutput? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ReasoningOutput);
