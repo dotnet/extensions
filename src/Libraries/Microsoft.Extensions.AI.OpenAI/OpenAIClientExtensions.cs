@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -15,7 +15,9 @@ using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
+using OpenAI.Containers;
 using OpenAI.Embeddings;
+using OpenAI.Files;
 using OpenAI.Images;
 using OpenAI.Responses;
 
@@ -172,6 +174,44 @@ public static class OpenAIClientExtensions
     /// <exception cref="ArgumentNullException"><paramref name="embeddingClient"/> is <see langword="null"/>.</exception>
     public static IEmbeddingGenerator<string, Embedding<float>> AsIEmbeddingGenerator(this EmbeddingClient embeddingClient, int? defaultModelDimensions = null) =>
         new OpenAIEmbeddingGenerator(embeddingClient, defaultModelDimensions);
+
+    /// <summary>Gets an <see cref="IHostedFileClient"/> for use with this <see cref="OpenAIClient"/>.</summary>
+    /// <param name="openAIClient">The client.</param>
+    /// <returns>An <see cref="IHostedFileClient"/> that can be used to manage files via the <see cref="OpenAIClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="openAIClient"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// The returned <see cref="IHostedFileClient"/> supports both the standard Files API and container files
+    /// (used for code interpreter outputs). To download a container file, specify the container ID
+    /// in the <see cref="HostedFileClientOptions.Scope"/> property.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IHostedFileClient AsIHostedFileClient(this OpenAIClient openAIClient) =>
+        new OpenAIHostedFileClient(openAIClient);
+
+    /// <summary>Gets an <see cref="IHostedFileClient"/> for use with this <see cref="OpenAIFileClient"/>.</summary>
+    /// <param name="fileClient">The client.</param>
+    /// <returns>An <see cref="IHostedFileClient"/> that can be used to manage files via the <see cref="OpenAIFileClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="fileClient"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// The returned <see cref="IHostedFileClient"/> supports only the standard Files API.
+    /// Operations requiring container access (via <c>Scope</c>) will throw <see cref="InvalidOperationException"/>.
+    /// To access container files, use <see cref="AsIHostedFileClient(ContainerClient, string?)"/> or <see cref="AsIHostedFileClient(OpenAIClient)"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IHostedFileClient AsIHostedFileClient(this OpenAIFileClient fileClient) =>
+        new OpenAIHostedFileClient(fileClient);
+
+    /// <summary>Gets an <see cref="IHostedFileClient"/> for use with this <see cref="ContainerClient"/>.</summary>
+    /// <param name="containerClient">The client.</param>
+    /// <param name="defaultScope">
+    /// The default container ID for operations. If not specified, a container ID must be
+    /// provided via the <c>Scope</c> property on per-call options.
+    /// </param>
+    /// <returns>An <see cref="IHostedFileClient"/> that can be used to manage files within containers via the <see cref="ContainerClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="containerClient"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IHostedFileClient AsIHostedFileClient(this ContainerClient containerClient, string? defaultScope = null) =>
+        new OpenAIHostedFileClient(containerClient, defaultScope);
 
     /// <summary>Gets whether the properties specify that strict schema handling is desired.</summary>
     internal static bool? HasStrict(IReadOnlyDictionary<string, object?>? additionalProperties) =>

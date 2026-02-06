@@ -142,6 +142,12 @@ internal static class OpenTelemetryConsts
         }
     }
 
+    public static class File
+    {
+        public const string Name = "file.name";
+        public const string Size = "file.size";
+    }
+
     public static class Server
     {
         public const string Address = "server.address";
