@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -402,6 +403,45 @@ public class HttpClientLoggingExtensionsTest
 
         using var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
         Assert.NotNull(httpClient);
+    }
+
+    [Fact]
+    public async Task LatencyInfo_IsPopulated_WhenLoggerWrapsHandlersPipeline()
+    {
+        await using var sp = new ServiceCollection()
+            .AddLatencyContext()
+            .AddRedaction()
+            .AddHttpClientLatencyTelemetry()
+            .AddHttpClient("test")
+            .ConfigurePrimaryHttpMessageHandler(() => new ServerNameStubHandler("TestServer"))
+            .AddExtendedHttpClientLogging(wrapHandlersPipeline: true)
+            .Services
+            .AddFakeLogging()
+            .BuildServiceProvider();
+
+        var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+
+        using var response = await client.GetAsync("http://localhost/api");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var collector = sp.GetFakeLogCollector();
+        var record = collector.LatestRecord;
+        Assert.NotNull(record);
+
+        var latencyInfo = record.GetStructuredStateValue("LatencyInfo");
+        Assert.False(string.IsNullOrEmpty(latencyInfo));
+        Assert.StartsWith("v1.0,", latencyInfo);
+        Assert.Contains("TestServer", latencyInfo);
+    }
+
+    private sealed class ServerNameStubHandler(string serverName) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.OK);
+            response.Headers.TryAddWithoutValidation(TelemetryConstants.ServerApplicationNameHeader, serverName);
+            return Task.FromResult(response);
+        }
     }
 
     private static void EnsureSingleLogger<T>(IServiceProvider serviceProvider, string serviceKey)
