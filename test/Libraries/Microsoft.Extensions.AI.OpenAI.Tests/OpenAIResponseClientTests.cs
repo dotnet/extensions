@@ -2892,6 +2892,7 @@ public class OpenAIResponseClientTests
         Assert.NotNull(codeCall.Inputs);
         var codeInput = Assert.IsType<DataContent>(Assert.Single(codeCall.Inputs));
         Assert.Equal("text/x-python", codeInput.MediaType);
+        Assert.Equal("# Calculating the sum of numbers from 1 to 5\nresult = sum(range(1, 6))\nresult", Encoding.UTF8.GetString(codeInput.Data.ToArray()));
 
         var codeResult = Assert.IsType<CodeInterpreterToolResultContent>(message.Contents[1]);
         Assert.Equal(codeCall.CallId, codeResult.CallId);
@@ -3111,7 +3112,7 @@ public class OpenAIResponseClientTests
         Assert.NotNull(codeCall.Inputs);
         var codeInput = Assert.IsType<DataContent>(Assert.Single(codeCall.Inputs));
         Assert.Equal("text/x-python", codeInput.MediaType);
-        Assert.Contains("sum_of_numbers", Encoding.UTF8.GetString(codeInput.Data.ToArray()));
+        Assert.Equal("# Calculate the sum of numbers from 1 to 10\nsum_of_numbers = sum(range(1, 11))\nsum_of_numbers", Encoding.UTF8.GetString(codeInput.Data.ToArray()));
 
         var codeResult = Assert.IsType<CodeInterpreterToolResultContent>(message.Contents[1]);
         Assert.Equal(codeCall.CallId, codeResult.CallId);
@@ -3123,6 +3124,125 @@ public class OpenAIResponseClientTests
         Assert.Equal(219, response.Usage.InputTokenCount);
         Assert.Equal(50, response.Usage.OutputTokenCount);
         Assert.Equal(269, response.Usage.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task CodeInterpreterTool_Streaming_YieldsCodeDeltas()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-2024-08-06",
+                "input":[{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"Calculate the sum of numbers from 1 to 10 using Python"}]
+                }],
+                "tools":[{
+                    "type":"code_interpreter",
+                    "container":{"type":"auto"}
+                }],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_05d8f42f04f94cb80068fc3b7e07bc819eaf0d6e2c1923e564","object":"response","created_at":1761360766,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"code_interpreter","container":{"type":"auto"}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_05d8f42f04f94cb80068fc3b7e07bc819eaf0d6e2c1923e564","object":"response","created_at":1761360766,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"code_interpreter","container":{"type":"auto"}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","type":"code_interpreter_call","status":"in_progress","code":"","container_id":"cntr_68fc3b80043c8191990a5837d7617af704511ed77cec9447","outputs":null}}
+
+            event: response.code_interpreter_call.in_progress
+            data: {"type":"response.code_interpreter_call.in_progress","sequence_number":3,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":4,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"#"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":5,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":" sum"}
+
+            event: response.code_interpreter_call_code.delta
+            data: {"type":"response.code_interpreter_call_code.delta","sequence_number":6,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","delta":"(range(1, 11))"}
+
+            event: response.code_interpreter_call_code.done
+            data: {"type":"response.code_interpreter_call_code.done","sequence_number":7,"output_index":0,"item_id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","code":"# sum(range(1, 11))"}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":8,"output_index":0,"item":{"id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","type":"code_interpreter_call","status":"completed","code":"# sum(range(1, 11))","container_id":"cntr_68fc3b80043c8191990a5837d7617af704511ed77cec9447","outputs":null}}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":9,"response":{"id":"resp_05d8f42f04f94cb80068fc3b7e07bc819eaf0d6e2c1923e564","object":"response","created_at":1761360766,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[{"id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","type":"code_interpreter_call","status":"completed","code":"# sum(range(1, 11))","container_id":"cntr_68fc3b80043c8191990a5837d7617af704511ed77cec9447","outputs":null}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"code_interpreter","container":{"type":"auto"}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":100,"input_tokens_details":{"cached_tokens":0},"output_tokens":20,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":120},"user":null,"metadata":{}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-2024-08-06");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("Calculate the sum of numbers from 1 to 10 using Python", new()
+        {
+            Tools = [new HostedCodeInterpreterTool()],
+        }))
+        {
+            updates.Add(update);
+        }
+
+        // Verify we got streaming updates with code interpreter call content (from deltas)
+        var codeInterpreterCallUpdates = updates.Where(u =>
+            u.Contents != null && u.Contents.Any(c => c is CodeInterpreterToolCallContent)).ToList();
+
+        // Should have exactly 3 delta updates (one for each delta event)
+        Assert.Equal(3, codeInterpreterCallUpdates.Count);
+
+        // Verify the deltas have the expected call ID and concatenate the code
+        StringBuilder codeBuilder = new();
+        foreach (var update in codeInterpreterCallUpdates)
+        {
+            var content = update.Contents.OfType<CodeInterpreterToolCallContent>().First();
+            Assert.Equal("ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3", content.CallId);
+
+            // Concatenate the delta code
+            if (content.Inputs is { Count: > 0 })
+            {
+                var dataContent = content.Inputs.OfType<DataContent>().FirstOrDefault();
+                if (dataContent is not null)
+                {
+                    codeBuilder.Append(Encoding.UTF8.GetString(dataContent.Data.ToArray()));
+                }
+            }
+        }
+
+        // Verify the concatenated deltas match the expected code
+        Assert.Equal("# sum(range(1, 11))", codeBuilder.ToString());
+
+        // Verify we also got the CodeInterpreterToolResultContent from OutputItemDone
+        var resultUpdates = updates.Where(u =>
+            u.Contents != null && u.Contents.Any(c => c is CodeInterpreterToolResultContent)).ToList();
+        Assert.Single(resultUpdates);
+
+        // Verify that streaming deltas are properly coalesced when creating a ChatResponse
+        var response = updates.ToChatResponse();
+        Assert.Single(response.Messages);
+
+        var message = response.Messages[0];
+        Assert.Equal(2, message.Contents.Count);
+
+        // First content should be the coalesced CodeInterpreterToolCallContent
+        var codeCall = Assert.IsType<CodeInterpreterToolCallContent>(message.Contents[0]);
+        Assert.Equal("ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3", codeCall.CallId);
+        Assert.NotNull(codeCall.Inputs);
+        var codeInput = Assert.IsType<DataContent>(Assert.Single(codeCall.Inputs));
+        Assert.Equal("text/x-python", codeInput.MediaType);
+        Assert.Equal("# sum(range(1, 11))", Encoding.UTF8.GetString(codeInput.Data.ToArray()));
+
+        // Second content should be the CodeInterpreterToolResultContent
+        var codeResult = Assert.IsType<CodeInterpreterToolResultContent>(message.Contents[1]);
+        Assert.Equal("ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3", codeResult.CallId);
     }
 
     [Fact]
