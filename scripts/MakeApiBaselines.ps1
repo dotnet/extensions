@@ -16,7 +16,7 @@ Write-Output "Installing required toolset"
 InitializeDotNetCli -install $true | Out-Null
 
 $Project = $PSScriptRoot + "/../eng/Tools/ApiChief/ApiChief.csproj"
-$Command = $PSScriptRoot + "/../artifacts/bin/ApiChief/Debug/net9.0/ApiChief.dll"
+$Command = $PSScriptRoot + "/../artifacts/bin/ApiChief/Debug/net10.0/ApiChief.dll"
 $LibrariesFolder = $PSScriptRoot + "/../src/Libraries"
 
 Write-Output "Building ApiChief tool"

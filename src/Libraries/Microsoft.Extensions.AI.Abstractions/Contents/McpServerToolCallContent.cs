@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -14,7 +12,6 @@ namespace Microsoft.Extensions.AI;
 /// This content type is used to represent an invocation of an MCP server tool by a hosted service.
 /// It is informational only.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.AIMcpServers, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class McpServerToolCallContent : FunctionCallContent
 {
     /// <summary>
