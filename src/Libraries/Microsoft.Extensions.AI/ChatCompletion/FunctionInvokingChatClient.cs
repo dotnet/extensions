@@ -828,7 +828,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         int count = content.Count;
         for (int i = 0; i < count; i++)
         {
-            if (content[i] is FunctionCallContent functionCall)
+            if (content[i] is FunctionCallContent functionCall && !functionCall.InformationalOnly)
             {
                 (functionCalls ??= []).Add(functionCall);
                 any = true;
@@ -1124,6 +1124,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         int iteration, int functionCallIndex, bool captureExceptions, bool isStreaming, CancellationToken cancellationToken)
     {
         var callContent = callContents[functionCallIndex];
+
+        // Mark the function call as purely informational since we're handling it
+        callContent.InformationalOnly = true;
 
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
         AIFunctionDeclaration? tool = FindTool(callContent.Name, options?.Tools, AdditionalTools);
@@ -1539,7 +1542,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 ref List<ApprovalResultWithRequestMessage>? targetList = ref approvalResponse.Approved ? ref approvedFunctionCalls : ref rejectedFunctionCalls;
 
                 ChatMessage? requestMessage = null;
-                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.FunctionCall.CallId, out requestMessage);
+                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.Id, out requestMessage);
 
                 (targetList ??= []).Add(new() { Response = approvalResponse, RequestMessage = requestMessage });
             }
@@ -1565,6 +1568,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     result = $"{result} {m.Response.Reason}";
                 }
 
+                // Mark the function call as purely informational since we're handling it (by rejecting it)
+                m.Response.FunctionCall.InformationalOnly = true;
                 return (AIContent)new FunctionResultContent(m.Response.FunctionCall.CallId, result);
             }) :
             null;
@@ -1703,7 +1708,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             for (int i = 0; i < content.Count; i++)
             {
-                if (content[i] is FunctionCallContent fcc)
+                if (content[i] is FunctionCallContent fcc && !fcc.InformationalOnly)
                 {
                     updatedContent ??= [.. content]; // Clone the list if we haven't already
                     updatedContent[i] = new FunctionApprovalRequestContent(fcc.CallId, fcc);
@@ -1734,7 +1739,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             var content = messages[i].Contents;
             for (int j = 0; j < content.Count; j++)
             {
-                if (content[j] is FunctionCallContent functionCall)
+                if (content[j] is FunctionCallContent functionCall && !functionCall.InformationalOnly)
                 {
                     (allFunctionCallContentIndices ??= []).Add((i, j));
 

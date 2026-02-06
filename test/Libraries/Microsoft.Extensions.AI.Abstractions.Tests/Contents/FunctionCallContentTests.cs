@@ -28,6 +28,7 @@ public class FunctionCallContentTests
 
         Assert.Null(c.Arguments);
         Assert.Null(c.Exception);
+        Assert.False(c.InformationalOnly);
     }
 
     [Fact]
@@ -71,6 +72,88 @@ public class FunctionCallContentTests
         Exception e = new();
         c.Exception = e;
         Assert.Same(e, c.Exception);
+
+        Assert.False(c.InformationalOnly);
+        c.InformationalOnly = true;
+        Assert.True(c.InformationalOnly);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InformationalOnly_Serialization(bool informationalOnly)
+    {
+        // Arrange
+        var sut = new FunctionCallContent("callId1", "functionName", new Dictionary<string, object?> { ["key"] = "value" })
+        {
+            InformationalOnly = informationalOnly
+        };
+
+        // Act
+        var json = JsonSerializer.SerializeToNode(sut, TestJsonSerializerContext.Default.Options);
+
+        // Assert - InformationalOnly should always be in the JSON (for roundtrip)
+        Assert.NotNull(json);
+        var jsonObj = json!.AsObject();
+        Assert.True(jsonObj.ContainsKey("informationalOnly") || jsonObj.ContainsKey("InformationalOnly"));
+
+        JsonNode? informationalOnlyValue = null;
+        if (jsonObj.TryGetPropertyValue("informationalOnly", out var value1))
+        {
+            informationalOnlyValue = value1;
+        }
+        else if (jsonObj.TryGetPropertyValue("InformationalOnly", out var value2))
+        {
+            informationalOnlyValue = value2;
+        }
+
+        Assert.NotNull(informationalOnlyValue);
+        Assert.Equal(informationalOnly, informationalOnlyValue!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InformationalOnly_Deserialization(bool informationalOnly)
+    {
+        // Test deserialization
+        var json = $$"""{"callId":"callId1","name":"functionName","informationalOnly":{{(informationalOnly ? "true" : "false")}}}""";
+        var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal("callId1", deserialized.CallId);
+        Assert.Equal("functionName", deserialized.Name);
+        Assert.Equal(informationalOnly, deserialized.InformationalOnly);
+    }
+
+    [Fact]
+    public void InformationalOnly_DeserializedToFalseWhenMissing()
+    {
+        // Test deserialization when InformationalOnly is not in JSON (should default to false from field initializer)
+        var json = """{"callId":"callId1","name":"functionName"}""";
+        var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal("callId1", deserialized.CallId);
+        Assert.Equal("functionName", deserialized.Name);
+        Assert.False(deserialized.InformationalOnly);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InformationalOnly_Roundtrip(bool informationalOnly)
+    {
+        // Test that InformationalOnly roundtrips correctly through JSON serialization
+        var original = new FunctionCallContent("callId1", "functionName") { InformationalOnly = informationalOnly };
+        var json = JsonSerializer.SerializeToNode(original, TestJsonSerializerContext.Default.Options);
+        var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal(original.CallId, deserialized.CallId);
+        Assert.Equal(original.Name, deserialized.Name);
+        Assert.Equal(original.InformationalOnly, deserialized.InformationalOnly);
+        Assert.Equal(informationalOnly, deserialized.InformationalOnly);
     }
 
     [Fact]

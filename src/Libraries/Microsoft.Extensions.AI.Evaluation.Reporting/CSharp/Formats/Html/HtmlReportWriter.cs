@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -34,6 +35,11 @@ public sealed class HtmlReportWriter(string reportFilePath) : IEvaluationReportW
                 createdAt: DateTime.UtcNow,
                 generatorVersion: Constants.Version);
 
+        // Serialize the dataset to JSON, then HTML-encode it for safe embedding in a data attribute.
+        // This pattern avoids XSS vulnerabilities that can occur when embedding JSON directly in script blocks.
+        string json = JsonSerializer.Serialize(dataset, JsonUtilities.Compact.DatasetTypeInfo);
+        string htmlEncodedJson = WebUtility.HtmlEncode(json);
+
         using var stream =
             new FileStream(
                 reportFilePath,
@@ -47,22 +53,12 @@ public sealed class HtmlReportWriter(string reportFilePath) : IEvaluationReportW
 
 #if NET
         await writer.WriteAsync(HtmlTemplateBefore.AsMemory(), cancellationToken).ConfigureAwait(false);
-        await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
-#else
-        await writer.WriteAsync(HtmlTemplateBefore).ConfigureAwait(false);
-        await writer.FlushAsync().ConfigureAwait(false);
-#endif
-
-        await JsonSerializer.SerializeAsync(
-            stream,
-            dataset,
-            JsonUtilities.Compact.DatasetTypeInfo,
-            cancellationToken).ConfigureAwait(false);
-
-#if NET
+        await writer.WriteAsync(htmlEncodedJson.AsMemory(), cancellationToken).ConfigureAwait(false);
         await writer.WriteAsync(HtmlTemplateAfter.AsMemory(), cancellationToken).ConfigureAwait(false);
         await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
 #else
+        await writer.WriteAsync(HtmlTemplateBefore).ConfigureAwait(false);
+        await writer.WriteAsync(htmlEncodedJson).ConfigureAwait(false);
         await writer.WriteAsync(HtmlTemplateAfter).ConfigureAwait(false);
         await writer.FlushAsync().ConfigureAwait(false);
 #endif
@@ -86,8 +82,8 @@ public sealed class HtmlReportWriter(string reportFilePath) : IEvaluationReportW
         using var reader = new StreamReader(resourceStream);
         string all = reader.ReadToEnd();
 
-        // This is the placeholder for the results array in the template.
-        const string SearchString = @"{scenarioRunResults:[]}";
+        // This is the placeholder in the data-dataset attribute on the root div.
+        const string SearchString = "##DATASETS##";
 
         int start = all.IndexOf(SearchString, StringComparison.Ordinal);
         if (start == -1)
