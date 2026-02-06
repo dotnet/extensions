@@ -16,7 +16,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
-    <NoWarn>$(NoWarn);CA1063;OPENAI001;OPENAI002;MEAI001;SCME0001</NoWarn>
+    <NoWarn>$(NoWarn);CA1063;</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DisableMinimumSupportedTfmCompatErrors>true</DisableMinimumSupportedTfmCompatErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

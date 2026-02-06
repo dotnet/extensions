@@ -63,6 +63,8 @@ internal static class DiagnosticIds
         // when using the experimental OpenAI APIs.
         internal const string AIOpenAI = "OPENAI001";
         internal const string AIOpenAIRealtime = "OPENAI002";
+        internal const string AIOpenAIComputerUse = "OPENAICUA001";
+        internal const string AIOpenAIJsonPatch = "SCME0001";
 
         private const string AIExperiments = "MEAI001";
     }

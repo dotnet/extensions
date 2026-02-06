@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.TestUtilities;
 using Xunit;
 
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
+
 namespace Microsoft.Extensions.AI;
 
 public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests

@@ -10,7 +10,7 @@ using Microsoft.Shared.Diagnostics;
 namespace OpenAI.Realtime;
 
 /// <summary>Provides extension methods for working with content associated with OpenAI.Realtime.</summary>
-[Experimental(DiagnosticIds.Experiments.AIOpenAIRealtime, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AIOpenAIRealtime)]
 public static class MicrosoftExtensionsAIRealtimeExtensions
 {
     /// <summary>Creates an OpenAI <see cref="ConversationFunctionTool"/> from an <see cref="AIFunctionDeclaration"/>.</summary>

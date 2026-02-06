@@ -6,6 +6,7 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -14,6 +15,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Responses;
 
@@ -25,6 +27,7 @@ using OpenAI.Responses;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an <see cref="ResponsesClient"/>.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAI)]
 internal sealed class OpenAIResponsesChatClient : IChatClient
 {
     // These delegate instances are used to call the internal overloads of CreateResponseAsync and CreateResponseStreamingAsync that accept
@@ -61,6 +64,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     /// <summary>Initializes a new instance of the <see cref="OpenAIResponsesChatClient"/> class for the specified <see cref="ResponsesClient"/>.</summary>
     /// <param name="responseClient">The underlying client.</param>
     /// <exception cref="ArgumentNullException"><paramref name="responseClient"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
     public OpenAIResponsesChatClient(ResponsesClient responseClient)
     {
         _ = Throw.IfNull(responseClient);
@@ -113,6 +117,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         return FromOpenAIResponse(openAIResponsesResult, openAIOptions, openAIConversationId);
     }
 
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
     internal static ChatResponse FromOpenAIResponse(ResponseResult responseResult, CreateResponseOptions? openAIOptions, string? conversationId)
     {
         // Convert and return the results.
@@ -161,6 +166,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         return response;
     }
 
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
     internal static IEnumerable<ChatMessage> ToChatMessages(IEnumerable<ResponseItem> items, CreateResponseOptions? options = null)
     {
         ChatMessage? message = null;
@@ -276,6 +282,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         return FromOpenAIStreamingResponseUpdatesAsync(createUpdates, openAIOptions, openAIConversationId, cancellationToken: cancellationToken);
     }
 
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
     internal static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingResponseUpdatesAsync(
         IAsyncEnumerable<StreamingResponseUpdate> streamingResponseUpdates,
         CreateResponseOptions? options,
@@ -536,6 +543,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Nothing to dispose.
     }
 
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
     internal static ResponseTool? ToResponseTool(AITool tool, ChatOptions? options = null)
     {
         switch (tool)
@@ -657,6 +665,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
     }
 
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
     internal static FunctionTool ToResponseTool(AIFunctionDeclaration aiFunction, ChatOptions? options = null)
     {
         bool? strictModeEnabled =
@@ -798,6 +807,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         return result;
     }
 
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
     internal static ResponseTextFormat? ToOpenAIResponseTextFormat(ChatResponseFormat? format, ChatOptions? options = null) =>
         format switch
         {
@@ -851,6 +861,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     /// <summary>Convert a sequence of <see cref="ChatMessage"/>s to <see cref="ResponseItem"/>s.</summary>
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
     internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> inputs, ChatOptions? options)
     {
         _ = options; // currently unused
@@ -1186,6 +1197,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     /// <summary>Converts a <see cref="UsageDetails"/> to a <see cref="ResponseTokenUsage"/>.</summary>
+    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
     internal static ResponseTokenUsage? ToResponseTokenUsage(UsageDetails? usageDetails)
     {
         ResponseTokenUsage? rtu = null;
