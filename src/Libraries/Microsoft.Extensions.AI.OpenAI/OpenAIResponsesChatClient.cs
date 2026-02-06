@@ -164,6 +164,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     internal static IEnumerable<ChatMessage> ToChatMessages(IEnumerable<ResponseItem> items, CreateResponseOptions? options = null)
     {
         ChatMessage? message = null;
+        Dictionary<string, McpToolCallApprovalRequestItem>? mcpApprovalRequests = null;
 
         foreach (ResponseItem outputItem in items)
         {
@@ -207,12 +208,33 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case McpToolCallApprovalRequestItem mtcari:
+                    // Store for correlation with responses.
+                    (mcpApprovalRequests ??= new())[mtcari.Id] = mtcari;
+
                     // We are reusing the mtcari.Id as the McpServerToolCallContent.CallId since we don't have one yet.
                     message.Contents.Add(new FunctionApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
                     {
                         Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
                         RawRepresentation = mtcari,
                     })
+                    {
+                        RawRepresentation = mtcari,
+                    });
+                    break;
+
+                case McpToolCallApprovalResponseItem mtcari
+                    when mcpApprovalRequests?.TryGetValue(mtcari.ApprovalRequestId, out McpToolCallApprovalRequestItem? request) is true:
+                    _ = mcpApprovalRequests.Remove(mtcari.ApprovalRequestId);
+
+                    // Correlate with the original request to get tool details.
+                    // McpToolCallApprovalResponseItem without a correlated request falls through to default.
+                    message.Contents.Add(new FunctionApprovalResponseContent(
+                        mtcari.ApprovalRequestId,
+                        mtcari.Approved,
+                        new McpServerToolCallContent(mtcari.ApprovalRequestId, request.ToolName, request.ServerLabel)
+                        {
+                            Arguments = JsonSerializer.Deserialize(request.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
+                        })
                     {
                         RawRepresentation = mtcari,
                     });
@@ -287,6 +309,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         ChatRole? lastRole = null;
         bool anyFunctions = false;
         ResponseStatus? latestResponseStatus = null;
+        Dictionary<string, McpToolCallApprovalRequestItem>? mcpApprovalRequests = null;
 
         UpdateConversationId(resumeResponseId);
 
@@ -422,12 +445,33 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case McpToolCallApprovalRequestItem mtcari:
+                            // Store for correlation with responses.
+                            (mcpApprovalRequests ??= new())[mtcari.Id] = mtcari;
+
                             // We are reusing the mtcari.Id as the McpServerToolCallContent.CallId since we don't have one yet.
                             yield return CreateUpdate(new FunctionApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
                             {
                                 Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
                                 RawRepresentation = mtcari,
                             })
+                            {
+                                RawRepresentation = mtcari,
+                            });
+                            break;
+
+                        case McpToolCallApprovalResponseItem mtcari
+                            when mcpApprovalRequests?.TryGetValue(mtcari.ApprovalRequestId, out McpToolCallApprovalRequestItem? request) is true:
+                            _ = mcpApprovalRequests.Remove(mtcari.ApprovalRequestId);
+
+                            // Correlate with the original request to get tool details.
+                            // McpToolCallApprovalResponseItem without a correlated request falls through to default.
+                            yield return CreateUpdate(new FunctionApprovalResponseContent(
+                                mtcari.ApprovalRequestId,
+                                mtcari.Approved,
+                                new McpServerToolCallContent(mtcari.ApprovalRequestId, request.ToolName, request.ServerLabel)
+                                {
+                                    Arguments = JsonSerializer.Deserialize(request.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
+                                })
                             {
                                 RawRepresentation = mtcari,
                             });
