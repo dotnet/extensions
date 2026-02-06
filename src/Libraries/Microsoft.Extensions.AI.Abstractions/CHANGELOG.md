@@ -2,6 +2,9 @@
 
 ## NOT YET RELEASED
 
+- Unsealed `FunctionCallContent` and `FunctionResultContent`.
+- Added `InformationalOnly` property to `FunctionCallContent` to indicate whether the content is informing the consumer about a call that's being made elsewhere or that is a request for the call to be performed.
+- Added `LoadFromAsync` and `SaveToAsync` helper methods to `DataContent` for file I/O operations.
 - Fixed JSON schema generation for nullable reference type annotations on parameters in AIFunctions.
 
 ## 10.2.0
