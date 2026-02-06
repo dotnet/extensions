@@ -4,6 +4,7 @@
 using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -12,6 +13,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace OpenAI.Chat;
@@ -32,6 +34,7 @@ public static class MicrosoftExtensionsAIChatExtensions
     /// <param name="format">The format.</param>
     /// <param name="options">The options to use when interpreting the format.</param>
     /// <returns>The converted OpenAI <see cref="ChatResponseFormat"/>.</returns>
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     public static ChatResponseFormat? AsOpenAIChatResponseFormat(this Microsoft.Extensions.AI.ChatResponseFormat? format, ChatOptions? options = null) =>
         OpenAIChatClient.ToOpenAIChatResponseFormat(format, options);
 
@@ -46,6 +49,7 @@ public static class MicrosoftExtensionsAIChatExtensions
     /// <param name="response">The <see cref="ChatResponse"/> to convert to a <see cref="ChatCompletion"/>.</param>
     /// <returns>A converted <see cref="ChatCompletion"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     public static ChatCompletion AsOpenAIChatCompletion(this ChatResponse response)
     {
         _ = Throw.IfNull(response);
@@ -127,6 +131,7 @@ public static class MicrosoftExtensionsAIChatExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A sequence of converted <see cref="ChatResponseUpdate"/> instances.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="responseUpdates"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     public static async IAsyncEnumerable<StreamingChatCompletionUpdate> AsOpenAIStreamingChatCompletionUpdatesAsync(
         this IAsyncEnumerable<ChatResponseUpdate> responseUpdates, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -203,11 +208,13 @@ public static class MicrosoftExtensionsAIChatExtensions
                     OpenAIChatClient.ConvertContentParts(ucm.Content, resultMessage.Contents);
                     break;
 
+#pragma warning disable OPENAI001 // Developer role is experimental
                 case DeveloperChatMessage dcm:
                     resultMessage.Role = ChatRole.System;
                     resultMessage.AuthorName = dcm.ParticipantName;
                     OpenAIChatClient.ConvertContentParts(dcm.Content, resultMessage.Contents);
                     break;
+#pragma warning restore OPENAI001
 
                 case SystemChatMessage scm:
                     resultMessage.Role = ChatRole.System;
@@ -251,6 +258,7 @@ public static class MicrosoftExtensionsAIChatExtensions
     /// <param name="options">The options employed in the creation of the response.</param>
     /// <returns>A converted <see cref="ChatResponse"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="chatCompletion"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     public static ChatResponse AsChatResponse(this ChatCompletion chatCompletion, ChatCompletionOptions? options = null) =>
         OpenAIChatClient.FromOpenAIChatCompletion(Throw.IfNull(chatCompletion), options);
 
@@ -263,6 +271,7 @@ public static class MicrosoftExtensionsAIChatExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A sequence of converted <see cref="ChatResponseUpdate"/> instances.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="chatCompletionUpdates"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     public static IAsyncEnumerable<ChatResponseUpdate> AsChatResponseUpdatesAsync(
         this IAsyncEnumerable<StreamingChatCompletionUpdate> chatCompletionUpdates, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default) =>
         OpenAIChatClient.FromOpenAIStreamingChatCompletionAsync(Throw.IfNull(chatCompletionUpdates), options, cancellationToken);
@@ -274,7 +283,9 @@ public static class MicrosoftExtensionsAIChatExtensions
             "user" => ChatMessageRole.User,
             "function" => ChatMessageRole.Function,
             "tool" => ChatMessageRole.Tool,
+#pragma warning disable OPENAI001 // Developer role is experimental
             "developer" => ChatMessageRole.Developer,
+#pragma warning restore OPENAI001
             "system" => ChatMessageRole.System,
             _ => ChatMessageRole.Assistant,
         };

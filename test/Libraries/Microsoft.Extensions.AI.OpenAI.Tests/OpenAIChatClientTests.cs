@@ -16,6 +16,7 @@ using OpenAI.Chat;
 using Xunit;
 
 #pragma warning disable S103 // Lines should not be too long
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
 
 namespace Microsoft.Extensions.AI;
 

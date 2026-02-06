@@ -19,6 +19,7 @@ using OpenAI.Responses;
 using Xunit;
 
 #pragma warning disable S103 // Lines should not be too long
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
 
 namespace Microsoft.Extensions.AI;
 
@@ -797,7 +798,10 @@ public class OpenAIResponseClientTests
 
         ChatOptions chatOptions = new()
         {
+#pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
             Tools = [ResponseTool.CreateComputerTool(ComputerToolEnvironment.Browser, 1024, 768).AsAITool()],
+#pragma warning restore OPENAICUA001
+
             RawRepresentationFactory = options => new CreateResponseOptions
             {
                 ReasoningOptions = new() { ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Concise },
@@ -818,7 +822,9 @@ public class OpenAIResponseClientTests
         Assert.Single(responseMessage.Contents, content => content is TextReasoningContent);
         AIContent computerUserItem = Assert.Single(responseMessage.Contents, content => content.GetType() == typeof(AIContent));
         Assert.NotNull(computerUserItem.RawRepresentation);
+#pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
         Assert.IsType<ComputerCallResponseItem>(computerUserItem.RawRepresentation);
+#pragma warning restore OPENAICUA001
         Assert.NotNull(response.Usage);
         Assert.Equal(18, response.Usage.InputTokenCount);
         Assert.Equal(53, response.Usage.OutputTokenCount);
@@ -883,6 +889,7 @@ public class OpenAIResponseClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateResponseClient(httpClient, "computer-use-preview");
 
+#pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
         ChatOptions chatOptions = new()
         {
             Tools = [ResponseTool.CreateComputerTool(ComputerToolEnvironment.Browser, 1024, 768).AsAITool()],
@@ -891,6 +898,7 @@ public class OpenAIResponseClientTests
                 ReasoningOptions = new() { ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Concise },
             }
         };
+#pragma warning restore OPENAICUA001
 
         List<ChatResponseUpdate> updates = [];
         await foreach (var update in client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "Search the web for the temperature today in Fremont")], chatOptions))
@@ -914,7 +922,9 @@ public class OpenAIResponseClientTests
         }
 
         AIContent content = Assert.Single(updates[3].Contents);
+#pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
         var ccri = Assert.IsType<ComputerCallResponseItem>(content.RawRepresentation);
+#pragma warning restore OPENAICUA001
 
         UsageContent usage = Assert.IsType<UsageContent>(Assert.Single(updates[4].Contents));
         Assert.Equal(18, usage.Details.InputTokenCount);
