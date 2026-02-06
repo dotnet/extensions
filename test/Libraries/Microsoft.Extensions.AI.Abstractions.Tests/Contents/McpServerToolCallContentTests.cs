@@ -72,14 +72,23 @@ public class McpServerToolCallContentTests
             Arguments = new Dictionary<string, object?> { { "arg1", "value1" } }
         };
 
-        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
-        var deserializedContent = JsonSerializer.Deserialize<McpServerToolCallContent>(json, AIJsonUtilities.DefaultOptions);
+        AssertSerializationRoundtrips<McpServerToolCallContent>(content);
+        AssertSerializationRoundtrips<FunctionCallContent>(content);
+        AssertSerializationRoundtrips<AIContent>(content);
 
-        Assert.NotNull(deserializedContent);
-        Assert.Equal(content.CallId, deserializedContent.CallId);
-        Assert.Equal(content.Name, deserializedContent.Name);
-        Assert.Equal(content.ServerName, deserializedContent.ServerName);
-        Assert.NotNull(deserializedContent.Arguments);
-        Assert.Equal("value1", deserializedContent.Arguments["arg1"]?.ToString());
+        static void AssertSerializationRoundtrips<T>(McpServerToolCallContent content)
+            where T : AIContent
+        {
+            T contentAsT = (T)(object)content;
+            string json = JsonSerializer.Serialize(contentAsT, AIJsonUtilities.DefaultOptions);
+            T? deserialized = JsonSerializer.Deserialize<T>(json, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            var deserializedContent = Assert.IsType<McpServerToolCallContent>(deserialized);
+            Assert.Equal(content.CallId, deserializedContent.CallId);
+            Assert.Equal(content.Name, deserializedContent.Name);
+            Assert.Equal(content.ServerName, deserializedContent.ServerName);
+            Assert.NotNull(deserializedContent.Arguments);
+            Assert.Equal("value1", deserializedContent.Arguments["arg1"]?.ToString());
+        }
     }
 }

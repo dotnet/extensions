@@ -10,7 +10,6 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents the response to an <see cref="InputRequestContent"/>.
 /// </summary>
-[JsonPolymorphic]
 [JsonDerivedType(typeof(FunctionApprovalResponseContent), "functionApprovalResponse")]
 public class InputResponseContent : AIContent
 {

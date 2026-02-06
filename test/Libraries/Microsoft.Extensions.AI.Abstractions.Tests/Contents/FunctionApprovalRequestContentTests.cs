@@ -81,13 +81,22 @@ public class FunctionApprovalRequestContentTests
     {
         var content = new FunctionApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } }));
 
-        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
-        var deserializedContent = JsonSerializer.Deserialize<FunctionApprovalRequestContent>(json, AIJsonUtilities.DefaultOptions);
+        AssertSerializationRoundtrips<FunctionApprovalRequestContent>(content);
+        AssertSerializationRoundtrips<InputRequestContent>(content);
+        AssertSerializationRoundtrips<AIContent>(content);
 
-        Assert.NotNull(deserializedContent);
-        Assert.Equal(content.RequestId, deserializedContent.RequestId);
-        Assert.NotNull(deserializedContent.FunctionCall);
-        Assert.Equal(content.FunctionCall.CallId, deserializedContent.FunctionCall.CallId);
-        Assert.Equal(content.FunctionCall.Name, deserializedContent.FunctionCall.Name);
+        static void AssertSerializationRoundtrips<T>(FunctionApprovalRequestContent content)
+            where T : AIContent
+        {
+            T contentAsT = (T)(object)content;
+            string json = JsonSerializer.Serialize(contentAsT, AIJsonUtilities.DefaultOptions);
+            T? deserialized = JsonSerializer.Deserialize<T>(json, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            var deserializedContent = Assert.IsType<FunctionApprovalRequestContent>(deserialized);
+            Assert.Equal(content.RequestId, deserializedContent.RequestId);
+            Assert.NotNull(deserializedContent.FunctionCall);
+            Assert.Equal(content.FunctionCall.CallId, deserializedContent.FunctionCall.CallId);
+            Assert.Equal(content.FunctionCall.Name, deserializedContent.FunctionCall.Name);
+        }
     }
 }

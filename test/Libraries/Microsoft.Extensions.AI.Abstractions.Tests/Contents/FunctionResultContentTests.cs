@@ -93,6 +93,27 @@ public class FunctionResultContentTests
     }
 
     [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new FunctionResultContent("call123", "result");
+
+        AssertSerializationRoundtrips<FunctionResultContent>(content);
+        AssertSerializationRoundtrips<AIContent>(content);
+
+        static void AssertSerializationRoundtrips<T>(FunctionResultContent content)
+            where T : AIContent
+        {
+            T contentAsT = (T)(object)content;
+            string json = JsonSerializer.Serialize(contentAsT, AIJsonUtilities.DefaultOptions);
+            T? deserialized = JsonSerializer.Deserialize<T>(json, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            var deserializedContent = Assert.IsType<FunctionResultContent>(deserialized);
+            Assert.Equal(content.CallId, deserializedContent.CallId);
+            Assert.Equal("result", deserializedContent.Result?.ToString());
+        }
+    }
+
+    [Fact]
     public void Serialization_DerivedTypes_Roundtrips()
     {
         FunctionResultContent[] contents =

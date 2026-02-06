@@ -35,10 +35,39 @@ public class FunctionApprovalResponseContentTests
         Assert.Same(functionCall, content.FunctionCall);
     }
 
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new FunctionApprovalResponseContent("request123", true, new FunctionCallContent("call123", "functionName"))
+        {
+            Reason = "Approved for testing"
+        };
+
+        AssertSerializationRoundtrips<FunctionApprovalResponseContent>(content);
+        AssertSerializationRoundtrips<InputResponseContent>(content);
+        AssertSerializationRoundtrips<AIContent>(content);
+
+        static void AssertSerializationRoundtrips<T>(FunctionApprovalResponseContent content)
+            where T : AIContent
+        {
+            T contentAsT = (T)(object)content;
+            string json = JsonSerializer.Serialize(contentAsT, AIJsonUtilities.DefaultOptions);
+            T? deserialized = JsonSerializer.Deserialize<T>(json, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            var deserializedContent = Assert.IsType<FunctionApprovalResponseContent>(deserialized);
+            Assert.Equal(content.RequestId, deserializedContent.RequestId);
+            Assert.Equal(content.Approved, deserializedContent.Approved);
+            Assert.Equal(content.Reason, deserializedContent.Reason);
+            Assert.NotNull(deserializedContent.FunctionCall);
+            Assert.Equal(content.FunctionCall.CallId, deserializedContent.FunctionCall.CallId);
+            Assert.Equal(content.FunctionCall.Name, deserializedContent.FunctionCall.Name);
+        }
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("Custom rejection reason")]
-    public void Serialization_Roundtrips(string? reason)
+    public void Serialization_WithReason_Roundtrips(string? reason)
     {
         var content = new FunctionApprovalResponseContent("request123", true, new FunctionCallContent("call123", "functionName"))
         {

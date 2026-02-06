@@ -57,11 +57,20 @@ public class McpServerToolResultContentTests
             Result = "result"
         };
 
-        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
-        var deserializedContent = JsonSerializer.Deserialize<McpServerToolResultContent>(json, AIJsonUtilities.DefaultOptions);
+        AssertSerializationRoundtrips<McpServerToolResultContent>(content);
+        AssertSerializationRoundtrips<FunctionResultContent>(content);
+        AssertSerializationRoundtrips<AIContent>(content);
 
-        Assert.NotNull(deserializedContent);
-        Assert.Equal(content.CallId, deserializedContent.CallId);
-        Assert.Equal("result", ((JsonElement)deserializedContent.Result!).GetString());
+        static void AssertSerializationRoundtrips<T>(McpServerToolResultContent content)
+            where T : AIContent
+        {
+            T contentAsT = (T)(object)content;
+            string json = JsonSerializer.Serialize(contentAsT, AIJsonUtilities.DefaultOptions);
+            T? deserialized = JsonSerializer.Deserialize<T>(json, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            var deserializedContent = Assert.IsType<McpServerToolResultContent>(deserialized);
+            Assert.Equal(content.CallId, deserializedContent.CallId);
+            Assert.Equal("result", ((JsonElement)deserializedContent.Result!).GetString());
+        }
     }
 }
