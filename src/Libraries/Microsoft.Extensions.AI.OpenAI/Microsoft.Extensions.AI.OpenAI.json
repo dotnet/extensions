@@ -21,15 +21,15 @@
         },
         {
           "Member": "static Microsoft.Extensions.AI.ChatResponse OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsChatResponse(this OpenAI.Chat.ChatCompletion chatCompletion, OpenAI.Chat.ChatCompletionOptions? options = null);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsChatResponseUpdatesAsync(this System.Collections.Generic.IAsyncEnumerable<OpenAI.Chat.StreamingChatCompletionUpdate> chatCompletionUpdates, OpenAI.Chat.ChatCompletionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "static OpenAI.Chat.ChatCompletion OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIChatCompletion(this Microsoft.Extensions.AI.ChatResponse response);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "static System.Collections.Generic.IEnumerable<OpenAI.Chat.ChatMessage> OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIChatMessages(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null);",
@@ -37,7 +37,7 @@
         },
         {
           "Member": "static OpenAI.Chat.ChatResponseFormat? OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIChatResponseFormat(this Microsoft.Extensions.AI.ChatResponseFormat? format, Microsoft.Extensions.AI.ChatOptions? options = null);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "static OpenAI.Chat.ChatTool OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIChatTool(this Microsoft.Extensions.AI.AIFunctionDeclaration function);",
@@ -45,7 +45,7 @@
         },
         {
           "Member": "static System.Collections.Generic.IAsyncEnumerable<OpenAI.Chat.StreamingChatCompletionUpdate> OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIStreamingChatCompletionUpdatesAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> responseUpdates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
