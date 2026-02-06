@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -45,8 +45,8 @@ public class FunctionInvokingChatClientApprovalsTests
         [
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ])
         ];
 
@@ -81,8 +81,8 @@ public class FunctionInvokingChatClientApprovalsTests
         [
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ])
         ];
 
@@ -125,8 +125,8 @@ public class FunctionInvokingChatClientApprovalsTests
         [
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ])
         ];
 
@@ -152,13 +152,13 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalResponseContent("callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalResponseContent("ficc_callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]),
         ];
 
@@ -204,13 +204,13 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]), // Note: No MessageId set - this is the bug trigger
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalResponseContent("callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalResponseContent("ficc_callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]),
         ];
 
@@ -256,19 +256,19 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]) { MessageId = "resp2" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
             ]),
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalResponseContent("ficc_callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]),
         ];
 
@@ -315,13 +315,13 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalResponseContent("callId2", false, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalResponseContent("ficc_callId2", false, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]),
         ];
 
@@ -374,13 +374,13 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalResponseContent("callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalResponseContent("ficc_callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]),
         ];
 
@@ -438,16 +438,16 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1"))
+                new FunctionApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1"))
                 {
                     Reason = "User denied permission for this operation"
                 },
-                new FunctionApprovalResponseContent("callId2", false, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalResponseContent("ficc_callId2", false, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
                 {
                     Reason = "Function Func2 is not allowed at this time"
                 }
@@ -504,15 +504,15 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })),
-                new FunctionApprovalRequestContent("callId3", new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } }))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })),
+                new FunctionApprovalRequestContent("ficc_callId3", new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } }))
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1")) { Reason = "Custom rejection for Func1" },
-                new FunctionApprovalResponseContent("callId2", false, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })),
-                new FunctionApprovalResponseContent("callId3", true, new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } }))
+                new FunctionApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1")) { Reason = "Custom rejection for Func1" },
+                new FunctionApprovalResponseContent("ficc_callId2", false, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })),
+                new FunctionApprovalResponseContent("ficc_callId3", true, new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } }))
             ]),
         ];
 
@@ -596,11 +596,11 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1"))
+                new FunctionApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1"))
                 {
                     Reason = reason
                 },
@@ -654,13 +654,13 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalResponseContent("callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalResponseContent("ficc_callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]),
         ];
 
@@ -682,7 +682,7 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1"), new FunctionResultContent("callId2", result: "Result 2: 42")]),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 3 } }))
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 3 } }))
             ]),
         ];
 
@@ -708,23 +708,23 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalRequestContent("callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalResponseContent("callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalResponseContent("ficc_callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1"), new FunctionResultContent("callId2", result: "Result 2: 42")]),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId3", new FunctionCallContent("callId3", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId3", new FunctionCallContent("callId3", "Func1")),
             ]) { MessageId = "resp2" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId3", true, new FunctionCallContent("callId3", "Func1")),
+                new FunctionApprovalResponseContent("ficc_callId3", true, new FunctionCallContent("callId3", "Func1")),
             ]),
         ];
 
@@ -834,7 +834,7 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
             ]) { MessageId = "resp1" },
         ];
 
@@ -864,8 +864,8 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalResponseContent("callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalResponseContent("ficc_callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]),
         ];
 
@@ -910,8 +910,8 @@ public class FunctionInvokingChatClientApprovalsTests
         [
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1")),
-                new FunctionApprovalResponseContent("callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                new FunctionApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
+                new FunctionApprovalResponseContent("ficc_callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]),
         ];
 
@@ -1190,7 +1190,7 @@ public class FunctionInvokingChatClientApprovalsTests
         [
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func")),
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func")),
                 new FunctionApprovalRequestContent("callId2", new McpServerToolCallContent("callId2", "McpCall", "myServer"))
             ])
         ];
@@ -1220,12 +1220,12 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func")),
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func")),
                 new FunctionApprovalRequestContent("callId2", new McpServerToolCallContent("callId2", "McpCall", "myServer"))
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func")),
+                new FunctionApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func")),
                 new FunctionApprovalResponseContent("callId2", true, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
             ]),
         ];
@@ -1304,12 +1304,12 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func")),
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func")),
                 new FunctionApprovalRequestContent("callId2", new McpServerToolCallContent("callId2", "McpCall", "myServer"))
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", approveFuncCall, new FunctionCallContent("callId1", "Func")),
+                new FunctionApprovalResponseContent("ficc_callId1", approveFuncCall, new FunctionCallContent("callId1", "Func")),
                 new FunctionApprovalResponseContent("callId2", approveMcpCall, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
             ]),
         ];

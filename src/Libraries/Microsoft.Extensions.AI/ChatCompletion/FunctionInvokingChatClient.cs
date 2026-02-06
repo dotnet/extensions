@@ -1542,7 +1542,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 ref List<ApprovalResultWithRequestMessage>? targetList = ref approvalResponse.Approved ? ref approvedFunctionCalls : ref rejectedFunctionCalls;
 
                 ChatMessage? requestMessage = null;
-                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.FunctionCall.CallId, out requestMessage);
+                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.RequestId, out requestMessage);
 
                 (targetList ??= []).Add(new() { Response = approvalResponse, RequestMessage = requestMessage });
             }
@@ -1711,7 +1711,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 if (content[i] is FunctionCallContent fcc && fcc.InvocationRequired)
                 {
                     updatedContent ??= [.. content]; // Clone the list if we haven't already
-                    updatedContent[i] = new FunctionApprovalRequestContent(fcc.CallId, fcc);
+                    updatedContent[i] = new FunctionApprovalRequestContent($"ficc_{fcc.CallId}", fcc);
                 }
             }
         }
@@ -1766,7 +1766,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 var functionCall = (FunctionCallContent)message.Contents[contentIndex];
                 LogFunctionRequiresApproval(functionCall.Name);
-                message.Contents[contentIndex] = new FunctionApprovalRequestContent(functionCall.CallId, functionCall);
+                message.Contents[contentIndex] = new FunctionApprovalRequestContent($"ficc_{functionCall.CallId}", functionCall);
                 outputMessages[messageIndex] = message;
 
                 lastMessageIndex = messageIndex;

@@ -207,7 +207,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case McpToolCallApprovalRequestItem mtcari:
-                    message.Contents.Add(new FunctionApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(string.Empty, mtcari.ToolName, mtcari.ServerLabel)
+                    // We are reusing the mtcari.Id as the McpServerToolCallContent.CallId since we don't have one yet.
+                    message.Contents.Add(new FunctionApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
                     {
                         Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
                         RawRepresentation = mtcari,
@@ -421,7 +422,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case McpToolCallApprovalRequestItem mtcari:
-                            yield return CreateUpdate(new FunctionApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(string.Empty, mtcari.ToolName, mtcari.ServerLabel)
+                            // We are reusing the mtcari.Id as the McpServerToolCallContent.CallId since we don't have one yet.
+                            yield return CreateUpdate(new FunctionApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
                             {
                                 Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
                                 RawRepresentation = mtcari,
