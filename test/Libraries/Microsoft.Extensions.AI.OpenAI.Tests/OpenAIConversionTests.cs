@@ -1091,7 +1091,7 @@ public class OpenAIConversionTests
     }
 
     [Fact]
-    public void AsChatMessages_FromResponseItems_AllContentTypes_RoundtripsWithRawRepresentation()
+    public void AsChatMessages_FromResponseItems_AllContentTypes_SetsRawRepresentation()
     {
         // Create ResponseItems of various types that ToChatMessages handles.
         // Each type should roundtrip with RawRepresentation set.
@@ -1227,6 +1227,32 @@ public class OpenAIConversionTests
         Assert.NotNull(genericContent);
         Assert.IsNotType<FunctionApprovalResponseContent>(genericContent);
         Assert.Same(mcpApprovalResponseItem, genericContent.RawRepresentation);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AsOpenAIResponseItems_McpServerToolContents_RoundtripsToolOutputAndError(bool isError)
+    {
+        var mcpToolCall = new McpServerToolCallContent("call_123", "get_weather", "weather_server") { Arguments = new Dictionary<string, object?> { ["city"] = "Seattle" } };
+        var mcpToolResult = new McpServerToolResultContent("call_123") { Result = isError ? new ErrorContent("error") : new TextContent("sunny") };
+
+        var items = new ChatMessage[] { new(ChatRole.Assistant, [mcpToolCall, mcpToolResult]) }.AsOpenAIResponseItems().ToArray();
+
+        McpToolCallItem mtci = Assert.IsType<McpToolCallItem>(Assert.Single(items));
+        Assert.Equal("get_weather", mtci.ToolName);
+        Assert.Equal("weather_server", mtci.ServerLabel);
+
+        if (isError)
+        {
+            Assert.Contains("error", mtci.Error?.ToString());
+            Assert.Null(mtci.ToolOutput);
+        }
+        else
+        {
+            Assert.Equal("sunny", mtci.ToolOutput);
+            Assert.Null(mtci.Error);
+        }
     }
 
     [Fact]

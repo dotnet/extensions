@@ -1193,13 +1193,13 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                     BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
                                         associatedCall.Arguments!,
                                         AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
-                                if (mstrc.Result is BinaryData errorData)
+                                if (mstrc.Result is ErrorContent errorContent)
                                 {
-                                    mtci.Error = errorData;
+                                    mtci.Error = BinaryData.FromString(errorContent.Message);
                                 }
-                                else if (mstrc.Result is string outputString)
+                                else if (mstrc.Result is TextContent textContent)
                                 {
-                                    mtci.ToolOutput = outputString;
+                                    mtci.ToolOutput = textContent.Text;
                                 }
 
                                 yield return mtci;
