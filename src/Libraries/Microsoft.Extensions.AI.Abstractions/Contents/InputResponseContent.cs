@@ -8,7 +8,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents the response to a request for user input.
+/// Represents the response to an <see cref="InputRequestContent"/>.
 /// </summary>
 [JsonPolymorphic]
 [JsonDerivedType(typeof(FunctionApprovalResponseContent), "functionApprovalResponse")]
@@ -17,7 +17,7 @@ public class InputResponseContent : AIContent
     /// <summary>
     /// Initializes a new instance of the <see cref="InputResponseContent"/> class.
     /// </summary>
-    /// <param name="requestId">The ID that uniquely identifies the user input request/response pair.</param>
+    /// <param name="requestId">The unique identifier that correlates this response with its corresponding request.</param>
     /// <exception cref="ArgumentNullException"><paramref name="requestId"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="requestId"/> is empty or composed entirely of whitespace.</exception>
     protected InputResponseContent(string requestId)
@@ -26,7 +26,7 @@ public class InputResponseContent : AIContent
     }
 
     /// <summary>
-    /// Gets the ID that uniquely identifies the user input request/response pair.
+    /// Gets the unique identifier that correlates this response with its corresponding <see cref="InputRequestContent"/>.
     /// </summary>
     public string RequestId { get; }
 }
