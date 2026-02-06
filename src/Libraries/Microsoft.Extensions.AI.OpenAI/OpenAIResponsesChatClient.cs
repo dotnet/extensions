@@ -716,6 +716,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         result.Model ??= options.ModelId ?? _responseClient.Model;
         result.Temperature ??= options.Temperature;
         result.TopP ??= options.TopP;
+        result.ReasoningOptions ??= ToOpenAIResponseReasoningOptions(options.Reasoning);
 
         // If the CreateResponseOptions.PreviousResponseId is already set (likely rare), then we don't need to do
         // anything with regards to Conversation, because they're mutually exclusive and we would want to ignore
@@ -813,6 +814,41 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             _ => null,
         };
+
+    private static ResponseReasoningOptions? ToOpenAIResponseReasoningOptions(ReasoningOptions? reasoning)
+    {
+        if (reasoning is null)
+        {
+            return null;
+        }
+
+        ResponseReasoningEffortLevel? effortLevel = reasoning.Effort switch
+        {
+            ReasoningEffort.Low => ResponseReasoningEffortLevel.Low,
+            ReasoningEffort.Medium => ResponseReasoningEffortLevel.Medium,
+            ReasoningEffort.High => ResponseReasoningEffortLevel.High,
+            ReasoningEffort.ExtraHigh => ResponseReasoningEffortLevel.High, // Map to highest available
+            _ => (ResponseReasoningEffortLevel?)null, // None or null - let OpenAI use its default
+        };
+
+        ResponseReasoningSummaryVerbosity? summary = reasoning.Output switch
+        {
+            ReasoningOutput.Summary => ResponseReasoningSummaryVerbosity.Concise,
+            ReasoningOutput.Full => ResponseReasoningSummaryVerbosity.Detailed,
+            _ => (ResponseReasoningSummaryVerbosity?)null, // None or null - let OpenAI use its default
+        };
+
+        if (effortLevel is null && summary is null)
+        {
+            return null;
+        }
+
+        return new ResponseReasoningOptions
+        {
+            ReasoningEffortLevel = effortLevel,
+            ReasoningSummaryVerbosity = summary,
+        };
+    }
 
     /// <summary>Convert a sequence of <see cref="ChatMessage"/>s to <see cref="ResponseItem"/>s.</summary>
     internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> inputs, ChatOptions? options)
