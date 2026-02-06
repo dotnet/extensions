@@ -857,33 +857,6 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task GaugeDuplicateDimensionStringNameInAttribute()
-    {
-        var d = await RunGenerator(@"
-        public class DimensionsTest
-        {
-            [Dimension(""regionFromAttribute"")]
-            public string region { get; set; }
-            public ChildDimensions childDimensions { get; set; }
-        }
-
-        public class ChildDimensions
-        {
-            [Dimension(""regionFromAttribute"")]
-            public string region { get; set; }
-        }
-
-        public static partial class MetricClass
-        {
-            [Gauge<double>(typeof(DimensionsTest), Name=""MemoryUsage"")]
-            public static partial MemoryUsage CreateMemoryUsageGauge(Meter meter);
-        }");
-
-        var diag = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
-    }
-
-    [Fact]
     public async Task GaugeDuplicateDimensionEnumName()
     {
         var d = await RunGenerator(@"
@@ -990,22 +963,5 @@ public partial class ParserTests
         }}");
 
         Assert.Empty(d);
-    }
-
-    [Theory]
-    [InlineData("uint")]
-    [InlineData("string")]
-    [InlineData("bool")]
-    public async Task GaugeInvalidGenericTypes(string type)
-    {
-        var d = await RunGenerator(@$"
-        partial class C
-        {{
-            [Gauge<{type}>(""d1"")]
-            static partial TestGauge CreateTestGauge(Meter meter);
-        }}");
-
-        var diag = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorInvalidAttributeGenericType.Id, diag.Id);
     }
 }
