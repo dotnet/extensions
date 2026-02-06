@@ -386,7 +386,7 @@ public class OpenAIConversionTests
     {
         var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
         {
-            AuthorizationToken = "test-token"
+            Headers = new Dictionary<string, string> { ["Authorization"] = "Bearer test-token" }
         };
 
         var result = mcpTool.AsOpenAIResponseTool();
@@ -404,9 +404,12 @@ public class OpenAIConversionTests
     {
         var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
         {
-            AuthorizationToken = "test-token"
+            Headers = new Dictionary<string, string>
+            {
+                ["Authorization"] = "Bearer test-token",
+                ["X-Custom-Header"] = "custom-value"
+            }
         };
-        mcpTool.Headers["X-Custom-Header"] = "custom-value";
 
         var result = mcpTool.AsOpenAIResponseTool();
 
@@ -514,11 +517,11 @@ public class OpenAIConversionTests
     }
 
     [Fact]
-    public void AsOpenAIResponseTool_WithHostedMcpServerToolConnector_OnlySetsAuthToken()
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolConnector_ExtractsAuthToken()
     {
         var mcpTool = new HostedMcpServerTool("calendar", "connector_googlecalendar")
         {
-            AuthorizationToken = "connector-token"
+            Headers = new Dictionary<string, string> { ["Authorization"] = "Bearer connector-token" }
         };
 
         var result = mcpTool.AsOpenAIResponseTool();
@@ -527,7 +530,7 @@ public class OpenAIConversionTests
         var tool = Assert.IsType<McpTool>(result);
         Assert.Equal("connector-token", tool.AuthorizationToken);
 
-        // For connectors, headers should not be set even though AuthorizationToken adds to Headers internally
+        // For connectors, headers should not be set - only AuthorizationToken
         Assert.Empty(tool.Headers);
     }
 

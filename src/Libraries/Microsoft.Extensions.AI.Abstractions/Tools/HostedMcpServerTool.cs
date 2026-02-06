@@ -15,14 +15,8 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AIMcpServers, UrlFormat = DiagnosticIds.UrlFormat)]
 public class HostedMcpServerTool : AITool
 {
-    /// <summary>The name of the Authorization header.</summary>
-    private const string AuthorizationHeaderName = "Authorization";
-
     /// <summary>Any additional properties associated with the tool.</summary>
     private IReadOnlyDictionary<string, object?>? _additionalProperties;
-
-    /// <summary>Lazily-initialized collection of headers to include when calling the remote MCP server.</summary>
-    private Dictionary<string, string>? _headers;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
@@ -108,39 +102,6 @@ public class HostedMcpServerTool : AITool
     public string ServerAddress { get; }
 
     /// <summary>
-    /// Gets or sets the OAuth authorization token that the AI service should use when calling the remote MCP server.
-    /// </summary>
-    /// <remarks>
-    /// When set, this value is automatically added to the <see cref="Headers"/> dictionary with the key "Authorization" 
-    /// and the value "Bearer {token}". Setting this property will overwrite any existing "Authorization" header in <see cref="Headers"/>.
-    /// Setting this property to <see langword="null"/> will remove the "Authorization" header from <see cref="Headers"/>.
-    /// </remarks>
-    public string? AuthorizationToken
-    {
-        get
-        {
-            if (_headers?.TryGetValue(AuthorizationHeaderName, out string? value) is true &&
-                value?.StartsWith("Bearer ", StringComparison.Ordinal) is true)
-            {
-                return value.Substring("Bearer ".Length);
-            }
-
-            return null;
-        }
-        set
-        {
-            if (value is not null)
-            {
-                Headers[AuthorizationHeaderName] = $"Bearer {value}";
-            }
-            else if (_headers is not null)
-            {
-                _ = _headers.Remove(AuthorizationHeaderName);
-            }
-        }
-    }
-
-    /// <summary>
     /// Gets or sets the description of the remote MCP server, used to provide more context to the AI service.
     /// </summary>
     public string? ServerDescription { get; set; }
@@ -171,12 +132,12 @@ public class HostedMcpServerTool : AITool
     public HostedMcpServerToolApprovalMode? ApprovalMode { get; set; }
 
     /// <summary>
-    /// Gets a mutable dictionary of HTTP headers to include when calling the remote MCP server.
+    /// Gets or sets a mutable dictionary of HTTP headers to include when calling the remote MCP server.
     /// </summary>
     /// <remarks>
     /// <para>
     /// The underlying provider is not guaranteed to support or honor the headers.
     /// </para>
     /// </remarks>
-    public IDictionary<string, string> Headers => _headers ??= new Dictionary<string, string>();
+    public IDictionary<string, string>? Headers { get; set; }
 }

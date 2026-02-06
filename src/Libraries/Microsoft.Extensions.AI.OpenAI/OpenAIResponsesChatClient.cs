@@ -600,16 +600,19 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 if (isUrl)
                 {
-                    // For http: favor headers over authorization token. 
-                    if (mcpTool.Headers.Count > 0)
+                    if (mcpTool.Headers is { Count: > 0 })
                     {
                         responsesMcpTool.Headers = mcpTool.Headers;
                     }
                 }
                 else
                 {
-                    // For connectors: Only set AuthorizationToken, do not include headers.
-                    responsesMcpTool.AuthorizationToken = mcpTool.AuthorizationToken;
+                    // For connectors: extract Bearer token from Headers and set as AuthorizationToken.
+                    if (mcpTool.Headers?.TryGetValue("Authorization", out string? authHeader) is true &&
+                        authHeader?.StartsWith("Bearer ", StringComparison.Ordinal) is true)
+                    {
+                        responsesMcpTool.AuthorizationToken = authHeader.Substring("Bearer ".Length);
+                    }
                 }
 
                 if (mcpTool.AllowedTools is not null)

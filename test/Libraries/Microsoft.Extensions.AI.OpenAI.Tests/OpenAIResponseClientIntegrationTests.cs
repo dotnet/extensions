@@ -372,7 +372,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["RemoteMCP:ConnectorAccessToken"] is not string accessToken)
+        if (TestRunnerConfiguration.Instance["RemoteMCP:ConnectorAccessToken"] is not string { Length: > 0 } accessToken)
         {
             throw new SkipTestException(
                 "To run this test, set a value for RemoteMCP:ConnectorAccessToken. " +
@@ -389,9 +389,9 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 Tools = [new HostedMcpServerTool("calendar", "connector_googlecalendar")
                     {
                         ApprovalMode = approval ?
-                                HostedMcpServerToolApprovalMode.AlwaysRequire :
-                                HostedMcpServerToolApprovalMode.NeverRequire,
-                        AuthorizationToken = accessToken
+                            HostedMcpServerToolApprovalMode.AlwaysRequire :
+                            HostedMcpServerToolApprovalMode.NeverRequire,
+                        Headers = new Dictionary<string, string> { ["Authorization"] = $"Bearer {accessToken}" },
                     }
                 ],
             };

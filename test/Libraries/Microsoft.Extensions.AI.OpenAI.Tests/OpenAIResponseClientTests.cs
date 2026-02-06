@@ -2396,10 +2396,12 @@ public class OpenAIResponseClientTests
         var mcpTool = new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
         {
             ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
-            AuthorizationToken = "test-auth-token-12345"
+            Headers = new Dictionary<string, string>
+            {
+                ["Authorization"] = "Bearer test-auth-token-12345",
+                ["X-Custom-Header"] = "custom-value"
+            }
         };
-
-        mcpTool.Headers!["X-Custom-Header"] = "custom-value";
 
         var response = await client.GetResponseAsync("hello", new ChatOptions { Tools = [mcpTool] });
 
