@@ -15,9 +15,9 @@ public class FunctionApprovalRequestContentTests
     {
         FunctionCallContent functionCall = new("FCC1", "TestFunction");
 
-        Assert.Throws<ArgumentNullException>("id", () => new FunctionApprovalRequestContent(null!, functionCall));
-        Assert.Throws<ArgumentException>("id", () => new FunctionApprovalRequestContent("", functionCall));
-        Assert.Throws<ArgumentException>("id", () => new FunctionApprovalRequestContent("\r\t\n ", functionCall));
+        Assert.Throws<ArgumentNullException>("requestId", () => new FunctionApprovalRequestContent(null!, functionCall));
+        Assert.Throws<ArgumentException>("requestId", () => new FunctionApprovalRequestContent("", functionCall));
+        Assert.Throws<ArgumentException>("requestId", () => new FunctionApprovalRequestContent("\r\t\n ", functionCall));
 
         Assert.Throws<ArgumentNullException>("functionCall", () => new FunctionApprovalRequestContent("id", null!));
     }
@@ -32,7 +32,7 @@ public class FunctionApprovalRequestContentTests
 
         FunctionApprovalRequestContent content = new(id, functionCall);
 
-        Assert.Same(id, content.Id);
+        Assert.Same(id, content.RequestId);
         Assert.Same(functionCall, content.FunctionCall);
     }
 
@@ -49,7 +49,7 @@ public class FunctionApprovalRequestContentTests
         var response = content.CreateResponse(approved);
 
         Assert.NotNull(response);
-        Assert.Same(id, response.Id);
+        Assert.Same(id, response.RequestId);
         Assert.Equal(approved, response.Approved);
         Assert.Same(functionCall, response.FunctionCall);
         Assert.Null(response.Reason);
@@ -70,7 +70,7 @@ public class FunctionApprovalRequestContentTests
         var response = content.CreateResponse(approved, reason);
 
         Assert.NotNull(response);
-        Assert.Same(id, response.Id);
+        Assert.Same(id, response.RequestId);
         Assert.Equal(approved, response.Approved);
         Assert.Same(functionCall, response.FunctionCall);
         Assert.Equal(reason, response.Reason);
@@ -85,7 +85,7 @@ public class FunctionApprovalRequestContentTests
         var deserializedContent = JsonSerializer.Deserialize<FunctionApprovalRequestContent>(json, AIJsonUtilities.DefaultOptions);
 
         Assert.NotNull(deserializedContent);
-        Assert.Equal(content.Id, deserializedContent.Id);
+        Assert.Equal(content.RequestId, deserializedContent.RequestId);
         Assert.NotNull(deserializedContent.FunctionCall);
         Assert.Equal(content.FunctionCall.CallId, deserializedContent.FunctionCall.CallId);
         Assert.Equal(content.FunctionCall.Name, deserializedContent.FunctionCall.Name);

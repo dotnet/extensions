@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
 
-namespace Microsoft.Extensions.AI.Contents;
+namespace Microsoft.Extensions.AI;
 
-public class UserInputRequestContentTests
+public class InputRequestContentTests
 {
     [Fact]
     public void Constructor_InvalidArguments_Throws()
     {
-        Assert.Throws<ArgumentNullException>("id", () => new TestUserInputRequestContent(null!));
-        Assert.Throws<ArgumentException>("id", () => new TestUserInputRequestContent(""));
-        Assert.Throws<ArgumentException>("id", () => new TestUserInputRequestContent("\r\t\n "));
+        Assert.Throws<ArgumentNullException>("requestId", () => new TestInputRequestContent(null!));
+        Assert.Throws<ArgumentException>("requestId", () => new TestInputRequestContent(""));
+        Assert.Throws<ArgumentException>("requestId", () => new TestInputRequestContent("\r\t\n "));
     }
 
     [Theory]
@@ -24,15 +24,15 @@ public class UserInputRequestContentTests
     [InlineData("!@#")]
     public void Constructor_Roundtrips(string id)
     {
-        TestUserInputRequestContent content = new(id);
+        TestInputRequestContent content = new(id);
 
-        Assert.Equal(id, content.Id);
+        Assert.Equal(id, content.RequestId);
     }
 
     [Fact]
     public void Serialization_DerivedTypes_Roundtrips()
     {
-        UserInputRequestContent[] contents =
+        InputRequestContent[] contents =
         [
             new FunctionApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
             new FunctionApprovalRequestContent("request456", new McpServerToolCallContent("call456", "myTool", "myServer")),
@@ -42,14 +42,14 @@ public class UserInputRequestContentTests
         foreach (var content in contents)
         {
             var serialized = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
-            var deserialized = JsonSerializer.Deserialize<UserInputRequestContent>(serialized, AIJsonUtilities.DefaultOptions);
+            var deserialized = JsonSerializer.Deserialize<InputRequestContent>(serialized, AIJsonUtilities.DefaultOptions);
             Assert.NotNull(deserialized);
             Assert.Equal(content.GetType(), deserialized.GetType());
         }
 
         // Verify the array roundtrips
-        var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.UserInputRequestContentArray);
-        var deserializedContents = JsonSerializer.Deserialize(serializedContents, TestJsonSerializerContext.Default.UserInputRequestContentArray);
+        var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.InputRequestContentArray);
+        var deserializedContents = JsonSerializer.Deserialize(serializedContents, TestJsonSerializerContext.Default.InputRequestContentArray);
         Assert.NotNull(deserializedContents);
         Assert.Equal(contents.Length, deserializedContents.Length);
         for (int i = 0; i < deserializedContents.Length; i++)
@@ -59,10 +59,10 @@ public class UserInputRequestContentTests
         }
     }
 
-    private sealed class TestUserInputRequestContent : UserInputRequestContent
+    private sealed class TestInputRequestContent : InputRequestContent
     {
-        public TestUserInputRequestContent(string id)
-            : base(id)
+        public TestInputRequestContent(string requestId)
+            : base(requestId)
         {
         }
     }

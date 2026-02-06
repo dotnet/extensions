@@ -5,16 +5,16 @@ using System;
 using System.Text.Json;
 using Xunit;
 
-namespace Microsoft.Extensions.AI.Contents;
+namespace Microsoft.Extensions.AI;
 
-public class UserInputResponseContentTests
+public class InputResponseContentTests
 {
     [Fact]
     public void Constructor_InvalidArguments_Throws()
     {
-        Assert.Throws<ArgumentNullException>("id", () => new TestUserInputResponseContent(null!));
-        Assert.Throws<ArgumentException>("id", () => new TestUserInputResponseContent(""));
-        Assert.Throws<ArgumentException>("id", () => new TestUserInputResponseContent("\r\t\n "));
+        Assert.Throws<ArgumentNullException>("requestId", () => new TestInputResponseContent(null!));
+        Assert.Throws<ArgumentException>("requestId", () => new TestInputResponseContent(""));
+        Assert.Throws<ArgumentException>("requestId", () => new TestInputResponseContent("\r\t\n "));
     }
 
     [Theory]
@@ -23,15 +23,15 @@ public class UserInputResponseContentTests
     [InlineData("!@#")]
     public void Constructor_Roundtrips(string id)
     {
-        TestUserInputResponseContent content = new(id);
+        TestInputResponseContent content = new(id);
 
-        Assert.Equal(id, content.Id);
+        Assert.Equal(id, content.RequestId);
     }
 
     [Fact]
     public void Serialization_DerivedTypes_Roundtrips()
     {
-        UserInputResponseContent[] contents =
+        InputResponseContent[] contents =
         [
             new FunctionApprovalResponseContent("request123", true, new FunctionCallContent("call123", "functionName")),
             new FunctionApprovalResponseContent("request456", true, new McpServerToolCallContent("call456", "myTool", "myServer")),
@@ -41,14 +41,14 @@ public class UserInputResponseContentTests
         foreach (var content in contents)
         {
             var serialized = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
-            var deserialized = JsonSerializer.Deserialize<UserInputResponseContent>(serialized, AIJsonUtilities.DefaultOptions);
+            var deserialized = JsonSerializer.Deserialize<InputResponseContent>(serialized, AIJsonUtilities.DefaultOptions);
             Assert.NotNull(deserialized);
             Assert.Equal(content.GetType(), deserialized.GetType());
         }
 
         // Verify the array roundtrips
-        var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.UserInputResponseContentArray);
-        var deserializedContents = JsonSerializer.Deserialize(serializedContents, TestJsonSerializerContext.Default.UserInputResponseContentArray);
+        var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.InputResponseContentArray);
+        var deserializedContents = JsonSerializer.Deserialize(serializedContents, TestJsonSerializerContext.Default.InputResponseContentArray);
         Assert.NotNull(deserializedContents);
         Assert.Equal(contents.Length, deserializedContents.Length);
         for (int i = 0; i < deserializedContents.Length; i++)
@@ -58,10 +58,10 @@ public class UserInputResponseContentTests
         }
     }
 
-    private class TestUserInputResponseContent : UserInputResponseContent
+    private class TestInputResponseContent : InputResponseContent
     {
-        public TestUserInputResponseContent(string id)
-            : base(id)
+        public TestInputResponseContent(string requestId)
+            : base(requestId)
         {
         }
     }

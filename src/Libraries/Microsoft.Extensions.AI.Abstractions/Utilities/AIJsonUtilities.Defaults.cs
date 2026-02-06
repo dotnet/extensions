@@ -128,8 +128,8 @@ public static partial class AIJsonUtilities
 
     // Temporary workaround: These should be implicitly added in once they're no longer [Experimental]
     // and are included via [JsonDerivedType] on AIContent.
-    [JsonSerializable(typeof(UserInputRequestContent))]
-    [JsonSerializable(typeof(UserInputResponseContent))]
+    [JsonSerializable(typeof(InputRequestContent))]
+    [JsonSerializable(typeof(InputResponseContent))]
     [JsonSerializable(typeof(FunctionApprovalRequestContent))]
     [JsonSerializable(typeof(FunctionApprovalResponseContent))]
     [JsonSerializable(typeof(McpServerToolCallContent))]

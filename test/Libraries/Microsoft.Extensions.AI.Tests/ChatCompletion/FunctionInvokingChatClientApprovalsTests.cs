@@ -1538,8 +1538,8 @@ public class FunctionInvokingChatClientApprovalsTests
             InvocationRequired = mstcc.InvocationRequired
         },
         FunctionCallContent fcc => new FunctionCallContent(fcc.CallId, fcc.Name, fcc.Arguments) { InvocationRequired = fcc.InvocationRequired },
-        FunctionApprovalRequestContent farc => new FunctionApprovalRequestContent(farc.Id, (FunctionCallContent)CloneFcc(farc.FunctionCall)),
-        FunctionApprovalResponseContent farc => new FunctionApprovalResponseContent(farc.Id, farc.Approved, (FunctionCallContent)CloneFcc(farc.FunctionCall)) { Reason = farc.Reason },
+        FunctionApprovalRequestContent farc => new FunctionApprovalRequestContent(farc.RequestId, (FunctionCallContent)CloneFcc(farc.FunctionCall)),
+        FunctionApprovalResponseContent farc => new FunctionApprovalResponseContent(farc.RequestId, farc.Approved, (FunctionCallContent)CloneFcc(farc.FunctionCall)) { Reason = farc.Reason },
         _ => c
     };
 }

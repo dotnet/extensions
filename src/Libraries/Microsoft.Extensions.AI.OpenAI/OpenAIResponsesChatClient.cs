@@ -848,7 +848,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     ResponseItem? directItem = item switch
                     {
                         { RawRepresentation: ResponseItem rawRep } => rawRep,
-                        FunctionApprovalResponseContent { FunctionCall: McpServerToolCallContent } funcResp => ResponseItem.CreateMcpApprovalResponseItem(funcResp.Id, funcResp.Approved),
+                        FunctionApprovalResponseContent { FunctionCall: McpServerToolCallContent } funcResp => ResponseItem.CreateMcpApprovalResponseItem(funcResp.RequestId, funcResp.Approved),
                         _ => null
                     };
 
@@ -931,7 +931,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case FunctionApprovalResponseContent funcResp when funcResp.FunctionCall is McpServerToolCallContent:
-                            yield return ResponseItem.CreateMcpApprovalResponseItem(funcResp.Id, funcResp.Approved);
+                            yield return ResponseItem.CreateMcpApprovalResponseItem(funcResp.RequestId, funcResp.Approved);
                             break;
 
                         case FunctionResultContent resultContent:
@@ -1090,7 +1090,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         case FunctionApprovalRequestContent funcResp when funcResp.FunctionCall is McpServerToolCallContent mcpToolCall:
                             yield return ResponseItem.CreateMcpApprovalRequestItem(
-                                funcResp.Id,
+                                funcResp.RequestId,
                                 mcpToolCall.ServerName,
                                 mcpToolCall.Name,
                                 BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(

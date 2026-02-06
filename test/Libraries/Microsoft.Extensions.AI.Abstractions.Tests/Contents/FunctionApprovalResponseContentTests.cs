@@ -14,9 +14,9 @@ public class FunctionApprovalResponseContentTests
     {
         FunctionCallContent functionCall = new("FCC1", "TestFunction");
 
-        Assert.Throws<ArgumentNullException>("id", () => new FunctionApprovalResponseContent(null!, true, functionCall));
-        Assert.Throws<ArgumentException>("id", () => new FunctionApprovalResponseContent("", true, functionCall));
-        Assert.Throws<ArgumentException>("id", () => new FunctionApprovalResponseContent("\r\t\n ", true, functionCall));
+        Assert.Throws<ArgumentNullException>("requestId", () => new FunctionApprovalResponseContent(null!, true, functionCall));
+        Assert.Throws<ArgumentException>("requestId", () => new FunctionApprovalResponseContent("", true, functionCall));
+        Assert.Throws<ArgumentException>("requestId", () => new FunctionApprovalResponseContent("\r\t\n ", true, functionCall));
 
         Assert.Throws<ArgumentNullException>("functionCall", () => new FunctionApprovalResponseContent("id", true, null!));
     }
@@ -30,7 +30,7 @@ public class FunctionApprovalResponseContentTests
         FunctionCallContent functionCall = new("FCC1", "TestFunction");
         FunctionApprovalResponseContent content = new(id, approved, functionCall);
 
-        Assert.Same(id, content.Id);
+        Assert.Same(id, content.RequestId);
         Assert.Equal(approved, content.Approved);
         Assert.Same(functionCall, content.FunctionCall);
     }
@@ -49,7 +49,7 @@ public class FunctionApprovalResponseContentTests
         var deserializedContent = JsonSerializer.Deserialize<FunctionApprovalResponseContent>(json, AIJsonUtilities.DefaultOptions);
 
         Assert.NotNull(deserializedContent);
-        Assert.Equal(content.Id, deserializedContent.Id);
+        Assert.Equal(content.RequestId, deserializedContent.RequestId);
         Assert.Equal(content.Approved, deserializedContent.Approved);
         Assert.Equal(content.Reason, deserializedContent.Reason);
         Assert.NotNull(deserializedContent.FunctionCall);

@@ -15,21 +15,21 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AIFunctionApprovals, UrlFormat = DiagnosticIds.UrlFormat)]
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(FunctionApprovalResponseContent), "functionApprovalResponse")]
-public class UserInputResponseContent : AIContent
+public class InputResponseContent : AIContent
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="UserInputResponseContent"/> class.
+    /// Initializes a new instance of the <see cref="InputResponseContent"/> class.
     /// </summary>
-    /// <param name="id">The ID that uniquely identifies the user input request/response pair.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="id"/> is empty or composed entirely of whitespace.</exception>
-    protected UserInputResponseContent(string id)
+    /// <param name="requestId">The ID that uniquely identifies the user input request/response pair.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="requestId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="requestId"/> is empty or composed entirely of whitespace.</exception>
+    protected InputResponseContent(string requestId)
     {
-        Id = Throw.IfNullOrWhitespace(id);
+        RequestId = Throw.IfNullOrWhitespace(requestId);
     }
 
     /// <summary>
     /// Gets the ID that uniquely identifies the user input request/response pair.
     /// </summary>
-    public string Id { get; }
+    public string RequestId { get; }
 }

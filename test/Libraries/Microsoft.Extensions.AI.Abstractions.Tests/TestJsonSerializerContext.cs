@@ -39,8 +39,8 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(ChatResponseFormatTests.SomeType))]
 [JsonSerializable(typeof(ChatResponseFormatTests.TypeWithDisplayName))]
 [JsonSerializable(typeof(ResponseContinuationToken))]
-[JsonSerializable(typeof(UserInputRequestContent[]))]
-[JsonSerializable(typeof(UserInputResponseContent[]))]
+[JsonSerializable(typeof(InputRequestContent[]))]
+[JsonSerializable(typeof(InputResponseContent[]))]
 [JsonSerializable(typeof(FunctionCallContent[]))]
 [JsonSerializable(typeof(FunctionResultContent[]))]
 internal sealed partial class TestJsonSerializerContext : JsonSerializerContext;

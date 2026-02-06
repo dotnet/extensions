@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -27,7 +26,6 @@ public sealed class McpServerToolCallContent : FunctionCallContent
     /// <param name="serverName">The MCP server name that hosts the tool.</param>
     /// <exception cref="ArgumentNullException"><paramref name="callId"/> or <paramref name="name"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="callId"/> or <paramref name="name"/> is empty or composed entirely of whitespace.</exception>
-    [JsonConstructor]
     public McpServerToolCallContent(string callId, string name, string? serverName)
         : base(Throw.IfNullOrWhitespace(callId), Throw.IfNullOrWhitespace(name))
     {
