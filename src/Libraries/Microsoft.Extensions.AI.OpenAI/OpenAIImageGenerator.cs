@@ -24,7 +24,7 @@ using OpenAI.Images;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IImageGenerator"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ImageClient"/>.</summary>
-[Experimental(DiagnosticIds.Experiments.AIOpenAI)]
+[Experimental(DiagnosticIds.Experiments.AIOpenAIImageClient)]
 internal sealed class OpenAIImageGenerator : IImageGenerator
 {
     /// <summary>Metadata about the client.</summary>

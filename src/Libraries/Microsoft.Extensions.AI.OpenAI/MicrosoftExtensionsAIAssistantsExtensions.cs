@@ -10,7 +10,7 @@ using Microsoft.Shared.Diagnostics;
 namespace OpenAI.Assistants;
 
 /// <summary>Provides extension methods for working with content associated with OpenAI.Assistants.</summary>
-[Experimental(DiagnosticIds.Experiments.AIOpenAI)]
+[Experimental(DiagnosticIds.Experiments.AIOpenAIAssistants)]
 public static class MicrosoftExtensionsAIAssistantsExtensions
 {
     /// <summary>Creates an OpenAI <see cref="FunctionToolDefinition"/> from an <see cref="AIFunctionDeclaration"/>.</summary>

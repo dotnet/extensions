@@ -10,7 +10,7 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Source-generated JSON type information for use by all OpenAI implementations.</summary>
-[Experimental(DiagnosticIds.Experiments.AIOpenAI)]
+[Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web,
     UseStringEnumConverter = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

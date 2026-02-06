@@ -14,7 +14,7 @@ using Microsoft.Shared.Diagnostics;
 namespace OpenAI.Responses;
 
 /// <summary>Provides extension methods for working with content associated with OpenAI.Responses.</summary>
-[Experimental(DiagnosticIds.Experiments.AIOpenAI)]
+[Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
 public static class MicrosoftExtensionsAIResponsesExtensions
 {
     /// <summary>Creates an OpenAI <see cref="ResponseTool"/> from an <see cref="AIFunctionDeclaration"/>.</summary>

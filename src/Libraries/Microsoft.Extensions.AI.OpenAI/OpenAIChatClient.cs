@@ -81,7 +81,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
@@ -100,7 +100,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
@@ -332,7 +332,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         return null;
     }
 
-    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     internal static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
         IAsyncEnumerable<StreamingChatCompletionUpdate> updates,
         ChatCompletionOptions? options,
@@ -458,7 +458,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         }
     }
 
-    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIAudio)]
     private static string GetOutputAudioMimeType(ChatCompletionOptions? options) =>
         options?.AudioOptions?.OutputAudioFormat.ToString()?.ToLowerInvariant() switch
         {
@@ -470,7 +470,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             "mp3" or _ => "audio/mpeg",
         };
 
-    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     internal static ChatResponse FromOpenAIChatCompletion(ChatCompletion openAICompletion, ChatCompletionOptions? chatCompletionOptions)
     {
         _ = Throw.IfNull(openAICompletion);
@@ -659,7 +659,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             _ => null
         };
 
-    [Experimental(DiagnosticIds.Experiments.AIOpenAI)]
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIReasoning)]
     private static ChatReasoningEffortLevel? ToOpenAIChatReasoningEffortLevel(ReasoningEffort? effort) =>
         effort switch
         {
