@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -21,8 +22,9 @@ public sealed class McpServerToolCallContent : FunctionCallContent
     /// <param name="name">The tool name.</param>
     /// <param name="serverName">The MCP server name that hosts the tool.</param>
     /// <exception cref="ArgumentNullException"><paramref name="callId"/> or <paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="callId"/> or <paramref name="name"/> is empty or composed entirely of whitespace.</exception>
     public McpServerToolCallContent(string callId, string name, string? serverName)
-        : base(callId, name)
+        : base(Throw.IfNullOrWhitespace(callId), Throw.IfNullOrWhitespace(name))
     {
         ServerName = serverName;
         InformationalOnly = true;
