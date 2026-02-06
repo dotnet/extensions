@@ -13,12 +13,8 @@ namespace Microsoft.Extensions.AI;
 /// Represents the result of a function call.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-
-// These should be added in once McpServerToolResultContent is no longer [Experimental].
-// If they're included while still experimental, any JsonSerializerContext that includes
-// FunctionResultContent will incur errors about using experimental types in its source generated files.
-// [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
-// [JsonDerivedType(typeof(McpServerToolResultContent), "mcpServerToolResult")]
+[JsonPolymorphic]
+[JsonDerivedType(typeof(McpServerToolResultContent), "mcpServerToolResult")]
 public class FunctionResultContent : AIContent
 {
     /// <summary>

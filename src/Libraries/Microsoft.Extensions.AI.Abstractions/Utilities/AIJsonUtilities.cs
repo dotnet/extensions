@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if !NET
 using System.Diagnostics;
+#endif
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -197,22 +199,6 @@ public static partial class AIJsonUtilities
             if (typeInfo.Type == typeof(AIContent))
             {
                 (typeInfo.PolymorphismOptions ??= new()).DerivedTypes.Add(new(contentType, typeDiscriminatorId));
-            }
-        });
-    }
-
-    private static void AddDerivedType<TBase>(JsonSerializerOptions options, Type contentType, string typeDiscriminatorId)
-        where TBase : class
-    {
-        Debug.Assert(typeof(TBase) == typeof(FunctionCallContent) || typeof(TBase) == typeof(FunctionResultContent), $"Unexpected base type: {typeof(TBase)}");
-
-        IJsonTypeInfoResolver resolver = options.TypeInfoResolver ?? DefaultOptions.TypeInfoResolver!;
-        options.TypeInfoResolver = resolver.WithAddedModifier(typeInfo =>
-        {
-            if (typeInfo.Type == typeof(TBase))
-            {
-                // TypeDiscriminatorPropertyName must be set because TBase doesn't have [JsonPolymorphic]
-                (typeInfo.PolymorphismOptions ??= new() { TypeDiscriminatorPropertyName = "$type" }).DerivedTypes.Add(new(contentType, typeDiscriminatorId));
             }
         });
     }

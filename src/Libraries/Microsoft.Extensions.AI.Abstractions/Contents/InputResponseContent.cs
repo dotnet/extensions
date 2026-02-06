@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents the response to a request for user input.
 /// </summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonPolymorphic]
 [JsonDerivedType(typeof(FunctionApprovalResponseContent), "functionApprovalResponse")]
 public class InputResponseContent : AIContent
 {

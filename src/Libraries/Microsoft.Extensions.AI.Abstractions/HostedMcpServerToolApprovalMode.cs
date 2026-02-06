@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// The predefined values <see cref="AlwaysRequire" />, and <see cref="NeverRequire"/> are provided to specify handling for all tools.
 /// To specify approval behavior for individual tool names, use <see cref="RequireSpecific(IList{string}, IList{string})"/>.
 /// </remarks>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonPolymorphic]
 [JsonDerivedType(typeof(HostedMcpServerToolNeverRequireApprovalMode), typeDiscriminator: "never")]
 [JsonDerivedType(typeof(HostedMcpServerToolAlwaysRequireApprovalMode), typeDiscriminator: "always")]
 [JsonDerivedType(typeof(HostedMcpServerToolRequireSpecificApprovalMode), typeDiscriminator: "requireSpecific")]
