@@ -1314,7 +1314,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         contents.Add(new McpServerToolResultContent(mtci.Id)
         {
             RawRepresentation = mtci,
-            Result = mtci.Error ?? (object)mtci.ToolOutput,
+            Result = mtci.Error is not null ?
+                new ErrorContent(mtci.Error.ToString()) :
+                new TextContent(mtci.ToolOutput),
         });
     }
 

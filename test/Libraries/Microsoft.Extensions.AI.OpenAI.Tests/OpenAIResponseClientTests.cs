@@ -1441,7 +1441,7 @@ public class OpenAIResponseClientTests
 
             var result = Assert.IsType<McpServerToolResultContent>(message.Contents[1]);
             Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", result.CallId);
-            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<string>(result.Result));
+            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(result.Result).Text);
 
             Assert.NotNull(response.Usage);
             Assert.Equal(542, response.Usage.InputTokenCount);
@@ -1694,7 +1694,7 @@ public class OpenAIResponseClientTests
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstResult.CallId);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<string>(firstResult.Result));
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(firstResult.Result).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondCall.CallId);
@@ -1706,7 +1706,7 @@ public class OpenAIResponseClientTests
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondResult.CallId);
-        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<string>(secondResult.Result));
+        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(secondResult.Result).Text);
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1329, response.Usage.InputTokenCount);
@@ -2105,7 +2105,7 @@ public class OpenAIResponseClientTests
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstResult.CallId);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<string>(firstResult.Result));
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(firstResult.Result).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondCall.CallId);
@@ -2117,7 +2117,7 @@ public class OpenAIResponseClientTests
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondResult.CallId);
-        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<string>(secondResult.Result));
+        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(secondResult.Result).Text);
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1420, response.Usage.InputTokenCount);
@@ -2313,13 +2313,8 @@ public class OpenAIResponseClientTests
 
         var toolResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", toolResult.CallId);
-        var errorData = Assert.IsType<BinaryData>(toolResult.Result);
-        var errorJson = JsonDocument.Parse(errorData);
-        Assert.Equal("mcp_tool_execution_error", errorJson.RootElement.GetProperty("type").GetString());
-        var contentArray = errorJson.RootElement.GetProperty("content");
-        Assert.Equal(1, contentArray.GetArrayLength());
-        Assert.Equal("text", contentArray[0].GetProperty("type").GetString());
-        Assert.Equal("An error occurred invoking 'test_error'.", contentArray[0].GetProperty("text").GetString());
+        var errorContent = Assert.IsType<ErrorContent>(toolResult.Result);
+        Assert.Contains("An error occurred invoking 'test_error'.", errorContent.Message);
 
         Assert.NotNull(response.Usage);
         Assert.Equal(500, response.Usage.InputTokenCount);
