@@ -49,12 +49,12 @@ public class HostedMcpServerTool : AITool
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
-    /// <param name="serverUrl">The URL of the remote MCP server.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
+    /// <param name="serverAddress">The URL of the remote MCP server.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="ArgumentException"><paramref name="serverUrl"/> is not an absolute URL.</exception>
-    public HostedMcpServerTool(string serverName, Uri serverUrl)
-        : this(serverName, ValidateUrl(serverUrl))
+    /// <exception cref="ArgumentException"><paramref name="serverAddress"/> is not an absolute URL.</exception>
+    public HostedMcpServerTool(string serverName, Uri serverAddress)
+        : this(serverName, ValidateUrl(serverAddress))
     {
     }
 
@@ -62,27 +62,27 @@ public class HostedMcpServerTool : AITool
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
-    /// <param name="serverUrl">The URL of the remote MCP server.</param>
+    /// <param name="serverAddress">The URL of the remote MCP server.</param>
     /// <param name="additionalProperties">Any additional properties associated with the tool.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="ArgumentException"><paramref name="serverUrl"/> is not an absolute URL.</exception>
-    public HostedMcpServerTool(string serverName, Uri serverUrl, IReadOnlyDictionary<string, object?>? additionalProperties)
-        : this(serverName, ValidateUrl(serverUrl))
+    /// <exception cref="ArgumentException"><paramref name="serverAddress"/> is not an absolute URL.</exception>
+    public HostedMcpServerTool(string serverName, Uri serverAddress, IReadOnlyDictionary<string, object?>? additionalProperties)
+        : this(serverName, ValidateUrl(serverAddress))
     {
         _additionalProperties = additionalProperties;
     }
 
-    private static string ValidateUrl(Uri serverUrl)
+    private static string ValidateUrl(Uri serverAddress)
     {
-        _ = Throw.IfNull(serverUrl);
+        _ = Throw.IfNull(serverAddress);
 
-        if (!serverUrl.IsAbsoluteUri)
+        if (!serverAddress.IsAbsoluteUri)
         {
-            Throw.ArgumentException(nameof(serverUrl), "The provided URL is not absolute.");
+            Throw.ArgumentException(nameof(serverAddress), "The provided URL is not absolute.");
         }
 
-        return serverUrl.AbsoluteUri;
+        return serverAddress.AbsoluteUri;
     }
 
     /// <inheritdoc />

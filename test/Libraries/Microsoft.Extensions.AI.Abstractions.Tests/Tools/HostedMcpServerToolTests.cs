@@ -127,9 +127,9 @@ public class HostedMcpServerToolTests
         Assert.Throws<ArgumentNullException>("serverName", () => new HostedMcpServerTool(null!, new Uri("https://localhost/")));
 
         Assert.Throws<ArgumentException>("serverAddress", () => new HostedMcpServerTool("name", string.Empty));
-        Assert.Throws<ArgumentException>("serverUrl", () => new HostedMcpServerTool("name", new Uri("/api/mcp", UriKind.Relative)));
+        Assert.Throws<ArgumentException>("serverAddress", () => new HostedMcpServerTool("name", new Uri("/api/mcp", UriKind.Relative)));
         Assert.Throws<ArgumentNullException>("serverAddress", () => new HostedMcpServerTool("name", (string)null!));
-        Assert.Throws<ArgumentNullException>("serverUrl", () => new HostedMcpServerTool("name", (Uri)null!));
+        Assert.Throws<ArgumentNullException>("serverAddress", () => new HostedMcpServerTool("name", (Uri)null!));
     }
 }
 
