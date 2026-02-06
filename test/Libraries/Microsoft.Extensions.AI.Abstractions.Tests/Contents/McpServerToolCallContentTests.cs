@@ -22,7 +22,7 @@ public class McpServerToolCallContentTests
         Assert.Equal("toolName", c.Name);
         Assert.Null(c.ServerName);
         Assert.Null(c.Arguments);
-        Assert.False(c.InvocationRequired);
+        Assert.True(c.InformationalOnly);
     }
 
     [Fact]
@@ -45,10 +45,13 @@ public class McpServerToolCallContentTests
         c.Arguments = args;
         Assert.Same(args, c.Arguments);
 
+        Assert.True(c.InformationalOnly);
+        c.InformationalOnly = false;
+        Assert.False(c.InformationalOnly);
+
         Assert.Equal("callId1", c.CallId);
         Assert.Equal("toolName", c.Name);
         Assert.Equal("serverName", c.ServerName);
-        Assert.False(c.InvocationRequired);
     }
 
     [Fact]

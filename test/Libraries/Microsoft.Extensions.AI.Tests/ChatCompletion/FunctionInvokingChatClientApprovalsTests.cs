@@ -1584,9 +1584,9 @@ public class FunctionInvokingChatClientApprovalsTests
         McpServerToolCallContent mstcc => new McpServerToolCallContent(mstcc.CallId, mstcc.Name, mstcc.ServerName)
         {
             Arguments = mstcc.Arguments,
-            InvocationRequired = mstcc.InvocationRequired
+            InformationalOnly = mstcc.InformationalOnly
         },
-        FunctionCallContent fcc => new FunctionCallContent(fcc.CallId, fcc.Name, fcc.Arguments) { InvocationRequired = fcc.InvocationRequired },
+        FunctionCallContent fcc => new FunctionCallContent(fcc.CallId, fcc.Name, fcc.Arguments) { InformationalOnly = fcc.InformationalOnly },
         FunctionApprovalRequestContent farc => new FunctionApprovalRequestContent(farc.RequestId, (FunctionCallContent)CloneFcc(farc.FunctionCall)),
         FunctionApprovalResponseContent farc => new FunctionApprovalResponseContent(farc.RequestId, farc.Approved, (FunctionCallContent)CloneFcc(farc.FunctionCall)) { Reason = farc.Reason },
         _ => c
