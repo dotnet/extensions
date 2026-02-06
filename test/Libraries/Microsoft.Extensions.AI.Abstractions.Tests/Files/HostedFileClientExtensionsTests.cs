@@ -375,6 +375,99 @@ public class HostedFileClientExtensionsTests
         Assert.Throws<ArgumentNullException>("client", () => client.GetService<string>());
     }
 
+    [Fact]
+    public void GetRequiredService_ReturnsService()
+    {
+        var expectedResult = "some-service-value";
+        using var client = new TestHostedFileClient
+        {
+            GetServiceCallback = (type, key) =>
+            {
+                Assert.Equal(typeof(string), type);
+                Assert.Null(key);
+                return expectedResult;
+            }
+        };
+        var result = client.GetRequiredService<string>();
+        Assert.Same(expectedResult, result);
+    }
+
+    [Fact]
+    public void GetRequiredService_WithKey_PassesKey()
+    {
+        var expectedKey = new object();
+        var expectedResult = 42;
+        using var client = new TestHostedFileClient
+        {
+            GetServiceCallback = (type, key) =>
+            {
+                Assert.Equal(typeof(int), type);
+                Assert.Same(expectedKey, key);
+                return expectedResult;
+            }
+        };
+        var result = client.GetRequiredService<int>(expectedKey);
+        Assert.Equal(42, result);
+    }
+
+    [Fact]
+    public void GetRequiredService_NotFound_Throws()
+    {
+        using var client = new TestHostedFileClient
+        {
+            GetServiceCallback = (type, key) => null
+        };
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService<string>());
+    }
+
+    [Fact]
+    public void GetRequiredService_NullClient_Throws()
+    {
+        IHostedFileClient client = null!;
+        Assert.Throws<ArgumentNullException>("client", () => client.GetRequiredService<string>());
+    }
+
+    [Fact]
+    public void GetRequiredServiceNonGeneric_ReturnsService()
+    {
+        var expectedResult = "some-service-value";
+        using var client = new TestHostedFileClient
+        {
+            GetServiceCallback = (type, key) =>
+            {
+                Assert.Equal(typeof(string), type);
+                Assert.Null(key);
+                return expectedResult;
+            }
+        };
+        var result = client.GetRequiredService(typeof(string));
+        Assert.Same(expectedResult, result);
+    }
+
+    [Fact]
+    public void GetRequiredServiceNonGeneric_NotFound_Throws()
+    {
+        using var client = new TestHostedFileClient
+        {
+            GetServiceCallback = (type, key) => null
+        };
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService(typeof(string)));
+    }
+
+    [Fact]
+    public void GetRequiredServiceNonGeneric_NullClient_Throws()
+    {
+        IHostedFileClient client = null!;
+        Assert.Throws<ArgumentNullException>("client", () => client.GetRequiredService(typeof(string)));
+    }
+
+    [Fact]
+    public void GetRequiredServiceNonGeneric_NullServiceType_Throws()
+    {
+        using var client = new TestHostedFileClient();
+        Assert.Throws<ArgumentNullException>("serviceType", () => client.GetRequiredService(null!));
+    }
+
     private sealed class TestHostedFileDownloadStream : HostedFileDownloadStream
     {
         private readonly MemoryStream _inner;

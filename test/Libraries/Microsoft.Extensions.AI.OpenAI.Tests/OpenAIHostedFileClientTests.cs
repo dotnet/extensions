@@ -597,6 +597,41 @@ public class OpenAIHostedFileClientTests
     }
 
     [Fact]
+    public async Task Download_StreamWriteThrowsNotSupportedException()
+    {
+        byte[] fileData = "Hello, World!"u8.ToArray();
+
+        using var handler = new RoutingHandler(request =>
+            request.RequestUri!.AbsolutePath.EndsWith("/content", StringComparison.Ordinal)
+                ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(fileData) }
+                : new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                        {
+                            "id": "file-abc123",
+                            "object": "file",
+                            "bytes": 13,
+                            "created_at": 1613677385,
+                            "filename": "hello.txt",
+                            "purpose": "assistants"
+                        }
+                        """, Encoding.UTF8, "application/json")
+                });
+        using HttpClient httpClient = new(handler);
+        using IHostedFileClient client = CreateFileClient(httpClient);
+
+        using var stream = await client.DownloadAsync("file-abc123");
+
+        Assert.False(stream.CanWrite);
+        Assert.Throws<NotSupportedException>(() => stream.Write(new byte[1], 0, 1));
+        await Assert.ThrowsAsync<NotSupportedException>(() => stream.WriteAsync(new byte[1], 0, 1));
+#if NET
+        Assert.Throws<NotSupportedException>(() => stream.Write(new ReadOnlySpan<byte>(new byte[1])));
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[1])));
+#endif
+    }
+
+    [Fact]
     public void GetService_NullServiceType_Throws()
     {
         var client = new OpenAIClient(new ApiKeyCredential("key"));
@@ -628,6 +663,32 @@ public class OpenAIHostedFileClientTests
         Assert.Equal("cfile-abc", result.Id);
         Assert.Equal("data.csv", result.Name);
         Assert.Equal("text/csv", result.MediaType);
+    }
+
+    [Fact]
+    public async Task Upload_WithScope_DoesNotDisposeCallerStream()
+    {
+        using var handler = new RoutingHandler(request =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                    {
+                        "id": "cfile-abc",
+                        "object": "container.file",
+                        "path": "uploads/data.csv"
+                    }
+                    """, Encoding.UTF8, "application/json")
+            });
+        using HttpClient httpClient = new(handler);
+        using IHostedFileClient client = CreateFileClient(httpClient);
+
+        using var contentStream = new MemoryStream(new byte[] { 1, 2, 3 });
+        await client.UploadAsync(contentStream, "text/csv", "data.csv", new HostedFileUploadOptions { Scope = "ctr-123" });
+
+        // The caller's stream should still be usable after upload completes.
+        contentStream.Position = 0;
+        Assert.Equal(3, contentStream.Length);
+        Assert.Equal(1, contentStream.ReadByte());
     }
 
     [Fact]

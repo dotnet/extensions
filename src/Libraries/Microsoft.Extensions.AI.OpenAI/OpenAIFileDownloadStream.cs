@@ -77,11 +77,11 @@ internal sealed class OpenAIFileDownloadStream : HostedFileDownloadStream
 
     /// <inheritdoc />
     public override void Write(byte[] buffer, int offset, int count) =>
-        _innerStream.Write(buffer, offset, count);
+        throw new NotSupportedException();
 
     /// <inheritdoc />
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
-        _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+        throw new NotSupportedException();
 
     /// <inheritdoc />
     public override long Seek(long offset, SeekOrigin origin) =>
@@ -117,11 +117,11 @@ internal sealed class OpenAIFileDownloadStream : HostedFileDownloadStream
         _innerStream.ReadAsync(buffer, cancellationToken);
 
     /// <inheritdoc />
-    public override void Write(ReadOnlySpan<byte> buffer) => _innerStream.Write(buffer);
+    public override void Write(ReadOnlySpan<byte> buffer) => throw new NotSupportedException();
 
     /// <inheritdoc />
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) =>
-        _innerStream.WriteAsync(buffer, cancellationToken);
+        throw new NotSupportedException();
 
     /// <inheritdoc />
     public override async ValueTask DisposeAsync()

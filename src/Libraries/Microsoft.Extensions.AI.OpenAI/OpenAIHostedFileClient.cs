@@ -111,7 +111,7 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
             mediaType ??= "application/octet-stream";
 
             using MultipartFormDataContent multipart = new();
-            using StreamContent fileContent = new(content);
+            using NonDisposingStreamContent fileContent = new(content);
             fileContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
             multipart.Add(fileContent, "file", fileName);
 
@@ -390,5 +390,16 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
         public override void Dispose()
         {
         }
+    }
+
+    /// <summary>A <see cref="StreamContent"/> that does not dispose the underlying stream.</summary>
+    private sealed class NonDisposingStreamContent(Stream stream) : StreamContent(stream)
+    {
+#pragma warning disable CA2215 // Intentionally not calling base.Dispose to avoid disposing the caller's stream
+        protected override void Dispose(bool disposing)
+        {
+            // Do not call base.Dispose; it would dispose the caller's stream.
+        }
+#pragma warning restore CA2215
     }
 }
