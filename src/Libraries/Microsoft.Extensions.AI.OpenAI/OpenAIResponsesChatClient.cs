@@ -1129,9 +1129,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                     AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                             break;
 
-                        case FunctionApprovalRequestContent funcResp when funcResp.FunctionCall is McpServerToolCallContent mcpToolCall:
+                        case FunctionApprovalRequestContent funcReq when funcReq.FunctionCall is McpServerToolCallContent mcpToolCall:
                             yield return ResponseItem.CreateMcpApprovalRequestItem(
-                                funcResp.RequestId,
+                                funcReq.RequestId,
                                 mcpToolCall.ServerName,
                                 mcpToolCall.Name,
                                 BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(

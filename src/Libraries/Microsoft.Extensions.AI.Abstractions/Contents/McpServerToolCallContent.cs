@@ -25,7 +25,7 @@ public sealed class McpServerToolCallContent : FunctionCallContent
         : base(callId, name)
     {
         ServerName = serverName;
-        InvocationRequired = false;
+        InformationalOnly = true;
     }
 
     /// <summary>

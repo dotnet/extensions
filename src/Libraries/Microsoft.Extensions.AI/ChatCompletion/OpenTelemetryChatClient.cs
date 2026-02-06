@@ -258,6 +258,30 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         m.Parts.Add(new OtelGenericPart { Type = "reasoning", Content = trc.Text });
                         break;
 
+                    case McpServerToolCallContent mstcc:
+                        m.Parts.Add(new OtelServerToolCallPart<OtelMcpToolCall>
+                        {
+                            Id = mstcc.CallId,
+                            Name = mstcc.Name,
+                            ServerToolCall = new OtelMcpToolCall
+                            {
+                                Arguments = mstcc.Arguments,
+                                ServerName = mstcc.ServerName,
+                            },
+                        });
+                        break;
+
+                    case McpServerToolResultContent mstrc:
+                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelMcpToolCallResponse>
+                        {
+                            Id = mstrc.CallId,
+                            ServerToolCallResponse = new OtelMcpToolCallResponse
+                            {
+                                Output = mstrc.Result,
+                            },
+                        });
+                        break;
+
                     case FunctionCallContent fcc:
                         m.Parts.Add(new OtelToolCallRequestPart
                         {
@@ -357,50 +381,26 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         });
                         break;
 
-                    case McpServerToolCallContent mstcc:
-                        m.Parts.Add(new OtelServerToolCallPart<OtelMcpToolCall>
-                        {
-                            Id = mstcc.CallId,
-                            Name = mstcc.ToolName,
-                            ServerToolCall = new OtelMcpToolCall
-                            {
-                                Arguments = mstcc.Arguments,
-                                ServerName = mstcc.ServerName,
-                            },
-                        });
-                        break;
-
-                    case McpServerToolResultContent mstrc:
-                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelMcpToolCallResponse>
-                        {
-                            Id = mstrc.CallId,
-                            ServerToolCallResponse = new OtelMcpToolCallResponse
-                            {
-                                Output = mstrc.Output,
-                            },
-                        });
-                        break;
-
-                    case McpServerToolApprovalRequestContent mstarc:
+                    case FunctionApprovalRequestContent fareqc when fareqc.FunctionCall is McpServerToolCallContent mcpToolCall:
                         m.Parts.Add(new OtelServerToolCallPart<OtelMcpApprovalRequest>
                         {
-                            Id = mstarc.Id,
-                            Name = mstarc.ToolCall.ToolName,
+                            Id = fareqc.RequestId,
+                            Name = fareqc.FunctionCall.Name,
                             ServerToolCall = new OtelMcpApprovalRequest
                             {
-                                Arguments = mstarc.ToolCall.Arguments,
-                                ServerName = mstarc.ToolCall.ServerName,
+                                Arguments = mcpToolCall.Arguments,
+                                ServerName = mcpToolCall.ServerName,
                             },
                         });
                         break;
 
-                    case McpServerToolApprovalResponseContent mstaresp:
+                    case FunctionApprovalResponseContent farespc when farespc.FunctionCall is McpServerToolCallContent:
                         m.Parts.Add(new OtelServerToolCallResponsePart<OtelMcpApprovalResponse>
                         {
-                            Id = mstaresp.Id,
+                            Id = farespc.RequestId,
                             ServerToolCallResponse = new OtelMcpApprovalResponse
                             {
-                                Approved = mstaresp.Approved,
+                                Approved = farespc.Approved,
                             },
                         });
                         break;
@@ -858,7 +858,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     {
         public string Type { get; set; } = "mcp";
         public string? ServerName { get; set; }
-        public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
+        public IDictionary<string, object?>? Arguments { get; set; }
     }
 
     private sealed class OtelMcpToolCallResponse
@@ -871,7 +871,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     {
         public string Type { get; set; } = "mcp_approval_request";
         public string? ServerName { get; set; }
-        public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
+        public IDictionary<string, object?>? Arguments { get; set; }
     }
 
     private sealed class OtelMcpApprovalResponse

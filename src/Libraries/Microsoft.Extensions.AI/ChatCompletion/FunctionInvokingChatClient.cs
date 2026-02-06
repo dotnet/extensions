@@ -1464,13 +1464,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 var content = message.Contents[j];
                 switch (content)
                 {
-                    case FunctionApprovalRequestContent farc when farc.FunctionCall.InvocationRequired:
+                    case FunctionApprovalRequestContent farc when !farc.FunctionCall.InformationalOnly:
                         // Validation: Capture each call id for each approval request to ensure later we have a matching response.
                         _ = (approvalRequestCallIds ??= []).Add(farc.FunctionCall.CallId);
                         (allApprovalRequestsMessages ??= []).Add(farc.RequestId, message);
                         break;
 
-                    case FunctionApprovalResponseContent farc when farc.FunctionCall.InvocationRequired:
+                    case FunctionApprovalResponseContent farc when !farc.FunctionCall.InformationalOnly:
                         // Validation: Remove the call id for each approval response, to check it off the list of requests we need responses for.
                         _ = approvalRequestCallIds?.Remove(farc.FunctionCall.CallId);
                         (allApprovalResponses ??= []).Add(farc);
