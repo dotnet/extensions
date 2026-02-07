@@ -127,7 +127,11 @@ public static partial class AIJsonUtilities
                 inferenceOptions);
 
             parameterSchemas.Add(parameter.Name, parameterSchema);
-            if (!parameter.IsOptional && !hasDefaultValue)
+            bool isRequired = !parameter.IsOptional && !hasDefaultValue;
+#if NET || NETFRAMEWORK
+            isRequired = isRequired || parameter.GetCustomAttribute<RequiredAttribute>(inherit: true) is not null;
+#endif
+            if (isRequired)
             {
                 (requiredProperties ??= []).Add((JsonNode)parameter.Name);
             }

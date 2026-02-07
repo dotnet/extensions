@@ -428,6 +428,67 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateFunctionJsonSchema_RequiredAttribute_MarksParameterAsRequired()
+    {
+        MethodInfo method = typeof(AIJsonUtilitiesTests).GetMethod(nameof(MethodWithRequiredAttributeCombinations), BindingFlags.NonPublic | BindingFlags.Static)!;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method, title: string.Empty);
+
+        Assert.True(schema.TryGetProperty("required", out JsonElement requiredElement));
+        HashSet<string> requiredParams = new(requiredElement.EnumerateArray().Select(e => e.GetString()!));
+
+        // Non-optional, no default value → required (baseline, unchanged)
+        Assert.Contains("valueNoDefault", requiredParams);
+        Assert.Contains("refNoDefault", requiredParams);
+        Assert.Contains("nullableValueNoDefault", requiredParams);
+        Assert.Contains("nullableRefNoDefault", requiredParams);
+
+        // Non-optional, no default, with [Required] → still required (unchanged)
+        Assert.Contains("valueNoDefaultRequired", requiredParams);
+
+        // Has [DefaultValue], with [Required] → required (new behavior)
+        Assert.Contains("valueWithDefaultValueAttrRequired", requiredParams);
+
+        // Has C# default, with [Required] → required (new behavior)
+        Assert.Contains("valueWithCSharpDefaultRequired", requiredParams);
+        Assert.Contains("nullableValueWithDefaultRequired", requiredParams);
+        Assert.Contains("refWithDefaultRequired", requiredParams);
+        Assert.Contains("nullableRefWithDefaultRequired", requiredParams);
+
+        // Has [DefaultValue], no [Required] → not required (unchanged)
+        Assert.DoesNotContain("valueWithDefaultValueAttr", requiredParams);
+
+        // Has C# default, no [Required] → not required (unchanged)
+        Assert.DoesNotContain("valueWithCSharpDefault", requiredParams);
+        Assert.DoesNotContain("nullableValueWithDefault", requiredParams);
+        Assert.DoesNotContain("refWithDefault", requiredParams);
+        Assert.DoesNotContain("nullableRefWithDefault", requiredParams);
+
+        Assert.Equal(10, requiredParams.Count);
+    }
+
+#pragma warning disable IDE0060 // Remove unused parameter
+    private static void MethodWithRequiredAttributeCombinations(
+        int valueNoDefault,
+        [Required] int valueNoDefaultRequired,
+        string refNoDefault,
+        int? nullableValueNoDefault,
+        string? nullableRefNoDefault,
+        [DefaultValue(5)] int valueWithDefaultValueAttr,
+        [Required, DefaultValue(5)] int valueWithDefaultValueAttrRequired,
+        int valueWithCSharpDefault = 5,
+        [Required] int valueWithCSharpDefaultRequired = 5,
+        int? nullableValueWithDefault = null,
+        [Required] int? nullableValueWithDefaultRequired = null,
+        string refWithDefault = "default",
+        [Required] string refWithDefaultRequired = "default",
+        string? nullableRefWithDefault = null,
+        [Required] string? nullableRefWithDefaultRequired = null)
+    {
+        // Method intentionally left empty; used only for schema generation reflection.
+    }
+#pragma warning restore IDE0060 // Remove unused parameter
+
+    [Fact]
     public static void CreateFunctionJsonSchema_DisplayNameAttribute_UsedForTitle()
     {
         [DisplayName("custom_method_name")]
