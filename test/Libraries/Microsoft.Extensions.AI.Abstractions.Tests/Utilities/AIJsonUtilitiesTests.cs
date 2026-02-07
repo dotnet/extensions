@@ -436,28 +436,28 @@ public static partial class AIJsonUtilitiesTests
         Assert.True(schema.TryGetProperty("required", out JsonElement requiredElement));
         HashSet<string> requiredParams = new(requiredElement.EnumerateArray().Select(e => e.GetString()!));
 
-        // Non-optional, no default value → required (baseline, unchanged)
+        // Non-optional, no default value → required
         Assert.Contains("valueNoDefault", requiredParams);
         Assert.Contains("refNoDefault", requiredParams);
         Assert.Contains("nullableValueNoDefault", requiredParams);
         Assert.Contains("nullableRefNoDefault", requiredParams);
 
-        // Non-optional, no default, with [Required] → still required (unchanged)
+        // Non-optional, no default, with [Required] → required
         Assert.Contains("valueNoDefaultRequired", requiredParams);
 
-        // Has [DefaultValue], with [Required] → required (new behavior)
+        // Has [DefaultValue], with [Required] → required
         Assert.Contains("valueWithDefaultValueAttrRequired", requiredParams);
 
-        // Has C# default, with [Required] → required (new behavior)
+        // Has C# default, with [Required] → required
         Assert.Contains("valueWithCSharpDefaultRequired", requiredParams);
         Assert.Contains("nullableValueWithDefaultRequired", requiredParams);
         Assert.Contains("refWithDefaultRequired", requiredParams);
         Assert.Contains("nullableRefWithDefaultRequired", requiredParams);
 
-        // Has [DefaultValue], no [Required] → not required (unchanged)
+        // Has [DefaultValue], no [Required] → not required
         Assert.DoesNotContain("valueWithDefaultValueAttr", requiredParams);
 
-        // Has C# default, no [Required] → not required (unchanged)
+        // Has C# default, no [Required] → not required
         Assert.DoesNotContain("valueWithCSharpDefault", requiredParams);
         Assert.DoesNotContain("nullableValueWithDefault", requiredParams);
         Assert.DoesNotContain("refWithDefault", requiredParams);
