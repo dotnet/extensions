@@ -14,7 +14,7 @@ public sealed class FunctionApprovalRequestContent : InputRequestContent
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionApprovalRequestContent"/> class.
     /// </summary>
-    /// <param name="requestId">The unique identifier that correlates this request with its corresponding response.</param>
+    /// <param name="requestId">The unique identifier that correlates this request with its corresponding response. This is typically not the same as the function call ID.</param>
     /// <param name="functionCall">The function call that requires approval before execution.</param>
     /// <exception cref="ArgumentNullException"><paramref name="requestId"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="requestId"/> is empty or composed entirely of whitespace.</exception>
