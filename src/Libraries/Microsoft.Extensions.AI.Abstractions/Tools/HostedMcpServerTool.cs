@@ -136,7 +136,7 @@ public class HostedMcpServerTool : AITool
     /// The underlying provider is not guaranteed to support or honor the headers.
     /// </para>
     /// <para>
-    /// This can be used to supply authorization tokens required by the remote MCP server.
+    /// This property is useful for specifying the authentication header or other headers required by the MCP server.
     /// </para>
     /// </remarks>
     public IDictionary<string, string>? Headers { get; set; }

@@ -12,8 +12,8 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// <para>
 /// This content type is used to represent an invocation of an MCP server tool by a hosted service.
-/// It is generally considered informational only, and is provided either as part of an approval request
-/// to convey what is being approved or as information about what tool was invoked elsewhere in the stack.
+/// It is informational only and may appear as part of an approval request
+/// to convey what is being approved, or as a record of which MCP server tool was invoked.
 /// </para>
 /// </remarks>
 public sealed class McpServerToolCallContent : FunctionCallContent
