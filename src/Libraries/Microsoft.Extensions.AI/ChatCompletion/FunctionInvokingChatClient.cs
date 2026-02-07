@@ -1464,13 +1464,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 var content = message.Contents[j];
                 switch (content)
                 {
-                    case FunctionApprovalRequestContent farc:
+                    case FunctionApprovalRequestContent farc when !farc.FunctionCall.InformationalOnly:
                         // Validation: Capture each call id for each approval request to ensure later we have a matching response.
                         _ = (approvalRequestCallIds ??= []).Add(farc.FunctionCall.CallId);
-                        (allApprovalRequestsMessages ??= []).Add(farc.Id, message);
+                        (allApprovalRequestsMessages ??= []).Add(farc.RequestId, message);
                         break;
 
-                    case FunctionApprovalResponseContent farc:
+                    case FunctionApprovalResponseContent farc when !farc.FunctionCall.InformationalOnly:
                         // Validation: Remove the call id for each approval response, to check it off the list of requests we need responses for.
                         _ = approvalRequestCallIds?.Remove(farc.FunctionCall.CallId);
                         (allApprovalResponses ??= []).Add(farc);
@@ -1542,7 +1542,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 ref List<ApprovalResultWithRequestMessage>? targetList = ref approvalResponse.Approved ? ref approvedFunctionCalls : ref rejectedFunctionCalls;
 
                 ChatMessage? requestMessage = null;
-                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.Id, out requestMessage);
+                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.RequestId, out requestMessage);
 
                 (targetList ??= []).Add(new() { Response = approvalResponse, RequestMessage = requestMessage });
             }
@@ -1711,7 +1711,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 if (content[i] is FunctionCallContent fcc && !fcc.InformationalOnly)
                 {
                     updatedContent ??= [.. content]; // Clone the list if we haven't already
-                    updatedContent[i] = new FunctionApprovalRequestContent(fcc.CallId, fcc);
+                    updatedContent[i] = new FunctionApprovalRequestContent(ComposeApprovalRequestId(fcc.CallId), fcc);
                 }
             }
         }
@@ -1766,7 +1766,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 var functionCall = (FunctionCallContent)message.Contents[contentIndex];
                 LogFunctionRequiresApproval(functionCall.Name);
-                message.Contents[contentIndex] = new FunctionApprovalRequestContent(functionCall.CallId, functionCall);
+                message.Contents[contentIndex] = new FunctionApprovalRequestContent(ComposeApprovalRequestId(functionCall.CallId), functionCall);
                 outputMessages[messageIndex] = message;
 
                 lastMessageIndex = messageIndex;
@@ -1782,6 +1782,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 #else
         new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
 #endif
+
+    /// <summary>Composes an approval request ID from a function call ID.</summary>
+    private static string ComposeApprovalRequestId(string callId) => $"ficc_{callId}";
 
     /// <summary>
     /// Execute the provided <see cref="FunctionApprovalResponseContent"/> and return the resulting <see cref="FunctionCallContent"/>

@@ -208,8 +208,8 @@ public sealed class SummarizingChatReducer : IChatReducer
         private static bool IsToolRelatedContent(AIContent content) => content
             is FunctionCallContent
             or FunctionResultContent
-            or UserInputRequestContent
-            or UserInputResponseContent;
+            or InputRequestContent
+            or InputResponseContent;
 
         /// <summary>Builds the list of messages to send to the chat client for summarization.</summary>
         private IEnumerable<ChatMessage> ToSummarizerChatMessages(int indexOfFirstMessageToKeep, string summarizationPrompt)

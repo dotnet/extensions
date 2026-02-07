@@ -615,7 +615,7 @@ public class OpenTelemetryChatClientTests
                     new ImageGenerationToolCallContent { ImageId = "img-123" },
                     new ImageGenerationToolResultContent { ImageId = "img-123", Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")] },
                     new McpServerToolCallContent("mcp-call-1", "myTool", "myServer") { Arguments = new Dictionary<string, object?> { ["param1"] = "value1" } },
-                    new McpServerToolResultContent("mcp-call-1") { Output = [new TextContent("Tool result")] },
+                    new McpServerToolResultContent("mcp-call-1") { Result = new TextContent("Tool result") },
                 ]));
             },
             GetStreamingResponseAsyncCallback = CallbackAsync,
@@ -631,7 +631,7 @@ public class OpenTelemetryChatClientTests
             yield return new() { Contents = [new ImageGenerationToolCallContent { ImageId = "img-123" }] };
             yield return new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img-123", Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")] }] };
             yield return new() { Contents = [new McpServerToolCallContent("mcp-call-1", "myTool", "myServer") { Arguments = new Dictionary<string, object?> { ["param1"] = "value1" } }] };
-            yield return new() { Contents = [new McpServerToolResultContent("mcp-call-1") { Output = [new TextContent("Tool result")] }] };
+            yield return new() { Contents = [new McpServerToolResultContent("mcp-call-1") { Result = new TextContent("Tool result") }] };
         }
 
         using var chatClient = innerClient
@@ -734,12 +734,10 @@ public class OpenTelemetryChatClientTests
                     "id": "mcp-call-1",
                     "server_tool_call_response": {
                       "type": "mcp",
-                      "output": [
-                        {
-                          "$type": "text",
-                          "text": "Tool result"
-                        }
-                      ]
+                      "output": {
+                        "$type": "text",
+                        "text": "Tool result"
+                      }
                     }
                   }
                 ]
@@ -785,11 +783,11 @@ public class OpenTelemetryChatClientTests
         [
             new(ChatRole.Assistant,
             [
-                new McpServerToolApprovalRequestContent("approval-1", toolCall),
+                new FunctionApprovalRequestContent("approval-1", toolCall),
             ]),
             new(ChatRole.User,
             [
-                new McpServerToolApprovalResponseContent("approval-1", true),
+                new FunctionApprovalResponseContent("approval-1", true, toolCall),
             ]),
         ];
 

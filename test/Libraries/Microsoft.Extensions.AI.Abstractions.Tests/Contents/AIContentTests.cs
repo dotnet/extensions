@@ -74,9 +74,18 @@ public class AIContentTests
             new FunctionApprovalResponseContent("request123", approved: true, new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
             new McpServerToolCallContent("call123", "myTool", "myServer"),
             new McpServerToolResultContent("call123"),
-            new McpServerToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
-            new McpServerToolApprovalResponseContent("request123", approved: true)
+            new FunctionApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
+            new FunctionApprovalResponseContent("request123", approved: true, new McpServerToolCallContent("call456", "myTool2", "myServer2")),
         ]);
+
+        // Verify each element roundtrips individually
+        foreach (AIContent content in message.Contents)
+        {
+            var serializedElement = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+            var deserializedElement = JsonSerializer.Deserialize<AIContent>(serializedElement, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserializedElement);
+            Assert.Equal(content.GetType(), deserializedElement.GetType());
+        }
 
         var serialized = JsonSerializer.Serialize(message, AIJsonUtilities.DefaultOptions);
         ChatMessage? deserialized = JsonSerializer.Deserialize<ChatMessage>(serialized, AIJsonUtilities.DefaultOptions);
