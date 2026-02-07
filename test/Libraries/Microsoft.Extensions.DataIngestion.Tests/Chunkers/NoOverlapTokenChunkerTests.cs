@@ -60,5 +60,37 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
 
             Assert.Equal(text, string.Join("", chunks.Select(c => c.Content)));
         }
+
+        [Fact]
+        public async Task VerifyTokenCount()
+        {
+            string text = string.Join(" ", Enumerable.Repeat("word", 600)); // each word is 1 token
+            IngestionDocument doc = new IngestionDocument("verifyTokenCountDoc");
+            doc.Sections.Add(new IngestionDocumentSection
+            {
+                Elements =
+                {
+                    new IngestionDocumentParagraph(text)
+                }
+            });
+
+            Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
+            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 512, overlapTokens: 0);
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+
+            Assert.Equal(2, chunks.Count);
+            foreach (IngestionChunk<string> chunk in chunks)
+            {
+                // Verify that TokenCount property is set
+                Assert.True(chunk.TokenCount > 0);
+
+                // Verify that TokenCount matches actual token count of content
+                int actualTokenCount = tokenizer.CountTokens(chunk.Content, considerNormalization: false);
+                Assert.Equal(actualTokenCount, chunk.TokenCount);
+
+                // Verify that TokenCount does not exceed max tokens per chunk
+                Assert.True(chunk.TokenCount <= 512);
+            }
+        }
     }
 }

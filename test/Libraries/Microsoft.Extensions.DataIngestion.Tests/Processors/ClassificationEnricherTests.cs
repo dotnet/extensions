@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DataIngestion.Tests;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -119,11 +120,11 @@ public class ClassificationEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        new(".NET developers need to integrate and interact with a growing variety of artificial intelligence (AI) services in their apps. " +
+        TestChunkFactory.CreateChunk(".NET developers need to integrate and interact with a growing variety of artificial intelligence (AI) services in their apps. " +
             "The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components, and enable seamless" +
             " integration and interoperability with various AI services.", _document),
-        new ("Rabbits are small mammals in the family Leporidae of the order Lagomorpha (along with the hare and the pika)." +
+        TestChunkFactory.CreateChunk("Rabbits are small mammals in the family Leporidae of the order Lagomorpha (along with the hare and the pika)." +
             "They are herbivorous animals and are known for their long ears, large hind legs, and short fluffy tails.", _document),
-        new("This text does not belong to any category.", _document),
+        TestChunkFactory.CreateChunk("This text does not belong to any category.", _document),
     ];
 }
