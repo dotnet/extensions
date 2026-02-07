@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -3382,4 +3382,379 @@ public class FunctionInvokingChatClientTests
     // ContinuesWithFailingCallsUntilMaximumConsecutiveErrors test which triggers
     // the threshold condition. The logging call is at line 1078 and will execute
     // when MaximumConsecutiveErrorsPerRequest is exceeded.
+
+    [Fact]
+    public void IterationCompleted_NullByDefault()
+    {
+        using TestChatClient innerClient = new();
+        using FunctionInvokingChatClient client = new(innerClient);
+
+        Assert.Null(client.IterationCompleted);
+    }
+
+    [Fact]
+    public void IterationCompleted_Roundtrip()
+    {
+        using TestChatClient innerClient = new();
+        using FunctionInvokingChatClient client = new(innerClient);
+
+        Assert.Null(client.IterationCompleted);
+        Func<FunctionInvocationIterationContext, CancellationToken, ValueTask> callback = (ctx, ct) => default;
+        client.IterationCompleted = callback;
+        Assert.Same(callback, client.IterationCompleted);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IterationCompleted_InvokedAfterEachIteration(bool streaming)
+    {
+        var iterationContexts = new List<FunctionInvocationIterationContext>();
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount <= 2)
+                {
+                    // Return function calls for first two iterations
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                        [new FunctionCallContent($"callId{callCount}", "Func1")])])
+                    {
+                        Usage = new UsageDetails { InputTokenCount = 100 * callCount, OutputTokenCount = 50 * callCount, TotalTokenCount = 150 * callCount }
+                    };
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")])
+                    {
+                        Usage = new UsageDetails { InputTokenCount = 300, OutputTokenCount = 150, TotalTokenCount = 450 }
+                    };
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                UsageDetails? usage;
+                if (callCount <= 2)
+                {
+                    message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent($"callId{callCount}", "Func1")]);
+                    usage = new UsageDetails { InputTokenCount = 100 * callCount, OutputTokenCount = 50 * callCount, TotalTokenCount = 150 * callCount };
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                    usage = new UsageDetails { InputTokenCount = 300, OutputTokenCount = 150, TotalTokenCount = 450 };
+                }
+
+                var updates = new ChatResponse(message) { Usage = usage }.ToChatResponseUpdates().ToList();
+                return YieldAsync(updates);
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            IterationCompleted = (ctx, ct) =>
+            {
+                iterationContexts.Add(new FunctionInvocationIterationContext
+                {
+                    Iteration = ctx.Iteration,
+                    TotalUsage = ctx.TotalUsage is not null
+                        ? new UsageDetails
+                        {
+                            InputTokenCount = ctx.TotalUsage.InputTokenCount,
+                            OutputTokenCount = ctx.TotalUsage.OutputTokenCount,
+                            TotalTokenCount = ctx.TotalUsage.TotalTokenCount
+                        }
+                        : null,
+                    Messages = ctx.Messages.ToList(),
+                    Response = ctx.Response,
+                    IsStreaming = ctx.IsStreaming
+                });
+                return default;
+            }
+        };
+
+        if (streaming)
+        {
+            await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+        }
+        else
+        {
+            await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+        }
+
+        // Should be called twice (once per iteration with function calls)
+        Assert.Equal(2, iterationContexts.Count);
+
+        // First iteration
+        Assert.Equal(0, iterationContexts[0].Iteration);
+        Assert.Equal(streaming, iterationContexts[0].IsStreaming);
+        Assert.NotNull(iterationContexts[0].Response);
+
+        // Second iteration
+        Assert.Equal(1, iterationContexts[1].Iteration);
+        Assert.Equal(streaming, iterationContexts[1].IsStreaming);
+
+        // Messages should accumulate
+        Assert.True(iterationContexts[1].Messages.Count > iterationContexts[0].Messages.Count);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IterationCompleted_CanTerminateLoop(bool streaming)
+    {
+        int functionInvocations = 0;
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { functionInvocations++; return "Result"; }, "Func1")]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                // Always return a function call - loop should be terminated by callback
+                return new ChatResponse([new ChatMessage(ChatRole.Assistant,
+                    [new FunctionCallContent($"callId{callCount}", "Func1")])]);
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+                var message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent($"callId{callCount}", "Func1")]);
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            IterationCompleted = (ctx, ct) =>
+            {
+                // Terminate after first iteration
+                if (ctx.Iteration == 0)
+                {
+                    ctx.Terminate = true;
+                }
+
+                return default;
+            }
+        };
+
+        if (streaming)
+        {
+            await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+        }
+        else
+        {
+            await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+        }
+
+        // Only one function invocation should occur (first iteration completes, then terminates)
+        Assert.Equal(1, functionInvocations);
+        Assert.Equal(1, callCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IterationCompleted_ReceivesCorrectUsageDetails(bool streaming)
+    {
+        UsageDetails? capturedUsage = null;
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result", "Func1")]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])])
+                    {
+                        Usage = new UsageDetails { InputTokenCount = 100, OutputTokenCount = 50, TotalTokenCount = 150 }
+                    };
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")])
+                    {
+                        Usage = new UsageDetails { InputTokenCount = 200, OutputTokenCount = 100, TotalTokenCount = 300 }
+                    };
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message;
+                UsageDetails usage;
+                if (callCount == 1)
+                {
+                    message = new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]);
+                    usage = new UsageDetails { InputTokenCount = 100, OutputTokenCount = 50, TotalTokenCount = 150 };
+                }
+                else
+                {
+                    message = new ChatMessage(ChatRole.Assistant, "Done");
+                    usage = new UsageDetails { InputTokenCount = 200, OutputTokenCount = 100, TotalTokenCount = 300 };
+                }
+
+                var updates = new ChatResponse(message) { Usage = usage }.ToChatResponseUpdates().ToList();
+                return YieldAsync(updates);
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            IterationCompleted = (ctx, ct) =>
+            {
+                capturedUsage = ctx.TotalUsage;
+                return default;
+            }
+        };
+
+        if (streaming)
+        {
+            await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+        }
+        else
+        {
+            await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+        }
+
+        // Usage should reflect accumulated values from first iteration
+        Assert.NotNull(capturedUsage);
+        Assert.Equal(100, capturedUsage.InputTokenCount);
+        Assert.Equal(50, capturedUsage.OutputTokenCount);
+        Assert.Equal(150, capturedUsage.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task IterationCompleted_NotCalledWhenNoFunctionCalls()
+    {
+        int callbackInvocations = 0;
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Just a regular response")]);
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            IterationCompleted = (ctx, ct) =>
+            {
+                callbackInvocations++;
+                return default;
+            }
+        };
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result", "Func1")]
+        };
+
+        await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+
+        // Callback should not be called since there were no function calls
+        Assert.Equal(0, callbackInvocations);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IterationCompleted_ReceivesAllMessages(bool streaming)
+    {
+        IReadOnlyList<ChatMessage>? capturedMessages = null;
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "FunctionResult", "Func1")]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, chatOptions, ct) =>
+            {
+                await Task.Yield();
+                callCount++;
+
+                if (callCount == 1)
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])]);
+                }
+                else
+                {
+                    return new ChatResponse([new ChatMessage(ChatRole.Assistant, "Done")]);
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, chatOptions, ct) =>
+            {
+                callCount++;
+
+                ChatMessage message = callCount == 1
+                    ? new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])
+                    : new ChatMessage(ChatRole.Assistant, "Done");
+
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            IterationCompleted = (ctx, ct) =>
+            {
+                capturedMessages = ctx.Messages.ToList();
+                return default;
+            }
+        };
+
+        if (streaming)
+        {
+            await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
+        }
+        else
+        {
+            await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
+        }
+
+        Assert.NotNull(capturedMessages);
+
+        // Should contain: FunctionCallContent message, FunctionResultContent message
+        Assert.Equal(2, capturedMessages.Count);
+
+        // First message should have FunctionCallContent
+        Assert.Contains(capturedMessages[0].Contents, c => c is FunctionCallContent);
+
+        // Second message should have FunctionResultContent
+        Assert.Contains(capturedMessages[1].Contents, c => c is FunctionResultContent frc && frc.Result?.ToString() == "FunctionResult");
+    }
 }
