@@ -260,11 +260,29 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     AddImageGenerationContents(imageGenItem, options, message.Contents);
                     break;
 
+                case WebSearchCallResponseItem wscri:
+                    _ = wscri.Patch.TryGetValue("$.action.query"u8, out string? wsQuery);
+
+                    message.Contents.Add(new WebSearchToolCallContent
+                    {
+                        CallId = wscri.Id,
+                        Queries = wsQuery is not null ? [wsQuery] : null,
+
+                        // We purposefully do not set the RawRepresentation on the WebSearchToolCallContent, only on the WebSearchToolResultContent, to avoid
+                        // the same WebSearchCallResponseItem being included on two different AIContent instances. When these are roundtripped, we want only one
+                        // WebSearchCallResponseItem sent back for the pair.
+                    });
+
+                    message.Contents.Add(new WebSearchToolResultContent
+                    {
+                        CallId = wscri.Id,
+                        RawRepresentation = wscri,
+                    });
+                    break;
+
                 // These tool types don't have dedicated AIContent-derived types. We use the base ToolCallContent/ToolResultContent
                 // to represent them, with the original ResponseItem accessible via RawRepresentation for type-specific data.
-                // WebSearch and FileSearch items contain both the call and results inline, so we emit a call+result pair
-                // (like MCP/CodeInterpreter). ComputerCall results arrive as a separate ComputerCallOutputResponseItem.
-                case WebSearchCallResponseItem or FileSearchCallResponseItem:
+                case FileSearchCallResponseItem:
                     message.Contents.Add(new ToolCallContent(outputItem.Id));
                     message.Contents.Add(new ToolResultContent(outputItem.Id) { RawRepresentation = outputItem });
                     break;
@@ -468,6 +486,14 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     });
                     break;
 
+                case StreamingResponseWebSearchCallInProgressUpdate webSearchInProgressUpdate:
+                    yield return CreateUpdate(new WebSearchToolCallContent
+                    {
+                        CallId = webSearchInProgressUpdate.ItemId,
+                        RawRepresentation = webSearchInProgressUpdate,
+                    });
+                    break;
+
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate:
                     switch (outputItemDoneUpdate.Item)
                     {
@@ -524,6 +550,24 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             yield return CreateUpdate(CreateCodeInterpreterResultContent(cicri));
                             break;
 
+                        case WebSearchCallResponseItem wscri:
+                            // The WebSearchToolCallContent has already been yielded as part of in-progress updates.
+                            // Yield a second one here with queries populated, which coalescing will merge with the first.
+                            _ = wscri.Patch.TryGetValue("$.action.query"u8, out string? wsStreamQuery);
+                            yield return CreateUpdate(new WebSearchToolCallContent
+                            {
+                                CallId = wscri.Id,
+                                Queries = wsStreamQuery is not null ? [wsStreamQuery] : null,
+                            });
+
+                            // Also yield the WebSearchToolResultContent.
+                            yield return CreateUpdate(new WebSearchToolResultContent
+                            {
+                                CallId = wscri.Id,
+                                RawRepresentation = wscri,
+                            });
+                            break;
+
                         // MessageResponseItems will have already had their content yielded as part of delta updates.
                         // However, those deltas didn't yield annotations. If there are any annotations, yield them now.
                         case MessageResponseItem mri when mri.Content is { Count: > 0 } mriContent && mriContent.Any(c => c.OutputTextAnnotations is { Count: > 0 }):
@@ -553,11 +597,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             yield return CreateUpdate();
                             break;
 
-                        // These tool types don't have dedicated AIContent-derived types. We use the base ToolCallContent/ToolResultContent
-                        // to represent them, with the original ResponseItem accessible via RawRepresentation for type-specific data.
-                        // WebSearch and FileSearch items contain both the call and results inline, so we emit a call+result pair
-                        // (like MCP/CodeInterpreter). ComputerCall results arrive as a separate ComputerCallOutputResponseItem.
-                        case WebSearchCallResponseItem or FileSearchCallResponseItem:
+                        // FileSearch items contain both the call and results inline, so we emit a call+result pair.
+                        // ComputerCall results arrive as a separate ComputerCallOutputResponseItem.
+                        case FileSearchCallResponseItem:
                             var toolCallUpdate = CreateUpdate(new ToolCallContent(outputItemDoneUpdate.Item.Id));
                             toolCallUpdate.Contents.Add(new ToolResultContent(outputItemDoneUpdate.Item.Id) { RawRepresentation = outputItemDoneUpdate.Item });
                             yield return toolCallUpdate;
