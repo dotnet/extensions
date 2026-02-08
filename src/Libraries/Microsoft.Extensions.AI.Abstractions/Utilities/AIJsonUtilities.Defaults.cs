@@ -59,6 +59,8 @@ public static partial class AIJsonUtilities
         AddAIContentType(options, typeof(McpServerToolApprovalResponseContent), typeDiscriminatorId: "mcpServerToolApprovalResponse", checkBuiltIn: false);
         AddAIContentType(options, typeof(CodeInterpreterToolCallContent), typeDiscriminatorId: "codeInterpreterToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(CodeInterpreterToolResultContent), typeDiscriminatorId: "codeInterpreterToolResult", checkBuiltIn: false);
+        AddAIContentType(options, typeof(WebSearchToolCallContent), typeDiscriminatorId: "webSearchToolCall", checkBuiltIn: false);
+        AddAIContentType(options, typeof(WebSearchToolResultContent), typeDiscriminatorId: "webSearchToolResult", checkBuiltIn: false);
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
@@ -133,6 +135,8 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(McpServerToolApprovalResponseContent))]
     [JsonSerializable(typeof(CodeInterpreterToolCallContent))]
     [JsonSerializable(typeof(CodeInterpreterToolResultContent))]
+    [JsonSerializable(typeof(WebSearchToolCallContent))]
+    [JsonSerializable(typeof(WebSearchToolResultContent))]
     [JsonSerializable(typeof(ResponseContinuationToken))]
 
     // IEmbeddingGenerator

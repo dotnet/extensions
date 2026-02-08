@@ -583,9 +583,15 @@ internal sealed partial class OpenAIChatClient : IChatClient
         {
             foreach (AITool tool in tools)
             {
-                if (tool is AIFunctionDeclaration af)
+                switch (tool)
                 {
-                    result.Tools.Add(ToOpenAIChatTool(af, options));
+                    case AIFunctionDeclaration af:
+                        result.Tools.Add(ToOpenAIChatTool(af, options));
+                        break;
+
+                    case HostedWebSearchTool:
+                        result.WebSearchOptions ??= new();
+                        break;
                 }
             }
 
