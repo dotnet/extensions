@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S3254 // Default parameter values should not be passed as arguments
@@ -12,6 +14,7 @@ using Microsoft.Shared.Diagnostics;
 namespace OpenAI.Responses;
 
 /// <summary>Provides extension methods for working with content associated with OpenAI.Responses.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
 public static class MicrosoftExtensionsAIResponsesExtensions
 {
     /// <summary>Creates an OpenAI <see cref="ResponseTool"/> from an <see cref="AIFunctionDeclaration"/>.</summary>
