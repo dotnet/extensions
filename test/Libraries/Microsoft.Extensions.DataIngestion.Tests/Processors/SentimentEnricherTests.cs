@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DataIngestion.Tests;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -106,9 +107,9 @@ public class SentimentEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        new("I love programming! It's so much fun and rewarding.", _document),
-        new("I hate bugs. They are so frustrating and time-consuming.", _document),
-        new("The weather is okay, not too bad but not great either.", _document),
-        new("I hate you. I am sorry, I actually don't. I am not sure myself what my feelings are.", _document)
+        TestChunkFactory.CreateChunk("I love programming! It's so much fun and rewarding.", _document),
+        TestChunkFactory.CreateChunk("I hate bugs. They are so frustrating and time-consuming.", _document),
+        TestChunkFactory.CreateChunk("The weather is okay, not too bad but not great either.", _document),
+        TestChunkFactory.CreateChunk("I hate you. I am sorry, I actually don't. I am not sure myself what my feelings are.", _document)
     ];
 }

@@ -11,6 +11,7 @@ trigger:
       - release/*
       - internal/release/*
       - validation/*
+      - data-ingestion-preview2
   paths:
     include:
       - '*'
@@ -33,6 +34,7 @@ pr:
       - dev
       - release/*
       - internal/release/*
+      - data-ingestion-preview2
   paths:
     include:
       - '*'
