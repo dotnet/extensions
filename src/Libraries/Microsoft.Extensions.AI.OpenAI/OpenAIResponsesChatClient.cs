@@ -655,14 +655,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 {
                     // For connectors: extract Bearer token from Headers and set as AuthorizationToken.
                     // Use case-insensitive comparison since auth scheme is case-insensitive per RFC 7235.
+                    // Allow flexible whitespace in the header value.
                     if (mcpTool.Headers?.TryGetValue("Authorization", out string? authHeader) is true)
                     {
-                        string? trimmedAuthHeader = authHeader?.TrimStart();
+                        string? trimmedAuthHeader = authHeader?.Trim();
 
                         if (!string.IsNullOrEmpty(trimmedAuthHeader) &&
                             trimmedAuthHeader!.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                         {
-                            responsesMcpTool.AuthorizationToken = trimmedAuthHeader.Substring("Bearer ".Length);
+                            responsesMcpTool.AuthorizationToken = trimmedAuthHeader.Substring("Bearer ".Length).TrimStart();
                         }
                     }
                 }

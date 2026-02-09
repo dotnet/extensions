@@ -2411,6 +2411,9 @@ public class OpenAIResponseClientTests
     [InlineData("BEARER test-auth-token-12345")]
     [InlineData("BeArEr test-auth-token-12345")]
     [InlineData("  Bearer test-auth-token-12345")]
+    [InlineData("Bearer test-auth-token-12345  ")]
+    [InlineData("  Bearer test-auth-token-12345  ")]
+    [InlineData("Bearer   test-auth-token-12345")]
     public async Task McpToolCall_WithCaseInsensitiveBearerToken_ExtractsToken(string authHeaderValue)
     {
         // Use a connector ID (non-URL) to trigger the Bearer token extraction code path
