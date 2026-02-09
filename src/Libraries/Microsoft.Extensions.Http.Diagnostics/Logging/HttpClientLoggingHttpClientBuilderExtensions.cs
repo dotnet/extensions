@@ -44,9 +44,10 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
     /// <param name="wrapHandlersPipeline">
-    /// Determines the logging behavior when resilience strategies (like retries or hedging) are configured.
-    /// When <see langword="true"/>, logs one record per logical request with total duration including all retry attempts.
-    /// When <see langword="false"/>, logs each individual attempt separately with per-attempt duration.
+    /// When <see langword="true"/>, the logger is placed at the beginning of the request pipeline, wrapping all other handlers.
+    /// When <see langword="false"/>, the logger is placed at the end of the pipeline, right before the primary message handler.
+    /// This affects what gets logged: with <see langword="true"/>, one log entry is emitted per logical request with total duration;
+    /// with <see langword="false"/> and resilience strategies like retries enabled, a separate log entry is emitted for each attempt with per-attempt duration.
     /// </param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
@@ -89,9 +90,10 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="LoggingOptions"/>.</param>
     /// <param name="wrapHandlersPipeline">
-    /// Determines the logging behavior when resilience strategies (like retries or hedging) are configured.
-    /// When <see langword="true"/>, logs one record per logical request with total duration including all retry attempts.
-    /// When <see langword="false"/>, logs each individual attempt separately with per-attempt duration.
+    /// When <see langword="true"/>, the logger is placed at the beginning of the request pipeline, wrapping all other handlers.
+    /// When <see langword="false"/>, the logger is placed at the end of the pipeline, right before the primary message handler.
+    /// This affects what gets logged: with <see langword="true"/>, one log entry is emitted per logical request with total duration;
+    /// with <see langword="false"/> and resilience strategies like retries enabled, a separate log entry is emitted for each attempt with per-attempt duration.
     /// </param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
@@ -135,9 +137,10 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
     /// <param name="configure">The delegate to configure <see cref="LoggingOptions"/> with.</param>
     /// <param name="wrapHandlersPipeline">
-    /// Determines the logging behavior when resilience strategies (like retries or hedging) are configured.
-    /// When <see langword="true"/>, logs one record per logical request with total duration including all retry attempts.
-    /// When <see langword="false"/>, logs each individual attempt separately with per-attempt duration.
+    /// When <see langword="true"/>, the logger is placed at the beginning of the request pipeline, wrapping all other handlers.
+    /// When <see langword="false"/>, the logger is placed at the end of the pipeline, right before the primary message handler.
+    /// This affects what gets logged: with <see langword="true"/>, one log entry is emitted per logical request with total duration;
+    /// with <see langword="false"/> and resilience strategies like retries enabled, a separate log entry is emitted for each attempt with per-attempt duration.
     /// </param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
