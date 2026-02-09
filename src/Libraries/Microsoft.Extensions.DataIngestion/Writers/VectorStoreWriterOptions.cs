@@ -11,13 +11,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </summary>
 public sealed class VectorStoreWriterOptions
 {
-    /// <summary>
-    /// The default number of tokens used to represent a single batch size.
-    /// </summary>
-    /// <remarks>
-    /// This is calculated as 256 times the default tokens per chunk (2000), resulting in 512,000 tokens.
-    /// </remarks>
-    private const int DefaultBatchTokenCount = 256 * 2000; // 256 * IngestionChunkerOptions.DefaultTokensPerChunk
+    private const int DefaultBatchTokenCount = 256 * IngestionChunkerOptions.DefaultTokensPerChunk;
 
     /// <summary>
     /// Gets or sets the name of the collection. When not provided, "chunks" will be used.
@@ -55,7 +49,7 @@ public sealed class VectorStoreWriterOptions
     /// </summary>
     /// <remarks>
     /// The writer accumulates chunks until the total number of tokens reaches this limit,
-    /// then performs a batch upsert operation. Default is 512,000 tokens (256 * 2000).
+    /// then performs a batch upsert operation. Default is 256 * <see cref="IngestionChunkerOptions.MaxTokensPerChunk"/>.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Value is less than or equal to zero.
