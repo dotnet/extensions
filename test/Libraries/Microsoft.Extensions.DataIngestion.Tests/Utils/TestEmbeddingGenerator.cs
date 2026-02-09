@@ -25,7 +25,7 @@ public sealed class TestEmbeddingGenerator<T> : IEmbeddingGenerator<T, Embedding
         WasCalled = true;
 
         List<Embedding<float>> embeddings = [];
-        foreach (var value in values)
+        foreach (var _ in values)
         {
             embeddings.Add(new(new float[] { 0, 1, 2, 3 }));
         }
