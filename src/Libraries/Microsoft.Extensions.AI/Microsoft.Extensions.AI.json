@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI, Version=10.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "abstract class Microsoft.Extensions.AI.CachingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
@@ -148,6 +148,16 @@
       ]
     },
     {
+      "Type": "static class Microsoft.Extensions.AI.ChatClientBuilderToolReductionExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.ChatClientBuilderToolReductionExtensions.UseToolReduction(this Microsoft.Extensions.AI.ChatClientBuilder builder, Microsoft.Extensions.AI.IToolReductionStrategy strategy);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "static class Microsoft.Extensions.AI.ChatClientStructuredOutputExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -246,6 +256,30 @@
         {
           "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.AI.ConfigureOptionsEmbeddingGeneratorBuilderExtensions.ConfigureOptions<TInput, TEmbedding>(this Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> builder, System.Action<Microsoft.Extensions.AI.EmbeddingGenerationOptions> configure);",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ConfigureOptionsImageGenerator : Microsoft.Extensions.AI.DelegatingImageGenerator",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ConfigureOptionsImageGenerator.ConfigureOptionsImageGenerator(Microsoft.Extensions.AI.IImageGenerator innerGenerator, System.Action<Microsoft.Extensions.AI.ImageGenerationOptions> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ImageGenerationResponse> Microsoft.Extensions.AI.ConfigureOptionsImageGenerator.GenerateAsync(Microsoft.Extensions.AI.ImageGenerationRequest request, Microsoft.Extensions.AI.ImageGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ConfigureOptionsImageGeneratorBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.AI.ConfigureOptionsImageGeneratorBuilderExtensions.ConfigureOptions(this Microsoft.Extensions.AI.ImageGeneratorBuilder builder, System.Action<Microsoft.Extensions.AI.ImageGenerationOptions> configure);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -438,6 +472,42 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.EmbeddingToolReductionStrategy : Microsoft.Extensions.AI.IToolReductionStrategy",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.EmbeddingToolReductionStrategy(Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>> embeddingGenerator, int toolLimit);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AITool>> Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.SelectToolsForRequestAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Func<Microsoft.Extensions.AI.AITool, bool> Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.IsRequiredTool { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage>, System.Threading.Tasks.ValueTask<string>> Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.MessagesEmbeddingTextSelector { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.PreserveOriginalOrdering { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<System.ReadOnlyMemory<float>, System.ReadOnlyMemory<float>, float> Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.Similarity { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.AI.AITool, string> Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.ToolEmbeddingTextSelector { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.FunctionInvocationContext",
       "Stage": "Stable",
       "Methods": [
@@ -617,6 +687,123 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.ImageGeneratingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGeneratingChatClient.ImageGeneratingChatClient(Microsoft.Extensions.AI.IChatClient innerClient, Microsoft.Extensions.AI.IImageGenerator imageGenerator, Microsoft.Extensions.AI.ImageGeneratingChatClient.DataContentHandling dataContentHandling = Microsoft.Extensions.AI.ImageGeneratingChatClient.DataContentHandling.AllImages);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.ImageGeneratingChatClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.ImageGeneratingChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.ImageGeneratingChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.ImageGeneratingChatClient.DataContentHandling",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGeneratingChatClient.DataContentHandling.DataContentHandling();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.ImageGeneratingChatClient.DataContentHandling Microsoft.Extensions.AI.ImageGeneratingChatClient.DataContentHandling.AllImages",
+          "Stage": "Experimental",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ImageGeneratingChatClient.DataContentHandling Microsoft.Extensions.AI.ImageGeneratingChatClient.DataContentHandling.GeneratedImages",
+          "Stage": "Experimental",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ImageGeneratingChatClient.DataContentHandling Microsoft.Extensions.AI.ImageGeneratingChatClient.DataContentHandling.None",
+          "Stage": "Experimental",
+          "Value": "0"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ImageGeneratingChatClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.ImageGeneratingChatClientBuilderExtensions.UseImageGeneration(this Microsoft.Extensions.AI.ChatClientBuilder builder, Microsoft.Extensions.AI.IImageGenerator? imageGenerator = null, System.Action<Microsoft.Extensions.AI.ImageGeneratingChatClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ImageGeneratorBuilder",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGeneratorBuilder.ImageGeneratorBuilder(Microsoft.Extensions.AI.IImageGenerator innerGenerator);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGeneratorBuilder.ImageGeneratorBuilder(System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IImageGenerator> innerGeneratorFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.IImageGenerator Microsoft.Extensions.AI.ImageGeneratorBuilder.Build(System.IServiceProvider? services = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.AI.ImageGeneratorBuilder.Use(System.Func<Microsoft.Extensions.AI.IImageGenerator, Microsoft.Extensions.AI.IImageGenerator> generatorFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.AI.ImageGeneratorBuilder.Use(System.Func<Microsoft.Extensions.AI.IImageGenerator, System.IServiceProvider, Microsoft.Extensions.AI.IImageGenerator> generatorFactory);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ImageGeneratorBuilderImageGeneratorExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.AI.ImageGeneratorBuilderImageGeneratorExtensions.AsBuilder(this Microsoft.Extensions.AI.IImageGenerator innerGenerator);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.ImageGeneratorBuilderServiceCollectionExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.DependencyInjection.ImageGeneratorBuilderServiceCollectionExtensions.AddImageGenerator(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, Microsoft.Extensions.AI.IImageGenerator innerGenerator, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.DependencyInjection.ImageGeneratorBuilderServiceCollectionExtensions.AddImageGenerator(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IImageGenerator> innerGeneratorFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.DependencyInjection.ImageGeneratorBuilderServiceCollectionExtensions.AddKeyedImageGenerator(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, Microsoft.Extensions.AI.IImageGenerator innerGenerator, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.DependencyInjection.ImageGeneratorBuilderServiceCollectionExtensions.AddKeyedImageGenerator(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IImageGenerator> innerGeneratorFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.LoggingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
       "Stage": "Stable",
       "Methods": [
@@ -681,6 +868,36 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.LoggingImageGenerator : Microsoft.Extensions.AI.DelegatingImageGenerator",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.LoggingImageGenerator.LoggingImageGenerator(Microsoft.Extensions.AI.IImageGenerator innerGenerator, Microsoft.Extensions.Logging.ILogger logger);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ImageGenerationResponse> Microsoft.Extensions.AI.LoggingImageGenerator.GenerateAsync(Microsoft.Extensions.AI.ImageGenerationRequest request, Microsoft.Extensions.AI.ImageGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.LoggingImageGenerator.JsonSerializerOptions { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.LoggingImageGeneratorBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.AI.LoggingImageGeneratorBuilderExtensions.UseLogging(this Microsoft.Extensions.AI.ImageGeneratorBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingImageGenerator>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.LoggingSpeechToTextClient : Microsoft.Extensions.AI.DelegatingSpeechToTextClient",
       "Stage": "Experimental",
       "Methods": [
@@ -710,6 +927,20 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.LoggingSpeechToTextClientBuilderExtensions.UseLogging(this Microsoft.Extensions.AI.SpeechToTextClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingSpeechToTextClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.MessageCountingChatReducer : Microsoft.Extensions.AI.IChatReducer",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.MessageCountingChatReducer.MessageCountingChatReducer(int targetCount);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage>> Microsoft.Extensions.AI.MessageCountingChatReducer.ReduceAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, System.Threading.CancellationToken cancellationToken);",
           "Stage": "Experimental"
         }
       ]
@@ -799,6 +1030,114 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.OpenTelemetryImageGenerator : Microsoft.Extensions.AI.DelegatingImageGenerator",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenTelemetryImageGenerator.OpenTelemetryImageGenerator(Microsoft.Extensions.AI.IImageGenerator innerGenerator, Microsoft.Extensions.Logging.ILogger? logger = null, string? sourceName = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.OpenTelemetryImageGenerator.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ImageGenerationResponse> Microsoft.Extensions.AI.OpenTelemetryImageGenerator.GenerateAsync(Microsoft.Extensions.AI.ImageGenerationRequest request, Microsoft.Extensions.AI.ImageGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.AI.OpenTelemetryImageGenerator.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.OpenTelemetryImageGenerator.EnableSensitiveData { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OpenTelemetryImageGeneratorBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.AI.OpenTelemetryImageGeneratorBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.ImageGeneratorBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetryImageGenerator>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClient : Microsoft.Extensions.AI.DelegatingSpeechToTextClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClient.OpenTelemetrySpeechToTextClient(Microsoft.Extensions.AI.ISpeechToTextClient innerClient, Microsoft.Extensions.Logging.ILogger? logger = null, string? sourceName = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.SpeechToTextResponseUpdate> Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClient.GetStreamingTextAsync(System.IO.Stream audioSpeechStream, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.SpeechToTextResponse> Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClient.GetTextAsync(System.IO.Stream audioSpeechStream, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClient.EnableSensitiveData { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClientBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.SpeechToTextClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ReducingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ReducingChatClient.ReducingChatClient(Microsoft.Extensions.AI.IChatClient innerClient, Microsoft.Extensions.AI.IChatReducer reducer);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.ReducingChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.ReducingChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ReducingChatClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.ReducingChatClientBuilderExtensions.UseChatReducer(this Microsoft.Extensions.AI.ChatClientBuilder builder, Microsoft.Extensions.AI.IChatReducer? reducer = null, System.Action<Microsoft.Extensions.AI.ReducingChatClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.AI.SpeechToTextClientBuilder",
       "Stage": "Experimental",
       "Methods": [
@@ -829,11 +1168,11 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.DependencyInjection.SpeechToTextClientBuilderServiceCollectionExtensions.AddKeyedSpeechToTextClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object serviceKey, Microsoft.Extensions.AI.ISpeechToTextClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.DependencyInjection.SpeechToTextClientBuilderServiceCollectionExtensions.AddKeyedSpeechToTextClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, Microsoft.Extensions.AI.ISpeechToTextClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.DependencyInjection.SpeechToTextClientBuilderServiceCollectionExtensions.AddKeyedSpeechToTextClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object serviceKey, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.ISpeechToTextClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.DependencyInjection.SpeechToTextClientBuilderServiceCollectionExtensions.AddKeyedSpeechToTextClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.ISpeechToTextClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
           "Stage": "Experimental"
         },
         {
@@ -852,6 +1191,44 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.SpeechToTextClientBuilderSpeechToTextClientExtensions.AsBuilder(this Microsoft.Extensions.AI.ISpeechToTextClient innerClient);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.SummarizingChatReducer : Microsoft.Extensions.AI.IChatReducer",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.SummarizingChatReducer.SummarizingChatReducer(Microsoft.Extensions.AI.IChatClient chatClient, int targetCount, int? threshold);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage>> Microsoft.Extensions.AI.SummarizingChatReducer.ReduceAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.SummarizingChatReducer.SummarizationPrompt { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ToolReducingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolReducingChatClient.ToolReducingChatClient(Microsoft.Extensions.AI.IChatClient innerClient, Microsoft.Extensions.AI.IToolReductionStrategy strategy);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.ToolReducingChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.ToolReducingChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ]

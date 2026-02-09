@@ -2841,9 +2841,14 @@
       ],
       "Fields": [
         {
-          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.None",
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.ExtraHigh",
           "Stage": "Stable",
-          "Value": "0"
+          "Value": "4"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.High",
+          "Stage": "Stable",
+          "Value": "3"
         },
         {
           "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.Low",
@@ -2856,14 +2861,9 @@
           "Value": "2"
         },
         {
-          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.High",
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.None",
           "Stage": "Stable",
-          "Value": "3"
-        },
-        {
-          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.ExtraHigh",
-          "Stage": "Stable",
-          "Value": "4"
+          "Value": "0"
         }
       ]
     },
@@ -2898,6 +2898,11 @@
       ],
       "Fields": [
         {
+          "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.Full",
+          "Stage": "Stable",
+          "Value": "2"
+        },
+        {
           "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.None",
           "Stage": "Stable",
           "Value": "0"
@@ -2906,11 +2911,6 @@
           "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.Summary",
           "Stage": "Stable",
           "Value": "1"
-        },
-        {
-          "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.Full",
-          "Stage": "Stable",
-          "Value": "2"
         }
       ]
     },
