@@ -117,5 +117,141 @@ public abstract class VectorStoreWriterTests
         Assert.Equal("value2", record["key1"]);
     }
 
+    [Fact]
+    public async Task BatchesChunks_WithLowLimit()
+    {
+        // Test batching with a very low limit (1 token) to ensure each chunk is upserted separately
+        string documentId = Guid.NewGuid().ToString();
+
+        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
+        using VectorStoreWriter<string> writer = new(
+            vectorStore,
+            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount,
+            options: new()
+            {
+                BatchTokenCount = 1, // Very low limit
+                IncrementalIngestion = false
+            });
+
+        IngestionDocument document = new(documentId);
+        List<IngestionChunk<string>> chunks =
+        [
+            new("chunk 1", document, context: null, tokenCount: 10),
+            new("chunk 2", document, context: null, tokenCount: 10),
+            new("chunk 3", document, context: null, tokenCount: 10)
+        ];
+
+        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+
+        int recordCount = await writer.VectorStoreCollection
+            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 100)
+            .CountAsync();
+
+        Assert.Equal(chunks.Count, recordCount);
+    }
+
+    [Fact]
+    public async Task BatchesChunks_WithDefaultLimit()
+    {
+        // Test batching with default limit
+        string documentId = Guid.NewGuid().ToString();
+
+        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
+        using VectorStoreWriter<string> writer = new(
+            vectorStore,
+            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount,
+            options: new()
+            {
+                IncrementalIngestion = false
+            });
+
+        IngestionDocument document = new(documentId);
+        // Create chunks with token counts that sum to less than default limit
+        List<IngestionChunk<string>> chunks =
+        [
+            new("chunk 1", document, context: null, tokenCount: 1000),
+            new("chunk 2", document, context: null, tokenCount: 1000),
+            new("chunk 3", document, context: null, tokenCount: 1000)
+        ];
+
+        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+
+        int recordCount = await writer.VectorStoreCollection
+            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 100)
+            .CountAsync();
+
+        Assert.Equal(chunks.Count, recordCount);
+    }
+
+    [Fact]
+    public async Task BatchesChunks_WhenSingleChunkExceedsLimit()
+    {
+        // Test that a single chunk exceeding the limit is still upserted
+        string documentId = Guid.NewGuid().ToString();
+
+        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
+        using VectorStoreWriter<string> writer = new(
+            vectorStore,
+            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount,
+            options: new()
+            {
+                BatchTokenCount = 100, // Low limit
+                IncrementalIngestion = false
+            });
+
+        IngestionDocument document = new(documentId);
+        List<IngestionChunk<string>> chunks =
+        [
+            new("large chunk", document, context: null, tokenCount: 200), // Exceeds limit
+            new("small chunk", document, context: null, tokenCount: 10)
+        ];
+
+        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+
+        int recordCount = await writer.VectorStoreCollection
+            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 100)
+            .CountAsync();
+
+        Assert.Equal(chunks.Count, recordCount);
+    }
+
+    [Fact]
+    public async Task BatchesChunks_SpansMultipleBatches()
+    {
+        // Test that chunks are correctly split across multiple batches
+        string documentId = Guid.NewGuid().ToString();
+
+        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
+        using VectorStoreWriter<string> writer = new(
+            vectorStore,
+            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount,
+            options: new()
+            {
+                BatchTokenCount = 100,
+                IncrementalIngestion = false
+            });
+
+        IngestionDocument document = new(documentId);
+        List<IngestionChunk<string>> chunks =
+        [
+            new("chunk 1", document, context: null, tokenCount: 60),
+            new("chunk 2", document, context: null, tokenCount: 60), // Should trigger batch
+            new("chunk 3", document, context: null, tokenCount: 60),
+            new("chunk 4", document, context: null, tokenCount: 60)  // Should trigger another batch
+        ];
+
+        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+
+        int recordCount = await writer.VectorStoreCollection
+            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 100)
+            .CountAsync();
+
+        Assert.Equal(chunks.Count, recordCount);
+    }
+
     protected abstract VectorStore CreateVectorStore(TestEmbeddingGenerator<string> testEmbeddingGenerator);
 }

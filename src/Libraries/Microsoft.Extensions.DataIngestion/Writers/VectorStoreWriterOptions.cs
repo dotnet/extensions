@@ -40,4 +40,22 @@ public sealed class VectorStoreWriterOptions
     /// Effectively the ingestion will "replace" the existing chunks for the document with the new ones.
     /// </remarks>
     public bool IncrementalIngestion { get; set; } = true;
+
+    private int _batchTokenCount = 256 * 2000; // 256 * IngestionChunkerOptions.DefaultTokensPerChunk
+
+    /// <summary>
+    /// Gets or sets the maximum number of tokens used to represent a single batch size.
+    /// </summary>
+    /// <remarks>
+    /// The writer accumulates chunks until the total number of tokens reaches this limit,
+    /// then performs a batch upsert operation. Default is 512,000 tokens (256 * 2000).
+    /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Value is less than or equal to zero.
+    /// </exception>
+    public int BatchTokenCount
+    {
+        get => _batchTokenCount;
+        set => _batchTokenCount = Throw.IfLessThanOrEqual(value, 0);
+    }
 }

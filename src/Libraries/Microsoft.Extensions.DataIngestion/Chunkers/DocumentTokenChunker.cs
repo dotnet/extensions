@@ -91,10 +91,14 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
 
             IngestionChunk<string> FinalizeChunk()
             {
+                string content = stringBuilder.ToString();
+                int tokenCount = _tokenizer.CountTokens(content, considerNormalization: false);
+
                 IngestionChunk<string> chunk = new IngestionChunk<string>(
-                    content: stringBuilder.ToString(),
+                    content: content,
                     document: document,
-                    context: string.Empty);
+                    context: string.Empty,
+                    tokenCount: tokenCount);
                 _ = stringBuilder.Clear();
                 stringBuilderTokenCount = 0;
 
