@@ -2406,6 +2406,91 @@ public class OpenAIResponseClientTests
         Assert.Equal("Hi!", message.Text);
     }
 
+    [Theory]
+    [InlineData("bearer test-auth-token-12345")]
+    [InlineData("BEARER test-auth-token-12345")]
+    [InlineData("BeArEr test-auth-token-12345")]
+    [InlineData("  Bearer test-auth-token-12345")]
+    public async Task McpToolCall_WithCaseInsensitiveBearerToken_ExtractsToken(string authHeaderValue)
+    {
+        // Use a connector ID (non-URL) to trigger the Bearer token extraction code path
+        string expectedToken = "test-auth-token-12345";
+        string expectedInput = $$"""
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "server_label": "my-connector",
+                        "connector_id": "connector-id-123",
+                        "authorization": "{{expectedToken}}",
+                        "require_approval": "never"
+                    }
+                ],
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+                "id": "resp_bearer01",
+                "object": "response",
+                "created_at": 1757299043,
+                "status": "completed",
+                "model": "gpt-4o-mini-2024-07-18",
+                "output": [
+                    {
+                        "id": "msg_bearer01",
+                        "type": "message",
+                        "status": "completed",
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "text": "Hi!"
+                            }
+                        ]
+                    }
+                ],
+                "usage": {
+                    "input_tokens": 10,
+                    "output_tokens": 2,
+                    "total_tokens": 12
+                }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(expectedInput, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        // Use string constructor with non-URL to trigger connector ID path
+        var mcpTool = new HostedMcpServerTool("my-connector", "connector-id-123")
+        {
+            ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+            Headers = new Dictionary<string, string>
+            {
+                ["Authorization"] = authHeaderValue,
+            }
+        };
+
+        var response = await client.GetResponseAsync("hello", new ChatOptions { Tools = [mcpTool] });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_bearer01", response.ResponseId);
+    }
+
     [Fact]
     public async Task GetResponseAsync_BackgroundResponses_FirstCall()
     {

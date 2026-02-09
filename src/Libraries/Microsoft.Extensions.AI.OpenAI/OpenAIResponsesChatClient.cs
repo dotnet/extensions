@@ -654,10 +654,16 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 else
                 {
                     // For connectors: extract Bearer token from Headers and set as AuthorizationToken.
-                    if (mcpTool.Headers?.TryGetValue("Authorization", out string? authHeader) is true &&
-                        authHeader?.StartsWith("Bearer ", StringComparison.Ordinal) is true)
+                    // Use case-insensitive comparison since auth scheme is case-insensitive per RFC 7235.
+                    if (mcpTool.Headers?.TryGetValue("Authorization", out string? authHeader) is true)
                     {
-                        responsesMcpTool.AuthorizationToken = authHeader.Substring("Bearer ".Length);
+                        string? trimmedAuthHeader = authHeader?.TrimStart();
+
+                        if (!string.IsNullOrEmpty(trimmedAuthHeader) &&
+                            trimmedAuthHeader!.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            responsesMcpTool.AuthorizationToken = trimmedAuthHeader.Substring("Bearer ".Length);
+                        }
                     }
                 }
 
