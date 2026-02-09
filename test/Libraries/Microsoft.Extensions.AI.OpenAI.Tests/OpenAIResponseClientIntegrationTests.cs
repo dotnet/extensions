@@ -81,6 +81,18 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             new() { Tools = [new HostedWebSearchTool()] });
 
         ChatMessage m = Assert.Single(response.Messages);
+
+        // Verify that the web search tool call and result content are present.
+        var wsCall = m.Contents.OfType<WebSearchToolCallContent>().FirstOrDefault();
+        Assert.NotNull(wsCall);
+        Assert.NotNull(wsCall.CallId);
+        Assert.NotNull(wsCall.Queries);
+        Assert.NotEmpty(wsCall.Queries);
+
+        var wsResult = m.Contents.OfType<WebSearchToolResultContent>().FirstOrDefault();
+        Assert.NotNull(wsResult);
+        Assert.Equal(wsCall.CallId, wsResult.CallId);
+
         TextContent tc = m.Contents.OfType<TextContent>().First();
         Assert.NotNull(tc.Annotations);
         Assert.NotEmpty(tc.Annotations);

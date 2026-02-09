@@ -1007,6 +1007,94 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Same(image3, imageResults[2].Outputs![0]);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_CoalescesWebSearchToolCallContent(bool useAsync)
+    {
+        object rawRepresentation = new();
+        AdditionalPropertiesDictionary additionalProps = new() { { "key", "value" } };
+
+        ChatResponseUpdate[] updates =
+        {
+            new(null, "Searching..."),
+
+            // Initial WebSearchToolCallContent with a query (like first search)
+            new() { Contents = [new WebSearchToolCallContent { CallId = "ws1", Queries = ["first query"] }] },
+
+            // Text in between
+            new(null, " found results"),
+
+            // Second WebSearchToolCallContent with additional query and RawRepresentation
+            new() { Contents = [new WebSearchToolCallContent { CallId = "ws1", Queries = ["second query"], RawRepresentation = rawRepresentation, AdditionalProperties = additionalProps }] },
+
+            // Different CallId should not be coalesced with the first
+            new() { Contents = [new WebSearchToolCallContent { CallId = "ws2", Queries = ["AI safety"] }] },
+
+            // Third for ws1, no queries this time
+            new() { Contents = [new WebSearchToolCallContent { CallId = "ws1" }] },
+
+            new(null, " done"),
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        var webSearchCalls = message.Contents.OfType<WebSearchToolCallContent>().ToArray();
+        Assert.Equal(2, webSearchCalls.Length);
+
+        // ws1 should have queries combined from both updates
+        var ws1 = webSearchCalls.First(ws => ws.CallId == "ws1");
+        Assert.Equal(["first query", "second query"], ws1.Queries);
+
+        // RawRepresentation and AdditionalProperties should be merged from the second update
+        Assert.Same(rawRepresentation, ws1.RawRepresentation);
+        Assert.Same(additionalProps, ws1.AdditionalProperties);
+
+        // ws2 should be unchanged
+        var ws2 = webSearchCalls.First(ws => ws.CallId == "ws2");
+        Assert.Equal(["AI safety"], ws2.Queries);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_CoalescesWebSearchToolCallContent_NullQueriesFirst(bool useAsync)
+    {
+        // First item has no queries, second provides them — should assign directly rather than merge.
+        ChatResponseUpdate[] updates =
+        {
+            new() { Contents = [new WebSearchToolCallContent { CallId = "ws1" }] },
+            new() { Contents = [new WebSearchToolCallContent { CallId = "ws1", Queries = ["query from second"] }] },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        var ws1 = Assert.Single(message.Contents.OfType<WebSearchToolCallContent>());
+        Assert.Equal("ws1", ws1.CallId);
+        Assert.Equal(["query from second"], ws1.Queries);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_WebSearchToolCallContentWithNullOrEmptyCallId_DoesNotCoalesce(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        {
+            new() { Contents = [new WebSearchToolCallContent { CallId = null, Queries = ["q1"] }] },
+            new() { Contents = [new WebSearchToolCallContent { CallId = "", Queries = ["q2"] }] },
+            new() { Contents = [new WebSearchToolCallContent { CallId = null, Queries = ["q3"] }] },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        var webSearchCalls = message.Contents.OfType<WebSearchToolCallContent>().ToArray();
+        Assert.Equal(3, webSearchCalls.Length);
+    }
+
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)
     {
         foreach (ChatResponseUpdate update in updates)

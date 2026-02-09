@@ -1180,7 +1180,8 @@ public class OpenAIChatClientTests
                         "content": "What day is it?"
                     }
                 ],
-                "model": "gpt-4o-mini"
+                "model": "gpt-4o-mini",
+                "web_search_options": {}
             }
             """;
 
