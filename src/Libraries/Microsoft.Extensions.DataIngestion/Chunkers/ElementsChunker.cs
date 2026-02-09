@@ -196,7 +196,7 @@ internal sealed class ElementsChunker
 
         if (totalTokenCount > contextTokenCount)
         {
-            chunks.Add(new(_currentChunk.ToString(), document, context, totalTokenCount));
+            chunks.Add(new(_currentChunk.ToString(), document, context));
         }
 
         _currentChunk.Clear();
@@ -205,7 +205,7 @@ internal sealed class ElementsChunker
 
         void Commit()
         {
-            chunks.Add(new(_currentChunk.ToString(), document, context, totalTokenCount));
+            chunks.Add(new(_currentChunk.ToString(), document, context));
 
             // We keep the context in the current chunk as it's the same for all elements.
             _currentChunk.Remove(
