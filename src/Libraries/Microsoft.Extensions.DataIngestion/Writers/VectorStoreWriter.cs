@@ -61,6 +61,9 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
         _ = Throw.IfNull(chunks);
 
         IReadOnlyList<object>? preExistingKeys = null;
+        List<Dictionary<string, object?>>? batch = null;
+        long currentBatchTokenCount = 0;
+
         await foreach (IngestionChunk<T> chunk in chunks.WithCancellation(cancellationToken))
         {
             if (_vectorStoreCollection is null)
@@ -93,7 +96,26 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
                 }
             }
 
-            await _vectorStoreCollection.UpsertAsync(record, cancellationToken).ConfigureAwait(false);
+            batch ??= [];
+
+            // Check if adding this chunk would exceed the batch token limit
+            // If the batch is empty or the chunk alone exceeds the limit, add it anyway.
+            if (batch.Count > 0 && currentBatchTokenCount + chunk.TokenCount > _options.BatchTokenCount)
+            {
+                await _vectorStoreCollection.UpsertAsync(batch, cancellationToken).ConfigureAwait(false);
+
+                batch.Clear();
+                currentBatchTokenCount = 0;
+            }
+
+            batch.Add(record);
+            currentBatchTokenCount += chunk.TokenCount;
+        }
+
+        // Upsert any remaining chunks in the batch
+        if (batch?.Count > 0)
+        {
+            await _vectorStoreCollection!.UpsertAsync(batch, cancellationToken).ConfigureAwait(false);
         }
 
         if (preExistingKeys?.Count > 0)
