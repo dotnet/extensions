@@ -381,6 +381,9 @@ public static partial class AIJsonUtilities
             }
 
             ApplyDataAnnotations(ref schema, ctx);
+#if NET || NETFRAMEWORK
+            ApplyRequiredMembers(ref schema, ctx);
+#endif
 
             // Finally, apply any user-defined transformations if specified.
             if (inferenceOptions.TransformSchemaNode is { } transformer)
@@ -714,8 +717,54 @@ public static partial class AIJsonUtilities
                     return ctx.GetCustomAttribute<TAttribute>(inherit: true);
                 }
             }
+
+#if NET || NETFRAMEWORK
+            static void ApplyRequiredMembers(ref JsonNode schema, AIJsonSchemaCreateContext ctx) =>
+                AIJsonUtilities.ApplyRequiredMembers(ref schema, ctx);
+#endif
         }
     }
+
+#if NET || NETFRAMEWORK
+    private static void ApplyRequiredMembers(ref JsonNode schema, AIJsonSchemaCreateContext ctx)
+    {
+        if (ctx.TypeInfo.Kind is not JsonTypeInfoKind.Object ||
+            schema is not JsonObject schemaObj ||
+            !schemaObj.ContainsKey(PropertiesPropertyName))
+        {
+            return;
+        }
+
+        JsonArray? requiredArray = schemaObj.TryGetPropertyValue(RequiredPropertyName, out JsonNode? existing) && existing is JsonArray arr ? arr : null;
+
+        foreach (JsonPropertyInfo property in ctx.TypeInfo.Properties)
+        {
+            if (property.AttributeProvider?.GetCustomAttributes(typeof(RequiredAttribute), inherit: true) is not { Length: > 0 } &&
+                property.AssociatedParameter?.AttributeProvider?.GetCustomAttributes(typeof(RequiredAttribute), inherit: true) is not { Length: > 0 })
+            {
+                continue;
+            }
+
+            requiredArray ??= (JsonArray)(schemaObj[RequiredPropertyName] = new JsonArray());
+            string propertyName = property.Name;
+
+            bool alreadyPresent = false;
+            foreach (JsonNode? entry in requiredArray)
+            {
+                if (entry?.GetValue<string>() == propertyName)
+                {
+                    alreadyPresent = true;
+                    break;
+                }
+            }
+
+            if (!alreadyPresent)
+            {
+                requiredArray.Add((JsonNode)propertyName);
+            }
+        }
+    }
+#endif
 
     private static bool TypeIsIntegerWithStringNumberHandling(AIJsonSchemaCreateContext ctx, JsonObject schema, [NotNullWhen(true)] out string? numericType, out bool isNullable)
     {

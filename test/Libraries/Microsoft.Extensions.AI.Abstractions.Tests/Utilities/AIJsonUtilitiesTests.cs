@@ -489,6 +489,61 @@ public static partial class AIJsonUtilitiesTests
 #pragma warning restore IDE0060 // Remove unused parameter
 
     [Fact]
+    public static void CreateFunctionJsonSchema_RequiredAttribute_MarksNestedPropertyAsRequired()
+    {
+        JsonSerializerOptions options = new(JsonContext.Default.Options);
+        MethodInfo method = typeof(AIJsonUtilitiesTests).GetMethod(nameof(MethodWithRequiredNestedType), BindingFlags.NonPublic | BindingFlags.Static)!;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method, title: string.Empty, serializerOptions: options);
+
+        // Get the "input" parameter's schema under properties
+        Assert.True(schema.TryGetProperty("properties", out JsonElement properties));
+        Assert.True(properties.TryGetProperty("input", out JsonElement inputSchema));
+
+        // The nested type should have its own "required" array for [Required]-attributed properties
+        Assert.True(inputSchema.TryGetProperty("required", out JsonElement requiredElement));
+        HashSet<string> requiredProps = new(requiredElement.EnumerateArray().Select(e => e.GetString()!));
+
+        Assert.Contains("RequiredValue", requiredProps);
+        Assert.Contains("RequiredRef", requiredProps);
+        Assert.DoesNotContain("OptionalValue", requiredProps);
+        Assert.DoesNotContain("OptionalRef", requiredProps);
+    }
+
+    [Fact]
+    public static void CreateJsonSchema_RequiredAttribute_MarksPropertyAsRequired()
+    {
+        JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(TypeWithRequiredMembers), serializerOptions: JsonContext.Default.Options);
+
+        Assert.True(schema.TryGetProperty("required", out JsonElement requiredElement));
+        HashSet<string> requiredProps = new(requiredElement.EnumerateArray().Select(e => e.GetString()!));
+
+        Assert.Contains("RequiredValue", requiredProps);
+        Assert.Contains("RequiredRef", requiredProps);
+        Assert.DoesNotContain("OptionalValue", requiredProps);
+        Assert.DoesNotContain("OptionalRef", requiredProps);
+    }
+
+#pragma warning disable IDE0060 // Remove unused parameter
+    private static void MethodWithRequiredNestedType(TypeWithRequiredMembers input)
+    {
+        // Method intentionally left empty; used only for schema generation reflection.
+    }
+#pragma warning restore IDE0060 // Remove unused parameter
+
+    internal sealed class TypeWithRequiredMembers
+    {
+        [Required]
+        public int RequiredValue { get; set; }
+
+        [Required]
+        public string? RequiredRef { get; set; }
+
+        public int OptionalValue { get; set; }
+
+        public string? OptionalRef { get; set; }
+    }
+
+    [Fact]
     public static void CreateFunctionJsonSchema_DisplayNameAttribute_UsedForTitle()
     {
         [DisplayName("custom_method_name")]
@@ -1625,6 +1680,7 @@ public static partial class AIJsonUtilitiesTests
     [JsonSerializable(typeof(MyEnumValue?))]
     [JsonSerializable(typeof(object[]))]
     [JsonSerializable(typeof(ClassWithNullableMaxLengthProperty))]
+    [JsonSerializable(typeof(TypeWithRequiredMembers))]
     private partial class JsonContext : JsonSerializerContext;
 
     private static bool DeepEquals(JsonElement element1, JsonElement element2)
