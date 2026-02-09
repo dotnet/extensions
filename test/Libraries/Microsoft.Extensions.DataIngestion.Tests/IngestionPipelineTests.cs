@@ -180,7 +180,8 @@ public sealed class IngestionPipelineTests : IDisposable
                     .OfType<IngestionDocumentImage>()
                     .Select(image => new IngestionChunk<DataContent>(
                         content: new(image.Content.GetValueOrDefault(), image.MediaType!),
-                        document: document))
+                        document: document,
+                        tokenCount: 123)) // made up number as we currently don't have the ability to easily count exact tokens
                     .ToAsyncEnumerable();
     }
 
