@@ -26,6 +26,10 @@ public sealed class McpServerToolCallContent : FunctionCallContent
     /// <param name="serverName">The MCP server name that hosts the tool.</param>
     /// <exception cref="ArgumentNullException"><paramref name="callId"/> or <paramref name="name"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="callId"/> or <paramref name="name"/> is empty or composed entirely of whitespace.</exception>
+    /// <remarks>
+    /// This content is informational only and may appear as part of an approval request
+    /// to convey what is being approved, or as a record of which MCP server tool was invoked.
+    /// </remarks>
     public McpServerToolCallContent(string callId, string name, string? serverName)
         : base(Throw.IfNullOrWhitespace(callId), Throw.IfNullOrWhitespace(name))
     {
