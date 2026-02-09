@@ -24,8 +24,13 @@ public sealed class TestEmbeddingGenerator<T> : IEmbeddingGenerator<T, Embedding
     {
         WasCalled = true;
 
-        return Task.FromResult(new GeneratedEmbeddings<Embedding<float>>(
-            [new(new float[] { 0, 1, 2, 3 })]));
+        List<Embedding<float>> embeddings = [];
+        foreach (var value in values)
+        {
+            embeddings.Add(new(new float[] { 0, 1, 2, 3 }));
+        }
+
+        return Task.FromResult(new GeneratedEmbeddings<Embedding<float>>(embeddings));
     }
 
     public object? GetService(Type serviceType, object? serviceKey = null) => null;

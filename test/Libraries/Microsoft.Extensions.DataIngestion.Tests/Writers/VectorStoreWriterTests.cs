@@ -168,6 +168,7 @@ public abstract class VectorStoreWriterTests
             });
 
         IngestionDocument document = new(documentId);
+
         // Create chunks with token counts that sum to less than default limit
         List<IngestionChunk<string>> chunks =
         [

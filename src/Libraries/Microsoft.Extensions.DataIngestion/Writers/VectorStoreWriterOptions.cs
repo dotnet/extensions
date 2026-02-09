@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -41,8 +42,6 @@ public sealed class VectorStoreWriterOptions
     /// </remarks>
     public bool IncrementalIngestion { get; set; } = true;
 
-    private int _batchTokenCount = 256 * 2000; // 256 * IngestionChunkerOptions.DefaultTokensPerChunk
-
     /// <summary>
     /// Gets or sets the maximum number of tokens used to represent a single batch size.
     /// </summary>
@@ -55,7 +54,7 @@ public sealed class VectorStoreWriterOptions
     /// </exception>
     public int BatchTokenCount
     {
-        get => _batchTokenCount;
-        set => _batchTokenCount = Throw.IfLessThanOrEqual(value, 0);
+        get => field == default ? 256 * 2000 : field; // 256 * IngestionChunkerOptions.DefaultTokensPerChunk
+        set => field = Throw.IfLessThanOrEqual(value, 0);
     }
 }
