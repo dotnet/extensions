@@ -15,9 +15,8 @@ Write-Output "Installing required toolset"
 . $PSScriptRoot/../eng/common/tools.ps1
 InitializeDotNetCli -install $true | Out-Null
 
-$TargetFramework = "net10.0"
 $Project = $PSScriptRoot + "/../eng/Tools/ApiChief/ApiChief.csproj"
-$Command = $PSScriptRoot + "/../artifacts/bin/ApiChief/Debug/$TargetFramework/ApiChief.dll"
+$Command = $PSScriptRoot + "/../artifacts/bin/ApiChief/Debug/net10.0/ApiChief.dll"
 $LibrariesFolder = $PSScriptRoot + "/../src/Libraries"
 
 Write-Output "Building ApiChief tool"
@@ -29,7 +28,7 @@ Write-Output "Creating API baseline files in the src/Libraries folder"
 Get-ChildItem -Path $LibrariesFolder -Depth 1 -Include *.csproj | ForEach-Object `
 {
     $name = Split-Path $_.FullName -LeafBase
-    $path = "$PSScriptRoot\..\artifacts\bin\$name\Debug\$TargetFramework\$name.dll"
+    $path = "$PSScriptRoot\..\artifacts\bin\$name\Debug\net10.0\$name.dll"
     Write-Host "  Processing" $name
     dotnet $Command $path emit baseline -o "$LibrariesFolder/$name/$name.json"
 }
