@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a request for input from the user or application.
 /// </summary>
-[JsonDerivedType(typeof(FunctionApprovalRequestContent), "functionApprovalRequest")]
+[JsonDerivedType(typeof(ToolApprovalRequestContent), "toolApprovalRequest")]
 public class InputRequestContent : AIContent
 {
     /// <summary>

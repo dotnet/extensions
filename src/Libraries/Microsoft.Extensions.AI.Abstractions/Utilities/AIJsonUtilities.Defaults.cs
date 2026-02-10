@@ -120,9 +120,13 @@ public static partial class AIJsonUtilities
     // InputRequestContent and InputResponseContent are polymorphic base types that may be
     // serialized as root types (not just as AIContent). They have protected constructors so
     // can't be instantiated directly, but we still need metadata when serializing derived
-    // types (e.g., FunctionApprovalRequestContent) as InputRequestContent.
+    // types (e.g., ToolApprovalRequestContent) as InputRequestContent.
     [JsonSerializable(typeof(InputRequestContent))]
     [JsonSerializable(typeof(InputResponseContent))]
+
+    // ToolCallContent and ToolResultContent are polymorphic base types for tool calls/results.
+    [JsonSerializable(typeof(ToolCallContent))]
+    [JsonSerializable(typeof(ToolResultContent))]
 
     // Temporary workaround: These should be implicitly added in once they're no longer [Experimental]
     // and are included via [JsonDerivedType] on AIContent.

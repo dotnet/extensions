@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -70,12 +70,12 @@ public class AIContentTests
             new HostedFileContent("file123"),
             new HostedVectorStoreContent("vectorStore123"),
             new UsageContent(new UsageDetails { InputTokenCount = 10, OutputTokenCount = 20, TotalTokenCount = 30 }),
-            new FunctionApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
-            new FunctionApprovalResponseContent("request123", approved: true, new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
+            new ToolApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
+            new ToolApprovalResponseContent("request123", approved: true, new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } })),
             new McpServerToolCallContent("call123", "myTool", "myServer"),
             new McpServerToolResultContent("call123"),
-            new FunctionApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
-            new FunctionApprovalResponseContent("request123", approved: true, new McpServerToolCallContent("call456", "myTool2", "myServer2")),
+            new ToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
+            new ToolApprovalResponseContent("request123", approved: true, new McpServerToolCallContent("call456", "myTool2", "myServer2")),
             new ImageGenerationToolCallContent { ImageId = "img123" },
             new ImageGenerationToolResultContent { ImageId = "img456", Outputs = [new DataContent(new byte[] { 4, 5, 6 }, "image/png")] }
         ]);

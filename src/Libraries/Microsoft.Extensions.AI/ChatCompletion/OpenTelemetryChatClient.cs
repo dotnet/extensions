@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -277,7 +277,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                             Id = mstrc.CallId,
                             ServerToolCallResponse = new OtelMcpToolCallResponse
                             {
-                                Output = mstrc.Result,
+                                Output = mstrc.Outputs,
                             },
                         });
                         break;
@@ -364,7 +364,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     case ImageGenerationToolCallContent igtcc:
                         m.Parts.Add(new OtelServerToolCallPart<OtelImageGenerationToolCall>
                         {
-                            Id = igtcc.ImageId,
+                            Id = igtcc.CallId,
                             Name = "image_generation",
                             ServerToolCall = new OtelImageGenerationToolCall(),
                         });
@@ -373,7 +373,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     case ImageGenerationToolResultContent igtrc:
                         m.Parts.Add(new OtelServerToolCallResponsePart<OtelImageGenerationToolCallResponse>
                         {
-                            Id = igtrc.ImageId,
+                            Id = igtrc.CallId,
                             ServerToolCallResponse = new OtelImageGenerationToolCallResponse
                             {
                                 Output = igtrc.Outputs,
@@ -381,11 +381,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         });
                         break;
 
-                    case FunctionApprovalRequestContent fareqc when fareqc.FunctionCall is McpServerToolCallContent mcpToolCall:
+                    case ToolApprovalRequestContent fareqc when fareqc.ToolCall is McpServerToolCallContent mcpToolCall:
                         m.Parts.Add(new OtelServerToolCallPart<OtelMcpApprovalRequest>
                         {
                             Id = fareqc.RequestId,
-                            Name = fareqc.FunctionCall.Name,
+                            Name = mcpToolCall.Name,
                             ServerToolCall = new OtelMcpApprovalRequest
                             {
                                 Arguments = mcpToolCall.Arguments,
@@ -394,7 +394,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         });
                         break;
 
-                    case FunctionApprovalResponseContent farespc when farespc.FunctionCall is McpServerToolCallContent:
+                    case ToolApprovalResponseContent farespc when farespc.ToolCall is McpServerToolCallContent:
                         m.Parts.Add(new OtelServerToolCallResponsePart<OtelMcpApprovalResponse>
                         {
                             Id = farespc.RequestId,
@@ -927,3 +927,4 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
     private sealed partial class OtelContext : JsonSerializerContext;
 }
+

@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -13,8 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// Represents the result of a function call.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-[JsonDerivedType(typeof(McpServerToolResultContent), "mcpServerToolResult")]
-public class FunctionResultContent : AIContent
+public class FunctionResultContent : ToolResultContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResultContent"/> class.
@@ -27,19 +25,10 @@ public class FunctionResultContent : AIContent
     /// </param>
     [JsonConstructor]
     public FunctionResultContent(string callId, object? result)
+        : base(callId)
     {
-        CallId = Throw.IfNull(callId);
         Result = result;
     }
-
-    /// <summary>
-    /// Gets the ID of the function call for which this is the result.
-    /// </summary>
-    /// <remarks>
-    /// If this is the result for a <see cref="FunctionCallContent"/>, this property should contain the same
-    /// <see cref="FunctionCallContent.CallId"/> value.
-    /// </remarks>
-    public string CallId { get; }
 
     /// <summary>
     /// Gets or sets the result of the function call, or a generic error message if the function call failed.

@@ -113,33 +113,4 @@ public class FunctionResultContentTests
         }
     }
 
-    [Fact]
-    public void Serialization_DerivedTypes_Roundtrips()
-    {
-        FunctionResultContent[] contents =
-        [
-            new FunctionResultContent("call1", "result1"),
-            new McpServerToolResultContent("call2"),
-        ];
-
-        // Verify each element roundtrips individually
-        foreach (var content in contents)
-        {
-            var serialized = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
-            var deserialized = JsonSerializer.Deserialize<FunctionResultContent>(serialized, AIJsonUtilities.DefaultOptions);
-            Assert.NotNull(deserialized);
-            Assert.Equal(content.GetType(), deserialized.GetType());
-        }
-
-        // Verify the array roundtrips
-        var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.FunctionResultContentArray);
-        var deserializedContents = JsonSerializer.Deserialize<FunctionResultContent[]>(serializedContents, TestJsonSerializerContext.Default.FunctionResultContentArray);
-        Assert.NotNull(deserializedContents);
-        Assert.Equal(contents.Length, deserializedContents.Length);
-        for (int i = 0; i < deserializedContents.Length; i++)
-        {
-            Assert.NotNull(deserializedContents[i]);
-            Assert.Equal(contents[i].GetType(), deserializedContents[i].GetType());
-        }
-    }
 }

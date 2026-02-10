@@ -22,7 +22,6 @@ public class McpServerToolCallContentTests
         Assert.Equal("toolName", c.Name);
         Assert.Null(c.ServerName);
         Assert.Null(c.Arguments);
-        Assert.True(c.InformationalOnly);
     }
 
     [Fact]
@@ -44,10 +43,6 @@ public class McpServerToolCallContentTests
         IDictionary<string, object?> args = new Dictionary<string, object?>();
         c.Arguments = args;
         Assert.Same(args, c.Arguments);
-
-        Assert.True(c.InformationalOnly);
-        c.InformationalOnly = false;
-        Assert.False(c.InformationalOnly);
 
         Assert.Equal("callId1", c.CallId);
         Assert.Equal("toolName", c.Name);
@@ -73,7 +68,7 @@ public class McpServerToolCallContentTests
         };
 
         AssertSerializationRoundtrips<McpServerToolCallContent>(content);
-        AssertSerializationRoundtrips<FunctionCallContent>(content);
+        AssertSerializationRoundtrips<ToolCallContent>(content);
         AssertSerializationRoundtrips<AIContent>(content);
 
         static void AssertSerializationRoundtrips<T>(McpServerToolCallContent content)

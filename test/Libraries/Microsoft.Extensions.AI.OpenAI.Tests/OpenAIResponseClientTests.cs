@@ -1396,7 +1396,7 @@ public class OpenAIResponseClientTests
         {
             Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))]
         };
-        FunctionApprovalRequestContent approvalRequest;
+        ToolApprovalRequestContent approvalRequest;
 
         using (VerbatimHttpHandler handler = new(input, output))
         using (HttpClient httpClient = new(handler))
@@ -1406,7 +1406,7 @@ public class OpenAIResponseClientTests
                 "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository",
                 chatOptions);
 
-            approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<FunctionApprovalRequestContent>());
+            approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<ToolApprovalRequestContent>());
             chatOptions.ConversationId = response.ConversationId;
         }
 
@@ -1551,7 +1551,7 @@ public class OpenAIResponseClientTests
 
             var result = Assert.IsType<McpServerToolResultContent>(message.Contents[1]);
             Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", result.CallId);
-            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(result.Result).Text);
+            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(result.Outputs!)).Text);
 
             Assert.NotNull(response.Usage);
             Assert.Equal(542, response.Usage.InputTokenCount);
@@ -1804,7 +1804,7 @@ public class OpenAIResponseClientTests
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstResult.CallId);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(firstResult.Result).Text);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Outputs!)).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondCall.CallId);
@@ -1816,7 +1816,7 @@ public class OpenAIResponseClientTests
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondResult.CallId);
-        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(secondResult.Result).Text);
+        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(secondResult.Outputs!)).Text);
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1329, response.Usage.InputTokenCount);
@@ -2215,7 +2215,7 @@ public class OpenAIResponseClientTests
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstResult.CallId);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(firstResult.Result).Text);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Outputs!)).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondCall.CallId);
@@ -2227,7 +2227,7 @@ public class OpenAIResponseClientTests
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondResult.CallId);
-        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(secondResult.Result).Text);
+        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(Assert.Single(secondResult.Outputs!)).Text);
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1420, response.Usage.InputTokenCount);
@@ -2423,7 +2423,7 @@ public class OpenAIResponseClientTests
 
         var toolResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", toolResult.CallId);
-        var errorContent = Assert.IsType<ErrorContent>(toolResult.Result);
+        var errorContent = Assert.IsType<ErrorContent>(Assert.Single(toolResult.Outputs!));
         Assert.Contains("An error occurred invoking 'test_error'.", errorContent.Message);
 
         Assert.NotNull(response.Usage);
@@ -5915,12 +5915,12 @@ public class OpenAIResponseClientTests
         // First content should be the tool call
         var toolCall = contents[0] as ImageGenerationToolCallContent;
         Assert.NotNull(toolCall);
-        Assert.Equal("img_call_abc123", toolCall.ImageId);
+        Assert.Equal("img_call_abc123", toolCall.CallId);
 
         // Second content should be the result with image data
         var toolResult = contents[1] as ImageGenerationToolResultContent;
         Assert.NotNull(toolResult);
-        Assert.Equal("img_call_abc123", toolResult.ImageId);
+        Assert.Equal("img_call_abc123", toolResult.CallId);
         Assert.Single(toolResult.Outputs!);
 
         var imageData = toolResult.Outputs![0] as DataContent;
@@ -6021,7 +6021,7 @@ public class OpenAIResponseClientTests
             u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolCallContent));
         Assert.NotNull(toolCallUpdate);
         var toolCall = toolCallUpdate.Contents.OfType<ImageGenerationToolCallContent>().First();
-        Assert.Equal("img_call_def456", toolCall.ImageId);
+        Assert.Equal("img_call_def456", toolCall.CallId);
 
         // Should have partial image content
         var partialImageUpdate = updates.FirstOrDefault(u =>
@@ -6180,7 +6180,7 @@ public class OpenAIResponseClientTests
             u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolCallContent));
         Assert.NotNull(toolCallUpdate);
         var toolCall = toolCallUpdate.Contents.OfType<ImageGenerationToolCallContent>().First();
-        Assert.Equal("img_call_ghi789", toolCall.ImageId);
+        Assert.Equal("img_call_ghi789", toolCall.CallId);
     }
 
     [Theory]
@@ -6391,3 +6391,4 @@ public class OpenAIResponseClientTests
         }
     }
 }
+

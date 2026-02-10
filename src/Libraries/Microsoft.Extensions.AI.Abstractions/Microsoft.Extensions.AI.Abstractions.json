@@ -1930,51 +1930,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.FunctionApprovalRequestContent : Microsoft.Extensions.AI.InputRequestContent",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.FunctionApprovalRequestContent.FunctionApprovalRequestContent(string requestId, Microsoft.Extensions.AI.FunctionCallContent functionCall);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.FunctionApprovalResponseContent Microsoft.Extensions.AI.FunctionApprovalRequestContent.CreateResponse(bool approved, string? reason = null);",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.FunctionCallContent Microsoft.Extensions.AI.FunctionApprovalRequestContent.FunctionCall { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.AI.FunctionApprovalResponseContent : Microsoft.Extensions.AI.InputResponseContent",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.FunctionApprovalResponseContent.FunctionApprovalResponseContent(string requestId, bool approved, Microsoft.Extensions.AI.FunctionCallContent functionCall);",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "bool Microsoft.Extensions.AI.FunctionApprovalResponseContent.Approved { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.FunctionCallContent Microsoft.Extensions.AI.FunctionApprovalResponseContent.FunctionCall { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.FunctionApprovalResponseContent.Reason { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.AI.FunctionCallContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.FunctionCallContent : Microsoft.Extensions.AI.ToolCallContent",
       "Stage": "Stable",
       "Methods": [
         {
@@ -1992,10 +1948,6 @@
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.AI.FunctionCallContent.CallId { get; }",
-          "Stage": "Stable"
-        },
-        {
           "Member": "System.Exception? Microsoft.Extensions.AI.FunctionCallContent.Exception { get; set; }",
           "Stage": "Stable"
         },
@@ -2004,13 +1956,13 @@
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.AI.FunctionCallContent.Name { get; }",
+          "Member": "string Microsoft.Extensions.AI.FunctionCallContent.Name { get; set; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.FunctionResultContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.FunctionResultContent : Microsoft.Extensions.AI.ToolResultContent",
       "Stage": "Stable",
       "Methods": [
         {
@@ -2019,10 +1971,6 @@
         }
       ],
       "Properties": [
-        {
-          "Member": "string Microsoft.Extensions.AI.FunctionResultContent.CallId { get; }",
-          "Stage": "Stable"
-        },
         {
           "Member": "System.Exception? Microsoft.Extensions.AI.FunctionResultContent.Exception { get; set; }",
           "Stage": "Stable"
@@ -2757,15 +2705,31 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolCallContent : Microsoft.Extensions.AI.FunctionCallContent",
+      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolCallContent : Microsoft.Extensions.AI.ToolCallContent",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.McpServerToolCallContent.McpServerToolCallContent(string callId, string name, string? serverName);",
+          "Member": "Microsoft.Extensions.AI.McpServerToolCallContent.McpServerToolCallContent(string callId, string name, string? serverName, System.Collections.Generic.IDictionary<string, object?>? arguments = null);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, object?>? Microsoft.Extensions.AI.McpServerToolCallContent.Arguments { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Exception? Microsoft.Extensions.AI.McpServerToolCallContent.Exception { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.McpServerToolCallContent.InformationalOnly { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.McpServerToolCallContent.Name { get; set; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "string? Microsoft.Extensions.AI.McpServerToolCallContent.ServerName { get; }",
           "Stage": "Stable"
@@ -2773,11 +2737,25 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolResultContent : Microsoft.Extensions.AI.FunctionResultContent",
+      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolResultContent : Microsoft.Extensions.AI.ToolResultContent",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.McpServerToolResultContent.McpServerToolResultContent(string callId);",
+          "Member": "Microsoft.Extensions.AI.McpServerToolResultContent.McpServerToolResultContent(string callId, string? serverName, object? result = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Exception? Microsoft.Extensions.AI.McpServerToolResultContent.Exception { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.McpServerToolResultContent.Result { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.McpServerToolResultContent.ServerName { get; }",
           "Stage": "Stable"
         }
       ]
@@ -3314,6 +3292,106 @@
         },
         {
           "Member": "int? Microsoft.Extensions.AI.TextSpanAnnotatedRegion.StartIndex { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ToolApprovalRequestContent : Microsoft.Extensions.AI.InputRequestContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolApprovalRequestContent(string requestId, Microsoft.Extensions.AI.FunctionCallContent functionCall);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolApprovalRequestContent(string requestId, Microsoft.Extensions.AI.McpServerToolCallContent mcpServerToolCall);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolApprovalRequestContent(string requestId, Microsoft.Extensions.AI.ToolCallContent toolCall);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalResponseContent Microsoft.Extensions.AI.ToolApprovalRequestContent.CreateResponse(bool approved, string? reason = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolCallContent Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolCall { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ToolApprovalResponseContent : Microsoft.Extensions.AI.InputResponseContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalResponseContent.ToolApprovalResponseContent(string requestId, bool approved, Microsoft.Extensions.AI.FunctionCallContent functionCall);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalResponseContent.ToolApprovalResponseContent(string requestId, bool approved, Microsoft.Extensions.AI.McpServerToolCallContent mcpServerToolCall);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalResponseContent.ToolApprovalResponseContent(string requestId, bool approved, Microsoft.Extensions.AI.ToolCallContent toolCall);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.ToolApprovalResponseContent.Approved { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ToolApprovalResponseContent.Reason { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolCallContent Microsoft.Extensions.AI.ToolApprovalResponseContent.ToolCall { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.AI.ToolCallContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolCallContent.ToolCallContent(string callId);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolCallContent.ToolCallContent();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.ToolCallContent.CallId { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.AI.ToolResultContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolResultContent.ToolResultContent(string callId);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolResultContent.ToolResultContent();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.ToolResultContent.CallId { get; set; }",
           "Stage": "Stable"
         }
       ]

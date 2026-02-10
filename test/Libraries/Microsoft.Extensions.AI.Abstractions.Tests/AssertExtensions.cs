@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -46,25 +46,49 @@ internal static class AssertExtensions
                     var chatFunctionResult = (FunctionResultContent)chatItem;
                     AssertExtensions.EqualFunctionCallResults(expectedFunctionResult.Result, chatFunctionResult.Result);
                 }
-                else if (expectedItem is FunctionApprovalRequestContent expectedApprovalRequest)
+                else if (expectedItem is ToolApprovalRequestContent expectedApprovalRequest)
                 {
-                    var actualApprovalRequest = (FunctionApprovalRequestContent)chatItem;
+                    var actualApprovalRequest = (ToolApprovalRequestContent)chatItem;
                     Assert.Equal(expectedApprovalRequest.RequestId, actualApprovalRequest.RequestId);
-                    Assert.Equal(expectedApprovalRequest.FunctionCall.CallId, actualApprovalRequest.FunctionCall.CallId);
-                    Assert.Equal(expectedApprovalRequest.FunctionCall.Name, actualApprovalRequest.FunctionCall.Name);
-                    AssertExtensions.EqualFunctionCallParameters(expectedApprovalRequest.FunctionCall.Arguments, actualApprovalRequest.FunctionCall.Arguments);
+                    Assert.Equal(expectedApprovalRequest.ToolCall.CallId, actualApprovalRequest.ToolCall.CallId);
+                    Assert.Equal(expectedApprovalRequest.ToolCall.GetType(), actualApprovalRequest.ToolCall.GetType());
+                    AssertToolCallNameAndArguments(expectedApprovalRequest.ToolCall, actualApprovalRequest.ToolCall);
                 }
-                else if (expectedItem is FunctionApprovalResponseContent expectedApprovalResponse)
+                else if (expectedItem is ToolApprovalResponseContent expectedApprovalResponse)
                 {
-                    var actualApprovalResponse = (FunctionApprovalResponseContent)chatItem;
+                    var actualApprovalResponse = (ToolApprovalResponseContent)chatItem;
                     Assert.Equal(expectedApprovalResponse.RequestId, actualApprovalResponse.RequestId);
                     Assert.Equal(expectedApprovalResponse.Approved, actualApprovalResponse.Approved);
-                    Assert.Equal(expectedApprovalResponse.FunctionCall.CallId, actualApprovalResponse.FunctionCall.CallId);
-                    Assert.Equal(expectedApprovalResponse.FunctionCall.Name, actualApprovalResponse.FunctionCall.Name);
-                    AssertExtensions.EqualFunctionCallParameters(expectedApprovalResponse.FunctionCall.Arguments, actualApprovalResponse.FunctionCall.Arguments);
+                    Assert.Equal(expectedApprovalResponse.ToolCall.CallId, actualApprovalResponse.ToolCall.CallId);
+                    Assert.Equal(expectedApprovalResponse.ToolCall.GetType(), actualApprovalResponse.ToolCall.GetType());
+                    AssertToolCallNameAndArguments(expectedApprovalResponse.ToolCall, actualApprovalResponse.ToolCall);
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Asserts that two ToolCallContent instances have the same Name and Arguments,
+    /// regardless of whether they are FunctionCallContent or McpServerToolCallContent.
+    /// </summary>
+    private static void AssertToolCallNameAndArguments(ToolCallContent expected, ToolCallContent actual)
+    {
+        (string? expectedName, IDictionary<string, object?>? expectedArgs) = expected switch
+        {
+            FunctionCallContent fcc => (fcc.Name, fcc.Arguments),
+            McpServerToolCallContent mcp => (mcp.Name, mcp.Arguments),
+            _ => throw new XunitException($"Unexpected ToolCallContent type: {expected.GetType()}")
+        };
+
+        (string? actualName, IDictionary<string, object?>? actualArgs) = actual switch
+        {
+            FunctionCallContent fcc => (fcc.Name, fcc.Arguments),
+            McpServerToolCallContent mcp => (mcp.Name, mcp.Arguments),
+            _ => throw new XunitException($"Unexpected ToolCallContent type: {actual.GetType()}")
+        };
+
+        Assert.Equal(expectedName, actualName);
+        EqualFunctionCallParameters(expectedArgs, actualArgs);
     }
 
     /// <summary>
@@ -136,3 +160,4 @@ internal static class AssertExtensions
             => value is JsonElement e ? e : JsonSerializer.SerializeToElement(value, options);
     }
 }
+

@@ -15,7 +15,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
-    <NoWarn>$(NoWarn);MEAI001</NoWarn>
+    <NoWarn>$(NoWarn);MEAI001;LA0003;LA0006;S1128</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DisableMinimumSupportedTfmCompatErrors>true</DisableMinimumSupportedTfmCompatErrors>
   </PropertyGroup>

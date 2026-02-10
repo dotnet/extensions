@@ -43,6 +43,8 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(InputResponseContent[]))]
 [JsonSerializable(typeof(FunctionCallContent[]))]
 [JsonSerializable(typeof(FunctionResultContent[]))]
+[JsonSerializable(typeof(ToolCallContent[]))]
+[JsonSerializable(typeof(ToolResultContent[]))]
 [JsonSerializable(typeof(ReasoningOptions))]
 [JsonSerializable(typeof(ReasoningEffort))]
 [JsonSerializable(typeof(ReasoningOutput))]

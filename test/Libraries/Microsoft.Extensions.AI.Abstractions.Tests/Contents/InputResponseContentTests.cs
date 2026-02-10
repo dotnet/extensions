@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -33,8 +33,8 @@ public class InputResponseContentTests
     {
         InputResponseContent[] contents =
         [
-            new FunctionApprovalResponseContent("request123", true, new FunctionCallContent("call123", "functionName")),
-            new FunctionApprovalResponseContent("request456", true, new McpServerToolCallContent("call456", "myTool", "myServer")),
+            new ToolApprovalResponseContent("request123", true, new FunctionCallContent("call123", "functionName")),
+            new ToolApprovalResponseContent("request456", true, new McpServerToolCallContent("call456", "myTool", "myServer")),
         ];
 
         // Verify each element roundtrips individually
@@ -66,3 +66,4 @@ public class InputResponseContentTests
         }
     }
 }
+

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -149,7 +149,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             Assert.NotNull(response);
             Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
             Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
-            Assert.Empty(response.Messages.SelectMany(m => m.Contents).OfType<FunctionApprovalRequestContent>());
+            Assert.Empty(response.Messages.SelectMany(m => m.Contents).OfType<ToolApprovalRequestContent>());
 
             Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
         }
@@ -203,7 +203,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 var approvalResponse = new ChatMessage(ChatRole.Tool,
                     response.Messages
                             .SelectMany(m => m.Contents)
-                            .OfType<FunctionApprovalRequestContent>()
+                            .OfType<ToolApprovalRequestContent>()
                             .Select(c => c.CreateResponse(true))
                             .ToArray());
                 if (approvalResponse.Contents.Count == 0)
@@ -412,8 +412,8 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             if (approval)
             {
                 input.AddRange(response.Messages);
-                var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<FunctionApprovalRequestContent>());
-                var mcpCallContent = Assert.IsType<McpServerToolCallContent>(approvalRequest.FunctionCall);
+                var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<ToolApprovalRequestContent>());
+                var mcpCallContent = Assert.IsType<McpServerToolCallContent>(approvalRequest.ToolCall);
                 Assert.Equal("search_events", mcpCallContent.Name);
                 input.Add(new ChatMessage(ChatRole.Tool, [approvalRequest.CreateResponse(true)]));
 
@@ -427,7 +427,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             Assert.Equal("search_events", toolCall.Name);
 
             var toolResult = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
-            var content = Assert.IsType<TextContent>(toolResult.Result);
+            var content = Assert.IsType<TextContent>(Assert.Single(toolResult.Outputs!));
             Assert.Equal(@"{""events"": [], ""next_page_token"": null}", content.Text);
         }
     }

@@ -18,8 +18,8 @@ namespace Microsoft.Extensions.AI;
 [JsonDerivedType(typeof(TextReasoningContent), typeDiscriminator: "reasoning")]
 [JsonDerivedType(typeof(UriContent), typeDiscriminator: "uri")]
 [JsonDerivedType(typeof(UsageContent), typeDiscriminator: "usage")]
-[JsonDerivedType(typeof(FunctionApprovalRequestContent), typeDiscriminator: "functionApprovalRequest")]
-[JsonDerivedType(typeof(FunctionApprovalResponseContent), typeDiscriminator: "functionApprovalResponse")]
+[JsonDerivedType(typeof(ToolApprovalRequestContent), typeDiscriminator: "toolApprovalRequest")]
+[JsonDerivedType(typeof(ToolApprovalResponseContent), typeDiscriminator: "toolApprovalResponse")]
 [JsonDerivedType(typeof(McpServerToolCallContent), typeDiscriminator: "mcpServerToolCall")]
 [JsonDerivedType(typeof(McpServerToolResultContent), typeDiscriminator: "mcpServerToolResult")]
 

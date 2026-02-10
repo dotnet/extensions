@@ -937,19 +937,19 @@ public class OpenAIConversionTests
         Assert.NotNull(mcpToolResultContent.RawRepresentation);
         Assert.Same(mcpToolCall, mcpToolResultContent.RawRepresentation);
 
-        // Third update should be FunctionApprovalRequestContent with McpServerToolCallContent
-        FunctionApprovalRequestContent? approvalRequest = updates[2].Contents.OfType<FunctionApprovalRequestContent>().FirstOrDefault();
+        // Third update should be ToolApprovalRequestContent with McpServerToolCallContent
+        ToolApprovalRequestContent? approvalRequest = updates[2].Contents.OfType<ToolApprovalRequestContent>().FirstOrDefault();
         Assert.NotNull(approvalRequest);
         Assert.Equal("mcpr_123", approvalRequest.RequestId);
         Assert.NotNull(approvalRequest.RawRepresentation);
         Assert.Same(mcpApprovalRequest, approvalRequest.RawRepresentation);
 
-        McpServerToolCallContent nestedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalRequest.FunctionCall);
+        McpServerToolCallContent nestedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalRequest.ToolCall);
         Assert.Equal("ask_question", nestedMcpCall.Name);
         Assert.Equal("deepwiki", nestedMcpCall.ServerName);
 
-        // Fourth update should be FunctionApprovalResponseContent correlated with request
-        FunctionApprovalResponseContent? approvalResponse = updates[3].Contents.OfType<FunctionApprovalResponseContent>().FirstOrDefault();
+        // Fourth update should be ToolApprovalResponseContent correlated with request
+        ToolApprovalResponseContent? approvalResponse = updates[3].Contents.OfType<ToolApprovalResponseContent>().FirstOrDefault();
         Assert.NotNull(approvalResponse);
         Assert.Equal("mcpr_123", approvalResponse.RequestId);
         Assert.True(approvalResponse.Approved);
@@ -957,7 +957,7 @@ public class OpenAIConversionTests
         Assert.Same(mcpApprovalResponse, approvalResponse.RawRepresentation);
 
         // The correlated FunctionCall should be McpServerToolCallContent with tool details from the request
-        McpServerToolCallContent correlatedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalResponse.FunctionCall);
+        McpServerToolCallContent correlatedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalResponse.ToolCall);
         Assert.Equal("mcpr_123", correlatedMcpCall.CallId);
         Assert.Equal("ask_question", correlatedMcpCall.Name);
         Assert.Equal("deepwiki", correlatedMcpCall.ServerName);
@@ -989,13 +989,13 @@ public class OpenAIConversionTests
 
         Assert.Single(updates);
 
-        // Should NOT have a FunctionApprovalResponseContent since there was no correlated request
-        Assert.Empty(updates[0].Contents.OfType<FunctionApprovalResponseContent>());
+        // Should NOT have a ToolApprovalResponseContent since there was no correlated request
+        Assert.Empty(updates[0].Contents.OfType<ToolApprovalResponseContent>());
 
         // Should have a generic AIContent with RawRepresentation set to the response item
         AIContent? genericContent = updates[0].Contents.FirstOrDefault(c => c.RawRepresentation == mcpApprovalResponse);
         Assert.NotNull(genericContent);
-        Assert.IsNotType<FunctionApprovalResponseContent>(genericContent);
+        Assert.IsNotType<ToolApprovalResponseContent>(genericContent);
         Assert.Same(mcpApprovalResponse, genericContent.RawRepresentation);
 
         async IAsyncEnumerable<StreamingResponseUpdate> CreateStreamingUpdates()
@@ -1174,22 +1174,22 @@ public class OpenAIConversionTests
         Assert.NotNull(mcpToolResult.RawRepresentation);
         Assert.Same(mcpToolCallItem, mcpToolResult.RawRepresentation);
 
-        // 6. McpToolCallApprovalRequestItem -> FunctionApprovalRequestContent
-        FunctionApprovalRequestContent? approvalRequestContent = message.Contents.OfType<FunctionApprovalRequestContent>().FirstOrDefault();
+        // 6. McpToolCallApprovalRequestItem -> ToolApprovalRequestContent
+        ToolApprovalRequestContent? approvalRequestContent = message.Contents.OfType<ToolApprovalRequestContent>().FirstOrDefault();
         Assert.NotNull(approvalRequestContent);
         Assert.Equal("mcpr_123", approvalRequestContent.RequestId);
         Assert.NotNull(approvalRequestContent.RawRepresentation);
         Assert.Same(mcpApprovalRequestItem, approvalRequestContent.RawRepresentation);
 
         // The nested FunctionCall should be McpServerToolCallContent
-        McpServerToolCallContent nestedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalRequestContent.FunctionCall);
+        McpServerToolCallContent nestedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalRequestContent.ToolCall);
         Assert.Equal("ask_question", nestedMcpCall.Name);
         Assert.Equal("deepwiki", nestedMcpCall.ServerName);
         Assert.NotNull(nestedMcpCall.RawRepresentation);
         Assert.Same(mcpApprovalRequestItem, nestedMcpCall.RawRepresentation);
 
-        // 7. McpToolCallApprovalResponseItem -> FunctionApprovalResponseContent (correlated with request)
-        FunctionApprovalResponseContent? approvalResponseContent = message.Contents.OfType<FunctionApprovalResponseContent>().FirstOrDefault();
+        // 7. McpToolCallApprovalResponseItem -> ToolApprovalResponseContent (correlated with request)
+        ToolApprovalResponseContent? approvalResponseContent = message.Contents.OfType<ToolApprovalResponseContent>().FirstOrDefault();
         Assert.NotNull(approvalResponseContent);
         Assert.Equal("mcpr_123", approvalResponseContent.RequestId);
         Assert.True(approvalResponseContent.Approved);
@@ -1197,7 +1197,7 @@ public class OpenAIConversionTests
         Assert.Same(mcpApprovalResponseItem, approvalResponseContent.RawRepresentation);
 
         // The correlated FunctionCall should be McpServerToolCallContent with tool details from the request
-        McpServerToolCallContent correlatedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalResponseContent.FunctionCall);
+        McpServerToolCallContent correlatedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalResponseContent.ToolCall);
         Assert.Equal("mcpr_123", correlatedMcpCall.CallId);
         Assert.Equal("ask_question", correlatedMcpCall.Name);
         Assert.Equal("deepwiki", correlatedMcpCall.ServerName);
@@ -1221,13 +1221,13 @@ public class OpenAIConversionTests
         Assert.Single(messages);
         ChatMessage message = messages[0];
 
-        // Should NOT have a FunctionApprovalResponseContent since there was no correlated request
-        Assert.Empty(message.Contents.OfType<FunctionApprovalResponseContent>());
+        // Should NOT have a ToolApprovalResponseContent since there was no correlated request
+        Assert.Empty(message.Contents.OfType<ToolApprovalResponseContent>());
 
         // Should have a generic AIContent with RawRepresentation set to the response item
         AIContent? genericContent = message.Contents.FirstOrDefault(c => c.RawRepresentation == mcpApprovalResponseItem);
         Assert.NotNull(genericContent);
-        Assert.IsNotType<FunctionApprovalResponseContent>(genericContent);
+        Assert.IsNotType<ToolApprovalResponseContent>(genericContent);
         Assert.Same(mcpApprovalResponseItem, genericContent.RawRepresentation);
     }
 
@@ -1237,7 +1237,7 @@ public class OpenAIConversionTests
     public void AsOpenAIResponseItems_McpServerToolContents_RoundtripsToolOutputAndError(bool isError)
     {
         var mcpToolCall = new McpServerToolCallContent("call_123", "get_weather", "weather_server") { Arguments = new Dictionary<string, object?> { ["city"] = "Seattle" } };
-        var mcpToolResult = new McpServerToolResultContent("call_123") { Result = isError ? new ErrorContent("error") : new TextContent("sunny") };
+        var mcpToolResult = new McpServerToolResultContent("call_123") { Outputs = isError ? [new ErrorContent("error")] : [new TextContent("sunny")] };
 
         var items = new ChatMessage[] { new(ChatRole.Assistant, [mcpToolCall, mcpToolResult]) }.AsOpenAIResponseItems().ToArray();
 

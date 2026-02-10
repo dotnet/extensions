@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -13,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// This content type is used to represent the result of an invocation of an MCP server tool by a hosted service.
 /// It is informational only.
 /// </remarks>
-public sealed class McpServerToolResultContent : FunctionResultContent
+public sealed class McpServerToolResultContent : ToolResultContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="McpServerToolResultContent"/> class.
@@ -22,7 +24,12 @@ public sealed class McpServerToolResultContent : FunctionResultContent
     /// <exception cref="ArgumentNullException"><paramref name="callId"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="callId"/> is empty or composed entirely of whitespace.</exception>
     public McpServerToolResultContent(string callId)
-        : base(Throw.IfNullOrWhitespace(callId), result: null)
+        : base(Throw.IfNullOrWhitespace(callId))
     {
     }
+
+    /// <summary>
+    /// Gets or sets the output contents of the tool call.
+    /// </summary>
+    public IList<AIContent>? Outputs { get; set; }
 }

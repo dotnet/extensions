@@ -333,10 +333,7 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
 
                     if (functionCall.Name != nameof(GetImagesForEdit))
                     {
-                        newContents.Add(new ImageGenerationToolCallContent
-                        {
-                            ImageId = functionCall.CallId,
-                        });
+                        newContents.Add(new ImageGenerationToolCallContent(functionCall.CallId));
                     }
                 }
                 else if (content is FunctionResultContent functionResult &&
@@ -347,9 +344,8 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                     if (imageContents.Any())
                     {
                         // Insert ImageGenerationToolResultContent in its place, do not preserve the FunctionResultContent
-                        newContents.Add(new ImageGenerationToolResultContent
+                        newContents.Add(new ImageGenerationToolResultContent(functionResult.CallId)
                         {
-                            ImageId = functionResult.CallId,
                             Outputs = imageContents
                         });
                     }

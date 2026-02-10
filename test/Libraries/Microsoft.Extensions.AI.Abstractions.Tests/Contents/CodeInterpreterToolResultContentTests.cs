@@ -12,20 +12,18 @@ public class CodeInterpreterToolResultContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        CodeInterpreterToolResultContent c = new();
+        CodeInterpreterToolResultContent c = new("callId1");
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.CallId);
+        Assert.Equal("callId1", c.CallId);
         Assert.Null(c.Outputs);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        CodeInterpreterToolResultContent c = new();
+        CodeInterpreterToolResultContent c = new("call123");
 
-        Assert.Null(c.CallId);
-        c.CallId = "call123";
         Assert.Equal("call123", c.CallId);
 
         Assert.Null(c.Outputs);
@@ -47,9 +45,8 @@ public class CodeInterpreterToolResultContentTests
     [Fact]
     public void Output_SupportsMultipleContentTypes()
     {
-        CodeInterpreterToolResultContent c = new()
+        CodeInterpreterToolResultContent c = new("call789")
         {
-            CallId = "call789",
             Outputs =
             [
                 new TextContent("Execution completed"),
@@ -70,9 +67,8 @@ public class CodeInterpreterToolResultContentTests
     [Fact]
     public void Serialization_Roundtrips()
     {
-        CodeInterpreterToolResultContent content = new()
+        CodeInterpreterToolResultContent content = new("call123")
         {
-            CallId = "call123",
             Outputs =
             [
                 new TextContent("Hello, World!"),

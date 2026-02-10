@@ -1,7 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
 
@@ -16,7 +17,7 @@ public class McpServerToolResultContentTests
         Assert.Equal("callId", c.CallId);
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.Result);
+        Assert.Null(c.Outputs);
     }
 
     [Fact]
@@ -36,10 +37,10 @@ public class McpServerToolResultContentTests
 
         Assert.Equal("callId", c.CallId);
 
-        Assert.Null(c.Result);
-        object result = "test result";
-        c.Result = result;
-        Assert.Same(result, c.Result);
+        Assert.Null(c.Outputs);
+        IList<AIContent> outputs = [new TextContent("test result")];
+        c.Outputs = outputs;
+        Assert.Same(outputs, c.Outputs);
     }
 
     [Fact]
@@ -54,11 +55,11 @@ public class McpServerToolResultContentTests
     {
         var content = new McpServerToolResultContent("call123")
         {
-            Result = "result"
+            Outputs = [new TextContent("result")]
         };
 
         AssertSerializationRoundtrips<McpServerToolResultContent>(content);
-        AssertSerializationRoundtrips<FunctionResultContent>(content);
+        AssertSerializationRoundtrips<ToolResultContent>(content);
         AssertSerializationRoundtrips<AIContent>(content);
 
         static void AssertSerializationRoundtrips<T>(McpServerToolResultContent content)
@@ -70,7 +71,9 @@ public class McpServerToolResultContentTests
             Assert.NotNull(deserialized);
             var deserializedContent = Assert.IsType<McpServerToolResultContent>(deserialized);
             Assert.Equal(content.CallId, deserializedContent.CallId);
-            Assert.Equal("result", ((JsonElement)deserializedContent.Result!).GetString());
+            Assert.NotNull(deserializedContent.Outputs);
+            Assert.Equal("result", Assert.IsType<TextContent>(Assert.Single(deserializedContent.Outputs)).Text);
         }
     }
 }
+
