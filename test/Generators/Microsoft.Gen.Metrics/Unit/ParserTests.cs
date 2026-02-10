@@ -541,9 +541,9 @@ public partial class ParserTests
                 [Microsoft.Extensions.Diagnostics.Metrics.Counter]
                 static partial MetricName1 CreateMetricName(Meter meter);
             }",
-            wrap: false,
-            includeBaseReferences: true,
-            includeMeterReferences: false);
+        wrap: false,
+        includeBaseReferences: true,
+        includeMeterReferences: false);
 
         Assert.Empty(d);
     }
@@ -918,7 +918,7 @@ public partial class ParserTests
         var diag = Assert.Single(d);
         Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
     }
-    
+
     [Fact]
     public async Task GaugeWithGenericType()
     {

@@ -239,11 +239,6 @@ internal sealed class Parser
             return (InstrumentKind.Gauge, symbols.LongTypeSymbol);
         }
 
-        if (methodAttributeSymbol.Equals(symbols.GaugeOfTAttribute, SymbolEqualityComparer.Default))
-        {
-            return (InstrumentKind.GaugeT, symbols.LongTypeSymbol);
-        }
-
         if (methodAttributeSymbol.OriginalDefinition.Equals(symbols.CounterOfTAttribute, SymbolEqualityComparer.Default))
         {
             return (InstrumentKind.CounterT, GetGenericType(methodAttributeSymbol));
@@ -252,6 +247,11 @@ internal sealed class Parser
         if (methodAttributeSymbol.OriginalDefinition.Equals(symbols.HistogramOfTAttribute, SymbolEqualityComparer.Default))
         {
             return (InstrumentKind.HistogramT, GetGenericType(methodAttributeSymbol));
+        }
+
+        if (methodAttributeSymbol.Equals(symbols.GaugeOfTAttribute, SymbolEqualityComparer.Default))
+        {
+            return (InstrumentKind.GaugeT, GetGenericType(methodAttributeSymbol));
         }
 
         return (InstrumentKind.None, null);
