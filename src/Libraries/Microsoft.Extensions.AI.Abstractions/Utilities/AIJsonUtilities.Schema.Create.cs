@@ -381,9 +381,6 @@ public static partial class AIJsonUtilities
             }
 
             ApplyDataAnnotations(ref schema, ctx);
-#if NET || NETFRAMEWORK
-            ApplyRequiredMembers(ref schema, ctx);
-#endif
 
             // Finally, apply any user-defined transformations if specified.
             if (inferenceOptions.TransformSchemaNode is { } transformer)
@@ -542,6 +539,8 @@ public static partial class AIJsonUtilities
                         }
                     }
                 }
+
+                ApplyRequiredAttributes(ref schema, ctx);
 #endif
 
 #if NET
@@ -703,6 +702,9 @@ public static partial class AIJsonUtilities
                             return false;
                     }
                 }
+
+                static void ApplyRequiredAttributes(ref JsonNode schema, AIJsonSchemaCreateContext ctx) =>
+                    AIJsonUtilities.ApplyRequiredAttributes(ref schema, ctx);
 #endif
 
                 TAttribute? ResolveAttribute<TAttribute>()
@@ -717,16 +719,11 @@ public static partial class AIJsonUtilities
                     return ctx.GetCustomAttribute<TAttribute>(inherit: true);
                 }
             }
-
-#if NET || NETFRAMEWORK
-            static void ApplyRequiredMembers(ref JsonNode schema, AIJsonSchemaCreateContext ctx) =>
-                AIJsonUtilities.ApplyRequiredMembers(ref schema, ctx);
-#endif
         }
     }
 
 #if NET || NETFRAMEWORK
-    private static void ApplyRequiredMembers(ref JsonNode schema, AIJsonSchemaCreateContext ctx)
+    private static void ApplyRequiredAttributes(ref JsonNode schema, AIJsonSchemaCreateContext ctx)
     {
         if (ctx.TypeInfo.Kind is not JsonTypeInfoKind.Object ||
             schema is not JsonObject schemaObj ||
