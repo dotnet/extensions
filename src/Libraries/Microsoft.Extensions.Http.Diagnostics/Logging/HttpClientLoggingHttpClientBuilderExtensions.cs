@@ -28,8 +28,7 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
-    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
-    /// you have a way of viewing structured logs in order to view this extra information.
+    /// Information logged by this method is added as key/value pairs to log state.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Argument <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder)
@@ -46,14 +45,11 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// <param name="wrapHandlersPipeline">
     /// When <see langword="true"/>, the logger is placed at the beginning of the request pipeline, wrapping all other handlers.
     /// When <see langword="false"/>, the logger is placed at the end of the pipeline, right before the primary message handler.
-    /// This affects what gets logged: with <see langword="true"/>, one log entry is emitted per logical request with total duration;
-    /// with <see langword="false"/> and resilience strategies like retries enabled, a separate log entry is emitted for each attempt with per-attempt duration.
     /// </param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
-    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
-    /// you have a way of viewing structured logs in order to view this extra information.
+    /// Information logged by this method is added as key/value pairs to log state.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Argument <paramref name="builder"/> is <see langword="null"/>.</exception>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
@@ -72,8 +68,7 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
-    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
-    /// you have a way of viewing structured logs in order to view this extra information.
+    /// Information logged by this method is added as key/value pairs to log state.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, IConfigurationSection section)
@@ -92,14 +87,11 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// <param name="wrapHandlersPipeline">
     /// When <see langword="true"/>, the logger is placed at the beginning of the request pipeline, wrapping all other handlers.
     /// When <see langword="false"/>, the logger is placed at the end of the pipeline, right before the primary message handler.
-    /// This affects what gets logged: with <see langword="true"/>, one log entry is emitted per logical request with total duration;
-    /// with <see langword="false"/> and resilience strategies like retries enabled, a separate log entry is emitted for each attempt with per-attempt duration.
     /// </param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
-    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
-    /// you have a way of viewing structured logs in order to view this extra information.
+    /// Information logged by this method is added as key/value pairs to log state.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
@@ -119,8 +111,7 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
-    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
-    /// you have a way of viewing structured logs in order to view this extra information.
+    /// Information logged by this method is added as key/value pairs to log state.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, Action<LoggingOptions> configure)
@@ -139,14 +130,11 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// <param name="wrapHandlersPipeline">
     /// When <see langword="true"/>, the logger is placed at the beginning of the request pipeline, wrapping all other handlers.
     /// When <see langword="false"/>, the logger is placed at the end of the pipeline, right before the primary message handler.
-    /// This affects what gets logged: with <see langword="true"/>, one log entry is emitted per logical request with total duration;
-    /// with <see langword="false"/> and resilience strategies like retries enabled, a separate log entry is emitted for each attempt with per-attempt duration.
     /// </param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
-    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
-    /// you have a way of viewing structured logs in order to view this extra information.
+    /// Information logged by this method is added as key/value pairs to log state.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]

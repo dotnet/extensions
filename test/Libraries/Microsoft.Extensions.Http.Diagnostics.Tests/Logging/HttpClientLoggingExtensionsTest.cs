@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -414,7 +413,12 @@ public class HttpClientLoggingExtensionsTest
             .AddRedaction()
             .AddHttpClientLatencyTelemetry()
             .AddHttpClient("test")
-            .ConfigurePrimaryHttpMessageHandler(() => new ServerNameStubHandler("TestServer"))
+            .ConfigurePrimaryHttpMessageHandler(() => new TestMessageHandler(_ =>
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Headers.TryAddWithoutValidation(TelemetryConstants.ServerApplicationNameHeader, "TestServer");
+                return response;
+            }))
             .AddExtendedHttpClientLogging(wrapHandlersPipeline: true)
             .Services
             .AddFakeLogging()
@@ -523,16 +527,6 @@ public class HttpClientLoggingExtensionsTest
             }
 
             throw lastException!;
-        }
-    }
-
-    private sealed class ServerNameStubHandler(string serverName) : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            var response = new HttpResponseMessage(HttpStatusCode.OK);
-            response.Headers.TryAddWithoutValidation(TelemetryConstants.ServerApplicationNameHeader, serverName);
-            return Task.FromResult(response);
         }
     }
 
