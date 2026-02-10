@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -13,6 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// The token is used for resuming streamed background responses and continuing
 /// non-streamed background responses until completion.
 /// </remarks>
+[Experimental(DiagnosticIds.Experiments.AIResponseContinuations)]
 internal sealed class ResponsesClientContinuationToken : ResponseContinuationToken
 {
     /// <summary>Initializes a new instance of the <see cref="ResponsesClientContinuationToken"/> class.</summary>
