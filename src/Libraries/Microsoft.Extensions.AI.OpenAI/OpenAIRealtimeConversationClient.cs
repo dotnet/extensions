@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using OpenAI.Realtime;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides helpers for interacting with OpenAI Realtime.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAIRealtime)]
 internal sealed class OpenAIRealtimeConversationClient
 {
     public static ConversationFunctionTool ToOpenAIConversationFunctionTool(AIFunctionDeclaration aiFunction, ChatOptions? options = null)
