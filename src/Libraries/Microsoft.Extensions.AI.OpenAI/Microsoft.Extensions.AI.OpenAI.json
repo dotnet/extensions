@@ -13,11 +13,11 @@
     },
     {
       "Type": "static class OpenAI.Chat.MicrosoftExtensionsAIChatExtensions",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "static System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsChatMessages(this System.Collections.Generic.IEnumerable<OpenAI.Chat.ChatMessage> messages);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "static Microsoft.Extensions.AI.ChatResponse OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsChatResponse(this OpenAI.Chat.ChatCompletion chatCompletion, OpenAI.Chat.ChatCompletionOptions? options = null);",
@@ -33,7 +33,7 @@
         },
         {
           "Member": "static System.Collections.Generic.IEnumerable<OpenAI.Chat.ChatMessage> OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIChatMessages(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "static OpenAI.Chat.ChatResponseFormat? OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIChatResponseFormat(this Microsoft.Extensions.AI.ChatResponseFormat? format, Microsoft.Extensions.AI.ChatOptions? options = null);",
@@ -41,7 +41,7 @@
         },
         {
           "Member": "static OpenAI.Chat.ChatTool OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIChatTool(this Microsoft.Extensions.AI.AIFunctionDeclaration function);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "static System.Collections.Generic.IAsyncEnumerable<OpenAI.Chat.StreamingChatCompletionUpdate> OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIStreamingChatCompletionUpdatesAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> responseUpdates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
