@@ -385,8 +385,10 @@ public partial class ParserTests
 
     [Theory]
     [InlineData("ulong")]
-    [InlineData("string")]
-    [InlineData("object")]
+    [InlineData("uint")]
+    [InlineData("ushort")]
+    [InlineData("char")]
+    [InlineData("bool")]
     public async Task GaugeT_InvalidGenericType(string type)
     {
         var d = await RunGenerator(@$"
