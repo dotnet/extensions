@@ -5,12 +5,13 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a real-time client.</summary>
 /// <remarks>This interface provides methods to create and manage real-time sessions.</remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IRealtimeClient : IDisposable
 {
     /// <summary>Creates a new real-time session with the specified options.</summary>

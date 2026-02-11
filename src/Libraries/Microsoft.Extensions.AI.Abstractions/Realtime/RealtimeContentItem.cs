@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -13,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// This class is used to encapsulate the details of a real-time item that can be inserted into a conversation,
 /// or sent as part of a real-time response creation process.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public class RealtimeContentItem
 {
     /// <summary>

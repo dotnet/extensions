@@ -3,13 +3,14 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
 /// Represents a real-time message for committing audio buffer input.
 /// </summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 
 public class RealtimeClientInputAudioBufferCommitMessage : RealtimeClientMessage
 {

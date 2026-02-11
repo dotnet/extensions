@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -11,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// Used with the <see cref="RealtimeServerMessageType.ResponseDone"/> and <see cref="RealtimeServerMessageType.ResponseCreated"/> messages.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public class RealtimeServerResponseOutputItemMessage : RealtimeServerMessage
 {
     /// <summary>

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -9,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 /// Represents the type of a real-time response.
 /// This is used to identify the response type being received from the model.
 /// </summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public enum RealtimeServerMessageType
 {
     /// <summary>

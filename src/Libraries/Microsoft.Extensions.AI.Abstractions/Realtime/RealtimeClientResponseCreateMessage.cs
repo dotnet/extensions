@@ -3,13 +3,14 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
 /// Represents a real-time message for creating a response item.
 /// </summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public class RealtimeClientResponseCreateMessage : RealtimeClientMessage
 {
     /// <summary>

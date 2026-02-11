@@ -6,12 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a real-time session.</summary>
 /// <remarks>This interface provides methods to manage a real-time session and to interact with the real-time model.</remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IRealtimeSession : IDisposable
 {
     /// <summary>Updates the session with new options.</summary>

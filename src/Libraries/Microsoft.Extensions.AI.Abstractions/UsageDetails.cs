@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -44,7 +45,7 @@ public class UsageDetails
     /// <remarks>
     /// This property is used only when audio input tokens are involved.
     /// </remarks>
-    [Experimental("MEAI001")]
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
     public long? InputAudioTokenCount { get; set; }
 
@@ -52,7 +53,7 @@ public class UsageDetails
     /// <remarks>
     /// This property is used only when having audio and text tokens. Otherwise InputTokenCount is sufficient.
     /// </remarks>
-    [Experimental("MEAI001")]
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
     public long? InputTextTokenCount { get; set; }
 
@@ -60,7 +61,7 @@ public class UsageDetails
     /// <remarks>
     /// This property is used only when audio output tokens are involved.
     /// </remarks>
-    [Experimental("MEAI001")]
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
     public long? OutputAudioTokenCount { get; set; }
 
@@ -68,7 +69,7 @@ public class UsageDetails
     /// <remarks>
     /// This property is used only when having audio and text tokens. Otherwise OutputTokenCount is sufficient.
     /// </remarks>
-    [Experimental("MEAI001")]
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
     public long? OutputTextTokenCount { get; set; }
 
