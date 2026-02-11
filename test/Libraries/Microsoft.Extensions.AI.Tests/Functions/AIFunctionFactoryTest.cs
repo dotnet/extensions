@@ -1424,7 +1424,7 @@ public partial class AIFunctionFactoryTest
     {
         DynamicMethod dynamicMethod = new DynamicMethod(
             "DoubleIt",
-            typeof(Task<object>),
+            typeof(Task<int>),
             new[] { typeof(int) },
             typeof(AIFunctionFactoryTest).Module);
 
@@ -1434,11 +1434,10 @@ public partial class AIFunctionFactoryTest
         il.Emit(OpCodes.Ldarg_0);
         il.Emit(OpCodes.Ldc_I4_2);
         il.Emit(OpCodes.Mul);
-        il.Emit(OpCodes.Box, typeof(int));
-        il.Emit(OpCodes.Call, typeof(Task).GetMethod(nameof(Task.FromResult))!.MakeGenericMethod(typeof(object)));
+        il.Emit(OpCodes.Call, typeof(Task).GetMethod(nameof(Task.FromResult))!.MakeGenericMethod(typeof(int)));
         il.Emit(OpCodes.Ret);
 
-        Delegate testDelegate = dynamicMethod.CreateDelegate(typeof(Func<int, Task<object>>));
+        Delegate testDelegate = dynamicMethod.CreateDelegate(typeof(Func<int, Task<int>>));
 
         AIFunction func = AIFunctionFactory.Create(testDelegate.GetMethodInfo(), testDelegate.Target);
 
