@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.ClientModel;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenAI;
 using Xunit;
 
 #pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -19,25 +17,6 @@ public class OpenAIRealtimeClientTests
     {
         Assert.Throws<ArgumentNullException>("apiKey", () => new OpenAIRealtimeClient(null!, "model"));
         Assert.Throws<ArgumentNullException>("model", () => new OpenAIRealtimeClient("key", null!));
-    }
-
-    [Fact]
-    public void AsIRealtimeClient_InvalidArgs_Throws()
-    {
-        Assert.Throws<ArgumentNullException>("openAIClient", () => ((OpenAIClient)null!).AsIRealtimeClient("key", "model"));
-
-        var client = new OpenAIClient(new ApiKeyCredential("key"));
-        Assert.Throws<ArgumentNullException>("apiKey", () => client.AsIRealtimeClient(null!, "model"));
-        Assert.Throws<ArgumentNullException>("model", () => client.AsIRealtimeClient("key", null!));
-    }
-
-    [Fact]
-    public void AsIRealtimeClient_ReturnsIRealtimeClient()
-    {
-        var openAIClient = new OpenAIClient(new ApiKeyCredential("key"));
-        using var client = openAIClient.AsIRealtimeClient("key", "gpt-realtime");
-        Assert.NotNull(client);
-        Assert.IsType<OpenAIRealtimeClient>(client);
     }
 
     [Fact]

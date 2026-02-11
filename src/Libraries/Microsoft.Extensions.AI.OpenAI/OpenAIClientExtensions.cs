@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
-using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
@@ -172,21 +171,6 @@ public static class OpenAIClientExtensions
     [Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IImageGenerator AsIImageGenerator(this ImageClient imageClient) =>
         new OpenAIImageGenerator(imageClient);
-
-    /// <summary>Gets an <see cref="IRealtimeClient"/> for use with the OpenAI Realtime API.</summary>
-    /// <param name="openAIClient">The client.</param>
-    /// <param name="apiKey">The API key used for authentication.</param>
-    /// <param name="model">The model to use for realtime sessions.</param>
-    /// <returns>An <see cref="IRealtimeClient"/> that can be used to create realtime sessions via the OpenAI Realtime API.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="openAIClient"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="apiKey"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="model"/> is <see langword="null"/>.</exception>
-    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-    public static IRealtimeClient AsIRealtimeClient(this OpenAIClient openAIClient, string apiKey, string model)
-    {
-        _ = Throw.IfNull(openAIClient);
-        return new OpenAIRealtimeClient(apiKey, model);
-    }
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="EmbeddingClient"/>.</summary>
     /// <param name="embeddingClient">The client.</param>
