@@ -209,6 +209,9 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
         RealtimeSessionOptions? options = Options;
         string? requestModelId = options?.Model ?? _defaultModelId;
 
+        // Start timing from the beginning of the streaming operation
+        Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
+
         // Determine if we should capture messages for telemetry
         bool captureMessages = EnableSensitiveData && _activitySource.HasListeners();
 
@@ -226,8 +229,7 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
         {
             // Create an activity for the error case
             using Activity? errorActivity = CreateAndConfigureActivity(options);
-            Stopwatch? errorStopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
-            TraceStreamingResponse(errorActivity, requestModelId, response: null, ex, errorStopwatch);
+            TraceStreamingResponse(errorActivity, requestModelId, response: null, ex, stopwatch);
             throw;
         }
 
@@ -280,12 +282,11 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
                     responseDoneMsg.Type == RealtimeServerMessageType.ResponseDone)
                 {
                     using Activity? responseActivity = CreateAndConfigureActivity(options);
-                    Stopwatch? responseStopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
 
                     // Add output modalities and messages tags
                     AddOutputModalitiesTag(responseActivity, outputModalities);
                     AddOutputMessagesTag(responseActivity, outputMessages);
-                    TraceStreamingResponse(responseActivity, requestModelId, responseDoneMsg, error, responseStopwatch);
+                    TraceStreamingResponse(responseActivity, requestModelId, responseDoneMsg, error, stopwatch);
                 }
 
                 yield return message;
@@ -297,10 +298,9 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
             if (error is not null)
             {
                 using Activity? errorActivity = CreateAndConfigureActivity(options);
-                Stopwatch? errorStopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
                 AddOutputModalitiesTag(errorActivity, outputModalities);
                 AddOutputMessagesTag(errorActivity, outputMessages);
-                TraceStreamingResponse(errorActivity, requestModelId, response: null, error, errorStopwatch);
+                TraceStreamingResponse(errorActivity, requestModelId, response: null, error, stopwatch);
             }
 
             await responseEnumerator.DisposeAsync().ConfigureAwait(false);
@@ -952,6 +952,15 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
 
         if (response is not null && activity is not null)
         {
+            // Log metadata first so standard tags take precedence if keys collide
+            if (EnableSensitiveData && response.Metadata is { } metadata)
+            {
+                foreach (var prop in metadata)
+                {
+                    _ = activity.AddTag(prop.Key, prop.Value);
+                }
+            }
+
             if (!string.IsNullOrWhiteSpace(response.ResponseId))
             {
                 _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Id, response.ResponseId);
@@ -1010,15 +1019,6 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
             {
                 _ = activity.AddTag(OpenTelemetryConsts.Error.Type, responseError.ErrorCode ?? "RealtimeError");
                 _ = activity.SetStatus(ActivityStatusCode.Error, responseError.Message);
-            }
-
-            // Log metadata as additional properties if sensitive data is enabled
-            if (EnableSensitiveData && response.Metadata is { } metadata)
-            {
-                foreach (var prop in metadata)
-                {
-                    _ = activity.AddTag(prop.Key, prop.Value);
-                }
             }
         }
     }

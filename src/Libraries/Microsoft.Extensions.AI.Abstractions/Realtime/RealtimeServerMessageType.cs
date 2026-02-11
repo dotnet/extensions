@@ -110,6 +110,22 @@ public enum RealtimeServerMessageType
     ResponseCreated,
 
     /// <summary>
+    /// Indicates an individual output item in the response has completed.
+    /// </summary>
+    /// <remarks>
+    /// The type <see cref="RealtimeServerResponseOutputItemMessage"/> is used with this response type.
+    /// </remarks>
+    ResponseOutputItemDone,
+
+    /// <summary>
+    /// Indicates an individual output item has been added to the response.
+    /// </summary>
+    /// <remarks>
+    /// The type <see cref="RealtimeServerResponseOutputItemMessage"/> is used with this response type.
+    /// </remarks>
+    ResponseOutputItemAdded,
+
+    /// <summary>
     /// Indicates an error occurred while processing the request.
     /// </summary>
     /// <remarks>

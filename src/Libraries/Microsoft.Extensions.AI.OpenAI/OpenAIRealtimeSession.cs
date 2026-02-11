@@ -82,7 +82,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
             // since callers commonly use short-lived timeout tokens for creation.
             _cancellationTokenSource = new CancellationTokenSource();
 
-            var uri = new Uri($"wss://api.openai.com/v1/realtime?model={_model}");
+            var uri = new Uri($"wss://api.openai.com/v1/realtime?model={Uri.EscapeDataString(_model)}");
             await clientWebSocket.ConnectAsync(uri, cancellationToken).ConfigureAwait(false);
 
             // Start receiving messages in the background.
@@ -492,7 +492,9 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                         {
                             itemObj["type"] = "function_call_output";
                             itemObj["call_id"] = functionResult.CallId;
-                            itemObj["output"] = functionResult?.Result?.ToString();
+                            itemObj["output"] = functionResult?.Result is not null
+                                ? JsonSerializer.Serialize(functionResult.Result)
+                                : null;
                         }
                         else if (contentItem.Contents.Count > 0 && contentItem.Contents[0] is FunctionCallContent functionCall)
                         {
@@ -1637,8 +1639,8 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
     {
         RealtimeServerMessageType serverMessageType = messageType switch
         {
-            "response.output_item.added" => RealtimeServerMessageType.ResponseCreated,
-            "response.output_item.done" => RealtimeServerMessageType.ResponseDone,
+            "response.output_item.added" => RealtimeServerMessageType.ResponseOutputItemAdded,
+            "response.output_item.done" => RealtimeServerMessageType.ResponseOutputItemDone,
             _ => throw new InvalidOperationException($"Unknown message type: {messageType}"),
         };
 
@@ -1883,8 +1885,8 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
         // which may be an MCP item (mcp_call, mcp_approval_request) or a regular item.
         RealtimeServerMessageType serverMessageType = messageType switch
         {
-            "conversation.item.added" => RealtimeServerMessageType.ResponseCreated,
-            "conversation.item.done" => RealtimeServerMessageType.ResponseDone,
+            "conversation.item.added" => RealtimeServerMessageType.ResponseOutputItemAdded,
+            "conversation.item.done" => RealtimeServerMessageType.ResponseOutputItemDone,
             _ => throw new InvalidOperationException($"Unknown message type: {messageType}"),
         };
 

@@ -503,7 +503,7 @@ public class FunctionInvokingRealtimeSessionTests
             new FunctionCallContent("call_b", "slow_func"),
         ], "item_combined");
 
-        var combinedMessage = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseDone)
+        var combinedMessage = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone)
         {
             ResponseId = "resp_combined",
             OutputIndex = 0,
@@ -654,7 +654,7 @@ public class FunctionInvokingRealtimeSessionTests
         var functionCallContent = new FunctionCallContent(callId, functionName, arguments);
         var item = new RealtimeContentItem([functionCallContent], $"item_{callId}");
 
-        return new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseDone)
+        return new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone)
         {
             ResponseId = $"resp_{callId}",
             OutputIndex = 0,

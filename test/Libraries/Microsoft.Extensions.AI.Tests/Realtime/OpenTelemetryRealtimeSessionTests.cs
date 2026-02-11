@@ -868,7 +868,7 @@ public class OpenTelemetryRealtimeSessionTests
         var contentItem = new RealtimeContentItem(
             [new FunctionCallContent("call_123", "search", new Dictionary<string, object?> { ["query"] = "test" })],
             role: ChatRole.Assistant);
-        yield return new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseDone)
+        yield return new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone)
         {
             Item = contentItem,
         };

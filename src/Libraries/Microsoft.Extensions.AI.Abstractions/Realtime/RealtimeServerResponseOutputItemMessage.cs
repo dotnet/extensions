@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 /// Represents a real-time message representing a new output item added or created during response generation.
 /// </summary>
 /// <remarks>
-/// Used with the <see cref="RealtimeServerMessageType.ResponseDone"/> and <see cref="RealtimeServerMessageType.ResponseCreated"/> messages.
+/// Used with the <see cref="RealtimeServerMessageType.ResponseOutputItemDone"/> and <see cref="RealtimeServerMessageType.ResponseOutputItemAdded"/> messages.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public class RealtimeServerResponseOutputItemMessage : RealtimeServerMessage
@@ -19,7 +19,7 @@ public class RealtimeServerResponseOutputItemMessage : RealtimeServerMessage
     /// Initializes a new instance of the <see cref="RealtimeServerResponseOutputItemMessage"/> class.
     /// </summary>
     /// <remarks>
-    /// The <paramref name="type"/> should be <see cref="RealtimeServerMessageType.ResponseDone"/> or <see cref="RealtimeServerMessageType.ResponseCreated"/>.
+    /// The <paramref name="type"/> should be <see cref="RealtimeServerMessageType.ResponseOutputItemDone"/> or <see cref="RealtimeServerMessageType.ResponseOutputItemAdded"/>.
     /// </remarks>
     public RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType type)
     {

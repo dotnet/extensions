@@ -263,7 +263,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
         {
             // Check if this message contains function calls
             bool hasFunctionCalls = false;
-            if (message is RealtimeServerResponseOutputItemMessage responseOutputItemMessage && responseOutputItemMessage.Type == RealtimeServerMessageType.ResponseDone)
+            if (message is RealtimeServerResponseOutputItemMessage responseOutputItemMessage && responseOutputItemMessage.Type == RealtimeServerMessageType.ResponseOutputItemDone)
             {
                 // Extract function calls from the message
                 functionCallContents ??= [];

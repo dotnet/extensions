@@ -204,7 +204,7 @@ public class OpenAIRealtimeSessionSerializationTests : IAsyncLifetime
         var msg = await ReadNextServerMessageAsync();
 
         var outputItemMsg = Assert.IsType<RealtimeServerResponseOutputItemMessage>(msg);
-        Assert.Equal(RealtimeServerMessageType.ResponseCreated, outputItemMsg.Type);
+        Assert.Equal(RealtimeServerMessageType.ResponseOutputItemAdded, outputItemMsg.Type);
         Assert.Equal("resp_006", outputItemMsg.ResponseId);
         Assert.Equal(0, outputItemMsg.OutputIndex);
         Assert.NotNull(outputItemMsg.Item);
@@ -780,7 +780,7 @@ public class OpenAIRealtimeSessionSerializationTests : IAsyncLifetime
         var msg = await ReadNextServerMessageAsync();
 
         var outputMsg = Assert.IsType<RealtimeServerResponseOutputItemMessage>(msg);
-        Assert.Equal(RealtimeServerMessageType.ResponseDone, outputMsg.Type);
+        Assert.Equal(RealtimeServerMessageType.ResponseOutputItemDone, outputMsg.Type);
         Assert.NotNull(outputMsg.Item);
 
         var callContent = Assert.IsType<McpServerToolCallContent>(outputMsg.Item.Contents[0]);
@@ -800,7 +800,7 @@ public class OpenAIRealtimeSessionSerializationTests : IAsyncLifetime
         var msg = await ReadNextServerMessageAsync();
 
         var outputMsg = Assert.IsType<RealtimeServerResponseOutputItemMessage>(msg);
-        Assert.Equal(RealtimeServerMessageType.ResponseCreated, outputMsg.Type);
+        Assert.Equal(RealtimeServerMessageType.ResponseOutputItemAdded, outputMsg.Type);
         Assert.NotNull(outputMsg.Item);
         Assert.Equal("msg_conv_001", outputMsg.Item.Id);
         Assert.Equal(ChatRole.User, outputMsg.Item.Role);

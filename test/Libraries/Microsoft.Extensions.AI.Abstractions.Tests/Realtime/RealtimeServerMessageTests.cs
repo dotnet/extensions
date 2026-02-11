@@ -231,15 +231,15 @@ public class RealtimeServerMessageTests
     [Fact]
     public void ResponseOutputItemMessage_Constructor_SetsType()
     {
-        var message = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseDone);
+        var message = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone);
 
-        Assert.Equal(RealtimeServerMessageType.ResponseDone, message.Type);
+        Assert.Equal(RealtimeServerMessageType.ResponseOutputItemDone, message.Type);
     }
 
     [Fact]
     public void ResponseOutputItemMessage_DefaultProperties()
     {
-        var message = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseCreated);
+        var message = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemAdded);
 
         Assert.Null(message.ResponseId);
         Assert.Null(message.OutputIndex);
@@ -251,7 +251,7 @@ public class RealtimeServerMessageTests
     {
         var item = new RealtimeContentItem([new TextContent("output")], "item_out_1", ChatRole.Assistant);
 
-        var message = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseDone)
+        var message = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone)
         {
             ResponseId = "resp_1",
             OutputIndex = 0,
