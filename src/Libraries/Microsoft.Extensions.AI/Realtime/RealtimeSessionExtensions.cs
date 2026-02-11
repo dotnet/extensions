@@ -7,7 +7,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides a collection of static methods for extending <see cref="IChatClient"/> instances.</summary>
+/// <summary>Provides a collection of static methods for extending <see cref="IRealtimeSession"/> instances.</summary>
 [Experimental("MEAI001")]
 public static class RealtimeSessionExtensions
 {

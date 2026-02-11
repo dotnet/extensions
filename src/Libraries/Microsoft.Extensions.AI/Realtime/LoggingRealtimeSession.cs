@@ -131,6 +131,8 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
     public override async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
         IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(updates);
+
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             LogInvoked(nameof(GetStreamingResponseAsync));

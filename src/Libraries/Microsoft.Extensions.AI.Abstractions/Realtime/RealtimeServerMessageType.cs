@@ -25,7 +25,7 @@ public enum RealtimeServerMessageType
     /// Indicates the output of audio transcription for user audio written to the user audio buffer.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerInputAudioTranscriptionMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerInputAudioTranscriptionMessage"/> is used with this response type.
     /// </remarks>
     InputAudioTranscriptionCompleted,
 
@@ -33,7 +33,7 @@ public enum RealtimeServerMessageType
     /// Indicates the text value of an input audio transcription content part is updated with incremental transcription results.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerInputAudioTranscriptionMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerInputAudioTranscriptionMessage"/> is used with this response type.
     /// </remarks>
     InputAudioTranscriptionDelta,
 
@@ -41,7 +41,7 @@ public enum RealtimeServerMessageType
     /// Indicates that the audio transcription for user audio written to the user audio buffer has failed.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerInputAudioTranscriptionMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerInputAudioTranscriptionMessage"/> is used with this response type.
     /// </remarks>
     InputAudioTranscriptionFailed,
 
@@ -49,7 +49,7 @@ public enum RealtimeServerMessageType
     /// Indicates the output text update with incremental results response.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
     /// </remarks>
     OutputTextDelta,
 
@@ -57,7 +57,7 @@ public enum RealtimeServerMessageType
     /// Indicates the output text is complete.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
     /// </remarks>
     OutputTextDone,
 
@@ -65,7 +65,7 @@ public enum RealtimeServerMessageType
     /// Indicates the model-generated transcription of audio output updated.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
     /// </remarks>
     OutputAudioTranscriptionDelta,
 
@@ -73,7 +73,7 @@ public enum RealtimeServerMessageType
     /// Indicates the model-generated transcription of audio output is done streaming.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
     /// </remarks>
     OutputAudioTranscriptionDone,
 
@@ -81,7 +81,7 @@ public enum RealtimeServerMessageType
     /// Indicates the audio output updated.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
     /// </remarks>
     OutputAudioDelta,
 
@@ -89,15 +89,15 @@ public enum RealtimeServerMessageType
     /// Indicates the audio output is done streaming.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerOutputTextAudioMessage"/> is used with this response type.
     /// </remarks>
     OutputAudioDone,
 
     /// <summary>
-    /// Indicates the response has been created.
+    /// Indicates the response has completed.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerResponseCreatedMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerResponseCreatedMessage"/> is used with this response type.
     /// </remarks>
     ResponseDone,
 
@@ -105,7 +105,7 @@ public enum RealtimeServerMessageType
     /// Indicates the response has been created.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerResponseCreatedMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerResponseCreatedMessage"/> is used with this response type.
     /// </remarks>
     ResponseCreated,
 
@@ -113,7 +113,7 @@ public enum RealtimeServerMessageType
     /// Indicates an error occurred while processing the request.
     /// </summary>
     /// <remarks>
-    /// The type <ref name="RealtimeServerErrorMessage"/> is used with this response type.
+    /// The type <see cref="RealtimeServerErrorMessage"/> is used with this response type.
     /// </remarks>
     Error,
 
