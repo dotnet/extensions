@@ -15,6 +15,10 @@
     <NoWarn>$(NoWarn);S1694;S2368</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <InjectMediaTypeMapOnLegacy>true</InjectMediaTypeMapOnLegacy>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="System.Memory" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />

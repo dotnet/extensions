@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// Represents a function call request.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class FunctionCallContent : AIContent
+public class FunctionCallContent : AIContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionCallContent"/> class.
@@ -55,6 +55,16 @@ public sealed class FunctionCallContent : AIContent
     /// </remarks>
     [JsonIgnore]
     public Exception? Exception { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this function call is purely informational.
+    /// </summary>
+    /// <remarks>
+    /// This property defaults to <see langword="false"/>, indicating that the function call should be processed.
+    /// When set to <see langword="true"/>, it indicates that the function has already been processed or is otherwise
+    /// purely informational and should be ignored by components that process function calls.
+    /// </remarks>
+    public bool InformationalOnly { get; set; }
 
     /// <summary>
     /// Creates a new instance of <see cref="FunctionCallContent"/> parsing arguments using a specified encoding and parser.

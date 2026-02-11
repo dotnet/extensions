@@ -43,21 +43,8 @@ public class MarkItDownMcpReader : IngestionDocumentReader
             throw new FileNotFoundException("The specified file does not exist.", source.FullName);
         }
 
-        // Read file content and create DataContent
-#if NET
-        ReadOnlyMemory<byte> fileBytes = await File.ReadAllBytesAsync(source.FullName, cancellationToken).ConfigureAwait(false);
-#else
-        ReadOnlyMemory<byte> fileBytes;
-        using (FileStream fs = new(source.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1, FileOptions.Asynchronous))
-        {
-            using MemoryStream ms = new((int)Math.Min(int.MaxValue, fs.Length));
-            await fs.CopyToAsync(ms).ConfigureAwait(false);
-            fileBytes = ms.GetBuffer().AsMemory(0, (int)ms.Length);
-        }
-#endif
-        DataContent dataContent = new(
-            fileBytes,
-            string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType!);
+        // Read file content and create DataContent (media type is inferred from extension if not provided)
+        DataContent dataContent = await DataContent.LoadFromAsync(source.FullName, mediaType, cancellationToken).ConfigureAwait(false);
 
         string markdown = await ConvertToMarkdownAsync(dataContent, cancellationToken).ConfigureAwait(false);
 
@@ -70,16 +57,8 @@ public class MarkItDownMcpReader : IngestionDocumentReader
         _ = Throw.IfNull(source);
         _ = Throw.IfNullOrEmpty(identifier);
 
-        // Read stream content and create DataContent
-        using MemoryStream ms = source.CanSeek ? new((int)Math.Min(int.MaxValue, source.Length)) : new();
-#if NET
-        await source.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
-#else
-        await source.CopyToAsync(ms).ConfigureAwait(false);
-#endif
-        DataContent dataContent = new(
-            ms.GetBuffer().AsMemory(0, (int)ms.Length),
-            string.IsNullOrEmpty(mediaType) ? "application/octet-stream" : mediaType);
+        // Read stream content and create DataContent (media type is inferred from FileStream path if applicable)
+        DataContent dataContent = await DataContent.LoadFromAsync(source, mediaType, cancellationToken).ConfigureAwait(false);
 
         string markdown = await ConvertToMarkdownAsync(dataContent, cancellationToken).ConfigureAwait(false);
 

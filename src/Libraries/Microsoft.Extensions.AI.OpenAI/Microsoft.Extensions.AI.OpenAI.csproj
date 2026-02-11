@@ -8,15 +8,15 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>preview</Stage>
+    <Stage>normal</Stage>
     <EnablePackageValidation>false</EnablePackageValidation>
-    <MinCodeCoverage>49</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>50</MinMutationScore>
   </PropertyGroup>
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
-    <NoWarn>$(NoWarn);CA1063;OPENAI001;OPENAI002;MEAI001;SCME0001</NoWarn>
+    <NoWarn>$(NoWarn);CA1063;</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DisableMinimumSupportedTfmCompatErrors>true</DisableMinimumSupportedTfmCompatErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -25,6 +25,7 @@
   <PropertyGroup>
     <InjectCompilerFeatureRequiredOnLegacy>true</InjectCompilerFeatureRequiredOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectMediaTypeMapOnLegacy>true</InjectMediaTypeMapOnLegacy>
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
