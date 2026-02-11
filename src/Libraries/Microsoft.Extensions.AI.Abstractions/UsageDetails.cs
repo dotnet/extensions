@@ -94,6 +94,8 @@ public class UsageDetails
         ReasoningTokenCount = NullableSum(ReasoningTokenCount, usage.ReasoningTokenCount);
         InputAudioTokenCount = NullableSum(InputAudioTokenCount, usage.InputAudioTokenCount);
         InputTextTokenCount = NullableSum(InputTextTokenCount, usage.InputTextTokenCount);
+        OutputAudioTokenCount = NullableSum(OutputAudioTokenCount, usage.OutputAudioTokenCount);
+        OutputTextTokenCount = NullableSum(OutputTextTokenCount, usage.OutputTextTokenCount);
 
         if (usage.AdditionalCounts is { } countsToAdd)
         {
@@ -156,6 +158,15 @@ public class UsageDetails
                 parts.Add($"{nameof(InputTextTokenCount)} = {inputText}");
             }
 
+            if (OutputAudioTokenCount is { } outputAudio)
+            {
+                parts.Add($"{nameof(OutputAudioTokenCount)} = {outputAudio}");
+            }
+
+            if (OutputTextTokenCount is { } outputText)
+            {
+                parts.Add($"{nameof(OutputTextTokenCount)} = {outputText}");
+            }
             if (AdditionalCounts is { } additionalCounts)
             {
                 foreach (var entry in additionalCounts)

@@ -82,7 +82,7 @@ public class RealtimeSessionOptions
     /// Gets or sets the tool choice mode for the response.
     /// </summary>
     /// <remarks>
-    /// If FunctionToolName or McpToolName is specified, this value will be ignored.
+    /// If <see cref="AIFunction"/> or <see cref="HostedMcpServerTool"/> is specified, this value will be ignored.
     /// </remarks>
     public ToolChoiceMode? ToolChoiceMode { get; set; }
 
