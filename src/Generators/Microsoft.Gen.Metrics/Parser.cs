@@ -249,7 +249,7 @@ internal sealed class Parser
             return (InstrumentKind.HistogramT, GetGenericType(methodAttributeSymbol));
         }
 
-        if (methodAttributeSymbol.Equals(symbols.GaugeOfTAttribute, SymbolEqualityComparer.Default))
+        if (methodAttributeSymbol.OriginalDefinition.Equals(symbols.GaugeOfTAttribute, SymbolEqualityComparer.Default))
         {
             return (InstrumentKind.GaugeT, GetGenericType(methodAttributeSymbol));
         }

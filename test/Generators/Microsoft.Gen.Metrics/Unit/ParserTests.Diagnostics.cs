@@ -541,12 +541,13 @@ public partial class ParserTests
     public async Task Gauge_StrongType_TooManyTags()
     {
         var sb = new StringBuilder();
-    
+
         // Create 31 nested classes (max is 30)
         for (int i = 0; i < 31; i++)
         {
             sb.AppendLine($"public class C{i} : C{i + 1} {{ public string Tag{i} {{ get; set; }} }}");
         }
+
         sb.AppendLine("public class C31 { public string Tag31 { get; set; } }");
 
         sb.AppendLine(@"
