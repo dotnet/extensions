@@ -1420,38 +1420,35 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task AIFunctionFactory_DynamicMethodParameters_DoesNotThrow()
+    public async Task AIFunctionFactory_DynamicMethod()
     {
-        // Regression test: NullabilityInfoContext.Create(ParameterInfo) throws NullReferenceException
-        // for parameters created via DynamicMethod.DefineParameter(), which lack complete reflection metadata.
-        // Cf. https://github.com/dotnet/runtime/pull/124293
         DynamicMethod dynamicMethod = new DynamicMethod(
-            "TestMethod",
+            "DoubleIt",
             typeof(Task<object>),
-            new[] { typeof(string), typeof(int) },
+            new[] { typeof(int) },
             typeof(AIFunctionFactoryTest).Module);
 
-        dynamicMethod.DefineParameter(1, ParameterAttributes.None, "message");
-        dynamicMethod.DefineParameter(2, ParameterAttributes.None, "count");
+        dynamicMethod.DefineParameter(1, ParameterAttributes.None, "value");
 
         ILGenerator il = dynamicMethod.GetILGenerator();
-        il.Emit(OpCodes.Ldnull);
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldc_I4_2);
+        il.Emit(OpCodes.Mul);
+        il.Emit(OpCodes.Box, typeof(int));
         il.Emit(OpCodes.Call, typeof(Task).GetMethod(nameof(Task.FromResult))!.MakeGenericMethod(typeof(object)));
         il.Emit(OpCodes.Ret);
 
-        Delegate testDelegate = dynamicMethod.CreateDelegate(typeof(Func<string, int, Task<object>>));
+        Delegate testDelegate = dynamicMethod.CreateDelegate(typeof(Func<int, Task<object>>));
 
         AIFunction func = AIFunctionFactory.Create(testDelegate.GetMethodInfo(), testDelegate.Target);
 
-        Assert.Equal("TestMethod", func.Name);
+        Assert.Equal("DoubleIt", func.Name);
 
         JsonElement schema = func.JsonSchema;
         JsonElement properties = schema.GetProperty("properties");
-        Assert.True(properties.TryGetProperty("message", out _));
-        Assert.True(properties.TryGetProperty("count", out _));
+        Assert.True(properties.TryGetProperty("value", out _));
 
-        // Verify the function can also be invoked successfully.
-        await func.InvokeAsync(new() { ["message"] = "hello", ["count"] = 42 });
+        AssertExtensions.EqualFunctionCallResults(42, await func.InvokeAsync(new() { ["value"] = 21 }));
     }
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]

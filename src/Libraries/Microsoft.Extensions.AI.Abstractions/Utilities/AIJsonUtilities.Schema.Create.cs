@@ -20,6 +20,7 @@ using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1075 // URIs should not be hardcoded
 #pragma warning disable S1199 // Nested block
+#pragma warning disable S1696 // NullReferenceException should not be caught
 #pragma warning disable SA1118 // Parameter should not span multiple lines
 
 namespace Microsoft.Extensions.AI;
@@ -845,22 +846,19 @@ public static partial class AIJsonUtilities
     /// </remarks>
     private static NullabilityState? GetNullableWriteState(NullabilityInfoContext? nullabilityContext, ParameterInfo parameter)
     {
-        if (nullabilityContext is null)
+        if (nullabilityContext is not null)
         {
-            return null;
+            try
+            {
+                return nullabilityContext.Create(parameter).WriteState;
+            }
+            catch (NullReferenceException)
+            {
+                // Swallow NullReferenceException thrown by NullabilityInfoContext for parameters
+                // that lack complete reflection metadata (e.g. DynamicMethod parameters).
+            }
         }
 
-        try
-        {
-            return nullabilityContext.Create(parameter).WriteState;
-        }
-        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NullReferenceException)
-        {
-            // Swallow exceptions thrown by NullabilityInfoContext for parameters
-            // that lack complete reflection metadata (e.g. DynamicMethod parameters).
-            // NullReferenceException is included because the runtime bug causes it to be
-            // thrown internally within NullabilityInfoContext.Create().
-            return null;
-        }
+        return null;
     }
 }
