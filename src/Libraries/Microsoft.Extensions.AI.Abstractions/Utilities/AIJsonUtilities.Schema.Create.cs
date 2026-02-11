@@ -343,7 +343,7 @@ public static partial class AIJsonUtilities
                 }
                 else if (parameter is not null &&
                     !ctx.TypeInfo.Type.IsValueType &&
-                    nullabilityContext?.Create(parameter).WriteState is NullabilityState.Nullable)
+                    GetNullableWriteState(nullabilityContext, parameter) is NullabilityState.Nullable)
                 {
                     // Handle nullable reference type parameters (e.g., object?).
                     if (objSchema.TryGetPropertyValue(TypePropertyName, out JsonNode? typeKeyWord) &&
@@ -832,5 +832,33 @@ public static partial class AIJsonUtilities
         }
 
         return defaultValue;
+    }
+
+    /// <summary>
+    /// Gets the <see cref="NullabilityState"/> for the specified parameter's write state,
+    /// returning <see langword="null"/> if the nullability information cannot be determined.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="NullabilityInfoContext.Create(ParameterInfo)"/> can throw for parameters
+    /// lacking complete reflection metadata, e.g. parameters defined via DynamicMethod.DefineParameter.
+    /// Cf. https://github.com/dotnet/runtime/pull/124293.
+    /// </remarks>
+    private static NullabilityState? GetNullableWriteState(NullabilityInfoContext? nullabilityContext, ParameterInfo parameter)
+    {
+        if (nullabilityContext is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return nullabilityContext.Create(parameter).WriteState;
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NullReferenceException)
+        {
+            // Swallow exceptions thrown by NullabilityInfoContext for parameters
+            // that lack complete reflection metadata (e.g. DynamicMethod parameters).
+            return null;
+        }
     }
 }

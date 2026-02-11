@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -1416,6 +1417,38 @@ public partial class AIFunctionFactoryTest
         Assert.Contains("nullableInt", requiredParams);
         Assert.DoesNotContain("nullableStringWithDefault", requiredParams);
         Assert.DoesNotContain("nullableIntWithDefault", requiredParams);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_DynamicMethodParameters_DoesNotThrow()
+    {
+        // Regression test: NullabilityInfoContext.Create(ParameterInfo) throws NullReferenceException
+        // for parameters created via DynamicMethod.DefineParameter(), which lack complete reflection metadata.
+        // Cf. https://github.com/dotnet/runtime/pull/124293
+        DynamicMethod dynamicMethod = new DynamicMethod(
+            "TestMethod",
+            typeof(Task<object>),
+            new[] { typeof(string), typeof(int) },
+            typeof(AIFunctionFactoryTest).Module);
+
+        dynamicMethod.DefineParameter(1, ParameterAttributes.None, "message");
+        dynamicMethod.DefineParameter(2, ParameterAttributes.None, "count");
+
+        ILGenerator il = dynamicMethod.GetILGenerator();
+        il.Emit(OpCodes.Ldnull);
+        il.Emit(OpCodes.Call, typeof(Task).GetMethod(nameof(Task.FromResult))!.MakeGenericMethod(typeof(object)));
+        il.Emit(OpCodes.Ret);
+
+        Delegate testDelegate = dynamicMethod.CreateDelegate(typeof(Func<string, int, Task<object>>));
+
+        AIFunction func = AIFunctionFactory.Create(testDelegate.GetMethodInfo(), testDelegate.Target);
+
+        Assert.Equal("TestMethod", func.Name);
+
+        JsonElement schema = func.JsonSchema;
+        JsonElement properties = schema.GetProperty("properties");
+        Assert.True(properties.TryGetProperty("message", out _));
+        Assert.True(properties.TryGetProperty("count", out _));
     }
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
