@@ -4,6 +4,7 @@
 using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -12,11 +13,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace OpenAI.Chat;
 
 /// <summary>Provides extension methods for working with content associated with OpenAI.Chat.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
 public static class MicrosoftExtensionsAIChatExtensions
 {
     /// <summary>Creates an OpenAI <see cref="ChatTool"/> from an <see cref="AIFunctionDeclaration"/>.</summary>
@@ -203,11 +206,13 @@ public static class MicrosoftExtensionsAIChatExtensions
                     OpenAIChatClient.ConvertContentParts(ucm.Content, resultMessage.Contents);
                     break;
 
+#pragma warning disable OPENAI001 // Developer role is experimental
                 case DeveloperChatMessage dcm:
                     resultMessage.Role = ChatRole.System;
                     resultMessage.AuthorName = dcm.ParticipantName;
                     OpenAIChatClient.ConvertContentParts(dcm.Content, resultMessage.Contents);
                     break;
+#pragma warning restore OPENAI001
 
                 case SystemChatMessage scm:
                     resultMessage.Role = ChatRole.System;
@@ -274,7 +279,9 @@ public static class MicrosoftExtensionsAIChatExtensions
             "user" => ChatMessageRole.User,
             "function" => ChatMessageRole.Function,
             "tool" => ChatMessageRole.Tool,
+#pragma warning disable OPENAI001 // Developer role is experimental
             "developer" => ChatMessageRole.Developer,
+#pragma warning restore OPENAI001
             "system" => ChatMessageRole.System,
             _ => ChatMessageRole.Assistant,
         };

@@ -1,0 +1,143 @@
+{
+  "Name": "Microsoft.Extensions.AI.OpenAI, Version=10.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "static class OpenAI.Assistants.MicrosoftExtensionsAIAssistantsExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static OpenAI.Assistants.FunctionToolDefinition OpenAI.Assistants.MicrosoftExtensionsAIAssistantsExtensions.AsOpenAIAssistantsFunctionToolDefinition(this Microsoft.Extensions.AI.AIFunctionDeclaration function);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class OpenAI.Chat.MicrosoftExtensionsAIChatExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsChatMessages(this System.Collections.Generic.IEnumerable<OpenAI.Chat.ChatMessage> messages);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatResponse OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsChatResponse(this OpenAI.Chat.ChatCompletion chatCompletion, OpenAI.Chat.ChatCompletionOptions? options = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsChatResponseUpdatesAsync(this System.Collections.Generic.IAsyncEnumerable<OpenAI.Chat.StreamingChatCompletionUpdate> chatCompletionUpdates, OpenAI.Chat.ChatCompletionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static OpenAI.Chat.ChatCompletion OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIChatCompletion(this Microsoft.Extensions.AI.ChatResponse response);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Collections.Generic.IEnumerable<OpenAI.Chat.ChatMessage> OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIChatMessages(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static OpenAI.Chat.ChatResponseFormat? OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIChatResponseFormat(this Microsoft.Extensions.AI.ChatResponseFormat? format, Microsoft.Extensions.AI.ChatOptions? options = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static OpenAI.Chat.ChatTool OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIChatTool(this Microsoft.Extensions.AI.AIFunctionDeclaration function);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Collections.Generic.IAsyncEnumerable<OpenAI.Chat.StreamingChatCompletionUpdate> OpenAI.Chat.MicrosoftExtensionsAIChatExtensions.AsOpenAIStreamingChatCompletionUpdatesAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> responseUpdates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class OpenAI.Realtime.MicrosoftExtensionsAIRealtimeExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static OpenAI.Realtime.ConversationFunctionTool OpenAI.Realtime.MicrosoftExtensionsAIRealtimeExtensions.AsOpenAIConversationFunctionTool(this Microsoft.Extensions.AI.AIFunctionDeclaration function);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static void OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.Add(this System.Collections.Generic.IList<Microsoft.Extensions.AI.AITool> tools, OpenAI.Responses.ResponseTool tool);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.AITool OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.AsAITool(this OpenAI.Responses.ResponseTool tool);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.AsChatMessages(this System.Collections.Generic.IEnumerable<OpenAI.Responses.ResponseItem> items);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatResponse OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.AsChatResponse(this OpenAI.Responses.ResponseResult response, OpenAI.Responses.CreateResponseOptions? options = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.AsChatResponseUpdatesAsync(this System.Collections.Generic.IAsyncEnumerable<OpenAI.Responses.StreamingResponseUpdate> responseUpdates, OpenAI.Responses.CreateResponseOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Collections.Generic.IEnumerable<OpenAI.Responses.ResponseItem> OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseItems(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static OpenAI.Responses.ResponseResult OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseResult(this Microsoft.Extensions.AI.ChatResponse response, Microsoft.Extensions.AI.ChatOptions? options = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static OpenAI.Responses.ResponseTextFormat? OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTextFormat(this Microsoft.Extensions.AI.ChatResponseFormat? format, Microsoft.Extensions.AI.ChatOptions? options = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static OpenAI.Responses.FunctionTool OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTool(this Microsoft.Extensions.AI.AIFunctionDeclaration function);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static OpenAI.Responses.ResponseTool? OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTool(this Microsoft.Extensions.AI.AITool tool);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OpenAIClientExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.IChatClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIChatClient(this OpenAI.Chat.ChatClient chatClient);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.IChatClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIChatClient(this OpenAI.Responses.ResponsesClient responseClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.IChatClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIChatClient(this OpenAI.Assistants.AssistantClient assistantClient, string assistantId, string? threadId = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.IChatClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIChatClient(this OpenAI.Assistants.AssistantClient assistantClient, OpenAI.Assistants.Assistant assistant, string? threadId = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>> Microsoft.Extensions.AI.OpenAIClientExtensions.AsIEmbeddingGenerator(this OpenAI.Embeddings.EmbeddingClient embeddingClient, int? defaultModelDimensions = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.IImageGenerator Microsoft.Extensions.AI.OpenAIClientExtensions.AsIImageGenerator(this OpenAI.Images.ImageClient imageClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ISpeechToTextClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsISpeechToTextClient(this OpenAI.Audio.AudioClient audioClient);",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}
