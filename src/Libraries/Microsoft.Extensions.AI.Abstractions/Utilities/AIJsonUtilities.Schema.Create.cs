@@ -858,6 +858,8 @@ public static partial class AIJsonUtilities
         {
             // Swallow exceptions thrown by NullabilityInfoContext for parameters
             // that lack complete reflection metadata (e.g. DynamicMethod parameters).
+            // NullReferenceException is included because the runtime bug causes it to be
+            // thrown internally within NullabilityInfoContext.Create().
             return null;
         }
     }

@@ -1449,6 +1449,9 @@ public partial class AIFunctionFactoryTest
         JsonElement properties = schema.GetProperty("properties");
         Assert.True(properties.TryGetProperty("message", out _));
         Assert.True(properties.TryGetProperty("count", out _));
+
+        // Verify the function can also be invoked successfully.
+        await func.InvokeAsync(new() { ["message"] = "hello", ["count"] = 42 });
     }
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
