@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
+using FunctionInvocationResult = Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationResult;
 using FunctionInvocationStatus = Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
@@ -418,7 +419,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
         // Check if we exceeded the maximum consecutive errors
         if (newConsecutiveErrorCount > MaximumConsecutiveErrorsPerRequest)
         {
-            var firstException = results.Find(static r => r.Exception is not null).Exception;
+            var firstException = results.Find(static r => r.Exception is not null)?.Exception;
             if (firstException is not null)
             {
                 throw firstException;
@@ -432,7 +433,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
     }
 
     /// <summary>Creates function result messages from invocation results.</summary>
-    private List<RealtimeClientMessage> CreateFunctionResultMessages(List<FunctionInvocationResultInternal> results)
+    private List<RealtimeClientMessage> CreateFunctionResultMessages(List<FunctionInvocationResult> results)
     {
         var messages = new List<RealtimeClientMessage>(results.Count);
 

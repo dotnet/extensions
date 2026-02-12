@@ -1022,7 +1022,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         var captureCurrentIterationExceptions = consecutiveErrorCount < MaximumConsecutiveErrorsPerRequest;
 
         // Use the processor to handle function calls
-        var internalResults = await Processor.ProcessFunctionCallsAsync(
+        var results = await Processor.ProcessFunctionCallsAsync(
             functionCallContents,
             toolMap,
             AllowConcurrentInvocation,
@@ -1044,18 +1044,11 @@ public class FunctionInvokingChatClient : DelegatingChatClient
 
         // Mark all processed function calls as no longer requiring invocation
         // This prevents duplicate processing when multiple FunctionInvokingChatClients are in a pipeline
-        foreach (var result in internalResults)
+        foreach (var result in results)
         {
             result.CallContent.InformationalOnly = true;
         }
 
-        // Convert internal results to public FunctionInvocationResult
-        var results = internalResults.ConvertAll(r => new FunctionInvocationResult(
-            r.Terminate,
-            r.Status,
-            r.CallContent,
-            r.Result,
-            r.Exception));
         var shouldTerminate = results.Exists(static r => r.Terminate);
 
         IList<ChatMessage> addedMessages = CreateResponseMessages(results.ToArray());

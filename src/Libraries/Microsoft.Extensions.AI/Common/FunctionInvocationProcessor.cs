@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
+using FunctionInvocationResult = Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationResult;
 using FunctionInvocationStatus = Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus;
 
 namespace Microsoft.Extensions.AI;
@@ -58,7 +59,7 @@ internal sealed class FunctionInvocationProcessor
     /// <param name="captureExceptionsWhenSerial">Whether to capture exceptions when running serially (typically based on consecutive error count).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of function invocation results.</returns>
-    public async Task<List<FunctionInvocationResultInternal>> ProcessFunctionCallsAsync(
+    public async Task<List<FunctionInvocationResult>> ProcessFunctionCallsAsync(
         List<FunctionCallContent> functionCallContents,
         Dictionary<string, AITool>? toolMap,
         bool allowConcurrentInvocation,
@@ -67,7 +68,7 @@ internal sealed class FunctionInvocationProcessor
         bool captureExceptionsWhenSerial,
         CancellationToken cancellationToken)
     {
-        var results = new List<FunctionInvocationResultInternal>();
+        var results = new List<FunctionInvocationResult>();
 
         if (allowConcurrentInvocation && functionCallContents.Count > 1)
         {
@@ -102,7 +103,7 @@ internal sealed class FunctionInvocationProcessor
     /// <summary>
     /// Processes a single function call.
     /// </summary>
-    private async Task<FunctionInvocationResultInternal> ProcessSingleFunctionCallAsync(
+    private async Task<FunctionInvocationResult> ProcessSingleFunctionCallAsync(
         FunctionCallContent callContent,
         Dictionary<string, AITool>? toolMap,
         int callIndex,
@@ -116,13 +117,13 @@ internal sealed class FunctionInvocationProcessor
             !toolMap.TryGetValue(callContent.Name, out AITool? tool))
         {
             FunctionInvocationLogger.LogFunctionNotFound(_logger, callContent.Name);
-            return new(Terminate: false, FunctionInvocationStatus.NotFound, callContent, Result: null, Exception: null);
+            return new(terminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
         if (tool is not AIFunction aiFunction)
         {
             FunctionInvocationLogger.LogNonInvocableFunction(_logger, callContent.Name);
-            return new(Terminate: false, FunctionInvocationStatus.NotFound, callContent, Result: null, Exception: null);
+            return new(terminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
         var context = createContext(callContent, aiFunction, callIndex);
@@ -136,11 +137,11 @@ internal sealed class FunctionInvocationProcessor
                 FunctionInvocationLogger.LogFunctionRequestedTermination(_logger, callContent.Name);
             }
 
-            return new(context.Terminate, FunctionInvocationStatus.RanToCompletion, callContent, result, Exception: null);
+            return new(context.Terminate, FunctionInvocationStatus.RanToCompletion, callContent, result, exception: null);
         }
         catch (Exception ex) when (captureExceptions && !cancellationToken.IsCancellationRequested)
         {
-            return new(Terminate: false, FunctionInvocationStatus.Exception, callContent, Result: null, Exception: ex);
+            return new(terminate: false, FunctionInvocationStatus.Exception, callContent, result: null, exception: ex);
         }
         finally
         {
@@ -249,13 +250,3 @@ internal sealed class FunctionInvocationProcessor
         return result;
     }
 }
-
-/// <summary>
-/// Internal result type for function invocation used by <see cref="FunctionInvocationProcessor"/>.
-/// </summary>
-internal readonly record struct FunctionInvocationResultInternal(
-    bool Terminate,
-    FunctionInvocationStatus Status,
-    FunctionCallContent CallContent,
-    object? Result,
-    Exception? Exception);
