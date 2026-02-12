@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI.OpenAI, Version=10.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI.OpenAI, Version=10.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class OpenAI.Assistants.MicrosoftExtensionsAIAssistantsExtensions",
@@ -135,56 +135,6 @@
         },
         {
           "Member": "static Microsoft.Extensions.AI.ISpeechToTextClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsISpeechToTextClient(this OpenAI.Audio.AudioClient audioClient);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.AI.OpenAIRealtimeClient : Microsoft.Extensions.AI.IRealtimeClient, System.IDisposable",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.OpenAIRealtimeClient.OpenAIRealtimeClient(string apiKey, string model);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.IRealtimeSession?> Microsoft.Extensions.AI.OpenAIRealtimeClient.CreateSessionAsync(Microsoft.Extensions.AI.RealtimeSessionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "void Microsoft.Extensions.AI.OpenAIRealtimeClient.Dispose();",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.AI.OpenAIRealtimeSession : Microsoft.Extensions.AI.IRealtimeSession, System.IDisposable, System.IAsyncDisposable",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "void Microsoft.Extensions.AI.OpenAIRealtimeSession.Dispose();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.OpenAIRealtimeSession.DisposeAsync();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeServerMessage> Microsoft.Extensions.AI.OpenAIRealtimeSession.GetStreamingResponseAsync(System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeClientMessage> updates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.AI.OpenAIRealtimeSession.InjectClientMessageAsync(Microsoft.Extensions.AI.RealtimeClientMessage message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.AI.OpenAIRealtimeSession.UpdateAsync(Microsoft.Extensions.AI.RealtimeSessionOptions options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.RealtimeSessionOptions? Microsoft.Extensions.AI.OpenAIRealtimeSession.Options { get; private set; }",
           "Stage": "Experimental"
         }
       ]

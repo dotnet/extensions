@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI, Version=10.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI, Version=10.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "abstract class Microsoft.Extensions.AI.CachingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
@@ -10,11 +10,14 @@
           "Stage": "Stable"
         },
         {
-          "Member": "virtual bool Microsoft.Extensions.AI.CachingChatClient.EnableCaching(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options);",
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
+          "Member": "abstract string Microsoft.Extensions.AI.CachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, params System.ReadOnlySpan<object?> additionalValues);",
           "Stage": "Stable"
         },
         {
-          "Member": "abstract string Microsoft.Extensions.AI.CachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, scoped System.ReadOnlySpan<object?> additionalValues);",
+          "Member": "virtual bool Microsoft.Extensions.AI.CachingChatClient.EnableCaching(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options);",
           "Stage": "Stable"
         },
         {
@@ -62,7 +65,10 @@
           "Stage": "Stable"
         },
         {
-          "Member": "abstract string Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(scoped System.ReadOnlySpan<object?> values);",
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
+          "Member": "abstract string Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(params System.ReadOnlySpan<object?> values);",
           "Stage": "Stable"
         },
         {
@@ -314,7 +320,10 @@
           "Stage": "Stable"
         },
         {
-          "Member": "override string Microsoft.Extensions.AI.DistributedCachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, scoped System.ReadOnlySpan<object?> additionalValues);",
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
+          "Member": "override string Microsoft.Extensions.AI.DistributedCachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, params System.ReadOnlySpan<object?> additionalValues);",
           "Stage": "Stable"
         },
         {
@@ -364,7 +373,10 @@
           "Stage": "Stable"
         },
         {
-          "Member": "override string Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(scoped System.ReadOnlySpan<object?> values);",
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
+          "Member": "override string Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(params System.ReadOnlySpan<object?> values);",
           "Stage": "Stable"
         },
         {
@@ -675,72 +687,6 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.FunctionInvokingRealtimeSession : Microsoft.Extensions.AI.DelegatingRealtimeSession",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.FunctionInvokingRealtimeSession(Microsoft.Extensions.AI.IRealtimeSession innerSession, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.IServiceProvider? functionInvocationServices = null);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeServerMessage> Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.GetStreamingResponseAsync(System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeClientMessage> updates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "virtual System.Threading.Tasks.ValueTask<object?> Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.InvokeFunctionAsync(Microsoft.Extensions.AI.FunctionInvocationContext context, System.Threading.CancellationToken cancellationToken);",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AITool>? Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.AdditionalTools { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.AllowConcurrentInvocation { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.AI.FunctionInvocationContext? Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.CurrentContext { get; protected set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.IServiceProvider? Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.FunctionInvocationServices { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Func<Microsoft.Extensions.AI.FunctionInvocationContext, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<object?>>? Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.FunctionInvoker { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.IncludeDetailedErrors { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "int Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.MaximumConsecutiveErrorsPerRequest { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "int Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.MaximumIterationsPerRequest { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.AI.FunctionInvokingRealtimeSession.TerminateOnUnknownCalls { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.AI.FunctionInvokingRealtimeSessionBuilderExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.AI.RealtimeSessionBuilder Microsoft.Extensions.AI.FunctionInvokingRealtimeSessionBuilderExtensions.UseFunctionInvocation(this Microsoft.Extensions.AI.RealtimeSessionBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.FunctionInvokingRealtimeSession>? configure = null);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "sealed class Microsoft.Extensions.AI.ImageGeneratingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
       "Stage": "Experimental",
       "Methods": [
@@ -952,44 +898,6 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.LoggingRealtimeSession : Microsoft.Extensions.AI.DelegatingRealtimeSession",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.LoggingRealtimeSession.LoggingRealtimeSession(Microsoft.Extensions.AI.IRealtimeSession innerSession, Microsoft.Extensions.Logging.ILogger logger);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeServerMessage> Microsoft.Extensions.AI.LoggingRealtimeSession.GetStreamingResponseAsync(System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeClientMessage> updates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override System.Threading.Tasks.Task Microsoft.Extensions.AI.LoggingRealtimeSession.InjectClientMessageAsync(Microsoft.Extensions.AI.RealtimeClientMessage message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override System.Threading.Tasks.Task Microsoft.Extensions.AI.LoggingRealtimeSession.UpdateAsync(Microsoft.Extensions.AI.RealtimeSessionOptions options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.LoggingRealtimeSession.JsonSerializerOptions { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.AI.LoggingRealtimeSessionBuilderExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.AI.RealtimeSessionBuilder Microsoft.Extensions.AI.LoggingRealtimeSessionBuilderExtensions.UseLogging(this Microsoft.Extensions.AI.RealtimeSessionBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingRealtimeSession>? configure = null);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.Extensions.AI.LoggingSpeechToTextClient : Microsoft.Extensions.AI.DelegatingSpeechToTextClient",
       "Stage": "Experimental",
       "Methods": [
@@ -1160,52 +1068,6 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.OpenTelemetryRealtimeSession : Microsoft.Extensions.AI.DelegatingRealtimeSession",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.OpenTelemetryRealtimeSession.OpenTelemetryRealtimeSession(Microsoft.Extensions.AI.IRealtimeSession innerSession, Microsoft.Extensions.Logging.ILogger? logger = null, string? sourceName = null);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override void Microsoft.Extensions.AI.OpenTelemetryRealtimeSession.Dispose(bool disposing);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override object? Microsoft.Extensions.AI.OpenTelemetryRealtimeSession.GetService(System.Type serviceType, object? serviceKey = null);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeServerMessage> Microsoft.Extensions.AI.OpenTelemetryRealtimeSession.GetStreamingResponseAsync(System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeClientMessage> updates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override System.Threading.Tasks.Task Microsoft.Extensions.AI.OpenTelemetryRealtimeSession.UpdateAsync(Microsoft.Extensions.AI.RealtimeSessionOptions options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "bool Microsoft.Extensions.AI.OpenTelemetryRealtimeSession.EnableSensitiveData { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.OpenTelemetryRealtimeSession.JsonSerializerOptions { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.AI.OpenTelemetryRealtimeSessionBuilderExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.AI.RealtimeSessionBuilder Microsoft.Extensions.AI.OpenTelemetryRealtimeSessionBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.RealtimeSessionBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetryRealtimeSession>? configure = null);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "sealed class Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClient : Microsoft.Extensions.AI.DelegatingSpeechToTextClient",
       "Stage": "Experimental",
       "Methods": [
@@ -1243,56 +1105,6 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClientBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.SpeechToTextClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClient>? configure = null);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.AI.RealtimeSessionBuilder",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.RealtimeSessionBuilder.RealtimeSessionBuilder(Microsoft.Extensions.AI.IRealtimeSession innerSession);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.RealtimeSessionBuilder.RealtimeSessionBuilder(System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IRealtimeSession> innerSessionFactory);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.IRealtimeSession Microsoft.Extensions.AI.RealtimeSessionBuilder.Build(System.IServiceProvider? services = null);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.RealtimeSessionBuilder Microsoft.Extensions.AI.RealtimeSessionBuilder.Use(System.Func<Microsoft.Extensions.AI.IRealtimeSession, Microsoft.Extensions.AI.IRealtimeSession> sessionFactory);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.RealtimeSessionBuilder Microsoft.Extensions.AI.RealtimeSessionBuilder.Use(System.Func<Microsoft.Extensions.AI.IRealtimeSession, System.IServiceProvider, Microsoft.Extensions.AI.IRealtimeSession> sessionFactory);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.RealtimeSessionBuilder Microsoft.Extensions.AI.RealtimeSessionBuilder.Use(System.Func<System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeClientMessage>, Microsoft.Extensions.AI.IRealtimeSession, System.Threading.CancellationToken, System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeServerMessage>> getStreamingResponseFunc);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.AI.RealtimeSessionBuilderRealtimeSessionExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.AI.RealtimeSessionBuilder Microsoft.Extensions.AI.RealtimeSessionBuilderRealtimeSessionExtensions.AsBuilder(this Microsoft.Extensions.AI.IRealtimeSession innerSession);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.AI.RealtimeSessionExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static TService? Microsoft.Extensions.AI.RealtimeSessionExtensions.GetService<TService>(this Microsoft.Extensions.AI.IRealtimeSession session, object? serviceKey = null);",
           "Stage": "Experimental"
         }
       ]
