@@ -1447,7 +1447,9 @@ public partial class AIFunctionFactoryTest
         JsonElement properties = schema.GetProperty("properties");
         Assert.True(properties.TryGetProperty("value", out _));
 
-        AssertExtensions.EqualFunctionCallResults(42, await func.InvokeAsync(new() { ["value"] = 21 }));
+        object? result = await func.InvokeAsync(new() { ["value"] = 21 });
+        Assert.IsType<JsonElement>(result);
+        Assert.Equal(42, ((JsonElement)result!).GetInt32());
     }
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
