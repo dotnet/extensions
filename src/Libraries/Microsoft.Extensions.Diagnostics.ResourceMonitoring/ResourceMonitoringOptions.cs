@@ -117,15 +117,14 @@ public partial class ResourceMonitoringOptions
     /// Gets or sets a value indicating whether CPU and Memory utilization metric values for Linux should be in range <c>[0, 1]</c> instead of <c>[0, 100]</c>.
     /// </summary>
     /// <value>
-    /// The default value is <see langword="false"/>.
+    /// The default value is <see langword="true"/>.
     /// </value>
     /// <remarks>
     /// This property affects Linux-specific metrics and has no effect on other operating systems.
-    /// Use this property if you prefer to have the metric values in range <c>[0, 1]</c> instead of <c>[0, 100]</c>.
-    /// In the long term, the default value of this property will be changed to <see langword="true"/>.
+    /// Use this property if you prefer to have the metric values in range <c>[0, 100]</c> instead of <c>[0, 1]</c>.
     /// </remarks>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
-    public bool UseZeroToOneRangeForLinuxMetrics { get; set; }
+    public bool UseZeroToOneRangeForLinuxMetrics { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a value indicating whether disk I/O metrics should be enabled.
