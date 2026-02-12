@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// Represents the result of a function call.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
+[JsonDerivedType(typeof(McpServerToolResultContent), "mcpServerToolResult")]
 public class FunctionResultContent : AIContent
 {
     /// <summary>
