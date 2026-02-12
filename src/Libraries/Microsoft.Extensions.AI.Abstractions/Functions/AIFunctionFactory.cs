@@ -1095,15 +1095,16 @@ public static partial class AIFunctionFactory
 
         private static string? GetReturnParameterDescription(MethodInfo method)
         {
-            try
+            ParameterInfo returnParameter = method.ReturnParameter;
+
+            // DynamicMethod return parameters have a null Member, which causes
+            // GetCustomAttribute to throw ArgumentNullException.
+            if (returnParameter.Member is null)
             {
-                return method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
-            }
-            catch (ArgumentNullException)
-            {
-                // DynamicMethod return parameters may not support GetCustomAttribute on some runtimes.
                 return null;
             }
+
+            return returnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
         }
 
         private static Type NormalizeReturnType(Type type, JsonSerializerOptions? options)
