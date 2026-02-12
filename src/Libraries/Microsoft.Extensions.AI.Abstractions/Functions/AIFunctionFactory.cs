@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 #endif
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -1095,16 +1096,13 @@ public static partial class AIFunctionFactory
 
         private static string? GetReturnParameterDescription(MethodInfo method)
         {
-            ParameterInfo returnParameter = method.ReturnParameter;
-
-            // DynamicMethod return parameters have a null Member, which causes
-            // GetCustomAttribute to throw ArgumentNullException.
-            if (returnParameter.Member is null)
+            // DynamicMethod return parameters don't support GetCustomAttribute.
+            if (method is DynamicMethod)
             {
                 return null;
             }
 
-            return returnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+            return method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
         }
 
         private static Type NormalizeReturnType(Type type, JsonSerializerOptions? options)
