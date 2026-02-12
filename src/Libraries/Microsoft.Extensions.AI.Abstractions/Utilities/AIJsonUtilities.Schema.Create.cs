@@ -845,8 +845,8 @@ public static partial class AIJsonUtilities
             }
             catch (NullReferenceException)
             {
-                // Swallow NullReferenceException thrown by NullabilityInfoContext for parameters
-                // that lack complete reflection metadata (e.g. DynamicMethod parameters).
+                // NullabilityInfoContext can throw for parameters that lack complete reflection metadata
+                // (e.g. DynamicMethod parameters). cf. https://github.com/dotnet/runtime/pull/124293
                 return NullabilityState.Unknown;
             }
         }
