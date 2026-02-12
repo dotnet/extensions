@@ -296,8 +296,8 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         int consecutiveErrorCount = 0;
-
-        (Dictionary<string, AITool>? toolMap, bool anyToolsRequireApproval) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, options?.Tools); // all available tools, indexed by name
+        Dictionary<string, AITool>? toolMap = null;
+        bool anyToolsRequireApproval = false;
 
         if (HasAnyApprovalContent(originalMessages))
         {
@@ -449,10 +449,10 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         List<ChatResponseUpdate> updates = []; // updates from the current response
         int consecutiveErrorCount = 0;
+        Dictionary<string, AITool>? toolMap = null;
+        bool anyToolsRequireApproval = false;
 
-        (Dictionary<string, AITool>? toolMap, bool anyToolsRequireApproval) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, options?.Tools); // all available tools, indexed by name
-
-        // This is a synthetic ID since we're generating the tool messages instead of getting them from
+        // This is a synthetic IDsince we're generating the tool messages instead of getting them from
         // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
         // use the same message ID for all of them within a given iteration, as this is a single logical
         // message with multiple content items. We could also use different message IDs per tool content,
