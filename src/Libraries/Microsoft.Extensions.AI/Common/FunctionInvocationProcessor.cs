@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
+using FunctionInvocationStatus = Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus;
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>

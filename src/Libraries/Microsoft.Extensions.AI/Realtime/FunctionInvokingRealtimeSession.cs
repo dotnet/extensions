@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
+using FunctionInvocationStatus = Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus;
+
 #pragma warning disable CA2213 // Disposable fields should be disposed
 #pragma warning disable S2219 // Runtime type checking should be simplified
 #pragma warning disable S3353 // Unchanged local variables should be "const"

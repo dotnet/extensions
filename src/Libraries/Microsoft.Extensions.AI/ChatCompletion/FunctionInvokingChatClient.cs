@@ -1052,7 +1052,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         // Convert internal results to public FunctionInvocationResult
         var results = internalResults.ConvertAll(r => new FunctionInvocationResult(
             r.Terminate,
-            (FunctionInvocationStatus)r.Status,
+            r.Status,
             r.CallContent,
             r.Result,
             r.Exception));
