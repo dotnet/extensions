@@ -43,7 +43,7 @@ public class UsageDetails
 
     /// <summary>Gets or sets the number of audio input tokens used.</summary>
     /// <remarks>
-    /// This property is used only when audio input tokens are involved.
+    /// Audio input tokens should be counted as part of <see cref="InputTokenCount"/>.
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
@@ -51,7 +51,7 @@ public class UsageDetails
 
     /// <summary>Gets or sets the number of text input tokens used.</summary>
     /// <remarks>
-    /// This property is used only when having audio and text tokens. Otherwise InputTokenCount is sufficient.
+    /// Text input tokens should be counted as part of <see cref="InputTokenCount"/>.
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
@@ -59,7 +59,7 @@ public class UsageDetails
 
     /// <summary>Gets or sets the number of audio output tokens used.</summary>
     /// <remarks>
-    /// This property is used only when audio output tokens are involved.
+    /// Audio output tokens should be counted as part of <see cref="OutputTokenCount"/>.
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
@@ -67,7 +67,7 @@ public class UsageDetails
 
     /// <summary>Gets or sets the number of text output tokens used.</summary>
     /// <remarks>
-    /// This property is used only when having audio and text tokens. Otherwise OutputTokenCount is sufficient.
+    /// Text output tokens should be counted as part of <see cref="OutputTokenCount"/>.
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
