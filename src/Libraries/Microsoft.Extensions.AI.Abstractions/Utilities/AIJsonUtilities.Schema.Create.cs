@@ -835,7 +835,7 @@ public static partial class AIJsonUtilities
         return defaultValue;
     }
 
-    private static NullabilityState GetNullableWriteState(NullabilityInfoContext? nullabilityContext, ParameterInfo parameter)
+    private static NullabilityState? GetNullableWriteState(NullabilityInfoContext? nullabilityContext, ParameterInfo parameter)
     {
         if (nullabilityContext is not null)
         {
@@ -847,9 +847,10 @@ public static partial class AIJsonUtilities
             {
                 // Swallow NullReferenceException thrown by NullabilityInfoContext for parameters
                 // that lack complete reflection metadata (e.g. DynamicMethod parameters).
+                return NullabilityState.Unknown;
             }
         }
 
-        return NullabilityState.Unknown;
+        return null;
     }
 }
