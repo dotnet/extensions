@@ -38,6 +38,29 @@ public class DelegatingRealtimeSession : IRealtimeSession
         GC.SuppressFinalize(this);
     }
 
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsyncCore().ConfigureAwait(false);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>Performs async cleanup of managed resources.</summary>
+    /// <returns>A task representing the asynchronous dispose operation.</returns>
+#pragma warning disable EA0014 // The async method doesn't support cancellation
+    protected virtual async ValueTask DisposeAsyncCore()
+#pragma warning restore EA0014
+    {
+        if (InnerSession is IAsyncDisposable asyncDisposable)
+        {
+            await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+        }
+        else
+        {
+            InnerSession.Dispose();
+        }
+    }
+
     /// <summary>Gets the inner <see cref="IRealtimeSession" />.</summary>
     protected IRealtimeSession InnerSession { get; }
 

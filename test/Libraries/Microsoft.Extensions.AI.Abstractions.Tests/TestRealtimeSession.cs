@@ -62,6 +62,13 @@ public sealed class TestRealtimeSession : IRealtimeSession
         // No-op for test implementation
     }
 
+    /// <inheritdoc/>
+    public ValueTask DisposeAsync()
+    {
+        // No-op for test implementation
+        return default;
+    }
+
     private static async IAsyncEnumerable<RealtimeServerMessage> EmptyAsyncEnumerable()
     {
         await Task.CompletedTask.ConfigureAwait(false);

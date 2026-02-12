@@ -53,6 +53,9 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
     /// <summary>Whether the session has been disposed (0 = false, 1 = true).</summary>
     private int _disposed;
 
+    /// <summary>The background task that receives WebSocket messages.</summary>
+    private Task? _receiveTask;
+
     /// <inheritdoc />
     public RealtimeSessionOptions? Options { get; private set; }
 
@@ -86,7 +89,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
             await clientWebSocket.ConnectAsync(uri, cancellationToken).ConfigureAwait(false);
 
             // Start receiving messages in the background.
-            _ = Task.Run(() => ReceiveMessagesAsync(_cancellationTokenSource.Token), _cancellationTokenSource.Token);
+            _receiveTask = Task.Run(() => ReceiveMessagesAsync(_cancellationTokenSource.Token), _cancellationTokenSource.Token);
 
             return true;
         }
@@ -105,7 +108,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
         _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         // Start receiving messages in the background.
-        _ = Task.Run(() => ReceiveMessagesAsync(_cancellationTokenSource.Token), _cancellationTokenSource.Token);
+        _receiveTask = Task.Run(() => ReceiveMessagesAsync(_cancellationTokenSource.Token), _cancellationTokenSource.Token);
 
         return Task.CompletedTask;
     }
@@ -641,6 +644,58 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
         catch (ObjectDisposedException)
         {
             // Already disposed; nothing to do.
+        }
+
+        // Best-effort wait for the background receive loop to finish.
+#pragma warning disable VSTHRD002 // Synchronous Dispose must block; callers should prefer DisposeAsync
+        try
+        {
+            _receiveTask?.GetAwaiter().GetResult();
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when the session is cancelled during disposal.
+        }
+#pragma warning restore VSTHRD002
+
+        _cancellationTokenSource?.Dispose();
+        _webSocket?.Dispose();
+        _sendLock.Dispose();
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        _ = _eventChannel.Writer.TryComplete();
+        try
+        {
+#if NET
+            await (_cancellationTokenSource?.CancelAsync() ?? Task.CompletedTask).ConfigureAwait(false);
+#else
+            _cancellationTokenSource?.Cancel();
+#endif
+        }
+        catch (ObjectDisposedException)
+        {
+            // Already disposed; nothing to do.
+        }
+
+        // Wait for the background receive loop to finish before disposing resources.
+        if (_receiveTask is not null)
+        {
+            try
+            {
+                await _receiveTask.ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when the session is cancelled during disposal.
+            }
         }
 
         _cancellationTokenSource?.Dispose();

@@ -234,6 +234,12 @@ public class DelegatingRealtimeSessionTests
 
         public void Dispose() => _onDispose();
 
+        public ValueTask DisposeAsync()
+        {
+            _onDispose();
+            return default;
+        }
+
         private static async IAsyncEnumerable<RealtimeServerMessage> EmptyUpdatesServer(
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {

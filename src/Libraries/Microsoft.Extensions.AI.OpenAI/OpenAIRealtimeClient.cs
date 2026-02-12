@@ -42,7 +42,7 @@ public sealed class OpenAIRealtimeClient : IRealtimeClient
             bool connected = await session.ConnectAsync(cancellationToken).ConfigureAwait(false);
             if (!connected)
             {
-                session.Dispose();
+                await session.DisposeAsync().ConfigureAwait(false);
                 return null;
             }
 
@@ -55,7 +55,7 @@ public sealed class OpenAIRealtimeClient : IRealtimeClient
         }
         catch
         {
-            session.Dispose();
+            await session.DisposeAsync().ConfigureAwait(false);
             throw;
         }
     }
