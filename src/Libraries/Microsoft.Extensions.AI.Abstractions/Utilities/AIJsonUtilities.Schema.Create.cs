@@ -835,7 +835,7 @@ public static partial class AIJsonUtilities
         return defaultValue;
     }
 
-    private static NullabilityState? GetNullableWriteState(NullabilityInfoContext? nullabilityContext, ParameterInfo parameter)
+    private static NullabilityState GetNullableWriteState(NullabilityInfoContext? nullabilityContext, ParameterInfo parameter)
     {
         if (nullabilityContext is not null)
         {
@@ -850,6 +850,6 @@ public static partial class AIJsonUtilities
             }
         }
 
-        return null;
+        return NullabilityState.Unknown;
     }
 }
