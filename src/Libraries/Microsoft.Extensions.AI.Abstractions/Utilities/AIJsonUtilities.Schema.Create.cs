@@ -835,15 +835,6 @@ public static partial class AIJsonUtilities
         return defaultValue;
     }
 
-    /// <summary>
-    /// Gets the <see cref="NullabilityState"/> for the specified parameter's write state,
-    /// returning <see langword="null"/> if the nullability information cannot be determined.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="NullabilityInfoContext.Create(ParameterInfo)"/> can throw for parameters
-    /// lacking complete reflection metadata, e.g. parameters defined via DynamicMethod.DefineParameter.
-    /// Cf. https://github.com/dotnet/runtime/pull/124293.
-    /// </remarks>
     private static NullabilityState? GetNullableWriteState(NullabilityInfoContext? nullabilityContext, ParameterInfo parameter)
     {
         if (nullabilityContext is not null)
