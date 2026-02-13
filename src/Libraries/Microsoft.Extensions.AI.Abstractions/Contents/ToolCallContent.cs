@@ -28,7 +28,7 @@ public class ToolCallContent : AIContent
     /// </summary>
     /// <param name="callId">The tool call ID.</param>
     /// <exception cref="ArgumentNullException"><paramref name="callId"/> is <see langword="null"/>.</exception>
-    protected ToolCallContent(string callId)
+    internal ToolCallContent(string callId)
     {
         CallId = Throw.IfNull(callId);
     }
