@@ -1095,13 +1095,15 @@ public static partial class AIFunctionFactory
 
         private static string? GetReturnParameterDescription(MethodInfo method)
         {
-            // DynamicMethod return parameters don't support GetCustomAttribute.
-            if (method.GetType().Name == "DynamicMethod")
+            try
             {
+                return method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+            }
+            catch (Exception e) when (e is ArgumentNullException or NullReferenceException)
+            {
+                // DynamicMethod return parameters don't support GetCustomAttribute.
                 return null;
             }
-
-            return method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
         }
 
         private static Type NormalizeReturnType(Type type, JsonSerializerOptions? options)
