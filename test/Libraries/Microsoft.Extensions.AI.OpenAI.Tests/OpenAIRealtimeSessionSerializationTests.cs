@@ -238,8 +238,8 @@ public class OpenAIRealtimeSessionSerializationTests : IAsyncLifetime
         Assert.Equal(16000, options.InputAudioFormat.SampleRate);
         Assert.Equal(NoiseReductionOptions.NearField, options.NoiseReductionOptions);
         Assert.NotNull(options.TranscriptionOptions);
-        Assert.Equal("en", options.TranscriptionOptions.Language);
-        Assert.Equal("whisper-1", options.TranscriptionOptions.Model);
+        Assert.Equal("en", options.TranscriptionOptions.SpeechLanguage);
+        Assert.Equal("whisper-1", options.TranscriptionOptions.ModelId);
 
         var serverVad = Assert.IsType<ServerVoiceActivityDetection>(options.VoiceActivityDetection);
         Assert.True(serverVad.CreateResponse);

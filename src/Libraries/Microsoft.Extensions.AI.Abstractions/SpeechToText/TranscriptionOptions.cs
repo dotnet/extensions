@@ -7,30 +7,31 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents options for configuring transcription in a real-time session.
+/// Represents options for configuring transcription.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public class TranscriptionOptions
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TranscriptionOptions"/> class.
     /// </summary>
-    public TranscriptionOptions(string language, string model, string? prompt = null)
+    public TranscriptionOptions()
     {
-        Language = language;
-        Model = model;
-        Prompt = prompt;
     }
 
     /// <summary>
-    /// Gets or sets the language for transcription. The input language should be in ISO-639-1 (e.g. en).
+    /// Gets or sets the language of the input speech audio.
     /// </summary>
-    public string Language { get; set; }
+    /// <remarks>
+    /// The language should be specified in ISO-639-1 format (e.g. "en").
+    /// Supplying the input speech language improves transcription accuracy and latency.
+    /// </remarks>
+    public string? SpeechLanguage { get; set; }
 
     /// <summary>
-    /// Gets or sets the model name to use for transcription.
+    /// Gets or sets the model ID to use for transcription.
     /// </summary>
-    public string Model { get; set; }
+    public string? ModelId { get; set; }
 
     /// <summary>
     /// Gets or sets an optional prompt to guide the transcription.

@@ -47,7 +47,7 @@ public class RealtimeSessionOptionsTests
         List<string> modalities = ["text", "audio"];
         List<AITool> tools = [AIFunctionFactory.Create(() => 42)];
         var tracingMetadata = new { key = "value" };
-        var transcriptionOptions = new TranscriptionOptions("en", "whisper-1", "greeting");
+        var transcriptionOptions = new TranscriptionOptions { SpeechLanguage = "en", ModelId = "whisper-1", Prompt = "greeting" };
         var vad = new VoiceActivityDetection { CreateResponse = true, InterruptResponse = true };
 
         options.SessionKind = RealtimeSessionKind.Transcription;
@@ -92,25 +92,25 @@ public class RealtimeSessionOptionsTests
     [Fact]
     public void TranscriptionOptions_Properties_Roundtrip()
     {
-        var options = new TranscriptionOptions("en", "whisper-1", "greeting");
+        var options = new TranscriptionOptions { SpeechLanguage = "en", ModelId = "whisper-1", Prompt = "greeting" };
 
-        Assert.Equal("en", options.Language);
-        Assert.Equal("whisper-1", options.Model);
+        Assert.Equal("en", options.SpeechLanguage);
+        Assert.Equal("whisper-1", options.ModelId);
         Assert.Equal("greeting", options.Prompt);
 
-        options.Language = "fr";
-        options.Model = "whisper-2";
+        options.SpeechLanguage = "fr";
+        options.ModelId = "whisper-2";
         options.Prompt = null;
 
-        Assert.Equal("fr", options.Language);
-        Assert.Equal("whisper-2", options.Model);
+        Assert.Equal("fr", options.SpeechLanguage);
+        Assert.Equal("whisper-2", options.ModelId);
         Assert.Null(options.Prompt);
     }
 
     [Fact]
     public void TranscriptionOptions_PromptDefaultsToNull()
     {
-        var options = new TranscriptionOptions("en", "whisper-1");
+        var options = new TranscriptionOptions { SpeechLanguage = "en", ModelId = "whisper-1" };
         Assert.Null(options.Prompt);
     }
 

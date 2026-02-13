@@ -159,8 +159,8 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
         {
             var transcriptionOptionsObj = new JsonObject
             {
-                ["language"] = options.TranscriptionOptions.Language,
-                ["model"] = options.TranscriptionOptions.Model,
+                ["language"] = options.TranscriptionOptions.SpeechLanguage,
+                ["model"] = options.TranscriptionOptions.ModelId,
             };
             if (options.TranscriptionOptions.Prompt is not null)
             {
@@ -1444,7 +1444,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
                     if (language is not null && model is not null)
                     {
-                        options.TranscriptionOptions = new TranscriptionOptions(language, model, prompt);
+                        options.TranscriptionOptions = new TranscriptionOptions { SpeechLanguage = language, ModelId = model, Prompt = prompt };
                     }
                 }
 
