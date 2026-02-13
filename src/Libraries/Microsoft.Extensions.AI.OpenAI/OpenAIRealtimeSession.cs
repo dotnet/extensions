@@ -535,7 +535,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                 break;
 
             case RealtimeClientInputAudioBufferAppendMessage audioAppend:
-                if (audioAppend.Content is not null && audioAppend.Content.MediaType.StartsWith("audio/", StringComparison.Ordinal))
+                if (audioAppend.Content is not null && audioAppend.Content.HasTopLevelMediaType("audio"))
                 {
                     jsonMessage["type"] = "input_audio_buffer.append";
 
