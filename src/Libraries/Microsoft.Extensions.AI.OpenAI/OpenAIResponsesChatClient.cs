@@ -244,9 +244,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case CodeInterpreterCallResponseItem cicri:
-                    message.Contents.Add(new CodeInterpreterToolCallContent
+                    message.Contents.Add(new CodeInterpreterToolCallContent(cicri.Id)
                     {
-                        CallId = cicri.Id,
                         Inputs = !string.IsNullOrWhiteSpace(cicri.Code) ? [new DataContent(Encoding.UTF8.GetBytes(cicri.Code), OpenAIClientExtensions.PythonMediaType)] : null,
 
                         // We purposefully do not set the RawRepresentation on the CodeInterpreterToolCallContent, only on the CodeInterpreterToolResultContent, to avoid
@@ -432,9 +431,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case StreamingResponseImageGenerationCallInProgressUpdate imageGenInProgress:
-                    yield return CreateUpdate(new ImageGenerationToolCallContent
+                    yield return CreateUpdate(new ImageGenerationToolCallContent(imageGenInProgress.ItemId)
                     {
-                        ImageId = imageGenInProgress.ItemId,
                         RawRepresentation = imageGenInProgress,
                     });
                     break;
@@ -444,9 +442,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case StreamingResponseCodeInterpreterCallCodeDeltaUpdate codeInterpreterDeltaUpdate:
-                    yield return CreateUpdate(new CodeInterpreterToolCallContent
+                    yield return CreateUpdate(new CodeInterpreterToolCallContent(codeInterpreterDeltaUpdate.ItemId)
                     {
-                        CallId = codeInterpreterDeltaUpdate.ItemId,
                         Inputs = [new DataContent(Encoding.UTF8.GetBytes(codeInterpreterDeltaUpdate.Delta), OpenAIClientExtensions.PythonMediaType)],
                         RawRepresentation = codeInterpreterDeltaUpdate,
                     });
@@ -1445,9 +1442,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
     /// <summary>Creates a <see cref="CodeInterpreterToolResultContent"/> for the specified <paramref name="cicri"/>.</summary>
     private static CodeInterpreterToolResultContent CreateCodeInterpreterResultContent(CodeInterpreterCallResponseItem cicri) =>
-        new()
+        new(cicri.Id)
         {
-            CallId = cicri.Id,
             Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
                 o switch
                 {
@@ -1463,14 +1459,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
         string outputFormat = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
-        contents.Add(new ImageGenerationToolCallContent
-        {
-            ImageId = outputItem.Id,
-        });
+        contents.Add(new ImageGenerationToolCallContent(outputItem.Id));
 
-        contents.Add(new ImageGenerationToolResultContent
+        contents.Add(new ImageGenerationToolResultContent(outputItem.Id)
         {
-            ImageId = outputItem.Id,
             RawRepresentation = outputItem,
             Outputs = [new DataContent(outputItem.ImageResultBytes, $"image/{outputFormat}")]
         });
@@ -1481,9 +1473,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
         var outputType = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
-        return new ImageGenerationToolResultContent
+        return new ImageGenerationToolResultContent(update.ItemId)
         {
-            ImageId = update.ItemId,
             RawRepresentation = update,
             Outputs =
             [

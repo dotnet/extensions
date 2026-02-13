@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
@@ -11,19 +12,17 @@ namespace Microsoft.Extensions.AI;
 /// Represents the result of a code interpreter tool invocation by a hosted service.
 /// </summary>
 [Experimental(DiagnosticIds.Experiments.AICodeInterpreter, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class CodeInterpreterToolResultContent : AIContent
+public sealed class CodeInterpreterToolResultContent : ToolResultContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CodeInterpreterToolResultContent"/> class.
     /// </summary>
-    public CodeInterpreterToolResultContent()
+    /// <param name="callId">The tool call ID.</param>
+    [JsonConstructor]
+    public CodeInterpreterToolResultContent(string callId)
+        : base(callId)
     {
     }
-
-    /// <summary>
-    /// Gets or sets the tool call ID that this result corresponds to.
-    /// </summary>
-    public string? CallId { get; set; }
 
     /// <summary>
     /// Gets or sets the output of code interpreter tool.

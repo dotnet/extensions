@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
@@ -10,17 +11,15 @@ namespace Microsoft.Extensions.AI;
 /// Represents the invocation of an image generation tool call by a hosted service.
 /// </summary>
 [Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class ImageGenerationToolCallContent : AIContent
+public sealed class ImageGenerationToolCallContent : ToolCallContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageGenerationToolCallContent"/> class.
     /// </summary>
-    public ImageGenerationToolCallContent()
+    /// <param name="callId">The tool call ID.</param>
+    [JsonConstructor]
+    public ImageGenerationToolCallContent(string callId)
+        : base(callId)
     {
     }
-
-    /// <summary>
-    /// Gets or sets the unique identifier of the image generation item.
-    /// </summary>
-    public string? ImageId { get; set; }
 }

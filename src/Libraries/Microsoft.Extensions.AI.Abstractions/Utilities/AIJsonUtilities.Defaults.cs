@@ -56,6 +56,12 @@ public static partial class AIJsonUtilities
         AddAIContentType(options, typeof(ImageGenerationToolCallContent), typeDiscriminatorId: "imageGenerationToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(ImageGenerationToolResultContent), typeDiscriminatorId: "imageGenerationToolResult", checkBuiltIn: false);
 
+        // Also register the experimental types as derived types of ToolCallContent/ToolResultContent.
+        AddDerivedContentType(options, typeof(ToolCallContent), typeof(CodeInterpreterToolCallContent), "codeInterpreterToolCall");
+        AddDerivedContentType(options, typeof(ToolCallContent), typeof(ImageGenerationToolCallContent), "imageGenerationToolCall");
+        AddDerivedContentType(options, typeof(ToolResultContent), typeof(CodeInterpreterToolResultContent), "codeInterpreterToolResult");
+        AddDerivedContentType(options, typeof(ToolResultContent), typeof(ImageGenerationToolResultContent), "imageGenerationToolResult");
+
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
             // If reflection-based serialization is enabled by default, use it as a fallback for all other types.

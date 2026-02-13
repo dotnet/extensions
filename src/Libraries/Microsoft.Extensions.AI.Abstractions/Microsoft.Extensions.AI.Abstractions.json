@@ -1476,19 +1476,15 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.CodeInterpreterToolCallContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "sealed class Microsoft.Extensions.AI.CodeInterpreterToolCallContent : Microsoft.Extensions.AI.ToolCallContent",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.CodeInterpreterToolCallContent.CodeInterpreterToolCallContent();",
+          "Member": "Microsoft.Extensions.AI.CodeInterpreterToolCallContent.CodeInterpreterToolCallContent(string callId);",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
-        {
-          "Member": "string? Microsoft.Extensions.AI.CodeInterpreterToolCallContent.CallId { get; set; }",
-          "Stage": "Experimental"
-        },
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.CodeInterpreterToolCallContent.Inputs { get; set; }",
           "Stage": "Experimental"
@@ -1496,19 +1492,15 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.CodeInterpreterToolResultContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "sealed class Microsoft.Extensions.AI.CodeInterpreterToolResultContent : Microsoft.Extensions.AI.ToolResultContent",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.CodeInterpreterToolResultContent.CodeInterpreterToolResultContent();",
+          "Member": "Microsoft.Extensions.AI.CodeInterpreterToolResultContent.CodeInterpreterToolResultContent(string callId);",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
-        {
-          "Member": "string? Microsoft.Extensions.AI.CodeInterpreterToolResultContent.CallId { get; set; }",
-          "Stage": "Experimental"
-        },
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.CodeInterpreterToolResultContent.Outputs { get; set; }",
           "Stage": "Experimental"
@@ -2551,35 +2543,25 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolCallContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolCallContent : Microsoft.Extensions.AI.ToolCallContent",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.ImageGenerationToolCallContent.ImageGenerationToolCallContent();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "string? Microsoft.Extensions.AI.ImageGenerationToolCallContent.ImageId { get; set; }",
+          "Member": "Microsoft.Extensions.AI.ImageGenerationToolCallContent.ImageGenerationToolCallContent(string callId);",
           "Stage": "Experimental"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolResultContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolResultContent : Microsoft.Extensions.AI.ToolResultContent",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.ImageGenerationToolResultContent.ImageGenerationToolResultContent();",
+          "Member": "Microsoft.Extensions.AI.ImageGenerationToolResultContent.ImageGenerationToolResultContent(string callId);",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
-        {
-          "Member": "string? Microsoft.Extensions.AI.ImageGenerationToolResultContent.ImageId { get; set; }",
-          "Stage": "Experimental"
-        },
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.ImageGenerationToolResultContent.Outputs { get; set; }",
           "Stage": "Experimental"

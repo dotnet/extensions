@@ -76,8 +76,8 @@ public class AIContentTests
             new McpServerToolResultContent("call123"),
             new ToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
             new ToolApprovalResponseContent("request123", approved: true, new McpServerToolCallContent("call456", "myTool2", "myServer2")),
-            new ImageGenerationToolCallContent { ImageId = "img123" },
-            new ImageGenerationToolResultContent { ImageId = "img456", Outputs = [new DataContent(new byte[] { 4, 5, 6 }, "image/png")] }
+            new ImageGenerationToolCallContent("img123"),
+            new ImageGenerationToolResultContent("img456") { Outputs = [new DataContent(new byte[] { 4, 5, 6 }, "image/png")] }
         ]);
 
         // Verify each element roundtrips individually
