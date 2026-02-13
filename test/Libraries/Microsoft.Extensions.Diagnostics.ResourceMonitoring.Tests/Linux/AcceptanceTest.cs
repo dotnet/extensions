@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
 public sealed class AcceptanceTest
 {
-    [ConditionalFact]
+    [ConditionalFact(Skip = "Flaky test, see https://github.com/dotnet/extensions/issues/7293")]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
     public void Adding_Linux_Resource_Utilization_Allows_To_Query_Snapshot_Provider()
     {
