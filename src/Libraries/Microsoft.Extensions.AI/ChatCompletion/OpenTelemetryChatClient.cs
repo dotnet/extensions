@@ -258,30 +258,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         m.Parts.Add(new OtelGenericPart { Type = "reasoning", Content = trc.Text });
                         break;
 
-                    case McpServerToolCallContent mstcc:
-                        m.Parts.Add(new OtelServerToolCallPart<OtelMcpToolCall>
-                        {
-                            Id = mstcc.CallId,
-                            Name = mstcc.Name,
-                            ServerToolCall = new OtelMcpToolCall
-                            {
-                                Arguments = mstcc.Arguments,
-                                ServerName = mstcc.ServerName,
-                            },
-                        });
-                        break;
-
-                    case McpServerToolResultContent mstrc:
-                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelMcpToolCallResponse>
-                        {
-                            Id = mstrc.CallId,
-                            ServerToolCallResponse = new OtelMcpToolCallResponse
-                            {
-                                Output = mstrc.Outputs,
-                            },
-                        });
-                        break;
-
                     case FunctionCallContent fcc:
                         m.Parts.Add(new OtelToolCallRequestPart
                         {
@@ -377,6 +353,30 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                             ServerToolCallResponse = new OtelImageGenerationToolCallResponse
                             {
                                 Output = igtrc.Outputs,
+                            },
+                        });
+                        break;
+
+                    case McpServerToolCallContent mstcc:
+                        m.Parts.Add(new OtelServerToolCallPart<OtelMcpToolCall>
+                        {
+                            Id = mstcc.CallId,
+                            Name = mstcc.Name,
+                            ServerToolCall = new OtelMcpToolCall
+                            {
+                                Arguments = mstcc.Arguments,
+                                ServerName = mstcc.ServerName,
+                            },
+                        });
+                        break;
+
+                    case McpServerToolResultContent mstrc:
+                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelMcpToolCallResponse>
+                        {
+                            Id = mstrc.CallId,
+                            ServerToolCallResponse = new OtelMcpToolCallResponse
+                            {
+                                Output = mstrc.Outputs,
                             },
                         });
                         break;

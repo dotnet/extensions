@@ -98,6 +98,7 @@ public class FunctionResultContentTests
         var content = new FunctionResultContent("call123", "result");
 
         AssertSerializationRoundtrips<FunctionResultContent>(content);
+        AssertSerializationRoundtrips<ToolResultContent>(content);
         AssertSerializationRoundtrips<AIContent>(content);
 
         static void AssertSerializationRoundtrips<T>(FunctionResultContent content)
@@ -112,5 +113,4 @@ public class FunctionResultContentTests
             Assert.Equal("result", deserializedContent.Result?.ToString());
         }
     }
-
 }

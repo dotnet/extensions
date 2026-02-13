@@ -403,7 +403,7 @@ public class FunctionInvokingChatClientTests
         {
             FunctionInvoker = (ctx, cancellationToken) =>
             {
-                returnedFrc = new FunctionResultContent(ctx.CallContent.CallId!, "Custom result from function")
+                returnedFrc = new FunctionResultContent(ctx.CallContent.CallId, "Custom result from function")
                 {
                     RawRepresentation = "CustomRaw"
                 };
@@ -566,7 +566,7 @@ public class FunctionInvokingChatClientTests
             FunctionInvoker = (ctx, cancellationToken) =>
             {
                 // Return a derived FunctionResultContent
-                returnedFrc = new DerivedFunctionResultContent(ctx.CallContent.CallId!, "Derived result")
+                returnedFrc = new DerivedFunctionResultContent(ctx.CallContent.CallId, "Derived result")
                 {
                     CustomProperty = "CustomValue"
                 };
@@ -2258,7 +2258,7 @@ public class FunctionInvokingChatClientTests
             // Clone FunctionCallContent to avoid sharing InformationalOnly state
             if (content is FunctionCallContent fcc)
             {
-                cloned.Add(new FunctionCallContent(fcc.CallId!, fcc.Name, fcc.Arguments)
+                cloned.Add(new FunctionCallContent(fcc.CallId, fcc.Name, fcc.Arguments)
                 {
                     InformationalOnly = fcc.InformationalOnly,
                     Exception = fcc.Exception,

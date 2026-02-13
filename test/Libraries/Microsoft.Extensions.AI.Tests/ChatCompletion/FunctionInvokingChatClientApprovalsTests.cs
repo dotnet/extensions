@@ -1589,19 +1589,12 @@ public class FunctionInvokingChatClientApprovalsTests
         {
             InformationalOnly = fcc.InformationalOnly
         },
-        ToolApprovalRequestContent farc when farc.ToolCall is McpServerToolCallContent =>
-            new ToolApprovalRequestContent(farc.RequestId, (McpServerToolCallContent)CloneFcc(farc.ToolCall)),
-        ToolApprovalRequestContent farc =>
-            new ToolApprovalRequestContent(farc.RequestId, (FunctionCallContent)CloneFcc(farc.ToolCall)),
-        ToolApprovalResponseContent farc when farc.ToolCall is McpServerToolCallContent =>
-            new ToolApprovalResponseContent(farc.RequestId, farc.Approved, (McpServerToolCallContent)CloneFcc(farc.ToolCall))
+        ToolApprovalRequestContent tarc =>
+            new ToolApprovalRequestContent(tarc.RequestId, (ToolCallContent)CloneFcc(tarc.ToolCall)),
+        ToolApprovalResponseContent tarc =>
+            new ToolApprovalResponseContent(tarc.RequestId, tarc.Approved, (ToolCallContent)CloneFcc(tarc.ToolCall))
             {
-                Reason = farc.Reason
-            },
-        ToolApprovalResponseContent farc =>
-            new ToolApprovalResponseContent(farc.RequestId, farc.Approved, (FunctionCallContent)CloneFcc(farc.ToolCall))
-            {
-                Reason = farc.Reason
+                Reason = tarc.Reason
             },
         _ => c
     };

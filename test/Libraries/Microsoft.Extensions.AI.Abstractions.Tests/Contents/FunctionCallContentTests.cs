@@ -415,6 +415,7 @@ public class FunctionCallContentTests
         };
 
         AssertSerializationRoundtrips<FunctionCallContent>(content);
+        AssertSerializationRoundtrips<ToolCallContent>(content);
         AssertSerializationRoundtrips<AIContent>(content);
 
         static void AssertSerializationRoundtrips<T>(FunctionCallContent content)
@@ -431,5 +432,4 @@ public class FunctionCallContentTests
             Assert.Equal("value1", deserializedContent.Arguments["arg1"]?.ToString());
         }
     }
-
 }

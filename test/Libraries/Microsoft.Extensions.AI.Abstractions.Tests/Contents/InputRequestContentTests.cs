@@ -25,7 +25,6 @@ public class InputRequestContentTests
     public void Constructor_Roundtrips(string id)
     {
         TestInputRequestContent content = new(id);
-
         Assert.Equal(id, content.RequestId);
     }
 

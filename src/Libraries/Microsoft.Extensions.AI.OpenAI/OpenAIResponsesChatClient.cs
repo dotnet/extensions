@@ -964,7 +964,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     ResponseItem? directItem = item switch
                     {
                         { RawRepresentation: ResponseItem rawRep } => rawRep,
-                        ToolApprovalResponseContent { ToolCall: McpServerToolCallContent } funcResp => ResponseItem.CreateMcpApprovalResponseItem(funcResp.RequestId, funcResp.Approved),
+                        ToolApprovalResponseContent { ToolCall: McpServerToolCallContent } toolResp => ResponseItem.CreateMcpApprovalResponseItem(toolResp.RequestId, toolResp.Approved),
                         _ => null
                     };
 
@@ -1046,8 +1046,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             yield return rawRep;
                             break;
 
-                        case ToolApprovalResponseContent funcResp when funcResp.ToolCall is McpServerToolCallContent:
-                            yield return ResponseItem.CreateMcpApprovalResponseItem(funcResp.RequestId, funcResp.Approved);
+                        case ToolApprovalResponseContent toolResp when toolResp.ToolCall is McpServerToolCallContent:
+                            yield return ResponseItem.CreateMcpApprovalResponseItem(toolResp.RequestId, toolResp.Approved);
                             break;
 
                         case FunctionResultContent resultContent:
@@ -1204,9 +1204,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                     AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                             break;
 
-                        case ToolApprovalRequestContent funcReq when funcReq.ToolCall is McpServerToolCallContent mcpToolCall:
+                        case ToolApprovalRequestContent toolReq when toolReq.ToolCall is McpServerToolCallContent mcpToolCall:
                             yield return ResponseItem.CreateMcpApprovalRequestItem(
-                                funcReq.RequestId,
+                                toolReq.RequestId,
                                 mcpToolCall.ServerName,
                                 mcpToolCall.Name,
                                 BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
