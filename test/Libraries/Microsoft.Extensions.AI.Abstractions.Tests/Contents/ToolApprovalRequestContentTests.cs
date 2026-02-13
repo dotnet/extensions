@@ -14,44 +14,56 @@ public class ToolApprovalRequestContentTests
     public void Constructor_InvalidArguments_Throws()
     {
         FunctionCallContent functionCall = new("FCC1", "TestFunction");
+        McpServerToolCallContent mcpCall = new("MCC1", "TestTool", "TestServer");
 
+        // FunctionCallContent overload
         Assert.Throws<ArgumentNullException>("requestId", () => new ToolApprovalRequestContent(null!, functionCall));
         Assert.Throws<ArgumentException>("requestId", () => new ToolApprovalRequestContent("", functionCall));
         Assert.Throws<ArgumentException>("requestId", () => new ToolApprovalRequestContent("\r\t\n ", functionCall));
-
         Assert.Throws<ArgumentNullException>("functionCall", () => new ToolApprovalRequestContent("id", (FunctionCallContent)null!));
+
+        // McpServerToolCallContent overload
+        Assert.Throws<ArgumentNullException>("requestId", () => new ToolApprovalRequestContent(null!, mcpCall));
+        Assert.Throws<ArgumentException>("requestId", () => new ToolApprovalRequestContent("", mcpCall));
+        Assert.Throws<ArgumentException>("requestId", () => new ToolApprovalRequestContent("\r\t\n ", mcpCall));
+        Assert.Throws<ArgumentNullException>("mcpServerToolCall", () => new ToolApprovalRequestContent("id", (McpServerToolCallContent)null!));
+
+        // ToolCallContent (JsonConstructor) overload
+        Assert.Throws<ArgumentNullException>("toolCall", () => new ToolApprovalRequestContent("id", (ToolCallContent)null!));
+        Assert.Throws<ArgumentException>("toolCall", () => new ToolApprovalRequestContent("id", new CodeInterpreterToolCallContent("call1")));
+        Assert.Throws<ArgumentException>("toolCall", () => new ToolApprovalRequestContent("id", new ImageGenerationToolCallContent("call1")));
     }
 
-    [Theory]
-    [InlineData("abc")]
-    [InlineData("123")]
-    [InlineData("!@#")]
-    public void Constructor_Roundtrips(string id)
+    public static TheoryData<ToolCallContent> ToolCallContentInstances => new()
     {
-        FunctionCallContent functionCall = new("FCC1", "TestFunction");
-
-        ToolApprovalRequestContent content = new(id, functionCall);
-
-        Assert.Same(id, content.RequestId);
-        Assert.Same(functionCall, content.ToolCall);
-    }
+        new FunctionCallContent("FCC1", "TestFunction", new Dictionary<string, object?> { { "param1", 123 } }),
+        new McpServerToolCallContent("MCC1", "TestTool", "TestServer") { Arguments = new Dictionary<string, object?> { { "arg1", "value1" } } },
+    };
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void CreateResponse_ReturnsExpectedResponse(bool approved)
+    [MemberData(nameof(ToolCallContentInstances))]
+    public void Constructor_Roundtrips(ToolCallContent toolCall)
     {
         string id = "req-1";
-        FunctionCallContent functionCall = new("FCC1", "TestFunction");
+        ToolApprovalRequestContent content = new(id, toolCall);
 
-        ToolApprovalRequestContent content = new(id, functionCall);
+        Assert.Same(id, content.RequestId);
+        Assert.Same(toolCall, content.ToolCall);
+    }
 
-        var response = content.CreateResponse(approved);
+    [Theory]
+    [MemberData(nameof(ToolCallContentInstances))]
+    public void CreateResponse_ReturnsExpectedResponse(ToolCallContent toolCall)
+    {
+        string id = "req-1";
+        ToolApprovalRequestContent content = new(id, toolCall);
+
+        var response = content.CreateResponse(approved: true);
 
         Assert.NotNull(response);
         Assert.Same(id, response.RequestId);
-        Assert.Equal(approved, response.Approved);
-        Assert.Same(functionCall, response.ToolCall);
+        Assert.True(response.Approved);
+        Assert.Same(toolCall, response.ToolCall);
         Assert.Null(response.Reason);
     }
 
@@ -76,10 +88,11 @@ public class ToolApprovalRequestContentTests
         Assert.Equal(reason, response.Reason);
     }
 
-    [Fact]
-    public void Serialization_Roundtrips()
+    [Theory]
+    [MemberData(nameof(ToolCallContentInstances))]
+    public void Serialization_Roundtrips(ToolCallContent toolCall)
     {
-        var content = new ToolApprovalRequestContent("request123", new FunctionCallContent("call123", "functionName", new Dictionary<string, object?> { { "param1", 123 } }));
+        var content = new ToolApprovalRequestContent("request123", toolCall);
 
         AssertSerializationRoundtrips<ToolApprovalRequestContent>(content);
         AssertSerializationRoundtrips<InputRequestContent>(content);
@@ -95,9 +108,8 @@ public class ToolApprovalRequestContentTests
             var deserializedContent = Assert.IsType<ToolApprovalRequestContent>(deserialized);
             Assert.Equal(content.RequestId, deserializedContent.RequestId);
             Assert.NotNull(deserializedContent.ToolCall);
-            var functionCall = Assert.IsType<FunctionCallContent>(deserializedContent.ToolCall);
-            Assert.Equal(content.ToolCall.CallId, functionCall.CallId);
-            Assert.Equal(((FunctionCallContent)content.ToolCall).Name, functionCall.Name);
+            Assert.IsType(content.ToolCall.GetType(), deserializedContent.ToolCall);
+            Assert.Equal(content.ToolCall.CallId, deserializedContent.ToolCall.CallId);
         }
     }
 }
