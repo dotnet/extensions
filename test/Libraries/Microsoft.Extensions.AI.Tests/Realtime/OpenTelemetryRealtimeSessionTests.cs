@@ -561,11 +561,19 @@ public class OpenTelemetryRealtimeSessionTests
     }
 
     [Theory]
-    [InlineData(ToolChoiceMode.None, "none")]
-    [InlineData(ToolChoiceMode.Auto, "auto")]
-    [InlineData(ToolChoiceMode.Required, "required")]
-    public async Task ToolChoiceMode_Logged(ToolChoiceMode mode, string expectedValue)
+    [InlineData("none", "none")]
+    [InlineData("auto", "auto")]
+    [InlineData("required", "required")]
+    public async Task ToolChoiceMode_Logged(string modeKey, string expectedValue)
     {
+        ChatToolMode mode = modeKey switch
+        {
+            "none" => ChatToolMode.None,
+            "auto" => ChatToolMode.Auto,
+            "required" => ChatToolMode.RequireAny,
+            _ => throw new ArgumentException(modeKey),
+        };
+
         var sourceName = Guid.NewGuid().ToString();
         var activities = new List<Activity>();
         using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
@@ -578,7 +586,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions
             {
                 Model = "test-model",
-                ToolChoiceMode = mode,
+                ToolMode = mode,
                 Tools = [AIFunctionFactory.Create((string query) => query, "Search")],
             },
             GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
@@ -617,7 +625,7 @@ public class OpenTelemetryRealtimeSessionTests
             {
                 Model = "test-model",
                 AIFunction = forcedFunction,
-                ToolChoiceMode = ToolChoiceMode.Auto, // Should be ignored when AIFunction is set
+                ToolMode = ChatToolMode.Auto, // Should be ignored when AIFunction is set
             },
             GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
         };
@@ -656,7 +664,7 @@ public class OpenTelemetryRealtimeSessionTests
             {
                 Model = "test-model",
                 HostedMcpServerTool = mcpTool,
-                ToolChoiceMode = ToolChoiceMode.Auto, // Should be ignored when HostedMcpServerTool is set
+                ToolMode = ChatToolMode.Auto, // Should be ignored when HostedMcpServerTool is set
             },
             GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
         };

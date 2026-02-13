@@ -27,7 +27,7 @@ public class RealtimeSessionOptionsTests
         Assert.Null(options.Instructions);
         Assert.Null(options.MaxOutputTokens);
         Assert.Null(options.OutputModalities);
-        Assert.Null(options.ToolChoiceMode);
+        Assert.Null(options.ToolMode);
         Assert.Null(options.AIFunction);
         Assert.Null(options.HostedMcpServerTool);
         Assert.Null(options.Tools);
@@ -62,7 +62,7 @@ public class RealtimeSessionOptionsTests
         options.Instructions = "Be helpful";
         options.MaxOutputTokens = 500;
         options.OutputModalities = modalities;
-        options.ToolChoiceMode = ToolChoiceMode.Auto;
+        options.ToolMode = ChatToolMode.Auto;
         options.Tools = tools;
         options.EnableAutoTracing = true;
         options.TracingGroupId = "group-1";
@@ -81,7 +81,7 @@ public class RealtimeSessionOptionsTests
         Assert.Equal("Be helpful", options.Instructions);
         Assert.Equal(500, options.MaxOutputTokens);
         Assert.Same(modalities, options.OutputModalities);
-        Assert.Equal(ToolChoiceMode.Auto, options.ToolChoiceMode);
+        Assert.Equal(ChatToolMode.Auto, options.ToolMode);
         Assert.Same(tools, options.Tools);
         Assert.True(options.EnableAutoTracing);
         Assert.Equal("group-1", options.TracingGroupId);

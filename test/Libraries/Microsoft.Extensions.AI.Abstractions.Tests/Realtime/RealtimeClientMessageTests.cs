@@ -139,7 +139,7 @@ public class RealtimeClientMessageTests
         Assert.Null(message.MaxOutputTokens);
         Assert.Null(message.Metadata);
         Assert.Null(message.OutputModalities);
-        Assert.Null(message.ToolChoiceMode);
+        Assert.Null(message.ToolMode);
         Assert.Null(message.AIFunction);
         Assert.Null(message.HostedMcpServerTool);
         Assert.Null(message.Tools);
@@ -167,7 +167,7 @@ public class RealtimeClientMessageTests
         message.MaxOutputTokens = 100;
         message.Metadata = metadata;
         message.OutputModalities = modalities;
-        message.ToolChoiceMode = ToolChoiceMode.Auto;
+        message.ToolMode = ChatToolMode.Auto;
         message.Tools = tools;
 
         Assert.Same(items, message.Items);
@@ -178,7 +178,7 @@ public class RealtimeClientMessageTests
         Assert.Equal(100, message.MaxOutputTokens);
         Assert.Same(metadata, message.Metadata);
         Assert.Same(modalities, message.OutputModalities);
-        Assert.Equal(ToolChoiceMode.Auto, message.ToolChoiceMode);
+        Assert.Equal(ChatToolMode.Auto, message.ToolMode);
         Assert.Same(tools, message.Tools);
     }
 

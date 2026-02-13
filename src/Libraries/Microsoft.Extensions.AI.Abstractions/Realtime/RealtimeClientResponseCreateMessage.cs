@@ -68,7 +68,7 @@ public class RealtimeClientResponseCreateMessage : RealtimeClientMessage
     /// <remarks>
     /// If AIFunction or HostedMcpServerTool is specified, this value will be ignored.
     /// </remarks>
-    public ToolChoiceMode? ToolChoiceMode { get; set; }
+    public ChatToolMode? ToolMode { get; set; }
 
     /// <summary>
     /// Gets or sets the AI function to use for the response.

@@ -413,13 +413,13 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                         ["name"] = responseCreate.HostedMcpServerTool.Name,
                     };
                 }
-                else if (responseCreate.ToolChoiceMode.HasValue)
+                else if (responseCreate.ToolMode is { } toolMode)
                 {
-                    responseObj["tool_choice"] = responseCreate.ToolChoiceMode.Value switch
+                    responseObj["tool_choice"] = toolMode switch
                     {
-                        ToolChoiceMode.None => "none",
-                        ToolChoiceMode.Auto => "auto",
-                        ToolChoiceMode.Required => "required",
+                        RequiredChatToolMode r when r.RequiredFunctionName is not null => r.RequiredFunctionName,
+                        RequiredChatToolMode => "required",
+                        NoneChatToolMode => "none",
                         _ => "auto",
                     };
                 }
@@ -1361,7 +1361,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                 newOptions.Tools = Options.Tools;
                 newOptions.AIFunction = Options.AIFunction;
                 newOptions.HostedMcpServerTool = Options.HostedMcpServerTool;
-                newOptions.ToolChoiceMode = Options.ToolChoiceMode;
+                newOptions.ToolMode = Options.ToolMode;
                 newOptions.EnableAutoTracing = Options.EnableAutoTracing;
                 newOptions.TracingGroupId = Options.TracingGroupId;
                 newOptions.TracingWorkflowName = Options.TracingWorkflowName;

@@ -298,7 +298,7 @@ public class OpenAIRealtimeSessionSerializationTests : IAsyncLifetime
             OutputVoice = "alloy",
             OutputAudioOptions = new RealtimeAudioFormat("audio/pcm", 24000),
             Metadata = new AdditionalPropertiesDictionary { ["key1"] = "value1" },
-            ToolChoiceMode = ToolChoiceMode.Auto,
+            ToolMode = ChatToolMode.Auto,
         };
 
         await _session.InjectClientMessageAsync(message);

@@ -808,7 +808,7 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
                     }
 
                     // Tool choice mode (custom attribute - not part of OTel GenAI spec)
-                    // Priority: AIFunction > HostedMcpServerTool > ToolChoiceMode
+                    // Priority: AIFunction > HostedMcpServerTool > ToolMode
                     string? toolChoice = null;
                     if (options.AIFunction is { } aiFunc)
                     {
@@ -820,15 +820,14 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
                         // When a specific MCP tool is forced, use the server name (mcp:<server_name>)
                         toolChoice = $"mcp:{mcpTool.ServerName}";
                     }
-                    else if (options.ToolChoiceMode is { } mode)
+                    else if (options.ToolMode is { } toolMode)
                     {
-                        // Map ToolChoiceMode enum to lowercase string values
-                        toolChoice = mode switch
+                        toolChoice = toolMode switch
                         {
-                            ToolChoiceMode.None => "none",
-                            ToolChoiceMode.Auto => "auto",
-                            ToolChoiceMode.Required => "required",
-                            _ => mode.ToString().ToLowerInvariant(),
+                            RequiredChatToolMode r when r.RequiredFunctionName is not null => r.RequiredFunctionName,
+                            RequiredChatToolMode => "required",
+                            NoneChatToolMode => "none",
+                            _ => "auto",
                         };
                     }
 
