@@ -190,7 +190,7 @@ public sealed class AcceptanceTest
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 
-    [ConditionalFact]
+    [ConditionalFact(Skip = "Flaky test, see https://github.com/dotnet/extensions/issues/7294")]
     [CombinatorialData]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv1()
