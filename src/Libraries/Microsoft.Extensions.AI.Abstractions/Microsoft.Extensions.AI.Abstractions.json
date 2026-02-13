@@ -1948,7 +1948,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.AI.FunctionCallContent.Name { get; set; }",
+          "Member": "string Microsoft.Extensions.AI.FunctionCallContent.Name { get; }",
           "Stage": "Stable"
         }
       ]
@@ -2365,11 +2365,11 @@
     },
     {
       "Type": "interface Microsoft.Extensions.AI.IChatReducer",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage>> Microsoft.Extensions.AI.IChatReducer.ReduceAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, System.Threading.CancellationToken cancellationToken);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -2691,7 +2691,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.McpServerToolCallContent.McpServerToolCallContent(string callId, string name, string? serverName, System.Collections.Generic.IDictionary<string, object?>? arguments = null);",
+          "Member": "Microsoft.Extensions.AI.McpServerToolCallContent.McpServerToolCallContent(string callId, string name, string? serverName);",
           "Stage": "Stable"
         }
       ],
@@ -2701,15 +2701,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "System.Exception? Microsoft.Extensions.AI.McpServerToolCallContent.Exception { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.AI.McpServerToolCallContent.InformationalOnly { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string Microsoft.Extensions.AI.McpServerToolCallContent.Name { get; set; }",
+          "Member": "string Microsoft.Extensions.AI.McpServerToolCallContent.Name { get; }",
           "Stage": "Stable"
         },
         {
@@ -2723,21 +2715,13 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.McpServerToolResultContent.McpServerToolResultContent(string callId, string? serverName, object? result = null);",
+          "Member": "Microsoft.Extensions.AI.McpServerToolResultContent.McpServerToolResultContent(string callId);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "System.Exception? Microsoft.Extensions.AI.McpServerToolResultContent.Exception { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "object? Microsoft.Extensions.AI.McpServerToolResultContent.Result { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.McpServerToolResultContent.ServerName { get; }",
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.McpServerToolResultContent.Outputs { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -3339,41 +3323,21 @@
       ]
     },
     {
-      "Type": "abstract class Microsoft.Extensions.AI.ToolCallContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.ToolCallContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.ToolCallContent.ToolCallContent(string callId);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.ToolCallContent.ToolCallContent();",
-          "Stage": "Experimental"
-        }
-      ],
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.AI.ToolCallContent.CallId { get; set; }",
+          "Member": "string Microsoft.Extensions.AI.ToolCallContent.CallId { get; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "abstract class Microsoft.Extensions.AI.ToolResultContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.ToolResultContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.ToolResultContent.ToolResultContent(string callId);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.ToolResultContent.ToolResultContent();",
-          "Stage": "Experimental"
-        }
-      ],
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.AI.ToolResultContent.CallId { get; set; }",
+          "Member": "string Microsoft.Extensions.AI.ToolResultContent.CallId { get; }",
           "Stage": "Stable"
         }
       ]
