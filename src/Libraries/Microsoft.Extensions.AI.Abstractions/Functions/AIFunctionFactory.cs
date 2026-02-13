@@ -12,7 +12,6 @@ using System.IO;
 using System.Linq;
 #endif
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -1097,7 +1096,7 @@ public static partial class AIFunctionFactory
         private static string? GetReturnParameterDescription(MethodInfo method)
         {
             // DynamicMethod return parameters don't support GetCustomAttribute.
-            if (method is DynamicMethod)
+            if (method.GetType().Name == "DynamicMethod")
             {
                 return null;
             }
