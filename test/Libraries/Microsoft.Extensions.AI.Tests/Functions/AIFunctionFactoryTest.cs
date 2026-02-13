@@ -1447,9 +1447,12 @@ public partial class AIFunctionFactoryTest
         JsonElement properties = schema.GetProperty("properties");
         Assert.True(properties.TryGetProperty("value", out _));
 
+#if NET
+        // DynamicMethod invocation via MethodInfo.Invoke is not supported on .NET Framework.
         object? result = await func.InvokeAsync(new() { ["value"] = 21 });
         Assert.IsType<JsonElement>(result);
         Assert.Equal(42, ((JsonElement)result!).GetInt32());
+#endif
     }
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
