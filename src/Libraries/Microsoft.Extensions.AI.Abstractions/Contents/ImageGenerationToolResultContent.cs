@@ -22,7 +22,6 @@ public sealed class ImageGenerationToolResultContent : ToolResultContent
     /// Initializes a new instance of the <see cref="ImageGenerationToolResultContent"/> class.
     /// </summary>
     /// <param name="callId">The tool call ID.</param>
-    [JsonConstructor]
     public ImageGenerationToolResultContent(string callId)
         : base(callId)
     {

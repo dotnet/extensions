@@ -22,7 +22,6 @@ public sealed class CodeInterpreterToolCallContent : ToolCallContent
     /// Initializes a new instance of the <see cref="CodeInterpreterToolCallContent"/> class.
     /// </summary>
     /// <param name="callId">The tool call ID.</param>
-    [JsonConstructor]
     public CodeInterpreterToolCallContent(string callId)
         : base(callId)
     {
