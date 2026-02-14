@@ -374,6 +374,13 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 ConvertContentParts(update.ContentUpdate, responseUpdate.Contents);
             }
 
+            // Check for reasoning content from OpenAI-compatible endpoints (e.g. DeepSeek, vLLM, OpenRouter)
+            // that surface it via non-standard fields in the response JSON.
+            if (TryGetReasoningDelta(update, out string? reasoningText))
+            {
+                responseUpdate.Contents.Add(new TextReasoningContent(reasoningText));
+            }
+
             if (update.OutputAudioUpdate is { } audioUpdate)
             {
                 responseUpdate.Contents.Add(new DataContent(audioUpdate.AudioBytesUpdate.ToMemory(), GetOutputAudioMimeType(options))
@@ -491,6 +498,13 @@ internal sealed partial class OpenAIChatClient : IChatClient
             {
                 returnMessage.Contents.Add(aiContent);
             }
+        }
+
+        // Check for reasoning content from OpenAI-compatible endpoints (e.g. DeepSeek, vLLM, OpenRouter)
+        // that surface it via non-standard fields in the response JSON.
+        if (TryGetReasoningMessage(openAICompletion, out string? reasoningText))
+        {
+            returnMessage.Contents.Add(new TextReasoningContent(reasoningText));
         }
 
         // Output audio is handled separately from message content parts.
@@ -821,6 +835,16 @@ internal sealed partial class OpenAIChatClient : IChatClient
         public string? Name;
         public StringBuilder? Arguments;
     }
+
+#pragma warning disable SCME0001 // JsonPatch is experimental
+    /// <summary>Tries to extract reasoning text from a streaming chat completion update's Patch.</summary>
+    private static bool TryGetReasoningDelta(StreamingChatCompletionUpdate update, [NotNullWhen(true)] out string? reasoningText)
+        => update.Patch.TryGetValue("$.choices[0].delta.reasoning_content"u8, out reasoningText) && reasoningText is not null;
+
+    /// <summary>Tries to extract reasoning text from a non-streaming chat completion's Patch.</summary>
+    private static bool TryGetReasoningMessage(ChatCompletion completion, [NotNullWhen(true)] out string? reasoningText)
+        => completion.Patch.TryGetValue("$.choices[0].message.reasoning_content"u8, out reasoningText) && reasoningText is not null;
+#pragma warning restore SCME0001
 
     private const string InvalidAuthorNamePattern = @"[^a-zA-Z0-9_]+";
 #if NET
