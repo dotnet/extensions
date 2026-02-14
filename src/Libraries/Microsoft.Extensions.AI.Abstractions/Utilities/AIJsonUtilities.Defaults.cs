@@ -162,6 +162,15 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(ImageGenerationOptions))]
     [JsonSerializable(typeof(ImageGenerationResponse))]
 
+    // IHostedFileClient
+    [JsonSerializable(typeof(HostedFile))]
+    [JsonSerializable(typeof(HostedFileUploadOptions))]
+    [JsonSerializable(typeof(HostedFileDownloadOptions))]
+    [JsonSerializable(typeof(HostedFileGetOptions))]
+    [JsonSerializable(typeof(HostedFileListOptions))]
+    [JsonSerializable(typeof(HostedFileDeleteOptions))]
+    [JsonSerializable(typeof(HostedFileClientMetadata))]
+
     [EditorBrowsable(EditorBrowsableState.Never)] // Never use JsonContext directly, use DefaultOptions instead.
     private sealed partial class JsonContext : JsonSerializerContext;
 
