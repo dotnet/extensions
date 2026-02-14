@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -3045,7 +3045,7 @@ public class FunctionInvokingChatClientTests
             var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
 
             // FunctionB should have been converted to an approval request (not executed)
-            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+            Assert.Contains(result.Messages, m => m.Contents.OfType<ToolApprovalRequestContent>().Any(frc => ((FunctionCallContent)frc.ToolCall).Name == "FunctionB"));
 
             // And FunctionA should have been executed
             Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>().Any(frc => frc.Result?.ToString() == "FunctionA result"));
@@ -3055,7 +3055,7 @@ public class FunctionInvokingChatClientTests
             var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
 
             // FunctionB should have been converted to an approval request (not executed)
-            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+            Assert.Contains(result.Messages, m => m.Contents.OfType<ToolApprovalRequestContent>().Any(frc => ((FunctionCallContent)frc.ToolCall).Name == "FunctionB"));
 
             // And FunctionA should have been executed
             Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionResultContent>().Any(frc => frc.Result?.ToString() == "FunctionA result"));
@@ -3151,7 +3151,7 @@ public class FunctionInvokingChatClientTests
             var result = await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "test")], options).ToChatResponseAsync();
 
             // FunctionB should have been converted to an approval request (not executed)
-            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+            Assert.Contains(result.Messages, m => m.Contents.OfType<ToolApprovalRequestContent>().Any(frc => ((FunctionCallContent)frc.ToolCall).Name == "FunctionB"));
 
             // Original FunctionB result should NOT be present
             Assert.DoesNotContain(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
@@ -3162,7 +3162,7 @@ public class FunctionInvokingChatClientTests
             var result = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "test")], options);
 
             // FunctionB should have been converted to an approval request (not executed)
-            Assert.Contains(result.Messages, m => m.Contents.OfType<FunctionApprovalRequestContent>().Any(frc => frc.FunctionCall.Name == "FunctionB"));
+            Assert.Contains(result.Messages, m => m.Contents.OfType<ToolApprovalRequestContent>().Any(frc => ((FunctionCallContent)frc.ToolCall).Name == "FunctionB"));
 
             // Original FunctionB result should NOT be present
             Assert.DoesNotContain(result.Messages, m => m.Contents.OfType<FunctionResultContent>()
@@ -3291,7 +3291,7 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1"))
             ])
         ];
 
@@ -3327,11 +3327,11 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1"))
             ]),
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1"))
+                new ToolApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1"))
             ])
         };
 
@@ -3364,11 +3364,11 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1"))
             ]),
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1")) { Reason = "User denied" }
+                new ToolApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1")) { Reason = "User denied" }
             ])
         };
 
@@ -3383,3 +3383,4 @@ public class FunctionInvokingChatClientTests
     // the threshold condition. The logging call is at line 1078 and will execute
     // when MaximumConsecutiveErrorsPerRequest is exceeded.
 }
+

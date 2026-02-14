@@ -196,15 +196,15 @@ public static class ChatResponseExtensions
 
         for (int i = 0; i < contents.Count; i++)
         {
-            if (contents[i] is ImageGenerationToolResultContent imageResult && !string.IsNullOrEmpty(imageResult.ImageId))
+            if (contents[i] is ImageGenerationToolResultContent imageResult)
             {
-                // Check if there's an existing ImageGenerationToolResultContent with the same ImageId to replace
+                // Check if there's an existing ImageGenerationToolResultContent with the same CallId to replace
                 if (imageResultIndexById is null)
                 {
                     imageResultIndexById = new(StringComparer.Ordinal);
                 }
 
-                if (imageResultIndexById.TryGetValue(imageResult.ImageId!, out int existingIndex))
+                if (imageResultIndexById.TryGetValue(imageResult.CallId, out int existingIndex))
                 {
                     // Replace the existing imageResult with the new one
                     contents[existingIndex] = imageResult;
@@ -213,7 +213,7 @@ public static class ChatResponseExtensions
                 }
                 else
                 {
-                    imageResultIndexById[imageResult.ImageId!] = i;
+                    imageResultIndexById[imageResult.CallId] = i;
                 }
             }
         }
@@ -320,9 +320,8 @@ public static class ChatResponseExtensions
                     CoalesceContent(inputs);
                 }
 
-                return new()
+                return new(firstContent.CallId)
                 {
-                    CallId = firstContent.CallId,
                     Inputs = inputs,
                     AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
                 };
@@ -331,7 +330,7 @@ public static class ChatResponseExtensions
         Coalesce<CodeInterpreterToolResultContent>(
             contents,
             mergeSingle: true,
-            canMerge: static (r1, r2) => r1.CallId is not null && r2.CallId is not null && r1.CallId == r2.CallId,
+            canMerge: static (r1, r2) => r1.CallId == r2.CallId,
             static (contents, start, end) =>
             {
                 var firstContent = (CodeInterpreterToolResultContent)contents[start];
@@ -358,9 +357,8 @@ public static class ChatResponseExtensions
                     CoalesceContent(output);
                 }
 
-                return new()
+                return new(firstContent.CallId)
                 {
-                    CallId = firstContent.CallId,
                     Outputs = output,
                     AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
                 };

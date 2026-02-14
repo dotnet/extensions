@@ -203,6 +203,19 @@ public static partial class AIJsonUtilities
         });
     }
 
+    /// <summary>Adds a derived type to the polymorphism options of the specified base type.</summary>
+    private static void AddDerivedContentType(JsonSerializerOptions options, Type baseType, Type derivedType, string typeDiscriminatorId)
+    {
+        IJsonTypeInfoResolver resolver = options.TypeInfoResolver ?? DefaultOptions.TypeInfoResolver!;
+        options.TypeInfoResolver = resolver.WithAddedModifier(typeInfo =>
+        {
+            if (typeInfo.Type == baseType)
+            {
+                (typeInfo.PolymorphismOptions ??= new()).DerivedTypes.Add(new(derivedType, typeDiscriminatorId));
+            }
+        });
+    }
+
 #if NET
     /// <summary>Provides a stream that writes to an <see cref="IncrementalHash"/>.</summary>
     private sealed class IncrementalHashStream : Stream

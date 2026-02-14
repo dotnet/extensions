@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -17,7 +17,7 @@ public class McpServerToolResultContentTests
         Assert.Equal("callId", c.CallId);
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.Output);
+        Assert.Null(c.Outputs);
     }
 
     [Fact]
@@ -37,10 +37,10 @@ public class McpServerToolResultContentTests
 
         Assert.Equal("callId", c.CallId);
 
-        Assert.Null(c.Output);
-        IList<AIContent> output = [];
-        c.Output = output;
-        Assert.Same(output, c.Output);
+        Assert.Null(c.Outputs);
+        IList<AIContent> outputs = [new TextContent("test result")];
+        c.Outputs = outputs;
+        Assert.Same(outputs, c.Outputs);
     }
 
     [Fact]
@@ -55,14 +55,25 @@ public class McpServerToolResultContentTests
     {
         var content = new McpServerToolResultContent("call123")
         {
-            Output = new List<AIContent> { new TextContent("result") }
+            Outputs = [new TextContent("result")]
         };
 
-        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
-        var deserializedContent = JsonSerializer.Deserialize<McpServerToolResultContent>(json, AIJsonUtilities.DefaultOptions);
+        AssertSerializationRoundtrips<McpServerToolResultContent>(content);
+        AssertSerializationRoundtrips<ToolResultContent>(content);
+        AssertSerializationRoundtrips<AIContent>(content);
 
-        Assert.NotNull(deserializedContent);
-        Assert.Equal(content.CallId, deserializedContent.CallId);
-        Assert.NotNull(deserializedContent.Output);
+        static void AssertSerializationRoundtrips<T>(McpServerToolResultContent content)
+            where T : AIContent
+        {
+            T contentAsT = (T)(object)content;
+            string json = JsonSerializer.Serialize(contentAsT, AIJsonUtilities.DefaultOptions);
+            T? deserialized = JsonSerializer.Deserialize<T>(json, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            var deserializedContent = Assert.IsType<McpServerToolResultContent>(deserialized);
+            Assert.Equal(content.CallId, deserializedContent.CallId);
+            Assert.NotNull(deserializedContent.Outputs);
+            Assert.Equal("result", Assert.IsType<TextContent>(Assert.Single(deserializedContent.Outputs)).Text);
+        }
     }
 }
+
