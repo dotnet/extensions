@@ -198,19 +198,16 @@ public class LinuxResourceHealthCheckTests
 
         listener.SetMeasurementEventCallback<double>((instrument, measurement, _, _) =>
         {
-            if (ReferenceEquals(meter, instrument.Meter))
+            switch (instrument.Name)
             {
-                switch (instrument.Name)
-                {
-                    case "process.cpu.utilization":
-                    case "container.cpu.limit.utilization":
-                        cpuUsedPercentage = measurement * 100;
-                        break;
-                    case "dotnet.process.memory.virtual.utilization":
-                    case "container.memory.limit.utilization":
-                        memoryUsedPercentage = measurement * 100;
-                        break;
-                }
+                case "process.cpu.utilization":
+                case "container.cpu.limit.utilization":
+                    cpuUsedPercentage = measurement * 100;
+                    break;
+                case "dotnet.process.memory.virtual.utilization":
+                case "container.memory.limit.utilization":
+                    memoryUsedPercentage = measurement * 100;
+                    break;
             }
         });
 
