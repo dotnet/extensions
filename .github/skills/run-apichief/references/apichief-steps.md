@@ -6,7 +6,7 @@ Ask the user which command to run if not specified. The available commands are:
 
 | Command | Description | Extra arguments |
 |---|---|---|
-| `emit baseline` | Emit a YAML API fingerprint | `-o <file>` for output path |
+| `emit baseline` | Emit a JSON API baseline | `-o <file>` for output path |
 | `emit summary` | Emit a human-readable API summary | `-o <file>`, `-x` to omit XML docs |
 | `emit review` | Emit API review files | `-o <dir>`, `-n` to group by namespace |
 | `emit delta` | Emit a delta against a previous baseline | `<baseline-path>`, `-o <file>` |
