@@ -9,6 +9,7 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.Shared.Instruments;
 using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
@@ -151,8 +152,6 @@ public class LinuxResourceHealthCheckTests
         string expectedDescription)
     {
         var fakeClock = new FakeTimeProvider();
-        var dataTracker = new Mock<IResourceMonitor>();
-        var meterName = Guid.NewGuid().ToString();
         var logger = new FakeLogger<LinuxUtilizationProvider>();
         using var meter = new Meter("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
         var meterFactoryMock = new Mock<IMeterFactory>();
@@ -176,7 +175,6 @@ public class LinuxResourceHealthCheckTests
         var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser.Object, resourceMonitoringOptions);
         var provider = new LinuxUtilizationProvider(resourceMonitoringOptions, parser.Object, meterFactoryMock.Object, resourceQuotaProvider, logger, fakeClock);
 
-        var checkContext = new HealthCheckContext();
         var checkOptions = new ResourceUtilizationHealthCheckOptions
         {
             CpuThresholds = cpuThresholds,
@@ -184,15 +182,49 @@ public class LinuxResourceHealthCheckTests
             UseObservableResourceMonitoringInstruments = true
         };
 
-        var options = Microsoft.Extensions.Options.Options.Create(checkOptions);
-        using var healthCheck = new ResourceUtilizationHealthCheck(
-            options,
-            dataTracker.Object,
-            Microsoft.Extensions.Options.Options.Create(new ResourceMonitoringOptions()));
+        // Create local MeterListener isolated by meter reference
+        double cpuUsedPercentage = 0;
+        double memoryUsedPercentage = 0;
+
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = (instrument, listener) =>
+            {
+                if (ReferenceEquals(meter, instrument.Meter))
+                {
+                    listener.EnableMeasurementEvents(instrument);
+                }
+            }
+        };
+
+        listener.SetMeasurementEventCallback<double>((instrument, measurement, _, _) =>
+        {
+            if (ReferenceEquals(meter, instrument.Meter))
+            {
+                switch (instrument.Name)
+                {
+                    case ResourceUtilizationInstruments.ProcessCpuUtilization:
+                    case ResourceUtilizationInstruments.ContainerCpuLimitUtilization:
+                        cpuUsedPercentage = measurement * 100;
+                        break;
+                    case ResourceUtilizationInstruments.ProcessMemoryUtilization:
+                    case ResourceUtilizationInstruments.ContainerMemoryLimitUtilization:
+                        memoryUsedPercentage = measurement * 100;
+                        break;
+                }
+            }
+        });
+
+        listener.Start();
 
         // Act
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
-        var healthCheckResult = await healthCheck.CheckHealthAsync(checkContext);
+        listener.RecordObservableInstruments();
+
+        var healthCheckResult = await ResourceUtilizationHealthCheck.EvaluateHealthStatusAsync(
+            cpuUsedPercentage,
+            memoryUsedPercentage,
+            checkOptions);
 
         // Assert
         Assert.Equal(expected, healthCheckResult.Status);
