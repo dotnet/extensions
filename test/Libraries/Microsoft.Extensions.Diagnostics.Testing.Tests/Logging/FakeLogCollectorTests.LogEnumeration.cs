@@ -98,16 +98,25 @@ public partial class FakeLogCollectorTests
             null,
             cancellationToken: CancellationToken.None);
 
+        var abcProcessedAB = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         var abcSequenceTask = AwaitSequence(
             new Queue<string>(["A", "B", "C"]),
             fromIndex: 0,
             fakeLogCollector,
             null,
             cancellationToken: CancellationToken.None,
-            () => Interlocked.Increment(ref moveNextCounter));
+            () =>
+            {
+                if (Interlocked.Increment(ref moveNextCounter) == 2)
+                {
+                    abcProcessedAB.TrySetResult();
+                }
+            });
 
         EmitLogs(logger, ["A", "B"], null);
         await AssertAwaitingTaskCompleted(abSequenceTask); // checkpoint to not clear, before A, B is processed
+        await AssertAwaitingTaskCompleted(abcProcessedAB.Task); // ensure enumerator #2 has also consumed A and B
 
         if (clearIsCalledDuringWait)
         {
