@@ -270,7 +270,7 @@ public class OpenAIRealtimeSessionSerializationTests : IAsyncLifetime
         var semanticVad = Assert.IsType<SemanticVoiceActivityDetection>(options.VoiceActivityDetection);
         Assert.False(semanticVad.CreateResponse);
         Assert.True(semanticVad.InterruptResponse);
-        Assert.Equal("high", semanticVad.Eagerness);
+        Assert.Equal(SemanticEagerness.High, semanticVad.Eagerness);
     }
 
     [Fact]

@@ -15,8 +15,5 @@ public class SemanticVoiceActivityDetection : VoiceActivityDetection
     /// <summary>
     /// Gets or sets the eagerness level for semantic voice activity detection.
     /// </summary>
-    /// <remarks>
-    /// Examples of the values are "low", "medium", "high", and "auto".
-    /// </remarks>
-    public string Eagerness { get; set; } = "auto";
+    public SemanticEagerness Eagerness { get; set; } = SemanticEagerness.Auto;
 }

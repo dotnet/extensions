@@ -190,7 +190,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                 ["type"] = "semantic_vad",
                 ["create_response"] = semanticVad.CreateResponse,
                 ["interrupt_response"] = semanticVad.InterruptResponse,
-                ["eagerness"] = semanticVad.Eagerness,
+                ["eagerness"] = semanticVad.Eagerness.Value,
             };
         }
 
@@ -1505,7 +1505,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                         if (turnDetectionElement.TryGetProperty("eagerness", out var eagernessElement) &&
                             eagernessElement.GetString() is string eagerness)
                         {
-                            semanticVad.Eagerness = eagerness;
+                            semanticVad.Eagerness = new SemanticEagerness(eagerness);
                         }
 
                         options.VoiceActivityDetection = semanticVad;
