@@ -20,6 +20,7 @@ using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1075 // URIs should not be hardcoded
 #pragma warning disable S1199 // Nested block
+#pragma warning disable S1696 // NullReferenceException should not be caught
 #pragma warning disable SA1118 // Parameter should not span multiple lines
 
 namespace Microsoft.Extensions.AI;
@@ -343,7 +344,7 @@ public static partial class AIJsonUtilities
                 }
                 else if (parameter is not null &&
                     !ctx.TypeInfo.Type.IsValueType &&
-                    nullabilityContext?.Create(parameter).WriteState is NullabilityState.Nullable)
+                    GetNullableWriteState(nullabilityContext, parameter) is NullabilityState.Nullable)
                 {
                     // Handle nullable reference type parameters (e.g., object?).
                     if (objSchema.TryGetPropertyValue(TypePropertyName, out JsonNode? typeKeyWord) &&
@@ -832,5 +833,24 @@ public static partial class AIJsonUtilities
         }
 
         return defaultValue;
+    }
+
+    private static NullabilityState? GetNullableWriteState(NullabilityInfoContext? nullabilityContext, ParameterInfo parameter)
+    {
+        if (nullabilityContext is not null)
+        {
+            try
+            {
+                return nullabilityContext.Create(parameter).WriteState;
+            }
+            catch (NullReferenceException)
+            {
+                // NullabilityInfoContext can throw for parameters that lack complete reflection metadata
+                // (e.g. DynamicMethod parameters). cf. https://github.com/dotnet/runtime/pull/124293
+                return NullabilityState.Unknown;
+            }
+        }
+
+        return null;
     }
 }
