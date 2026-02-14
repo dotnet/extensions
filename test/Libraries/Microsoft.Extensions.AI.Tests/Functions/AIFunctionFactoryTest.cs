@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -1416,6 +1417,42 @@ public partial class AIFunctionFactoryTest
         Assert.Contains("nullableInt", requiredParams);
         Assert.DoesNotContain("nullableStringWithDefault", requiredParams);
         Assert.DoesNotContain("nullableIntWithDefault", requiredParams);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_DynamicMethod()
+    {
+        DynamicMethod dynamicMethod = new DynamicMethod(
+            "DoubleIt",
+            typeof(Task<int>),
+            new[] { typeof(int) },
+            typeof(AIFunctionFactoryTest).Module);
+
+        dynamicMethod.DefineParameter(1, ParameterAttributes.None, "value");
+
+        ILGenerator il = dynamicMethod.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldc_I4_2);
+        il.Emit(OpCodes.Mul);
+        il.Emit(OpCodes.Call, typeof(Task).GetMethod(nameof(Task.FromResult))!.MakeGenericMethod(typeof(int)));
+        il.Emit(OpCodes.Ret);
+
+        Delegate testDelegate = dynamicMethod.CreateDelegate(typeof(Func<int, Task<int>>));
+
+        AIFunction func = AIFunctionFactory.Create(testDelegate.GetMethodInfo(), testDelegate.Target);
+
+        Assert.Equal("DoubleIt", func.Name);
+
+        JsonElement schema = func.JsonSchema;
+        JsonElement properties = schema.GetProperty("properties");
+        Assert.True(properties.TryGetProperty("value", out _));
+
+#if NET
+        // DynamicMethod invocation via MethodInfo.Invoke is not supported on .NET Framework.
+        object? result = await func.InvokeAsync(new() { ["value"] = 21 });
+        Assert.IsType<JsonElement>(result);
+        Assert.Equal(42, ((JsonElement)result!).GetInt32());
+#endif
     }
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]

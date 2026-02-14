@@ -704,7 +704,7 @@ public static partial class AIFunctionFactory
             JsonSerializerOptions = serializerOptions;
             ReturnJsonSchema = returnType is null || key.ExcludeResultSchema ? null : AIJsonUtilities.CreateJsonSchema(
                 NormalizeReturnType(returnType, serializerOptions),
-                description: key.Method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+                description: GetReturnParameterDescription(key.Method),
                 serializerOptions: serializerOptions,
                 inferenceOptions: schemaOptions);
 
@@ -1092,6 +1092,19 @@ public static partial class AIFunctionFactory
         private static bool IsAIContentRelatedType(Type type) =>
             typeof(AIContent).IsAssignableFrom(type) ||
             typeof(IEnumerable<AIContent>).IsAssignableFrom(type);
+
+        private static string? GetReturnParameterDescription(MethodInfo method)
+        {
+            try
+            {
+                return method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+            }
+            catch (Exception e) when (e is ArgumentNullException or NullReferenceException)
+            {
+                // DynamicMethod return parameters don't support GetCustomAttribute.
+                return null;
+            }
+        }
 
         private static Type NormalizeReturnType(Type type, JsonSerializerOptions? options)
         {
