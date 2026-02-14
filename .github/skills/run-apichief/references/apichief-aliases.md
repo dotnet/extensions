@@ -17,9 +17,9 @@ Match aliases from **longest prefix first** to avoid ambiguous matches (e.g. `ME
 | `MEC` | `Microsoft.Extensions.Compliance` |
 | `MER` | `Microsoft.Extensions.Resilience` |
 | `MET` | `Microsoft.Extensions.Telemetry` |
-| `ME` | `Microsoft.Extensions` |
-| `MAD` | `Microsoft.AspNetCore.Diagnostics` |
-| `MA` | `Microsoft.AspNetCore` |
+| `ME` | `Microsoft.Extensions.*` |
+| `MAD` | `Microsoft.AspNetCore.Diagnostics.*` |
+| `MA` | `Microsoft.AspNetCore.*` |
 
 ## Expansion Rules
 
