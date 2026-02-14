@@ -98,7 +98,7 @@ public partial class FakeLogCollectorTests
             null,
             cancellationToken: CancellationToken.None);
 
-        var abcProcessedAB = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var abcProcessedAB = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var abcSequenceTask = AwaitSequence(
             new Queue<string>(["A", "B", "C"]),
@@ -110,7 +110,7 @@ public partial class FakeLogCollectorTests
             {
                 if (Interlocked.Increment(ref moveNextCounter) == 2)
                 {
-                    abcProcessedAB.TrySetResult();
+                    abcProcessedAB.TrySetResult(true);
                 }
             });
 
