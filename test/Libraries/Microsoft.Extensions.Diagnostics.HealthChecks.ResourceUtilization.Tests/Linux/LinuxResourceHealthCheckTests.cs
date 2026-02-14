@@ -9,7 +9,6 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
-using Microsoft.Shared.Instruments;
 using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
@@ -203,12 +202,12 @@ public class LinuxResourceHealthCheckTests
             {
                 switch (instrument.Name)
                 {
-                    case ResourceUtilizationInstruments.ProcessCpuUtilization:
-                    case ResourceUtilizationInstruments.ContainerCpuLimitUtilization:
+                    case "process.cpu.utilization":
+                    case "container.cpu.limit.utilization":
                         cpuUsedPercentage = measurement * 100;
                         break;
-                    case ResourceUtilizationInstruments.ProcessMemoryUtilization:
-                    case ResourceUtilizationInstruments.ContainerMemoryLimitUtilization:
+                    case "dotnet.process.memory.virtual.utilization":
+                    case "container.memory.limit.utilization":
                         memoryUsedPercentage = measurement * 100;
                         break;
                 }
