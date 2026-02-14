@@ -14,7 +14,7 @@ Expand shorthands **before** matching. See the [alias table](references/apichief
 
 ## Subset Exclusion Rules
 
-When one shorthand's expansion is a prefix of another's, the more specific libraries are **excluded** from broad wildcard matches unless explicitly requested. See the [subset exclusion rules](references/apichief-aliases.md#subset-exclusion-rules) for the full list. For example, `MEAI*` excludes `Evaluation*` libraries, and `MED*` excludes `DataIngestion*` libraries.
+When one shorthand's expansion is a prefix of another's, the more specific libraries are **excluded** from broad wildcard matches unless explicitly requested. See the [subset exclusion rules](references/apichief-aliases.md#subset-exclusion-rules) for the full list. For example, `MEAI*` excludes `MEAI.Eval*` libraries, and `MA*` excludes `MAD*` libraries.
 
 ## Steps
 
