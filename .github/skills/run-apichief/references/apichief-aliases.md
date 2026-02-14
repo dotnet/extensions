@@ -26,7 +26,7 @@ Match aliases from **longest prefix first** to avoid ambiguous matches (e.g. `ME
 1. Replace the shorthand prefix with the full name, preserving any suffix the user provided.
 2. If the user appended `.` and more text, join naturally instead of using an inferred wildcard: `MEAI.OpenAI` → `Microsoft.Extensions.AI.OpenAI`.
 3. If the user appended `*`, keep the wildcard: `MEAI*` → `Microsoft.Extensions.AI*`.
-4. If the user did not prefix with `ME` or `MA`, use a 'contains' match: `OpenAI` → `*.OpenAI.*` and `DependencyInjection` → `*.DependencyInjection.*`
+4. If the user did not prefix with `ME` or `MA`, use a 'contains' match that covers both middle and trailing segments: e.g. `OpenAI` → `*.OpenAI.*`, `*.OpenAI`, or `*.OpenAI*`, and `DependencyInjection` → `*.DependencyInjection.*`, `*.DependencyInjection`, or `*.DependencyInjection*`.
 5. All alias and expanded matching is case-insensitive.
 
 ## Subset Exclusion Rules
