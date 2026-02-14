@@ -35,7 +35,8 @@ The libraries must already be built so that compiled DLLs exist. Build the match
 ```powershell
 # Build all matched libraries using the repo's build infrastructure
 # Use --vs to generate and build a filtered solution
-build.cmd --vs <keyword>
+build.cmd --vs <keyword>   # Windows
+./build.sh --vs <keyword>  # Linux/macOS
 ```
 
 Where `<keyword>` is derived from the library names (e.g. `AI` for MEAI libraries, `AspNetCore` for ASP.NET Core libraries). Use the most appropriate keyword(s) for the matched set.
