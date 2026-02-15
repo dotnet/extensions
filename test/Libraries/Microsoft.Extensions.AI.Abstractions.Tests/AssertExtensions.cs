@@ -46,6 +46,23 @@ internal static class AssertExtensions
                     var chatFunctionResult = (FunctionResultContent)chatItem;
                     AssertExtensions.EqualFunctionCallResults(expectedFunctionResult.Result, chatFunctionResult.Result);
                 }
+                else if (expectedItem is FunctionApprovalRequestContent expectedApprovalRequest)
+                {
+                    var actualApprovalRequest = (FunctionApprovalRequestContent)chatItem;
+                    Assert.Equal(expectedApprovalRequest.RequestId, actualApprovalRequest.RequestId);
+                    Assert.Equal(expectedApprovalRequest.FunctionCall.CallId, actualApprovalRequest.FunctionCall.CallId);
+                    Assert.Equal(expectedApprovalRequest.FunctionCall.Name, actualApprovalRequest.FunctionCall.Name);
+                    AssertExtensions.EqualFunctionCallParameters(expectedApprovalRequest.FunctionCall.Arguments, actualApprovalRequest.FunctionCall.Arguments);
+                }
+                else if (expectedItem is FunctionApprovalResponseContent expectedApprovalResponse)
+                {
+                    var actualApprovalResponse = (FunctionApprovalResponseContent)chatItem;
+                    Assert.Equal(expectedApprovalResponse.RequestId, actualApprovalResponse.RequestId);
+                    Assert.Equal(expectedApprovalResponse.Approved, actualApprovalResponse.Approved);
+                    Assert.Equal(expectedApprovalResponse.FunctionCall.CallId, actualApprovalResponse.FunctionCall.CallId);
+                    Assert.Equal(expectedApprovalResponse.FunctionCall.Name, actualApprovalResponse.FunctionCall.Name);
+                    AssertExtensions.EqualFunctionCallParameters(expectedApprovalResponse.FunctionCall.Arguments, actualApprovalResponse.FunctionCall.Arguments);
+                }
             }
         }
     }

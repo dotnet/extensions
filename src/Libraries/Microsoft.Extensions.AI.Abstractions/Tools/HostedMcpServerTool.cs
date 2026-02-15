@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -12,17 +10,10 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a hosted MCP server tool that can be specified to an AI service.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.AIMcpServers, UrlFormat = DiagnosticIds.UrlFormat)]
 public class HostedMcpServerTool : AITool
 {
-    /// <summary>The name of the Authorization header.</summary>
-    private const string AuthorizationHeaderName = "Authorization";
-
     /// <summary>Any additional properties associated with the tool.</summary>
     private IReadOnlyDictionary<string, object?>? _additionalProperties;
-
-    /// <summary>Lazily-initialized collection of headers to include when calling the remote MCP server.</summary>
-    private Dictionary<string, string>? _headers;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
@@ -55,12 +46,12 @@ public class HostedMcpServerTool : AITool
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
-    /// <param name="serverUrl">The URL of the remote MCP server.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
+    /// <param name="serverAddress">The URL of the remote MCP server.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="ArgumentException"><paramref name="serverUrl"/> is not an absolute URL.</exception>
-    public HostedMcpServerTool(string serverName, Uri serverUrl)
-        : this(serverName, ValidateUrl(serverUrl))
+    /// <exception cref="ArgumentException"><paramref name="serverAddress"/> is not an absolute URL.</exception>
+    public HostedMcpServerTool(string serverName, Uri serverAddress)
+        : this(serverName, ValidateUrl(serverAddress))
     {
     }
 
@@ -68,27 +59,27 @@ public class HostedMcpServerTool : AITool
     /// Initializes a new instance of the <see cref="HostedMcpServerTool"/> class.
     /// </summary>
     /// <param name="serverName">The name of the remote MCP server.</param>
-    /// <param name="serverUrl">The URL of the remote MCP server.</param>
+    /// <param name="serverAddress">The URL of the remote MCP server.</param>
     /// <param name="additionalProperties">Any additional properties associated with the tool.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverUrl"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="serverName"/> or <paramref name="serverAddress"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="serverName"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="ArgumentException"><paramref name="serverUrl"/> is not an absolute URL.</exception>
-    public HostedMcpServerTool(string serverName, Uri serverUrl, IReadOnlyDictionary<string, object?>? additionalProperties)
-        : this(serverName, ValidateUrl(serverUrl))
+    /// <exception cref="ArgumentException"><paramref name="serverAddress"/> is not an absolute URL.</exception>
+    public HostedMcpServerTool(string serverName, Uri serverAddress, IReadOnlyDictionary<string, object?>? additionalProperties)
+        : this(serverName, ValidateUrl(serverAddress))
     {
         _additionalProperties = additionalProperties;
     }
 
-    private static string ValidateUrl(Uri serverUrl)
+    private static string ValidateUrl(Uri serverAddress)
     {
-        _ = Throw.IfNull(serverUrl);
+        _ = Throw.IfNull(serverAddress);
 
-        if (!serverUrl.IsAbsoluteUri)
+        if (!serverAddress.IsAbsoluteUri)
         {
-            Throw.ArgumentException(nameof(serverUrl), "The provided URL is not absolute.");
+            Throw.ArgumentException(nameof(serverAddress), "The provided URL is not absolute.");
         }
 
-        return serverUrl.AbsoluteUri;
+        return serverAddress.AbsoluteUri;
     }
 
     /// <inheritdoc />
@@ -106,39 +97,6 @@ public class HostedMcpServerTool : AITool
     /// Gets the address of the remote MCP server. This may be a URL, or in the case of a service providing built-in MCP servers with known names, it can be such a name.
     /// </summary>
     public string ServerAddress { get; }
-
-    /// <summary>
-    /// Gets or sets the OAuth authorization token that the AI service should use when calling the remote MCP server.
-    /// </summary>
-    /// <remarks>
-    /// When set, this value is automatically added to the <see cref="Headers"/> dictionary with the key "Authorization" 
-    /// and the value "Bearer {token}". Setting this property will overwrite any existing "Authorization" header in <see cref="Headers"/>.
-    /// Setting this property to <see langword="null"/> will remove the "Authorization" header from <see cref="Headers"/>.
-    /// </remarks>
-    public string? AuthorizationToken
-    {
-        get
-        {
-            if (_headers?.TryGetValue(AuthorizationHeaderName, out string? value) is true &&
-                value?.StartsWith("Bearer ", StringComparison.Ordinal) is true)
-            {
-                return value.Substring("Bearer ".Length);
-            }
-
-            return null;
-        }
-        set
-        {
-            if (value is not null)
-            {
-                Headers[AuthorizationHeaderName] = $"Bearer {value}";
-            }
-            else if (_headers is not null)
-            {
-                _ = _headers.Remove(AuthorizationHeaderName);
-            }
-        }
-    }
 
     /// <summary>
     /// Gets or sets the description of the remote MCP server, used to provide more context to the AI service.
@@ -171,12 +129,15 @@ public class HostedMcpServerTool : AITool
     public HostedMcpServerToolApprovalMode? ApprovalMode { get; set; }
 
     /// <summary>
-    /// Gets a mutable dictionary of HTTP headers to include when calling the remote MCP server.
+    /// Gets or sets a mutable dictionary of HTTP headers to include when calling the remote MCP server.
     /// </summary>
     /// <remarks>
     /// <para>
     /// The underlying provider is not guaranteed to support or honor the headers.
     /// </para>
+    /// <para>
+    /// This property is useful for specifying the authentication header or other headers required by the MCP server.
+    /// </para>
     /// </remarks>
-    public IDictionary<string, string> Headers => _headers ??= new Dictionary<string, string>();
+    public IDictionary<string, string>? Headers { get; set; }
 }

@@ -3291,7 +3291,7 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1"))
             ])
         ];
 
@@ -3327,11 +3327,11 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1"))
             ]),
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", true, new FunctionCallContent("callId1", "Func1"))
+                new FunctionApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1"))
             ])
         };
 
@@ -3364,11 +3364,11 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant,
             [
-                new FunctionApprovalRequestContent("callId1", new FunctionCallContent("callId1", "Func1"))
+                new FunctionApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1"))
             ]),
             new ChatMessage(ChatRole.User,
             [
-                new FunctionApprovalResponseContent("callId1", false, new FunctionCallContent("callId1", "Func1")) { Reason = "User denied" }
+                new FunctionApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1")) { Reason = "User denied" }
             ])
         };
 

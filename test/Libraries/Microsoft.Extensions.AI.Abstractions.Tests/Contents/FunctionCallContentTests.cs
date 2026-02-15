@@ -405,4 +405,60 @@ public class FunctionCallContentTests
         Assert.Throws<ArgumentNullException>("name", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", null!, _ => null));
         Assert.Throws<ArgumentNullException>("argumentParser", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", "functionName", null!));
     }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new FunctionCallContent("call123", "myFunction")
+        {
+            Arguments = new Dictionary<string, object?> { { "arg1", "value1" } }
+        };
+
+        AssertSerializationRoundtrips<FunctionCallContent>(content);
+        AssertSerializationRoundtrips<AIContent>(content);
+
+        static void AssertSerializationRoundtrips<T>(FunctionCallContent content)
+            where T : AIContent
+        {
+            T contentAsT = (T)(object)content;
+            string json = JsonSerializer.Serialize(contentAsT, AIJsonUtilities.DefaultOptions);
+            T? deserialized = JsonSerializer.Deserialize<T>(json, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            var deserializedContent = Assert.IsType<FunctionCallContent>(deserialized);
+            Assert.Equal(content.CallId, deserializedContent.CallId);
+            Assert.Equal(content.Name, deserializedContent.Name);
+            Assert.NotNull(deserializedContent.Arguments);
+            Assert.Equal("value1", deserializedContent.Arguments["arg1"]?.ToString());
+        }
+    }
+
+    [Fact]
+    public void Serialization_DerivedTypes_Roundtrips()
+    {
+        FunctionCallContent[] contents =
+        [
+            new FunctionCallContent("call1", "function1", new Dictionary<string, object?> { { "param1", 123 } }),
+            new McpServerToolCallContent("call2", "myTool", "myServer"),
+        ];
+
+        // Verify each element roundtrips individually
+        foreach (var content in contents)
+        {
+            var serialized = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+            var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(serialized, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            Assert.Equal(content.GetType(), deserialized.GetType());
+        }
+
+        // Verify the array roundtrips
+        var serializedContents = JsonSerializer.Serialize(contents, TestJsonSerializerContext.Default.FunctionCallContentArray);
+        var deserializedContents = JsonSerializer.Deserialize<FunctionCallContent[]>(serializedContents, TestJsonSerializerContext.Default.FunctionCallContentArray);
+        Assert.NotNull(deserializedContents);
+        Assert.Equal(contents.Length, deserializedContents.Length);
+        for (int i = 0; i < deserializedContents.Length; i++)
+        {
+            Assert.NotNull(deserializedContents[i]);
+            Assert.Equal(contents[i].GetType(), deserializedContents[i].GetType());
+        }
+    }
 }

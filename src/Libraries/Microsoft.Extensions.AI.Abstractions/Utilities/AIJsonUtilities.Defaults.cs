@@ -51,12 +51,6 @@ public static partial class AIJsonUtilities
         // Temporary workaround: these types are [Experimental] and can't be added as [JsonDerivedType] on AIContent yet,
         // or else consuming assemblies that used source generation with AIContent would implicitly reference them.
         // Once they're no longer [Experimental] and added as [JsonDerivedType] on AIContent, these lines should be removed.
-        AddAIContentType(options, typeof(FunctionApprovalRequestContent), typeDiscriminatorId: "functionApprovalRequest", checkBuiltIn: false);
-        AddAIContentType(options, typeof(FunctionApprovalResponseContent), typeDiscriminatorId: "functionApprovalResponse", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolCallContent), typeDiscriminatorId: "mcpServerToolCall", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolResultContent), typeDiscriminatorId: "mcpServerToolResult", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolApprovalRequestContent), typeDiscriminatorId: "mcpServerToolApprovalRequest", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolApprovalResponseContent), typeDiscriminatorId: "mcpServerToolApprovalResponse", checkBuiltIn: false);
         AddAIContentType(options, typeof(CodeInterpreterToolCallContent), typeDiscriminatorId: "codeInterpreterToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(CodeInterpreterToolResultContent), typeDiscriminatorId: "codeInterpreterToolResult", checkBuiltIn: false);
         AddAIContentType(options, typeof(ImageGenerationToolCallContent), typeDiscriminatorId: "imageGenerationToolCall", checkBuiltIn: false);
@@ -123,16 +117,15 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(AIContent))]
     [JsonSerializable(typeof(IEnumerable<AIContent>))]
 
+    // InputRequestContent and InputResponseContent are polymorphic base types that may be
+    // serialized as root types (not just as AIContent). They have protected constructors so
+    // can't be instantiated directly, but we still need metadata when serializing derived
+    // types (e.g., FunctionApprovalRequestContent) as InputRequestContent.
+    [JsonSerializable(typeof(InputRequestContent))]
+    [JsonSerializable(typeof(InputResponseContent))]
+
     // Temporary workaround: These should be implicitly added in once they're no longer [Experimental]
     // and are included via [JsonDerivedType] on AIContent.
-    [JsonSerializable(typeof(UserInputRequestContent))]
-    [JsonSerializable(typeof(UserInputResponseContent))]
-    [JsonSerializable(typeof(FunctionApprovalRequestContent))]
-    [JsonSerializable(typeof(FunctionApprovalResponseContent))]
-    [JsonSerializable(typeof(McpServerToolCallContent))]
-    [JsonSerializable(typeof(McpServerToolResultContent))]
-    [JsonSerializable(typeof(McpServerToolApprovalRequestContent))]
-    [JsonSerializable(typeof(McpServerToolApprovalResponseContent))]
     [JsonSerializable(typeof(CodeInterpreterToolCallContent))]
     [JsonSerializable(typeof(CodeInterpreterToolResultContent))]
     [JsonSerializable(typeof(ImageGenerationToolCallContent))]
