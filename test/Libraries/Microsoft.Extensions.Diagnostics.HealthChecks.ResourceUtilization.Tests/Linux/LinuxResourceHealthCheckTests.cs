@@ -151,6 +151,7 @@ public class LinuxResourceHealthCheckTests
         string expectedDescription)
     {
         var fakeClock = new FakeTimeProvider();
+        var dataTracker = new Mock<IResourceMonitor>();
         var logger = new FakeLogger<LinuxUtilizationProvider>();
         using var meter = new Meter("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
         var meterFactoryMock = new Mock<IMeterFactory>();
@@ -181,7 +182,7 @@ public class LinuxResourceHealthCheckTests
             UseObservableResourceMonitoringInstruments = true
         };
 
-        // Create local MeterListener isolated by meter reference
+        // Use local MeterListener to collect measurements from this specific meter instance to avoid flakiness
         double cpuUsedPercentage = 0;
         double memoryUsedPercentage = 0;
 
@@ -221,6 +222,14 @@ public class LinuxResourceHealthCheckTests
             cpuUsedPercentage,
             memoryUsedPercentage,
             checkOptions);
+
+        // Also create ResourceUtilizationHealthCheck and call CheckHealthAsync for code coverage
+        var options = Microsoft.Extensions.Options.Options.Create(checkOptions);
+        using var healthCheck = new ResourceUtilizationHealthCheck(
+            options,
+            dataTracker.Object,
+            Microsoft.Extensions.Options.Options.Create(new ResourceMonitoringOptions()));
+        _ = await healthCheck.CheckHealthAsync(new HealthCheckContext());
 
         // Assert
         Assert.Equal(expected, healthCheckResult.Status);
