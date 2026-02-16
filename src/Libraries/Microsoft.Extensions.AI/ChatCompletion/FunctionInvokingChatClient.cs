@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
@@ -254,6 +255,39 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </remarks>
     public bool TerminateOnUnknownCalls { get; set; }
 
+    /// <summary>Gets or sets a delegate called after each iteration of the function invocation loop completes.</summary>
+    /// <remarks>
+    /// <para>
+    /// This delegate is invoked after each iteration completes - specifically, after function invocations
+    /// are processed and before the next request is made to the inner client. This timing ensures that:
+    /// </para>
+    /// <list type="bullet">
+    /// <item>Function calls are not lost mid-execution</item>
+    /// <item>Function results are available for inspection</item>
+    /// <item>Aggregated usage information is up-to-date</item>
+    /// </list>
+    /// <para>
+    /// Common use cases include:
+    /// </para>
+    /// <list type="bullet">
+    /// <item>Token usage monitoring and context compaction triggers</item>
+    /// <item>Cost limit enforcement</item>
+    /// <item>Content guardrails and moderation</item>
+    /// <item>Time limit enforcement</item>
+    /// <item>Custom iteration-level logging or metrics</item>
+    /// </list>
+    /// <para>
+    /// Set <see cref="FunctionInvocationIterationContext.Terminate"/> to <see langword="true"/>
+    /// to stop the loop. The function calls for the current iteration will have already been processed.
+    /// </para>
+    /// <para>
+    /// Changing the value of this property while the client is in use might result in inconsistencies
+    /// as to whether the callback is invoked for an in-flight request.
+    /// </para>
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIIterationCompleted, UrlFormat = DiagnosticIds.UrlFormat)]
+    public Func<FunctionInvocationIterationContext, CancellationToken, ValueTask>? IterationCompleted { get; set; }
+
     /// <summary>Gets or sets a delegate used to invoke <see cref="AIFunction"/> instances.</summary>
     /// <remarks>
     /// By default, the protected <see cref="InvokeFunctionAsync"/> method is called for each <see cref="AIFunction"/> to be invoked,
@@ -399,6 +433,27 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 break;
             }
 
+            // Call the iteration completed hook if configured
+            if (IterationCompleted is { } iterationCallback)
+            {
+                var iterationContext = new FunctionInvocationIterationContext
+                {
+                    Iteration = iteration,
+                    TotalUsage = CloneUsageDetails(totalUsage),
+                    Messages = responseMessages,
+                    Response = response,
+                    IsStreaming = false
+                };
+
+                await iterationCallback(iterationContext, cancellationToken);
+
+                if (iterationContext.Terminate)
+                {
+                    LogIterationCallbackRequestedTermination(iteration);
+                    break;
+                }
+            }
+
             UpdateOptionsForNextIteration(ref options, response.ConversationId);
         }
 
@@ -421,7 +476,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Create an activity to group them together for better observability. If there's already a genai "invoke_agent"
         // span that's current, however, we just consider that the group and don't add a new one.
         using Activity? activity = CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
-        UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
+
+        // Track usage if needed for telemetry or for the iteration callback
+        bool needsUsageTracking = activity is { IsAllDataRequested: true } || IterationCompleted is not null;
+        UsageDetails? totalUsage = needsUsageTracking ? new() : null;
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
@@ -640,6 +698,27 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 break;
             }
 
+            // Call the iteration completed hook if configured
+            if (IterationCompleted is { } iterationCallback)
+            {
+                var iterationContext = new FunctionInvocationIterationContext
+                {
+                    Iteration = iteration,
+                    TotalUsage = CloneUsageDetails(totalUsage),
+                    Messages = responseMessages,
+                    Response = response,
+                    IsStreaming = true
+                };
+
+                await iterationCallback(iterationContext, cancellationToken);
+
+                if (iterationContext.Terminate)
+                {
+                    LogIterationCallbackRequestedTermination(iteration);
+                    break;
+                }
+            }
+
             UpdateOptionsForNextIteration(ref options, response.ConversationId);
         }
 
@@ -675,6 +754,31 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.OutputTokens, (int)outputTokens);
             }
         }
+    }
+
+    /// <summary>Creates a defensive copy of usage details to prevent mutation after callback returns.</summary>
+    private static UsageDetails? CloneUsageDetails(UsageDetails? usage)
+    {
+        if (usage is null)
+        {
+            return null;
+        }
+
+        var clone = new UsageDetails
+        {
+            InputTokenCount = usage.InputTokenCount,
+            OutputTokenCount = usage.OutputTokenCount,
+            TotalTokenCount = usage.TotalTokenCount,
+            CachedInputTokenCount = usage.CachedInputTokenCount,
+            ReasoningTokenCount = usage.ReasoningTokenCount,
+        };
+
+        if (usage.AdditionalCounts is { } additionalCounts)
+        {
+            clone.AdditionalCounts = new(additionalCounts);
+        }
+
+        return clone;
     }
 
     /// <summary>Prepares the various chat message lists after a response from the inner client and before invoking functions.</summary>
@@ -1850,6 +1954,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' requested termination of the processing loop.")]
     private partial void LogFunctionRequestedTermination(string functionName);
+
+    [LoggerMessage(LogLevel.Debug, "Iteration {Iteration}: IterationCompleted callback requested termination.")]
+    private partial void LogIterationCallbackRequestedTermination(int iteration);
 
     /// <summary>Provides information about the invocation of a function call.</summary>
     public sealed class FunctionInvocationResult
