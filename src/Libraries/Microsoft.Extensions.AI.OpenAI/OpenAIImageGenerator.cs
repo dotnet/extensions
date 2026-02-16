@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Images;
@@ -22,6 +24,7 @@ using OpenAI.Images;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IImageGenerator"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ImageClient"/>.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAIImageClient)]
 internal sealed class OpenAIImageGenerator : IImageGenerator
 {
     /// <summary>Metadata about the client.</summary>

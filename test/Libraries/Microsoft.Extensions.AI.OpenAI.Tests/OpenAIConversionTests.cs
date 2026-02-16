@@ -15,6 +15,8 @@ using OpenAI.Realtime;
 using OpenAI.Responses;
 using Xunit;
 
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
+
 namespace Microsoft.Extensions.AI;
 
 public class OpenAIConversionTests
