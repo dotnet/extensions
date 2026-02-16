@@ -5372,31 +5372,43 @@ public class OpenAIResponseClientTests
             data: {"type":"response.in_progress","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
 
             event: response.output_item.added
-            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"function_call_output","id":"fc_output_001","call_id":"call_123","output":"Result text"}}
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"function_call","id":"fc_001","call_id":"call_123","name":"get_weather","arguments":"","status":"in_progress"}}
+
+            event: response.function_call_arguments.delta
+            data: {"type":"response.function_call_arguments.delta","item_id":"fc_001","output_index":0,"delta":"{\"city\":\"Paris\"}"}
+
+            event: response.function_call_arguments.done
+            data: {"type":"response.function_call_arguments.done","item_id":"fc_001","output_index":0,"arguments":"{\"city\":\"Paris\"}"}
 
             event: response.output_item.done
-            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"function_call_output","id":"fc_output_001","call_id":"call_123","output":"Result text"}}
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"function_call","id":"fc_001","call_id":"call_123","name":"get_weather","arguments":"{\"city\":\"Paris\"}","status":"completed"}}
 
             event: response.output_item.added
-            data: {"type":"response.output_item.added","output_index":1,"item":{"type":"message","id":"msg_001","status":"in_progress","role":"assistant","content":[]}}
-
-            event: response.content_part.added
-            data: {"type":"response.content_part.added","item_id":"msg_001","output_index":1,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
-
-            event: response.output_text.delta
-            data: {"type":"response.output_text.delta","item_id":"msg_001","output_index":1,"content_index":0,"delta":"Done"}
-
-            event: response.output_text.done
-            data: {"type":"response.output_text.done","item_id":"msg_001","output_index":1,"content_index":0,"text":"Done"}
-
-            event: response.content_part.done
-            data: {"type":"response.content_part.done","item_id":"msg_001","output_index":1,"content_index":0,"part":{"type":"output_text","text":"Done","annotations":[]}}
+            data: {"type":"response.output_item.added","output_index":1,"item":{"type":"function_call_output","id":"fc_output_001","call_id":"call_123","output":"25°C and sunny"}}
 
             event: response.output_item.done
-            data: {"type":"response.output_item.done","output_index":1,"item":{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}}
+            data: {"type":"response.output_item.done","output_index":1,"item":{"type":"function_call_output","id":"fc_output_001","call_id":"call_123","output":"25°C and sunny"}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":2,"item":{"type":"message","id":"msg_001","status":"in_progress","role":"assistant","content":[]}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","item_id":"msg_001","output_index":2,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_001","output_index":2,"content_index":0,"delta":"It's 25°C and sunny in Paris."}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","item_id":"msg_001","output_index":2,"content_index":0,"text":"It's 25°C and sunny in Paris."}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","item_id":"msg_001","output_index":2,"content_index":0,"part":{"type":"output_text","text":"It's 25°C and sunny in Paris.","annotations":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":2,"item":{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"It's 25°C and sunny in Paris.","annotations":[]}]}}
 
             event: response.completed
-            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"function_call_output","id":"fc_output_001","call_id":"call_123","output":"Result text"},{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}],"usage":{"input_tokens":10,"output_tokens":5,"total_tokens":15}}}
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"function_call","id":"fc_001","call_id":"call_123","name":"get_weather","arguments":"{\"city\":\"Paris\"}","status":"completed"},{"type":"function_call_output","id":"fc_output_001","call_id":"call_123","output":"25°C and sunny"},{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"It's 25°C and sunny in Paris.","annotations":[]}]}],"usage":{"input_tokens":10,"output_tokens":15,"total_tokens":25}}}
 
             
             """;
@@ -5411,15 +5423,45 @@ public class OpenAIResponseClientTests
             updates.Add(update);
         }
 
+        // Verify FunctionCallContent is produced from the function_call item
+        var functionCallUpdate = updates.FirstOrDefault(u => u.Contents.OfType<FunctionCallContent>().Any());
+        Assert.NotNull(functionCallUpdate);
+        Assert.Equal(ChatRole.Assistant, functionCallUpdate.Role);
+        var fcc = functionCallUpdate.Contents.OfType<FunctionCallContent>().Single();
+        Assert.Equal("call_123", fcc.CallId);
+        Assert.Equal("get_weather", fcc.Name);
+
         // Verify FunctionResultContent is produced from the function_call_output item
         var functionResultUpdate = updates.FirstOrDefault(u => u.Contents.OfType<FunctionResultContent>().Any());
         Assert.NotNull(functionResultUpdate);
+        Assert.Equal(ChatRole.Assistant, functionResultUpdate.Role);
         var frc = functionResultUpdate.Contents.OfType<FunctionResultContent>().Single();
         Assert.Equal("call_123", frc.CallId);
-        Assert.Equal("Result text", frc.Result);
+        Assert.Equal("25°C and sunny", frc.Result);
+        Assert.IsType<FunctionCallOutputResponseItem>(frc.RawRepresentation);
 
         // Verify the text message is also present
-        Assert.Equal("Done", string.Concat(updates.Select(u => u.Text)));
+        Assert.Equal("It's 25°C and sunny in Paris.", string.Concat(updates.Select(u => u.Text)));
+
+        // Verify ToChatResponse coalesces updates correctly
+        var response = updates.ToChatResponse();
+        Assert.Equal("resp_001", response.ResponseId);
+        Assert.Equal("gpt-4o-mini", response.ModelId);
+        Assert.Single(response.Messages);
+        var message = response.Messages[0];
+        Assert.Equal(ChatRole.Assistant, message.Role);
+
+        // Message should contain: FunctionCallContent, FunctionResultContent, and TextContent
+        Assert.Single(message.Contents.OfType<FunctionCallContent>());
+        Assert.Single(message.Contents.OfType<FunctionResultContent>());
+        var textContent = Assert.Single(message.Contents.OfType<TextContent>());
+        Assert.Equal("It's 25°C and sunny in Paris.", textContent.Text);
+
+        // Verify usage
+        UsageContent usage = updates.SelectMany(u => u.Contents).OfType<UsageContent>().Single();
+        Assert.Equal(10, usage.Details.InputTokenCount);
+        Assert.Equal(15, usage.Details.OutputTokenCount);
+        Assert.Equal(25, usage.Details.TotalTokenCount);
     }
 
     [Fact]

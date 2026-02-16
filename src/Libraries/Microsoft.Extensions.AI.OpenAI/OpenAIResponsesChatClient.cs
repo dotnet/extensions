@@ -458,6 +458,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case FunctionCallOutputResponseItem functionCallOutputItem:
+                            lastRole ??= ChatRole.Assistant;
                             yield return CreateUpdate(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
                             break;
 
