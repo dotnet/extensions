@@ -246,7 +246,7 @@ public sealed class AcceptanceTest
                 .AddSingleton<IUserHz>(new FakeUserHz(100))
                 .AddSingleton<IFileSystem>(fileSystem)
                 .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
-                .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>())
+                .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV1>())
                 .AddResourceMonitoring())
             .Build();
 
