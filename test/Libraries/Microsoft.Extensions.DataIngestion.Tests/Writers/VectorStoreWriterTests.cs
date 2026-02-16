@@ -174,7 +174,7 @@ public abstract class VectorStoreWriterTests
         List<IngestionChunk<string>> chunks = [];
         for (int i = 0; i < 2500; i++)
         {
-            chunks.Add(new($"chunk {i}", document, tokenCount: 1));
+            chunks.Add(TestChunkFactory.CreateChunk($"chunk {i}", document));
         }
 
         await writer.WriteAsync(chunks.ToAsyncEnumerable());
@@ -187,8 +187,8 @@ public abstract class VectorStoreWriterTests
         // Now we will do an incremental ingestion that should delete all pre-existing chunks
         List<IngestionChunk<string>> updatedChunks =
         [
-            new("updated chunk 1", document, tokenCount: 1),
-            new("updated chunk 2", document, tokenCount: 1)
+            TestChunkFactory.CreateChunk("updated chunk 1", document),
+            TestChunkFactory.CreateChunk("updated chunk 2", document)
         ];
 
         await writer.WriteAsync(updatedChunks.ToAsyncEnumerable());
