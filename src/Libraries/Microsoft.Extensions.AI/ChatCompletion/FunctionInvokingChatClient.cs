@@ -857,8 +857,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     /// <summary>
     /// Marks any <see cref="FunctionCallContent"/> in <paramref name="messages"/> as <see cref="FunctionCallContent.InformationalOnly"/>
-    /// if there is a matching <see cref="FunctionResultContent"/> with the same <see cref="FunctionCallContent.CallId"/> in the same set of messages.
-    /// This handles cases where the server has already executed the function and returned both the call and result.
+    /// if there is a matching <see cref="FunctionResultContent"/> with the same <see cref="FunctionCallContent.CallId"/> in the same set of messages,
+    /// regardless of order. This handles cases where the server has already executed the function and returned both the call and result.
     /// </summary>
     private static void MarkServerHandledFunctionCalls(IList<ChatMessage> messages)
     {
@@ -900,8 +900,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     /// <summary>
     /// Marks any <see cref="FunctionCallContent"/> in the streaming <paramref name="updates"/> as <see cref="FunctionCallContent.InformationalOnly"/>
-    /// if there is a matching <see cref="FunctionResultContent"/> with the same <see cref="FunctionCallContent.CallId"/>.
-    /// Also removes any matched entries from <paramref name="functionCallContents"/> so they won't be invoked locally.
+    /// if there is a matching <see cref="FunctionResultContent"/> with the same <see cref="FunctionCallContent.CallId"/>, regardless of order.
+    /// Any matched entries are also removed from <paramref name="functionCallContents"/> so they won't be invoked locally.
+    /// If <paramref name="functionCallContents"/> is <see langword="null"/> or empty, this method is a no-op.
     /// </summary>
     private static void MarkServerHandledFunctionCalls(List<ChatResponseUpdate> updates, List<FunctionCallContent>? functionCallContents)
     {
