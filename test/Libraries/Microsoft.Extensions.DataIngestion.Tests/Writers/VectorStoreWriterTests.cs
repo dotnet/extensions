@@ -117,5 +117,56 @@ public abstract class VectorStoreWriterTests
         Assert.Equal("value2", record["key1"]);
     }
 
+    [Fact]
+    public async Task IncrementalIngestion_WithManyRecords_DeletesAllPreExistingChunks()
+    {
+        string documentId = Guid.NewGuid().ToString();
+
+        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
+        using VectorStoreWriter<string> writer = new(
+            vectorStore,
+            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount,
+            options: new()
+            {
+                IncrementalIngestion = true,
+            });
+
+        IngestionDocument document = new(documentId);
+
+        // Create more chunks than the MaxTopCount in debug builds (10) to test pagination
+        // In debug builds, MaxTopCount is 10, so we create 25 chunks to ensure multiple batches
+        List<IngestionChunk<string>> chunks = [];
+        for (int i = 0; i < 25; i++)
+        {
+            chunks.Add(new($"chunk {i}", document));
+        }
+
+        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+
+        int recordCount = await writer.VectorStoreCollection
+            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 1000)
+            .CountAsync();
+        Assert.Equal(chunks.Count, recordCount);
+
+        // Now we will do an incremental ingestion that should delete all 25 pre-existing chunks
+        List<IngestionChunk<string>> updatedChunks =
+        [
+            new("updated chunk 1", document),
+            new("updated chunk 2", document)
+        ];
+
+        await writer.WriteAsync(updatedChunks.ToAsyncEnumerable());
+
+        // Verify that all old records were deleted and only the new ones remain
+        List<Dictionary<string, object?>> records = await writer.VectorStoreCollection
+            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 1000)
+            .ToListAsync();
+
+        Assert.Equal(updatedChunks.Count, records.Count);
+        Assert.Contains(records, r => (string)r["content"]! == "updated chunk 1");
+        Assert.Contains(records, r => (string)r["content"]! == "updated chunk 2");
+    }
+
     protected abstract VectorStore CreateVectorStore(TestEmbeddingGenerator<string> testEmbeddingGenerator);
 }
