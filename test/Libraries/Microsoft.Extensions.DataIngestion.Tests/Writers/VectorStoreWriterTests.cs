@@ -134,10 +134,10 @@ public abstract class VectorStoreWriterTests
 
         IngestionDocument document = new(documentId);
 
-        // Create more chunks than the MaxTopCount in debug builds (10) to test pagination
-        // In debug builds, MaxTopCount is 10, so we create 25 chunks to ensure multiple batches
+        // Create more chunks than the MaxTopCount (1000) to test pagination
+        // We create 2500 chunks to ensure multiple batches
         List<IngestionChunk<string>> chunks = [];
-        for (int i = 0; i < 25; i++)
+        for (int i = 0; i < 2500; i++)
         {
             chunks.Add(new($"chunk {i}", document));
         }
@@ -145,11 +145,11 @@ public abstract class VectorStoreWriterTests
         await writer.WriteAsync(chunks.ToAsyncEnumerable());
 
         int recordCount = await writer.VectorStoreCollection
-            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 1000)
+            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 10000)
             .CountAsync();
         Assert.Equal(chunks.Count, recordCount);
 
-        // Now we will do an incremental ingestion that should delete all 25 pre-existing chunks
+        // Now we will do an incremental ingestion that should delete all pre-existing chunks
         List<IngestionChunk<string>> updatedChunks =
         [
             new("updated chunk 1", document),
@@ -160,7 +160,7 @@ public abstract class VectorStoreWriterTests
 
         // Verify that all old records were deleted and only the new ones remain
         List<Dictionary<string, object?>> records = await writer.VectorStoreCollection
-            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 1000)
+            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 10000)
             .ToListAsync();
 
         Assert.Equal(updatedChunks.Count, records.Count);
