@@ -1,14 +1,16 @@
 # Microsoft.Extensions.AI Release History
 
-## NOT YET RELEASED
+## 10.3.0
 
 - Fixed `FunctionInvokingChatClient` to respect `ChatOptions.Tools` modifications made by function tools.
 - Fixed `FunctionInvokingChatClient` `invoke_agent` span detection.
+- Fixed approval request/response correlation in `FunctionInvokingChatClient`.
 - Added logging to `FunctionInvokingChatClient` for approval flow, error handling, and loop control.
 - Removed `AIFunctionDeclaration` tools on last iteration in `FunctionInvokingChatClient`.
 - Allowed `FunctionResultContent` returned by `AIFunction`s to be used by `FunctionInvokingChatClient`.
 - Updated `OpenTelemetryChatClient` to include cached input token counts.
 - Updated `OpenTelemetryChatClient` for server tool call addition to the standard convention.
+- Updated the OpenTelemetry instrumentation to conform to the 1.39 specification of the Semantic Conventions for Generative AI systems.
 - Fixed token metric unit in `OpenTelemetryChatClient` to use UCUM format.
 
 ## 10.2.0
