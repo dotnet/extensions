@@ -14,7 +14,7 @@ public class IngestionChunkerOptions
 {
     // Default values come from https://learn.microsoft.com/en-us/azure/search/vector-search-how-to-chunk-documents#text-split-skill-example
     private const int DefaultOverlapTokens = 500;
-    private const int DefaultTokensPerChunk = 2_000;
+    internal const int DefaultTokensPerChunk = 2_000;
     private int? _overlapTokens;
 
     /// <summary>
