@@ -997,7 +997,10 @@ public class FunctionInvokingChatClientApprovalsTests
                 if (functionCall.CallId == "callId1")
                 {
                     Assert.Equal("Func1", functionCall.Name);
-                    Assert.Equal(1, updateYieldCount);
+
+                    // FCCs are now buffered until the end of the stream to check for
+                    // matching FunctionResultContent from server-handled function calls.
+                    Assert.Equal(2, updateYieldCount);
                 }
                 else if (functionCall.CallId == "callId2")
                 {

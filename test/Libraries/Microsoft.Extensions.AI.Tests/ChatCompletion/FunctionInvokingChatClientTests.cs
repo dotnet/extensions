@@ -3382,4 +3382,196 @@ public class FunctionInvokingChatClientTests
     // ContinuesWithFailingCallsUntilMaximumConsecutiveErrors test which triggers
     // the threshold condition. The logging call is at line 1078 and will execute
     // when MaximumConsecutiveErrorsPerRequest is exceeded.
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ServerHandledFunctionCalls_MarkedAsInformationalOnly(bool streaming)
+    {
+        // When a server returns both a FunctionCallContent and matching FunctionResultContent,
+        // the FCC should be automatically marked as InformationalOnly so it won't be invoked locally.
+        var functionInvokedCount = 0;
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")]
+        };
+
+        var fcc = new FunctionCallContent("callId1", "Func1");
+        var frc = new FunctionResultContent("callId1", "Server Result");
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(
+                [
+                    new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+                    new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Server Result")]),
+                ]);
+            },
+            GetStreamingResponseAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
+            {
+                var response = new ChatResponse(
+                [
+                    new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+                    new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Server Result")]),
+                ]);
+                return YieldAsync(response.ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        ChatResponse response = streaming
+            ? await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync()
+            : await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+
+        // The function should not have been invoked since the server already handled it
+        Assert.Equal(0, functionInvokedCount);
+
+        // The response should contain the FCC marked as InformationalOnly
+        Assert.Contains(response.Messages, m =>
+            m.Contents.Any(c => c is FunctionCallContent fcc2 && fcc2.CallId == "callId1" && fcc2.InformationalOnly));
+
+        // The response should also contain the server's FRC
+        Assert.Contains(response.Messages, m =>
+            m.Contents.Any(c => c is FunctionResultContent frc2 && frc2.CallId == "callId1"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ServerHandledFunctionCalls_MixedWithLocalCalls(bool streaming)
+    {
+        // When a server returns an FCC+FRC pair for one function and just an FCC for another,
+        // only the locally-needed FCC should be invoked.
+        var func1InvokedCount = 0;
+        var func2InvokedCount = 0;
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => { func1InvokedCount++; return "Local Result 1"; }, "Func1"),
+                AIFunctionFactory.Create(() => { func2InvokedCount++; return "Local Result 2"; }, "Func2"),
+            ]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            {
+                await Task.Yield();
+
+                if (Interlocked.Increment(ref callCount) == 1)
+                {
+                    // First call: Func1 is server-handled (has both FCC and FRC), Func2 needs local invocation
+                    return new ChatResponse(
+                    [
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2")]),
+                        new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Server Result 1")]),
+                    ]);
+                }
+                else
+                {
+                    return new ChatResponse(new ChatMessage(ChatRole.Assistant, "done"));
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
+            {
+                if (Interlocked.Increment(ref callCount) == 1)
+                {
+                    var response = new ChatResponse(
+                    [
+                        new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2")]),
+                        new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Server Result 1")]),
+                    ]);
+                    return YieldAsync(response.ToChatResponseUpdates());
+                }
+                else
+                {
+                    var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "done"));
+                    return YieldAsync(response.ToChatResponseUpdates());
+                }
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        ChatResponse response = streaming
+            ? await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync()
+            : await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+
+        // Only Func2 should be invoked locally (Func1 was handled by server)
+        Assert.Equal(0, func1InvokedCount);
+        Assert.Equal(1, func2InvokedCount);
+
+        // Func1's FCC should be marked InformationalOnly
+        Assert.Contains(response.Messages, m =>
+            m.Contents.Any(c => c is FunctionCallContent fcc2 && fcc2.CallId == "callId1" && fcc2.InformationalOnly));
+
+        // There should be a FunctionResultContent for Func2 (locally invoked)
+        Assert.Contains(response.Messages, m =>
+            m.Contents.Any(c => c is FunctionResultContent frc2 && frc2.CallId == "callId2"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ServerHandledFunctionCalls_NoMatchingFRC_StillInvoked(bool streaming)
+    {
+        // When a server returns a FCC without a matching FRC, it should still be invoked locally
+        // (the existing behavior should be preserved).
+        var functionInvokedCount = 0;
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Local Result"; }, "Func1")]
+        };
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            {
+                await Task.Yield();
+
+                if (Interlocked.Increment(ref callCount) == 1)
+                {
+                    return new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]));
+                }
+                else
+                {
+                    return new ChatResponse(new ChatMessage(ChatRole.Assistant, "done"));
+                }
+            },
+            GetStreamingResponseAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
+            {
+                if (Interlocked.Increment(ref callCount) == 1)
+                {
+                    var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]));
+                    return YieldAsync(response.ToChatResponseUpdates());
+                }
+                else
+                {
+                    var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "done"));
+                    return YieldAsync(response.ToChatResponseUpdates());
+                }
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        ChatResponse response = streaming
+            ? await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync()
+            : await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
+
+        // The function should have been invoked locally since there was no matching FRC
+        Assert.Equal(1, functionInvokedCount);
+
+        // There should be a FunctionResultContent from the local invocation
+        Assert.Contains(response.Messages, m =>
+            m.Contents.Any(c => c is FunctionResultContent frc2 && frc2.CallId == "callId1"));
+    }
 }
