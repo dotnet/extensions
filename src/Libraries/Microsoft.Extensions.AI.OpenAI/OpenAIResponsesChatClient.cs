@@ -457,6 +457,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             });
                             break;
 
+                        case FunctionCallOutputResponseItem functionCallOutputItem:
+                            yield return CreateUpdate(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
+                            break;
+
                         case CodeInterpreterCallResponseItem cicri:
                             // The CodeInterpreterToolCallContent has already been yielded as part of delta updates.
                             // Only yield the CodeInterpreterToolResultContent here for the outputs.

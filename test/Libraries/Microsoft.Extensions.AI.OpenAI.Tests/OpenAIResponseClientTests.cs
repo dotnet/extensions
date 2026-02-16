@@ -5354,6 +5354,75 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task StreamingResponseWithFunctionCallOutput_YieldsFunctionResultContent()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"function_call_output","id":"fc_output_001","call_id":"call_123","output":"Result text"}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"function_call_output","id":"fc_output_001","call_id":"call_123","output":"Result text"}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":1,"item":{"type":"message","id":"msg_001","status":"in_progress","role":"assistant","content":[]}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","item_id":"msg_001","output_index":1,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_001","output_index":1,"content_index":0,"delta":"Done"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","item_id":"msg_001","output_index":1,"content_index":0,"text":"Done"}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","item_id":"msg_001","output_index":1,"content_index":0,"part":{"type":"output_text","text":"Done","annotations":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":1,"item":{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"function_call_output","id":"fc_output_001","call_id":"call_123","output":"Result text"},{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}],"usage":{"input_tokens":10,"output_tokens":5,"total_tokens":15}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        // Verify FunctionResultContent is produced from the function_call_output item
+        var functionResultUpdate = updates.FirstOrDefault(u => u.Contents.OfType<FunctionResultContent>().Any());
+        Assert.NotNull(functionResultUpdate);
+        var frc = functionResultUpdate.Contents.OfType<FunctionResultContent>().Single();
+        Assert.Equal("call_123", frc.CallId);
+        Assert.Equal("Result text", frc.Result);
+
+        // Verify the text message is also present
+        Assert.Equal("Done", string.Concat(updates.Select(u => u.Text)));
+    }
+
+    [Fact]
     public async Task UserMessageWithEmptyText_CreatesEmptyInputPart()
     {
         const string Input = """
