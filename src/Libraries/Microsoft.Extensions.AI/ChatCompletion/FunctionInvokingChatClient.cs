@@ -537,15 +537,17 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     }
                 }
 
-                // We're streaming updates back to the caller. However, approvals requires extra handling. We should not yield any
-                // FunctionCallContents back to the caller if approvals might be required, because if any actually are, we need to convert
-                // all FunctionCallContents into approval requests, even those that don't require approval (we otherwise don't have a way
-                // to track the FCCs to a later turn, in particular when the conversation history is managed by the service / inner client).
-                // So, if there are no functions that need approval, we can yield updates with FCCs as they arrive. But if any FCC _might_
-                // require approval (which just means that any AIFunction we can possibly invoke requires approval), then we need to hold off
-                // on yielding any FCCs until we know whether any of them actually require approval, which is either at the end of the stream
-                // or the first time we get an FCC that requires approval. At that point, we can yield all of the updates buffered thus far
-                // and anything further, replacing FCCs with approval if any required it, or yielding them as is.
+                // We're streaming updates back to the caller. Once we encounter a FunctionCallContent, we need to buffer all
+                // remaining updates until the stream completes. This is necessary for two reasons:
+                // 1. Server-handled function calls: The server may yield both a FunctionCallContent and a matching
+                //    FunctionResultContent. We need to see the full stream to detect these pairs and mark the FCCs as
+                //    InformationalOnly so they aren't re-invoked locally.
+                // 2. Approval handling: If any tools require approval, we need to convert all FunctionCallContents into
+                //    approval requests, even those that don't require approval (we otherwise don't have a way to track the
+                //    FCCs to a later turn, in particular when the conversation history is managed by the service / inner client).
+                //    If any FCC _might_ require approval, we hold off on yielding until we know whether any actually do,
+                //    which is either at the end of the stream or the first time we get an FCC that requires approval.
+                //    At that point, we yield all buffered updates, replacing FCCs with approval requests if needed.
                 if (anyToolsRequireApproval && approvalRequiredFunctions is null && functionCallContents is { Count: > 0 })
                 {
                     approvalRequiredFunctions =

@@ -3396,9 +3396,6 @@ public class FunctionInvokingChatClientTests
             Tools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")]
         };
 
-        var fcc = new FunctionCallContent("callId1", "Func1");
-        var frc = new FunctionResultContent("callId1", "Server Result");
-
         using var innerClient = new TestChatClient
         {
             GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
