@@ -5,7 +5,6 @@ using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -88,7 +87,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        AddOpenAIApiType(OpenAIApiTypeChatCompletions);
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeChatCompletions);
 
         var openAIChatMessages = ToOpenAIChatMessages(messages, options);
         var openAIOptions = ToOpenAIOptions(options);
@@ -109,7 +108,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        AddOpenAIApiType(OpenAIApiTypeChatCompletions);
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeChatCompletions);
 
         var openAIChatMessages = ToOpenAIChatMessages(messages, options);
         var openAIOptions = ToOpenAIOptions(options);
@@ -859,31 +858,4 @@ internal sealed partial class OpenAIChatClient : IChatClient
     private static Regex InvalidAuthorNameRegex() => _invalidAuthorNameRegex;
     private static readonly Regex _invalidAuthorNameRegex = new(InvalidAuthorNamePattern, RegexOptions.Compiled);
 #endif
-
-    /// <summary>The "openai.api.type" tag name per the OpenTelemetry semantic conventions for OpenAI.</summary>
-    private const string OpenAIApiTypeTag = "openai.api.type";
-
-    /// <summary>The "chat_completions" value for the "openai.api.type" tag.</summary>
-    private const string OpenAIApiTypeChatCompletions = "chat_completions";
-
-    /// <summary>The "chat" operation name used by the OpenTelemetry chat client.</summary>
-    private const string ChatOperationName = "chat";
-
-    /// <summary>
-    /// If the current <see cref="Activity"/> represents a "chat" operation span,
-    /// adds the "openai.api.type" tag with the specified value.
-    /// </summary>
-    private static void AddOpenAIApiType(string apiType)
-    {
-        Activity? activity = Activity.Current;
-        if (activity is { IsAllDataRequested: true })
-        {
-            string name = activity.DisplayName;
-            if (name.StartsWith(ChatOperationName, StringComparison.Ordinal) &&
-                (name.Length == ChatOperationName.Length || name[ChatOperationName.Length] == ' '))
-            {
-                _ = activity.AddTag(OpenAIApiTypeTag, apiType);
-            }
-        }
-    }
 }

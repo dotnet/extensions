@@ -92,7 +92,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        AddOpenAIApiType(OpenAIApiTypeResponses);
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeResponses);
 
         // Convert the inputs into what ResponsesClient expects.
         var openAIOptions = AsCreateResponseOptions(options, out string? openAIConversationId);
@@ -262,7 +262,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        AddOpenAIApiType(OpenAIApiTypeResponses);
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeResponses);
 
         var openAIOptions = AsCreateResponseOptions(options, out string? openAIConversationId);
         openAIOptions.StreamingEnabled = true;
@@ -1517,33 +1517,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
 
         return null;
-    }
-
-    /// <summary>The "openai.api.type" tag name per the OpenTelemetry semantic conventions for OpenAI.</summary>
-    private const string OpenAIApiTypeTag = "openai.api.type";
-
-    /// <summary>The "responses" value for the "openai.api.type" tag.</summary>
-    private const string OpenAIApiTypeResponses = "responses";
-
-    /// <summary>The "chat" operation name used by the OpenTelemetry chat client.</summary>
-    private const string ChatOperationName = "chat";
-
-    /// <summary>
-    /// If the current <see cref="Activity"/> represents a "chat" operation span,
-    /// adds the "openai.api.type" tag with the specified value.
-    /// </summary>
-    private static void AddOpenAIApiType(string apiType)
-    {
-        Activity? activity = Activity.Current;
-        if (activity is { IsAllDataRequested: true })
-        {
-            string name = activity.DisplayName;
-            if (name.StartsWith(ChatOperationName, StringComparison.Ordinal) &&
-                (name.Length == ChatOperationName.Length || name[ChatOperationName.Length] == ' '))
-            {
-                _ = activity.AddTag(OpenAIApiTypeTag, apiType);
-            }
-        }
     }
 
     /// <summary>Provides an <see cref="AITool"/> wrapper for a <see cref="ResponseTool"/>.</summary>
