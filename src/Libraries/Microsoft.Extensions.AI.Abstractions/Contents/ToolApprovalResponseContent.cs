@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
@@ -18,53 +17,16 @@ public sealed class ToolApprovalResponseContent : InputResponseContent
     /// </summary>
     /// <param name="requestId">The unique identifier of the <see cref="ToolApprovalRequestContent"/> associated with this response.</param>
     /// <param name="approved"><see langword="true"/> if the tool call is approved; otherwise, <see langword="false"/>.</param>
-    /// <param name="functionCall">The function call that was subject to approval.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="requestId"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="requestId"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="functionCall"/> is <see langword="null"/>.</exception>
-    public ToolApprovalResponseContent(string requestId, bool approved, FunctionCallContent functionCall)
-        : base(requestId)
-    {
-        Approved = approved;
-        ToolCall = Throw.IfNull(functionCall);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ToolApprovalResponseContent"/> class.
-    /// </summary>
-    /// <param name="requestId">The unique identifier of the <see cref="ToolApprovalRequestContent"/> associated with this response.</param>
-    /// <param name="approved"><see langword="true"/> if the tool call is approved; otherwise, <see langword="false"/>.</param>
-    /// <param name="mcpServerToolCall">The MCP server tool call that was subject to approval.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="requestId"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="requestId"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="mcpServerToolCall"/> is <see langword="null"/>.</exception>
-    public ToolApprovalResponseContent(string requestId, bool approved, McpServerToolCallContent mcpServerToolCall)
-        : base(requestId)
-    {
-        Approved = approved;
-        ToolCall = Throw.IfNull(mcpServerToolCall);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ToolApprovalResponseContent"/> class for JSON deserialization.
-    /// </summary>
-    /// <param name="requestId">The unique identifier of the <see cref="ToolApprovalRequestContent"/> associated with this response.</param>
-    /// <param name="approved"><see langword="true"/> if the tool call is approved; otherwise, <see langword="false"/>.</param>
     /// <param name="toolCall">The tool call that was subject to approval.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="requestId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="requestId"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="toolCall"/> is <see langword="null"/>.</exception>
     [JsonConstructor]
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public ToolApprovalResponseContent(string requestId, bool approved, ToolCallContent toolCall)
         : base(requestId)
     {
-        _ = Throw.IfNull(toolCall);
-
-        if (toolCall is not FunctionCallContent and not McpServerToolCallContent)
-        {
-            Throw.ArgumentException(nameof(toolCall), $"Unsupported type '{toolCall.GetType().Name}'.");
-        }
-
         Approved = approved;
-        ToolCall = toolCall;
+        ToolCall = Throw.IfNull(toolCall);
     }
 
     /// <summary>

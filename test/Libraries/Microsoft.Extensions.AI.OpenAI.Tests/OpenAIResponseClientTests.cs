@@ -1561,6 +1561,129 @@ public class OpenAIResponseClientTests
     }
 
     [Theory]
+    [InlineData("user")]
+    [InlineData("tool")]
+    public async Task ToolApprovalResponse_NonMcpToolCall_SilentlyIgnored_NonStreaming(string role)
+    {
+        // When a ToolApprovalResponseContent wraps a non-MCP tool call (e.g. CodeInterpreterToolCallContent
+        // or ImageGenerationToolCallContent), the client should silently drop it from the request payload.
+        // For the user role, the text content is preserved; for the tool role, the function result is preserved.
+        string input = role == "user"
+            ? """
+            {
+                "model": "gpt-4o-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """
+            : """
+            {
+                "model": "gpt-4o-mini",
+                "input": [
+                    {
+                        "type": "function_call_output",
+                        "call_id": "call-1",
+                        "output": "tool result"
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_fallthrough_test_001",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": null,
+              "max_tool_calls": null,
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_fallthrough_test_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello! How can I help?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "reasoning": {
+                "effort": null,
+                "summary": null
+              },
+              "store": true,
+              "temperature": 1.0,
+              "text": {
+                "format": {
+                  "type": "text"
+                }
+              },
+              "tool_choice": "auto",
+              "tools": [],
+              "top_p": 1.0,
+              "usage": {
+                "input_tokens": 10,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 8,
+                "output_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "total_tokens": 18
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        // Build a message with role-appropriate content + non-MCP approval responses that should be silently dropped.
+        var codeInterpreterApproval = new ToolApprovalResponseContent("req-ci-1", true, new CodeInterpreterToolCallContent("ci-call-1"));
+        var imageGenApproval = new ToolApprovalResponseContent("req-ig-1", false, new ImageGenerationToolCallContent("ig-call-1"));
+
+        AIContent anchorContent = role == "user"
+            ? new TextContent("hello")
+            : new FunctionResultContent("call-1", "tool result");
+
+        var messages = new List<ChatMessage>
+        {
+            new(new ChatRole(role), [anchorContent, codeInterpreterApproval, imageGenApproval]),
+        };
+
+        var response = await client.GetResponseAsync(messages);
+
+        Assert.NotNull(response);
+        var message = Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, message.Role);
+        Assert.Equal("Hello! How can I help?", message.Text);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task McpToolCall_ApprovalNotRequired_NonStreaming(bool rawTool)

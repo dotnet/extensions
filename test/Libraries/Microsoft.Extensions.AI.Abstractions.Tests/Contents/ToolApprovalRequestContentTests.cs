@@ -13,31 +13,18 @@ public class ToolApprovalRequestContentTests
     [Fact]
     public void Constructor_InvalidArguments_Throws()
     {
-        FunctionCallContent functionCall = new("FCC1", "TestFunction");
-        McpServerToolCallContent mcpCall = new("MCC1", "TestTool", "TestServer");
-
-        // FunctionCallContent overload
-        Assert.Throws<ArgumentNullException>("requestId", () => new ToolApprovalRequestContent(null!, functionCall));
-        Assert.Throws<ArgumentException>("requestId", () => new ToolApprovalRequestContent("", functionCall));
-        Assert.Throws<ArgumentException>("requestId", () => new ToolApprovalRequestContent("\r\t\n ", functionCall));
-        Assert.Throws<ArgumentNullException>("functionCall", () => new ToolApprovalRequestContent("id", (FunctionCallContent)null!));
-
-        // McpServerToolCallContent overload
-        Assert.Throws<ArgumentNullException>("requestId", () => new ToolApprovalRequestContent(null!, mcpCall));
-        Assert.Throws<ArgumentException>("requestId", () => new ToolApprovalRequestContent("", mcpCall));
-        Assert.Throws<ArgumentException>("requestId", () => new ToolApprovalRequestContent("\r\t\n ", mcpCall));
-        Assert.Throws<ArgumentNullException>("mcpServerToolCall", () => new ToolApprovalRequestContent("id", (McpServerToolCallContent)null!));
-
-        // ToolCallContent (JsonConstructor) overload
-        Assert.Throws<ArgumentNullException>("toolCall", () => new ToolApprovalRequestContent("id", (ToolCallContent)null!));
-        Assert.Throws<ArgumentException>("toolCall", () => new ToolApprovalRequestContent("id", new CodeInterpreterToolCallContent("call1")));
-        Assert.Throws<ArgumentException>("toolCall", () => new ToolApprovalRequestContent("id", new ImageGenerationToolCallContent("call1")));
+        Assert.Throws<ArgumentNullException>("requestId", () => new ToolApprovalRequestContent(null!, new FunctionCallContent("FCC1", "TestFunction")));
+        Assert.Throws<ArgumentException>("requestId", () => new ToolApprovalRequestContent("", new FunctionCallContent("FCC1", "TestFunction")));
+        Assert.Throws<ArgumentException>("requestId", () => new ToolApprovalRequestContent("\r\t\n ", new FunctionCallContent("FCC1", "TestFunction")));
+        Assert.Throws<ArgumentNullException>("toolCall", () => new ToolApprovalRequestContent("id", null!));
     }
 
     public static TheoryData<ToolCallContent> ToolCallContentInstances => new()
     {
         new FunctionCallContent("FCC1", "TestFunction", new Dictionary<string, object?> { { "param1", 123 } }),
         new McpServerToolCallContent("MCC1", "TestTool", "TestServer") { Arguments = new Dictionary<string, object?> { { "arg1", "value1" } } },
+        new CodeInterpreterToolCallContent("CI1") { Inputs = [new DataContent("print('hello')"u8.ToArray(), "text/x-python")] },
+        new ImageGenerationToolCallContent("IG1"),
     };
 
     [Theory]

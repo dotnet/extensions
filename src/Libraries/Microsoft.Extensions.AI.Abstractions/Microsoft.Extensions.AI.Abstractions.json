@@ -3267,14 +3267,6 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolApprovalRequestContent(string requestId, Microsoft.Extensions.AI.FunctionCallContent functionCall);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolApprovalRequestContent(string requestId, Microsoft.Extensions.AI.McpServerToolCallContent mcpServerToolCall);",
-          "Stage": "Stable"
-        },
-        {
           "Member": "Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolApprovalRequestContent(string requestId, Microsoft.Extensions.AI.ToolCallContent toolCall);",
           "Stage": "Stable"
         },
@@ -3294,14 +3286,6 @@
       "Type": "sealed class Microsoft.Extensions.AI.ToolApprovalResponseContent : Microsoft.Extensions.AI.InputResponseContent",
       "Stage": "Stable",
       "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.ToolApprovalResponseContent.ToolApprovalResponseContent(string requestId, bool approved, Microsoft.Extensions.AI.FunctionCallContent functionCall);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.ToolApprovalResponseContent.ToolApprovalResponseContent(string requestId, bool approved, Microsoft.Extensions.AI.McpServerToolCallContent mcpServerToolCall);",
-          "Stage": "Stable"
-        },
         {
           "Member": "Microsoft.Extensions.AI.ToolApprovalResponseContent.ToolApprovalResponseContent(string requestId, bool approved, Microsoft.Extensions.AI.ToolCallContent toolCall);",
           "Stage": "Stable"
