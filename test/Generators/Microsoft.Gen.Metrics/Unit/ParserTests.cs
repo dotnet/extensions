@@ -609,6 +609,9 @@ public partial class ParserTests
         var d = await RunGenerator(@"
             partial class C
             {
+                /// <summary>
+                /// MemoryUsage description.
+                /// </summary>
                 [Gauge(""d1"")]
                 static partial MemoryUsage CreateGauge(Meter meter);
             }");

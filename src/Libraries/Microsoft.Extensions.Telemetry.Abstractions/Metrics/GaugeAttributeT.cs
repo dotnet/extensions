@@ -89,6 +89,5 @@ public sealed class GaugeAttribute<T> : Attribute
     /// <summary>
     /// Gets or sets the unit of measurement for the metric.
     /// </summary>
-    [Experimental(DiagnosticIds.Experiments.Telemetry)]
     public string? Unit { get; set; }
 }

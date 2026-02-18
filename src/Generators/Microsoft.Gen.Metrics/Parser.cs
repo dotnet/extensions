@@ -728,12 +728,6 @@ internal sealed class Parser
                 return tagConfigs;
         }
 
-        if (typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
-        {
-            Diag(DiagDescriptors.ErrorInvalidTagNameType, member.Locations[0]);
-            return tagConfigs;
-        }
-
         // This one is to properly cover "Nullable<T>" cases:
         if (specialType == SpecialType.None)
         {
