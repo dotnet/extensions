@@ -1397,7 +1397,7 @@ public class OpenAIResponseClientTests
         {
             Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))]
         };
-        McpServerToolApprovalRequestContent approvalRequest;
+        ToolApprovalRequestContent approvalRequest;
 
         using (VerbatimHttpHandler handler = new(input, output))
         using (HttpClient httpClient = new(handler))
@@ -1407,7 +1407,7 @@ public class OpenAIResponseClientTests
                 "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository",
                 chatOptions);
 
-            approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
+            approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<ToolApprovalRequestContent>());
             chatOptions.ConversationId = response.ConversationId;
         }
 
@@ -1544,7 +1544,7 @@ public class OpenAIResponseClientTests
             var call = Assert.IsType<McpServerToolCallContent>(message.Contents[0]);
             Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", call.CallId);
             Assert.Equal("deepwiki", call.ServerName);
-            Assert.Equal("ask_question", call.ToolName);
+            Assert.Equal("ask_question", call.Name);
             Assert.NotNull(call.Arguments);
             Assert.Equal(2, call.Arguments.Count);
             Assert.Equal("dotnet/extensions", ((JsonElement)call.Arguments["repoName"]!).GetString());
@@ -1552,14 +1552,136 @@ public class OpenAIResponseClientTests
 
             var result = Assert.IsType<McpServerToolResultContent>(message.Contents[1]);
             Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", result.CallId);
-            Assert.NotNull(result.Output);
-            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(result.Output)).Text);
+            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(result.Outputs!)).Text);
 
             Assert.NotNull(response.Usage);
             Assert.Equal(542, response.Usage.InputTokenCount);
             Assert.Equal(72, response.Usage.OutputTokenCount);
             Assert.Equal(614, response.Usage.TotalTokenCount);
         }
+    }
+
+    [Theory]
+    [InlineData("user")]
+    [InlineData("tool")]
+    public async Task ToolApprovalResponse_NonMcpToolCall_SilentlyIgnored_NonStreaming(string role)
+    {
+        // When a ToolApprovalResponseContent wraps a non-MCP tool call (e.g. CodeInterpreterToolCallContent
+        // or ImageGenerationToolCallContent), the client should silently drop it from the request payload.
+        // For the user role, the text content is preserved; for the tool role, the function result is preserved.
+        string input = role == "user"
+            ? """
+            {
+                "model": "gpt-4o-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """
+            : """
+            {
+                "model": "gpt-4o-mini",
+                "input": [
+                    {
+                        "type": "function_call_output",
+                        "call_id": "call-1",
+                        "output": "tool result"
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_fallthrough_test_001",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": null,
+              "max_tool_calls": null,
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_fallthrough_test_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello! How can I help?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "reasoning": {
+                "effort": null,
+                "summary": null
+              },
+              "store": true,
+              "temperature": 1.0,
+              "text": {
+                "format": {
+                  "type": "text"
+                }
+              },
+              "tool_choice": "auto",
+              "tools": [],
+              "top_p": 1.0,
+              "usage": {
+                "input_tokens": 10,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 8,
+                "output_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "total_tokens": 18
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        // Build a message with role-appropriate content + non-MCP approval responses that should be silently dropped.
+        var codeInterpreterApproval = new ToolApprovalResponseContent("req-ci-1", true, new CodeInterpreterToolCallContent("ci-call-1"));
+        var imageGenApproval = new ToolApprovalResponseContent("req-ig-1", false, new ImageGenerationToolCallContent("ig-call-1"));
+
+        AIContent anchorContent = role == "user"
+            ? new TextContent("hello")
+            : new FunctionResultContent("call-1", "tool result");
+
+        var messages = new List<ChatMessage>
+        {
+            new(new ChatRole(role), [anchorContent, codeInterpreterApproval, imageGenApproval]),
+        };
+
+        var response = await client.GetResponseAsync(messages);
+
+        Assert.NotNull(response);
+        var message = Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, message.Role);
+        Assert.Equal("Hello! How can I help?", message.Text);
     }
 
     [Theory]
@@ -1799,28 +1921,26 @@ public class OpenAIResponseClientTests
         var firstCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
         Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstCall.CallId);
         Assert.Equal("deepwiki", firstCall.ServerName);
-        Assert.Equal("read_wiki_structure", firstCall.ToolName);
+        Assert.Equal("read_wiki_structure", firstCall.Name);
         Assert.NotNull(firstCall.Arguments);
         Assert.Single(firstCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)firstCall.Arguments["repoName"]!).GetString());
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstResult.CallId);
-        Assert.NotNull(firstResult.Output);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Output)).Text);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Outputs!)).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondCall.CallId);
         Assert.Equal("deepwiki", secondCall.ServerName);
-        Assert.Equal("ask_question", secondCall.ToolName);
+        Assert.Equal("ask_question", secondCall.Name);
         Assert.NotNull(secondCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)secondCall.Arguments["repoName"]!).GetString());
         Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)secondCall.Arguments["question"]!).GetString());
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondResult.CallId);
-        Assert.NotNull(secondResult.Output);
-        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(secondResult.Output)).Text);
+        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(secondResult.Outputs!)).Text);
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1329, response.Usage.InputTokenCount);
@@ -2212,33 +2332,228 @@ public class OpenAIResponseClientTests
         var firstCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
         Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstCall.CallId);
         Assert.Equal("deepwiki", firstCall.ServerName);
-        Assert.Equal("read_wiki_structure", firstCall.ToolName);
+        Assert.Equal("read_wiki_structure", firstCall.Name);
         Assert.NotNull(firstCall.Arguments);
         Assert.Single(firstCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)firstCall.Arguments["repoName"]!).GetString());
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstResult.CallId);
-        Assert.NotNull(firstResult.Output);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Output)).Text);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Outputs!)).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondCall.CallId);
         Assert.Equal("deepwiki", secondCall.ServerName);
-        Assert.Equal("ask_question", secondCall.ToolName);
+        Assert.Equal("ask_question", secondCall.Name);
         Assert.NotNull(secondCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)secondCall.Arguments["repoName"]!).GetString());
         Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)secondCall.Arguments["question"]!).GetString());
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondResult.CallId);
-        Assert.NotNull(secondResult.Output);
-        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(Assert.Single(secondResult.Output)).Text);
+        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(Assert.Single(secondResult.Outputs!)).Text);
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1420, response.Usage.InputTokenCount);
         Assert.Equal(149, response.Usage.OutputTokenCount);
         Assert.Equal(1569, response.Usage.TotalTokenCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task McpToolCall_ErrorResponse_NonStreaming(bool rawTool)
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "server_label": "mymcp",
+                        "server_url": "https://mcp.example.com/mcp",
+                        "require_approval": "never"
+                    }
+                ],
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Test error handling"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+                "id": "resp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                "object": "response",
+                "created_at": 1757299100,
+                "status": "completed",
+                "background": false,
+                "error": null,
+                "incomplete_details": null,
+                "instructions": null,
+                "max_output_tokens": null,
+                "max_tool_calls": null,
+                "model": "gpt-4o-mini-2024-07-18",
+                "output": [
+                    {
+                        "id": "mcpl_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                        "type": "mcp_list_tools",
+                        "server_label": "mymcp",
+                        "tools": [
+                            {
+                                "annotations": {
+                                    "read_only": false
+                                },
+                                "description": "A tool that always errors",
+                                "input_schema": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": false,
+                                    "$schema": "http://json-schema.org/draft-07/schema#"
+                                },
+                                "name": "test_error"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                        "type": "mcp_call",
+                        "approval_request_id": null,
+                        "arguments": "{}",
+                        "error": {
+                            "type": "mcp_tool_execution_error",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": "An error occurred invoking 'test_error'.",
+                                    "annotations": null,
+                                    "meta": null
+                                }
+                            ]
+                        },
+                        "name": "test_error",
+                        "output": null,
+                        "server_label": "mymcp"
+                    },
+                    {
+                        "id": "msg_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                        "type": "message",
+                        "status": "completed",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "annotations": [],
+                                "logprobs": [],
+                                "text": "The tool encountered an error during execution."
+                            }
+                        ],
+                        "role": "assistant"
+                    }
+                ],
+                "parallel_tool_calls": true,
+                "previous_response_id": null,
+                "prompt_cache_key": null,
+                "reasoning": {
+                    "effort": null,
+                    "summary": null
+                },
+                "safety_identifier": null,
+                "service_tier": "default",
+                "store": true,
+                "temperature": 1,
+                "text": {
+                    "format": {
+                        "type": "text"
+                    },
+                    "verbosity": "medium"
+                },
+                "tool_choice": "auto",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "allowed_tools": null,
+                        "headers": null,
+                        "require_approval": "never",
+                        "server_description": null,
+                        "server_label": "mymcp",
+                        "server_url": "https://mcp.example.com/<redacted>"
+                    }
+                ],
+                "top_logprobs": 0,
+                "top_p": 1,
+                "truncation": "disabled",
+                "usage": {
+                    "input_tokens": 500,
+                    "input_tokens_details": {
+                        "cached_tokens": 0
+                    },
+                    "output_tokens": 50,
+                    "output_tokens_details": {
+                        "reasoning_tokens": 0
+                    },
+                    "total_tokens": 550
+                },
+                "user": null,
+                "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        AITool mcpTool = rawTool ?
+            ResponseTool.CreateMcpTool("mymcp", serverUri: new("https://mcp.example.com/mcp"), toolCallApprovalPolicy: new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval)).AsAITool() :
+            new HostedMcpServerTool("mymcp", new Uri("https://mcp.example.com/mcp"))
+            {
+                ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+            };
+
+        ChatOptions chatOptions = new()
+        {
+            Tools = [mcpTool],
+        };
+
+        var response = await client.GetResponseAsync("Test error handling", chatOptions);
+        Assert.NotNull(response);
+
+        Assert.Equal("resp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", response.ResponseId);
+        Assert.Equal("resp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", response.ConversationId);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_757_299_100), response.CreatedAt);
+        Assert.Null(response.FinishReason);
+
+        var message = Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
+        Assert.Equal("The tool encountered an error during execution.", response.Messages[0].Text);
+
+        Assert.Equal(4, message.Contents.Count);
+
+        var toolCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
+        Assert.Equal("mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", toolCall.CallId);
+        Assert.Equal("mymcp", toolCall.ServerName);
+        Assert.Equal("test_error", toolCall.Name);
+        Assert.NotNull(toolCall.Arguments);
+        Assert.Empty(toolCall.Arguments);
+
+        var toolResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
+        Assert.Equal("mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", toolResult.CallId);
+        var errorContent = Assert.IsType<ErrorContent>(Assert.Single(toolResult.Outputs!));
+        Assert.Contains("An error occurred invoking 'test_error'.", errorContent.Message);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(500, response.Usage.InputTokenCount);
+        Assert.Equal(50, response.Usage.OutputTokenCount);
+        Assert.Equal(550, response.Usage.TotalTokenCount);
     }
 
     [Fact]
@@ -2310,10 +2625,12 @@ public class OpenAIResponseClientTests
         var mcpTool = new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
         {
             ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
-            AuthorizationToken = "test-auth-token-12345"
+            Headers = new Dictionary<string, string>
+            {
+                ["Authorization"] = "Bearer test-auth-token-12345",
+                ["X-Custom-Header"] = "custom-value"
+            }
         };
-
-        mcpTool.Headers!["X-Custom-Header"] = "custom-value";
 
         var response = await client.GetResponseAsync("hello", new ChatOptions { Tools = [mcpTool] });
 
@@ -2321,6 +2638,94 @@ public class OpenAIResponseClientTests
         Assert.Equal("resp_auth01", response.ResponseId);
         var message = Assert.Single(response.Messages);
         Assert.Equal("Hi!", message.Text);
+    }
+
+    [Theory]
+    [InlineData("bearer test-auth-token-12345")]
+    [InlineData("BEARER test-auth-token-12345")]
+    [InlineData("BeArEr test-auth-token-12345")]
+    [InlineData("  Bearer test-auth-token-12345")]
+    [InlineData("Bearer test-auth-token-12345  ")]
+    [InlineData("  Bearer test-auth-token-12345  ")]
+    [InlineData("Bearer   test-auth-token-12345")]
+    public async Task McpToolCall_WithCaseInsensitiveBearerToken_ExtractsToken(string authHeaderValue)
+    {
+        // Use a connector ID (non-URL) to trigger the Bearer token extraction code path
+        string expectedToken = "test-auth-token-12345";
+        string expectedInput = $$"""
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "server_label": "my-connector",
+                        "connector_id": "connector-id-123",
+                        "authorization": "{{expectedToken}}",
+                        "require_approval": "never"
+                    }
+                ],
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+                "id": "resp_bearer01",
+                "object": "response",
+                "created_at": 1757299043,
+                "status": "completed",
+                "model": "gpt-4o-mini-2024-07-18",
+                "output": [
+                    {
+                        "id": "msg_bearer01",
+                        "type": "message",
+                        "status": "completed",
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "text": "Hi!"
+                            }
+                        ]
+                    }
+                ],
+                "usage": {
+                    "input_tokens": 10,
+                    "output_tokens": 2,
+                    "total_tokens": 12
+                }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(expectedInput, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        // Use string constructor with non-URL to trigger connector ID path
+        var mcpTool = new HostedMcpServerTool("my-connector", "connector-id-123")
+        {
+            ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+            Headers = new Dictionary<string, string>
+            {
+                ["Authorization"] = authHeaderValue,
+            }
+        };
+
+        var response = await client.GetResponseAsync("hello", new ChatOptions { Tools = [mcpTool] });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_bearer01", response.ResponseId);
     }
 
     [Fact]
@@ -5634,12 +6039,12 @@ public class OpenAIResponseClientTests
         // First content should be the tool call
         var toolCall = contents[0] as ImageGenerationToolCallContent;
         Assert.NotNull(toolCall);
-        Assert.Equal("img_call_abc123", toolCall.ImageId);
+        Assert.Equal("img_call_abc123", toolCall.CallId);
 
         // Second content should be the result with image data
         var toolResult = contents[1] as ImageGenerationToolResultContent;
         Assert.NotNull(toolResult);
-        Assert.Equal("img_call_abc123", toolResult.ImageId);
+        Assert.Equal("img_call_abc123", toolResult.CallId);
         Assert.Single(toolResult.Outputs!);
 
         var imageData = toolResult.Outputs![0] as DataContent;
@@ -5740,7 +6145,7 @@ public class OpenAIResponseClientTests
             u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolCallContent));
         Assert.NotNull(toolCallUpdate);
         var toolCall = toolCallUpdate.Contents.OfType<ImageGenerationToolCallContent>().First();
-        Assert.Equal("img_call_def456", toolCall.ImageId);
+        Assert.Equal("img_call_def456", toolCall.CallId);
 
         // Should have partial image content
         var partialImageUpdate = updates.FirstOrDefault(u =>
@@ -5899,7 +6304,7 @@ public class OpenAIResponseClientTests
             u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolCallContent));
         Assert.NotNull(toolCallUpdate);
         var toolCall = toolCallUpdate.Contents.OfType<ImageGenerationToolCallContent>().First();
-        Assert.Equal("img_call_ghi789", toolCall.ImageId);
+        Assert.Equal("img_call_ghi789", toolCall.CallId);
     }
 
     [Theory]
@@ -6179,3 +6584,4 @@ public class OpenAIResponseClientTests
         }
     }
 }
+

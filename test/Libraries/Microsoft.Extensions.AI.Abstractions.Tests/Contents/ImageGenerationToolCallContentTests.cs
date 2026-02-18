@@ -11,20 +11,18 @@ public class ImageGenerationToolCallContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        ImageGenerationToolCallContent c = new();
+        ImageGenerationToolCallContent c = new("call123");
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.ImageId);
+        Assert.Equal("call123", c.CallId);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        ImageGenerationToolCallContent c = new();
+        ImageGenerationToolCallContent c = new("img123");
 
-        Assert.Null(c.ImageId);
-        c.ImageId = "img123";
-        Assert.Equal("img123", c.ImageId);
+        Assert.Equal("img123", c.CallId);
 
         Assert.Null(c.RawRepresentation);
         object raw = new();
@@ -40,25 +38,19 @@ public class ImageGenerationToolCallContentTests
     [Fact]
     public void Serialization_Roundtrips()
     {
-        ImageGenerationToolCallContent content = new()
-        {
-            ImageId = "img123"
-        };
+        ImageGenerationToolCallContent content = new("img123");
 
         var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
         var deserializedSut = JsonSerializer.Deserialize<ImageGenerationToolCallContent>(json, AIJsonUtilities.DefaultOptions);
 
         Assert.NotNull(deserializedSut);
-        Assert.Equal("img123", deserializedSut.ImageId);
+        Assert.Equal("img123", deserializedSut.CallId);
     }
 
     [Fact]
     public void Serialization_PolymorphicAsAIContent_Roundtrips()
     {
-        AIContent content = new ImageGenerationToolCallContent
-        {
-            ImageId = "img456"
-        };
+        AIContent content = new ImageGenerationToolCallContent("img456");
 
         var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
         Assert.Contains("\"$type\"", json);
@@ -68,6 +60,6 @@ public class ImageGenerationToolCallContentTests
 
         Assert.NotNull(deserialized);
         Assert.IsType<ImageGenerationToolCallContent>(deserialized);
-        Assert.Equal("img456", ((ImageGenerationToolCallContent)deserialized).ImageId);
+        Assert.Equal("img456", ((ImageGenerationToolCallContent)deserialized).CallId);
     }
 }

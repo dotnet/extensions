@@ -15,19 +15,16 @@ namespace Microsoft.Extensions.AI;
 /// It is informational only and represents the call itself, not the result.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class ImageGenerationToolResultContent : AIContent
+public sealed class ImageGenerationToolResultContent : ToolResultContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageGenerationToolResultContent"/> class.
     /// </summary>
-    public ImageGenerationToolResultContent()
+    /// <param name="callId">The tool call ID.</param>
+    public ImageGenerationToolResultContent(string callId)
+        : base(callId)
     {
     }
-
-    /// <summary>
-    /// Gets or sets the unique identifier of the image generation item.
-    /// </summary>
-    public string? ImageId { get; set; }
 
     /// <summary>
     /// Gets or sets the generated content items.

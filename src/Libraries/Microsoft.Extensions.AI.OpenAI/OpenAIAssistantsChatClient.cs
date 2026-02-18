@@ -202,9 +202,8 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                 case RunStepDetailsUpdate details:
                     if (!string.IsNullOrEmpty(details.CodeInterpreterInput))
                     {
-                        CodeInterpreterToolCallContent hcitcc = new()
+                        CodeInterpreterToolCallContent hcitcc = new(details.ToolCallId)
                         {
-                            CallId = details.ToolCallId,
                             Inputs = [new DataContent(Encoding.UTF8.GetBytes(details.CodeInterpreterInput), OpenAIClientExtensions.PythonMediaType)],
                             RawRepresentation = details,
                         };
@@ -221,9 +220,8 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
 
                     if (details.CodeInterpreterOutputs is { Count: > 0 })
                     {
-                        CodeInterpreterToolResultContent hcitrc = new()
+                        CodeInterpreterToolResultContent hcitrc = new(details.ToolCallId)
                         {
-                            CallId = details.ToolCallId,
                             RawRepresentation = details,
                         };
 

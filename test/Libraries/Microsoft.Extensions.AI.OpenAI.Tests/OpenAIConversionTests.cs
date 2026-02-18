@@ -431,7 +431,7 @@ public class OpenAIConversionTests
     {
         var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
         {
-            AuthorizationToken = "test-token"
+            Headers = new Dictionary<string, string> { ["Authorization"] = "Bearer test-token" }
         };
 
         var result = mcpTool.AsOpenAIResponseTool();
@@ -449,9 +449,12 @@ public class OpenAIConversionTests
     {
         var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
         {
-            AuthorizationToken = "test-token"
+            Headers = new Dictionary<string, string>
+            {
+                ["Authorization"] = "Bearer test-token",
+                ["X-Custom-Header"] = "custom-value"
+            }
         };
-        mcpTool.Headers["X-Custom-Header"] = "custom-value";
 
         var result = mcpTool.AsOpenAIResponseTool();
 
@@ -559,11 +562,11 @@ public class OpenAIConversionTests
     }
 
     [Fact]
-    public void AsOpenAIResponseTool_WithHostedMcpServerToolConnector_OnlySetsAuthToken()
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolConnector_ExtractsAuthToken()
     {
         var mcpTool = new HostedMcpServerTool("calendar", "connector_googlecalendar")
         {
-            AuthorizationToken = "connector-token"
+            Headers = new Dictionary<string, string> { ["Authorization"] = "Bearer connector-token" }
         };
 
         var result = mcpTool.AsOpenAIResponseTool();
@@ -572,7 +575,7 @@ public class OpenAIConversionTests
         var tool = Assert.IsType<McpTool>(result);
         Assert.Equal("connector-token", tool.AuthorizationToken);
 
-        // For connectors, headers should not be set even though AuthorizationToken adds to Headers internally
+        // For connectors, headers should not be set - only AuthorizationToken
         Assert.Empty(tool.Headers);
     }
 
@@ -880,13 +883,126 @@ public class OpenAIConversionTests
         // as all constructors/factory methods currently are internal. Update this test when such functionality is available.
     }
 
+    /// <summary>
+    /// Derived type to allow creating StreamingResponseOutputItemDoneUpdate instances for testing.
+    /// The base class has internal constructors, but we can derive and set the Item property.
+    /// </summary>
+    private sealed class TestableStreamingResponseOutputItemDoneUpdate : StreamingResponseOutputItemDoneUpdate
+    {
+    }
+
     [Fact]
-    public void AsChatResponseUpdatesAsync_ConvertsOpenAIStreamingResponseUpdates()
+    public async Task AsChatResponseUpdatesAsync_ConvertsOpenAIStreamingResponseUpdates()
     {
         Assert.Throws<ArgumentNullException>("responseUpdates", () => ((IAsyncEnumerable<StreamingResponseUpdate>)null!).AsChatResponseUpdatesAsync());
 
-        // The OpenAI library currently doesn't provide any way to create a StreamingResponseUpdate instance,
-        // as all constructors/factory methods currently are internal. Update this test when such functionality is available.
+        // Create streaming updates with various ResponseItem types
+        FunctionCallResponseItem functionCall = ResponseItem.CreateFunctionCallItem("call_abc", "MyFunction", BinaryData.FromString("""{"arg":"value"}"""));
+        McpToolCallItem mcpToolCall = ResponseItem.CreateMcpToolCallItem("deepwiki", "ask_question", BinaryData.FromString("""{"query":"hello"}"""));
+        mcpToolCall.Id = "mcp_call_123";
+        mcpToolCall.ToolOutput = "The answer is 42";
+        McpToolCallApprovalRequestItem mcpApprovalRequest = ResponseItem.CreateMcpApprovalRequestItem(
+            "mcpr_123",
+            "deepwiki",
+            "ask_question",
+            BinaryData.FromString("""{"repo":"dotnet/extensions"}"""));
+        McpToolCallApprovalResponseItem mcpApprovalResponse = ResponseItem.CreateMcpApprovalResponseItem("mcpr_123", approved: true);
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (ChatResponseUpdate update in CreateStreamingUpdates().AsChatResponseUpdatesAsync())
+        {
+            updates.Add(update);
+        }
+
+        // Verify we got the expected updates
+        Assert.Equal(4, updates.Count);
+
+        // First update should be FunctionCallContent
+        FunctionCallContent? fcc = updates[0].Contents.OfType<FunctionCallContent>().FirstOrDefault();
+        Assert.NotNull(fcc);
+        Assert.Equal("call_abc", fcc.CallId);
+        Assert.Equal("MyFunction", fcc.Name);
+
+        // Second update should be McpServerToolCallContent + McpServerToolResultContent
+        McpServerToolCallContent? mcpToolCallContent = updates[1].Contents.OfType<McpServerToolCallContent>().FirstOrDefault();
+        Assert.NotNull(mcpToolCallContent);
+        Assert.Equal("mcp_call_123", mcpToolCallContent.CallId);
+        Assert.Equal("ask_question", mcpToolCallContent.Name);
+        Assert.Equal("deepwiki", mcpToolCallContent.ServerName);
+        Assert.Null(mcpToolCallContent.RawRepresentation); // Intentionally null to avoid duplication during roundtrip
+
+        McpServerToolResultContent? mcpToolResultContent = updates[1].Contents.OfType<McpServerToolResultContent>().FirstOrDefault();
+        Assert.NotNull(mcpToolResultContent);
+        Assert.Equal("mcp_call_123", mcpToolResultContent.CallId);
+        Assert.NotNull(mcpToolResultContent.RawRepresentation);
+        Assert.Same(mcpToolCall, mcpToolResultContent.RawRepresentation);
+
+        // Third update should be ToolApprovalRequestContent with McpServerToolCallContent
+        ToolApprovalRequestContent? approvalRequest = updates[2].Contents.OfType<ToolApprovalRequestContent>().FirstOrDefault();
+        Assert.NotNull(approvalRequest);
+        Assert.Equal("mcpr_123", approvalRequest.RequestId);
+        Assert.NotNull(approvalRequest.RawRepresentation);
+        Assert.Same(mcpApprovalRequest, approvalRequest.RawRepresentation);
+
+        McpServerToolCallContent nestedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalRequest.ToolCall);
+        Assert.Equal("ask_question", nestedMcpCall.Name);
+        Assert.Equal("deepwiki", nestedMcpCall.ServerName);
+
+        // Fourth update should be ToolApprovalResponseContent correlated with request
+        ToolApprovalResponseContent? approvalResponse = updates[3].Contents.OfType<ToolApprovalResponseContent>().FirstOrDefault();
+        Assert.NotNull(approvalResponse);
+        Assert.Equal("mcpr_123", approvalResponse.RequestId);
+        Assert.True(approvalResponse.Approved);
+        Assert.NotNull(approvalResponse.RawRepresentation);
+        Assert.Same(mcpApprovalResponse, approvalResponse.RawRepresentation);
+
+        // The correlated FunctionCall should be McpServerToolCallContent with tool details from the request
+        McpServerToolCallContent correlatedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalResponse.ToolCall);
+        Assert.Equal("mcpr_123", correlatedMcpCall.CallId);
+        Assert.Equal("ask_question", correlatedMcpCall.Name);
+        Assert.Equal("deepwiki", correlatedMcpCall.ServerName);
+        Assert.NotNull(correlatedMcpCall.Arguments);
+        Assert.Equal("dotnet/extensions", correlatedMcpCall.Arguments["repo"]?.ToString());
+
+        async IAsyncEnumerable<StreamingResponseUpdate> CreateStreamingUpdates()
+        {
+            await Task.Yield();
+
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = functionCall };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = mcpToolCall };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = mcpApprovalRequest };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = mcpApprovalResponse };
+        }
+    }
+
+    [Fact]
+    public async Task AsChatResponseUpdatesAsync_McpToolCallApprovalResponseItem_WithoutCorrelatedRequest_FallsBackToAIContent()
+    {
+        // Create an approval response without a matching request in the stream.
+        McpToolCallApprovalResponseItem mcpApprovalResponse = ResponseItem.CreateMcpApprovalResponseItem("unknown_request_id", approved: true);
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (ChatResponseUpdate update in CreateStreamingUpdates().AsChatResponseUpdatesAsync())
+        {
+            updates.Add(update);
+        }
+
+        Assert.Single(updates);
+
+        // Should NOT have a ToolApprovalResponseContent since there was no correlated request
+        Assert.Empty(updates[0].Contents.OfType<ToolApprovalResponseContent>());
+
+        // Should have a generic AIContent with RawRepresentation set to the response item
+        AIContent? genericContent = updates[0].Contents.FirstOrDefault(c => c.RawRepresentation == mcpApprovalResponse);
+        Assert.NotNull(genericContent);
+        Assert.IsNotType<ToolApprovalResponseContent>(genericContent);
+        Assert.Same(mcpApprovalResponse, genericContent.RawRepresentation);
+
+        async IAsyncEnumerable<StreamingResponseUpdate> CreateStreamingUpdates()
+        {
+            await Task.Yield();
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = mcpApprovalResponse };
+        }
     }
 
     [Fact]
@@ -974,6 +1090,171 @@ public class OpenAIConversionTests
         Assert.Equal("call123", functionCall.CallId);
         Assert.Equal("TestFunction", functionCall.Name);
         Assert.Equal("value", functionCall.Arguments!["param"]?.ToString());
+    }
+
+    [Fact]
+    public void AsChatMessages_FromResponseItems_AllContentTypes_SetsRawRepresentation()
+    {
+        // Create ResponseItems of various types that ToChatMessages handles.
+        // Each type should roundtrip with RawRepresentation set.
+        MessageResponseItem assistantItem = ResponseItem.CreateAssistantMessageItem("Hello from the assistant!");
+        ReasoningResponseItem reasoningItem = ResponseItem.CreateReasoningItem("This is reasoning text");
+        FunctionCallResponseItem functionCallItem = ResponseItem.CreateFunctionCallItem("call_abc", "MyFunction", BinaryData.FromString("""{"arg": "value"}"""));
+        FunctionCallOutputResponseItem functionOutputItem = ResponseItem.CreateFunctionCallOutputItem("call_abc", "function result output");
+        McpToolCallItem mcpToolCallItem = ResponseItem.CreateMcpToolCallItem("deepwiki", "ask_question", BinaryData.FromString("""{"query":"hello"}"""));
+        mcpToolCallItem.Id = "mcp_call_123";
+        mcpToolCallItem.ToolOutput = "The answer is 42";
+        McpToolCallApprovalRequestItem mcpApprovalRequestItem = ResponseItem.CreateMcpApprovalRequestItem(
+            "mcpr_123",
+            "deepwiki",
+            "ask_question",
+            BinaryData.FromString("""{"repoName":"dotnet/extensions"}"""));
+
+        // Use matching ID so response can correlate with the request
+        McpToolCallApprovalResponseItem mcpApprovalResponseItem = ResponseItem.CreateMcpApprovalResponseItem("mcpr_123", approved: true);
+
+        ResponseItem[] items = [assistantItem, reasoningItem, functionCallItem, functionOutputItem, mcpToolCallItem, mcpApprovalRequestItem, mcpApprovalResponseItem];
+
+        // Convert to ChatMessages
+        ChatMessage[] messages = items.AsChatMessages().ToArray();
+
+        // All items should be grouped into a single assistant message
+        Assert.Single(messages);
+        ChatMessage message = messages[0];
+        Assert.Equal(ChatRole.Assistant, message.Role);
+
+        // The message itself should have RawRepresentation from MessageResponseItem
+        Assert.NotNull(message.RawRepresentation);
+        Assert.Same(assistantItem, message.RawRepresentation);
+
+        // Verify each content type has RawRepresentation set
+
+        // 1. MessageResponseItem -> TextContent with ResponseContentPart as RawRepresentation
+        TextContent? textContent = message.Contents.OfType<TextContent>().FirstOrDefault();
+        Assert.NotNull(textContent);
+        Assert.Equal("Hello from the assistant!", textContent.Text);
+        Assert.NotNull(textContent.RawRepresentation);
+        Assert.IsAssignableFrom<ResponseContentPart>(textContent.RawRepresentation);
+
+        // 2. ReasoningResponseItem -> TextReasoningContent
+        TextReasoningContent? reasoningContent = message.Contents.OfType<TextReasoningContent>().FirstOrDefault();
+        Assert.NotNull(reasoningContent);
+        Assert.Equal("This is reasoning text", reasoningContent.Text);
+        Assert.NotNull(reasoningContent.RawRepresentation);
+        Assert.Same(reasoningItem, reasoningContent.RawRepresentation);
+
+        // 3. FunctionCallResponseItem -> FunctionCallContent
+        FunctionCallContent? functionCallContent = message.Contents.OfType<FunctionCallContent>().FirstOrDefault();
+        Assert.NotNull(functionCallContent);
+        Assert.Equal("call_abc", functionCallContent.CallId);
+        Assert.Equal("MyFunction", functionCallContent.Name);
+        Assert.NotNull(functionCallContent.RawRepresentation);
+        Assert.Same(functionCallItem, functionCallContent.RawRepresentation);
+
+        // 4. FunctionCallOutputResponseItem -> FunctionResultContent
+        FunctionResultContent? functionResultContent = message.Contents.OfType<FunctionResultContent>().FirstOrDefault();
+        Assert.NotNull(functionResultContent);
+        Assert.Equal("call_abc", functionResultContent.CallId);
+        Assert.Equal("function result output", functionResultContent.Result);
+        Assert.NotNull(functionResultContent.RawRepresentation);
+        Assert.Same(functionOutputItem, functionResultContent.RawRepresentation);
+
+        // 5. McpToolCallItem -> McpServerToolCallContent + McpServerToolResultContent
+        // Note: AddMcpToolCallContent creates both contents; RawRepresentation is only on the result, not the call
+        McpServerToolCallContent? mcpToolCall = message.Contents.OfType<McpServerToolCallContent>().FirstOrDefault(c => c.CallId == "mcp_call_123");
+        Assert.NotNull(mcpToolCall);
+        Assert.Equal("mcp_call_123", mcpToolCall.CallId);
+        Assert.Equal("ask_question", mcpToolCall.Name);
+        Assert.Equal("deepwiki", mcpToolCall.ServerName);
+        Assert.Null(mcpToolCall.RawRepresentation); // Intentionally null to avoid duplication during roundtrip
+
+        McpServerToolResultContent? mcpToolResult = message.Contents.OfType<McpServerToolResultContent>().FirstOrDefault(c => c.CallId == "mcp_call_123");
+        Assert.NotNull(mcpToolResult);
+        Assert.Equal("mcp_call_123", mcpToolResult.CallId);
+        Assert.NotNull(mcpToolResult.RawRepresentation);
+        Assert.Same(mcpToolCallItem, mcpToolResult.RawRepresentation);
+
+        // 6. McpToolCallApprovalRequestItem -> ToolApprovalRequestContent
+        ToolApprovalRequestContent? approvalRequestContent = message.Contents.OfType<ToolApprovalRequestContent>().FirstOrDefault();
+        Assert.NotNull(approvalRequestContent);
+        Assert.Equal("mcpr_123", approvalRequestContent.RequestId);
+        Assert.NotNull(approvalRequestContent.RawRepresentation);
+        Assert.Same(mcpApprovalRequestItem, approvalRequestContent.RawRepresentation);
+
+        // The nested FunctionCall should be McpServerToolCallContent
+        McpServerToolCallContent nestedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalRequestContent.ToolCall);
+        Assert.Equal("ask_question", nestedMcpCall.Name);
+        Assert.Equal("deepwiki", nestedMcpCall.ServerName);
+        Assert.NotNull(nestedMcpCall.RawRepresentation);
+        Assert.Same(mcpApprovalRequestItem, nestedMcpCall.RawRepresentation);
+
+        // 7. McpToolCallApprovalResponseItem -> ToolApprovalResponseContent (correlated with request)
+        ToolApprovalResponseContent? approvalResponseContent = message.Contents.OfType<ToolApprovalResponseContent>().FirstOrDefault();
+        Assert.NotNull(approvalResponseContent);
+        Assert.Equal("mcpr_123", approvalResponseContent.RequestId);
+        Assert.True(approvalResponseContent.Approved);
+        Assert.NotNull(approvalResponseContent.RawRepresentation);
+        Assert.Same(mcpApprovalResponseItem, approvalResponseContent.RawRepresentation);
+
+        // The correlated FunctionCall should be McpServerToolCallContent with tool details from the request
+        McpServerToolCallContent correlatedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalResponseContent.ToolCall);
+        Assert.Equal("mcpr_123", correlatedMcpCall.CallId);
+        Assert.Equal("ask_question", correlatedMcpCall.Name);
+        Assert.Equal("deepwiki", correlatedMcpCall.ServerName);
+        Assert.NotNull(correlatedMcpCall.Arguments);
+        Assert.Equal("dotnet/extensions", correlatedMcpCall.Arguments["repoName"]?.ToString());
+    }
+
+    [Fact]
+    public void AsChatMessages_McpToolCallApprovalResponseItem_WithoutCorrelatedRequest_FallsBackToAIContent()
+    {
+        // Create an approval response without a matching request in the batch.
+        // This simulates receiving a response item when we don't have the original request.
+        MessageResponseItem assistantItem = ResponseItem.CreateAssistantMessageItem("Hello");
+        McpToolCallApprovalResponseItem mcpApprovalResponseItem = ResponseItem.CreateMcpApprovalResponseItem("unknown_request_id", approved: true);
+
+        ResponseItem[] items = [assistantItem, mcpApprovalResponseItem];
+
+        // Convert to ChatMessages
+        ChatMessage[] messages = items.AsChatMessages().ToArray();
+
+        Assert.Single(messages);
+        ChatMessage message = messages[0];
+
+        // Should NOT have a ToolApprovalResponseContent since there was no correlated request
+        Assert.Empty(message.Contents.OfType<ToolApprovalResponseContent>());
+
+        // Should have a generic AIContent with RawRepresentation set to the response item
+        AIContent? genericContent = message.Contents.FirstOrDefault(c => c.RawRepresentation == mcpApprovalResponseItem);
+        Assert.NotNull(genericContent);
+        Assert.IsNotType<ToolApprovalResponseContent>(genericContent);
+        Assert.Same(mcpApprovalResponseItem, genericContent.RawRepresentation);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AsOpenAIResponseItems_McpServerToolContents_RoundtripsToolOutputAndError(bool isError)
+    {
+        var mcpToolCall = new McpServerToolCallContent("call_123", "get_weather", "weather_server") { Arguments = new Dictionary<string, object?> { ["city"] = "Seattle" } };
+        var mcpToolResult = new McpServerToolResultContent("call_123") { Outputs = isError ? [new ErrorContent("error")] : [new TextContent("sunny")] };
+
+        var items = new ChatMessage[] { new(ChatRole.Assistant, [mcpToolCall, mcpToolResult]) }.AsOpenAIResponseItems().ToArray();
+
+        McpToolCallItem mtci = Assert.IsType<McpToolCallItem>(Assert.Single(items));
+        Assert.Equal("get_weather", mtci.ToolName);
+        Assert.Equal("weather_server", mtci.ServerLabel);
+
+        if (isError)
+        {
+            Assert.Contains("error", mtci.Error?.ToString());
+            Assert.Null(mtci.ToolOutput);
+        }
+        else
+        {
+            Assert.Equal("sunny", mtci.ToolOutput);
+            Assert.Null(mtci.Error);
+        }
     }
 
     [Fact]
