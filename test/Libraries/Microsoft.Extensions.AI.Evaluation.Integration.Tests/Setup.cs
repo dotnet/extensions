@@ -31,11 +31,13 @@ internal static class Setup
 
         OpenAIClient client = OfflineOnly ?
             new OpenAIClient(new ApiKeyCredential("Bogus"), options) :
+#pragma warning disable OPENAI001 // Constructor with BearerTokenPolicy is experimental
             new OpenAIClient(
                 new BearerTokenPolicy(
                     new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential()),
                     "https://ai.azure.com/.default"),
                 options);
+#pragma warning restore OPENAI001
 
         return client.GetChatClient(Settings.Current.DeploymentName);
     }

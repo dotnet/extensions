@@ -1,5 +1,14 @@
 # Microsoft.Extensions.AI.OpenAI Release History
 
+## 10.3.0
+
+- Marked Microsoft.Extensions.AI.OpenAI as stable. Portions of the surface area are still marked as [Experimental], e.g. because the OpenAI Responses surface area from the OpenAI library is [Experimental], the corresponding `AsIChatClient` in Microsoft.Extensions.AI.OpenAI is as well.
+- Added support for `ReasoningOptions` in `ChatOptions` via the OpenAI chat clients.
+- Updated the OpenAI Responses `IChatClient` to handle streaming code interpreter content.
+- Fixed the OpenAI Responses `IChatClient` to preserve encrypted reasoning content during streaming.
+- Fixed tool call descriptions to not drop extraneous JSON properties.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 10.2.0-preview.1.26063.2
 
 - Updated the OpenAI Responses `IChatClient` to support `ResponseItem`s with input image urls.

@@ -2,11 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.TestUtilities;
+using OpenAI.Responses;
 using Xunit;
+
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
 
 namespace Microsoft.Extensions.AI;
 
@@ -549,5 +554,169 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             response.Text.Contains("image", StringComparison.OrdinalIgnoreCase) ||
             response.Text.Contains("logo", StringComparison.OrdinalIgnoreCase),
             $"Expected response to mention analysis or image content, but got: {response.Text}");
+    }
+
+    [ConditionalFact]
+    public async Task ReasoningContent_NonStreaming_RoundtripsEncryptedContent()
+    {
+        SkipIfNotEnabled();
+
+        ChatOptions chatOptions = new()
+        {
+            RawRepresentationFactory = _ => new CreateResponseOptions
+            {
+                ReasoningOptions = new ResponseReasoningOptions
+                {
+                    ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
+                    ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Detailed
+                },
+                StoredOutputEnabled = false,
+                IncludedProperties = { IncludedResponseProperty.ReasoningEncryptedContent },
+            },
+        };
+
+        // 1. First request: Get initial response with encrypted content
+        List<ChatMessage> chatHistory = [new ChatMessage(ChatRole.User, "What is 2+2? Think step by step but be very brief.")];
+
+        var response1 = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        Assert.NotNull(response1);
+
+        // Verify we got reasoning content with encrypted data and RawRepresentation
+        var reasoningContent = response1.Messages
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .FirstOrDefault();
+
+        Assert.NotNull(reasoningContent);
+        Assert.NotNull(reasoningContent.ProtectedData);
+        Assert.NotEmpty(reasoningContent.ProtectedData);
+        Assert.NotNull(reasoningContent.RawRepresentation);
+
+        // 2. Second request: Uses raw representation
+        chatHistory.AddMessages(response1);
+        chatHistory.Add(new ChatMessage(ChatRole.User, "What is 3+3?"));
+
+        var response2 = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        Assert.NotNull(response2);
+        Assert.Contains("6", response2.Text);
+
+        // 3. Serialize/deserialize to drop RawRepresentations, then make third request
+        string json = JsonSerializer.Serialize(chatHistory, AIJsonUtilities.DefaultOptions);
+        var deserializedHistory = JsonSerializer.Deserialize<List<ChatMessage>>(json, AIJsonUtilities.DefaultOptions)!;
+
+        // Verify RawRepresentation was dropped but ProtectedData preserved
+        var deserializedReasoning = deserializedHistory
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .First(r => !string.IsNullOrEmpty(r.ProtectedData));
+
+        Assert.Null(deserializedReasoning.RawRepresentation);
+        Assert.Equal(reasoningContent.ProtectedData, deserializedReasoning.ProtectedData);
+
+        deserializedHistory.Add(new ChatMessage(ChatRole.User, "What is 4+4?"));
+
+        var response3 = await ChatClient.GetResponseAsync(deserializedHistory, chatOptions);
+        Assert.NotNull(response3);
+        Assert.Contains("8", response3.Text);
+
+        // 4. Corrupt the encrypted content and verify fourth request fails
+        foreach (var reasoning in deserializedHistory
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .Where(r => !string.IsNullOrEmpty(r.ProtectedData)))
+        {
+            reasoning.ProtectedData = "completely_invalid_encrypted_content_that_should_fail";
+        }
+
+        deserializedHistory.Add(new ChatMessage(ChatRole.User, "What is 5+5?"));
+
+        var ex = await Assert.ThrowsAsync<ClientResultException>(
+            () => ChatClient.GetResponseAsync(deserializedHistory, chatOptions));
+        Assert.Contains("encrypted", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task ReasoningContent_Streaming_RoundtripsEncryptedContent()
+    {
+        // This test requires a reasoning model with encrypted content support.
+        SkipIfNotEnabled();
+
+        ChatOptions chatOptions = new()
+        {
+            RawRepresentationFactory = _ => new CreateResponseOptions
+            {
+                ReasoningOptions = new ResponseReasoningOptions
+                {
+                    ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
+                    ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Detailed
+                },
+                StoredOutputEnabled = false,
+                IncludedProperties = { IncludedResponseProperty.ReasoningEncryptedContent },
+            },
+        };
+
+        // 1. First request: Get initial response with encrypted content via streaming
+        List<ChatMessage> chatHistory = [new ChatMessage(ChatRole.User, "What is 2+2? Think step by step but be very brief.")];
+
+        var response1 = await ChatClient.GetStreamingResponseAsync(chatHistory, chatOptions).ToChatResponseAsync();
+        Assert.NotNull(response1);
+
+        // Verify we got reasoning content with encrypted data
+        // Note: After coalescing streaming updates, RawRepresentation is not preserved
+        var reasoningContent = response1.Messages
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .FirstOrDefault();
+
+        Assert.NotNull(reasoningContent);
+        Assert.NotNull(reasoningContent.ProtectedData);
+        Assert.NotEmpty(reasoningContent.ProtectedData);
+
+        // 2. Second request: Uses the coalesced content (no RawRepresentation after coalescing)
+        chatHistory.AddMessages(response1);
+        chatHistory.Add(new ChatMessage(ChatRole.User, "What is 3+3?"));
+
+        var response2 = await ChatClient.GetStreamingResponseAsync(chatHistory, chatOptions).ToChatResponseAsync();
+        Assert.NotNull(response2);
+        Assert.Contains("6", response2.Text);
+
+        // 3. Serialize/deserialize to ensure ProtectedData survives, then make third request
+        string json = JsonSerializer.Serialize(chatHistory, AIJsonUtilities.DefaultOptions);
+        var deserializedHistory = JsonSerializer.Deserialize<List<ChatMessage>>(json, AIJsonUtilities.DefaultOptions)!;
+
+        // Verify ProtectedData preserved after serialization
+        var deserializedReasoning = deserializedHistory
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .First(r => !string.IsNullOrEmpty(r.ProtectedData));
+
+        Assert.Null(deserializedReasoning.RawRepresentation);
+        Assert.Equal(reasoningContent.ProtectedData, deserializedReasoning.ProtectedData);
+
+        deserializedHistory.Add(new ChatMessage(ChatRole.User, "What is 4+4?"));
+
+        var response3 = await ChatClient.GetStreamingResponseAsync(deserializedHistory, chatOptions).ToChatResponseAsync();
+        Assert.NotNull(response3);
+        Assert.Contains("8", response3.Text);
+
+        // 4. Corrupt the encrypted content and verify fourth request fails
+        foreach (var reasoning in deserializedHistory
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .Where(r => !string.IsNullOrEmpty(r.ProtectedData)))
+        {
+            reasoning.ProtectedData = "completely_invalid_encrypted_content_that_should_fail";
+        }
+
+        deserializedHistory.Add(new ChatMessage(ChatRole.User, "What is 5+5?"));
+
+        var ex = await Assert.ThrowsAsync<ClientResultException>(async () =>
+        {
+            await foreach (var update in ChatClient.GetStreamingResponseAsync(deserializedHistory, chatOptions))
+            {
+                _ = update;
+            }
+        });
+        Assert.Contains("encrypted", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 }

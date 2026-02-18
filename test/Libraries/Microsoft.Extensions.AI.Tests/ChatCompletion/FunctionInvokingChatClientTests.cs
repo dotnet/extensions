@@ -1925,7 +1925,7 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
-    public async Task InvocationRequired_SetToFalseAfterProcessing()
+    public async Task InformationalOnly_SetToTrueAfterProcessing()
     {
         var options = new ChatOptions
         {
@@ -1946,14 +1946,14 @@ public class FunctionInvokingChatClientTests
         var functionCallMessage = chat.First(m => m.Contents.Any(c => c is FunctionCallContent));
         var functionCallContent = functionCallMessage.Contents.OfType<FunctionCallContent>().First();
 
-        // Verify InvocationRequired was set to false after processing
-        Assert.False(functionCallContent.InvocationRequired);
+        // Verify InformationalOnly was set to true after processing
+        Assert.True(functionCallContent.InformationalOnly);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InvocationRequired_IgnoresFunctionCallsWithInvocationRequiredFalse(bool streaming)
+    public async Task InformationalOnly_IgnoresFunctionCallsWithInformationalOnlyTrue(bool streaming)
     {
         var functionInvokedCount = 0;
         var options = new ChatOptions
@@ -1962,7 +1962,7 @@ public class FunctionInvokingChatClientTests
         };
 
         // Create a function call that has already been processed
-        var alreadyProcessedFunctionCall = new FunctionCallContent("callId1", "Func1") { InvocationRequired = false };
+        var alreadyProcessedFunctionCall = new FunctionCallContent("callId1", "Func1") { InformationalOnly = true };
 
         using var innerClient = new TestChatClient
         {
@@ -1970,13 +1970,13 @@ public class FunctionInvokingChatClientTests
             {
                 await Task.Yield();
 
-                // Return a response with a FunctionCallContent that has InvocationRequired = false
+                // Return a response with a FunctionCallContent that has InformationalOnly = true
                 var message = new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]);
                 return new ChatResponse(message);
             },
             GetStreamingResponseAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
             {
-                // Return a response with a FunctionCallContent that has InvocationRequired = false
+                // Return a response with a FunctionCallContent that has InformationalOnly = true
                 var message = new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]);
                 return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
             }
@@ -1988,18 +1988,18 @@ public class FunctionInvokingChatClientTests
             ? await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync()
             : await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
 
-        // The function should not have been invoked since InvocationRequired was false
+        // The function should not have been invoked since InformationalOnly was true
         Assert.Equal(0, functionInvokedCount);
 
         // The response should contain the FunctionCallContent but no FunctionResultContent
-        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && !fcc.InvocationRequired));
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && fcc.InformationalOnly));
         Assert.DoesNotContain(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent));
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InvocationRequired_ProcessesMixedFunctionCalls(bool streaming)
+    public async Task InformationalOnly_ProcessesMixedFunctionCalls(bool streaming)
     {
         var func1InvokedCount = 0;
         var func2InvokedCount = 0;
@@ -2014,8 +2014,8 @@ public class FunctionInvokingChatClientTests
         };
 
         // Create one function call that needs processing and one that doesn't
-        var needsProcessing = new FunctionCallContent("callId1", "Func1") { InvocationRequired = true };
-        var alreadyProcessed = new FunctionCallContent("callId2", "Func2") { InvocationRequired = false };
+        var needsProcessing = new FunctionCallContent("callId1", "Func1") { InformationalOnly = false };
+        var alreadyProcessed = new FunctionCallContent("callId2", "Func2") { InformationalOnly = true };
 
         using var innerClient = new TestChatClient
         {
@@ -2059,7 +2059,7 @@ public class FunctionInvokingChatClientTests
             ? await client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "hello")], options).ToChatResponseAsync()
             : await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hello")], options);
 
-        // Only Func1 should have been invoked (the one with InvocationRequired = true)
+        // Only Func1 should have been invoked (the one with InformationalOnly = false)
         Assert.Equal(1, func1InvokedCount);
         Assert.Equal(0, func2InvokedCount);
 
@@ -2069,7 +2069,7 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
-    public async Task InvocationRequired_MultipleFunctionInvokingChatClientsOnlyProcessOnce()
+    public async Task InformationalOnly_MultipleFunctionInvokingChatClientsOnlyProcessOnce()
     {
         // Test that when multiple FunctionInvokingChatClients are in a pipeline,
         // each FunctionCallContent is only processed once (by the first one that sees it)
@@ -2108,8 +2108,8 @@ public class FunctionInvokingChatClientTests
         // The function should have been invoked EXACTLY ONCE, not twice (once per FICC)
         Assert.Equal(1, functionInvokedCount);
 
-        // The response should contain the FunctionCallContent with InvocationRequired = false
-        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && fcc.CallId == "callId1" && !fcc.InvocationRequired));
+        // The response should contain the FunctionCallContent with InformationalOnly = true
+        Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionCallContent fcc && fcc.CallId == "callId1" && fcc.InformationalOnly));
 
         // There should be a FunctionResultContent since the function was processed
         Assert.Contains(response.Messages, m => m.Contents.Any(c => c is FunctionResultContent frc && frc.CallId == "callId1"));
@@ -2255,12 +2255,12 @@ public class FunctionInvokingChatClientTests
         var cloned = new List<AIContent>(contents.Count);
         foreach (var content in contents)
         {
-            // Clone FunctionCallContent to avoid sharing InvocationRequired state
+            // Clone FunctionCallContent to avoid sharing InformationalOnly state
             if (content is FunctionCallContent fcc)
             {
                 cloned.Add(new FunctionCallContent(fcc.CallId, fcc.Name, fcc.Arguments)
                 {
-                    InvocationRequired = fcc.InvocationRequired,
+                    InformationalOnly = fcc.InformationalOnly,
                     Exception = fcc.Exception,
                     AdditionalProperties = fcc.AdditionalProperties,
                     Annotations = fcc.Annotations,

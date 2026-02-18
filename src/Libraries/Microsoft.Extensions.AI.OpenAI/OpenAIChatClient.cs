@@ -5,6 +5,7 @@ using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -13,6 +14,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Chat;
@@ -60,7 +62,9 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         _chatClient = Throw.IfNull(chatClient);
 
+#pragma warning disable OPENAI001 // Endpoint and Model are experimental
         _metadata = new("openai", chatClient.Endpoint, _chatClient.Model);
+#pragma warning restore OPENAI001
     }
 
     /// <inheritdoc />
@@ -77,10 +81,13 @@ internal sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <inheritdoc />
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeChatCompletions);
 
         var openAIChatMessages = ToOpenAIChatMessages(messages, options);
         var openAIOptions = ToOpenAIOptions(options);
@@ -95,10 +102,13 @@ internal sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <inheritdoc />
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeChatCompletions);
 
         var openAIChatMessages = ToOpenAIChatMessages(messages, options);
         var openAIOptions = ToOpenAIOptions(options);
@@ -158,7 +168,9 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 string? name = SanitizeAuthorName(input.AuthorName);
                 yield return
                     input.Role == ChatRole.System ? new SystemChatMessage(parts) { ParticipantName = name } :
+#pragma warning disable OPENAI001 // Developer role is experimental
                     input.Role == OpenAIClientExtensions.ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = name } :
+#pragma warning restore OPENAI001
                     new UserChatMessage(parts) { ParticipantName = name };
             }
             else if (input.Role == ChatRole.Tool)
@@ -284,6 +296,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
                 return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, GetImageDetail(content));
 
+#pragma warning disable OPENAI001 // Audio and file content parts are experimental
             case DataContent dataContent when dataContent.HasTopLevelMediaType("audio"):
                 var audioData = BinaryData.FromBytes(dataContent.Data);
                 if (dataContent.MediaType.Equals("audio/mpeg", StringComparison.OrdinalIgnoreCase))
@@ -302,6 +315,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
             case HostedFileContent fileContent:
                 return ChatMessageContentPart.CreateFilePart(fileContent.FileId);
+#pragma warning restore OPENAI001
         }
 
         return null;
@@ -322,6 +336,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         return null;
     }
 
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     internal static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
         IAsyncEnumerable<StreamingChatCompletionUpdate> updates,
         ChatCompletionOptions? options,
@@ -361,6 +376,13 @@ internal sealed partial class OpenAIChatClient : IChatClient
             if (update.ContentUpdate is { Count: > 0 })
             {
                 ConvertContentParts(update.ContentUpdate, responseUpdate.Contents);
+            }
+
+            // Check for reasoning content from OpenAI-compatible endpoints (e.g. DeepSeek, vLLM, OpenRouter)
+            // that surface it via non-standard fields in the response JSON.
+            if (TryGetReasoningDelta(update, out string? reasoningText))
+            {
+                responseUpdate.Contents.Add(new TextReasoningContent(reasoningText));
             }
 
             if (update.OutputAudioUpdate is { } audioUpdate)
@@ -447,6 +469,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         }
     }
 
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIAudio)]
     private static string GetOutputAudioMimeType(ChatCompletionOptions? options) =>
         options?.AudioOptions?.OutputAudioFormat.ToString()?.ToLowerInvariant() switch
         {
@@ -458,6 +481,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             "mp3" or _ => "audio/mpeg",
         };
 
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
     internal static ChatResponse FromOpenAIChatCompletion(ChatCompletion openAICompletion, ChatCompletionOptions? chatCompletionOptions)
     {
         _ = Throw.IfNull(openAICompletion);
@@ -478,6 +502,13 @@ internal sealed partial class OpenAIChatClient : IChatClient
             {
                 returnMessage.Contents.Add(aiContent);
             }
+        }
+
+        // Check for reasoning content from OpenAI-compatible endpoints (e.g. DeepSeek, vLLM, OpenRouter)
+        // that surface it via non-standard fields in the response JSON.
+        if (TryGetReasoningMessage(openAICompletion, out string? reasoningText))
+        {
+            returnMessage.Contents.Add(new TextReasoningContent(reasoningText));
         }
 
         // Output audio is handled separately from message content parts.
@@ -567,8 +598,15 @@ internal sealed partial class OpenAIChatClient : IChatClient
         result.TopP ??= options.TopP;
         result.PresencePenalty ??= options.PresencePenalty;
         result.Temperature ??= options.Temperature;
+
+#pragma warning disable OPENAI001 // Seed and ReasoningEffortLevel are experimental
         result.Seed ??= options.Seed;
+        result.ReasoningEffortLevel ??= ToOpenAIChatReasoningEffortLevel(options.Reasoning?.Effort);
+#pragma warning restore OPENAI001
+
+#pragma warning disable SCME0001 // JsonPatch is experimental
         OpenAIClientExtensions.PatchModelIfNotSet(ref result.Patch, options.ModelId);
+#pragma warning restore SCME0001
 
         if (options.StopSequences is { Count: > 0 } stopSequences)
         {
@@ -625,16 +663,29 @@ internal sealed partial class OpenAIChatClient : IChatClient
         {
             ChatResponseFormatText => OpenAI.Chat.ChatResponseFormat.CreateTextFormat(),
 
+#pragma warning disable OPENAI001 // OpenAIJsonContext is marked as experimental since it relies on source-generated serializers
             ChatResponseFormatJson jsonFormat when OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema =>
                  OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
                     jsonFormat.SchemaName ?? "json_schema",
                     BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
                     jsonFormat.SchemaDescription,
                     OpenAIClientExtensions.HasStrict(options?.AdditionalProperties)),
+#pragma warning restore OPENAI001
 
             ChatResponseFormatJson => OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat(),
 
             _ => null
+        };
+
+    [Experimental(DiagnosticIds.Experiments.AIOpenAIReasoning)]
+    private static ChatReasoningEffortLevel? ToOpenAIChatReasoningEffortLevel(ReasoningEffort? effort) =>
+        effort switch
+        {
+            ReasoningEffort.Low => ChatReasoningEffortLevel.Low,
+            ReasoningEffort.Medium => ChatReasoningEffortLevel.Medium,
+            ReasoningEffort.High => ChatReasoningEffortLevel.High,
+            ReasoningEffort.ExtraHigh => ChatReasoningEffortLevel.High,
+            _ => (ChatReasoningEffortLevel?)null,
         };
 
     private static UsageDetails FromOpenAIUsage(ChatTokenUsage tokenUsage)
@@ -661,8 +712,11 @@ internal sealed partial class OpenAIChatClient : IChatClient
         {
             const string OutputDetails = nameof(ChatTokenUsage.OutputTokenDetails);
             counts.Add($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.AudioTokenCount)}", outputDetails.AudioTokenCount);
+
+#pragma warning disable OPENAI001 // AcceptedPredictionTokenCount and RejectedPredictionTokenCount are experimental
             counts.Add($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.AcceptedPredictionTokenCount)}", outputDetails.AcceptedPredictionTokenCount);
             counts.Add($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.RejectedPredictionTokenCount)}", outputDetails.RejectedPredictionTokenCount);
+#pragma warning restore OPENAI001
         }
 
         return destination;
@@ -676,7 +730,9 @@ internal sealed partial class OpenAIChatClient : IChatClient
             ChatMessageRole.User => ChatRole.User,
             ChatMessageRole.Assistant => ChatRole.Assistant,
             ChatMessageRole.Tool => ChatRole.Tool,
+#pragma warning disable OPENAI001 // Developer role is experimental
             ChatMessageRole.Developer => OpenAIClientExtensions.ChatRoleDeveloper,
+#pragma warning restore OPENAI001
             _ => new ChatRole(role.ToString()),
         };
 
@@ -720,12 +776,14 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
                 break;
 
+#pragma warning disable OPENAI001 // File content parts are experimental
             case ChatMessageContentPartKind.File:
                 aiContent =
                     contentPart.FileId is not null ? new HostedFileContent(contentPart.FileId) { Name = contentPart.Filename } :
                     contentPart.FileBytes is not null ? new DataContent(contentPart.FileBytes.ToMemory(), contentPart.FileBytesMediaType) { Name = contentPart.Filename } :
                     null;
                 break;
+#pragma warning restore OPENAI001
         }
 
         if (aiContent is not null)
@@ -781,6 +839,16 @@ internal sealed partial class OpenAIChatClient : IChatClient
         public string? Name;
         public StringBuilder? Arguments;
     }
+
+#pragma warning disable SCME0001 // JsonPatch is experimental
+    /// <summary>Tries to extract reasoning text from a streaming chat completion update's Patch.</summary>
+    private static bool TryGetReasoningDelta(StreamingChatCompletionUpdate update, [NotNullWhen(true)] out string? reasoningText)
+        => update.Patch.TryGetValue("$.choices[0].delta.reasoning_content"u8, out reasoningText) && reasoningText is not null;
+
+    /// <summary>Tries to extract reasoning text from a non-streaming chat completion's Patch.</summary>
+    private static bool TryGetReasoningMessage(ChatCompletion completion, [NotNullWhen(true)] out string? reasoningText)
+        => completion.Patch.TryGetValue("$.choices[0].message.reasoning_content"u8, out reasoningText) && reasoningText is not null;
+#pragma warning restore SCME0001
 
     private const string InvalidAuthorNamePattern = @"[^a-zA-Z0-9_]+";
 #if NET
