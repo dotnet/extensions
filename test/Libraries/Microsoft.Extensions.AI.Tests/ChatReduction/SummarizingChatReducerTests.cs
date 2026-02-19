@@ -96,15 +96,15 @@ public class SummarizingChatReducerTests
             new ChatMessage(ChatRole.User, "What's the time?"),
             new ChatMessage(ChatRole.Assistant, "Let me check"),
             new ChatMessage(ChatRole.User, "What's the weather?"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call1", "get_weather"), new TestUserInputRequestContent("uir1")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call1", "get_weather"), new TestInputRequestContent("uir1")]),
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("call1", "Sunny")]),
-            new ChatMessage(ChatRole.User, [new TestUserInputResponseContent("uir1")]),
+            new ChatMessage(ChatRole.User, [new TestInputResponseContent("uir1")]),
             new ChatMessage(ChatRole.Assistant, "It's sunny"),
         ];
 
         chatClient.GetResponseAsyncCallback = (msgs, _, _) =>
         {
-            Assert.DoesNotContain(msgs, m => m.Contents.Any(c => c is FunctionCallContent or FunctionResultContent or TestUserInputRequestContent or TestUserInputResponseContent));
+            Assert.DoesNotContain(msgs, m => m.Contents.Any(c => c is FunctionCallContent or FunctionResultContent or TestInputRequestContent or TestInputResponseContent));
             return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "Asked about time")));
         };
 
@@ -120,10 +120,10 @@ public class SummarizingChatReducerTests
             m =>
             {
                 Assert.Contains(m.Contents, c => c is FunctionCallContent);
-                Assert.Contains(m.Contents, c => c is TestUserInputRequestContent);
+                Assert.Contains(m.Contents, c => c is TestInputRequestContent);
             },
             m => Assert.Contains(m.Contents, c => c is FunctionResultContent),
-            m => Assert.Contains(m.Contents, c => c is TestUserInputResponseContent),
+            m => Assert.Contains(m.Contents, c => c is TestInputResponseContent),
             m => Assert.Contains("sunny", m.Text));
     }
 
@@ -185,9 +185,9 @@ public class SummarizingChatReducerTests
         List<ChatMessage> messages =
         [
             new ChatMessage(ChatRole.User, "What's the weather in Seattle?"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call1", "get_weather", new Dictionary<string, object?> { ["location"] = "Seattle" }), new TestUserInputRequestContent("uir2")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call1", "get_weather", new Dictionary<string, object?> { ["location"] = "Seattle" }), new TestInputRequestContent("uir2")]),
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("call1", "Sunny, 72°F")]),
-            new ChatMessage(ChatRole.User, [new TestUserInputResponseContent("uir2")]),
+            new ChatMessage(ChatRole.User, [new TestInputResponseContent("uir2")]),
             new ChatMessage(ChatRole.Assistant, "It's sunny and 72°F in Seattle."),
             new ChatMessage(ChatRole.User, "What about New York?"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call2", "get_weather", new Dictionary<string, object?> { ["location"] = "New York" })]),
@@ -200,7 +200,7 @@ public class SummarizingChatReducerTests
             var msgList = msgs.ToList();
 
             Assert.Equal(4, msgList.Count); // 3 non-function messages + system prompt
-            Assert.DoesNotContain(msgList, m => m.Contents.Any(c => c is FunctionCallContent or FunctionResultContent or TestUserInputRequestContent or TestUserInputResponseContent));
+            Assert.DoesNotContain(msgList, m => m.Contents.Any(c => c is FunctionCallContent or FunctionResultContent or TestInputRequestContent or TestInputResponseContent));
             Assert.Contains(msgList, m => m.Text.Contains("What's the weather in Seattle?"));
             Assert.Contains(msgList, m => m.Text.Contains("sunny and 72°F in Seattle"));
             Assert.Contains(msgList, m => m.Text.Contains("What about New York?"));
@@ -220,8 +220,8 @@ public class SummarizingChatReducerTests
         Assert.Contains(resultList, m => m.Contents.Any(c => c is FunctionResultContent fr && fr.CallId == "call2"));
         Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is FunctionCallContent fc && fc.CallId == "call1"));
         Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is FunctionResultContent fr && fr.CallId == "call1"));
-        Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is TestUserInputRequestContent));
-        Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is TestUserInputResponseContent));
+        Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is TestInputRequestContent));
+        Assert.DoesNotContain(resultList, m => m.Contents.Any(c => c is TestInputResponseContent));
         Assert.DoesNotContain(resultList, m => m.Text.Contains("sunny and 72°F in Seattle"));
     }
 
@@ -385,18 +385,18 @@ public class SummarizingChatReducerTests
             m => Assert.StartsWith("Do they make good lap dogs", m.Text, StringComparison.Ordinal));
     }
 
-    private sealed class TestUserInputRequestContent : UserInputRequestContent
+    private sealed class TestInputRequestContent : InputRequestContent
     {
-        public TestUserInputRequestContent(string id)
-            : base(id)
+        public TestInputRequestContent(string requestId)
+            : base(requestId)
         {
         }
     }
 
-    private sealed class TestUserInputResponseContent : UserInputResponseContent
+    private sealed class TestInputResponseContent : InputResponseContent
     {
-        public TestUserInputResponseContent(string id)
-            : base(id)
+        public TestInputResponseContent(string requestId)
+            : base(requestId)
         {
         }
     }

@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -15,8 +13,6 @@ namespace Microsoft.Extensions.AI;
 /// The predefined values <see cref="AlwaysRequire" />, and <see cref="NeverRequire"/> are provided to specify handling for all tools.
 /// To specify approval behavior for individual tool names, use <see cref="RequireSpecific(IList{string}, IList{string})"/>.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.AIMcpServers, UrlFormat = DiagnosticIds.UrlFormat)]
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(HostedMcpServerToolNeverRequireApprovalMode), typeDiscriminator: "never")]
 [JsonDerivedType(typeof(HostedMcpServerToolAlwaysRequireApprovalMode), typeDiscriminator: "always")]
 [JsonDerivedType(typeof(HostedMcpServerToolRequireSpecificApprovalMode), typeDiscriminator: "requireSpecific")]
