@@ -92,6 +92,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeResponses);
+
         // Convert the inputs into what ResponsesClient expects.
         var openAIOptions = AsCreateResponseOptions(options, out string? openAIConversationId);
 
@@ -259,6 +261,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeResponses);
 
         var openAIOptions = AsCreateResponseOptions(options, out string? openAIConversationId);
         openAIOptions.StreamingEnabled = true;

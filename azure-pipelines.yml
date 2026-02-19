@@ -7,7 +7,6 @@ trigger:
   branches:
     include:
       - main
-      - dev
       - release/*
       - internal/release/*
       - validation/*
@@ -30,7 +29,6 @@ pr:
   branches:
     include:
       - main
-      - dev
       - release/*
       - internal/release/*
   paths:

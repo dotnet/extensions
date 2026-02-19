@@ -6,6 +6,7 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -2009,5 +2010,69 @@ public class OpenAIChatClientTests
 
         // Verify regular content was also captured from the content deltas
         Assert.Equal("9.8 is larger.", string.Concat(updates.Select(u => u.Text)));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OpenAIApiTypeTag_SetToChatCompletions(bool streaming)
+    {
+        const string Output = """
+            {
+              "id": "chatcmpl-test",
+              "object": "chat.completion",
+              "created": 1727888631,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello!"
+                  },
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 8,
+                "completion_tokens": 2,
+                "total_tokens": 10
+              }
+            }
+            """;
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == sourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => activities.Add(activity),
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        using VerbatimHttpHandler handler = new(new HttpHandlerExpectedInput(), Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
+            .GetChatClient("gpt-4o-mini")
+            .AsIChatClient()
+            .AsBuilder()
+            .UseOpenTelemetry(sourceName: sourceName)
+            .Build();
+
+        if (streaming)
+        {
+            await foreach (var update in client.GetStreamingResponseAsync("hello"))
+            {
+                // Drain the stream.
+            }
+        }
+        else
+        {
+            await client.GetResponseAsync("hello");
+        }
+
+        var activity = Assert.Single(activities);
+        Assert.Equal("chat_completions", activity.GetTagItem("openai.api.type"));
     }
 }
