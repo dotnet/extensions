@@ -138,7 +138,6 @@ internal static class OpenTelemetryConsts
         {
             public const string InputTokens = "gen_ai.usage.input_tokens";
             public const string OutputTokens = "gen_ai.usage.output_tokens";
-            public const string CacheCreationInputTokens = "gen_ai.usage.cache_creation.input_tokens";
             public const string CacheReadInputTokens = "gen_ai.usage.cache_read.input_tokens";
         }
     }
