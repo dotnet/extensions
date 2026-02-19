@@ -941,8 +941,8 @@ public partial class AcceptanceTests
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
 
                 // 1st is the flushed Trace from "test" category
-                // 2, 3rd are unbuffered logs from our "test" category
-                // and 4 and 5th are logs from the /logatrequest endpoint
+                // 2nd and 3rd are logs emitted by the /logatrequest endpoint
+                // and 4th and 5th are unbuffered logs from our "test" category
                 Assert.Equal(5, logCollector.Count);
                 Assert.Equal(LogLevel.Trace, logCollector.LatestRecord.Level);
                 Assert.Equal("test", logCollector.LatestRecord.Category);
