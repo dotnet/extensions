@@ -685,7 +685,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             ReasoningEffort.Low => ChatReasoningEffortLevel.Low,
             ReasoningEffort.Medium => ChatReasoningEffortLevel.Medium,
             ReasoningEffort.High => ChatReasoningEffortLevel.High,
-            ReasoningEffort.ExtraHigh => ChatReasoningEffortLevel.High,
+            ReasoningEffort.ExtraHigh => new ChatReasoningEffortLevel("xhigh"),
             _ => (ChatReasoningEffortLevel?)null,
         };
 

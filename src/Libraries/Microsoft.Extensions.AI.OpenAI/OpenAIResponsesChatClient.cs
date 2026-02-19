@@ -863,7 +863,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             ReasoningEffort.Low => ResponseReasoningEffortLevel.Low,
             ReasoningEffort.Medium => ResponseReasoningEffortLevel.Medium,
             ReasoningEffort.High => ResponseReasoningEffortLevel.High,
-            ReasoningEffort.ExtraHigh => ResponseReasoningEffortLevel.High,
+            ReasoningEffort.ExtraHigh => new ResponseReasoningEffortLevel("xhigh"),
             _ => (ResponseReasoningEffortLevel?)null,
         };
 

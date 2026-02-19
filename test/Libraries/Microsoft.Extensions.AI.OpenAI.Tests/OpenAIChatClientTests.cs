@@ -1824,7 +1824,7 @@ public class OpenAIChatClientTests
     [InlineData(ReasoningEffort.Low, "low")]
     [InlineData(ReasoningEffort.Medium, "medium")]
     [InlineData(ReasoningEffort.High, "high")]
-    [InlineData(ReasoningEffort.ExtraHigh, "high")] // ExtraHigh maps to high in OpenAI
+    [InlineData(ReasoningEffort.ExtraHigh, "xhigh")]
     public async Task ReasoningOptions_Effort_ProducesExpectedJson(ReasoningEffort effort, string expectedEffortString)
     {
         string input = $$"""
