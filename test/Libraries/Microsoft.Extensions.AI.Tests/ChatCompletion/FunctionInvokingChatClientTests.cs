@@ -1716,10 +1716,6 @@ public class FunctionInvokingChatClientTests
     [Fact]
     public async Task StreamingPreservesTraceContextWhenInvokeAgentWithNameIsParent()
     {
-        // Reproduces: Activity.Current lost after streaming + tool call when
-        // parent is "invoke_agent AgentName(id)" (agent-framework naming convention).
-        // The broadened CurrentActivityIsInvokeAgent match (PR #7224) causes
-        // activity to be null, and Activity.Current = activity wipes the context.
         string agentSourceName = Guid.NewGuid().ToString();
         string clientSourceName = Guid.NewGuid().ToString();
         var activities = new List<Activity>();
