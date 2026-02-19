@@ -548,8 +548,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 //    If any FCC _might_ require approval, we hold off on yielding until we know whether any actually do,
                 //    which is either at the end of the stream or the first time we get an FCC that requires approval.
                 //    At that point, we yield all buffered updates, replacing FCCs with approval requests if needed.
-            Generally, however, such buffering does not meaningfully impact consumption experience, as function
-            call contents typically come at the end of the streaming sequence.
+                // Generally, however, such buffering does not meaningfully impact consumption experience, as function
+                // call contents typically come at the end of the streaming sequence.
                 if (anyToolsRequireApproval && approvalRequiredFunctions is null && functionCallContents is { Count: > 0 })
                 {
                     approvalRequiredFunctions =
