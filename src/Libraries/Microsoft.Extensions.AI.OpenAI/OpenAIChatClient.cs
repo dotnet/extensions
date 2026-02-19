@@ -681,6 +681,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     private static ChatReasoningEffortLevel? ToOpenAIChatReasoningEffortLevel(ReasoningEffort? effort) =>
         effort switch
         {
+            ReasoningEffort.None => ChatReasoningEffortLevel.Minimal,
             ReasoningEffort.Low => ChatReasoningEffortLevel.Low,
             ReasoningEffort.Medium => ChatReasoningEffortLevel.Medium,
             ReasoningEffort.High => ChatReasoningEffortLevel.High,

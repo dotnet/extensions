@@ -1820,6 +1820,7 @@ public class OpenAIChatClientTests
     }
 
     [Theory]
+    [InlineData(ReasoningEffort.None, "minimal")]
     [InlineData(ReasoningEffort.Low, "low")]
     [InlineData(ReasoningEffort.Medium, "medium")]
     [InlineData(ReasoningEffort.High, "high")]
@@ -1863,49 +1864,6 @@ public class OpenAIChatClientTests
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             Reasoning = new ReasoningOptions { Effort = effort }
-        }));
-    }
-
-    [Fact]
-    public async Task ReasoningOptions_None_ProducesNoReasoningEffortInJson()
-    {
-        const string Input = """
-            {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": "hello"
-                    }
-                ],
-                "model": "gpt-4o-mini"
-            }
-            """;
-
-        const string Output = """
-            {
-              "id": "chatcmpl-test",
-              "object": "chat.completion",
-              "model": "gpt-4o-mini",
-              "choices": [
-                {
-                  "message": {
-                    "role": "assistant",
-                    "content": "Hello!"
-                  },
-                  "finish_reason": "stop"
-                }
-              ]
-            }
-            """;
-
-        using VerbatimHttpHandler handler = new(Input, Output);
-        using HttpClient httpClient = new(handler);
-        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
-
-        // None effort should not include reasoning_effort in the request
-        Assert.NotNull(await client.GetResponseAsync("hello", new()
-        {
-            Reasoning = new ReasoningOptions { Effort = ReasoningEffort.None }
         }));
     }
 
