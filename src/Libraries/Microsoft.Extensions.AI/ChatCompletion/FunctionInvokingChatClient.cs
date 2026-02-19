@@ -421,6 +421,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Create an activity to group them together for better observability. If there's already a genai "invoke_agent"
         // span that's current, however, we just consider that the group and don't add a new one.
         using Activity? activity = CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
+        Activity? activityToRestore = activity ?? Activity.Current; // when activity is null (under invoke_agent), restore the parent instead
         UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
@@ -460,7 +461,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 foreach (var message in preDownstreamCallHistory)
                 {
                     yield return ConvertToolResultMessageToUpdate(message, options?.ConversationId, message.MessageId);
-                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                    Activity.Current = activityToRestore; // workaround for https://github.com/dotnet/runtime/issues/47802
                 }
             }
 
@@ -474,7 +475,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     message.MessageId = toolMessageId;
                     yield return ConvertToolResultMessageToUpdate(message, options?.ConversationId, message.MessageId);
-                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                    Activity.Current = activityToRestore; // workaround for https://github.com/dotnet/runtime/issues/47802
                 }
 
                 if (shouldTerminate)
@@ -557,7 +558,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     // we can yield the update as-is.
                     lastYieldedUpdateIndex++;
                     yield return update;
-                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                    Activity.Current = activityToRestore; // workaround for https://github.com/dotnet/runtime/issues/47802
 
                     continue;
                 }
@@ -584,7 +585,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                         }
 
                         yield return updateToYield;
-                        Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                        Activity.Current = activityToRestore; // workaround for https://github.com/dotnet/runtime/issues/47802
                     }
 
                     continue;
@@ -601,7 +602,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             {
                 var updateToYield = updates[lastYieldedUpdateIndex];
                 yield return updateToYield;
-                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                Activity.Current = activityToRestore; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
             // If there's nothing more to do, break out of the loop and allow the handling at the
@@ -632,7 +633,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             foreach (var message in modeAndMessages.MessagesAdded)
             {
                 yield return ConvertToolResultMessageToUpdate(message, response.ConversationId, toolMessageId);
-                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                Activity.Current = activityToRestore; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
             if (modeAndMessages.ShouldTerminate)
