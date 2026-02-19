@@ -859,7 +859,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         ResponseReasoningEffortLevel? effortLevel = reasoning.Effort switch
         {
-            ReasoningEffort.None => ResponseReasoningEffortLevel.Minimal,
+            ReasoningEffort.None => new ResponseReasoningEffortLevel("none"),
             ReasoningEffort.Low => ResponseReasoningEffortLevel.Low,
             ReasoningEffort.Medium => ResponseReasoningEffortLevel.Medium,
             ReasoningEffort.High => ResponseReasoningEffortLevel.High,

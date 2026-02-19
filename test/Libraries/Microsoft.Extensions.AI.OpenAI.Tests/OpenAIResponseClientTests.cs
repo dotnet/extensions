@@ -5903,7 +5903,7 @@ public class OpenAIResponseClientTests
     }
 
     [Theory]
-    [InlineData(ReasoningEffort.None, ReasoningOutput.Summary, "minimal", "concise")]
+    [InlineData(ReasoningEffort.None, ReasoningOutput.Summary, "none", "concise")]
     [InlineData(ReasoningEffort.Low, ReasoningOutput.Summary, "low", "concise")]
     [InlineData(ReasoningEffort.Medium, ReasoningOutput.Full, "medium", "detailed")]
     [InlineData(ReasoningEffort.High, ReasoningOutput.Summary, "high", "concise")]
@@ -5964,7 +5964,7 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
-    public async Task ReasoningOptions_NoneValues_ProducesMinimalReasoningInJson()
+    public async Task ReasoningOptions_NoneValues_ProducesNoneReasoningInJson()
     {
         const string Input = """
             {
@@ -5975,7 +5975,7 @@ public class OpenAIResponseClientTests
                     "content": [{"type": "input_text", "text": "hello"}]
                 }],
                 "reasoning": {
-                    "effort": "minimal"
+                    "effort": "none"
                 }
             }
             """;
@@ -6008,7 +6008,7 @@ public class OpenAIResponseClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateResponseClient(httpClient, "o4-mini");
 
-        // None effort maps to minimal reasoning effort in the request
+        // None effort maps to "none" reasoning effort in the request
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             Reasoning = new ReasoningOptions { Effort = ReasoningEffort.None, Output = ReasoningOutput.None }

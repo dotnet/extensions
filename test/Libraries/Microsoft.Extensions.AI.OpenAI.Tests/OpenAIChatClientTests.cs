@@ -1820,7 +1820,7 @@ public class OpenAIChatClientTests
     }
 
     [Theory]
-    [InlineData(ReasoningEffort.None, "minimal")]
+    [InlineData(ReasoningEffort.None, "none")]
     [InlineData(ReasoningEffort.Low, "low")]
     [InlineData(ReasoningEffort.Medium, "medium")]
     [InlineData(ReasoningEffort.High, "high")]
