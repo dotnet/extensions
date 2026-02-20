@@ -39,6 +39,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
     private readonly Histogram<int> _tokenUsageHistogram;
     private readonly Histogram<double> _operationDurationHistogram;
+    private readonly Histogram<double> _timeToFirstChunkHistogram;
+    private readonly Histogram<double> _timePerOutputChunkHistogram;
 
     private readonly string? _defaultModelId;
     private readonly string? _providerName;
@@ -82,6 +84,20 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             OpenTelemetryConsts.SecondsUnit,
             OpenTelemetryConsts.GenAI.Client.OperationDuration.Description,
             advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
+            );
+
+        _timeToFirstChunkHistogram = _meter.CreateHistogram<double>(
+            OpenTelemetryConsts.GenAI.Client.TimeToFirstChunk.Name,
+            OpenTelemetryConsts.SecondsUnit,
+            OpenTelemetryConsts.GenAI.Client.TimeToFirstChunk.Description,
+            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TimeToFirstChunk.ExplicitBucketBoundaries }
+            );
+
+        _timePerOutputChunkHistogram = _meter.CreateHistogram<double>(
+            OpenTelemetryConsts.GenAI.Client.TimePerOutputChunk.Name,
+            OpenTelemetryConsts.SecondsUnit,
+            OpenTelemetryConsts.GenAI.Client.TimePerOutputChunk.Description,
+            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TimePerOutputChunk.ExplicitBucketBoundaries }
             );
 
         _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
@@ -167,7 +183,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         _jsonSerializerOptions.MakeReadOnly();
 
         using Activity? activity = CreateAndConfigureActivity(options);
-        Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
+        bool trackChunkTimes = _timeToFirstChunkHistogram.Enabled || _timePerOutputChunkHistogram.Enabled;
+        Stopwatch? stopwatch = _operationDurationHistogram.Enabled || trackChunkTimes ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _defaultModelId;
 
         AddInputMessagesTags(messages, options, activity);
@@ -185,6 +202,9 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         var responseEnumerator = updates.GetAsyncEnumerator(cancellationToken);
         List<ChatResponseUpdate> trackedUpdates = [];
+        TimeSpan lastChunkElapsed = default;
+        double? timeToFirstChunk = null;
+        List<double>? interChunkTimes = trackChunkTimes ? [] : null;
         Exception? error = null;
         try
         {
@@ -206,6 +226,23 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     throw;
                 }
 
+                if (stopwatch is not null && trackChunkTimes)
+                {
+                    TimeSpan currentElapsed = stopwatch.Elapsed;
+                    double delta = (currentElapsed - lastChunkElapsed).TotalSeconds;
+
+                    if (timeToFirstChunk is null)
+                    {
+                        timeToFirstChunk = delta;
+                    }
+                    else
+                    {
+                        interChunkTimes!.Add(delta);
+                    }
+
+                    lastChunkElapsed = currentElapsed;
+                }
+
                 trackedUpdates.Add(update);
                 yield return update;
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
@@ -213,7 +250,9 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
         finally
         {
-            TraceResponse(activity, requestModelId, trackedUpdates.ToChatResponse(), error, stopwatch);
+            ChatResponse? response = trackedUpdates.ToChatResponse();
+            TraceResponse(activity, requestModelId, response, error, stopwatch);
+            RecordStreamingChunkMetrics(requestModelId, response, timeToFirstChunk, interChunkTimes);
 
             await responseEnumerator.DisposeAsync();
         }
@@ -711,26 +750,54 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
 
         void AddMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
+            => PopulateMetricTags(ref tags, requestModelId, response);
+    }
+
+    /// <summary>Records streaming-specific chunk timing metrics.</summary>
+    private void RecordStreamingChunkMetrics(
+        string? requestModelId,
+        ChatResponse? response,
+        double? timeToFirstChunk,
+        List<double>? interChunkTimes)
+    {
+        if (timeToFirstChunk is not null && _timeToFirstChunkHistogram.Enabled)
         {
-            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName);
+            TagList tags = default;
+            PopulateMetricTags(ref tags, requestModelId, response);
+            _timeToFirstChunkHistogram.Record(timeToFirstChunk.Value, tags);
+        }
 
-            if (requestModelId is not null)
+        if (interChunkTimes is not null && _timePerOutputChunkHistogram.Enabled)
+        {
+            TagList tags = default;
+            PopulateMetricTags(ref tags, requestModelId, response);
+            foreach (double time in interChunkTimes)
             {
-                tags.Add(OpenTelemetryConsts.GenAI.Request.Model, requestModelId);
+                _timePerOutputChunkHistogram.Record(time, tags);
             }
+        }
+    }
 
-            tags.Add(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
+    private void PopulateMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
+    {
+        tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName);
 
-            if (_serverAddress is string endpointAddress)
-            {
-                tags.Add(OpenTelemetryConsts.Server.Address, endpointAddress);
-                tags.Add(OpenTelemetryConsts.Server.Port, _serverPort);
-            }
+        if (requestModelId is not null)
+        {
+            tags.Add(OpenTelemetryConsts.GenAI.Request.Model, requestModelId);
+        }
 
-            if (response?.ModelId is string responseModel)
-            {
-                tags.Add(OpenTelemetryConsts.GenAI.Response.Model, responseModel);
-            }
+        tags.Add(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
+
+        if (_serverAddress is string endpointAddress)
+        {
+            tags.Add(OpenTelemetryConsts.Server.Address, endpointAddress);
+            tags.Add(OpenTelemetryConsts.Server.Port, _serverPort);
+        }
+
+        if (response?.ModelId is string responseModel)
+        {
+            tags.Add(OpenTelemetryConsts.GenAI.Response.Model, responseModel);
         }
     }
 
