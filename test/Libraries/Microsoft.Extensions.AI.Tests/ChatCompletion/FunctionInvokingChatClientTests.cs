@@ -1713,6 +1713,63 @@ public class FunctionInvokingChatClientTests
         Assert.All(childActivities, activity => Assert.Same(invokeAgent, activity.Parent));
     }
 
+    [Fact]
+    public async Task StreamingPreservesTraceContextWhenInvokeAgentWithNameIsParent()
+    {
+        string agentSourceName = Guid.NewGuid().ToString();
+        string clientSourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(agentSourceName)
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        int callCount = 0;
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (messages, options, ct) =>
+            {
+                callCount++;
+                ChatMessage message = callCount == 1
+                    ? new(ChatRole.Assistant, [new FunctionCallContent("call1", "Func1")])
+                    : new(ChatRole.Assistant, "Done");
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+            }
+        };
+
+        var client = innerClient.AsBuilder()
+            .Use(c => new FunctionInvokingChatClient(
+                new OpenTelemetryChatClient(c, sourceName: clientSourceName)))
+            .Build();
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        using var agentSource = new ActivitySource(agentSourceName);
+        using var invokeAgentActivity = agentSource.StartActivity("invoke_agent MyAgent(agent-123)");
+        Assert.NotNull(invokeAgentActivity);
+
+        await foreach (var update in client.GetStreamingResponseAsync(
+            [new ChatMessage(ChatRole.User, "hello")], options))
+        {
+            // consume all updates
+        }
+
+        Assert.Equal(2, callCount);
+
+        var chatActivities = activities.Where(a => a.DisplayName.StartsWith("chat", StringComparison.Ordinal)).ToList();
+        Assert.Equal(2, chatActivities.Count);
+
+        // All child activities must share the same trace as invoke_agent
+        var nonAgentActivities = activities.Where(a => a != invokeAgentActivity).ToList();
+        Assert.All(nonAgentActivities, a =>
+            Assert.Equal(invokeAgentActivity.TraceId, a.TraceId));
+    }
+
     [Theory]
     [InlineData("invoke_agen")]
     [InlineData("invoke_agent_extra")]

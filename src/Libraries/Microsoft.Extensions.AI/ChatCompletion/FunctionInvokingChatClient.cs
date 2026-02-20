@@ -464,7 +464,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 foreach (var message in preDownstreamCallHistory)
                 {
                     yield return ConvertToolResultMessageToUpdate(message, options?.ConversationId, message.MessageId);
-                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                    if (activity is not null)
+                    {
+                        Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                    }
                 }
             }
 
@@ -478,7 +481,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     message.MessageId = toolMessageId;
                     yield return ConvertToolResultMessageToUpdate(message, options?.ConversationId, message.MessageId);
-                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                    if (activity is not null)
+                    {
+                        Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                    }
                 }
 
                 if (shouldTerminate)
@@ -564,8 +570,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     // If there are no function calls to make yet, we can yield the update as-is.
                     lastYieldedUpdateIndex++;
                     yield return update;
-                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
-
+                    if (activity is not null)
+                    {
+                        Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                    }
                     continue;
                 }
 
@@ -599,7 +607,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                         }
 
                         yield return updateToYield;
-                        Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                        if (activity is not null)
+                        {
+                            Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                        }
                     }
 
                     continue;
@@ -622,7 +633,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             {
                 var updateToYield = updates[lastYieldedUpdateIndex];
                 yield return updateToYield;
-                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                if (activity is not null)
+                {
+                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                }
             }
 
             // If there's nothing more to do, break out of the loop and allow the handling at the
@@ -653,7 +667,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             foreach (var message in modeAndMessages.MessagesAdded)
             {
                 yield return ConvertToolResultMessageToUpdate(message, response.ConversationId, toolMessageId);
-                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                if (activity is not null)
+                {
+                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                }
             }
 
             if (modeAndMessages.ShouldTerminate)
