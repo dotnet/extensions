@@ -93,4 +93,123 @@ public class EmitterTests
         Assert.Throws<NotSupportedException>(() =>
             emitter.EmitMetrics(new List<MetricType> { metricClass }, cancellationToken: default));
     }
+
+    [Theory]
+    [InlineData(10)]
+    [InlineData((int)InstrumentKind.None)]
+    public void EmitFactory_GivenMetricTypeIsUnknown_ThrowsNotSupportedException(int instrumentKind)
+    {
+        var metricClass = new MetricType
+        {
+            Name = "MetricClass",
+            Namespace = "Samples",
+            Methods =
+            {
+                new MetricMethod
+                {
+                    Name = "CreateUnknownMetric",
+                    MetricName = "UnknownMetric",
+                    MetricTypeName = "UnknownMetric",
+                    InstrumentKind = (InstrumentKind)instrumentKind,
+                    GenericType = "long",
+                    IsExtensionMethod = false,
+                    Modifiers = "static partial",
+                    MetricTypeModifiers = "public static partial",
+                    AllParameters =
+                    {
+                        new MetricParameter
+                        {
+                            Name = "meter",
+                            Type = "global::System.Diagnostics.Metrics.Meter",
+                            IsMeter = true
+                        }
+                    }
+                }
+            }
+        };
+
+        var emitter = new MetricFactoryEmitter();
+
+        Assert.Throws<NotSupportedException>(() =>
+            emitter.Emit(new List<MetricType> { metricClass }, cancellationToken: default));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("a")]
+    public void EmitFactory_MetricTypeNameWithLowercaseOrEmptyFirstChar_DoesNotThrow(string metricTypeName)
+    {
+        var metricClass = new MetricType
+        {
+            Name = "MetricClass",
+            Namespace = "Samples",
+            Methods =
+            {
+                new MetricMethod
+                {
+                    Name = "CreateMetric",
+                    MetricName = "TestMetric",
+                    MetricTypeName = metricTypeName,
+                    InstrumentKind = InstrumentKind.Counter,
+                    GenericType = "long",
+                    IsExtensionMethod = false,
+                    Modifiers = "static partial",
+                    MetricTypeModifiers = "public static partial",
+                    AllParameters =
+                    {
+                        new MetricParameter
+                        {
+                            Name = "meter",
+                            Type = "global::System.Diagnostics.Metrics.Meter",
+                            IsMeter = true
+                        }
+                    }
+                }
+            }
+        };
+
+        var emitter = new MetricFactoryEmitter();
+        var result = emitter.Emit(new List<MetricType> { metricClass }, cancellationToken: default);
+
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void EmitFactory_MetricTypeNameWithSingleUppercaseChar_DoesNotThrow()
+    {
+        var metricClass = new MetricType
+        {
+            Name = "MetricClass",
+            Namespace = "Samples",
+            Methods =
+            {
+                new MetricMethod
+                {
+                    Name = "CreateMetric",
+                    MetricName = "TestMetric",
+                    MetricTypeName = "M",
+                    InstrumentKind = InstrumentKind.Counter,
+                    GenericType = "long",
+                    IsExtensionMethod = false,
+                    Modifiers = "static partial",
+                    MetricTypeModifiers = "public static partial",
+                    AllParameters =
+                    {
+                        new MetricParameter
+                        {
+                            Name = "meter",
+                            Type = "global::System.Diagnostics.Metrics.Meter",
+                            IsMeter = true
+                        }
+                    }
+                }
+            }
+        };
+
+        var emitter = new MetricFactoryEmitter();
+        var result = emitter.Emit(new List<MetricType> { metricClass }, cancellationToken: default);
+
+        Assert.NotNull(result);
+        Assert.Contains("_mInstruments", result);
+    }
 }
