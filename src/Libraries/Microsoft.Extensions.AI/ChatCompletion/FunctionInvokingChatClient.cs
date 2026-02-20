@@ -334,6 +334,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 Throw.InvalidOperationException($"The inner {nameof(IChatClient)} returned a null {nameof(ChatResponse)}.");
             }
 
+            // Before we do any function execution, mark any FunctionCallContent as InformationalOnly if the
+            // response also contains a matching FunctionResultContent, as that means the server already handled the call.
+            MarkServerHandledFunctionCalls(response.Messages);
+
             // Before we do any function execution, make sure that any functions that require approval have been turned into
             // approval requests so that they don't get executed here. We recompute anyToolsRequireApproval on each iteration
             // because a function may have modified ChatOptions.Tools.
@@ -533,15 +537,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     }
                 }
 
-                // We're streaming updates back to the caller. However, approvals requires extra handling. We should not yield any
-                // FunctionCallContents back to the caller if approvals might be required, because if any actually are, we need to convert
-                // all FunctionCallContents into approval requests, even those that don't require approval (we otherwise don't have a way
-                // to track the FCCs to a later turn, in particular when the conversation history is managed by the service / inner client).
-                // So, if there are no functions that need approval, we can yield updates with FCCs as they arrive. But if any FCC _might_
-                // require approval (which just means that any AIFunction we can possibly invoke requires approval), then we need to hold off
-                // on yielding any FCCs until we know whether any of them actually require approval, which is either at the end of the stream
-                // or the first time we get an FCC that requires approval. At that point, we can yield all of the updates buffered thus far
-                // and anything further, replacing FCCs with approval if any required it, or yielding them as is.
+                // We're streaming updates back to the caller. Once we encounter a FunctionCallContent, we need to buffer all
+                // remaining updates until the stream completes. This is necessary for two reasons:
+                // 1. Server-handled function calls: The server may yield both a FunctionCallContent and a matching
+                //    FunctionResultContent. We need to see the full stream to detect these pairs and mark the FCCs as
+                //    InformationalOnly so they aren't re-invoked locally.
+                // 2. Approval handling: If any tools require approval, we need to convert all FunctionCallContents into
+                //    approval requests, even those that don't require approval (we otherwise don't have a way to track the
+                //    FCCs to a later turn, in particular when the conversation history is managed by the service / inner client).
+                //    If any FCC _might_ require approval, we hold off on yielding until we know whether any actually do,
+                //    which is either at the end of the stream or the first time we get an FCC that requires approval.
+                //    At that point, we yield all buffered updates, replacing FCCs with approval requests if needed.
+                // Generally, however, such buffering does not meaningfully impact consumption experience, as function
+                // call contents typically come at the end of the streaming sequence.
                 if (anyToolsRequireApproval && approvalRequiredFunctions is null && functionCallContents is { Count: > 0 })
                 {
                     approvalRequiredFunctions =
@@ -551,14 +559,21 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                         .ToArray();
                 }
 
-                if (approvalRequiredFunctions is not { Length: > 0 } || functionCallContents is not { Count: > 0 })
+                if (functionCallContents is not { Count: > 0 })
                 {
-                    // If there are no function calls to make yet, or if none of the functions require approval at all,
-                    // we can yield the update as-is.
+                    // If there are no function calls to make yet, we can yield the update as-is.
                     lastYieldedUpdateIndex++;
                     yield return update;
                     Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
 
+                    continue;
+                }
+
+                if (approvalRequiredFunctions is not { Length: > 0 })
+                {
+                    // We have function calls but no approval-required functions. We still need to buffer updates
+                    // from this point on, because the server may also yield a FunctionResultContent for a FCC later
+                    // in the stream, and we need to be able to mark those FCCs as InformationalOnly.
                     continue;
                 }
 
@@ -595,6 +610,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // We will yield the updates as soon as we receive a function call content that requires approval
                 // or when we reach the end of the updates stream.
             }
+
+            // Mark any FunctionCallContent as InformationalOnly if the response also contains a matching
+            // FunctionResultContent, as that means the server already handled the call. This is done after the
+            // entire stream has been received so that FCC/FRC pairs can be matched across the full set of updates.
+            // Any matched FCCs are also removed from functionCallContents so that they won't be invoked locally.
+            MarkServerHandledFunctionCalls(updates, functionCallContents);
 
             // We need to yield any remaining updates that were not yielded while looping through the streamed updates.
             for (; lastYieldedUpdateIndex < updates.Count; lastYieldedUpdateIndex++)
@@ -836,6 +857,94 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         return any;
+    }
+
+    /// <summary>
+    /// Marks any <see cref="FunctionCallContent"/> in <paramref name="messages"/> as <see cref="FunctionCallContent.InformationalOnly"/>
+    /// if there is a matching <see cref="FunctionResultContent"/> with the same <see cref="FunctionCallContent.CallId"/> in the same set of messages,
+    /// regardless of order. This handles cases where the server has already executed the function and returned both the call and result.
+    /// </summary>
+    private static void MarkServerHandledFunctionCalls(IList<ChatMessage> messages)
+    {
+        // First, collect all FRC CallIds.
+        HashSet<string>? resultCallIds = null;
+        int messageCount = messages.Count;
+        for (int i = 0; i < messageCount; i++)
+        {
+            IList<AIContent> contents = messages[i].Contents;
+            int contentCount = contents.Count;
+            for (int j = 0; j < contentCount; j++)
+            {
+                if (contents[j] is FunctionResultContent frc)
+                {
+                    _ = (resultCallIds ??= []).Add(frc.CallId);
+                }
+            }
+        }
+
+        if (resultCallIds is null)
+        {
+            return;
+        }
+
+        // Then mark any matching FCCs as InformationalOnly.
+        for (int i = 0; i < messageCount; i++)
+        {
+            IList<AIContent> contents = messages[i].Contents;
+            int contentCount = contents.Count;
+            for (int j = 0; j < contentCount; j++)
+            {
+                if (contents[j] is FunctionCallContent fcc && !fcc.InformationalOnly && resultCallIds.Contains(fcc.CallId))
+                {
+                    fcc.InformationalOnly = true;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Marks any <see cref="FunctionCallContent"/> in the streaming <paramref name="updates"/> as <see cref="FunctionCallContent.InformationalOnly"/>
+    /// if there is a matching <see cref="FunctionResultContent"/> with the same <see cref="FunctionCallContent.CallId"/>, regardless of order.
+    /// Any matched entries are also removed from <paramref name="functionCallContents"/> so they won't be invoked locally.
+    /// If <paramref name="functionCallContents"/> is <see langword="null"/> or empty, this method is a no-op.
+    /// </summary>
+    private static void MarkServerHandledFunctionCalls(List<ChatResponseUpdate> updates, List<FunctionCallContent>? functionCallContents)
+    {
+        if (functionCallContents is not { Count: > 0 })
+        {
+            return;
+        }
+
+        // Collect all FRC CallIds from the updates.
+        HashSet<string>? resultCallIds = null;
+        int updateCount = updates.Count;
+        for (int i = 0; i < updateCount; i++)
+        {
+            IList<AIContent> contents = updates[i].Contents;
+            int contentCount = contents.Count;
+            for (int j = 0; j < contentCount; j++)
+            {
+                if (contents[j] is FunctionResultContent frc)
+                {
+                    _ = (resultCallIds ??= []).Add(frc.CallId);
+                }
+            }
+        }
+
+        if (resultCallIds is null)
+        {
+            return;
+        }
+
+        // Mark matching FCCs as InformationalOnly and remove them from functionCallContents.
+        for (int i = functionCallContents.Count - 1; i >= 0; i--)
+        {
+            if (resultCallIds.Contains(functionCallContents[i].CallId))
+            {
+                functionCallContents[i].InformationalOnly = true;
+                functionCallContents.RemoveAt(i);
+            }
+        }
     }
 
     private static void UpdateOptionsForNextIteration(ref ChatOptions? options, string? conversationId)
