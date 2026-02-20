@@ -203,8 +203,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         var responseEnumerator = updates.GetAsyncEnumerator(cancellationToken);
         List<ChatResponseUpdate> trackedUpdates = [];
         TimeSpan lastChunkElapsed = default;
-        double? timeToFirstChunk = null;
-        List<double>? interChunkTimes = trackChunkTimes ? [] : null;
+        bool isFirstChunk = true;
         Exception? error = null;
         try
         {
@@ -231,13 +230,21 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     TimeSpan currentElapsed = stopwatch.Elapsed;
                     double delta = (currentElapsed - lastChunkElapsed).TotalSeconds;
 
-                    if (timeToFirstChunk is null)
+                    if (isFirstChunk)
                     {
-                        timeToFirstChunk = delta;
+                        isFirstChunk = false;
+                        if (_timeToFirstChunkHistogram.Enabled)
+                        {
+                            TagList tags = default;
+                            PopulateMetricTags(ref tags, requestModelId, response: null);
+                            _timeToFirstChunkHistogram.Record(delta, tags);
+                        }
                     }
-                    else
+                    else if (_timePerOutputChunkHistogram.Enabled)
                     {
-                        interChunkTimes!.Add(delta);
+                        TagList tags = default;
+                        PopulateMetricTags(ref tags, requestModelId, response: null);
+                        _timePerOutputChunkHistogram.Record(delta, tags);
                     }
 
                     lastChunkElapsed = currentElapsed;
@@ -250,9 +257,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
         finally
         {
-            ChatResponse? response = trackedUpdates.ToChatResponse();
-            TraceResponse(activity, requestModelId, response, error, stopwatch);
-            RecordStreamingChunkMetrics(requestModelId, response, timeToFirstChunk, interChunkTimes);
+            TraceResponse(activity, requestModelId, trackedUpdates.ToChatResponse(), error, stopwatch);
 
             await responseEnumerator.DisposeAsync();
         }
@@ -751,31 +756,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         void AddMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
             => PopulateMetricTags(ref tags, requestModelId, response);
-    }
-
-    /// <summary>Records streaming-specific chunk timing metrics.</summary>
-    private void RecordStreamingChunkMetrics(
-        string? requestModelId,
-        ChatResponse? response,
-        double? timeToFirstChunk,
-        List<double>? interChunkTimes)
-    {
-        if (timeToFirstChunk is not null && _timeToFirstChunkHistogram.Enabled)
-        {
-            TagList tags = default;
-            PopulateMetricTags(ref tags, requestModelId, response);
-            _timeToFirstChunkHistogram.Record(timeToFirstChunk.Value, tags);
-        }
-
-        if (interChunkTimes is not null && _timePerOutputChunkHistogram.Enabled)
-        {
-            TagList tags = default;
-            PopulateMetricTags(ref tags, requestModelId, response);
-            foreach (double time in interChunkTimes)
-            {
-                _timePerOutputChunkHistogram.Record(time, tags);
-            }
-        }
     }
 
     private void PopulateMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
