@@ -1668,6 +1668,7 @@ public class FunctionInvokingChatClientTests
     [InlineData("invoke_agent")]
     [InlineData("invoke_agent my_agent")]
     [InlineData("invoke_agent ")]
+    [InlineData("invoke_agent MyAgent(agent-123)")]
     public async Task DoesNotCreateOrchestrateToolsSpanWhenInvokeAgentIsParent(string displayName)
     {
         string agentSourceName = Guid.NewGuid().ToString();
@@ -1702,6 +1703,60 @@ public class FunctionInvokingChatClientTests
         {
             Assert.NotNull(invokeAgentActivity);
             await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+        }
+
+        Assert.DoesNotContain(activities, a => a.DisplayName == "orchestrate_tools");
+        Assert.Contains(activities, a => a.DisplayName == "chat");
+        Assert.Contains(activities, a => a.DisplayName == "execute_tool Func1");
+
+        var invokeAgent = Assert.Single(activities, a => a.DisplayName == displayName);
+        var childActivities = activities.Where(a => a != invokeAgent).ToList();
+        Assert.All(childActivities, activity => Assert.Same(invokeAgent, activity.Parent));
+    }
+
+    [Theory]
+    [InlineData("invoke_agent")]
+    [InlineData("invoke_agent my_agent")]
+    [InlineData("invoke_agent MyAgent(agent-123)")]
+    public async Task StreamingPreservesActivityCurrentWhenInvokeAgentIsParent(string displayName)
+    {
+        string agentSourceName = Guid.NewGuid().ToString();
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
+
+        var activities = new List<Activity>();
+
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(agentSourceName)
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using (var agentSource = new ActivitySource(agentSourceName))
+        using (var invokeAgentActivity = agentSource.StartActivity(displayName))
+        {
+            Assert.NotNull(invokeAgentActivity);
+            await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
+
+            // Activity.Current must still be the invoke_agent activity after streaming completes.
+            // This is the regression test for https://github.com/microsoft/agent-framework/issues/4074:
+            // Before the fix, Activity.Current was set to null after the first streaming + tool call cycle.
+            Assert.Same(invokeAgentActivity, Activity.Current);
         }
 
         Assert.DoesNotContain(activities, a => a.DisplayName == "orchestrate_tools");
