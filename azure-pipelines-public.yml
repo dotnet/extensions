@@ -113,7 +113,7 @@ stages:
 
         pool:
           name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals windows.vs2022preview.amd64.open
+          demands: ImageOverride -equals windows.vs2022.amd64.open
 
         variables:
           - _buildScript: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
@@ -145,7 +145,7 @@ stages:
 
         pool:
           name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals build.ubuntu.2004.amd64.open
+          demands: ImageOverride -equals Build.Ubuntu.2204.Amd64.Open
 
         variables:
           - _buildScript: $(Build.SourcesDirectory)/build.sh --ci
@@ -198,7 +198,7 @@ stages:
 
         pool:
           name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals build.ubuntu.2004.amd64.open
+          demands: ImageOverride -equals Build.Ubuntu.2204.Amd64.Open
 
         preSteps:
           - checkout: self
@@ -237,7 +237,7 @@ stages:
 
         pool:
           name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals windows.vs2022preview.amd64.open
+          demands: ImageOverride -equals windows.vs2022.amd64.open
 
         variables:
           - _buildScript: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
