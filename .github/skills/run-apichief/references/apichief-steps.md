@@ -14,11 +14,10 @@ Ask the user which command to run if not specified. The available commands are:
 
 Default to `emit baseline` if the user only asks to "run ApiChief" without specifying a command. This updates the API baseline files in the source tree.
 
-## 2. Expand the Library Pattern
+## 2. Identify the Target Libraries
 
-1. Apply [alias expansion](apichief-aliases.md) to the user's input (longest prefix first).
-2. Apply [subset exclusion rules](apichief-aliases.md#subset-exclusion-rules) to the expanded pattern.
-3. Match the resulting glob pattern against folder names in `src/Libraries/`.
+1. Interpret the user's input (which may be a shorthand, abbreviation, or glob pattern) and match it against folder names in `src/Libraries/`.
+2. List the matched libraries and confirm before proceeding if the match is ambiguous.
 
 ## 3. Build ApiChief
 
@@ -49,17 +48,33 @@ dotnet build src/Libraries/<LibraryName>/<LibraryName>.csproj --nologo --verbosi
 
 ## 5. Run ApiChief
 
-For each matched library, run ApiChief against the compiled DLL:
+For each matched library, run ApiChief against the compiled DLL. The repo multi-targets libraries across several TFMs (e.g. `net10.0`, `net9.0`, `net8.0`, `net462`, `netstandard2.0`). Use the **highest available `net*` TFM** under `artifacts/bin/$name/Debug/` by default (e.g. prefer `net10.0` over `net9.0`). Do not use `netstandard*` or `net4*` targets unless specifically requested.
 
 ```powershell
 $chiefDll = "artifacts/bin/ApiChief/Debug/net10.0/ApiChief.dll"
 
 # For each matched library:
 $name = "<LibraryName>"
-$dll = "artifacts/bin/$name/Debug/net10.0/$name.dll"
+# Find the highest net* TFM available (e.g. net10.0, net9.0, net8.0)
+$tfm = Get-ChildItem "artifacts/bin/$name/Debug" -Directory |
+    Where-Object { $_.Name -match '^net\d+\.\d+$' } |
+    Sort-Object { [version]($_.Name -replace '^net','') } -Descending |
+    Select-Object -First 1 -ExpandProperty Name
+$dll = "artifacts/bin/$name/Debug/$tfm/$name.dll"
 
 dotnet $chiefDll $dll <command> [options]
 ```
+
+### TFM Reporting and Override
+
+Before running ApiChief, list the selected TFM for each library so the user can see what will be used:
+
+```
+  Microsoft.Extensions.AI → net10.0 (available: net10.0, net9.0, net8.0, net462, netstandard2.0)
+  Microsoft.Extensions.AI.Abstractions → net10.0 (available: net10.0, net9.0, net8.0, netstandard2.0)
+```
+
+If the user specifies a TFM override (e.g. "use net9.0 for MEAI.Abstractions"), use that target instead of the auto-selected one. The user may also specify a blanket override for all libraries (e.g. "use net9.0").
 
 ### Output Conventions
 

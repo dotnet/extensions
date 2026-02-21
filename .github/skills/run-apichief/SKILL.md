@@ -8,13 +8,7 @@ tools: ['github/*']
 
 Run the [ApiChief tool](../../../eng/Tools/ApiChief/README.md) against one or more libraries in `src/Libraries`.
 
-## Shorthand Aliases
-
-Expand shorthands **before** matching. See the [alias table](references/apichief-aliases.md).
-
-## Subset Exclusion Rules
-
-When one shorthand's expansion is a prefix of another's, the more specific libraries are **excluded** from broad wildcard matches unless explicitly requested. See the [subset exclusion rules](references/apichief-aliases.md#subset-exclusion-rules) for the full list. For example, `MEAI*` excludes `MEAI.Eval*` libraries, and `MA*` excludes `MAD*` libraries.
+The user might provide a shorthand or abbreviated reference to the library or libraries in scope (e.g. "MEAI" for `Microsoft.Extensions.AI`). Match their intent against the folder names in `src/Libraries/`.
 
 ## Steps
 
