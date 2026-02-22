@@ -384,10 +384,10 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                     responseObj["max_output_tokens"] = responseCreate.MaxOutputTokens.Value;
                 }
 
-                if (responseCreate.Metadata is { Count: > 0 })
+                if (responseCreate.AdditionalProperties is { Count: > 0 })
                 {
                     var metadataObj = new JsonObject();
-                    foreach (var kvp in responseCreate.Metadata)
+                    foreach (var kvp in responseCreate.AdditionalProperties)
                     {
                         metadataObj[kvp.Key] = JsonValue.Create(kvp.Value);
                     }
@@ -1779,7 +1779,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                     : JsonSerializer.Deserialize<object?>(property.Value.GetRawText());
             }
 
-            msg.Metadata = metadataDict;
+            msg.AdditionalProperties = metadataDict;
         }
 
         if (responseElement.TryGetProperty("output_modalities", out var outputModalitiesElement))

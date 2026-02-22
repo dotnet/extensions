@@ -52,9 +52,14 @@ public class RealtimeClientResponseCreateMessage : RealtimeClientMessage
     public int? MaxOutputTokens { get; set; }
 
     /// <summary>
-    /// Gets or sets additional metadata for the message.
+    /// Gets or sets any additional properties associated with the response request.
     /// </summary>
-    public AdditionalPropertiesDictionary? Metadata { get; set; }
+    /// <remarks>
+    /// This can be used to attach arbitrary key-value metadata to a response request
+    /// for tracking or disambiguation purposes (e.g., correlating multiple simultaneous responses).
+    /// Providers may map this to their own metadata fields.
+    /// </remarks>
+    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <summary>
     /// Gets or sets the output modalities for the response. like "text", "audio".

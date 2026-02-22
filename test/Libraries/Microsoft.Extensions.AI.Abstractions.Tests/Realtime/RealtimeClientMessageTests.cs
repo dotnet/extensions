@@ -137,7 +137,7 @@ public class RealtimeClientMessageTests
         Assert.False(message.ExcludeFromConversation);
         Assert.Null(message.Instructions);
         Assert.Null(message.MaxOutputTokens);
-        Assert.Null(message.Metadata);
+        Assert.Null(message.AdditionalProperties);
         Assert.Null(message.OutputModalities);
         Assert.Null(message.ToolMode);
         Assert.Null(message.Tools);
@@ -163,7 +163,7 @@ public class RealtimeClientMessageTests
         message.ExcludeFromConversation = true;
         message.Instructions = "Be brief";
         message.MaxOutputTokens = 100;
-        message.Metadata = metadata;
+        message.AdditionalProperties = metadata;
         message.OutputModalities = modalities;
         message.ToolMode = ChatToolMode.Auto;
         message.Tools = tools;
@@ -174,7 +174,7 @@ public class RealtimeClientMessageTests
         Assert.True(message.ExcludeFromConversation);
         Assert.Equal("Be brief", message.Instructions);
         Assert.Equal(100, message.MaxOutputTokens);
-        Assert.Same(metadata, message.Metadata);
+        Assert.Same(metadata, message.AdditionalProperties);
         Assert.Same(modalities, message.OutputModalities);
         Assert.Equal(ChatToolMode.Auto, message.ToolMode);
         Assert.Same(tools, message.Tools);

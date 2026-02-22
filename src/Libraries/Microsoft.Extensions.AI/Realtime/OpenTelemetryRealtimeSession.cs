@@ -964,7 +964,7 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
         if (response is not null && activity is not null)
         {
             // Log metadata first so standard tags take precedence if keys collide
-            if (EnableSensitiveData && response.Metadata is { } metadata)
+            if (EnableSensitiveData && response.AdditionalProperties is { } metadata)
             {
                 foreach (var prop in metadata)
                 {

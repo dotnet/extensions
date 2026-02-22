@@ -177,7 +177,7 @@ public class RealtimeServerMessageTests
         Assert.Null(message.ConversationId);
         Assert.Null(message.ResponseId);
         Assert.Null(message.MaxOutputTokens);
-        Assert.Null(message.Metadata);
+        Assert.Null(message.AdditionalProperties);
         Assert.Null(message.Items);
         Assert.Null(message.OutputModalities);
         Assert.Null(message.Status);
@@ -205,7 +205,7 @@ public class RealtimeServerMessageTests
             ConversationId = "conv_1",
             ResponseId = "resp_1",
             MaxOutputTokens = 1000,
-            Metadata = metadata,
+            AdditionalProperties = metadata,
             Items = items,
             OutputModalities = modalities,
             Status = "completed",
@@ -218,7 +218,7 @@ public class RealtimeServerMessageTests
         Assert.Equal("conv_1", message.ConversationId);
         Assert.Equal("resp_1", message.ResponseId);
         Assert.Equal(1000, message.MaxOutputTokens);
-        Assert.Same(metadata, message.Metadata);
+        Assert.Same(metadata, message.AdditionalProperties);
         Assert.Same(items, message.Items);
         Assert.Same(modalities, message.OutputModalities);
         Assert.Equal("completed", message.Status);

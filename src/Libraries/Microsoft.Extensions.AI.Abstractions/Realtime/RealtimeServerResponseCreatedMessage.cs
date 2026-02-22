@@ -59,9 +59,14 @@ public class RealtimeServerResponseCreatedMessage : RealtimeServerMessage
     public int? MaxOutputTokens { get; set; }
 
     /// <summary>
-    /// Gets or sets additional metadata for the message.
+    /// Gets or sets any additional properties associated with the response.
     /// </summary>
-    public AdditionalPropertiesDictionary? Metadata { get; set; }
+    /// <remarks>
+    /// Contains arbitrary key-value metadata attached to the response.
+    /// This is the metadata that was provided when the response was created
+    /// (e.g., for tracking or disambiguating multiple simultaneous responses).
+    /// </remarks>
+    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <summary>
     /// Gets or sets the list of the conversation items included in the response.
