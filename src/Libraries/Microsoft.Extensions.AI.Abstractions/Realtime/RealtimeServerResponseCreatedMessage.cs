@@ -53,9 +53,12 @@ public class RealtimeServerResponseCreatedMessage : RealtimeServerMessage
     public string? ResponseId { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum number of output tokens for the response.
-    /// If 0, the service will apply its own limit.
+    /// Gets or sets the maximum number of output tokens for the response, inclusive of all modalities and tool calls.
     /// </summary>
+    /// <remarks>
+    /// This limit applies to the total output tokens regardless of modality (text, audio, etc.).
+    /// If <see langword="null"/>, the provider's default limit was used.
+    /// </remarks>
     public int? MaxOutputTokens { get; set; }
 
     /// <summary>

@@ -47,8 +47,12 @@ public class RealtimeClientResponseCreateMessage : RealtimeClientMessage
     public string? Instructions { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum number of output tokens for the response.
+    /// Gets or sets the maximum number of output tokens for the response, inclusive of all modalities and tool calls.
     /// </summary>
+    /// <remarks>
+    /// This limit applies to the total output tokens regardless of modality (text, audio, etc.).
+    /// If <see langword="null"/>, the provider's default limit is used.
+    /// </remarks>
     public int? MaxOutputTokens { get; set; }
 
     /// <summary>
