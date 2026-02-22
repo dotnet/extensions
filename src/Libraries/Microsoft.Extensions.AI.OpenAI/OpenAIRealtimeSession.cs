@@ -62,7 +62,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
     /// <summary>Initializes a new instance of the <see cref="OpenAIRealtimeSession"/> class.</summary>
     /// <param name="apiKey">The API key used for authentication.</param>
     /// <param name="model">The model to use for the session.</param>
-    internal OpenAIRealtimeSession(string apiKey, string model)
+    public OpenAIRealtimeSession(string apiKey, string model)
     {
         _apiKey = apiKey;
         _model = model;
@@ -72,7 +72,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
     /// <summary>Connects the WebSocket to the OpenAI Realtime API.</summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns><see langword="true"/> if the connection succeeded; otherwise, <see langword="false"/>.</returns>
-    internal async Task<bool> ConnectAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> ConnectAsync(CancellationToken cancellationToken = default)
     {
         try
         {

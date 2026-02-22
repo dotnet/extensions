@@ -32,10 +32,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="OpenAI" />
   </ItemGroup>
 
