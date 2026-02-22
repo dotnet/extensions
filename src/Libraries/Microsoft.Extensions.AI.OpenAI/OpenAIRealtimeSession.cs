@@ -285,9 +285,9 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
         JsonObject? jsonMessage = new JsonObject();
 
-        if (message.EventId is not null)
+        if (message.MessageId is not null)
         {
-            jsonMessage["event_id"] = message.EventId;
+            jsonMessage["event_id"] = message.MessageId;
         }
 
         switch (message)
@@ -554,11 +554,11 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                     jsonMessage = rawJsonObject;
                 }
 
-                // Preserve EventId if it was set on the message but not in the raw representation.
-                if (jsonMessage is not null && message.EventId is not null &&
+                // Preserve MessageId if it was set on the message but not in the raw representation.
+                if (jsonMessage is not null && message.MessageId is not null &&
                     !jsonMessage.ContainsKey("event_id"))
                 {
-                    jsonMessage["event_id"] = message.EventId;
+                    jsonMessage["event_id"] = message.MessageId;
                 }
 
                 break;
@@ -1550,7 +1550,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
         if (root.TryGetProperty("event_id", out var eventIdElement))
         {
-            msg.EventId = eventIdElement.GetString();
+            msg.MessageId = eventIdElement.GetString();
         }
 
         if (errorElement.TryGetProperty("param", out var paramElement))
@@ -1575,7 +1575,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
         if (root.TryGetProperty("event_id", out var eventIdElement))
         {
-            msg.EventId = eventIdElement.GetString();
+            msg.MessageId = eventIdElement.GetString();
         }
 
         if (root.TryGetProperty("content_index", out var contentIndexElement))
@@ -1639,7 +1639,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
         if (root.TryGetProperty("event_id", out var eventIdElement))
         {
-            msg.EventId = eventIdElement.GetString();
+            msg.MessageId = eventIdElement.GetString();
         }
 
         if (root.TryGetProperty("response_id", out var responseIdElement))
@@ -1695,7 +1695,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
         if (root.TryGetProperty("event_id", out var eventIdElement))
         {
-            msg.EventId = eventIdElement.GetString();
+            msg.MessageId = eventIdElement.GetString();
         }
 
         if (root.TryGetProperty("response_id", out var responseIdElement))
@@ -1734,7 +1734,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
         if (root.TryGetProperty("event_id", out var eventIdElement))
         {
-            msg.EventId = eventIdElement.GetString();
+            msg.MessageId = eventIdElement.GetString();
         }
 
         if (responseElement.TryGetProperty("audio", out var responseAudioElement) &&
@@ -1845,7 +1845,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
         if (root.TryGetProperty("event_id", out var eventIdElement))
         {
-            msg.EventId = eventIdElement.GetString();
+            msg.MessageId = eventIdElement.GetString();
         }
 
         if (root.TryGetProperty("response_id", out var responseIdElement))
@@ -1884,7 +1884,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
         var msg = new RealtimeServerResponseOutputItemMessage(serverMessageType)
         {
             RawRepresentation = root.Clone(),
-            EventId = root.TryGetProperty("event_id", out var eventIdElement) ? eventIdElement.GetString() : null,
+            MessageId = root.TryGetProperty("event_id", out var eventIdElement) ? eventIdElement.GetString() : null,
         };
 
         string? itemId = root.TryGetProperty("item_id", out var itemIdElement) ? itemIdElement.GetString() : null;
@@ -1949,7 +1949,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
             return new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.RawContentOnly)
             {
                 RawRepresentation = root.Clone(),
-                EventId = root.TryGetProperty("event_id", out var evtElement) ? evtElement.GetString() : null,
+                MessageId = root.TryGetProperty("event_id", out var evtElement) ? evtElement.GetString() : null,
             };
         }
 
@@ -1961,7 +1961,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
         if (root.TryGetProperty("event_id", out var eventIdElement))
         {
-            msg.EventId = eventIdElement.GetString();
+            msg.MessageId = eventIdElement.GetString();
         }
 
         return msg;

@@ -108,7 +108,7 @@ public class LoggingRealtimeSessionTests
             .UseLogging()
             .Build(services);
 
-        await session.InjectClientMessageAsync(new RealtimeClientMessage { EventId = "test-event-123" });
+        await session.InjectClientMessageAsync(new RealtimeClientMessage { MessageId = "test-event-123" });
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
@@ -146,8 +146,8 @@ public class LoggingRealtimeSessionTests
         static async IAsyncEnumerable<RealtimeServerMessage> GetMessagesAsync()
         {
             await Task.Yield();
-            yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.OutputTextDelta, EventId = "event-1" };
-            yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.OutputAudioDelta, EventId = "event-2" };
+            yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.OutputTextDelta, MessageId = "event-1" };
+            yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.OutputAudioDelta, MessageId = "event-2" };
         }
 
         using var session = innerSession
@@ -360,7 +360,7 @@ public class LoggingRealtimeSessionTests
 
         cts.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            session.InjectClientMessageAsync(new RealtimeClientMessage { EventId = "evt_cancel" }, cts.Token));
+            session.InjectClientMessageAsync(new RealtimeClientMessage { MessageId = "evt_cancel" }, cts.Token));
 
         var logs = collector.GetSnapshot();
         Assert.Collection(logs,
@@ -511,6 +511,6 @@ public class LoggingRealtimeSessionTests
     {
         _ = cancellationToken;
         await Task.CompletedTask.ConfigureAwait(false);
-        yield return new RealtimeClientMessage { EventId = "client_evt_1" };
+        yield return new RealtimeClientMessage { MessageId = "client_evt_1" };
     }
 }

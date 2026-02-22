@@ -142,7 +142,7 @@ public class RealtimeSessionBuilderTests
         var intercepted = false;
         using var inner = new TestRealtimeSession
         {
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldSingle(new RealtimeServerMessage { EventId = "inner" }, ct),
+            GetStreamingResponseAsyncCallback = (_, ct) => YieldSingle(new RealtimeServerMessage { MessageId = "inner" }, ct),
         };
 
         var builder = new RealtimeSessionBuilder(inner);
@@ -155,7 +155,7 @@ public class RealtimeSessionBuilderTests
         using var pipeline = builder.Build();
         await foreach (var msg in pipeline.GetStreamingResponseAsync(EmptyUpdates()))
         {
-            Assert.Equal("inner", msg.EventId);
+            Assert.Equal("inner", msg.MessageId);
         }
 
         Assert.True(intercepted);

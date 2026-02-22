@@ -18,10 +18,10 @@ public class RealtimeServerMessage
     public RealtimeServerMessageType Type { get; set; }
 
     /// <summary>
-    /// Gets or sets the optional event ID associated with the response.
+    /// Gets or sets the optional message ID associated with the response.
     /// This can be used for tracking and correlation purposes.
     /// </summary>
-    public string? EventId { get; set; }
+    public string? MessageId { get; set; }
 
     /// <summary>
     /// Gets or sets the raw representation of the response.

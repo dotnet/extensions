@@ -16,7 +16,7 @@ public class RealtimeServerMessageTests
         var message = new RealtimeServerMessage();
 
         Assert.Equal(default, message.Type);
-        Assert.Null(message.EventId);
+        Assert.Null(message.MessageId);
         Assert.Null(message.RawRepresentation);
     }
 
@@ -27,12 +27,12 @@ public class RealtimeServerMessageTests
         var message = new RealtimeServerMessage
         {
             Type = RealtimeServerMessageType.ResponseDone,
-            EventId = "evt_001",
+            MessageId = "evt_001",
             RawRepresentation = rawObj,
         };
 
         Assert.Equal(RealtimeServerMessageType.ResponseDone, message.Type);
-        Assert.Equal("evt_001", message.EventId);
+        Assert.Equal("evt_001", message.MessageId);
         Assert.Same(rawObj, message.RawRepresentation);
     }
 
@@ -50,7 +50,7 @@ public class RealtimeServerMessageTests
         var message = new RealtimeServerErrorMessage();
 
         Assert.Null(message.Error);
-        Assert.Null(message.ErrorEventId);
+        Assert.Null(message.ErrorMessageId);
     }
 
     [Fact]
@@ -60,14 +60,14 @@ public class RealtimeServerMessageTests
         var message = new RealtimeServerErrorMessage
         {
             Error = error,
-            ErrorEventId = "evt_bad",
-            EventId = "evt_err_1",
+            ErrorMessageId = "evt_bad",
+            MessageId = "evt_err_1",
         };
 
         Assert.Same(error, message.Error);
-        Assert.Equal("evt_bad", message.ErrorEventId);
+        Assert.Equal("evt_bad", message.ErrorMessageId);
         Assert.Equal("temperature", message.Error.Details);
-        Assert.Equal("evt_err_1", message.EventId);
+        Assert.Equal("evt_err_1", message.MessageId);
         Assert.IsAssignableFrom<RealtimeServerMessage>(message);
     }
 

@@ -81,8 +81,8 @@ public class FunctionInvokingRealtimeSessionTests
     {
         var serverMessages = new RealtimeServerMessage[]
         {
-            new() { Type = RealtimeServerMessageType.ResponseCreated, EventId = "evt_001" },
-            new() { Type = RealtimeServerMessageType.ResponseDone, EventId = "evt_002" },
+            new() { Type = RealtimeServerMessageType.ResponseCreated, MessageId = "evt_001" },
+            new() { Type = RealtimeServerMessageType.ResponseDone, MessageId = "evt_002" },
         };
 
         using var inner = new TestRealtimeSession
@@ -98,8 +98,8 @@ public class FunctionInvokingRealtimeSessionTests
         }
 
         Assert.Equal(2, received.Count);
-        Assert.Equal("evt_001", received[0].EventId);
-        Assert.Equal("evt_002", received[1].EventId);
+        Assert.Equal("evt_001", received[0].MessageId);
+        Assert.Equal("evt_002", received[1].MessageId);
     }
 
     [Fact]
@@ -395,7 +395,7 @@ public class FunctionInvokingRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(
             [
                 CreateFunctionCallOutputItemMessage("call_unknown", "nonexistent_func", null),
-                new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseDone, EventId = "should_not_reach" },
+                new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseDone, MessageId = "should_not_reach" },
             ], ct),
             InjectClientMessageAsyncCallback = (msg, _) =>
             {
@@ -621,7 +621,7 @@ public class FunctionInvokingRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(
             [
                 CreateFunctionCallOutputItemMessage("call_decl", "my_declaration", null),
-                new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseDone, EventId = "should_not_reach" },
+                new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseDone, MessageId = "should_not_reach" },
             ], ct),
             InjectClientMessageAsyncCallback = (msg, _) =>
             {

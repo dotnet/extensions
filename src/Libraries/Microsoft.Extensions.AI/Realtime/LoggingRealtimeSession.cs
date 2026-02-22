@@ -217,9 +217,9 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
         {
             obj["content"] = AsJson(message.RawRepresentation);
         }
-        else if (message.EventId is not null)
+        else if (message.MessageId is not null)
         {
-            obj["eventId"] = message.EventId;
+            obj["messageId"] = message.MessageId;
         }
 
         return obj.ToJsonString();
@@ -240,9 +240,9 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
         {
             obj["content"] = AsJson(message.RawRepresentation);
         }
-        else if (message.EventId is not null)
+        else if (message.MessageId is not null)
         {
-            obj["eventId"] = message.EventId;
+            obj["messageId"] = message.MessageId;
         }
 
         return obj.ToJsonString();

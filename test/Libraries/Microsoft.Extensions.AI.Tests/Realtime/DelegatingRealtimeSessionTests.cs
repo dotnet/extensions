@@ -54,7 +54,7 @@ public class DelegatingRealtimeSessionTests
     public async Task InjectClientMessageAsync_DelegatesToInner()
     {
         var called = false;
-        var sentMessage = new RealtimeClientMessage { EventId = "evt_001" };
+        var sentMessage = new RealtimeClientMessage { MessageId = "evt_001" };
         using var inner = new TestRealtimeSession
         {
             InjectClientMessageAsyncCallback = (msg, _) =>
@@ -73,7 +73,7 @@ public class DelegatingRealtimeSessionTests
     [Fact]
     public async Task GetStreamingResponseAsync_DelegatesToInner()
     {
-        var expected = new RealtimeServerMessage { Type = RealtimeServerMessageType.Error, EventId = "evt_002" };
+        var expected = new RealtimeServerMessage { Type = RealtimeServerMessageType.Error, MessageId = "evt_002" };
         using var inner = new TestRealtimeSession
         {
             GetStreamingResponseAsyncCallback = (_, ct) => YieldSingle(expected, ct),

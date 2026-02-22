@@ -58,7 +58,7 @@ public class OpenTelemetryRealtimeSessionTests
                 // Just consume the update
             }
 
-            yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseCreated, EventId = "evt_001" };
+            yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseCreated, MessageId = "evt_001" };
             yield return new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDelta) { OutputIndex = 0, Text = "Hello" };
             yield return new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDelta) { OutputIndex = 0, Text = " there!" };
             yield return new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDone) { OutputIndex = 0, Text = "Hello there!" };

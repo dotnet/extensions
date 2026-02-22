@@ -16,7 +16,7 @@ public class RealtimeClientMessageTests
     {
         var message = new RealtimeClientMessage();
 
-        Assert.Null(message.EventId);
+        Assert.Null(message.MessageId);
         Assert.Null(message.RawRepresentation);
     }
 
@@ -26,11 +26,11 @@ public class RealtimeClientMessageTests
         var rawObj = new object();
         var message = new RealtimeClientMessage
         {
-            EventId = "evt_001",
+            MessageId = "evt_001",
             RawRepresentation = rawObj,
         };
 
-        Assert.Equal("evt_001", message.EventId);
+        Assert.Equal("evt_001", message.MessageId);
         Assert.Same(rawObj, message.RawRepresentation);
     }
 
@@ -76,10 +76,10 @@ public class RealtimeClientMessageTests
         var item = new RealtimeContentItem([new TextContent("Hello")]);
         var message = new RealtimeClientConversationItemCreateMessage(item)
         {
-            EventId = "evt_create_1",
+            MessageId = "evt_create_1",
         };
 
-        Assert.Equal("evt_create_1", message.EventId);
+        Assert.Equal("evt_create_1", message.MessageId);
         Assert.IsAssignableFrom<RealtimeClientMessage>(message);
     }
 
@@ -110,10 +110,10 @@ public class RealtimeClientMessageTests
         var audioContent = new DataContent(new byte[] { 1, 2, 3 }, "audio/pcm");
         var message = new RealtimeClientInputAudioBufferAppendMessage(audioContent)
         {
-            EventId = "evt_append_1",
+            MessageId = "evt_append_1",
         };
 
-        Assert.Equal("evt_append_1", message.EventId);
+        Assert.Equal("evt_append_1", message.MessageId);
         Assert.IsAssignableFrom<RealtimeClientMessage>(message);
     }
 
@@ -123,7 +123,7 @@ public class RealtimeClientMessageTests
         var message = new RealtimeClientInputAudioBufferCommitMessage();
 
         Assert.IsAssignableFrom<RealtimeClientMessage>(message);
-        Assert.Null(message.EventId);
+        Assert.Null(message.MessageId);
     }
 
     [Fact]
@@ -185,11 +185,11 @@ public class RealtimeClientMessageTests
     {
         var message = new RealtimeClientResponseCreateMessage
         {
-            EventId = "evt_resp_1",
+            MessageId = "evt_resp_1",
             RawRepresentation = "raw",
         };
 
-        Assert.Equal("evt_resp_1", message.EventId);
+        Assert.Equal("evt_resp_1", message.MessageId);
         Assert.Equal("raw", message.RawRepresentation);
         Assert.IsAssignableFrom<RealtimeClientMessage>(message);
     }

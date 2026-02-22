@@ -13,10 +13,10 @@ namespace Microsoft.Extensions.AI;
 public class RealtimeClientMessage
 {
     /// <summary>
-    /// Gets or sets the optional event ID associated with the message.
+    /// Gets or sets the optional message ID associated with the message.
     /// This can be used for tracking and correlation purposes.
     /// </summary>
-    public string? EventId { get; set; }
+    public string? MessageId { get; set; }
 
     /// <summary>
     /// Gets or sets the raw representation of the message.
