@@ -1555,7 +1555,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
         if (errorElement.TryGetProperty("param", out var paramElement))
         {
-            msg.Parameter = paramElement.GetString();
+            msg.Error.Details = paramElement.GetString();
         }
 
         return msg;

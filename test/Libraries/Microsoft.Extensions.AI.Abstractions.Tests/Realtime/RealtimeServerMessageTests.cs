@@ -51,24 +51,22 @@ public class RealtimeServerMessageTests
 
         Assert.Null(message.Error);
         Assert.Null(message.ErrorEventId);
-        Assert.Null(message.Parameter);
     }
 
     [Fact]
     public void ErrorMessage_Properties_Roundtrip()
     {
-        var error = new ErrorContent("Test error");
+        var error = new ErrorContent("Test error") { Details = "temperature" };
         var message = new RealtimeServerErrorMessage
         {
             Error = error,
             ErrorEventId = "evt_bad",
-            Parameter = "temperature",
             EventId = "evt_err_1",
         };
 
         Assert.Same(error, message.Error);
         Assert.Equal("evt_bad", message.ErrorEventId);
-        Assert.Equal("temperature", message.Parameter);
+        Assert.Equal("temperature", message.Error.Details);
         Assert.Equal("evt_err_1", message.EventId);
         Assert.IsAssignableFrom<RealtimeServerMessage>(message);
     }
