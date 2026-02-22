@@ -26,24 +26,41 @@ public class RealtimeClientResponseCreateMessage : RealtimeClientMessage
     public IList<RealtimeContentItem>? Items { get; set; }
 
     /// <summary>
-    /// Gets or sets the output audio options for the response. If null, the default conversation audio options will be used.
+    /// Gets or sets the output audio options for the response.
     /// </summary>
+    /// <remarks>
+    /// If set, overrides the session-level audio output configuration for this response only.
+    /// If <see langword="null"/>, the session's default audio options are used.
+    /// </remarks>
     public RealtimeAudioFormat? OutputAudioOptions { get; set; }
 
     /// <summary>
     /// Gets or sets the voice of the output audio.
     /// </summary>
+    /// <remarks>
+    /// If set, overrides the session-level voice for this response only.
+    /// If <see langword="null"/>, the session's default voice is used.
+    /// </remarks>
     public string? OutputVoice { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the response should be excluded from the conversation history.
+    /// Gets or sets a value indicating whether the response output should be excluded from the conversation context.
     /// </summary>
+    /// <remarks>
+    /// When <see langword="true"/>, the response is generated out-of-band: the model produces output
+    /// but the resulting items are not added to the conversation history, so they will not appear
+    /// as context for subsequent responses. Defaults to <see langword="false"/>, meaning response
+    /// output is added to the default conversation.
+    /// </remarks>
     public bool ExcludeFromConversation { get; set; }
 
     /// <summary>
-    /// Gets or sets the instructions allows the client to guide the model on desired responses.
-    /// If null, the default conversation instructions will be used.
+    /// Gets or sets the instructions that guide the model on desired responses.
     /// </summary>
+    /// <remarks>
+    /// If set, overrides the session-level instructions for this response only.
+    /// If <see langword="null"/>, the session's default instructions are used.
+    /// </remarks>
     public string? Instructions { get; set; }
 
     /// <summary>
@@ -66,18 +83,29 @@ public class RealtimeClientResponseCreateMessage : RealtimeClientMessage
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <summary>
-    /// Gets or sets the output modalities for the response. like "text", "audio".
-    /// If null, then default conversation modalities will be used.
+    /// Gets or sets the output modalities for the response (e.g., "text", "audio").
     /// </summary>
+    /// <remarks>
+    /// If set, overrides the session-level output modalities for this response only.
+    /// If <see langword="null"/>, the session's default modalities are used.
+    /// </remarks>
     public IList<string>? OutputModalities { get; set; }
 
     /// <summary>
     /// Gets or sets the tool choice mode for the response.
     /// </summary>
+    /// <remarks>
+    /// If set, overrides the session-level tool choice for this response only.
+    /// If <see langword="null"/>, the session's default tool choice is used.
+    /// </remarks>
     public ChatToolMode? ToolMode { get; set; }
 
     /// <summary>
     /// Gets or sets the AI tools available for generating the response.
     /// </summary>
+    /// <remarks>
+    /// If set, overrides the session-level tools for this response only.
+    /// If <see langword="null"/>, the session's default tools are used.
+    /// </remarks>
     public IList<AITool>? Tools { get; set; }
 }
