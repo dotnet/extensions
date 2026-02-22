@@ -204,6 +204,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         List<ChatResponseUpdate> trackedUpdates = [];
         TimeSpan lastChunkElapsed = default;
         bool isFirstChunk = true;
+        bool responseModelSet = false;
         TagList chunkMetricTags = default;
         if (trackChunkTimes)
         {
@@ -236,6 +237,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     Debug.Assert(stopwatch is not null, "stopwatch should have been initialized when trackChunkTimes is true");
                     TimeSpan currentElapsed = stopwatch!.Elapsed;
                     double delta = (currentElapsed - lastChunkElapsed).TotalSeconds;
+
+                    if (!responseModelSet && update.ModelId is string modelId)
+                    {
+                        chunkMetricTags.Add(OpenTelemetryConsts.GenAI.Response.Model, modelId);
+                        responseModelSet = true;
+                    }
 
                     if (isFirstChunk)
                     {

@@ -858,7 +858,7 @@ public class OpenTelemetryChatClientTests
             IEnumerable<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await Task.Yield();
-            yield return new ChatResponseUpdate(ChatRole.Assistant, "First") { ResponseId = "id1" };
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "First") { ResponseId = "id1", ModelId = "responsemodel" };
             await Task.Yield();
             yield return new ChatResponseUpdate(ChatRole.Assistant, "Second") { ResponseId = "id1" };
             await Task.Yield();
@@ -885,6 +885,7 @@ public class OpenTelemetryChatClientTests
         Assert.True(ttfcMeasurements[0].ContainsTags(
             new KeyValuePair<string, object?>("gen_ai.operation.name", "chat"),
             new KeyValuePair<string, object?>("gen_ai.request.model", "mymodel"),
+            new KeyValuePair<string, object?>("gen_ai.response.model", "responsemodel"),
             new KeyValuePair<string, object?>("gen_ai.provider.name", "testprovider"),
             new KeyValuePair<string, object?>("server.address", "localhost"),
             new KeyValuePair<string, object?>("server.port", 5000)));
@@ -898,6 +899,7 @@ public class OpenTelemetryChatClientTests
             Assert.True(measurement.ContainsTags(
                 new KeyValuePair<string, object?>("gen_ai.operation.name", "chat"),
                 new KeyValuePair<string, object?>("gen_ai.request.model", "mymodel"),
+                new KeyValuePair<string, object?>("gen_ai.response.model", "responsemodel"),
                 new KeyValuePair<string, object?>("gen_ai.provider.name", "testprovider"),
                 new KeyValuePair<string, object?>("server.address", "localhost"),
                 new KeyValuePair<string, object?>("server.port", 5000)));
