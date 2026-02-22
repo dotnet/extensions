@@ -31,10 +31,6 @@ public class RealtimeSessionOptionsTests
         Assert.Null(options.AIFunction);
         Assert.Null(options.HostedMcpServerTool);
         Assert.Null(options.Tools);
-        Assert.False(options.EnableAutoTracing);
-        Assert.Null(options.TracingGroupId);
-        Assert.Null(options.TracingWorkflowName);
-        Assert.Null(options.TracingMetadata);
     }
 
     [Fact]
@@ -46,7 +42,6 @@ public class RealtimeSessionOptionsTests
         var outputFormat = new RealtimeAudioFormat("audio/pcm", 24000);
         List<string> modalities = ["text", "audio"];
         List<AITool> tools = [AIFunctionFactory.Create(() => 42)];
-        var tracingMetadata = new { key = "value" };
         var transcriptionOptions = new TranscriptionOptions { SpeechLanguage = "en", ModelId = "whisper-1", Prompt = "greeting" };
         var vad = new VoiceActivityDetection { CreateResponse = true, InterruptResponse = true };
 
@@ -64,10 +59,6 @@ public class RealtimeSessionOptionsTests
         options.OutputModalities = modalities;
         options.ToolMode = ChatToolMode.Auto;
         options.Tools = tools;
-        options.EnableAutoTracing = true;
-        options.TracingGroupId = "group-1";
-        options.TracingWorkflowName = "workflow-1";
-        options.TracingMetadata = tracingMetadata;
 
         Assert.Equal(RealtimeSessionKind.Transcription, options.SessionKind);
         Assert.Equal("gpt-4-realtime", options.Model);
@@ -83,10 +74,6 @@ public class RealtimeSessionOptionsTests
         Assert.Same(modalities, options.OutputModalities);
         Assert.Equal(ChatToolMode.Auto, options.ToolMode);
         Assert.Same(tools, options.Tools);
-        Assert.True(options.EnableAutoTracing);
-        Assert.Equal("group-1", options.TracingGroupId);
-        Assert.Equal("workflow-1", options.TracingWorkflowName);
-        Assert.Same(tracingMetadata, options.TracingMetadata);
     }
 
     [Fact]

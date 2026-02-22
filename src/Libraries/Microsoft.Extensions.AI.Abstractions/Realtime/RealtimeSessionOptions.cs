@@ -110,36 +110,6 @@ public class RealtimeSessionOptions
     public IList<AITool>? Tools { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to enable automatic tracing for the session.
-    /// if enabled, will create a trace for the session with default values for the workflow name, group id, and metadata.
-    /// </summary>
-    public bool EnableAutoTracing { get; set; }
-
-    /// <summary>
-    /// Gets or sets the group ID for tracing.
-    /// </summary>
-    /// <remarks>
-    /// This property is only used if <see cref="EnableAutoTracing"/> is not set to true.
-    /// </remarks>
-    public string? TracingGroupId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the workflow name for tracing.
-    /// </summary>
-    /// <remarks>
-    /// This property is only used if <see cref="EnableAutoTracing"/> is not set to true.
-    /// </remarks>
-    public string? TracingWorkflowName { get; set; }
-
-    /// <summary>
-    /// Gets or sets arbitrary metadata to attach to this trace to enable filtering.
-    /// </summary>
-    /// <remarks>
-    /// This property is only used if <see cref="EnableAutoTracing"/> is not set to true.
-    /// </remarks>
-    public object? TracingMetadata { get; set; }
-
-    /// <summary>
     /// Gets or sets a callback responsible for creating the raw representation of the session options from an underlying implementation.
     /// </summary>
     /// <remarks>

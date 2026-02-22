@@ -1366,10 +1366,6 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                 newOptions.AIFunction = Options.AIFunction;
                 newOptions.HostedMcpServerTool = Options.HostedMcpServerTool;
                 newOptions.ToolMode = Options.ToolMode;
-                newOptions.EnableAutoTracing = Options.EnableAutoTracing;
-                newOptions.TracingGroupId = Options.TracingGroupId;
-                newOptions.TracingWorkflowName = Options.TracingWorkflowName;
-                newOptions.TracingMetadata = Options.TracingMetadata;
             }
 
             Options = newOptions;
