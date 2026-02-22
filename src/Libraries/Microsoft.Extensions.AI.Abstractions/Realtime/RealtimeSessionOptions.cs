@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
@@ -136,4 +138,24 @@ public class RealtimeSessionOptions
     /// This property is only used if <see cref="EnableAutoTracing"/> is not set to true.
     /// </remarks>
     public object? TracingMetadata { get; set; }
+
+    /// <summary>
+    /// Gets or sets a callback responsible for creating the raw representation of the session options from an underlying implementation.
+    /// </summary>
+    /// <remarks>
+    /// The underlying <see cref="IRealtimeSession" /> implementation might have its own representation of options.
+    /// When <see cref="IRealtimeSession.UpdateAsync" /> is invoked with a <see cref="RealtimeSessionOptions" />,
+    /// that implementation might convert the provided options into its own representation in order to use it while
+    /// performing the operation. For situations where a consumer knows which concrete <see cref="IRealtimeSession" />
+    /// is being used and how it represents options, a new instance of that implementation-specific options type can be
+    /// returned by this callback for the <see cref="IRealtimeSession" /> implementation to use, instead of creating a
+    /// new instance. Such implementations might mutate the supplied options instance further based on other settings
+    /// supplied on this <see cref="RealtimeSessionOptions" /> instance or from other inputs.
+    /// Therefore, it is <b>strongly recommended</b> to not return shared instances and instead make the callback return
+    /// a new instance on each call.
+    /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly typed
+    /// properties on <see cref="RealtimeSessionOptions" />.
+    /// </remarks>
+    [JsonIgnore]
+    public Func<IRealtimeSession, object?>? RawRepresentationFactory { get; set; }
 }

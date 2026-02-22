@@ -118,6 +118,10 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
     {
         _ = Throw.IfNull(options);
 
+        // Note: When switching to the OpenAI SDK for serialization, consume options.RawRepresentationFactory
+        // here to allow callers to provide a pre-configured SDK-specific options instance, following the
+        // same pattern used by OpenAIChatClient and other provider implementations.
+
         var sessionElement = new JsonObject
         {
             ["type"] = "session.update",
