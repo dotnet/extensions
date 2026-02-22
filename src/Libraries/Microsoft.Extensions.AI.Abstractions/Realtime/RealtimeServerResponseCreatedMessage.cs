@@ -40,6 +40,11 @@ public class RealtimeServerResponseCreatedMessage : RealtimeServerMessage
     /// <summary>
     /// Gets or sets the conversation ID associated with the response.
     /// </summary>
+    /// <remarks>
+    /// Identifies which conversation within the session this response belongs to.
+    /// A session may have a default conversation to which items are automatically added,
+    /// or responses may be generated out-of-band (not associated with any conversation).
+    /// </remarks>
     public string? ConversationId { get; set; }
 
     /// <summary>
