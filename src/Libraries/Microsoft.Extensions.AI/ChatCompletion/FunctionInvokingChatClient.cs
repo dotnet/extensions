@@ -312,7 +312,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         int consecutiveErrorCount = 0;
-        Dictionary<string, int>? validationRetryCounts = null;
+        Dictionary<string, int> validationRetryCounts = [];
 
         if (HasAnyApprovalContent(originalMessages))
         {
@@ -371,7 +371,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             bool anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
             if (anyToolsRequireApproval)
             {
-                if (await ProcessValidationBeforeApprovalAsync(response.Messages, options, iteration, ref validationRetryCounts, cancellationToken).ConfigureAwait(false))
+                if (await ProcessValidationBeforeApprovalAsync(response.Messages, options, iteration, validationRetryCounts, cancellationToken).ConfigureAwait(false))
                 {
                     // If any validation failed, we should NOT request approval yet, but instead return the validation errors
                     // to the model and allow it to retry.
@@ -477,7 +477,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         List<ChatResponseUpdate> updates = []; // updates from the current response
         int consecutiveErrorCount = 0;
-        Dictionary<string, int>? validationRetryCounts = null;
+        Dictionary<string, int> validationRetryCounts = [];
 
         // This is a synthetic ID since we're generating the tool messages instead of getting them from
         // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
@@ -673,7 +673,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             if (anyToolsRequireApproval)
             {
-                if (await ProcessValidationBeforeApprovalAsync(response.Messages, options, iteration, ref validationRetryCounts, cancellationToken).ConfigureAwait(false))
+                if (await ProcessValidationBeforeApprovalAsync(response.Messages, options, iteration, validationRetryCounts, cancellationToken).ConfigureAwait(false))
                 {
                     // Validation failed. We've added FRCs to response.Messages.
                     // We need to yield these as updates.
@@ -2126,7 +2126,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         IList<ChatMessage> messages,
         ChatOptions? options,
         int iteration,
-        ref Dictionary<string, int>? validationRetryCounts,
+        Dictionary<string, int> validationRetryCounts,
         CancellationToken cancellationToken)
     {
         if (FunctionInputValidator is null)
@@ -2172,7 +2172,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     anyFailed = true;
 
                     // Track validation retries
-                    validationRetryCounts ??= [];
                     validationRetryCounts.TryGetValue(fcc.CallId, out int retryCount);
                     if (retryCount >= FunctionInputValidationRetryCount)
                     {
