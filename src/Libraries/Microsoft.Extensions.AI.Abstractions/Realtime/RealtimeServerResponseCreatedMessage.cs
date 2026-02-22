@@ -80,7 +80,12 @@ public class RealtimeServerResponseCreatedMessage : RealtimeServerMessage
     public ErrorContent? Error { get; set; }
 
     /// <summary>
-    /// Gets or sets the usage details for the response.
+    /// Gets or sets the per-response token usage for billing purposes.
     /// </summary>
+    /// <remarks>
+    /// Populated when the response is complete (i.e., on <see cref="RealtimeServerMessageType.ResponseDone"/>).
+    /// Input tokens include the entire conversation context, so they grow over successive turns
+    /// as previous output becomes input for later responses.
+    /// </remarks>
     public UsageDetails? Usage { get; set; }
 }

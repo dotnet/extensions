@@ -43,8 +43,12 @@ public class RealtimeServerInputAudioTranscriptionMessage : RealtimeServerMessag
     public string? Transcription { get; set; }
 
     /// <summary>
-    /// Gets or sets the usage details for the transcription.
+    /// Gets or sets the transcription-specific usage, which is billed separately from the realtime model.
     /// </summary>
+    /// <remarks>
+    /// This usage reflects the cost of the speech-to-text transcription and is billed according to the
+    /// ASR (Automatic Speech Recognition) model's pricing rather than the realtime model's pricing.
+    /// </remarks>
     public UsageDetails? Usage { get; set; }
 
     /// <summary>
