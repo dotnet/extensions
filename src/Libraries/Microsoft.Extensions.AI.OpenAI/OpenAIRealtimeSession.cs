@@ -1664,7 +1664,14 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
         if (root.TryGetProperty("delta", out var deltaElement))
         {
-            msg.Text = deltaElement.GetString();
+            if (serverMessageType is RealtimeServerMessageType.OutputAudioDelta)
+            {
+                msg.Audio = deltaElement.GetString();
+            }
+            else
+            {
+                msg.Text = deltaElement.GetString();
+            }
         }
 
         if (msg.Text is null && root.TryGetProperty("transcript", out deltaElement))

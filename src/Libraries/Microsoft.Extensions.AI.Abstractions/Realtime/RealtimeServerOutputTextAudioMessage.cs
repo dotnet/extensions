@@ -32,13 +32,26 @@ public class RealtimeServerOutputTextAudioMessage : RealtimeServerMessage
     public int? ContentIndex { get; set; }
 
     /// <summary>
-    /// Gets or sets the text or audio delta, or the final text or audio once the output is complete.
+    /// Gets or sets the text delta or final text content.
     /// </summary>
     /// <remarks>
-    /// if dealing with audio content, this property may contain Base64-encoded audio data.
-    /// With <see cref="RealtimeServerMessageType.OutputAudioDone"/>, usually will have null Text value.
+    /// Populated for <see cref="RealtimeServerMessageType.OutputTextDelta"/>, <see cref="RealtimeServerMessageType.OutputTextDone"/>,
+    /// <see cref="RealtimeServerMessageType.OutputAudioTranscriptionDelta"/>, and <see cref="RealtimeServerMessageType.OutputAudioTranscriptionDone"/> messages.
+    /// For audio messages (<see cref="RealtimeServerMessageType.OutputAudioDelta"/> and <see cref="RealtimeServerMessageType.OutputAudioDone"/>),
+    /// use <see cref="Audio"/> instead.
     /// </remarks>
     public string? Text { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Base64-encoded audio data delta or final audio content.
+    /// </summary>
+    /// <remarks>
+    /// Populated for <see cref="RealtimeServerMessageType.OutputAudioDelta"/> messages.
+    /// For <see cref="RealtimeServerMessageType.OutputAudioDone"/>, this is typically <see langword="null"/>
+    /// as the final audio is not included; use the accumulated deltas instead.
+    /// For text content, use <see cref="Text"/> instead.
+    /// </remarks>
+    public string? Audio { get; set; }
 
     /// <summary>
     /// Gets or sets the ID of the item containing the content part whose text has been updated.

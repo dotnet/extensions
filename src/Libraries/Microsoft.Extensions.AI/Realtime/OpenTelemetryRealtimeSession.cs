@@ -451,7 +451,7 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
                     RealtimeServerMessageType.OutputTextDelta or RealtimeServerMessageType.OutputTextDone =>
                         ("text", textAudioMsg.Text),
                     RealtimeServerMessageType.OutputAudioDelta or RealtimeServerMessageType.OutputAudioDone =>
-                        ("audio", string.IsNullOrEmpty(textAudioMsg.Text) ? "[audio data]" : textAudioMsg.Text),
+                        ("audio", string.IsNullOrEmpty(textAudioMsg.Audio) ? "[audio data]" : textAudioMsg.Audio),
                     RealtimeServerMessageType.OutputAudioTranscriptionDelta or RealtimeServerMessageType.OutputAudioTranscriptionDone =>
                         ("output_transcription", textAudioMsg.Text),
                     _ => ("text", textAudioMsg.Text),

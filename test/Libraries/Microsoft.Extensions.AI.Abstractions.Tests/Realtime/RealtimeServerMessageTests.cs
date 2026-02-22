@@ -134,6 +134,7 @@ public class RealtimeServerMessageTests
 
         Assert.Null(message.ContentIndex);
         Assert.Null(message.Text);
+        Assert.Null(message.Audio);
         Assert.Null(message.ItemId);
         Assert.Null(message.OutputIndex);
         Assert.Null(message.ResponseId);
