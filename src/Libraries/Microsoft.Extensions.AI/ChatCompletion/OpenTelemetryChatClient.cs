@@ -207,7 +207,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         TagList chunkMetricTags = default;
         if (trackChunkTimes)
         {
-            PopulateMetricTags(ref chunkMetricTags, requestModelId, response: null);
+            AddMetricTags(ref chunkMetricTags, requestModelId, response: null);
         }
 
         Exception? error = null;
@@ -672,7 +672,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         {
             TagList tags = default;
 
-            PopulateMetricTags(ref tags, requestModelId, response);
+            AddMetricTags(ref tags, requestModelId, response);
             if (error is not null)
             {
                 tags.Add(OpenTelemetryConsts.Error.Type, error.GetType().FullName);
@@ -687,7 +687,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             {
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeInput);
-                PopulateMetricTags(ref tags, requestModelId, response);
+                AddMetricTags(ref tags, requestModelId, response);
                 _tokenUsageHistogram.Record((int)inputTokens, tags);
             }
 
@@ -695,7 +695,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             {
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeOutput);
-                PopulateMetricTags(ref tags, requestModelId, response);
+                AddMetricTags(ref tags, requestModelId, response);
                 _tokenUsageHistogram.Record((int)outputTokens, tags);
             }
         }
@@ -758,7 +758,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
     }
 
-    private void PopulateMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
+    private void AddMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
     {
         tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName);
 
