@@ -18,12 +18,18 @@ public static class FunctionInvokingChatClientBuilderExtensions
     /// </summary>
     /// <remarks>This works by adding an instance of <see cref="FunctionInvokingChatClient"/> with default options.</remarks>
     /// <param name="builder">The <see cref="ChatClientBuilder"/> being used to build the chat pipeline.</param>
+    /// <param name="inputValidator">An optional delegate used to validate function arguments before invocation.</param>
+    /// <param name="outputValidator">An optional delegate used to validate function results after invocation.</param>
+    /// <param name="inputValidationRetryCount">The maximum number of times function input validation is allowed to fail for a single function call per request.</param>
     /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to use to create a logger for logging function invocations.</param>
     /// <param name="configure">An optional callback that can be used to configure the <see cref="FunctionInvokingChatClient"/> instance.</param>
     /// <returns>The supplied <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static ChatClientBuilder UseFunctionInvocation(
         this ChatClientBuilder builder,
+        Func<FunctionInvocationContext, CancellationToken, ValueTask>? inputValidator = null,
+        Func<FunctionInvocationContext, object?, CancellationToken, ValueTask>? outputValidator = null,
+        int inputValidationRetryCount = 1,
         ILoggerFactory? loggerFactory = null,
         Action<FunctionInvokingChatClient>? configure = null)
     {
@@ -33,7 +39,12 @@ public static class FunctionInvokingChatClientBuilderExtensions
         {
             loggerFactory ??= services.GetService<ILoggerFactory>();
 
-            var chatClient = new FunctionInvokingChatClient(innerClient, loggerFactory, services);
+            var chatClient = new FunctionInvokingChatClient(innerClient, loggerFactory, services)
+            {
+                FunctionInputValidator = inputValidator,
+                FunctionOutputValidator = outputValidator,
+                FunctionInputValidationRetryCount = inputValidationRetryCount
+            };
             configure?.Invoke(chatClient);
             return chatClient;
         });

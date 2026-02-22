@@ -263,6 +263,32 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </remarks>
     public Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>>? FunctionInvoker { get; set; }
 
+    /// <summary>Gets or sets a delegate used to validate function arguments before invocation.</summary>
+    /// <remarks>
+    /// If this delegate is set to a non-<see langword="null"/> value, it will be called for each function to be invoked,
+    /// before the actual invocation. If it throws an exception, the exception will be caught and reported
+    /// back to the <see cref="IChatClient"/> as a function failure, allowing it to potentially retry.
+    /// </remarks>
+    public Func<FunctionInvocationContext, CancellationToken, ValueTask>? FunctionInputValidator { get; set; }
+
+    /// <summary>Gets or sets a delegate used to validate function results after invocation.</summary>
+    /// <remarks>
+    /// If this delegate is set to a non-<see langword="null"/> value, it will be called for each successful function invocation,
+    /// with the result of the invocation. If it throws an exception, the exception will be caught and reported
+    /// back to the <see cref="IChatClient"/> as a function failure.
+    /// </remarks>
+    public Func<FunctionInvocationContext, object?, CancellationToken, ValueTask>? FunctionOutputValidator { get; set; }
+
+    private int _functionInputValidationRetryCount = 1;
+
+    /// <summary>Gets or sets the maximum number of times function input validation is allowed to fail for a single function call per request.</summary>
+    /// <value>The default value is 1.</value>
+    public int FunctionInputValidationRetryCount
+    {
+        get => _functionInputValidationRetryCount;
+        set => _functionInputValidationRetryCount = Throw.IfLessThan(value, 0);
+    }
+
     /// <inheritdoc/>
     public override async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -286,6 +312,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         int consecutiveErrorCount = 0;
+        Dictionary<string, int>? validationRetryCounts = null;
 
         if (HasAnyApprovalContent(originalMessages))
         {
@@ -344,7 +371,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             bool anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
             if (anyToolsRequireApproval)
             {
-                response.Messages = ReplaceFunctionCallsWithApprovalRequests(response.Messages, options?.Tools, AdditionalTools);
+                if (await ProcessValidationBeforeApprovalAsync(response.Messages, options, iteration, ref validationRetryCounts, cancellationToken).ConfigureAwait(false))
+                {
+                    // If any validation failed, we should NOT request approval yet, but instead return the validation errors
+                    // to the model and allow it to retry.
+                    (responseMessages ??= []).AddRange(response.Messages);
+                    FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
+                    UpdateOptionsForNextIteration(ref options, response.ConversationId);
+                    continue;
+                }
+                else
+                {
+                    response.Messages = ReplaceFunctionCallsWithApprovalRequests(response.Messages, options?.Tools, AdditionalTools);
+                }
             }
 
             // Any function call work to do? If yes, ensure we're tracking that work in functionCallContents.
@@ -438,6 +477,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         List<ChatResponseUpdate> updates = []; // updates from the current response
         int consecutiveErrorCount = 0;
+        Dictionary<string, int>? validationRetryCounts = null;
 
         // This is a synthetic ID since we're generating the tool messages instead of getting them from
         // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
@@ -592,7 +632,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // Check if any of the function call contents in this update requires approval.
                 (hasApprovalRequiringFcc, lastApprovalCheckedFCCIndex) = CheckForApprovalRequiringFCC(
                     functionCallContents, approvalRequiredFunctions!, hasApprovalRequiringFcc, lastApprovalCheckedFCCIndex);
-                if (hasApprovalRequiringFcc)
+                if (hasApprovalRequiringFcc && FunctionInputValidator is null)
                 {
                     // If we've encountered a function call content that requires approval,
                     // we need to ask for approval for all functions, since we cannot mix and match.
@@ -628,6 +668,46 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // Any matched FCCs are also removed from functionCallContents so that they won't be invoked locally.
             MarkServerHandledFunctionCalls(updates, functionCallContents);
 
+            // Reconstitute a response from the response updates.
+            var response = updates.ToChatResponse();
+
+            if (anyToolsRequireApproval)
+            {
+                if (await ProcessValidationBeforeApprovalAsync(response.Messages, options, iteration, ref validationRetryCounts, cancellationToken).ConfigureAwait(false))
+                {
+                    // Validation failed. We've added FRCs to response.Messages.
+                    // We need to yield these as updates.
+                    foreach (var message in response.Messages.Where(m => m.Contents.Any(c => c is FunctionResultContent)))
+                    {
+                        yield return ConvertToolResultMessageToUpdate(message, response.ConversationId, toolMessageId);
+                    }
+                    
+                    // Update variables for history fixup below
+                    (responseMessages ??= []).AddRange(response.Messages);
+                    FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
+                    UpdateOptionsForNextIteration(ref options, response.ConversationId);
+                    continue;
+                }
+                else if (hasApprovalRequiringFcc)
+                {
+                    // All validation passed, and approval is required.
+                    // Yield any remaining updates as approval requests.
+                    for (; lastYieldedUpdateIndex < updates.Count; lastYieldedUpdateIndex++)
+                    {
+                        var updateToYield = updates[lastYieldedUpdateIndex];
+                        if (TryReplaceFunctionCallsWithApprovalRequests(updateToYield.Contents, out var updatedContents))
+                        {
+                            updateToYield.Contents = updatedContents;
+                        }
+
+                        yield return updateToYield;
+                    }
+                    
+                    break;
+                }
+            }
+
+            // Normal flow: no approval required or it's a regular function call that doesn't need approval.
             // We need to yield any remaining updates that were not yielded while looping through the streamed updates.
             for (; lastYieldedUpdateIndex < updates.Count; lastYieldedUpdateIndex++)
             {
@@ -648,10 +728,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 break;
             }
 
-            // We need to invoke functions.
-
-            // Reconstitute a response from the response updates.
-            var response = updates.ToChatResponse();
             (responseMessages ??= []).AddRange(response.Messages);
 
             // Prepare the history for the next iteration.
@@ -1444,7 +1520,18 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         try
         {
             CurrentContext = context; // doesn't need to be explicitly reset after, as that's handled automatically at async method exit
-            result = await InvokeFunctionAsync(context, cancellationToken);
+
+            if (FunctionInputValidator is not null)
+            {
+                await FunctionInputValidator(context, cancellationToken).ConfigureAwait(false);
+            }
+
+            result = await InvokeFunctionAsync(context, cancellationToken).ConfigureAwait(false);
+
+            if (FunctionOutputValidator is not null)
+            {
+                await FunctionOutputValidator(context, result, cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (Exception e)
         {
@@ -2030,5 +2117,91 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         public FunctionApprovalResponseContent Response { get; set; }
         public ChatMessage? RequestMessage { get; set; }
+    }
+
+    /// <summary>
+    /// Checks all function calls in <paramref name="messages"/> for validation failures before moving to the approval phase.
+    /// </summary>
+    private async Task<bool> ProcessValidationBeforeApprovalAsync(
+        IList<ChatMessage> messages,
+        ChatOptions? options,
+        int iteration,
+        ref Dictionary<string, int>? validationRetryCounts,
+        CancellationToken cancellationToken)
+    {
+        if (FunctionInputValidator is null)
+        {
+            return false;
+        }
+
+        List<FunctionCallContent>? functionCalls = null;
+        CopyFunctionCalls(messages, ref functionCalls);
+
+        if (functionCalls is null)
+        {
+            return false;
+        }
+
+        bool anyFailed = false;
+        List<FunctionInvocationResult> results = [];
+
+        for (int i = 0; i < functionCalls.Count; i++)
+        {
+            var fcc = functionCalls[i];
+            AIFunctionDeclaration? tool = FindTool(fcc.Name, options?.Tools, AdditionalTools);
+            if (tool is AIFunction aiFunction)
+            {
+                FunctionInvocationContext context = new()
+                {
+                    Function = aiFunction,
+                    Arguments = new(fcc.Arguments) { Services = FunctionInvocationServices },
+                    Messages = messages,
+                    Options = options,
+                    CallContent = fcc,
+                    Iteration = iteration,
+                    FunctionCallIndex = i,
+                    FunctionCount = functionCalls.Count
+                };
+
+                try
+                {
+                    await FunctionInputValidator(context, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception e) when (!cancellationToken.IsCancellationRequested)
+                {
+                    anyFailed = true;
+
+                    // Track validation retries
+                    validationRetryCounts ??= [];
+                    validationRetryCounts.TryGetValue(fcc.CallId, out int retryCount);
+                    if (retryCount >= FunctionInputValidationRetryCount)
+                    {
+                        throw; // Re-throw if retry limit reached
+                    }
+
+                    validationRetryCounts[fcc.CallId] = retryCount + 1;
+
+                    results.Add(new FunctionInvocationResult(
+                        terminate: false,
+                        FunctionInvocationStatus.RanToCompletion, // We treat validation failures as "ran" but with an exception in the result record
+                        fcc,
+                        result: null,
+                        exception: e));
+
+                    fcc.InformationalOnly = true;
+                }
+            }
+        }
+
+        if (anyFailed)
+        {
+            var addedMessages = CreateResponseMessages(results.ToArray());
+            foreach (var m in addedMessages)
+            {
+                messages.Add(m);
+            }
+        }
+
+        return anyFailed;
     }
 }

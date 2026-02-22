@@ -3628,4 +3628,170 @@ public class FunctionInvokingChatClientTests
         Assert.Contains(response.Messages, m =>
             m.Contents.Any(c => c is FunctionResultContent frc2 && frc2.CallId == "callId1"));
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionInputValidator_Called(bool streaming)
+    {
+        int inputValidatorCalledCount = 0;
+        int functionInvokedCount = 0;
+
+        var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
+            },
+            GetStreamingResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]));
+                return YieldAsync(response.ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            FunctionInputValidator = (context, cancellationToken) =>
+            {
+                inputValidatorCalledCount++;
+                Assert.Equal("Func1", context.Function.Name);
+                return ValueTask.CompletedTask;
+            }
+        };
+
+        client.AdditionalTools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")];
+
+        if (streaming)
+        {
+            await client.GetStreamingResponseAsync("hello").ToChatResponseAsync();
+        }
+        else
+        {
+            await client.GetResponseAsync("hello");
+        }
+
+        Assert.Equal(1, inputValidatorCalledCount);
+        Assert.Equal(1, functionInvokedCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionOutputValidator_Called(bool streaming)
+    {
+        int outputValidatorCalledCount = 0;
+        int functionInvokedCount = 0;
+
+        var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
+            },
+            GetStreamingResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]));
+                return YieldAsync(response.ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            FunctionOutputValidator = (context, result, cancellationToken) =>
+            {
+                outputValidatorCalledCount++;
+                Assert.Equal("Func1", context.Function.Name);
+                Assert.Equal("Result 1", result);
+                return ValueTask.CompletedTask;
+            }
+        };
+
+        client.AdditionalTools = [AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")];
+
+        if (streaming)
+        {
+            await client.GetStreamingResponseAsync("hello").ToChatResponseAsync();
+        }
+        else
+        {
+            await client.GetResponseAsync("hello");
+        }
+
+        Assert.Equal(1, outputValidatorCalledCount);
+        Assert.Equal(1, functionInvokedCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionValidation_ApprovalFlow_RetriesOnFailure(bool streaming)
+    {
+        int validationAttemptCount = 0;
+        int innerClientCallCount = 0;
+
+        var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                innerClientCallCount++;
+                if (innerClientCallCount == 1)
+                {
+                    // First call returns a tool call that requires approval
+                    return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")])));
+                }
+                
+                // Second call (after validation retry) returns a tool call that passed validation (because we'll make it pass)
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func1")])));
+            },
+            GetStreamingResponseAsyncCallback = (contents, options, cancellationToken) =>
+            {
+                innerClientCallCount++;
+                ChatResponse response;
+                if (innerClientCallCount == 1)
+                {
+                    response = new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]));
+                }
+                else
+                {
+                    response = new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func1")]));
+                }
+                return YieldAsync(response.ToChatResponseUpdates());
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient)
+        {
+            FunctionInputValidator = (context, cancellationToken) =>
+            {
+                validationAttemptCount++;
+                if (context.CallContent.CallId == "callId1")
+                {
+                    throw new InvalidOperationException("Validation failed for callId1");
+                }
+                return ValueTask.CompletedTask;
+            },
+            FunctionInputValidationRetryCount = 1
+        };
+
+        // Func1 requires approval
+        client.AdditionalTools = [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1"))];
+
+        if (streaming)
+        {
+            var updates = await client.GetStreamingResponseAsync("hello").ToListAsync();
+            // We expect the validation error to be sent back to the model, so we should see a second call to inner client
+            // but the updates yielded to the user should only be from the FINAL response if we keep looping,
+            // or we'd see the validation error FRC if we yielded it.
+            // In our implementation, we yield the FRC as an update.
+            Assert.Contains(updates, u => u.Contents.Any(c => c is FunctionResultContent frc && frc.Result?.ToString()?.Contains("Validation failed") == true));
+        }
+        else
+        {
+            var response = await client.GetResponseAsync("hello");
+            // The final response should be the one after retries
+            Assert.Equal(2, innerClientCallCount);
+            Assert.Equal(2, validationAttemptCount);
+        }
+    }
 }
