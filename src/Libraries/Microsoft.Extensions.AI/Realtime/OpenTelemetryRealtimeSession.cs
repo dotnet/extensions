@@ -364,14 +364,30 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
     /// <summary>Gets the output modality from a server message, if applicable.</summary>
     private static string? GetOutputModality(RealtimeServerMessage message)
     {
-        return message switch
+        if (message is RealtimeServerOutputTextAudioMessage textAudio)
         {
-            RealtimeServerOutputTextAudioMessage { Type: RealtimeServerMessageType.OutputTextDelta or RealtimeServerMessageType.OutputTextDone } => "text",
-            RealtimeServerOutputTextAudioMessage { Type: RealtimeServerMessageType.OutputAudioDelta or RealtimeServerMessageType.OutputAudioDone } => "audio",
-            RealtimeServerOutputTextAudioMessage { Type: RealtimeServerMessageType.OutputAudioTranscriptionDelta or RealtimeServerMessageType.OutputAudioTranscriptionDone } => "transcription",
-            RealtimeServerResponseOutputItemMessage => "item",
-            _ => null,
-        };
+            if (textAudio.Type == RealtimeServerMessageType.OutputTextDelta || textAudio.Type == RealtimeServerMessageType.OutputTextDone)
+            {
+                return "text";
+            }
+
+            if (textAudio.Type == RealtimeServerMessageType.OutputAudioDelta || textAudio.Type == RealtimeServerMessageType.OutputAudioDone)
+            {
+                return "audio";
+            }
+
+            if (textAudio.Type == RealtimeServerMessageType.OutputAudioTranscriptionDelta || textAudio.Type == RealtimeServerMessageType.OutputAudioTranscriptionDone)
+            {
+                return "transcription";
+            }
+        }
+
+        if (message is RealtimeServerResponseOutputItemMessage)
+        {
+            return "item";
+        }
+
+        return null;
     }
 
     /// <summary>Extracts an OTel message from a realtime client message.</summary>
@@ -445,17 +461,24 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
                 return ExtractOtelMessage(outputItemMsg.Item);
 
             case RealtimeServerOutputTextAudioMessage textAudioMsg:
-                // Determine content type and role
-                var (partType, content) = textAudioMsg.Type switch
+                string partType;
+                string? content;
+
+                if (textAudioMsg.Type == RealtimeServerMessageType.OutputAudioDelta || textAudioMsg.Type == RealtimeServerMessageType.OutputAudioDone)
                 {
-                    RealtimeServerMessageType.OutputTextDelta or RealtimeServerMessageType.OutputTextDone =>
-                        ("text", textAudioMsg.Text),
-                    RealtimeServerMessageType.OutputAudioDelta or RealtimeServerMessageType.OutputAudioDone =>
-                        ("audio", string.IsNullOrEmpty(textAudioMsg.Audio) ? "[audio data]" : textAudioMsg.Audio),
-                    RealtimeServerMessageType.OutputAudioTranscriptionDelta or RealtimeServerMessageType.OutputAudioTranscriptionDone =>
-                        ("output_transcription", textAudioMsg.Text),
-                    _ => ("text", textAudioMsg.Text),
-                };
+                    partType = "audio";
+                    content = string.IsNullOrEmpty(textAudioMsg.Audio) ? "[audio data]" : textAudioMsg.Audio;
+                }
+                else if (textAudioMsg.Type == RealtimeServerMessageType.OutputAudioTranscriptionDelta || textAudioMsg.Type == RealtimeServerMessageType.OutputAudioTranscriptionDone)
+                {
+                    partType = "output_transcription";
+                    content = textAudioMsg.Text;
+                }
+                else
+                {
+                    partType = "text";
+                    content = textAudioMsg.Text;
+                }
 
                 // Skip if no meaningful content
                 if (string.IsNullOrEmpty(content))

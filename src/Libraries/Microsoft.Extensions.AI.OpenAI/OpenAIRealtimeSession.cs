@@ -1664,7 +1664,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
         if (root.TryGetProperty("delta", out var deltaElement))
         {
-            if (serverMessageType is RealtimeServerMessageType.OutputAudioDelta)
+            if (serverMessageType == RealtimeServerMessageType.OutputAudioDelta)
             {
                 msg.Audio = deltaElement.GetString();
             }
