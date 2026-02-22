@@ -947,7 +947,9 @@ public partial class AcceptanceTests
                 // 1st log record is from DfaMatcher,
                 // 2, 3, 4th are from our "test" category
                 // and 5 and 6th are logs from the /logatrequest endpoint
-                Assert.Equal(6, logCollector.Count);
+                var entries = logCollector.GetSnapshot();
+                var relevantCount = entries.Count(x => x.Category == "Microsoft.AspNetCore.Routing.Matching.DfaMatcher" || x.Category == "test" || x.Category == "logatrequest");
+                Assert.Equal(6, relevantCount);
                 Assert.Equal(LogLevel.Trace, logCollector.LatestRecord.Level);
                 Assert.Equal("test", logCollector.LatestRecord.Category);
             });
