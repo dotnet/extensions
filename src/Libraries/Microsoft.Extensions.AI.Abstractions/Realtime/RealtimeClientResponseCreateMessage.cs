@@ -8,8 +8,14 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents a real-time message for creating a response item.
+/// Represents a client message that triggers model inference to generate a response.
 /// </summary>
+/// <remarks>
+/// Sending this message instructs the provider to generate a new response from the model.
+/// The response may include one or more output items (text, audio, or tool calls).
+/// Properties on this message optionally override the session-level configuration
+/// for this response only.
+/// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public class RealtimeClientResponseCreateMessage : RealtimeClientMessage
 {
