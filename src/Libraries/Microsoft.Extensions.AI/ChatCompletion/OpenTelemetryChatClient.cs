@@ -204,6 +204,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         List<ChatResponseUpdate> trackedUpdates = [];
         TimeSpan lastChunkElapsed = default;
         bool isFirstChunk = true;
+        TagList chunkMetricTags = default;
+        if (trackChunkTimes)
+        {
+            PopulateMetricTags(ref chunkMetricTags, requestModelId, response: null);
+        }
+
         Exception? error = null;
         try
         {
@@ -225,9 +231,10 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     throw;
                 }
 
-                if (stopwatch is not null && trackChunkTimes)
+                if (trackChunkTimes)
                 {
-                    TimeSpan currentElapsed = stopwatch.Elapsed;
+                    Debug.Assert(stopwatch is not null, "stopwatch should have been initialized when trackChunkTimes is true");
+                    TimeSpan currentElapsed = stopwatch!.Elapsed;
                     double delta = (currentElapsed - lastChunkElapsed).TotalSeconds;
 
                     if (isFirstChunk)
@@ -235,16 +242,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         isFirstChunk = false;
                         if (_timeToFirstChunkHistogram.Enabled)
                         {
-                            TagList tags = default;
-                            PopulateMetricTags(ref tags, requestModelId, response: null);
-                            _timeToFirstChunkHistogram.Record(delta, tags);
+                            _timeToFirstChunkHistogram.Record(delta, chunkMetricTags);
                         }
                     }
                     else if (_timePerOutputChunkHistogram.Enabled)
                     {
-                        TagList tags = default;
-                        PopulateMetricTags(ref tags, requestModelId, response: null);
-                        _timePerOutputChunkHistogram.Record(delta, tags);
+                        _timePerOutputChunkHistogram.Record(delta, chunkMetricTags);
                     }
 
                     lastChunkElapsed = currentElapsed;
@@ -669,7 +672,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         {
             TagList tags = default;
 
-            AddMetricTags(ref tags, requestModelId, response);
+            PopulateMetricTags(ref tags, requestModelId, response);
             if (error is not null)
             {
                 tags.Add(OpenTelemetryConsts.Error.Type, error.GetType().FullName);
@@ -684,7 +687,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             {
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeInput);
-                AddMetricTags(ref tags, requestModelId, response);
+                PopulateMetricTags(ref tags, requestModelId, response);
                 _tokenUsageHistogram.Record((int)inputTokens, tags);
             }
 
@@ -692,7 +695,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             {
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, OpenTelemetryConsts.TokenTypeOutput);
-                AddMetricTags(ref tags, requestModelId, response);
+                PopulateMetricTags(ref tags, requestModelId, response);
                 _tokenUsageHistogram.Record((int)outputTokens, tags);
             }
         }
@@ -753,9 +756,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 }
             }
         }
-
-        void AddMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
-            => PopulateMetricTags(ref tags, requestModelId, response);
     }
 
     private void PopulateMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
