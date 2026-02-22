@@ -617,15 +617,12 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        var forcedFunction = AIFunctionFactory.Create((string query) => query, "SpecificSearch", "Search with specific parameters");
-
         using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions
             {
                 Model = "test-model",
-                AIFunction = forcedFunction,
-                ToolMode = ChatToolMode.Auto, // Should be ignored when AIFunction is set
+                ToolMode = ChatToolMode.RequireSpecific("SpecificSearch"),
             },
             GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
         };
@@ -647,7 +644,7 @@ public class OpenTelemetryRealtimeSessionTests
 
 #pragma warning disable MEAI001 // Type is for evaluation purposes only
     [Fact]
-    public async Task HostedMcpServerTool_ForcedTool_Logged()
+    public async Task RequireAny_ToolMode_Logged()
     {
         var sourceName = Guid.NewGuid().ToString();
         var activities = new List<Activity>();
@@ -656,15 +653,12 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        var mcpTool = new HostedMcpServerTool("github-server", "https://mcp.github.com");
-
         using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions
             {
                 Model = "test-model",
-                HostedMcpServerTool = mcpTool,
-                ToolMode = ChatToolMode.Auto, // Should be ignored when HostedMcpServerTool is set
+                ToolMode = ChatToolMode.RequireAny,
             },
             GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
         };
@@ -681,7 +675,7 @@ public class OpenTelemetryRealtimeSessionTests
         }
 
         var activity = Assert.Single(activities);
-        Assert.Equal("mcp:github-server", activity.GetTagItem("gen_ai.request.tool_choice"));
+        Assert.Equal("required", activity.GetTagItem("gen_ai.request.tool_choice"));
     }
 #pragma warning restore MEAI001
 

@@ -808,19 +808,8 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
                     }
 
                     // Tool choice mode (custom attribute - not part of OTel GenAI spec)
-                    // Priority: AIFunction > HostedMcpServerTool > ToolMode
                     string? toolChoice = null;
-                    if (options.AIFunction is { } aiFunc)
-                    {
-                        // When a specific AIFunction is forced, use its name
-                        toolChoice = aiFunc.Name;
-                    }
-                    else if (options.HostedMcpServerTool is { } mcpTool)
-                    {
-                        // When a specific MCP tool is forced, use the server name (mcp:<server_name>)
-                        toolChoice = $"mcp:{mcpTool.ServerName}";
-                    }
-                    else if (options.ToolMode is { } toolMode)
+                    if (options.ToolMode is { } toolMode)
                     {
                         toolChoice = toolMode switch
                         {

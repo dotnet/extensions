@@ -28,8 +28,6 @@ public class RealtimeSessionOptionsTests
         Assert.Null(options.MaxOutputTokens);
         Assert.Null(options.OutputModalities);
         Assert.Null(options.ToolMode);
-        Assert.Null(options.AIFunction);
-        Assert.Null(options.HostedMcpServerTool);
         Assert.Null(options.Tools);
     }
 

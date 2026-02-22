@@ -83,26 +83,7 @@ public class RealtimeSessionOptions
     /// <summary>
     /// Gets or sets the tool choice mode for the session.
     /// </summary>
-    /// <remarks>
-    /// If <see cref="AIFunction"/> or <see cref="HostedMcpServerTool"/> is specified, this value will be ignored.
-    /// </remarks>
     public ChatToolMode? ToolMode { get; set; }
-
-    /// <summary>
-    /// Gets or sets the AI function to use for the response.
-    /// </summary>
-    /// <remarks>
-    /// If specified, the <see cref="ToolMode"/> will be ignored.
-    /// </remarks>
-    public AIFunction? AIFunction { get; set; }
-
-    /// <summary>
-    /// Gets or sets the name of the MCP tool to use for the response.
-    /// </summary>
-    /// <remarks>
-    /// If specified, the <see cref="ToolMode"/> will be ignored.
-    /// </remarks>
-    public HostedMcpServerTool? HostedMcpServerTool { get; set; }
 
     /// <summary>
     /// Gets or sets the AI tools available for generating the response.

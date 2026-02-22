@@ -140,8 +140,6 @@ public class RealtimeClientMessageTests
         Assert.Null(message.Metadata);
         Assert.Null(message.OutputModalities);
         Assert.Null(message.ToolMode);
-        Assert.Null(message.AIFunction);
-        Assert.Null(message.HostedMcpServerTool);
         Assert.Null(message.Tools);
     }
 

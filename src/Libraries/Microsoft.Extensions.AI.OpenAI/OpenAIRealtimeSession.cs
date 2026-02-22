@@ -400,28 +400,15 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                     responseObj["output_modalities"] = CreateModalitiesArray(responseCreate.OutputModalities);
                 }
 
-                if (responseCreate.AIFunction is not null)
-                {
-                    responseObj["tool_choice"] = new JsonObject
-                    {
-                        ["type"] = "function",
-                        ["name"] = responseCreate.AIFunction.Name,
-                    };
-                }
-                else if (responseCreate.HostedMcpServerTool is not null)
-                {
-                    responseObj["tool_choice"] = new JsonObject
-                    {
-                        ["type"] = "mcp",
-                        ["server_label"] = responseCreate.HostedMcpServerTool.ServerName,
-                        ["name"] = responseCreate.HostedMcpServerTool.Name,
-                    };
-                }
-                else if (responseCreate.ToolMode is { } toolMode)
+                if (responseCreate.ToolMode is { } toolMode)
                 {
                     responseObj["tool_choice"] = toolMode switch
                     {
-                        RequiredChatToolMode r when r.RequiredFunctionName is not null => r.RequiredFunctionName,
+                        RequiredChatToolMode r when r.RequiredFunctionName is not null => new JsonObject
+                        {
+                            ["type"] = "function",
+                            ["name"] = r.RequiredFunctionName,
+                        },
                         RequiredChatToolMode => "required",
                         NoneChatToolMode => "none",
                         _ => "auto",
@@ -1363,8 +1350,6 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
             if (Options is not null)
             {
                 newOptions.Tools = Options.Tools;
-                newOptions.AIFunction = Options.AIFunction;
-                newOptions.HostedMcpServerTool = Options.HostedMcpServerTool;
                 newOptions.ToolMode = Options.ToolMode;
             }
 
