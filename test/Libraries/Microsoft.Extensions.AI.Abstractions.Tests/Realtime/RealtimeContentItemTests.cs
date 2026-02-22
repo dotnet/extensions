@@ -19,6 +19,7 @@ public class RealtimeContentItemTests
         Assert.Same(contents, item.Contents);
         Assert.Null(item.Id);
         Assert.Null(item.Role);
+        Assert.Null(item.RawRepresentation);
     }
 
     [Fact]
@@ -42,10 +43,12 @@ public class RealtimeContentItemTests
         item.Id = "new_id";
         item.Role = ChatRole.Assistant;
         item.Contents = newContents;
+        item.RawRepresentation = "raw_data";
 
         Assert.Equal("new_id", item.Id);
         Assert.Equal(ChatRole.Assistant, item.Role);
         Assert.Same(newContents, item.Contents);
+        Assert.Equal("raw_data", item.RawRepresentation);
     }
 
     [Fact]
