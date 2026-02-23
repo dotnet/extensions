@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 public class SemanticVoiceActivityDetection : VoiceActivityDetection
 {
     /// <summary>
-    /// Gets or sets the eagerness level for semantic voice activity detection.
+    /// Gets the eagerness level for semantic voice activity detection.
     /// </summary>
-    public SemanticEagerness Eagerness { get; set; } = SemanticEagerness.Auto;
+    public SemanticEagerness Eagerness { get; init; } = SemanticEagerness.Auto;
 }

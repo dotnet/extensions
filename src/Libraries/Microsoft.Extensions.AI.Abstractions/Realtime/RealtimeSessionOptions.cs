@@ -14,84 +14,84 @@ namespace Microsoft.Extensions.AI;
 public class RealtimeSessionOptions
 {
     /// <summary>
-    /// Gets or sets the session kind.
+    /// Gets the session kind.
     /// </summary>
     /// <remarks>
     /// If set to <see cref="RealtimeSessionKind.Transcription"/>, most of the sessions properties will not apply to the session. Only InputAudioFormat, NoiseReductionOptions, TranscriptionOptions, and VoiceActivityDetection will be used.
     /// </remarks>
-    public RealtimeSessionKind SessionKind { get; set; } = RealtimeSessionKind.Realtime;
+    public RealtimeSessionKind SessionKind { get; init; } = RealtimeSessionKind.Realtime;
 
     /// <summary>
-    /// Gets or sets the model name to use for the session.
+    /// Gets the model name to use for the session.
     /// </summary>
-    public string? Model { get; set; }
+    public string? Model { get; init; }
 
     /// <summary>
-    /// Gets or sets the input audio format for the session.
+    /// Gets the input audio format for the session.
     /// </summary>
-    public RealtimeAudioFormat? InputAudioFormat { get; set; }
+    public RealtimeAudioFormat? InputAudioFormat { get; init; }
 
     /// <summary>
-    /// Gets or sets the noise reduction options for the session.
+    /// Gets the noise reduction options for the session.
     /// </summary>
-    public NoiseReductionOptions? NoiseReductionOptions { get; set; }
+    public NoiseReductionOptions? NoiseReductionOptions { get; init; }
 
     /// <summary>
-    /// Gets or sets the transcription options for the session.
+    /// Gets the transcription options for the session.
     /// </summary>
-    public TranscriptionOptions? TranscriptionOptions { get; set; }
+    public TranscriptionOptions? TranscriptionOptions { get; init; }
 
     /// <summary>
-    /// Gets or sets the voice activity detection options for the session.
+    /// Gets the voice activity detection options for the session.
     /// </summary>
-    public VoiceActivityDetection? VoiceActivityDetection { get; set; }
+    public VoiceActivityDetection? VoiceActivityDetection { get; init; }
 
     /// <summary>
-    /// Gets or sets the output audio format for the session.
+    /// Gets the output audio format for the session.
     /// </summary>
-    public RealtimeAudioFormat? OutputAudioFormat { get; set; }
+    public RealtimeAudioFormat? OutputAudioFormat { get; init; }
 
     /// <summary>
-    /// Gets or sets the output voice speed for the session.
+    /// Gets the output voice speed for the session.
     /// </summary>
     /// <remarks>
     /// The default value is 1.0, which represents normal speed.
     /// </remarks>
-    public double VoiceSpeed { get; set; } = 1.0;
+    public double VoiceSpeed { get; init; } = 1.0;
 
     /// <summary>
-    /// Gets or sets the output voice for the session.
+    /// Gets the output voice for the session.
     /// </summary>
-    public string? Voice { get; set; }
+    public string? Voice { get; init; }
 
     /// <summary>
-    /// Gets or sets the default system instructions for the session.
+    /// Gets the default system instructions for the session.
     /// </summary>
-    public string? Instructions { get; set; }
+    public string? Instructions { get; init; }
 
     /// <summary>
-    /// Gets or sets the maximum number of response tokens for the session.
+    /// Gets the maximum number of response tokens for the session.
     /// </summary>
-    public int? MaxOutputTokens { get; set; }
+    public int? MaxOutputTokens { get; init; }
 
     /// <summary>
-    /// Gets or sets the output modalities for the response. like "text", "audio".
+    /// Gets the output modalities for the response. like "text", "audio".
     /// If null, then default conversation modalities will be used.
     /// </summary>
-    public IList<string>? OutputModalities { get; set; }
+    public IReadOnlyList<string>? OutputModalities { get; init; }
 
     /// <summary>
-    /// Gets or sets the tool choice mode for the session.
+    /// Gets the tool choice mode for the session.
     /// </summary>
-    public ChatToolMode? ToolMode { get; set; }
+    public ChatToolMode? ToolMode { get; init; }
 
     /// <summary>
-    /// Gets or sets the AI tools available for generating the response.
+    /// Gets the AI tools available for generating the response.
     /// </summary>
-    public IList<AITool>? Tools { get; set; }
+    public IReadOnlyList<AITool>? Tools { get; init; }
 
     /// <summary>
-    /// Gets or sets a callback responsible for creating the raw representation of the session options from an underlying implementation.
+    /// Gets a callback responsible for creating the raw representation of the session options from an underlying implementation.
     /// </summary>
     /// <remarks>
     /// The underlying <see cref="IRealtimeSession" /> implementation might have its own representation of options.
@@ -108,5 +108,5 @@ public class RealtimeSessionOptions
     /// properties on <see cref="RealtimeSessionOptions" />.
     /// </remarks>
     [JsonIgnore]
-    public Func<IRealtimeSession, object?>? RawRepresentationFactory { get; set; }
+    public Func<IRealtimeSession, object?>? RawRepresentationFactory { get; init; }
 }

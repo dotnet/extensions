@@ -341,7 +341,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
     /// </remarks>
     private bool ShouldTerminateBasedOnFunctionCalls(List<FunctionCallContent> functionCallContents)
     {
-        var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, InnerSession.Options?.Tools);
+        var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, InnerSession.Options?.Tools as IList<AITool>);
 
         if (toolMap is null || toolMap.Count == 0)
         {
@@ -389,7 +389,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
         CancellationToken cancellationToken)
     {
         // Compute toolMap to ensure we always use the latest tools
-        var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, InnerSession.Options?.Tools);
+        var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, InnerSession.Options?.Tools as IList<AITool>);
 
         var captureCurrentIterationExceptions = consecutiveErrorCount < MaximumConsecutiveErrorsPerRequest;
 

@@ -1315,17 +1315,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
     {
         if (root.TryGetProperty("session", out var sessionElement))
         {
-            var newOptions = DeserializeSessionOptions(sessionElement);
-
-            // Preserve client-side properties that the server cannot round-trip
-            // as typed objects (tools are returned as JSON schemas, not AITool instances).
-            if (Options is not null)
-            {
-                newOptions.Tools = Options.Tools;
-                newOptions.ToolMode = Options.ToolMode;
-            }
-
-            Options = newOptions;
+            Options = DeserializeSessionOptions(sessionElement, Options);
         }
 
         return new RealtimeServerMessage
@@ -1335,37 +1325,35 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
         };
     }
 
-    private static RealtimeSessionOptions DeserializeSessionOptions(JsonElement session)
+    private static RealtimeSessionOptions DeserializeSessionOptions(JsonElement session, RealtimeSessionOptions? previousOptions)
     {
-        var options = new RealtimeSessionOptions();
-
-        if (session.TryGetProperty("type", out var typeElement))
+        RealtimeSessionKind sessionKind = RealtimeSessionKind.Realtime;
+        if (session.TryGetProperty("type", out var typeElement) && typeElement.GetString() == "transcription")
         {
-            options.SessionKind = typeElement.GetString() == "transcription"
-                ? RealtimeSessionKind.Transcription
-                : RealtimeSessionKind.Realtime;
+            sessionKind = RealtimeSessionKind.Transcription;
         }
 
-        if (session.TryGetProperty("model", out var modelElement))
-        {
-            options.Model = modelElement.GetString();
-        }
+        string? model = session.TryGetProperty("model", out var modelElement) ? modelElement.GetString() : null;
 
-        if (session.TryGetProperty("instructions", out var instructionsElement) &&
-            instructionsElement.ValueKind == JsonValueKind.String)
-        {
-            options.Instructions = instructionsElement.GetString();
-        }
+        string? instructions = session.TryGetProperty("instructions", out var instructionsElement) && instructionsElement.ValueKind == JsonValueKind.String
+            ? instructionsElement.GetString()
+            : null;
 
-        if (session.TryGetProperty("max_output_tokens", out var maxTokensElement))
-        {
-            options.MaxOutputTokens = ParseMaxOutputTokens(maxTokensElement);
-        }
+        int? maxOutputTokens = session.TryGetProperty("max_output_tokens", out var maxTokensElement)
+            ? ParseMaxOutputTokens(maxTokensElement)
+            : null;
 
-        if (session.TryGetProperty("output_modalities", out var modalitiesElement))
-        {
-            options.OutputModalities = ParseOutputModalities(modalitiesElement);
-        }
+        IReadOnlyList<string>? outputModalities = session.TryGetProperty("output_modalities", out var modalitiesElement)
+            ? ParseOutputModalities(modalitiesElement)
+            : null;
+
+        RealtimeAudioFormat? inputAudioFormat = null;
+        NoiseReductionOptions? noiseReductionOptions = null;
+        TranscriptionOptions? transcriptionOptions = null;
+        VoiceActivityDetection? voiceActivityDetection = null;
+        RealtimeAudioFormat? outputAudioFormat = null;
+        double voiceSpeed = 1.0;
+        string? voice = null;
 
         // Audio configuration.
         if (session.TryGetProperty("audio", out var audioElement) &&
@@ -1377,14 +1365,14 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
             {
                 if (inputElement.TryGetProperty("format", out var inputFormatElement))
                 {
-                    options.InputAudioFormat = ParseAudioFormat(inputFormatElement);
+                    inputAudioFormat = ParseAudioFormat(inputFormatElement);
                 }
 
                 if (inputElement.TryGetProperty("noise_reduction", out var noiseElement) &&
                     noiseElement.ValueKind == JsonValueKind.Object &&
                     noiseElement.TryGetProperty("type", out var noiseTypeElement))
                 {
-                    options.NoiseReductionOptions = noiseTypeElement.GetString() switch
+                    noiseReductionOptions = noiseTypeElement.GetString() switch
                     {
                         "near_field" => NoiseReductionOptions.NearField,
                         "far_field" => NoiseReductionOptions.FarField,
@@ -1396,12 +1384,12 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                     transcriptionElement.ValueKind == JsonValueKind.Object)
                 {
                     string? language = transcriptionElement.TryGetProperty("language", out var langElement) ? langElement.GetString() : null;
-                    string? model = transcriptionElement.TryGetProperty("model", out var modelEl) ? modelEl.GetString() : null;
+                    string? transcriptionModel = transcriptionElement.TryGetProperty("model", out var modelEl) ? modelEl.GetString() : null;
                     string? prompt = transcriptionElement.TryGetProperty("prompt", out var promptElement) ? promptElement.GetString() : null;
 
-                    if (language is not null && model is not null)
+                    if (language is not null && transcriptionModel is not null)
                     {
-                        options.TranscriptionOptions = new TranscriptionOptions { SpeechLanguage = language, ModelId = model, Prompt = prompt };
+                        transcriptionOptions = new TranscriptionOptions { SpeechLanguage = language, ModelId = transcriptionModel, Prompt = prompt };
                     }
                 }
 
@@ -1410,63 +1398,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                     turnDetectionElement.ValueKind == JsonValueKind.Object &&
                     turnDetectionElement.TryGetProperty("type", out var vadTypeElement))
                 {
-                    string? vadType = vadTypeElement.GetString();
-                    if (vadType == "server_vad")
-                    {
-                        var serverVad = new ServerVoiceActivityDetection();
-                        if (turnDetectionElement.TryGetProperty("create_response", out var crElement))
-                        {
-                            serverVad.CreateResponse = crElement.GetBoolean();
-                        }
-
-                        if (turnDetectionElement.TryGetProperty("interrupt_response", out var irElement))
-                        {
-                            serverVad.InterruptResponse = irElement.GetBoolean();
-                        }
-
-                        if (turnDetectionElement.TryGetProperty("idle_timeout_ms", out var itElement) && itElement.ValueKind == JsonValueKind.Number)
-                        {
-                            serverVad.IdleTimeoutInMilliseconds = itElement.GetInt32();
-                        }
-
-                        if (turnDetectionElement.TryGetProperty("prefix_padding_ms", out var ppElement) && ppElement.ValueKind == JsonValueKind.Number)
-                        {
-                            serverVad.PrefixPaddingInMilliseconds = ppElement.GetInt32();
-                        }
-
-                        if (turnDetectionElement.TryGetProperty("silence_duration_ms", out var sdElement) && sdElement.ValueKind == JsonValueKind.Number)
-                        {
-                            serverVad.SilenceDurationInMilliseconds = sdElement.GetInt32();
-                        }
-
-                        if (turnDetectionElement.TryGetProperty("threshold", out var thElement) && thElement.ValueKind == JsonValueKind.Number)
-                        {
-                            serverVad.Threshold = thElement.GetDouble();
-                        }
-
-                        options.VoiceActivityDetection = serverVad;
-                    }
-                    else if (vadType == "semantic_vad")
-                    {
-                        var semanticVad = new SemanticVoiceActivityDetection();
-                        if (turnDetectionElement.TryGetProperty("create_response", out var crElement))
-                        {
-                            semanticVad.CreateResponse = crElement.GetBoolean();
-                        }
-
-                        if (turnDetectionElement.TryGetProperty("interrupt_response", out var irElement))
-                        {
-                            semanticVad.InterruptResponse = irElement.GetBoolean();
-                        }
-
-                        if (turnDetectionElement.TryGetProperty("eagerness", out var eagernessElement) &&
-                            eagernessElement.GetString() is string eagerness)
-                        {
-                            semanticVad.Eagerness = new SemanticEagerness(eagerness);
-                        }
-
-                        options.VoiceActivityDetection = semanticVad;
-                    }
+                    voiceActivityDetection = ParseVoiceActivityDetection(vadTypeElement.GetString(), turnDetectionElement);
                 }
             }
 
@@ -1476,30 +1408,79 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
             {
                 if (outputElement.TryGetProperty("format", out var outputFormatElement))
                 {
-                    options.OutputAudioFormat = ParseAudioFormat(outputFormatElement);
+                    outputAudioFormat = ParseAudioFormat(outputFormatElement);
                 }
 
                 if (outputElement.TryGetProperty("speed", out var speedElement) && speedElement.ValueKind == JsonValueKind.Number)
                 {
-                    options.VoiceSpeed = speedElement.GetDouble();
+                    voiceSpeed = speedElement.GetDouble();
                 }
 
                 if (outputElement.TryGetProperty("voice", out var voiceElement))
                 {
                     if (voiceElement.ValueKind == JsonValueKind.String)
                     {
-                        options.Voice = voiceElement.GetString();
+                        voice = voiceElement.GetString();
                     }
                     else if (voiceElement.ValueKind == JsonValueKind.Object &&
                              voiceElement.TryGetProperty("id", out var voiceIdElement))
                     {
-                        options.Voice = voiceIdElement.GetString();
+                        voice = voiceIdElement.GetString();
                     }
                 }
             }
         }
 
-        return options;
+        return new RealtimeSessionOptions
+        {
+            SessionKind = sessionKind,
+            Model = model,
+            Instructions = instructions,
+            MaxOutputTokens = maxOutputTokens,
+            OutputModalities = outputModalities,
+            InputAudioFormat = inputAudioFormat,
+            NoiseReductionOptions = noiseReductionOptions,
+            TranscriptionOptions = transcriptionOptions,
+            VoiceActivityDetection = voiceActivityDetection,
+            OutputAudioFormat = outputAudioFormat,
+            VoiceSpeed = voiceSpeed,
+            Voice = voice,
+
+            // Preserve client-side properties that the server cannot round-trip
+            // as typed objects (tools are returned as JSON schemas, not AITool instances).
+            Tools = previousOptions?.Tools,
+            ToolMode = previousOptions?.ToolMode,
+        };
+    }
+
+    private static VoiceActivityDetection? ParseVoiceActivityDetection(string? vadType, JsonElement turnDetectionElement)
+    {
+        if (vadType == "server_vad")
+        {
+            return new ServerVoiceActivityDetection
+            {
+                CreateResponse = turnDetectionElement.TryGetProperty("create_response", out var crElement) && crElement.GetBoolean(),
+                InterruptResponse = turnDetectionElement.TryGetProperty("interrupt_response", out var irElement) && irElement.GetBoolean(),
+                IdleTimeoutInMilliseconds = turnDetectionElement.TryGetProperty("idle_timeout_ms", out var itElement) && itElement.ValueKind == JsonValueKind.Number ? itElement.GetInt32() : 0,
+                PrefixPaddingInMilliseconds = turnDetectionElement.TryGetProperty("prefix_padding_ms", out var ppElement) && ppElement.ValueKind == JsonValueKind.Number ? ppElement.GetInt32() : 300,
+                SilenceDurationInMilliseconds = turnDetectionElement.TryGetProperty("silence_duration_ms", out var sdElement) && sdElement.ValueKind == JsonValueKind.Number ? sdElement.GetInt32() : 500,
+                Threshold = turnDetectionElement.TryGetProperty("threshold", out var thElement) && thElement.ValueKind == JsonValueKind.Number ? thElement.GetDouble() : 0.5,
+            };
+        }
+
+        if (vadType == "semantic_vad")
+        {
+            return new SemanticVoiceActivityDetection
+            {
+                CreateResponse = turnDetectionElement.TryGetProperty("create_response", out var crElement) && crElement.GetBoolean(),
+                InterruptResponse = turnDetectionElement.TryGetProperty("interrupt_response", out var irElement) && irElement.GetBoolean(),
+                Eagerness = turnDetectionElement.TryGetProperty("eagerness", out var eagernessElement) && eagernessElement.GetString() is string eagerness
+                    ? new SemanticEagerness(eagerness)
+                    : SemanticEagerness.Auto,
+            };
+        }
+
+        return null;
     }
 
     private static RealtimeServerErrorMessage? CreateErrorMessage(JsonElement root)

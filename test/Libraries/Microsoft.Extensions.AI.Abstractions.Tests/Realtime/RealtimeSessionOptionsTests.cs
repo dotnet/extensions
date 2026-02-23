@@ -34,8 +34,6 @@ public class RealtimeSessionOptionsTests
     [Fact]
     public void Properties_Roundtrip()
     {
-        RealtimeSessionOptions options = new();
-
         var inputFormat = new RealtimeAudioFormat("audio/pcm", 16000);
         var outputFormat = new RealtimeAudioFormat("audio/pcm", 24000);
         List<string> modalities = ["text", "audio"];
@@ -43,20 +41,23 @@ public class RealtimeSessionOptionsTests
         var transcriptionOptions = new TranscriptionOptions { SpeechLanguage = "en", ModelId = "whisper-1", Prompt = "greeting" };
         var vad = new VoiceActivityDetection { CreateResponse = true, InterruptResponse = true };
 
-        options.SessionKind = RealtimeSessionKind.Transcription;
-        options.Model = "gpt-4-realtime";
-        options.InputAudioFormat = inputFormat;
-        options.OutputAudioFormat = outputFormat;
-        options.NoiseReductionOptions = NoiseReductionOptions.NearField;
-        options.TranscriptionOptions = transcriptionOptions;
-        options.VoiceActivityDetection = vad;
-        options.VoiceSpeed = 1.5;
-        options.Voice = "alloy";
-        options.Instructions = "Be helpful";
-        options.MaxOutputTokens = 500;
-        options.OutputModalities = modalities;
-        options.ToolMode = ChatToolMode.Auto;
-        options.Tools = tools;
+        RealtimeSessionOptions options = new()
+        {
+            SessionKind = RealtimeSessionKind.Transcription,
+            Model = "gpt-4-realtime",
+            InputAudioFormat = inputFormat,
+            OutputAudioFormat = outputFormat,
+            NoiseReductionOptions = NoiseReductionOptions.NearField,
+            TranscriptionOptions = transcriptionOptions,
+            VoiceActivityDetection = vad,
+            VoiceSpeed = 1.5,
+            Voice = "alloy",
+            Instructions = "Be helpful",
+            MaxOutputTokens = 500,
+            OutputModalities = modalities,
+            ToolMode = ChatToolMode.Auto,
+            Tools = tools,
+        };
 
         Assert.Equal(RealtimeSessionKind.Transcription, options.SessionKind);
         Assert.Equal("gpt-4-realtime", options.Model);
@@ -107,10 +108,9 @@ public class RealtimeSessionOptionsTests
         Assert.False(vad.CreateResponse);
         Assert.False(vad.InterruptResponse);
 
-        vad.CreateResponse = true;
-        vad.InterruptResponse = true;
+        var vad2 = new VoiceActivityDetection { CreateResponse = true, InterruptResponse = true };
 
-        Assert.True(vad.CreateResponse);
-        Assert.True(vad.InterruptResponse);
+        Assert.True(vad2.CreateResponse);
+        Assert.True(vad2.InterruptResponse);
     }
 }

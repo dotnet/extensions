@@ -13,12 +13,12 @@ namespace Microsoft.Extensions.AI;
 public class VoiceActivityDetection
 {
     /// <summary>
-    /// Gets or sets a value indicating whether to create a response when voice activity is detected.
+    /// Gets a value indicating whether to create a response when voice activity is detected.
     /// </summary>
-    public bool CreateResponse { get; set; }
+    public bool CreateResponse { get; init; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to interrupt the response when voice activity is detected.
+    /// Gets a value indicating whether to interrupt the response when voice activity is detected.
     /// </summary>
-    public bool InterruptResponse { get; set; }
+    public bool InterruptResponse { get; init; }
 }

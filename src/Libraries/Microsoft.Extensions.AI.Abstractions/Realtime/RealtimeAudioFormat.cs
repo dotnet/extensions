@@ -22,16 +22,16 @@ public class RealtimeAudioFormat
     }
 
     /// <summary>
-    /// Gets or sets the media type of the audio (e.g., "audio/pcm", "audio/pcmu", "audio/pcma").
+    /// Gets the media type of the audio (e.g., "audio/pcm", "audio/pcmu", "audio/pcma").
     /// </summary>
-    public string MediaType { get; set; }
+    public string MediaType { get; init; }
 
     /// <summary>
-    /// Gets or sets the sample rate of the audio in Hertz.
+    /// Gets the sample rate of the audio in Hertz.
     /// </summary>
     /// <remarks>
     /// When constructed via <see cref="RealtimeAudioFormat(string, int)"/>, this property is always set.
     /// The nullable type allows deserialized instances to omit the sample rate when the server does not provide one.
     /// </remarks>
-    public int? SampleRate { get; set; }
+    public int? SampleRate { get; init; }
 }
