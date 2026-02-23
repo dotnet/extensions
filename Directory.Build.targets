@@ -8,6 +8,11 @@
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Generators.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\ProjectStaging.targets" />
 
+  <PropertyGroup>
+    <!-- Workaround https://github.com/dotnet/sdk/issues/51265 - can be removed when updating to .NET 10.0.100 (GA) SDK -->
+    <RestoreEnablePackagePruning Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">false</RestoreEnablePackagePruning>
+  </PropertyGroup>
+  
   <!-- Warning stuff -->
   <PropertyGroup>
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1138;MSB3270</MSBuildWarningsAsMessages>
@@ -35,6 +40,9 @@
 
     <!-- Legacy targets do not support attributes for a nullable context thus suppressing null check warnings -->
     <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
+
+    <!-- Async method lacks 'await' operators and will run synchronously (The C# compiler has already removed it) -->
+    <NoWarn>$(NoWarn);CS1998</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition="('$(Stage)' == 'normal' OR '$(Stage)' == 'obsolete') AND '$(OutputType)' != 'Exe' AND '$(IsPackable)' == 'true' AND '$(Api)' != 'false'">

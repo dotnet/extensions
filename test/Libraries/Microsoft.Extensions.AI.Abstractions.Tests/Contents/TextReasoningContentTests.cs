@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -16,6 +17,7 @@ public class TextReasoningContentTests
         TextReasoningContent c = new(text);
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
+        Assert.Null(c.ProtectedData);
         Assert.Equal(text ?? string.Empty, c.Text);
     }
 
@@ -46,5 +48,24 @@ public class TextReasoningContentTests
         c.Text = string.Empty;
         Assert.Equal(string.Empty, c.Text);
         Assert.Equal(string.Empty, c.ToString());
+
+        Assert.Null(c.ProtectedData);
+        c.ProtectedData = "protected";
+        Assert.Equal("protected", c.ProtectedData);
+        c.ProtectedData = null;
+        Assert.Null(c.ProtectedData);
+    }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new TextReasoningContent("reasoning text") { ProtectedData = "protected" };
+
+        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+        var deserializedContent = JsonSerializer.Deserialize<TextReasoningContent>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(deserializedContent);
+        Assert.Equal(content.Text, deserializedContent.Text);
+        Assert.Equal("protected", deserializedContent.ProtectedData);
     }
 }

@@ -3,10 +3,11 @@
 
 using System;
 using System.ClientModel;
-using Azure.AI.OpenAI;
+using System.ClientModel.Primitives;
 using Azure.Identity;
-using Microsoft.Extensions.Configuration;
 using OpenAI;
+
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
 
 namespace Microsoft.Extensions.AI;
 
@@ -26,14 +27,13 @@ internal static class IntegrationTestHelpers
             var endpoint = configuration["OpenAI:Endpoint"]
                 ?? throw new InvalidOperationException("To use AzureOpenAI, set a value for OpenAI:Endpoint");
 
-            if (apiKey is not null)
-            {
-                return new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey));
-            }
-            else
-            {
-                return new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential());
-            }
+            // Use Azure endpoint with /openai/v1 suffix
+            var options = new OpenAIClientOptions { Endpoint = new Uri(new Uri(endpoint), "/openai/v1") };
+            return apiKey is not null ?
+                new OpenAIClient(new ApiKeyCredential(apiKey), options) :
+                new OpenAIClient(
+                    new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
+                    options);
         }
         else if (apiKey is not null)
         {

@@ -125,10 +125,7 @@ public class OpenAIEmbeddingGeneratorTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using IEmbeddingGenerator<string, Embedding<float>> generator = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions
-        {
-            Transport = new HttpClientPipelineTransport(httpClient),
-        }).GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
+        using IEmbeddingGenerator<string, Embedding<float>> generator = CreateEmbeddingGenerator(httpClient, "text-embedding-3-small");
 
         var response = await generator.GenerateAsync([
             "hello, world!",
@@ -188,10 +185,7 @@ public class OpenAIEmbeddingGeneratorTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using IEmbeddingGenerator<string, Embedding<float>> generator = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions
-        {
-            Transport = new HttpClientPipelineTransport(httpClient),
-        }).GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
+        using IEmbeddingGenerator<string, Embedding<float>> generator = CreateEmbeddingGenerator(httpClient, "text-embedding-3-small");
 
         var response = await generator.GenerateAsync([
             "hello, world!",
@@ -221,4 +215,109 @@ public class OpenAIEmbeddingGeneratorTests
             Assert.Contains(e.Vector.ToArray(), f => !f.Equals(0));
         }
     }
+
+    [Fact]
+    public async Task EmbeddingGenerationOptions_MissingUsage_Ignored()
+    {
+        const string Input = """
+            {
+              "input":["hello, world!"],
+              "model":"text-embedding-3-small",
+              "encoding_format":"base64"
+            }
+            """;
+
+        const string Output = """
+            {
+              "object": "list",
+              "data": [
+                {
+                  "object": "embedding",
+                  "index": 0,
+                  "embedding": "AAAAAA=="
+                }
+              ],
+              "model": "text-embedding-3-small"
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IEmbeddingGenerator<string, Embedding<float>> generator = CreateEmbeddingGenerator(httpClient, "text-embedding-3-small");
+
+        var response = await generator.GenerateAsync(["hello, world!"]);
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Null(response.Usage);
+
+        foreach (Embedding<float> e in response)
+        {
+            Assert.Equal("text-embedding-3-small", e.ModelId);
+            Assert.NotNull(e.CreatedAt);
+            Assert.Equal(1, e.Vector.Length);
+        }
+    }
+
+    [Fact]
+    public async Task EmbeddingGenerationOptions_NullUsage_Ignored()
+    {
+        const string Input = """
+            {
+              "input":["hello, world!"],
+              "model":"text-embedding-3-small",
+              "encoding_format":"base64"
+            }
+            """;
+
+        const string Output = """
+            {
+              "object": "list",
+              "data": [
+                {
+                  "object": "embedding",
+                  "index": 0,
+                  "embedding": "AAAAAA=="
+                }
+              ],
+              "model": "text-embedding-3-small",
+              "usage": null
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IEmbeddingGenerator<string, Embedding<float>> generator = CreateEmbeddingGenerator(httpClient, "text-embedding-3-small");
+
+        var response = await generator.GenerateAsync(["hello, world!"]);
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Null(response.Usage);
+
+        foreach (Embedding<float> e in response)
+        {
+            Assert.Equal("text-embedding-3-small", e.ModelId);
+            Assert.NotNull(e.CreatedAt);
+            Assert.Equal(1, e.Vector.Length);
+        }
+    }
+
+    [Fact]
+    public async Task RequestHeaders_UserAgent_ContainsMEAI()
+    {
+        using var handler = new ThrowUserAgentExceptionHandler();
+        using HttpClient httpClient = new(handler);
+        using IEmbeddingGenerator<string, Embedding<float>> generator = CreateEmbeddingGenerator(httpClient, "text-embedding-3-small");
+
+        InvalidOperationException e = await Assert.ThrowsAsync<InvalidOperationException>(() => generator.GenerateAsync("hello"));
+
+        Assert.StartsWith("User-Agent header: OpenAI", e.Message);
+        Assert.Contains("MEAI", e.Message);
+    }
+
+    private static IEmbeddingGenerator<string, Embedding<float>> CreateEmbeddingGenerator(HttpClient httpClient, string modelId) =>
+        new OpenAIClient(
+            new ApiKeyCredential("apikey"),
+            new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
+        .GetEmbeddingClient(modelId)
+        .AsIEmbeddingGenerator();
 }

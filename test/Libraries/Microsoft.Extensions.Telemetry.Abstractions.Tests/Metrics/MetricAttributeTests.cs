@@ -16,10 +16,13 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.Type);
+        Assert.Null(attribute.Unit);
         Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.TagNames);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -29,10 +32,13 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.Type);
+        Assert.Null(attribute.Unit);
         Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.TagNames);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -42,10 +48,13 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.Type);
+        Assert.Null(attribute.Unit);
         Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.TagNames);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -55,10 +64,13 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.Type);
+        Assert.Null(attribute.Unit);
         Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.TagNames);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -68,10 +80,13 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.Type);
+        Assert.Null(attribute.Unit);
         Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.TagNames);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -82,10 +97,13 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.TagNames);
+        Assert.Null(attribute.Unit);
         Assert.Equal(typeof(TagNameTest), attribute.Type);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -96,10 +114,13 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.TagNames);
+        Assert.Null(attribute.Unit);
         Assert.Equal(typeof(TagNameTest), attribute.Type);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -110,10 +131,13 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.TagNames);
+        Assert.Null(attribute.Unit);
         Assert.Equal(typeof(TagNameTest), attribute.Type);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -124,10 +148,13 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.TagNames);
+        Assert.Null(attribute.Unit);
         Assert.Equal(typeof(TagNameTest), attribute.Type);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]
@@ -138,10 +165,13 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.TagNames);
+        Assert.Null(attribute.Unit);
         Assert.Equal(typeof(TagNameTest), attribute.Type);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
     }
 
     [Fact]

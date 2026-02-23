@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -102,33 +101,6 @@ internal static class RoslynExtensions
         type.IsArray || type.FullName is null
             ? throw new ArgumentException("The input type must correspond to a named type symbol.")
             : GetBestTypeByMetadataName(compilation, type.FullName);
-
-    public static ImmutableArray<T> ToImmutableArray<T>(this ReadOnlySpan<T> span)
-    {
-#pragma warning disable S109 // Magic numbers should not be used
-        switch (span.Length)
-        {
-            case 0:
-                return ImmutableArray<T>.Empty;
-            case 1:
-                return ImmutableArray.Create(span[0]);
-            case 2:
-                return ImmutableArray.Create(span[0], span[1]);
-            case 3:
-                return ImmutableArray.Create(span[0], span[1], span[2]);
-            case 4:
-                return ImmutableArray.Create(span[0], span[1], span[2], span[3]);
-            default:
-                var builder = ImmutableArray.CreateBuilder<T>(span.Length);
-                foreach (var item in span)
-                {
-                    builder.Add(item);
-                }
-
-                return builder.MoveToImmutable();
-        }
-#pragma warning restore S109 // Magic numbers should not be used
-    }
 
     public static SimpleNameSyntax GetUnqualifiedName(this NameSyntax name)
         => name switch

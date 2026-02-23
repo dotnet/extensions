@@ -18,11 +18,10 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S107 // Methods should not have too many parameters
-#pragma warning disable S109 // Magic numbers should not be used
+#pragma warning disable CA1505 // Avoid unmaintainable code
 #pragma warning disable S1075 // URIs should not be hardcoded
-#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 #pragma warning disable S1199 // Nested block
+#pragma warning disable S1696 // NullReferenceException should not be caught
 #pragma warning disable SA1118 // Parameter should not span multiple lines
 
 namespace Microsoft.Extensions.AI;
@@ -83,9 +82,10 @@ public static partial class AIJsonUtilities
 
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
-        title ??= method.Name;
+        title ??= method.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? method.Name;
         description ??= method.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
+        NullabilityInfoContext nullabilityContext = new();
         JsonObject parameterSchemas = new();
         JsonArray? requiredProperties = null;
         foreach (ParameterInfo parameter in method.GetParameters())
@@ -111,17 +111,29 @@ public static partial class AIJsonUtilities
                 continue;
             }
 
+            bool hasDefaultValue = TryGetEffectiveDefaultValue(parameter, out object? defaultValue);
+
+            // Use a description from the description provider, if available. Otherwise, fall back to the DescriptionAttribute.
+            string? parameterDescription =
+                inferenceOptions.ParameterDescriptionProvider?.Invoke(parameter) ??
+                parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+
             JsonNode parameterSchema = CreateJsonSchemaCore(
                 type: parameter.ParameterType,
                 parameter: parameter,
-                description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                hasDefaultValue: parameter.HasDefaultValue,
-                defaultValue: GetDefaultValueNormalized(parameter),
+                nullabilityContext: nullabilityContext,
+                description: parameterDescription,
+                hasDefaultValue: hasDefaultValue,
+                defaultValue: defaultValue,
                 serializerOptions,
                 inferenceOptions);
 
             parameterSchemas.Add(parameter.Name, parameterSchema);
-            if (!parameter.IsOptional)
+            bool isRequired = !parameter.IsOptional && !hasDefaultValue;
+#if NET || NETFRAMEWORK
+            isRequired = isRequired || parameter.GetCustomAttribute<RequiredAttribute>(inherit: true) is not null;
+#endif
+            if (isRequired)
             {
                 (requiredProperties ??= []).Add((JsonNode)parameter.Name);
             }
@@ -178,7 +190,7 @@ public static partial class AIJsonUtilities
     {
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
-        JsonNode schema = CreateJsonSchemaCore(type, parameter: null, description, hasDefaultValue, defaultValue, serializerOptions, inferenceOptions);
+        JsonNode schema = CreateJsonSchemaCore(type, parameter: null, nullabilityContext: null, description, hasDefaultValue, defaultValue, serializerOptions, inferenceOptions);
 
         // Finally, apply any schema transformations if specified.
         if (inferenceOptions.TransformOptions is { } options)
@@ -190,25 +202,21 @@ public static partial class AIJsonUtilities
     }
 
     /// <summary>Gets the default JSON schema to be used by types or functions.</summary>
-    internal static JsonElement DefaultJsonSchema { get; } = ParseJsonElement("{}"u8);
+    internal static JsonElement DefaultJsonSchema { get; } = JsonElement.Parse("{}"u8);
 
     /// <summary>Validates the provided JSON schema document.</summary>
     internal static void ValidateSchemaDocument(JsonElement document, [CallerArgumentExpression("document")] string? paramName = null)
     {
-        if (document.ValueKind is not JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True)
+        if (document.ValueKind is not (JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True))
         {
             Throw.ArgumentException(paramName ?? "schema", "The schema document must be an object or a boolean value.");
         }
     }
 
-#if !NET9_0_OR_GREATER
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access",
-        Justification = "Pre STJ-9 schema extraction can fail with a runtime exception if certain reflection metadata have been trimmed. " +
-                        "The exception message will guide users to turn off 'IlcTrimMetadata' which resolves all issues.")]
-#endif
     private static JsonNode CreateJsonSchemaCore(
         Type? type,
         ParameterInfo? parameter,
+        NullabilityInfoContext? nullabilityContext,
         string? description,
         bool hasDefaultValue,
         object? defaultValue,
@@ -339,6 +347,21 @@ public static partial class AIJsonUtilities
                         objSchema.InsertAtStart(TypePropertyName, new JsonArray { (JsonNode)"string", (JsonNode)"null" });
                     }
                 }
+                else if (parameter is not null &&
+                    !ctx.TypeInfo.Type.IsValueType &&
+                    GetNullableWriteState(nullabilityContext, parameter) is NullabilityState.Nullable)
+                {
+                    // Handle nullable reference type parameters (e.g., object?).
+                    if (objSchema.TryGetPropertyValue(TypePropertyName, out JsonNode? typeKeyWord) &&
+                        typeKeyWord?.GetValueKind() is JsonValueKind.String)
+                    {
+                        string typeValue = typeKeyWord.GetValue<string>()!;
+                        if (typeValue is not "null")
+                        {
+                            objSchema[TypePropertyName] = new JsonArray { (JsonNode)typeValue, (JsonNode)"null" };
+                        }
+                    }
+                }
             }
 
             if (ctx.Path.IsEmpty && hasDefaultValue)
@@ -391,27 +414,32 @@ public static partial class AIJsonUtilities
 
             void ApplyDataAnnotations(ref JsonNode schema, AIJsonSchemaCreateContext ctx)
             {
+                // [DisplayName]
                 if (ResolveAttribute<DisplayNameAttribute>() is { } displayNameAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[TitlePropertyName] ??= displayNameAttribute.DisplayName;
                 }
 
 #if NET || NETFRAMEWORK
+                // [EmailAddress]
                 if (ResolveAttribute<EmailAddressAttribute>() is { } emailAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[FormatPropertyName] ??= "email";
                 }
 
+                // [Url]
                 if (ResolveAttribute<UrlAttribute>() is { } urlAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[FormatPropertyName] ??= "uri";
                 }
 
+                // [RegularExpression]
                 if (ResolveAttribute<RegularExpressionAttribute>() is { } regexAttribute)
                 {
                     ConvertSchemaToObject(ref schema)[PatternPropertyName] ??= regexAttribute.Pattern;
                 }
 
+                // [StringLength]
                 if (ResolveAttribute<StringLengthAttribute>() is { } stringLengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
@@ -424,10 +452,11 @@ public static partial class AIJsonUtilities
                     obj[MaxLengthStringPropertyName] ??= stringLengthAttribute.MaximumLength;
                 }
 
+                // [MinLength]
                 if (ResolveAttribute<MinLengthAttribute>() is { } minLengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
-                    if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
+                    if (TryGetSchemaType(obj, out string? schemaType, out _) && schemaType is "string")
                     {
                         obj[MinLengthStringPropertyName] ??= minLengthAttribute.Length;
                     }
@@ -437,10 +466,11 @@ public static partial class AIJsonUtilities
                     }
                 }
 
+                // [MaxLength]
                 if (ResolveAttribute<MaxLengthAttribute>() is { } maxLengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
-                    if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
+                    if (TryGetSchemaType(obj, out string? schemaType, out _) && schemaType is "string")
                     {
                         obj[MaxLengthStringPropertyName] ??= maxLengthAttribute.Length;
                     }
@@ -450,6 +480,7 @@ public static partial class AIJsonUtilities
                     }
                 }
 
+                // [Range]
                 if (ResolveAttribute<RangeAttribute>() is { } rangeAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
@@ -518,19 +549,55 @@ public static partial class AIJsonUtilities
                         }
                     }
                 }
-#endif
+
+                // [Required]
+                if (ctx.TypeInfo.Kind is JsonTypeInfoKind.Object &&
+                    schema is JsonObject requiredSchemaObj &&
+                    requiredSchemaObj.ContainsKey(PropertiesPropertyName))
+                {
+                    JsonArray? requiredArray = requiredSchemaObj.TryGetPropertyValue(RequiredPropertyName, out JsonNode? existing) ?
+                        existing as JsonArray :
+                        null;
+
+                    foreach (JsonPropertyInfo property in ctx.TypeInfo.Properties)
+                    {
+                        if (property.AttributeProvider?.GetCustomAttributes(typeof(RequiredAttribute), inherit: true) is { Length: > 0 } ||
+                            property.AssociatedParameter?.AttributeProvider?.GetCustomAttributes(typeof(RequiredAttribute), inherit: true) is { Length: > 0 })
+                        {
+                            requiredArray ??= (JsonArray)(requiredSchemaObj[RequiredPropertyName] = new JsonArray());
+                            string propertyName = property.Name;
+
+                            bool alreadyPresent = false;
+                            foreach (JsonNode? entry in requiredArray)
+                            {
+                                if (entry?.GetValue<string>() == propertyName)
+                                {
+                                    alreadyPresent = true;
+                                    break;
+                                }
+                            }
+
+                            if (!alreadyPresent)
+                            {
+                                requiredArray.Add((JsonNode)propertyName);
+                            }
+                        }
+                    }
+                }
 
 #if NET
+                // [Base64String]
                 if (ResolveAttribute<Base64StringAttribute>() is { } base64Attribute)
                 {
                     ConvertSchemaToObject(ref schema)[ContentEncodingPropertyName] ??= "base64";
                 }
 
+                // [Length]
                 if (ResolveAttribute<LengthAttribute>() is { } lengthAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
 
-                    if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
+                    if (TryGetSchemaType(obj, out string? schemaType, out _) && schemaType is "string")
                     {
                         if (lengthAttribute.MinimumLength > 0)
                         {
@@ -562,6 +629,7 @@ public static partial class AIJsonUtilities
                     }
                 }
 
+                // [DeniedValues]
                 if (ResolveAttribute<DeniedValuesAttribute>() is { } deniedValuesAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
@@ -583,20 +651,7 @@ public static partial class AIJsonUtilities
                     }
                 }
 
-                static JsonArray CreateJsonArray(object?[] values, JsonSerializerOptions serializerOptions)
-                {
-                    JsonArray enumArray = new();
-                    foreach (object? allowedValue in values)
-                    {
-                        if (allowedValue is not null && JsonSerializer.SerializeToNode(allowedValue, serializerOptions.GetTypeInfo(allowedValue.GetType())) is { } valueNode)
-                        {
-                            enumArray.Add(valueNode);
-                        }
-                    }
-
-                    return enumArray;
-                }
-
+                // [DataType]
                 if (ResolveAttribute<DataTypeAttribute>() is { } dataTypeAttribute)
                 {
                     JsonObject obj = ConvertSchemaToObject(ref schema);
@@ -628,7 +683,73 @@ public static partial class AIJsonUtilities
                             break;
                     }
                 }
+
+                static JsonArray CreateJsonArray(object?[] values, JsonSerializerOptions serializerOptions)
+                {
+                    JsonArray enumArray = new();
+                    foreach (object? allowedValue in values)
+                    {
+                        if (allowedValue is not null && JsonSerializer.SerializeToNode(allowedValue, serializerOptions.GetTypeInfo(allowedValue.GetType())) is { } valueNode)
+                        {
+                            enumArray.Add(valueNode);
+                        }
+                    }
+
+                    return enumArray;
+                }
 #endif
+
+                static bool TryGetSchemaType(JsonObject schema, [NotNullWhen(true)] out string? schemaType, out bool isNullable)
+                {
+                    schemaType = null;
+                    isNullable = false;
+
+                    if (!schema.TryGetPropertyValue(TypePropertyName, out JsonNode? typeNode))
+                    {
+                        return false;
+                    }
+
+                    switch (typeNode?.GetValueKind())
+                    {
+                        case JsonValueKind.String:
+                            schemaType = typeNode.GetValue<string>();
+                            return true;
+
+                        case JsonValueKind.Array:
+                            string? foundSchemaType = null;
+                            foreach (JsonNode? entry in (JsonArray)typeNode)
+                            {
+                                if (entry?.GetValueKind() is not JsonValueKind.String)
+                                {
+                                    return false;
+                                }
+
+                                string entryValue = entry.GetValue<string>();
+                                if (entryValue is "null")
+                                {
+                                    isNullable = true;
+                                    continue;
+                                }
+
+                                if (foundSchemaType is null)
+                                {
+                                    foundSchemaType = entryValue;
+                                }
+                                else if (foundSchemaType != entryValue)
+                                {
+                                    return false;
+                                }
+                            }
+
+                            schemaType = foundSchemaType;
+                            return schemaType is not null;
+
+                        default:
+                            return false;
+                    }
+                }
+#endif
+
                 TAttribute? ResolveAttribute<TAttribute>()
                     where TAttribute : Attribute
                 {
@@ -705,10 +826,30 @@ public static partial class AIJsonUtilities
 #endif
     }
 
-    private static JsonElement ParseJsonElement(ReadOnlySpan<byte> utf8Json)
+    /// <summary>
+    /// Tries to get the effective default value for a parameter, checking both C# default value syntax and DefaultValueAttribute.
+    /// </summary>
+    /// <param name="parameterInfo">The parameter to check.</param>
+    /// <param name="defaultValue">The default value if one exists.</param>
+    /// <returns><see langword="true"/> if the parameter has a default value; otherwise, <see langword="false"/>.</returns>
+    internal static bool TryGetEffectiveDefaultValue(ParameterInfo parameterInfo, out object? defaultValue)
     {
-        Utf8JsonReader reader = new(utf8Json);
-        return JsonElement.ParseValue(ref reader);
+        // First check for DefaultValueAttribute
+        if (parameterInfo.GetCustomAttribute<DefaultValueAttribute>(inherit: true) is { } attr)
+        {
+            defaultValue = attr.Value;
+            return true;
+        }
+
+        // Fall back to the parameter's declared default value
+        if (parameterInfo.HasDefaultValue)
+        {
+            defaultValue = GetDefaultValueNormalized(parameterInfo);
+            return true;
+        }
+
+        defaultValue = null;
+        return false;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.",
@@ -743,5 +884,24 @@ public static partial class AIJsonUtilities
         }
 
         return defaultValue;
+    }
+
+    private static NullabilityState? GetNullableWriteState(NullabilityInfoContext? nullabilityContext, ParameterInfo parameter)
+    {
+        if (nullabilityContext is not null)
+        {
+            try
+            {
+                return nullabilityContext.Create(parameter).WriteState;
+            }
+            catch (NullReferenceException)
+            {
+                // NullabilityInfoContext can throw for parameters that lack complete reflection metadata
+                // (e.g. DynamicMethod parameters). cf. https://github.com/dotnet/runtime/pull/124293
+                return NullabilityState.Unknown;
+            }
+        }
+
+        return null;
     }
 }

@@ -1,0 +1,408 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace Microsoft.Extensions.AI;
+
+public class FunctionCallContentTests
+{
+    [Fact]
+    public void Constructor_PropsDefault()
+    {
+        FunctionCallContent c = new("callId1", "name");
+
+        Assert.Null(c.RawRepresentation);
+        Assert.Null(c.AdditionalProperties);
+
+        Assert.Equal("callId1", c.CallId);
+        Assert.Equal("name", c.Name);
+
+        Assert.Null(c.Arguments);
+        Assert.Null(c.Exception);
+        Assert.False(c.InformationalOnly);
+    }
+
+    [Fact]
+    public void Constructor_ArgumentsRoundtrip()
+    {
+        Dictionary<string, object?> args = [];
+
+        FunctionCallContent c = new("id", "name", args);
+
+        Assert.Null(c.RawRepresentation);
+        Assert.Null(c.AdditionalProperties);
+
+        Assert.Equal("name", c.Name);
+        Assert.Equal("id", c.CallId);
+        Assert.Same(args, c.Arguments);
+    }
+
+    [Fact]
+    public void Constructor_PropsRoundtrip()
+    {
+        FunctionCallContent c = new("callId1", "name");
+
+        Assert.Null(c.RawRepresentation);
+        object raw = new();
+        c.RawRepresentation = raw;
+        Assert.Same(raw, c.RawRepresentation);
+
+        Assert.Null(c.AdditionalProperties);
+        AdditionalPropertiesDictionary props = new() { { "key", "value" } };
+        c.AdditionalProperties = props;
+        Assert.Same(props, c.AdditionalProperties);
+
+        Assert.Equal("callId1", c.CallId);
+
+        Assert.Null(c.Arguments);
+        AdditionalPropertiesDictionary args = new() { { "key", "value" } };
+        c.Arguments = args;
+        Assert.Same(args, c.Arguments);
+
+        Assert.Null(c.Exception);
+        Exception e = new();
+        c.Exception = e;
+        Assert.Same(e, c.Exception);
+
+        Assert.False(c.InformationalOnly);
+        c.InformationalOnly = true;
+        Assert.True(c.InformationalOnly);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InformationalOnly_Serialization(bool informationalOnly)
+    {
+        // Arrange
+        var sut = new FunctionCallContent("callId1", "functionName", new Dictionary<string, object?> { ["key"] = "value" })
+        {
+            InformationalOnly = informationalOnly
+        };
+
+        // Act
+        var json = JsonSerializer.SerializeToNode(sut, TestJsonSerializerContext.Default.Options);
+
+        // Assert - InformationalOnly should always be in the JSON (for roundtrip)
+        Assert.NotNull(json);
+        var jsonObj = json!.AsObject();
+        Assert.True(jsonObj.ContainsKey("informationalOnly") || jsonObj.ContainsKey("InformationalOnly"));
+
+        JsonNode? informationalOnlyValue = null;
+        if (jsonObj.TryGetPropertyValue("informationalOnly", out var value1))
+        {
+            informationalOnlyValue = value1;
+        }
+        else if (jsonObj.TryGetPropertyValue("InformationalOnly", out var value2))
+        {
+            informationalOnlyValue = value2;
+        }
+
+        Assert.NotNull(informationalOnlyValue);
+        Assert.Equal(informationalOnly, informationalOnlyValue!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InformationalOnly_Deserialization(bool informationalOnly)
+    {
+        // Test deserialization
+        var json = $$"""{"callId":"callId1","name":"functionName","informationalOnly":{{(informationalOnly ? "true" : "false")}}}""";
+        var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal("callId1", deserialized.CallId);
+        Assert.Equal("functionName", deserialized.Name);
+        Assert.Equal(informationalOnly, deserialized.InformationalOnly);
+    }
+
+    [Fact]
+    public void InformationalOnly_DeserializedToFalseWhenMissing()
+    {
+        // Test deserialization when InformationalOnly is not in JSON (should default to false from field initializer)
+        var json = """{"callId":"callId1","name":"functionName"}""";
+        var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal("callId1", deserialized.CallId);
+        Assert.Equal("functionName", deserialized.Name);
+        Assert.False(deserialized.InformationalOnly);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InformationalOnly_Roundtrip(bool informationalOnly)
+    {
+        // Test that InformationalOnly roundtrips correctly through JSON serialization
+        var original = new FunctionCallContent("callId1", "functionName") { InformationalOnly = informationalOnly };
+        var json = JsonSerializer.SerializeToNode(original, TestJsonSerializerContext.Default.Options);
+        var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal(original.CallId, deserialized.CallId);
+        Assert.Equal(original.Name, deserialized.Name);
+        Assert.Equal(original.InformationalOnly, deserialized.InformationalOnly);
+        Assert.Equal(informationalOnly, deserialized.InformationalOnly);
+    }
+
+    [Fact]
+    public void ItShouldBeSerializableAndDeserializableWithException()
+    {
+        // Arrange
+        var ex = new InvalidOperationException("hello", new NullReferenceException("bye"));
+        var sut = new FunctionCallContent("callId1", "functionName", new Dictionary<string, object?> { ["key"] = "value" }) { Exception = ex };
+
+        // Act
+        var json = JsonSerializer.SerializeToNode(sut, TestJsonSerializerContext.Default.Options);
+        var deserializedSut = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
+
+        // Assert
+        Assert.NotNull(deserializedSut);
+        Assert.Equal("callId1", deserializedSut.CallId);
+        Assert.Equal("functionName", deserializedSut.Name);
+        Assert.NotNull(deserializedSut.Arguments);
+        Assert.Single(deserializedSut.Arguments);
+        Assert.Null(deserializedSut.Exception);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_ObjectValues_Converted()
+    {
+        AIFunctionArguments arguments = new()
+        {
+            ["a"] = new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday },
+            ["b"] = 123.4M,
+            ["c"] = "072c2d93-7cf6-4d0d-aebc-acc51e6ee7ee",
+            ["d"] = new ReadOnlyDictionary<string, string>((new Dictionary<string, string>
+            {
+                ["p1"] = "42",
+                ["p2"] = "43",
+            })),
+        };
+
+        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, serializerOptions: TestJsonSerializerContext.Default.Options);
+        var result = await function.InvokeAsync(arguments);
+        AssertExtensions.EqualFunctionCallResults(123.4, result);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_JsonElementValues_ValuesDeserialized()
+    {
+        AIFunctionArguments arguments = JsonSerializer.Deserialize<AIFunctionArguments>("""
+            {
+              "a": ["Monday", "Tuesday", "Wednesday"],
+              "b": 123.4,
+              "c": "072c2d93-7cf6-4d0d-aebc-acc51e6ee7ee",
+              "d": {
+                       "property1": "42",
+                       "property2": "43",
+                       "property3": "44"
+                   }
+            }
+            """, TestJsonSerializerContext.Default.Options)!;
+        Assert.All(arguments.Values, v => Assert.IsType<JsonElement>(v));
+
+        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, serializerOptions: TestJsonSerializerContext.Default.Options);
+        var result = await function.InvokeAsync(arguments);
+        AssertExtensions.EqualFunctionCallResults(123.4, result);
+    }
+
+    [Fact]
+    public void AIFunctionFactory_WhenTypesUnknownByContext_Throws()
+    {
+        var ex = Assert.Throws<NotSupportedException>(() => AIFunctionFactory.Create((CustomType arg) => { }, serializerOptions: TestJsonSerializerContext.Default.Options));
+        Assert.Contains("JsonTypeInfo metadata", ex.Message);
+        Assert.Contains(nameof(CustomType), ex.Message);
+
+        ex = Assert.Throws<NotSupportedException>(() => AIFunctionFactory.Create(() => new CustomType(), serializerOptions: TestJsonSerializerContext.Default.Options));
+        Assert.Contains("JsonTypeInfo metadata", ex.Message);
+        Assert.Contains(nameof(CustomType), ex.Message);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_JsonDocumentValues_ValuesDeserialized()
+    {
+        var arguments = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>("""
+            {
+              "a": ["Monday", "Tuesday", "Wednesday"],
+              "b": 123.4,
+              "c": "072c2d93-7cf6-4d0d-aebc-acc51e6ee7ee",
+              "d": {
+                       "property1": "42",
+                       "property2": "43",
+                       "property3": "44"
+                   }
+            }
+            """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value);
+
+        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, serializerOptions: TestJsonSerializerContext.Default.Options);
+        var result = await function.InvokeAsync(new(arguments));
+        AssertExtensions.EqualFunctionCallResults(123.4, result);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_JsonNodeValues_ValuesDeserialized()
+    {
+        var arguments = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>("""
+            {
+              "a": ["Monday", "Tuesday", "Wednesday"],
+              "b": 123.4,
+              "c": "072c2d93-7cf6-4d0d-aebc-acc51e6ee7ee",
+              "d": {
+                       "property1": "42",
+                       "property2": "43",
+                       "property3": "44"
+                   }
+            }
+            """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value);
+
+        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, serializerOptions: TestJsonSerializerContext.Default.Options);
+        var result = await function.InvokeAsync(new(arguments));
+        AssertExtensions.EqualFunctionCallResults(123.4, result);
+    }
+
+    [Fact]
+    public async Task TypelessAIFunction_JsonDocumentValues_AcceptsArguments()
+    {
+        AIFunctionArguments arguments = new(JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>("""
+            {
+              "a": "string",
+              "b": 123.4,
+              "c": true,
+              "d": false,
+              "e": ["Monday", "Tuesday", "Wednesday"],
+              "f": null
+            }
+            """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value));
+
+        var result = await NetTypelessAIFunction.Instance.InvokeAsync(arguments);
+        Assert.Same(result, arguments);
+    }
+
+    [Fact]
+    public async Task TypelessAIFunction_JsonElementValues_AcceptsArguments()
+    {
+        AIFunctionArguments arguments = new(JsonSerializer.Deserialize<Dictionary<string, object?>>("""
+            {
+              "a": "string",
+              "b": 123.4,
+              "c": true,
+              "d": false,
+              "e": ["Monday", "Tuesday", "Wednesday"],
+              "f": null
+            }
+            """, TestJsonSerializerContext.Default.Options)!);
+
+        var result = await NetTypelessAIFunction.Instance.InvokeAsync(arguments);
+        Assert.Same(result, arguments);
+    }
+
+    [Fact]
+    public async Task TypelessAIFunction_JsonNodeValues_AcceptsArguments()
+    {
+        AIFunctionArguments arguments = new(JsonSerializer.Deserialize<Dictionary<string, JsonNode>>("""
+            {
+              "a": "string",
+              "b": 123.4,
+              "c": true,
+              "d": false,
+              "e": ["Monday", "Tuesday", "Wednesday"],
+              "f": null
+            }
+            """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value));
+
+        var result = await NetTypelessAIFunction.Instance.InvokeAsync(arguments);
+        Assert.Same(result, arguments);
+    }
+
+    private sealed class CustomType;
+
+    private sealed class NetTypelessAIFunction : AIFunction
+    {
+        public static NetTypelessAIFunction Instance { get; } = new NetTypelessAIFunction();
+
+        public override string Name => "NetTypeless";
+        public override string Description => "AIFunction with parameters that lack .NET types";
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
+            new(arguments);
+    }
+
+    [Fact]
+    public static void CreateFromParsedArguments_ObjectJsonInput_ReturnsElementArgumentDictionary()
+    {
+        var content = FunctionCallContent.CreateFromParsedArguments(
+            """{"Key1":{}, "Key2":null, "Key3" : [], "Key4" : 42, "Key5" : true }""",
+            "callId",
+            "functionName",
+            argumentParser: static json => JsonSerializer.Deserialize<Dictionary<string, object?>>(json, AIJsonUtilities.DefaultOptions));
+
+        Assert.NotNull(content);
+        Assert.Null(content.Exception);
+        Assert.NotNull(content.Arguments);
+        Assert.Equal(5, content.Arguments.Count);
+        Assert.Collection(content.Arguments,
+            kvp =>
+            {
+                Assert.Equal("Key1", kvp.Key);
+                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.Object });
+            },
+            kvp =>
+            {
+                Assert.Equal("Key2", kvp.Key);
+                Assert.Null(kvp.Value);
+            },
+            kvp =>
+            {
+                Assert.Equal("Key3", kvp.Key);
+                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.Array });
+            },
+            kvp =>
+            {
+                Assert.Equal("Key4", kvp.Key);
+                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.Number });
+            },
+            kvp =>
+            {
+                Assert.Equal("Key5", kvp.Key);
+                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.True });
+            });
+    }
+
+    [Theory]
+    [InlineData(typeof(JsonException))]
+    [InlineData(typeof(InvalidOperationException))]
+    [InlineData(typeof(NotSupportedException))]
+    public static void CreateFromParsedArguments_ParseException_HasExpectedHandling(Type exceptionType)
+    {
+        var exc = (Exception)Activator.CreateInstance(exceptionType)!;
+        var content = FunctionCallContent.CreateFromParsedArguments(exc, "callId", "functionName", ThrowingParser);
+
+        Assert.Equal("functionName", content.Name);
+        Assert.Equal("callId", content.CallId);
+        Assert.Null(content.Arguments);
+        Assert.IsType<InvalidOperationException>(content.Exception);
+        Assert.Same(exc, content.Exception.InnerException);
+
+        static Dictionary<string, object?> ThrowingParser(Exception ex) => throw ex;
+    }
+
+    [Fact]
+    public static void CreateFromParsedArguments_NullInput_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>("encodedArguments", () => FunctionCallContent.CreateFromParsedArguments((string)null!, "callId", "functionName", _ => null));
+        Assert.Throws<ArgumentNullException>("callId", () => FunctionCallContent.CreateFromParsedArguments("{}", null!, "functionName", _ => null));
+        Assert.Throws<ArgumentNullException>("name", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", null!, _ => null));
+        Assert.Throws<ArgumentNullException>("argumentParser", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", "functionName", null!));
+    }
+}

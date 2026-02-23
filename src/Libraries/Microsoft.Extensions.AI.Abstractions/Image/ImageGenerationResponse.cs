@@ -4,18 +4,14 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-
-#pragma warning disable EA0011 // Consider removing unnecessary conditional access operators
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an image generation request.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public class ImageGenerationResponse
 {
-    /// <summary>The content items in the generated text response.</summary>
-    private IList<AIContent>? _contents;
-
     /// <summary>Initializes a new instance of the <see cref="ImageGenerationResponse"/> class.</summary>
     [JsonConstructor]
     public ImageGenerationResponse()
@@ -26,7 +22,7 @@ public class ImageGenerationResponse
     /// <param name="contents">The contents for this response.</param>
     public ImageGenerationResponse(IList<AIContent>? contents)
     {
-        _contents = contents;
+        Contents = contents;
     }
 
     /// <summary>Gets or sets the raw representation of the image generation response from an underlying implementation.</summary>
@@ -39,14 +35,19 @@ public class ImageGenerationResponse
     public object? RawRepresentation { get; set; }
 
     /// <summary>
-    /// Gets or sets the generated content items.  Content will typically be DataContent for
-    /// images streamed from the generator or UriContent for remotely hosted images, but may also
-    /// be provider specific content types that represent the generated images.
+    /// Gets or sets the generated content items.
     /// </summary>
+    /// <remarks>
+    /// Content is typically <see cref="DataContent"/> for images streamed from the generator, or <see cref="UriContent"/> for remotely hosted images, but
+    /// can also be provider-specific content types that represent the generated images.
+    /// </remarks>
     [AllowNull]
     public IList<AIContent> Contents
     {
-        get => _contents ??= [];
-        set => _contents = value;
+        get => field ??= [];
+        set;
     }
+
+    /// <summary>Gets or sets usage details for the image generation response.</summary>
+    public UsageDetails? Usage { get; set; }
 }

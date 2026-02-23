@@ -7,7 +7,6 @@ trigger:
   branches:
     include:
       - main
-      - dev
       - release/*
       - internal/release/*
       - validation/*
@@ -30,7 +29,6 @@ pr:
   branches:
     include:
       - main
-      - dev
       - release/*
       - internal/release/*
   paths:
@@ -48,9 +46,15 @@ pr:
       - PATENTS.TXT
       - THIRD-PARTY-NOTICES.TXT
 
+parameters:
+  - name: runTests
+    displayName: Run Tests
+    type: boolean
+    default: false
+
 variables:
   - name: _TeamName
-    value: dotnet-r9
+    value: dotnet-extensions
   - name: NativeToolsOnMachine
     value: true
   - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
@@ -74,6 +78,13 @@ variables:
     value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
   - name: Build.Arcade.VSIXOutputPath
     value: $(Build.Arcade.ArtifactsPath)VSIX
+
+  # Enable extraction of published outputs for analysis
+  - name: GDN_EXTRACT_TOOLS
+    value: 'binskim,bandit,roslynanalyzers'
+
+  - name: GDN_EXTRACT_FILTER
+    value: 'f|**/*.zip;f|**/*.nupkg;f|**/*.vsix;f|**/*.cspkg;f|**/*.sfpkg;f|**/*.package'
 
   - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/validation/'), eq(variables['Build.Reason'], 'Manual')) }}:
     - name: PostBuildSign
@@ -117,6 +128,8 @@ variables:
   - ${{ if and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
     - name: enableSourceIndex
       value: true
+    - name: sourceIndexBuildCommand
+      value: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
   - ${{ else }}:
     - name: enableSourceIndex
       value: false
@@ -131,6 +144,10 @@ resources:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    settings:
+      networkIsolationPolicy: Permissive,CFSClean2
+    featureFlags:
+      binskimScanAllExtensions: true
     sdl:
       policheck:
         enabled: true
@@ -152,18 +169,19 @@ extends:
       jobs:
       - template: /eng/common/templates-official/jobs/jobs.yml@self
         parameters:
+          artifacts:
+            publish:
+              logs: true
+              manifests: true
           enableMicrobuild: true
           enableTelemetry: true
           enableSourceIndex: ${{ variables['enableSourceIndex'] }}
           runAsPublic: ${{ variables['runAsPublic'] }}
-          # Publish build logs
-          enablePublishBuildArtifacts: true
           # Publish test logs
           enablePublishTestResults: true
           # Publish NuGet packages using v3
           # https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Publishing.md#basic-onboarding-scenario-for-new-repositories-to-the-current-publishing-version-v3
           enablePublishUsingPipelines: true
-          enablePublishBuildAssets: true
           workspace:
             clean: all
 
@@ -187,9 +205,16 @@ extends:
               outputs:
               - output: pipelineArtifact
                 displayName: 'Publish Azure DevOps extension artifacts'
-                condition: succeeded()
                 targetPath: '$(Build.Arcade.VSIXOutputPath)'
                 artifactName: 'VSIXArtifacts'
+                condition: always()
+                continueOnError: true
+              - output: pipelineArtifact
+                displayName: 'Publish Packages'
+                targetPath: '$(Build.Arcade.ArtifactsPath)packages'
+                artifactName: 'PackageArtifacts_Windows'
+                condition: always()
+                continueOnError: true
 
             preSteps:
             - checkout: self
@@ -204,9 +229,9 @@ extends:
                 buildConfig: $(_BuildConfig)
                 repoLogPath: $(Build.Arcade.LogsPath)
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                skipTests: ${{ not(parameters.runTests) }}
                 skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
                 isWindows: true
-                warnAsError: 0
 
           # ----------------------------------------------------------------
           # This job build and run tests on Ubuntu
@@ -235,9 +260,9 @@ extends:
                 buildConfig: $(_BuildConfig)
                 repoLogPath: $(Build.Arcade.LogsPath)
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                skipTests: ${{ not(parameters.runTests) }}
                 skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
                 isWindows: false
-                warnAsError: 0
 
     # ----------------------------------------------------------------
     # This stage performs quality gates enforcements
@@ -246,7 +271,7 @@ extends:
       displayName: CodeCoverage
       dependsOn:
       - build
-      condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'))
+      condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'), ${{ eq(parameters.runTests, true) }})
       variables:
       - template: /eng/common/templates-official/variables/pool-providers.yml@self
       jobs:
@@ -339,7 +364,8 @@ extends:
         parameters:
           validateDependsOn:
           - build
-          - codecoverage
+          - ${{ if eq(parameters.runTests, true) }}:
+            - codecoverage
           - correctness
           publishingInfraVersion: 3
           enableSymbolValidation: false

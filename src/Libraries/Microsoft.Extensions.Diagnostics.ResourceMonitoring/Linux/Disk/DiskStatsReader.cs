@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Pools;
 
@@ -42,15 +40,12 @@ internal sealed class DiskStatsReader(IFileSystem fileSystem) : IDiskStatsReader
             try
             {
                 DiskStats stat = DiskStatsReader.ParseLine(line);
-                if (!skipDevicePrefixes.Any(prefix =>
-                    stat.DeviceName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                if (!Array.Exists(skipDevicePrefixes, prefix => stat.DeviceName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                 {
                     diskStatsList.Add(stat);
                 }
             }
-#pragma warning disable CA1031
             catch (Exception)
-#pragma warning restore CA1031
             {
                 // ignore parsing errors
             }
@@ -64,7 +59,6 @@ internal sealed class DiskStatsReader(IFileSystem fileSystem) : IDiskStatsReader
     /// </summary>
     /// <param name="line">one line in "/proc/diskstats".</param>
     /// <returns>parsed DiskStats object.</returns>
-    [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "These numbers represent fixed field indices in the Linux /proc/diskstats format")]
     private static DiskStats ParseLine(string line)
     {
         // Split by any whitespace and remove empty entries

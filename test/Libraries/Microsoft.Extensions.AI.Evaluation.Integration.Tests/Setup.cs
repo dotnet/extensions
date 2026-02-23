@@ -3,8 +3,9 @@
 
 using System;
 using System.ClientModel;
-using Azure.AI.OpenAI;
+using System.ClientModel.Primitives;
 using Azure.Identity;
+using OpenAI;
 
 namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
 
@@ -15,22 +16,29 @@ internal static class Setup
 
     internal static ChatConfiguration CreateChatConfiguration()
     {
-        AzureOpenAIClient azureOpenAIClient = GetAzureOpenAIClient();
-        IChatClient chatClient = azureOpenAIClient.GetChatClient(Settings.Current.DeploymentName).AsIChatClient();
+        OpenAI.Chat.ChatClient openAIClient = GetOpenAIClient();
+        IChatClient chatClient = openAIClient.AsIChatClient();
         return new ChatConfiguration(chatClient);
     }
 
-    private static AzureOpenAIClient GetAzureOpenAIClient()
+    private static OpenAI.Chat.ChatClient GetOpenAIClient()
     {
-        var endpoint = new Uri(Settings.Current.Endpoint);
-        AzureOpenAIClientOptions options = new();
-        var credential = new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential());
+        // Use Azure endpoint with /openai/v1 suffix
+        var options = new OpenAIClientOptions
+        {
+            Endpoint = new Uri(new Uri(Settings.Current.Endpoint), "/openai/v1")
+        };
 
-        AzureOpenAIClient azureOpenAIClient =
-            OfflineOnly
-                ? new AzureOpenAIClient(endpoint, new ApiKeyCredential("Bogus"), options)
-                : new AzureOpenAIClient(endpoint, credential, options);
+        OpenAIClient client = OfflineOnly ?
+            new OpenAIClient(new ApiKeyCredential("Bogus"), options) :
+#pragma warning disable OPENAI001 // Constructor with BearerTokenPolicy is experimental
+            new OpenAIClient(
+                new BearerTokenPolicy(
+                    new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential()),
+                    "https://ai.azure.com/.default"),
+                options);
+#pragma warning restore OPENAI001
 
-        return azureOpenAIClient;
+        return client.GetChatClient(Settings.Current.DeploymentName);
     }
 }

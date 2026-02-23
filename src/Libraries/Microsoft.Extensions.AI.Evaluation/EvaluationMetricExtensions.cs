@@ -3,9 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using Microsoft.Extensions.AI.Evaluation.Utilities;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.Text;
 
 namespace Microsoft.Extensions.AI.Evaluation;
 
@@ -85,7 +86,7 @@ public static class EvaluationMetricExtensions
 
         if (diagnostics.Any())
         {
-            metric.Diagnostics ??= new List<EvaluationDiagnostic>();
+            metric.Diagnostics ??= [];
 
             foreach (EvaluationDiagnostic diagnostic in diagnostics)
             {
@@ -143,7 +144,8 @@ public static class EvaluationMetricExtensions
     /// <param name="response">The <see cref="ChatResponse"/> that contains metadata to be added or updated.</param>
     /// <param name="duration">
     /// An optional duration that represents the amount of time that it took for the AI model to produce the supplied
-    /// <paramref name="response"/>. If supplied, the duration will also be included as part of the added metadata.
+    /// <paramref name="response"/>. If supplied, the duration (in milliseconds) will also be included as part of the
+    /// added metadata.
     /// </param>
     public static void AddOrUpdateChatMetadata(
         this EvaluationMetric metric,
@@ -154,31 +156,52 @@ public static class EvaluationMetricExtensions
 
         if (!string.IsNullOrWhiteSpace(response.ModelId))
         {
-            metric.AddOrUpdateMetadata(name: "evaluation-model-used", value: response.ModelId!);
+            metric.AddOrUpdateMetadata(name: BuiltInMetricUtilities.EvalModelMetadataName, value: response.ModelId!);
         }
 
         if (response.Usage is UsageDetails usage)
         {
             if (usage.InputTokenCount is not null)
             {
-                metric.AddOrUpdateMetadata(name: "evaluation-input-tokens-used", value: $"{usage.InputTokenCount}");
+                metric.AddOrUpdateMetadata(
+                    name: BuiltInMetricUtilities.EvalInputTokensMetadataName,
+                    value: usage.InputTokenCount.Value.ToInvariantString());
             }
 
             if (usage.OutputTokenCount is not null)
             {
-                metric.AddOrUpdateMetadata(name: "evaluation-output-tokens-used", value: $"{usage.OutputTokenCount}");
+                metric.AddOrUpdateMetadata(
+                    name: BuiltInMetricUtilities.EvalOutputTokensMetadataName,
+                    value: usage.OutputTokenCount.Value.ToInvariantString());
             }
 
             if (usage.TotalTokenCount is not null)
             {
-                metric.AddOrUpdateMetadata(name: "evaluation-total-tokens-used", value: $"{usage.TotalTokenCount}");
+                metric.AddOrUpdateMetadata(
+                    name: BuiltInMetricUtilities.EvalTotalTokensMetadataName,
+                    value: usage.TotalTokenCount.Value.ToInvariantString());
             }
         }
 
         if (duration is not null)
         {
-            string durationText = $"{duration.Value.TotalSeconds.ToString("F4", CultureInfo.InvariantCulture)} s";
-            metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
+            metric.AddOrUpdateDurationMetadata(duration.Value);
         }
+    }
+
+    /// <summary>
+    /// Adds or updates metadata identifying the amount of time (in milliseconds) that it took to perform the
+    /// evaluation in the supplied <paramref name="metric"/>'s <see cref="EvaluationMetric.Metadata"/> dictionary.
+    /// </summary>
+    /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
+    /// <param name="duration">
+    /// The amount of time that it took to perform the evaluation that produced the supplied <paramref name="metric"/>.
+    /// </param>
+    public static void AddOrUpdateDurationMetadata(this EvaluationMetric metric, TimeSpan duration)
+    {
+        string durationInMilliseconds = duration.ToMillisecondsText();
+        metric.AddOrUpdateMetadata(
+            name: BuiltInMetricUtilities.EvalDurationMillisecondsMetadataName,
+            value: durationInMilliseconds);
     }
 }

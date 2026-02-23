@@ -50,7 +50,8 @@ public sealed class LinuxUtilizationProviderTests
         });
 
         var parser = new LinuxUtilizationParserCgroupV1(fileSystem: fileSystem, new FakeUserHz(100));
-        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, logger, TimeProvider.System);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
+        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, logger, TimeProvider.System);
 
         using var listener = new MeterListener
         {
@@ -83,13 +84,16 @@ public sealed class LinuxUtilizationProviderTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(6, samples.Count);
+        Assert.Equal(7, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization);
+        Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization).value);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
@@ -118,6 +122,7 @@ public sealed class LinuxUtilizationProviderTests
 
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
+            { new FileInfo("/proc/self/cgroup"), "0::/" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "9223372036854771712" },
             { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
             { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
@@ -130,7 +135,8 @@ public sealed class LinuxUtilizationProviderTests
         });
 
         var parser = new LinuxUtilizationParserCgroupV2(fileSystem: fileSystem, new FakeUserHz(100));
-        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, logger, TimeProvider.System);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
+        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, logger, TimeProvider.System);
 
         using var listener = new MeterListener
         {
@@ -155,7 +161,7 @@ public sealed class LinuxUtilizationProviderTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(5, samples.Count);
+        Assert.Equal(6, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
@@ -166,6 +172,9 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
 
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization);
+        Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization).value);
+
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization).value));
 
@@ -173,7 +182,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
     }
 
-    [Fact]
+    [ConditionalFact]
     public Task Provider_EmitsLogRecord()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -186,6 +195,7 @@ public sealed class LinuxUtilizationProviderTests
 
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
+            { new FileInfo("/proc/self/cgroup"), "0::/" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "9223372036854771712" },
             { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
             { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
@@ -198,8 +208,8 @@ public sealed class LinuxUtilizationProviderTests
         });
 
         var parser = new LinuxUtilizationParserCgroupV2(fileSystem: fileSystem, new FakeUserHz(100));
-
-        var snapshotProvider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, logger, TimeProvider.System);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
+        var snapshotProvider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, logger, TimeProvider.System);
         var logRecords = logger.Collector.GetSnapshot();
 
         return Verifier.Verify(logRecords).UseDirectory(VerifiedDataDirectory);
@@ -212,7 +222,8 @@ public sealed class LinuxUtilizationProviderTests
         using var meterFactory = new TestMeterFactory();
 
         var parser = new DummyLinuxUtilizationParser();
-        _ = new LinuxUtilizationProvider(options, parser, meterFactory);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
+        _ = new LinuxUtilizationProvider(options, parser, meterFactory, resourceQuotaProvider);
 
         var meter = meterFactory.Meters.Single();
         Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
@@ -245,7 +256,8 @@ public sealed class LinuxUtilizationProviderTests
         });
 
         var parser = new LinuxUtilizationParserCgroupV2(fileSystem: fileSystem, new FakeUserHz(100));
-        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, logger, TimeProvider.System);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
+        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, logger, TimeProvider.System);
 
         using var listener = new MeterListener
         {
@@ -270,7 +282,7 @@ public sealed class LinuxUtilizationProviderTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(6, samples.Count);
+        Assert.Equal(7, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
@@ -283,6 +295,9 @@ public sealed class LinuxUtilizationProviderTests
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization);
+        Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryRequestUtilization).value);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
@@ -316,7 +331,8 @@ public sealed class LinuxUtilizationProviderTests
         parserMock.Setup(p => p.GetCgroupLimitedCpus()).Returns(12f);
 
         var fakeTime = new FakeTimeProvider(DateTimeOffset.UtcNow);
-        var provider = new LinuxUtilizationProvider(options, parserMock.Object, meterFactoryMock.Object, logger, fakeTime);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parserMock.Object, options);
+        var provider = new LinuxUtilizationProvider(options, parserMock.Object, meterFactoryMock.Object, resourceQuotaProvider, logger, fakeTime);
 
         using var listener = new MeterListener
         {
@@ -369,8 +385,9 @@ public sealed class LinuxUtilizationProviderTests
         var parserMock = new Mock<ILinuxUtilizationParser>();
         parserMock.Setup(p => p.GetMemoryUsageInBytes()).Returns(() =>
         {
+            // 4 represents number of calls of GetMemoryUsageInBytes() in LinuxUtilizationProvider in one interval
             callCount++;
-            if (callCount <= 3)
+            if (callCount <= 4)
             {
                 throw new InvalidOperationException("Simulated unhandled exception");
             }
@@ -382,7 +399,8 @@ public sealed class LinuxUtilizationProviderTests
         parserMock.Setup(p => p.GetCgroupLimitedCpus()).Returns(12f);
 
         var fakeTime = new FakeTimeProvider(DateTimeOffset.UtcNow);
-        var provider = new LinuxUtilizationProvider(options, parserMock.Object, meterFactoryMock.Object, logger, fakeTime);
+        var resourceQuotaProvider = new LinuxResourceQuotaProvider(parserMock.Object, options);
+        var provider = new LinuxUtilizationProvider(options, parserMock.Object, meterFactoryMock.Object, resourceQuotaProvider, logger, fakeTime);
 
         using var listener = new MeterListener
         {
@@ -408,12 +426,13 @@ public sealed class LinuxUtilizationProviderTests
 
         Assert.Throws<AggregateException>(() => listener.RecordObservableInstruments());
         Assert.DoesNotContain(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
+        parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(4));
 
         fakeTime.Advance(TimeSpan.FromMinutes(1));
         listener.RecordObservableInstruments();
         var metric = samples.SingleOrDefault(x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
         Assert.Equal(1234f / 2000f, metric.value, 0.01f);
 
-        parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(4));
+        parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(5));
     }
 }

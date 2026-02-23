@@ -4,8 +4,6 @@
 using System;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable SA1629 // Documentation text should end with a period
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="ConfigureOptionsEmbeddingGenerator{TInput, TEmbedding}"/> instances.</summary>

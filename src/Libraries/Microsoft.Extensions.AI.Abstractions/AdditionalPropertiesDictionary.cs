@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable S1144 // Unused private types or members should be removed
-#pragma warning disable S2365 // Properties should not make collection or array copies
-#pragma warning disable S3604 // Member initializer values should not be redundant
-
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.AI;

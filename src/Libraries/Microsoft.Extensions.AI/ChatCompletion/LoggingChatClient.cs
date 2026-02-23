@@ -169,7 +169,7 @@ public partial class LoggingChatClient : DelegatingChatClient
         }
     }
 
-    private string AsJson<T>(T value) => LoggingHelpers.AsJson(value, _jsonSerializerOptions);
+    private string AsJson<T>(T value) => TelemetryHelpers.AsJson(value, _jsonSerializerOptions);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
     private partial void LogInvoked(string methodName);

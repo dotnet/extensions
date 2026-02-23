@@ -4,12 +4,13 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>Provides extension methods for registering <see cref="ISpeechToTextClient"/> with a <see cref="IServiceCollection"/>.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class SpeechToTextClientBuilderServiceCollectionExtensions
 {
     /// <summary>Registers a singleton <see cref="ISpeechToTextClient"/> in the <see cref="IServiceCollection"/>.</summary>
@@ -52,7 +53,7 @@ public static class SpeechToTextClientBuilderServiceCollectionExtensions
     /// <remarks>The client is registered as a scoped service.</remarks>
     public static SpeechToTextClientBuilder AddKeyedSpeechToTextClient(
         this IServiceCollection serviceCollection,
-        object serviceKey,
+        object? serviceKey,
         ISpeechToTextClient innerClient,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         => AddKeyedSpeechToTextClient(serviceCollection, serviceKey, _ => innerClient, lifetime);
@@ -66,12 +67,11 @@ public static class SpeechToTextClientBuilderServiceCollectionExtensions
     /// <remarks>The client is registered as a scoped service.</remarks>
     public static SpeechToTextClientBuilder AddKeyedSpeechToTextClient(
         this IServiceCollection serviceCollection,
-        object serviceKey,
+        object? serviceKey,
         Func<IServiceProvider, ISpeechToTextClient> innerClientFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         _ = Throw.IfNull(serviceCollection);
-        _ = Throw.IfNull(serviceKey);
         _ = Throw.IfNull(innerClientFactory);
 
         var builder = new SpeechToTextClientBuilder(innerClientFactory);

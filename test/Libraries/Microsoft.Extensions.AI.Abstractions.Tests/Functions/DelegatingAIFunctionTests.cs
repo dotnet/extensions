@@ -20,7 +20,7 @@ public class DelegatingAIFunctionTests
     [Fact]
     public void DefaultOverrides_DelegateToInnerFunction()
     {
-        AIFunction expected = AIFunctionFactory.Create(() => 42);
+        AIFunction expected = new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => 42));
         DerivedFunction actual = new(expected);
 
         Assert.Same(expected, actual.InnerFunction);
@@ -32,6 +32,7 @@ public class DelegatingAIFunctionTests
         Assert.Same(expected.UnderlyingMethod, actual.UnderlyingMethod);
         Assert.Same(expected.AdditionalProperties, actual.AdditionalProperties);
         Assert.Equal(expected.ToString(), actual.ToString());
+        Assert.Same(expected, actual.GetService<ApprovalRequiredAIFunction>());
     }
 
     private sealed class DerivedFunction(AIFunction innerFunction) : DelegatingAIFunction(innerFunction)
@@ -78,7 +79,7 @@ public class DelegatingAIFunctionTests
         Assert.Same(inner.AdditionalProperties, actual.AdditionalProperties);
         Assert.Equal(inner.ToString(), actual.ToString());
 
-        object? result = await actual.InvokeAsync(new(), CancellationToken.None);
+        object? result = await actual.InvokeAsync([], CancellationToken.None);
         Assert.Contains("84", result?.ToString());
 
         Assert.False(innerInvoked);

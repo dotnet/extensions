@@ -2,16 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using OpenAI.Assistants;
 using OpenAI.Chat;
 using OpenAI.Realtime;
 using OpenAI.Responses;
 using Xunit;
+
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
 
 namespace Microsoft.Extensions.AI;
 
@@ -21,6 +25,75 @@ public class OpenAIConversionTests
         ([Description("The name parameter")] string name) => name,
         "test_function",
         "A test function for conversion");
+
+    [Fact]
+    public void AsOpenAIChatResponseFormat_HandlesVariousFormats()
+    {
+        Assert.Null(MicrosoftExtensionsAIChatExtensions.AsOpenAIChatResponseFormat(null));
+
+        var text = MicrosoftExtensionsAIChatExtensions.AsOpenAIChatResponseFormat(ChatResponseFormat.Text);
+        Assert.NotNull(text);
+        Assert.Equal("""{"type":"text"}""", ((IJsonModel<OpenAI.Chat.ChatResponseFormat>)text).Write(ModelReaderWriterOptions.Json).ToString());
+
+        var json = MicrosoftExtensionsAIChatExtensions.AsOpenAIChatResponseFormat(ChatResponseFormat.Json);
+        Assert.NotNull(json);
+        Assert.Equal("""{"type":"json_object"}""", ((IJsonModel<OpenAI.Chat.ChatResponseFormat>)json).Write(ModelReaderWriterOptions.Json).ToString());
+
+        var jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIChatResponseFormat();
+        Assert.NotNull(jsonSchema);
+        Assert.Equal(RemoveWhitespace("""
+            {"type":"json_schema","json_schema":{"description":"A test schema","name":"my_schema","schema":{
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "integer"
+            }}}
+            """), RemoveWhitespace(((IJsonModel<OpenAI.Chat.ChatResponseFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
+
+        jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIChatResponseFormat(
+            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strict"] = true } });
+        Assert.NotNull(jsonSchema);
+        Assert.Equal(RemoveWhitespace("""
+            {
+            "type":"json_schema","json_schema":{"description":"A test schema","name":"my_schema","schema":{
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "integer"
+            },"strict":true}}
+            """), RemoveWhitespace(((IJsonModel<OpenAI.Chat.ChatResponseFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTextFormat_HandlesVariousFormats()
+    {
+        Assert.Null(MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTextFormat(null));
+
+        var text = MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTextFormat(ChatResponseFormat.Text);
+        Assert.NotNull(text);
+        Assert.Equal(ResponseTextFormatKind.Text, text.Kind);
+
+        var json = MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTextFormat(ChatResponseFormat.Json);
+        Assert.NotNull(json);
+        Assert.Equal(ResponseTextFormatKind.JsonObject, json.Kind);
+
+        var jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIResponseTextFormat();
+        Assert.NotNull(jsonSchema);
+        Assert.Equal(ResponseTextFormatKind.JsonSchema, jsonSchema.Kind);
+        Assert.Equal(RemoveWhitespace("""
+            {"type":"json_schema","description":"A test schema","name":"my_schema","schema":{
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "integer"
+            }}
+            """), RemoveWhitespace(((IJsonModel<ResponseTextFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
+
+        jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIResponseTextFormat(
+            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strict"] = true } });
+        Assert.NotNull(jsonSchema);
+        Assert.Equal(ResponseTextFormatKind.JsonSchema, jsonSchema.Kind);
+        Assert.Equal(RemoveWhitespace("""
+            {"type":"json_schema","description":"A test schema","name":"my_schema","schema":{
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "integer"
+            },"strict":true}
+            """), RemoveWhitespace(((IJsonModel<ResponseTextFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
+    }
 
     [Fact]
     public void AsOpenAIChatTool_ProducesValidInstance()
@@ -34,11 +107,489 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIChatTool_PreservesExtraTopLevelPropertiesLikeDefs()
+    {
+        // Create a JSON schema with $defs (used for reference types)
+        var jsonSchema = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "person": { "$ref": "#/$defs/Person" }
+                },
+                "required": ["person"],
+                "$defs": {
+                    "Person": {
+                        "type": "object",
+                        "properties": {
+                            "name": { "type": "string" }
+                        }
+                    }
+                }
+            }
+            """).RootElement;
+
+        var functionWithDefs = AIFunctionFactory.CreateDeclaration(
+            "test_function_with_defs",
+            "A test function with $defs",
+            jsonSchema);
+
+        var tool = functionWithDefs.AsOpenAIChatTool();
+
+        Assert.NotNull(tool);
+        Assert.Equal("test_function_with_defs", tool.FunctionName);
+        Assert.Equal("A test function with $defs", tool.FunctionDescription);
+
+        // Verify that $defs is preserved in the function parameters
+        using var parsedParams = JsonDocument.Parse(tool.FunctionParameters);
+        var root = parsedParams.RootElement;
+
+        Assert.True(root.TryGetProperty("$defs", out var defs), "The $defs property should be preserved in the function parameters");
+        Assert.True(defs.TryGetProperty("Person", out var person), "The Person definition should exist in $defs");
+        Assert.True(person.TryGetProperty("properties", out var properties), "Person should have properties");
+        Assert.True(properties.TryGetProperty("name", out _), "Person should have a name property");
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_ProducesValidInstance()
     {
         var tool = _testFunction.AsOpenAIResponseTool();
 
         Assert.NotNull(tool);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithAIFunctionTool_ProducesValidFunctionTool()
+    {
+        var tool = MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTool(tool: _testFunction);
+
+        Assert.NotNull(tool);
+        var functionTool = Assert.IsType<FunctionTool>(tool);
+        Assert.Equal("test_function", functionTool.FunctionName);
+        Assert.Equal("A test function for conversion", functionTool.FunctionDescription);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedWebSearchTool_ProducesValidWebSearchTool()
+    {
+        var webSearchTool = new HostedWebSearchTool();
+
+        var result = webSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<WebSearchTool>(result);
+        Assert.NotNull(tool);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedWebSearchToolWithAdditionalProperties_ProducesValidWebSearchTool()
+    {
+        var location = WebSearchToolLocation.CreateApproximateLocation("US", "Region", "City", "UTC");
+        var webSearchTool = new HostedWebSearchToolWithProperties(new Dictionary<string, object?>
+        {
+            [nameof(WebSearchTool.UserLocation)] = location,
+            [nameof(WebSearchTool.SearchContextSize)] = WebSearchToolContextSize.High
+        });
+
+        var result = webSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+
+        var tool = Assert.IsType<WebSearchTool>(result);
+        Assert.Equal(WebSearchToolContextSize.High, tool.SearchContextSize);
+        Assert.NotNull(tool);
+
+        var approximateLocation = Assert.IsType<WebSearchToolApproximateLocation>(tool.UserLocation);
+        Assert.Equal(location.Country, approximateLocation.Country);
+        Assert.Equal(location.Region, approximateLocation.Region);
+        Assert.Equal(location.City, approximateLocation.City);
+        Assert.Equal(location.Timezone, approximateLocation.Timezone);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedFileSearchTool_ProducesValidFileSearchTool()
+    {
+        var fileSearchTool = new HostedFileSearchTool { MaximumResultCount = 10 };
+
+        var result = fileSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<FileSearchTool>(result);
+        Assert.Empty(tool.VectorStoreIds);
+        Assert.Equal(fileSearchTool.MaximumResultCount, tool.MaxResultCount);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedFileSearchToolWithVectorStores_ProducesValidFileSearchTool()
+    {
+        var vectorStoreContent = new HostedVectorStoreContent("vector-store-123");
+        var fileSearchTool = new HostedFileSearchTool
+        {
+            Inputs = [vectorStoreContent]
+        };
+
+        var result = fileSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<FileSearchTool>(result);
+        Assert.Single(tool.VectorStoreIds);
+        Assert.Equal(vectorStoreContent.VectorStoreId, tool.VectorStoreIds[0]);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedFileSearchToolWithMaxResults_ProducesValidFileSearchTool()
+    {
+        var fileSearchTool = new HostedFileSearchTool
+        {
+            MaximumResultCount = 10
+        };
+
+        var result = fileSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<FileSearchTool>(result);
+        Assert.Equal(10, tool.MaxResultCount);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedFileSearchToolWithAdditionalProperties_ProducesValidFileSearchTool()
+    {
+        var rankingOptions = new FileSearchToolRankingOptions { ScoreThreshold = 0.5f };
+        var filters = BinaryData.FromString("{\"type\":\"eq\",\"key\":\"status\",\"value\":\"published\"}");
+        var fileSearchTool = new HostedFileSearchTool(new Dictionary<string, object?>
+        {
+            [nameof(FileSearchTool.RankingOptions)] = rankingOptions,
+            [nameof(FileSearchTool.Filters)] = filters
+        })
+        {
+            MaximumResultCount = 15
+        };
+
+        var result = fileSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<FileSearchTool>(result);
+        Assert.NotNull(tool.RankingOptions);
+        Assert.Equal(0.5f, tool.RankingOptions.ScoreThreshold);
+        Assert.NotNull(tool.Filters);
+        Assert.Equal(15, tool.MaxResultCount);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedCodeInterpreterTool_ProducesValidCodeInterpreterTool()
+    {
+        var codeTool = new HostedCodeInterpreterTool();
+
+        var result = codeTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<CodeInterpreterTool>(result);
+        Assert.NotNull(tool.Container);
+        Assert.NotNull(tool.Container.ContainerConfiguration);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedCodeInterpreterToolWithFiles_ProducesValidCodeInterpreterTool()
+    {
+        var fileContent = new HostedFileContent("file-123");
+        var codeTool = new HostedCodeInterpreterTool
+        {
+            Inputs = [fileContent]
+        };
+
+        var result = codeTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<CodeInterpreterTool>(result);
+        var autoContainerConfig = Assert.IsType<AutomaticCodeInterpreterToolContainerConfiguration>(tool.Container.ContainerConfiguration);
+        Assert.Single(autoContainerConfig.FileIds);
+        Assert.Equal(fileContent.FileId, autoContainerConfig.FileIds[0]);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationTool_ProducesValidImageGenerationTool()
+    {
+        var imageGenTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions { MediaType = "image/png" }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.NotNull(tool);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithOptions_ProducesValidImageGenerationTool()
+    {
+        var imageGenTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                MediaType = "image/png",
+                ImageSize = new System.Drawing.Size(1024, 1024),
+                StreamingCount = 2
+            }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.Equal("gpt-image-1", tool.Model);
+        Assert.Equal(ImageGenerationToolOutputFileFormat.Png, tool.OutputFileFormat);
+        Assert.NotNull(tool.Size);
+        Assert.Equal(2, tool.PartialImageCount);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithAdditionalProperties_ProducesValidImageGenerationTool()
+    {
+        var imageGenTool = new HostedImageGenerationTool(new Dictionary<string, object?>
+        {
+            [nameof(ImageGenerationTool.Background)] = ImageGenerationToolBackground.Transparent,
+            [nameof(ImageGenerationTool.InputFidelity)] = ImageGenerationToolInputFidelity.High,
+            [nameof(ImageGenerationTool.ModerationLevel)] = ImageGenerationToolModerationLevel.Low,
+            [nameof(ImageGenerationTool.OutputCompressionFactor)] = 50,
+            [nameof(ImageGenerationTool.Quality)] = ImageGenerationToolQuality.High
+        })
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                MediaType = "image/jpeg",
+            }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.Equal("gpt-image-1", tool.Model);
+        Assert.Equal(ImageGenerationToolOutputFileFormat.Jpeg, tool.OutputFileFormat);
+        Assert.Equal(ImageGenerationToolBackground.Transparent, tool.Background);
+        Assert.Equal(ImageGenerationToolInputFidelity.High, tool.InputFidelity);
+        Assert.Equal(ImageGenerationToolModerationLevel.Low, tool.ModerationLevel);
+        Assert.Equal(50, tool.OutputCompressionFactor);
+        Assert.Equal(ImageGenerationToolQuality.High, tool.Quality);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithInputImageMask_ProducesValidImageGenerationTool()
+    {
+        var inputImageMask = new ImageGenerationToolInputImageMask(
+            BinaryData.FromBytes([0x89, 0x50, 0x4E, 0x47]),
+            "image/png");
+
+        var imageGenTool = new HostedImageGenerationTool(new Dictionary<string, object?>
+        {
+            [nameof(ImageGenerationTool.InputImageMask)] = inputImageMask
+        })
+        {
+            Options = new ImageGenerationOptions { MediaType = "image/png" }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.NotNull(tool.InputImageMask);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerTool_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000");
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Equal(new Uri("http://localhost:8000"), tool.ServerUri);
+        Assert.Equal("test-server", tool.ServerLabel);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithDescription_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            ServerDescription = "A test MCP server"
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Equal("A test MCP server", tool.ServerDescription);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithAuthToken_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            AuthorizationToken = "test-token"
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Null(tool.AuthorizationToken);
+        Assert.NotNull(tool.Headers);
+        Assert.Single(tool.Headers);
+        Assert.Equal("Bearer test-token", tool.Headers["Authorization"]);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithAuthTokenAndCustomHeaders_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            AuthorizationToken = "test-token"
+        };
+        mcpTool.Headers["X-Custom-Header"] = "custom-value";
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Null(tool.AuthorizationToken);
+        Assert.NotNull(tool.Headers);
+        Assert.Equal(2, tool.Headers.Count);
+        Assert.Equal("Bearer test-token", tool.Headers["Authorization"]);
+        Assert.Equal("custom-value", tool.Headers["X-Custom-Header"]);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithUri_ProducesValidMcpTool()
+    {
+        var expectedUri = new Uri("http://localhost:8000");
+        var mcpTool = new HostedMcpServerTool("test-server", expectedUri);
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Equal(expectedUri, tool.ServerUri);
+        Assert.Equal("test-server", tool.ServerLabel);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithAllowedTools_ProducesValidMcpTool()
+    {
+        var allowedTools = new List<string> { "tool1", "tool2", "tool3" };
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            AllowedTools = allowedTools
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.NotNull(tool.AllowedTools);
+        Assert.Equal(3, tool.AllowedTools.ToolNames.Count);
+        Assert.Contains("tool1", tool.AllowedTools.ToolNames);
+        Assert.Contains("tool2", tool.AllowedTools.ToolNames);
+        Assert.Contains("tool3", tool.AllowedTools.ToolNames);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithAlwaysRequireApprovalMode_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            ApprovalMode = HostedMcpServerToolApprovalMode.AlwaysRequire
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.NotNull(tool.ToolCallApprovalPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.GlobalPolicy);
+        Assert.Equal(GlobalMcpToolCallApprovalPolicy.AlwaysRequireApproval, tool.ToolCallApprovalPolicy.GlobalPolicy);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithNeverRequireApprovalMode_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.NotNull(tool.ToolCallApprovalPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.GlobalPolicy);
+        Assert.Equal(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval, tool.ToolCallApprovalPolicy.GlobalPolicy);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithRequireSpecificApprovalMode_ProducesValidMcpTool()
+    {
+        var alwaysRequireTools = new List<string> { "tool1", "tool2" };
+        var neverRequireTools = new List<string> { "tool3" };
+        var approvalMode = HostedMcpServerToolApprovalMode.RequireSpecific(alwaysRequireTools, neverRequireTools);
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            ApprovalMode = approvalMode
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.NotNull(tool.ToolCallApprovalPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.CustomPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval);
+        Assert.Equal(2, tool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval.ToolNames.Count);
+        Assert.Single(tool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval.ToolNames);
+        Assert.Contains("tool1", tool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval.ToolNames);
+        Assert.Contains("tool2", tool.ToolCallApprovalPolicy.CustomPolicy.ToolsAlwaysRequiringApproval.ToolNames);
+        Assert.Contains("tool3", tool.ToolCallApprovalPolicy.CustomPolicy.ToolsNeverRequiringApproval.ToolNames);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolConnector_OnlySetsAuthToken()
+    {
+        var mcpTool = new HostedMcpServerTool("calendar", "connector_googlecalendar")
+        {
+            AuthorizationToken = "connector-token"
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Equal("connector-token", tool.AuthorizationToken);
+
+        // For connectors, headers should not be set even though AuthorizationToken adds to Headers internally
+        Assert.Empty(tool.Headers);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithUnknownToolType_ReturnsNull()
+    {
+        var unknownTool = new UnknownAITool();
+
+        var result = unknownTool.AsOpenAIResponseTool();
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithNullTool_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>("tool", () => ((AITool)null!).AsOpenAIResponseTool());
     }
 
     [Fact]
@@ -88,7 +639,7 @@ public class OpenAIConversionTests
         List<ChatMessage> messages =
         [
             new(ChatRole.System, "You are a helpful assistant."),
-            new(ChatRole.User, "Hello"),
+            new(ChatRole.User, "Hello") { AuthorName = "Jane" },
             new(ChatRole.Assistant,
             [
                 new TextContent("Hi there!"),
@@ -97,9 +648,9 @@ public class OpenAIConversionTests
                     ["param1"] = "value1",
                     ["param2"] = 42
                 }),
-            ]),
+            ]) { AuthorName = "!@#$%John Smith^*)" },
             new(ChatRole.Tool, [new FunctionResultContent("callid123", "theresult")]),
-            new(ChatRole.Assistant, "The answer is 42."),
+            new(ChatRole.Assistant, "The answer is 42.") { AuthorName = "@#$#$@$" },
         ];
 
         ChatOptions? options = withOptions ? new ChatOptions { Instructions = "You talk like a parrot." } : null;
@@ -125,6 +676,7 @@ public class OpenAIConversionTests
 
         UserChatMessage m1 = Assert.IsType<UserChatMessage>(convertedMessages[index + 1], exactMatch: false);
         Assert.Equal("Hello", Assert.Single(m1.Content).Text);
+        Assert.Equal("Jane", m1.ParticipantName);
 
         AssistantChatMessage m2 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 2], exactMatch: false);
         Assert.Single(m2.Content);
@@ -136,7 +688,8 @@ public class OpenAIConversionTests
         {
             ["param1"] = "value1",
             ["param2"] = 42
-        }), JsonSerializer.Deserialize<JsonElement>(tc.FunctionArguments.ToMemory().Span)));
+        }), JsonElement.Parse(tc.FunctionArguments.ToMemory().Span)));
+        Assert.Equal("JohnSmith", m2.ParticipantName);
 
         ToolChatMessage m3 = Assert.IsType<ToolChatMessage>(convertedMessages[index + 3], exactMatch: false);
         Assert.Equal("callid123", m3.ToolCallId);
@@ -144,6 +697,7 @@ public class OpenAIConversionTests
 
         AssistantChatMessage m4 = Assert.IsType<AssistantChatMessage>(convertedMessages[index + 4], exactMatch: false);
         Assert.Equal("The answer is 42.", Assert.Single(m4.Content).Text);
+        Assert.Null(m4.ParticipantName);
     }
 
     [Fact]
@@ -190,7 +744,7 @@ public class OpenAIConversionTests
         {
             ["param1"] = "value1",
             ["param2"] = 42
-        }), JsonSerializer.Deserialize<JsonElement>(m3.FunctionArguments.ToMemory().Span)));
+        }), JsonElement.Parse(m3.FunctionArguments.ToMemory().Span)));
 
         FunctionCallOutputResponseItem m4 = Assert.IsAssignableFrom<FunctionCallOutputResponseItem>(convertedItems[4]);
         Assert.Equal("callid123", m4.CallId);
@@ -199,6 +753,43 @@ public class OpenAIConversionTests
         MessageResponseItem m5 = Assert.IsAssignableFrom<MessageResponseItem>(convertedItems[5]);
         Assert.Equal(OpenAI.Responses.MessageRole.Assistant, m5.Role);
         Assert.Equal("The answer is 42.", Assert.Single(m5.Content).Text);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseItems_RoundtripsRawRepresentation()
+    {
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User,
+            [
+                new TextContent("Hello, "),
+                new AIContent { RawRepresentation = ResponseItem.CreateWebSearchCallItem() },
+                new AIContent { RawRepresentation = ResponseItem.CreateReferenceItem("123") },
+                new TextContent("World"),
+                new TextContent("!"),
+            ]),
+            new(ChatRole.Assistant,
+            [
+                new TextContent("Hi!"),
+                new AIContent { RawRepresentation = ResponseItem.CreateReasoningItem("text") },
+            ]),
+            new(ChatRole.User,
+            [
+                new AIContent { RawRepresentation = ResponseItem.CreateSystemMessageItem("test") },
+            ]),
+        ];
+
+        var items = messages.AsOpenAIResponseItems().ToArray();
+
+        Assert.Equal(7, items.Length);
+        Assert.Equal("Hello, ", ((MessageResponseItem)items[0]).Content[0].Text);
+        Assert.Same(messages[0].Contents[1].RawRepresentation, items[1]);
+        Assert.Same(messages[0].Contents[2].RawRepresentation, items[2]);
+        Assert.Equal("World", ((MessageResponseItem)items[3]).Content[0].Text);
+        Assert.Equal("!", ((MessageResponseItem)items[3]).Content[1].Text);
+        Assert.Equal("Hi!", ((MessageResponseItem)items[4]).Content[0].Text);
+        Assert.Same(messages[1].Contents[1].RawRepresentation, items[5]);
+        Assert.Same(messages[2].Contents[0].RawRepresentation, items[6]);
     }
 
     [Fact]
@@ -245,7 +836,7 @@ public class OpenAIConversionTests
             updates.Add(update);
         }
 
-        ChatResponse response = updates.ToChatResponse();
+        var response = updates.ToChatResponse();
 
         Assert.Equal("id", response.ResponseId);
         Assert.Equal(ChatFinishReason.ToolCalls, response.FinishReason);
@@ -283,7 +874,7 @@ public class OpenAIConversionTests
     [Fact]
     public void AsChatResponse_ConvertsOpenAIResponse()
     {
-        Assert.Throws<ArgumentNullException>("response", () => ((OpenAIResponse)null!).AsChatResponse());
+        Assert.Throws<ArgumentNullException>("response", () => ((ResponseResult)null!).AsChatResponse());
 
         // The OpenAI library currently doesn't provide any way to create an OpenAIResponse instance,
         // as all constructors/factory methods currently are internal. Update this test when such functionality is available.
@@ -850,32 +1441,32 @@ public class OpenAIConversionTests
     [Fact]
     public void AsOpenAIResponse_WithNullArgument_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>("response", () => ((ChatResponse)null!).AsOpenAIResponse());
+        Assert.Throws<ArgumentNullException>("response", () => ((ChatResponse)null!).AsOpenAIResponseResult());
     }
 
     [Fact]
     public void AsOpenAIResponse_WithRawRepresentation_ReturnsOriginal()
     {
-        var originalOpenAIResponse = OpenAIResponsesModelFactory.OpenAIResponse(
-            "original-response-id",
-            new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
-            ResponseStatus.Completed,
-            usage: null,
-            maxOutputTokenCount: 100,
-            outputItems: [],
-            parallelToolCallsEnabled: false,
-            model: "gpt-4",
-            temperature: 0.7f,
-            topP: 0.9f,
-            previousResponseId: "prev-id",
-            instructions: "Test instructions");
+        ResponseResult originalOpenAIResponse = new()
+        {
+            Id = "original-response-id",
+            CreatedAt = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            Status = ResponseStatus.Completed,
+            MaxOutputTokenCount = 100,
+            ParallelToolCallsEnabled = false,
+            Model = "gpt-4",
+            Temperature = 0.7f,
+            TopP = 0.9f,
+            PreviousResponseId = "prev-id",
+            Instructions = "Test instructions"
+        };
 
         var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Test"))
         {
             RawRepresentation = originalOpenAIResponse
         };
 
-        var result = chatResponse.AsOpenAIResponse();
+        var result = chatResponse.AsOpenAIResponseResult();
 
         Assert.Same(originalOpenAIResponse, result);
     }
@@ -891,7 +1482,7 @@ public class OpenAIConversionTests
             FinishReason = ChatFinishReason.Stop
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.NotNull(openAIResponse);
         Assert.Equal("test-response-id", openAIResponse.Id);
@@ -910,6 +1501,7 @@ public class OpenAIConversionTests
     {
         var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Test message"))
         {
+            ConversationId = "conv_123",
             ResponseId = "options-test",
             ModelId = "gpt-3.5-turbo"
         };
@@ -918,20 +1510,19 @@ public class OpenAIConversionTests
         {
             MaxOutputTokens = 500,
             AllowMultipleToolCalls = true,
-            ConversationId = "conversation-123",
             Instructions = "You are a helpful assistant.",
             Temperature = 0.8f,
             TopP = 0.95f,
             ModelId = "override-model"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+        var openAIResponse = chatResponse.AsOpenAIResponseResult(options);
 
         Assert.Equal("options-test", openAIResponse.Id);
         Assert.Equal("gpt-3.5-turbo", openAIResponse.Model);
         Assert.Equal(500, openAIResponse.MaxOutputTokenCount);
         Assert.True(openAIResponse.ParallelToolCallsEnabled);
-        Assert.Equal("conversation-123", openAIResponse.PreviousResponseId);
+        Assert.Equal("conv_123", openAIResponse.ConversationOptions?.ConversationId);
         Assert.Equal("You are a helpful assistant.", openAIResponse.Instructions);
         Assert.Equal(0.8f, openAIResponse.Temperature);
         Assert.Equal(0.95f, openAIResponse.TopP);
@@ -946,7 +1537,7 @@ public class OpenAIConversionTests
             ModelId = "gpt-4"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.Equal("empty-response", openAIResponse.Id);
         Assert.Equal("gpt-4", openAIResponse.Model);
@@ -972,7 +1563,7 @@ public class OpenAIConversionTests
             ResponseId = "multi-message-response"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.Equal(4, openAIResponse.OutputItems.Count);
 
@@ -1009,7 +1600,7 @@ public class OpenAIConversionTests
             ResponseId = "tool-message-test"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         var outputItems = openAIResponse.OutputItems.ToArray();
         Assert.Equal(4, outputItems.Length);
@@ -1040,7 +1631,7 @@ public class OpenAIConversionTests
             ResponseId = "system-user-test"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         var outputItems = openAIResponse.OutputItems.ToArray();
         Assert.Equal(3, outputItems.Length);
@@ -1059,15 +1650,15 @@ public class OpenAIConversionTests
     {
         var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Default test"));
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.NotNull(openAIResponse);
         Assert.Equal(ResponseStatus.Completed, openAIResponse.Status);
-        Assert.False(openAIResponse.ParallelToolCallsEnabled);
+        Assert.True(openAIResponse.ParallelToolCallsEnabled);
         Assert.Null(openAIResponse.MaxOutputTokenCount);
         Assert.Null(openAIResponse.Temperature);
         Assert.Null(openAIResponse.TopP);
-        Assert.Null(openAIResponse.PreviousResponseId);
+        Assert.Null(openAIResponse.ConversationOptions);
         Assert.Null(openAIResponse.Instructions);
         Assert.NotNull(openAIResponse.OutputItems);
     }
@@ -1082,7 +1673,7 @@ public class OpenAIConversionTests
             ModelId = "options-model-id"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+        var openAIResponse = chatResponse.AsOpenAIResponseResult(options);
 
         Assert.Equal("options-model-id", openAIResponse.Model);
     }
@@ -1100,9 +1691,39 @@ public class OpenAIConversionTests
             ModelId = "options-model-id"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+        var openAIResponse = chatResponse.AsOpenAIResponseResult(options);
 
         Assert.Equal("response-model-id", openAIResponse.Model);
+    }
+
+    [Fact]
+    public void ListAddResponseTool_AddsToolCorrectly()
+    {
+        Assert.Throws<ArgumentNullException>("tools", () => ((IList<AITool>)null!).Add(ResponseTool.CreateWebSearchTool()));
+        Assert.Throws<ArgumentNullException>("tool", () => new List<AITool>().Add((ResponseTool)null!));
+
+        Assert.Throws<ArgumentNullException>("tool", () => ((ResponseTool)null!).AsAITool());
+
+        ChatOptions options;
+
+        options = new()
+        {
+            Tools = new List<AITool> { ResponseTool.CreateWebSearchTool() },
+        };
+        Assert.Single(options.Tools);
+        Assert.NotNull(options.Tools[0]);
+
+        var rawSearchTool = ResponseTool.CreateWebSearchTool();
+        options = new()
+        {
+            Tools = [rawSearchTool.AsAITool()],
+        };
+        Assert.Single(options.Tools);
+        Assert.NotNull(options.Tools[0]);
+
+        Assert.Same(rawSearchTool, options.Tools[0].GetService<ResponseTool>());
+        Assert.Same(rawSearchTool, options.Tools[0].GetService<WebSearchTool>());
+        Assert.Null(options.Tools[0].GetService<ResponseTool>("key"));
     }
 
     private static async IAsyncEnumerable<T> CreateAsyncEnumerable<T>(IEnumerable<T> source)
@@ -1111,6 +1732,27 @@ public class OpenAIConversionTests
         {
             await Task.Yield();
             yield return item;
+        }
+    }
+
+    private static string RemoveWhitespace(string input) => Regex.Replace(input, @"\s+", "");
+
+    /// <summary>Helper class for testing unknown tool types.</summary>
+    private sealed class UnknownAITool : AITool
+    {
+        public override string Name => "unknown_tool";
+    }
+
+    /// <summary>Helper class for testing WebSearchTool with additional properties.</summary>
+    private sealed class HostedWebSearchToolWithProperties : HostedWebSearchTool
+    {
+        private readonly Dictionary<string, object?> _additionalProperties;
+
+        public override IReadOnlyDictionary<string, object?> AdditionalProperties => _additionalProperties;
+
+        public HostedWebSearchToolWithProperties(Dictionary<string, object?> additionalProperties)
+        {
+            _additionalProperties = additionalProperties;
         }
     }
 }

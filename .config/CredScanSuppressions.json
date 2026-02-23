@@ -1,1 +1,9 @@
-{}
+{
+  "tool": "Credential Scanner",
+  "suppressions": [
+    {
+      "file": "\\test\\Libraries\\Microsoft.Extensions.Compliance.Redaction.Tests\\HmacRedactorTest.cs",
+      "_justification": "Tests"
+    }
+  ]
+}

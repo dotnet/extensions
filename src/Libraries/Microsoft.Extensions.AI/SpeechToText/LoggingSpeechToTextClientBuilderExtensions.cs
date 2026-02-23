@@ -6,15 +6,16 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="LoggingSpeechToTextClient"/> instances.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class LoggingSpeechToTextClientBuilderExtensions
 {
-    /// <summary>Adds logging to the audio transcription client pipeline.</summary>
+    /// <summary>Adds logging to the speech-to-text client pipeline.</summary>
     /// <param name="builder">The <see cref="SpeechToTextClientBuilder"/>.</param>
     /// <param name="loggerFactory">
     /// An optional <see cref="ILoggerFactory"/> used to create a logger with which logging should be performed.

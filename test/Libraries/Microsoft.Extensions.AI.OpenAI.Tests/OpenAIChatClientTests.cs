@@ -6,10 +6,9 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -18,6 +17,7 @@ using OpenAI.Chat;
 using Xunit;
 
 #pragma warning disable S103 // Lines should not be too long
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
 
 namespace Microsoft.Extensions.AI;
 
@@ -154,6 +154,7 @@ public class OpenAIChatClientTests
 
         var response = await client.GetResponseAsync("hello", new()
         {
+            AllowMultipleToolCalls = false,
             MaxOutputTokens = 10,
             Temperature = 0.5f,
         });
@@ -172,11 +173,11 @@ public class OpenAIChatClientTests
         Assert.Equal(8, response.Usage.InputTokenCount);
         Assert.Equal(9, response.Usage.OutputTokenCount);
         Assert.Equal(17, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -259,12 +260,12 @@ public class OpenAIChatClientTests
         Assert.Equal(8, usage.Details.InputTokenCount);
         Assert.Equal(9, usage.Details.OutputTokenCount);
         Assert.Equal(17, usage.Details.TotalTokenCount);
+        Assert.Equal(5, usage.Details.CachedInputTokenCount);
+        Assert.Equal(90, usage.Details.ReasoningTokenCount);
 
         Assert.Equal(new AdditionalPropertiesDictionary<long>
         {
             { "InputTokenDetails.AudioTokenCount", 123 },
-            { "InputTokenDetails.CachedTokenCount", 5 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 456 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -333,7 +334,7 @@ public class OpenAIChatClientTests
             Tools = [AIFunctionFactory.Create(() => 42, "GetPersonAge", "Gets the age of the specified person.")],
             AdditionalProperties = new()
             {
-                ["strictJsonSchema"] = true,
+                ["strict"] = true,
             },
         });
         Assert.NotNull(response);
@@ -655,36 +656,51 @@ public class OpenAIChatClientTests
         Assert.Equal("Hello! How can I assist you today?", responseText);
     }
 
-    /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
-    internal sealed class ChatToolJson
-    {
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "object";
-
-        [JsonPropertyName("required")]
-        public HashSet<string> Required { get; set; } = [];
-
-        [JsonPropertyName("properties")]
-        public Dictionary<string, JsonElement> Properties { get; set; } = [];
-
-        [JsonPropertyName("additionalProperties")]
-        public bool AdditionalProperties { get; set; }
-    }
-
     [Fact]
     public async Task StronglyTypedOptions_AllSent()
     {
         const string Input = """
             {
-                "messages":[{"role":"user","content":"hello"}],
-                "model":"gpt-4o-mini",
-                "logprobs":true,
-                "top_logprobs":42,
-                "logit_bias":{"12":34},
-                "parallel_tool_calls":false,
-                "user":"12345",
-                "metadata":{"something":"else"},
-                "store":true
+                "metadata": {
+                    "something": "else"
+                },
+                "user": "12345",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "hello"
+                    }
+                ],
+                "model": "gpt-4o-mini",
+                "top_logprobs": 42,
+                "store": true,
+                "logit_bias": {
+                    "12": 34
+                },
+                "logprobs": true,
+                "tools": [
+                    {
+                        "type": "function",
+                        "function": {
+                            "description": "",
+                            "name": "GetPersonAge",
+                            "parameters": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                ],
+                "tool_choice": "auto",
+                "parallel_tool_calls": false
             }
             """;
 
@@ -712,6 +728,7 @@ public class OpenAIChatClientTests
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             AllowMultipleToolCalls = false,
+            Tools = [AIFunctionFactory.Create((string name) => 42, "GetPersonAge")],
             RawRepresentationFactory = (c) =>
             {
                 var openAIOptions = new ChatCompletionOptions
@@ -830,11 +847,11 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 123 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 456 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -927,11 +944,11 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1025,11 +1042,11 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1136,12 +1153,12 @@ public class OpenAIChatClientTests
         Assert.Equal(61, response.Usage.InputTokenCount);
         Assert.Equal(16, response.Usage.OutputTokenCount);
         Assert.Equal(77, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
 
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1220,12 +1237,12 @@ public class OpenAIChatClientTests
         Assert.Equal(61, response.Usage.InputTokenCount);
         Assert.Equal(16, response.Usage.OutputTokenCount);
         Assert.Equal(77, response.Usage.TotalTokenCount);
+        Assert.Equal(13, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
 
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1336,12 +1353,12 @@ public class OpenAIChatClientTests
         Assert.Equal(61, usage.Details.InputTokenCount);
         Assert.Equal(16, usage.Details.OutputTokenCount);
         Assert.Equal(77, usage.Details.TotalTokenCount);
+        Assert.Equal(0, usage.Details.CachedInputTokenCount);
+        Assert.Equal(90, usage.Details.ReasoningTokenCount);
 
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1368,26 +1385,26 @@ public class OpenAIChatClientTests
                         "tool_calls": [
                             {
                                 "id": "12345",
+                                "type": "function",
                                 "function": {
                                     "name": "SayHello",
                                     "arguments": "null"
-                                },
-                                "type": "function"
+                                }
                             },
                             {
                                 "id": "12346",
+                                "type": "function",
                                 "function": {
                                     "name": "SayHi",
                                     "arguments": "null"
-                                },
-                                "type": "function"
+                                }
                             }
                         ]
                     },
                     {
                         "role": "tool",
                         "tool_call_id": "12345",
-                        "content": "Said hello"
+                        "content": "{ \"$type\": \"text\", \"text\": \"Said hello\" }"
                     },
                     {
                         "role":"tool",
@@ -1456,7 +1473,7 @@ public class OpenAIChatClientTests
             ]),
             new (ChatRole.Tool,
             [
-                new FunctionResultContent("12345", "Said hello"),
+                new FunctionResultContent("12345", new TextContent("Said hello")),
                 new FunctionResultContent("12346", "Said hi"),
             ]),
             new(ChatRole.Assistant, "You are great."),
@@ -1478,11 +1495,11 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
+        Assert.Equal(20, response.Usage.CachedInputTokenCount);
+        Assert.Equal(90, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 20 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
@@ -1593,19 +1610,469 @@ public class OpenAIChatClientTests
         Assert.Equal(8513, response.Usage.InputTokenCount);
         Assert.Equal(56, response.Usage.OutputTokenCount);
         Assert.Equal(8569, response.Usage.TotalTokenCount);
+        Assert.Equal(0, response.Usage.CachedInputTokenCount);
+        Assert.Equal(0, response.Usage.ReasoningTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
-            { "InputTokenDetails.CachedTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 0 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
     }
 
+    [Fact]
+    public async Task RequestHeaders_UserAgent_ContainsMEAI()
+    {
+        using var handler = new ThrowUserAgentExceptionHandler();
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        InvalidOperationException e = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetResponseAsync("hello"));
+
+        Assert.StartsWith("User-Agent header: OpenAI", e.Message);
+        Assert.Contains("MEAI", e.Message);
+    }
+
+    [Fact]
+    public async Task ChatOptions_ModelId_OverridesClientModel_NonStreaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "messages":[{"role":"user","content":"hello"}],
+                "model":"gpt-4o",
+                "max_completion_tokens":10
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "object": "chat.completion",
+              "created": 1727888631,
+              "model": "gpt-4o-2024-08-06",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?",
+                    "refusal": null
+                  },
+                  "logprobs": null,
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 8,
+                "completion_tokens": 9,
+                "total_tokens": 17
+              }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 10,
+            Temperature = 0.5f,
+            ModelId = "gpt-4o",
+        });
+        Assert.NotNull(response);
+
+        Assert.Equal("chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI", response.ResponseId);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+        Assert.Equal("gpt-4o-2024-08-06", response.ModelId);
+    }
+
+    [Fact]
+    public async Task ChatOptions_ModelId_OverridesClientModel_Streaming()
+    {
+        const string Input = """
+            {
+                "temperature":0.5,
+                "messages":[{"role":"user","content":"hello"}],
+                "model":"gpt-4o",
+                "stream":true,
+                "stream_options":{"include_usage":true},
+                "max_completion_tokens":20
+            }
+            """;
+
+        const string Output = """
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"role":"assistant","content":"","refusal":null},"logprobs":null,"finish_reason":null}],"usage":null}
+
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":"Hello"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":"!"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}],"usage":null}
+
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_f85bea6784","choices":[],"usage":{"prompt_tokens":8,"completion_tokens":9,"total_tokens":17}}
+
+            data: [DONE]
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+            ModelId = "gpt-4o",
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Hello!", string.Concat(updates.Select(u => u.Text)));
+        Assert.All(updates, u => Assert.Equal("gpt-4o-2024-08-06", u.ModelId));
+    }
+
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
         .GetChatClient(modelId)
         .AsIChatClient();
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_SystemMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new SystemChatMessage("You are a helpful assistant")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.System, extMessages[0].Role);
+        Assert.Equal("You are a helpful assistant", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_UserMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new UserChatMessage("Hello")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.User, extMessages[0].Role);
+        Assert.Equal("Hello", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_AssistantMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new AssistantChatMessage("Hi there!")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.Assistant, extMessages[0].Role);
+        Assert.Equal("Hi there!", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_DeveloperMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new DeveloperChatMessage("Developer instructions")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.System, extMessages[0].Role);
+        Assert.Equal("Developer instructions", extMessages[0].Text);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_ToolMessage()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages = [new ToolChatMessage("tool-123", "Result")];
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Single(extMessages);
+        Assert.Equal(ChatRole.Tool, extMessages[0].Role);
+        var frc = Assert.IsType<FunctionResultContent>(Assert.Single(extMessages[0].Contents));
+        Assert.Equal("tool-123", frc.CallId);
+        Assert.Equal("Result", frc.Result);
+    }
+
+    [Fact]
+    public void AsChatMessages_PreservesRole_MultipleMessages()
+    {
+        List<OpenAI.Chat.ChatMessage> openAIMessages =
+        [
+            new SystemChatMessage("System prompt"),
+            new UserChatMessage("User message"),
+            new AssistantChatMessage("Assistant response"),
+            new DeveloperChatMessage("Developer note")
+        ];
+
+        var extMessages = openAIMessages.AsChatMessages().ToList();
+
+        Assert.Equal(4, extMessages.Count);
+        Assert.Equal(ChatRole.System, extMessages[0].Role);
+        Assert.Equal(ChatRole.User, extMessages[1].Role);
+        Assert.Equal(ChatRole.Assistant, extMessages[2].Role);
+        Assert.Equal(ChatRole.System, extMessages[3].Role);
+    }
+
+    [Theory]
+    [InlineData(ReasoningEffort.Low, "low")]
+    [InlineData(ReasoningEffort.Medium, "medium")]
+    [InlineData(ReasoningEffort.High, "high")]
+    [InlineData(ReasoningEffort.ExtraHigh, "high")] // ExtraHigh maps to high in OpenAI
+    public async Task ReasoningOptions_Effort_ProducesExpectedJson(ReasoningEffort effort, string expectedEffortString)
+    {
+        string input = $$"""
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "hello"
+                    }
+                ],
+                "model": "o4-mini",
+                "reasoning_effort": "{{expectedEffortString}}"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-test",
+              "object": "chat.completion",
+              "model": "o4-mini",
+              "choices": [
+                {
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello!"
+                  },
+                  "finish_reason": "stop"
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "o4-mini");
+
+        Assert.NotNull(await client.GetResponseAsync("hello", new()
+        {
+            Reasoning = new ReasoningOptions { Effort = effort }
+        }));
+    }
+
+    [Fact]
+    public async Task ReasoningOptions_None_ProducesNoReasoningEffortInJson()
+    {
+        const string Input = """
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "hello"
+                    }
+                ],
+                "model": "gpt-4o-mini"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-test",
+              "object": "chat.completion",
+              "model": "gpt-4o-mini",
+              "choices": [
+                {
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello!"
+                  },
+                  "finish_reason": "stop"
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        // None effort should not include reasoning_effort in the request
+        Assert.NotNull(await client.GetResponseAsync("hello", new()
+        {
+            Reasoning = new ReasoningOptions { Effort = ReasoningEffort.None }
+        }));
+    }
+
+    [Fact]
+    public async Task ReasoningContent_NonStreaming_SurfacedAsTextReasoningContent()
+    {
+        const string Input = """
+            {
+                "messages":[{"role":"user","content":"hello"}],
+                "model":"gpt-oss-120b"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "c48a440c7dd64389b7fbe908e006ba3d",
+              "object": "chat.completion",
+              "created": 1770959477,
+              "model": "gpt-oss-120b",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "9.8 is larger.",
+                    "reasoning_content": "We just compare decimals: 9.11 vs 9.8. 9.8 > 9.11. Answer briefly."
+                  },
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 84,
+                "completion_tokens": 44,
+                "total_tokens": 128
+              }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-oss-120b");
+
+        var response = await client.GetResponseAsync("hello");
+        Assert.NotNull(response);
+
+        var message = response.Messages.Single();
+        var reasoning = message.Contents.OfType<TextReasoningContent>().Single();
+        Assert.Equal("We just compare decimals: 9.11 vs 9.8. 9.8 > 9.11. Answer briefly.", reasoning.Text);
+
+        var text = message.Contents.OfType<TextContent>().Single();
+        Assert.Equal("9.8 is larger.", text.Text);
+    }
+
+    [Fact]
+    public async Task ReasoningContent_Streaming_SurfacedAsTextReasoningContent()
+    {
+        // Streaming format captured from Azure gpt-oss-120b. Reasoning chunks have reasoning_content with content:null,
+        // then content chunks have content with reasoning_content:null.
+        const string Input = """
+            {
+                "messages":[{"role":"user","content":"hello"}],
+                "model":"gpt-oss-120b",
+                "stream":true,
+                "stream_options":{"include_usage":true}
+            }
+            """;
+
+        const string Output = """
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"role":"assistant","content":"","reasoning_content":null},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":null,"reasoning_content":"User asks"},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":null,"reasoning_content":": which"},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":null,"reasoning_content":" is larger."},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":"9","reasoning_content":null},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":".8 is larger.","reasoning_content":null},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":null,"reasoning_content":null},"finish_reason":"stop"}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[],"usage":{"completion_tokens":46,"prompt_tokens":84,"total_tokens":130}}
+
+            data: [DONE]
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-oss-120b");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello"))
+        {
+            updates.Add(update);
+        }
+
+        // Verify reasoning content was captured from the reasoning_content deltas
+        string reasoningText = string.Concat(updates.SelectMany(u => u.Contents).OfType<TextReasoningContent>().Select(r => r.Text));
+        Assert.Equal("User asks: which is larger.", reasoningText);
+
+        // Verify regular content was also captured from the content deltas
+        Assert.Equal("9.8 is larger.", string.Concat(updates.Select(u => u.Text)));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OpenAIApiTypeTag_SetToChatCompletions(bool streaming)
+    {
+        const string Output = """
+            {
+              "id": "chatcmpl-test",
+              "object": "chat.completion",
+              "created": 1727888631,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello!"
+                  },
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 8,
+                "completion_tokens": 2,
+                "total_tokens": 10
+              }
+            }
+            """;
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == sourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => activities.Add(activity),
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        using VerbatimHttpHandler handler = new(new HttpHandlerExpectedInput(), Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
+            .GetChatClient("gpt-4o-mini")
+            .AsIChatClient()
+            .AsBuilder()
+            .UseOpenTelemetry(sourceName: sourceName)
+            .Build();
+
+        if (streaming)
+        {
+            await foreach (var update in client.GetStreamingResponseAsync("hello"))
+            {
+                // Drain the stream.
+            }
+        }
+        else
+        {
+            await client.GetResponseAsync("hello");
+        }
+
+        var activity = Assert.Single(activities);
+        Assert.Equal("chat_completions", activity.GetTagItem("openai.api.type"));
+    }
 }

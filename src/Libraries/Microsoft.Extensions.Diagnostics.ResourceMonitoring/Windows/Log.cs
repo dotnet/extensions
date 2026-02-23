@@ -5,8 +5,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
-#pragma warning disable S109
-
 internal static partial class Log
 {
     [LoggerMessage(1, LogLevel.Information, "Resource Monitoring is running inside a Job Object. For more information about Job Objects see https://aka.ms/job-objects")]
@@ -26,15 +24,14 @@ internal static partial class Log
         double cpuPercentage);
 
     [LoggerMessage(4, LogLevel.Debug,
-        "Computed memory usage for container: CurrentMemoryUsage = {currentMemoryUsage}, TotalMemory = {totalMemory}")]
+        "Computed memory usage for container: CurrentMemoryUsage = {currentMemoryUsage}, LimitMemory = {limitMemory}, RequestMemory = {requestMemory}.")]
     public static partial void ContainerMemoryUsageData(
         this ILogger logger,
         ulong currentMemoryUsage,
-        double totalMemory);
+        double limitMemory,
+        double requestMemory);
 
-#pragma warning disable S103 // Lines should not be too long
     [LoggerMessage(5, LogLevel.Debug, "Computed CPU usage with CpuUsageKernelTicks = {cpuUsageKernelTicks}, CpuUsageUserTicks = {cpuUsageUserTicks}, OldCpuUsageTicks = {oldCpuUsageTicks}, TimeTickDelta = {timeTickDelta}, CpuUnits = {cpuUnits}, CpuPercentage = {cpuPercentage}.")]
-#pragma warning restore S103 // Lines should not be too long
     public static partial void CpuContainerUsageData(
         this ILogger logger,
         long cpuUsageKernelTicks,

@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// </para>
 /// <para>
 /// Note that at the moment, <see cref="IntentResolutionEvaluator"/> only supports evaluating calls to tools that are
-/// defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions that are supplied via
+/// defined as <see cref="AIFunctionDeclaration"/>s. Any other <see cref="AITool"/> definitions that are supplied via
 /// <see cref="IntentResolutionEvaluatorContext.ToolDefinitions"/> will be ignored.
 /// </para>
 /// <para>
@@ -176,7 +176,6 @@ public sealed class IntentResolutionEvaluator : IEvaluator
         string renderedModelResponse = modelResponse.RenderAsJson();
         string? renderedToolDefinitions = context?.ToolDefinitions.RenderAsJson();
 
-#pragma warning disable S103 // Lines should not be too long
         string evaluationPrompt =
             $$"""
             # Goal
@@ -313,7 +312,6 @@ public sealed class IntentResolutionEvaluator : IEvaluator
 
             # Output
             """;
-#pragma warning restore S103 
 
         evaluationInstructions.Add(new ChatMessage(ChatRole.User, evaluationPrompt));
 

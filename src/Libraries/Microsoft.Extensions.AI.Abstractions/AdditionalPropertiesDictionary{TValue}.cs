@@ -10,9 +10,6 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S1144 // Unused private types or members should be removed
-#pragma warning disable S2365 // Properties should not make collection or array copies
-#pragma warning disable S3604 // Member initializer values should not be redundant
 #pragma warning disable S4039 // Interface methods should be callable by derived types
 #pragma warning disable CA1033 // Interface methods should be callable by derived types
 
@@ -255,7 +252,9 @@ public class AdditionalPropertiesDictionary<TValue> : IDictionary<string, TValue
         private readonly AdditionalPropertiesDictionary<TValue> _properties = Throw.IfNull(properties);
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+#pragma warning disable S2365 // Properties should not make collection or array copies
         public AdditionalProperty[] Items => (from p in _properties select new AdditionalProperty(p.Key, p.Value)).ToArray();
+#pragma warning restore S2365
 
         [DebuggerDisplay("{Value}", Name = "[{Key}]")]
         public readonly struct AdditionalProperty(string key, TValue value)

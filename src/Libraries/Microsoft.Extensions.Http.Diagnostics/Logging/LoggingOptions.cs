@@ -37,6 +37,20 @@ public class LoggingOptions
     public bool LogRequestStart { get; set; }
 
     /// <summary>
+    /// Gets or sets the set of HTTP request query parameters to log and their respective data classifications to use for redaction.
+    /// </summary>
+    /// <value>
+    /// The default value is <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/>.
+    /// </value>
+    /// <remarks>
+    /// If empty, no HTTP request query parameters will be logged.
+    /// If the data class is <see cref="DataClassification.None"/>, no redaction will be done.
+    /// </remarks>
+    [Required]
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+    public IDictionary<string, DataClassification> RequestQueryParametersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
+
+    /// <summary>
     /// Gets or sets a value indicating whether the HTTP request and response body are logged.
     /// </summary>
     /// <value>
@@ -74,16 +88,12 @@ public class LoggingOptions
     /// <summary>
     /// Gets or sets the list of HTTP request content types which are considered text and thus possible to serialize.
     /// </summary>
-    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
-        Justification = "Options pattern.")]
     [Required]
     public ISet<string> RequestBodyContentTypes { get; set; } = new HashSet<string>();
 
     /// <summary>
     /// Gets or sets the list of HTTP response content types which are considered text and thus possible to serialize.
     /// </summary>
-    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
-        Justification = "Options pattern.")]
     [Required]
     public ISet<string> ResponseBodyContentTypes { get; set; } = new HashSet<string>();
 
@@ -97,8 +107,6 @@ public class LoggingOptions
     /// If empty, no HTTP request headers will be logged.
     /// If the data class is <see cref="DataClassification.None"/>, no redaction will be done.
     /// </remarks>
-    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
-        Justification = "Options pattern.")]
     [Required]
     public IDictionary<string, DataClassification> RequestHeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
 
@@ -112,8 +120,6 @@ public class LoggingOptions
     /// If the data class is <see cref="DataClassification.None"/>, no redaction will be done.
     /// If empty, no HTTP response headers will be logged.
     /// </remarks>
-    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
-        Justification = "Options pattern.")]
     [Required]
     public IDictionary<string, DataClassification> ResponseHeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
 
@@ -142,8 +148,6 @@ public class LoggingOptions
     /// Gets or sets the route parameters to redact with their corresponding data classifications to apply appropriate redaction.
     /// </summary>
     [Required]
-    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
-        Justification = "Options pattern.")]
     public IDictionary<string, DataClassification> RouteParameterDataClasses { get; set; } = new Dictionary<string, DataClassification>();
 
     /// <summary>

@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -27,7 +28,7 @@ namespace Microsoft.Extensions.AI;
 /// Messages and options are not logged at other logging levels.
 /// </para>
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
@@ -179,7 +180,7 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
         }
     }
 
-    private string AsJson<T>(T value) => LoggingHelpers.AsJson(value, _jsonSerializerOptions);
+    private string AsJson<T>(T value) => TelemetryHelpers.AsJson(value, _jsonSerializerOptions);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
     private partial void LogInvoked(string methodName);

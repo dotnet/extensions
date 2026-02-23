@@ -6,7 +6,6 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
 using Polly.Telemetry;
@@ -26,12 +25,12 @@ public static class ResilienceServiceCollectionExtensions
     /// <remarks>
     /// This method adds additional dimensions on top of the default ones that are built-in to the Polly library. These include:
     /// <list type="bullet">
-    /// <item><description>
-    /// Exception enrichment based on <see cref="IExceptionSummarizer"/>.</description>
-    /// </item>
-    /// <item><description>
-    /// Request metadata enrichment based on <see cref="RequestMetadata"/>.</description>
-    /// </item>
+    ///   <item>
+    ///   Exception enrichment based on <see cref="IExceptionSummarizer"/>.
+    ///   </item>
+    ///   <item>
+    ///   Request metadata enrichment based on <see cref="RequestMetadata"/>.
+    ///   </item>
     /// </list>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>

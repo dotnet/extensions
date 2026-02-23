@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Embeddings;
 
-#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 
 namespace Microsoft.Extensions.AI;
@@ -18,8 +19,17 @@ namespace Microsoft.Extensions.AI;
 /// <summary>An <see cref="IEmbeddingGenerator{String, Embedding}"/> for an OpenAI <see cref="EmbeddingClient"/>.</summary>
 internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
-    /// <summary>Default OpenAI endpoint.</summary>
-    private const string DefaultOpenAIEndpoint = "https://api.openai.com/v1";
+    // This delegate instance is used to call the internal overload of GenerateEmbeddingsAsync that accepts
+    // a RequestOptions. This should be replaced once a better way to pass RequestOptions is available.
+    private static readonly Func<EmbeddingClient, IEnumerable<string>, OpenAI.Embeddings.EmbeddingGenerationOptions, RequestOptions, Task<ClientResult<OpenAIEmbeddingCollection>>>?
+        _generateEmbeddingsAsync =
+        (Func<EmbeddingClient, IEnumerable<string>, OpenAI.Embeddings.EmbeddingGenerationOptions, RequestOptions, Task<ClientResult<OpenAIEmbeddingCollection>>>?)
+        typeof(EmbeddingClient)
+        .GetMethod(
+            nameof(EmbeddingClient.GenerateEmbeddingsAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+            null, [typeof(IEnumerable<string>), typeof(OpenAI.Embeddings.EmbeddingGenerationOptions), typeof(RequestOptions)], null)
+        ?.CreateDelegate(
+            typeof(Func<EmbeddingClient, IEnumerable<string>, OpenAI.Embeddings.EmbeddingGenerationOptions, RequestOptions, Task<ClientResult<OpenAIEmbeddingCollection>>>));
 
     /// <summary>Metadata about the embedding generator.</summary>
     private readonly EmbeddingGeneratorMetadata _metadata;
@@ -37,24 +47,17 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="defaultModelDimensions"/> is not positive.</exception>
     public OpenAIEmbeddingGenerator(EmbeddingClient embeddingClient, int? defaultModelDimensions = null)
     {
-        _ = Throw.IfNull(embeddingClient);
+        _embeddingClient = Throw.IfNull(embeddingClient);
+        _dimensions = defaultModelDimensions;
+
         if (defaultModelDimensions < 1)
         {
             Throw.ArgumentOutOfRangeException(nameof(defaultModelDimensions), "Value must be greater than 0.");
         }
 
-        _embeddingClient = embeddingClient;
-        _dimensions = defaultModelDimensions;
-
-        // https://github.com/openai/openai-dotnet/issues/215
-        // The endpoint and model aren't currently exposed, so use reflection to get at them, temporarily. Once packages
-        // implement the abstractions directly rather than providing adapters on top of the public APIs,
-        // the package can provide such implementations separate from what's exposed in the public API.
-        string providerUrl = (typeof(EmbeddingClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(embeddingClient) as Uri)?.ToString() ??
-            DefaultOpenAIEndpoint;
-
-        _metadata = CreateMetadata("openai", providerUrl, _embeddingClient.Model, defaultModelDimensions);
+#pragma warning disable OPENAI001 // Endpoint and Model are experimental
+        _metadata = new("openai", embeddingClient.Endpoint, _embeddingClient.Model, defaultModelDimensions);
+#pragma warning restore OPENAI001
     }
 
     /// <inheritdoc />
@@ -62,7 +65,18 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     {
         OpenAI.Embeddings.EmbeddingGenerationOptions? openAIOptions = ToOpenAIOptions(options);
 
-        var embeddings = (await _embeddingClient.GenerateEmbeddingsAsync(values, openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
+        var t = _generateEmbeddingsAsync is not null ?
+            _generateEmbeddingsAsync(_embeddingClient, values, openAIOptions, cancellationToken.ToRequestOptions(streaming: false)) :
+            _embeddingClient.GenerateEmbeddingsAsync(values, openAIOptions, cancellationToken);
+        var embeddings = (await t.ConfigureAwait(false)).Value;
+
+        UsageDetails? usage = embeddings.Usage is not null ?
+            new()
+            {
+                InputTokenCount = embeddings.Usage.InputTokenCount,
+                TotalTokenCount = embeddings.Usage.TotalTokenCount
+            } :
+            null;
 
         return new(embeddings.Select(e =>
                 new Embedding<float>(e.ToFloats())
@@ -71,11 +85,7 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
                     ModelId = embeddings.Model,
                 }))
         {
-            Usage = new()
-            {
-                InputTokenCount = embeddings.Usage.InputTokenCount,
-                TotalTokenCount = embeddings.Usage.TotalTokenCount
-            },
+            Usage = usage,
         };
     }
 
@@ -98,19 +108,19 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             null;
     }
 
-    /// <summary>Creates the <see cref="EmbeddingGeneratorMetadata"/> for this instance.</summary>
-    private static EmbeddingGeneratorMetadata CreateMetadata(string providerName, string providerUrl, string? defaultModelId, int? defaultModelDimensions) =>
-        new(providerName, Uri.TryCreate(providerUrl, UriKind.Absolute, out Uri? providerUri) ? providerUri : null, defaultModelId, defaultModelDimensions);
-
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
     private OpenAI.Embeddings.EmbeddingGenerationOptions ToOpenAIOptions(EmbeddingGenerationOptions? options)
     {
         if (options?.RawRepresentationFactory?.Invoke(this) is not OpenAI.Embeddings.EmbeddingGenerationOptions result)
         {
-            result = new OpenAI.Embeddings.EmbeddingGenerationOptions();
+            result = new();
         }
 
         result.Dimensions ??= options?.Dimensions ?? _dimensions;
+#pragma warning disable SCME0001 // JsonPatch is experimental
+        OpenAIClientExtensions.PatchModelIfNotSet(ref result.Patch, options?.ModelId);
+#pragma warning restore SCME0001
+
         return result;
     }
 }

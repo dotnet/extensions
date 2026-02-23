@@ -1,15 +1,27 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable S3604
-// S3604: Member initializer values should not be redundant.
-// We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
-// constructor syntax.
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
-internal sealed class ContentSafetyChatOptions(string annotationTask, string evaluatorName) : ChatOptions
+internal sealed class ContentSafetyChatOptions : ChatOptions
 {
-    internal string AnnotationTask { get; } = annotationTask;
-    internal string EvaluatorName { get; } = evaluatorName;
+    public ContentSafetyChatOptions(string annotationTask, string evaluatorName)
+    {
+        AnnotationTask = annotationTask;
+        EvaluatorName = evaluatorName;
+    }
+
+    private ContentSafetyChatOptions(ContentSafetyChatOptions other)
+        : base(Throw.IfNull(other))
+    {
+        AnnotationTask = other.AnnotationTask;
+        EvaluatorName = other.EvaluatorName;
+    }
+
+    public string AnnotationTask { get; }
+    public string EvaluatorName { get; }
+
+    public override ChatOptions Clone() => new ContentSafetyChatOptions(this);
 }

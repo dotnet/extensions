@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Threading;
-
-#pragma warning disable S1067 // Expressions should not be too complex
 
 namespace Microsoft.Extensions.AI;
 
@@ -36,6 +35,18 @@ public sealed record class AIJsonSchemaCreateOptions
     /// The delegate is not invoked for <see cref="CancellationToken"/> parameters.
     /// </remarks>
     public Func<ParameterInfo, bool>? IncludeParameter { get; init; }
+
+    /// <summary>
+    /// Gets a callback that is invoked for each parameter in the <see cref="MethodBase"/> provided to
+    /// <see cref="AIJsonUtilities.CreateFunctionJsonSchema"/> to obtain a description for the parameter.
+    /// </summary>
+    /// <remarks>
+    /// The delegate receives a <see cref="ParameterInfo"/> instance and returns a string describing
+    /// the parameter. If <see langword="null"/>, or if the delegate returns <see langword="null"/>,
+    /// the description will be sourced from the <see cref="MethodBase"/> metadata (like <see cref="DescriptionAttribute"/>),
+    /// if available.
+    /// </remarks>
+    public Func<ParameterInfo, string?>? ParameterDescriptionProvider { get; init; }
 
     /// <summary>
     /// Gets a <see cref="AIJsonSchemaTransformOptions"/> governing transformations on the JSON schema after it has been generated.

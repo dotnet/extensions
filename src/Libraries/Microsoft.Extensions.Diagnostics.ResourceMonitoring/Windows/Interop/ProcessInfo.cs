@@ -13,16 +13,13 @@ internal sealed class ProcessInfo : IProcessInfo
     public ulong GetMemoryUsage()
     {
         ulong memoryUsage = 0;
-        var processes = Process.GetProcesses();
-        foreach (var process in processes)
+        foreach (var process in Process.GetProcesses())
         {
             try
             {
                 memoryUsage += (ulong)process.WorkingSet64;
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 // Ignore various exceptions including, but not limited:
                 // AccessDenied (from kernel processes),
@@ -31,9 +28,7 @@ internal sealed class ProcessInfo : IProcessInfo
             }
             finally
             {
-#pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
                 process?.Dispose();
-#pragma warning restore EA0011 // Consider removing unnecessary conditional access operator (?)
             }
         }
 

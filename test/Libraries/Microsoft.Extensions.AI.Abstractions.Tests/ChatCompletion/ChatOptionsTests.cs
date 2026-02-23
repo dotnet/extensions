@@ -23,6 +23,7 @@ public class ChatOptionsTests
         Assert.Null(options.FrequencyPenalty);
         Assert.Null(options.PresencePenalty);
         Assert.Null(options.Seed);
+        Assert.Null(options.Reasoning);
         Assert.Null(options.ResponseFormat);
         Assert.Null(options.ModelId);
         Assert.Null(options.StopSequences);
@@ -42,6 +43,7 @@ public class ChatOptionsTests
         Assert.Null(clone.FrequencyPenalty);
         Assert.Null(clone.PresencePenalty);
         Assert.Null(clone.Seed);
+        Assert.Null(clone.Reasoning);
         Assert.Null(clone.ResponseFormat);
         Assert.Null(clone.ModelId);
         Assert.Null(clone.StopSequences);
@@ -50,6 +52,8 @@ public class ChatOptionsTests
         Assert.Null(clone.Tools);
         Assert.Null(clone.AdditionalProperties);
         Assert.Null(clone.RawRepresentationFactory);
+        Assert.Null(clone.ContinuationToken);
+        Assert.Null(clone.AllowBackgroundResponses);
     }
 
     [Fact]
@@ -76,6 +80,8 @@ public class ChatOptionsTests
 
         Func<IChatClient, object?> rawRepresentationFactory = (c) => null;
 
+        ResponseContinuationToken continuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+
         options.ConversationId = "12345";
         options.Instructions = "Some instructions";
         options.Temperature = 0.1f;
@@ -85,6 +91,7 @@ public class ChatOptionsTests
         options.FrequencyPenalty = 0.4f;
         options.PresencePenalty = 0.5f;
         options.Seed = 12345;
+        options.Reasoning = new ReasoningOptions { Effort = ReasoningEffort.Medium, Output = ReasoningOutput.Summary };
         options.ResponseFormat = ChatResponseFormat.Json;
         options.ModelId = "modelId";
         options.StopSequences = stopSequences;
@@ -93,6 +100,8 @@ public class ChatOptionsTests
         options.Tools = tools;
         options.RawRepresentationFactory = rawRepresentationFactory;
         options.AdditionalProperties = additionalProps;
+        options.ContinuationToken = continuationToken;
+        options.AllowBackgroundResponses = true;
 
         Assert.Equal("12345", options.ConversationId);
         Assert.Equal("Some instructions", options.Instructions);
@@ -103,6 +112,9 @@ public class ChatOptionsTests
         Assert.Equal(0.4f, options.FrequencyPenalty);
         Assert.Equal(0.5f, options.PresencePenalty);
         Assert.Equal(12345, options.Seed);
+        Assert.NotNull(options.Reasoning);
+        Assert.Equal(ReasoningEffort.Medium, options.Reasoning.Effort);
+        Assert.Equal(ReasoningOutput.Summary, options.Reasoning.Output);
         Assert.Same(ChatResponseFormat.Json, options.ResponseFormat);
         Assert.Equal("modelId", options.ModelId);
         Assert.Same(stopSequences, options.StopSequences);
@@ -111,6 +123,8 @@ public class ChatOptionsTests
         Assert.Same(tools, options.Tools);
         Assert.Same(rawRepresentationFactory, options.RawRepresentationFactory);
         Assert.Same(additionalProps, options.AdditionalProperties);
+        Assert.Same(continuationToken, options.ContinuationToken);
+        Assert.True(options.AllowBackgroundResponses);
 
         ChatOptions clone = options.Clone();
         Assert.Equal("12345", clone.ConversationId);
@@ -121,6 +135,10 @@ public class ChatOptionsTests
         Assert.Equal(0.4f, clone.FrequencyPenalty);
         Assert.Equal(0.5f, clone.PresencePenalty);
         Assert.Equal(12345, clone.Seed);
+        Assert.NotNull(clone.Reasoning);
+        Assert.NotSame(options.Reasoning, clone.Reasoning); // Should be a shallow copy
+        Assert.Equal(ReasoningEffort.Medium, clone.Reasoning.Effort);
+        Assert.Equal(ReasoningOutput.Summary, clone.Reasoning.Output);
         Assert.Same(ChatResponseFormat.Json, clone.ResponseFormat);
         Assert.Equal("modelId", clone.ModelId);
         Assert.Equal(stopSequences, clone.StopSequences);
@@ -129,6 +147,8 @@ public class ChatOptionsTests
         Assert.Equal(tools, clone.Tools);
         Assert.Same(rawRepresentationFactory, clone.RawRepresentationFactory);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
+        Assert.Same(continuationToken, clone.ContinuationToken);
+        Assert.True(clone.AllowBackgroundResponses);
     }
 
     [Fact]
@@ -147,6 +167,8 @@ public class ChatOptionsTests
             ["key"] = "value",
         };
 
+        ResponseContinuationToken continuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4 });
+
         options.ConversationId = "12345";
         options.Instructions = "Some instructions";
         options.Temperature = 0.1f;
@@ -156,6 +178,7 @@ public class ChatOptionsTests
         options.FrequencyPenalty = 0.4f;
         options.PresencePenalty = 0.5f;
         options.Seed = 12345;
+        options.Reasoning = new ReasoningOptions { Effort = ReasoningEffort.High, Output = ReasoningOutput.Full };
         options.ResponseFormat = ChatResponseFormat.Json;
         options.ModelId = "modelId";
         options.StopSequences = stopSequences;
@@ -168,6 +191,8 @@ public class ChatOptionsTests
         ];
         options.RawRepresentationFactory = (c) => null;
         options.AdditionalProperties = additionalProps;
+        options.ContinuationToken = continuationToken;
+        options.AllowBackgroundResponses = true;
 
         string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.ChatOptions);
 
@@ -183,6 +208,9 @@ public class ChatOptionsTests
         Assert.Equal(0.4f, deserialized.FrequencyPenalty);
         Assert.Equal(0.5f, deserialized.PresencePenalty);
         Assert.Equal(12345, deserialized.Seed);
+        Assert.NotNull(deserialized.Reasoning);
+        Assert.Equal(ReasoningEffort.High, deserialized.Reasoning.Effort);
+        Assert.Equal(ReasoningOutput.Full, deserialized.Reasoning.Output);
         Assert.IsType<ChatResponseFormatJson>(deserialized.ResponseFormat);
         Assert.Equal("modelId", deserialized.ModelId);
         Assert.NotSame(stopSequences, deserialized.StopSequences);
@@ -197,5 +225,71 @@ public class ChatOptionsTests
         Assert.True(deserialized.AdditionalProperties.TryGetValue("key", out object? value));
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
+    }
+
+    [Fact]
+    public void CopyConstructors_EnableHierarchyCloning()
+    {
+        OptionsB b = new()
+        {
+            ModelId = "test",
+            A = 42,
+            B = 84,
+        };
+
+        ChatOptions clone = b.Clone();
+
+        Assert.Equal("test", clone.ModelId);
+        Assert.Equal(42, Assert.IsType<OptionsA>(clone, exactMatch: false).A);
+        Assert.Equal(84, Assert.IsType<OptionsB>(clone, exactMatch: true).B);
+    }
+
+    private class OptionsA : ChatOptions
+    {
+        public OptionsA()
+        {
+        }
+
+        protected OptionsA(OptionsA other)
+            : base(other)
+        {
+            A = other.A;
+        }
+
+        public int A { get; set; }
+
+        public override ChatOptions Clone() => new OptionsA(this);
+    }
+
+    private class OptionsB : OptionsA
+    {
+        public OptionsB()
+        {
+        }
+
+        protected OptionsB(OptionsB other)
+            : base(other)
+        {
+            B = other.B;
+        }
+
+        public int B { get; set; }
+
+        public override ChatOptions Clone() => new OptionsB(this);
+    }
+
+    [Fact]
+    public void CopyConstructor_Null_Valid()
+    {
+        PassedNullToBaseOptions options = new();
+        Assert.NotNull(options);
+    }
+
+    private class PassedNullToBaseOptions : ChatOptions
+    {
+        public PassedNullToBaseOptions()
+            : base(null)
+        {
+        }
     }
 }

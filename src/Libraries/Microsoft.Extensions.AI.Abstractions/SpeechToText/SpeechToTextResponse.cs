@@ -5,14 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
-
-#pragma warning disable EA0011 // Consider removing unnecessary conditional access operators
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an speech to text request.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public class SpeechToTextResponse
 {
     /// <summary>The content items in the generated text response.</summary>

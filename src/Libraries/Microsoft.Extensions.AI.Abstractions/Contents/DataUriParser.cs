@@ -23,6 +23,11 @@ internal static class DataUriParser
 {
     public static string Scheme => "data:";
 
+    /// <summary>
+    /// The default media type per RFC 2397 when the media type is omitted.
+    /// </summary>
+    public const string DefaultMediaType = "text/plain;charset=US-ASCII";
+
     public static DataUri Parse(ReadOnlyMemory<char> dataUri)
     {
         // Validate, then trim off the "data:" scheme.
@@ -59,9 +64,14 @@ internal static class DataUriParser
         }
 
         // Validate the media type, if present.
+        // Per RFC 2397, if the media type is omitted, it defaults to "text/plain;charset=US-ASCII".
         ReadOnlySpan<char> span = metadata.Span.Trim();
         string? mediaType = null;
-        if (!span.IsEmpty && !IsValidMediaType(span, ref mediaType))
+        if (span.IsEmpty)
+        {
+            mediaType = DefaultMediaType;
+        }
+        else if (!IsValidMediaType(span, ref mediaType))
         {
             throw new UriFormatException("Invalid data URI format: the media type is not a valid.");
         }
@@ -91,6 +101,7 @@ internal static class DataUriParser
         // For common media types, we can avoid both allocating a string for the span and avoid parsing overheads.
         string? knownType = mediaTypeSpan switch
         {
+            DefaultMediaType => DefaultMediaType,
             "application/json" => "application/json",
             "application/octet-stream" => "application/octet-stream",
             "application/pdf" => "application/pdf",
@@ -148,9 +159,7 @@ internal static class DataUriParser
 #if NET8_0_OR_GREATER
         return Base64.IsValid(value) && !value.ContainsAny(" \t\r\n");
 #else
-#pragma warning disable S109 // Magic numbers should not be used
         if (value!.Length % 4 != 0)
-#pragma warning restore S109
         {
             return false;
         }
@@ -171,9 +180,7 @@ internal static class DataUriParser
         // Now traverse over characters
         for (var i = 0; i <= index; i++)
         {
-#pragma warning disable S1067 // Expressions should not be too complex
             bool validChar = value[i] is (>= 'A' and <= 'Z') or (>= 'a' and <= 'z') or (>= '0' and <= '9') or '+' or '/';
-#pragma warning restore S1067
             if (!validChar)
             {
                 return false;
@@ -187,13 +194,11 @@ internal static class DataUriParser
     /// <summary>Provides the parts of a parsed data URI.</summary>
     public sealed class DataUri(ReadOnlyMemory<char> data, bool isBase64, string? mediaType)
     {
-#pragma warning disable S3604 // False positive: Member initializer values should not be redundant
         public string? MediaType { get; } = mediaType;
 
         public ReadOnlyMemory<char> Data { get; } = data;
 
         public bool IsBase64 { get; } = isBase64;
-#pragma warning restore S3604
 
         public byte[] ToByteArray() => IsBase64 ?
             Convert.FromBase64String(Data.ToString()) :

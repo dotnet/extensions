@@ -24,23 +24,24 @@ if desired.
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
-| `EXTEXP0001` | Resilience experiments |
-| `EXTEXP0002` | Compliance experiments  |
-| `EXTEXP0003` | Telemetry experiments |
-| `EXTEXP0004` | TimeProvider experiments |
-| `EXTEXP0006` | AsyncState experiments |
-| `EXTEXP0007` | Health check experiments |
-| `EXTEXP0008` | Resource monitoring experiments |
-| `EXTEXP0009` | Hosting experiments |
-| `EXTEXP0010` | Object pool experiments |
-| `EXTEXP0011` | Document database experiments |
-| `EXTEXP0012` | Auto-activation experiments |
-| `EXTEXP0013` | HttpLogging middleware experiments |
-| `EXTEXP0014` | ASP.NET Core integration testing experiments |
-| `EXTEXP0015` | Environmental probes experiments |
-| `EXTEXP0016` | Hosting integration testing experiments |
-| `EXTEXP0017` | Contextual options experiments |
-| `EXTEXP0018` | HybridCache experiments |
+| `EXTEXP0001`      | Resilience experiments |
+| `EXTEXP0002`      | Compliance experiments  |
+| `EXTEXP0003`      | Telemetry experiments |
+| `EXTEXP0004`      | TimeProvider experiments |
+| `EXTEXP0006`      | AsyncState experiments |
+| `EXTEXP0007`      | Health check experiments |
+| `EXTEXP0008`      | Resource monitoring experiments |
+| `EXTEXP0009`      | Hosting experiments |
+| `EXTEXP0010`      | Object pool experiments |
+| `EXTEXP0011`      | Document database experiments |
+| `EXTEXP0012`      | Auto-activation experiments |
+| `EXTEXP0013`      | HttpLogging middleware experiments |
+| `EXTEXP0014`      | ASP.NET Core integration testing experiments |
+| `EXTEXP0015`      | Environmental probes experiments |
+| `EXTEXP0016`      | Hosting integration testing experiments |
+| `EXTEXP0017`      | Contextual options experiments |
+| `EXTEXP0018`      | HybridCache experiments |
+| `MEAI001`         | AI experiments |
 
 # Obsoletions
 
@@ -51,6 +52,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
 | `EXTOBS0001` | This API is obsolete and will be removed in a future version. Consider using [Resource Monitoring observable instruments](https://learn.microsoft.com/dotnet/core/diagnostics/built-in-metrics-diagnostics#microsoftextensionsdiagnosticsresourcemonitoring). |
+| `EXTOBS0002` | This API is obsolete and will be removed in a future version. Instead of the AddServiceLogEnricher() methods, consider using the respective AddApplicationLogEnricher() methods.                                                                              |
 
 # LoggerMessage
 

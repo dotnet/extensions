@@ -8,8 +8,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
-using static Microsoft.Extensions.AI.OpenTelemetryConsts.GenAI;
 
 namespace Microsoft.Extensions.AI;
 
@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.AI;
 /// Prompts and options are not logged at other logging levels.
 /// </para>
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public partial class LoggingImageGenerator : DelegatingImageGenerator
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
@@ -102,7 +102,7 @@ public partial class LoggingImageGenerator : DelegatingImageGenerator
         }
     }
 
-    private string AsJson<T>(T value) => LoggingHelpers.AsJson(value, _jsonSerializerOptions);
+    private string AsJson<T>(T value) => TelemetryHelpers.AsJson(value, _jsonSerializerOptions);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
     private partial void LogInvoked(string methodName);
