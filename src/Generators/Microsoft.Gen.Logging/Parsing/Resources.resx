@@ -153,11 +153,11 @@
   <data name="LoggingMethodMustBePartialMessage" xml:space="preserve">
     <value>Logging methods must be partial</value>
   </data>
-  <data name="LoggingMethodIsGenericTitle" xml:space="preserve">
-    <value>Logging methods can't be generic</value>
+  <data name="LoggingMethodHasAllowsRefStructConstraintTitle" xml:space="preserve">
+    <value>Logging methods can't use the 'allows ref struct' constraint</value>
   </data>
-  <data name="LoggingMethodIsGenericMessage" xml:space="preserve">
-    <value>Logging methods can't be generic</value>
+  <data name="LoggingMethodHasAllowsRefStructConstraintMessage" xml:space="preserve">
+    <value>Logging methods can't use the 'allows ref struct' constraint</value>
   </data>
   <data name="ShouldntMentionExceptionInMessageMessage" xml:space="preserve">
     <value>Don't include a template for parameter "{0}" in the logging message, exceptions are automatically delivered without being listed in the logging message</value>

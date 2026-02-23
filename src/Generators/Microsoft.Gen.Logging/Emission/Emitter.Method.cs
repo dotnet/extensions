@@ -49,9 +49,13 @@ internal sealed partial class Emitter : EmitterBase
         OutGeneratedCodeAttribute();
 
         OutIndent();
-        Out($"{lm.Modifiers} void {lm.Name}({extension}");
+        Out($"{lm.Modifiers} void {lm.Name}");
+        GenTypeParameterList(lm);
+        Out($"({extension}");
         GenParameters(lm);
-        Out(")\n");
+        Out(")");
+        GenTypeConstraints(lm);
+        Out("\n");
 
         OutOpenBrace();
 

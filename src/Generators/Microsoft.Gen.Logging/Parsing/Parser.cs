@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -16,6 +17,14 @@ namespace Microsoft.Gen.Logging.Parsing;
 
 internal sealed partial class Parser
 {
+    // ITypeParameterSymbol.AllowsRefLikeType was added in Roslyn 4.9 (C# 13). Access via a compiled
+    // delegate so the same source file compiles against all supported Roslyn versions, while
+    // avoiding the per-call overhead of PropertyInfo.GetValue boxing.
+    private static readonly Func<ITypeParameterSymbol, bool>? _getAllowsRefLikeType =
+        (Func<ITypeParameterSymbol, bool>?)typeof(ITypeParameterSymbol)
+            .GetProperty("AllowsRefLikeType")?.GetGetMethod()!
+            .CreateDelegate(typeof(Func<ITypeParameterSymbol, bool>));
+
     private readonly CancellationToken _cancellationToken;
     private readonly Compilation _compilation;
     private readonly Action<Diagnostic> _reportDiagnostic;
@@ -398,11 +407,22 @@ internal sealed partial class Parser
                 keepMethod = false;
             }
 
-            if (method.Arity > 0)
+            foreach (var tp in methodSymbol.TypeParameters)
             {
-                // we don't currently support generic methods
-                Diag(DiagDescriptors.LoggingMethodIsGeneric, method.TypeParameterList!.GetLocation());
-                keepMethod = false;
+                if (_getAllowsRefLikeType?.Invoke(tp) == true)
+                {
+                    // 'allows ref struct' anti-constraint is not supported because the generated code stores
+                    // parameters in fields and cannot hold ref struct type arguments.
+                    Diag(DiagDescriptors.LoggingMethodHasAllowsRefStructConstraint, method.Identifier.GetLocation());
+                    keepMethod = false;
+                    break;
+                }
+
+                lm.TypeParameters.Add(new LoggingMethodTypeParameter
+                {
+                    Name = tp.Name,
+                    Constraints = GetTypeParameterConstraints(tp),
+                });
             }
 
             bool isPartial = methodSymbol.IsPartialDefinition;
@@ -464,6 +484,45 @@ internal sealed partial class Parser
         }
 
         return false;
+    }
+
+    private static string? GetTypeParameterConstraints(ITypeParameterSymbol typeParameter)
+    {
+        var constraints = new List<string>();
+
+        if (typeParameter.HasReferenceTypeConstraint)
+        {
+            string classConstraint = typeParameter.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated ? "class?" : "class";
+            constraints.Add(classConstraint);
+        }
+        else if (typeParameter.HasValueTypeConstraint)
+        {
+            // HasUnmanagedTypeConstraint also implies HasValueTypeConstraint
+            constraints.Add(typeParameter.HasUnmanagedTypeConstraint ? "unmanaged" : "struct");
+        }
+        else if (typeParameter.HasNotNullConstraint)
+        {
+            constraints.Add("notnull");
+        }
+
+        foreach (var constraintType in typeParameter.ConstraintTypes)
+        {
+            if (constraintType is IErrorTypeSymbol)
+            {
+                continue;
+            }
+
+            constraints.Add(constraintType.ToDisplayString(
+                SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
+                    SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier)));
+        }
+
+        if (typeParameter.HasConstructorConstraint)
+        {
+            constraints.Add("new()");
+        }
+
+        return constraints.Count > 0 ? string.Join(", ", constraints) : null;
     }
 
     // Returns all the classification attributes attached to a symbol.

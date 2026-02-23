@@ -131,4 +131,41 @@ internal sealed partial class Emitter : EmitterBase
 #pragma warning restore S1643 // Strings should not be concatenated using '+' in a loop
         }
     }
+
+    private void GenTypeParameterList(LoggingMethod lm)
+    {
+        if (lm.TypeParameters.Count == 0)
+        {
+            return;
+        }
+
+        bool firstItem = true;
+        Out("<");
+        foreach (var tp in lm.TypeParameters)
+        {
+            if (firstItem)
+            {
+                firstItem = false;
+            }
+            else
+            {
+                Out(", ");
+            }
+
+            Out(tp.Name);
+        }
+
+        Out(">");
+    }
+
+    private void GenTypeConstraints(LoggingMethod lm)
+    {
+        foreach (var tp in lm.TypeParameters)
+        {
+            if (tp.Constraints is not null)
+            {
+                Out($"\n    where {tp.Name} : {tp.Constraints}");
+            }
+        }
+    }
 }
