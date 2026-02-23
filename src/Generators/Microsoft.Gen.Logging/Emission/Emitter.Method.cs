@@ -53,9 +53,9 @@ internal sealed partial class Emitter : EmitterBase
         GenTypeParameterList(lm);
         Out($"({extension}");
         GenParameters(lm);
-        Out(")");
+        Out(')');
         GenTypeConstraints(lm);
-        Out("\n");
+        OutLn();
 
         OutOpenBrace();
 

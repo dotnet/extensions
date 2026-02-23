@@ -140,7 +140,7 @@ internal sealed partial class Emitter : EmitterBase
         }
 
         bool firstItem = true;
-        Out("<");
+        Out('<');
         foreach (var tp in lm.TypeParameters)
         {
             if (firstItem)
@@ -155,7 +155,7 @@ internal sealed partial class Emitter : EmitterBase
             Out(tp.Name);
         }
 
-        Out(">");
+        Out('>');
     }
 
     private void GenTypeConstraints(LoggingMethod lm)
@@ -164,7 +164,8 @@ internal sealed partial class Emitter : EmitterBase
         {
             if (tp.Constraints is not null)
             {
-                Out($"\n    where {tp.Name} : {tp.Constraints}");
+                OutLn();
+                Out($"    where {tp.Name} : {tp.Constraints}");
             }
         }
     }
