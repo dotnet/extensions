@@ -14,7 +14,7 @@ public class RealtimeAudioFormatTests
     {
         var format = new RealtimeAudioFormat("audio/pcm", 16000);
 
-        Assert.Equal("audio/pcm", format.Type);
+        Assert.Equal("audio/pcm", format.MediaType);
         Assert.Equal(16000, format.SampleRate);
     }
 
@@ -23,11 +23,11 @@ public class RealtimeAudioFormatTests
     {
         var format = new RealtimeAudioFormat("audio/pcm", 16000)
         {
-            Type = "audio/wav",
+            MediaType = "audio/wav",
             SampleRate = 24000,
         };
 
-        Assert.Equal("audio/wav", format.Type);
+        Assert.Equal("audio/wav", format.MediaType);
         Assert.Equal(24000, format.SampleRate);
     }
 

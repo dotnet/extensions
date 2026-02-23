@@ -140,7 +140,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
         {
             var audioInputFormatElement = new JsonObject
             {
-                ["type"] = options.InputAudioFormat.Type,
+                ["type"] = options.InputAudioFormat.MediaType,
             };
             if (options.InputAudioFormat.SampleRate.HasValue)
             {
@@ -206,7 +206,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
             {
                 var audioOutputFormatElement = new JsonObject
                 {
-                    ["type"] = options.OutputAudioFormat.Type,
+                    ["type"] = options.OutputAudioFormat.MediaType,
                 };
                 if (options.OutputAudioFormat.SampleRate.HasValue)
                 {
@@ -303,12 +303,12 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                     var outputObj = new JsonObject();
                     var formatObj = new JsonObject();
 
-                    switch (responseCreate.OutputAudioOptions.Type)
+                    switch (responseCreate.OutputAudioOptions.MediaType)
                     {
                         case "audio/pcm":
                             if (responseCreate.OutputAudioOptions.SampleRate == 24000)
                             {
-                                formatObj["type"] = responseCreate.OutputAudioOptions.Type;
+                                formatObj["type"] = responseCreate.OutputAudioOptions.MediaType;
                                 formatObj["rate"] = 24000;
                             }
 
@@ -316,7 +316,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
                         case "audio/pcmu":
                         case "audio/pcma":
-                            formatObj["type"] = responseCreate.OutputAudioOptions.Type;
+                            formatObj["type"] = responseCreate.OutputAudioOptions.MediaType;
                             break;
                     }
 

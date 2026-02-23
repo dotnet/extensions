@@ -15,16 +15,16 @@ public class RealtimeAudioFormat
     /// <summary>
     /// Initializes a new instance of the <see cref="RealtimeAudioFormat"/> class.
     /// </summary>
-    public RealtimeAudioFormat(string type, int sampleRate)
+    public RealtimeAudioFormat(string mediaType, int sampleRate)
     {
-        Type = type;
+        MediaType = mediaType;
         SampleRate = sampleRate;
     }
 
     /// <summary>
-    /// Gets or sets the type of audio. For example, "audio/pcm".
+    /// Gets or sets the media type of the audio (e.g., "audio/pcm", "audio/pcmu", "audio/pcma").
     /// </summary>
-    public string Type { get; set; }
+    public string MediaType { get; set; }
 
     /// <summary>
     /// Gets or sets the sample rate of the audio in Hertz.
