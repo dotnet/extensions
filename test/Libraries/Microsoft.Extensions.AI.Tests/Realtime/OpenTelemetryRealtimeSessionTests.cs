@@ -44,19 +44,13 @@ public class OpenTelemetryRealtimeSessionTests
             GetServiceCallback = (serviceType, serviceKey) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("testprovider", new Uri("http://localhost:12345/realtime"), "gpt-4-realtime") :
                 null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => CallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackAsync(cancellationToken),
         };
 
-        static async IAsyncEnumerable<RealtimeServerMessage> CallbackAsync(
-            IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
+        static async IAsyncEnumerable<RealtimeServerMessage> CallbackAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await Task.Yield();
-
-            // Consume the incoming updates
-            await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                // Just consume the update
-            }
+            _ = cancellationToken;
 
             yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseCreated, MessageId = "evt_001" };
             yield return new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDelta) { OutputIndex = 0, Text = "Hello" };
@@ -91,8 +85,12 @@ public class OpenTelemetryRealtimeSessionTests
             })
             .Build();
 
-        var clientMessages = GetClientMessagesAsync();
-        await foreach (var response in session.GetStreamingResponseAsync(clientMessages))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume responses
         }
@@ -275,13 +273,13 @@ public class OpenTelemetryRealtimeSessionTests
         using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => ThrowingCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => ThrowingCallbackAsync(cancellationToken),
         };
 
-        static async IAsyncEnumerable<RealtimeServerMessage> ThrowingCallbackAsync(
-            IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
+        static async IAsyncEnumerable<RealtimeServerMessage> ThrowingCallbackAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await Task.Yield();
+            _ = cancellationToken;
             yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseCreated };
             throw new InvalidOperationException("Streaming error");
         }
@@ -291,10 +289,9 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        var clientMessages = GetClientMessagesAsync();
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            await foreach (var response in session.GetStreamingResponseAsync(clientMessages))
+            await foreach (var response in session.GetStreamingResponseAsync())
             {
                 // Consume responses
             }
@@ -319,18 +316,13 @@ public class OpenTelemetryRealtimeSessionTests
         using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => ErrorResponseCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => ErrorResponseCallbackAsync(cancellationToken),
         };
 
-        static async IAsyncEnumerable<RealtimeServerMessage> ErrorResponseCallbackAsync(
-            IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
+        static async IAsyncEnumerable<RealtimeServerMessage> ErrorResponseCallbackAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await Task.Yield();
-
-            await foreach (var _ in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                // Consume
-            }
+            _ = cancellationToken;
 
             yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone)
             {
@@ -345,8 +337,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        var clientMessages = GetClientMessagesAsync();
-        await foreach (var response in session.GetStreamingResponseAsync(clientMessages))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume responses
         }
@@ -374,18 +370,13 @@ public class OpenTelemetryRealtimeSessionTests
                 Model = "test-model",
                 VoiceSpeed = 1.0, // Default value should not be logged
             },
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => EmptyCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => EmptyCallbackAsync(cancellationToken),
         };
 
-        static async IAsyncEnumerable<RealtimeServerMessage> EmptyCallbackAsync(
-            IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
+        static async IAsyncEnumerable<RealtimeServerMessage> EmptyCallbackAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await Task.Yield();
-
-            await foreach (var _ in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                // Consume
-            }
+            _ = cancellationToken;
 
             yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
         }
@@ -395,8 +386,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        var clientMessages = GetClientMessagesAsync();
-        await foreach (var response in session.GetStreamingResponseAsync(clientMessages))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -417,18 +412,15 @@ public class OpenTelemetryRealtimeSessionTests
         using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => EmptyCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => EmptyCallbackAsync(cancellationToken),
         };
 
-        static async IAsyncEnumerable<RealtimeServerMessage> EmptyCallbackAsync(
-            IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
+#pragma warning disable S4144 // Methods should not have identical implementations
+        static async IAsyncEnumerable<RealtimeServerMessage> EmptyCallbackAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+#pragma warning restore S4144
         {
             await Task.Yield();
-
-            await foreach (var _ in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                // Consume
-            }
+            _ = cancellationToken;
 
             yield break;
         }
@@ -440,9 +432,8 @@ public class OpenTelemetryRealtimeSessionTests
             .Build();
 
         // This should work without errors even without listeners
-        var clientMessages = GetClientMessagesAsync();
         var count = 0;
-        await foreach (var response in session.GetStreamingResponseAsync(clientMessages))
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             count++;
         }
@@ -467,21 +458,6 @@ public class OpenTelemetryRealtimeSessionTests
         using var session = new OpenTelemetryRealtimeSession(innerSession);
 
         await Assert.ThrowsAsync<ArgumentNullException>("options", () => session.UpdateAsync(null!));
-    }
-
-    [Fact]
-    public async Task GetStreamingResponseAsync_InvalidArgs_Throws()
-    {
-        using var innerSession = new TestRealtimeSession();
-        using var session = new OpenTelemetryRealtimeSession(innerSession);
-
-        await Assert.ThrowsAsync<ArgumentNullException>("updates", async () =>
-        {
-            await foreach (var _ in session.GetStreamingResponseAsync(null!))
-            {
-                // Should not reach here
-            }
-        });
     }
 
     [Fact]
@@ -525,18 +501,13 @@ public class OpenTelemetryRealtimeSessionTests
                 Model = "whisper-1",
                 SessionKind = RealtimeSessionKind.Transcription,
             },
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => TranscriptionCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => TranscriptionCallbackAsync(cancellationToken),
         };
 
-        static async IAsyncEnumerable<RealtimeServerMessage> TranscriptionCallbackAsync(
-            IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
+        static async IAsyncEnumerable<RealtimeServerMessage> TranscriptionCallbackAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await Task.Yield();
-
-            await foreach (var _ in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                // Consume
-            }
+            _ = cancellationToken;
 
             yield return new RealtimeServerInputAudioTranscriptionMessage(RealtimeServerMessageType.InputAudioTranscriptionCompleted)
             {
@@ -550,8 +521,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        var clientMessages = GetClientMessagesAsync();
-        await foreach (var response in session.GetStreamingResponseAsync(clientMessages))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -589,7 +564,7 @@ public class OpenTelemetryRealtimeSessionTests
                 ToolMode = mode,
                 Tools = [AIFunctionFactory.Create((string query) => query, "Search")],
             },
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -597,8 +572,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        var clientMessages = GetClientMessagesAsync();
-        await foreach (var response in session.GetStreamingResponseAsync(clientMessages))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -624,7 +603,7 @@ public class OpenTelemetryRealtimeSessionTests
                 Model = "test-model",
                 ToolMode = ChatToolMode.RequireSpecific("SpecificSearch"),
             },
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -632,8 +611,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        var clientMessages = GetClientMessagesAsync();
-        await foreach (var response in session.GetStreamingResponseAsync(clientMessages))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -660,7 +643,7 @@ public class OpenTelemetryRealtimeSessionTests
                 Model = "test-model",
                 ToolMode = ChatToolMode.RequireAny,
             },
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -668,8 +651,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        var clientMessages = GetClientMessagesAsync();
-        await foreach (var response in session.GetStreamingResponseAsync(clientMessages))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -695,7 +682,7 @@ public class OpenTelemetryRealtimeSessionTests
             {
                 Model = "test-model",
             },
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -703,8 +690,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        var clientMessages = GetClientMessagesAsync();
-        await foreach (var response in session.GetStreamingResponseAsync(clientMessages))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -728,7 +719,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -736,7 +727,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesWithToolResultAsync()))
+        await foreach (var msg in GetClientMessagesWithToolResultAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -766,7 +762,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => CallbackWithToolCallAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithToolCallAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -774,7 +770,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesAsync()))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -804,7 +805,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => CallbackWithToolCallAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithToolCallAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -812,7 +813,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = false)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesWithToolResultAsync()))
+        await foreach (var msg in GetClientMessagesWithToolResultAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -822,15 +828,12 @@ public class OpenTelemetryRealtimeSessionTests
         Assert.Null(activity.GetTagItem("gen_ai.output.messages"));
     }
 
-    private static async IAsyncEnumerable<RealtimeServerMessage> SimpleCallbackAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
+#pragma warning disable S4144 // Methods should not have identical implementations
+    private static async IAsyncEnumerable<RealtimeServerMessage> SimpleCallbackAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+#pragma warning restore S4144
     {
         await Task.Yield();
-
-        await foreach (var _ in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            // Consume
-        }
+        _ = cancellationToken;
 
         yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
     }
@@ -855,16 +858,10 @@ public class OpenTelemetryRealtimeSessionTests
         yield return new RealtimeClientResponseCreateMessage();
     }
 
-    private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithToolCallAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithToolCallAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await Task.Yield();
-
-        // Consume incoming messages
-        await foreach (var _ in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            // Consume
-        }
+        _ = cancellationToken;
 
         // Yield a function call item from the server using RealtimeServerResponseOutputItemMessage
         var contentItem = new RealtimeContentItem(
@@ -893,7 +890,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -901,7 +898,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesAsync()))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -931,7 +933,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -939,7 +941,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesAsync()))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -969,7 +976,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -977,7 +984,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesWithInstructionsAsync()))
+        await foreach (var msg in GetClientMessagesWithInstructionsAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -1006,7 +1018,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -1014,7 +1026,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesWithItemsAsync()))
+        await foreach (var msg in GetClientMessagesWithItemsAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -1043,7 +1060,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => CallbackWithTextOutputAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithTextOutputAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -1051,7 +1068,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesAsync()))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -1079,7 +1101,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => CallbackWithTranscriptionAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithTranscriptionAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -1087,7 +1109,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesAsync()))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -1115,7 +1142,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => CallbackWithServerErrorAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithServerErrorAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -1123,7 +1150,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesAsync()))
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -1151,7 +1183,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -1159,7 +1191,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesWithTextContentAsync()))
+        await foreach (var msg in GetClientMessagesWithTextContentAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -1187,7 +1224,7 @@ public class OpenTelemetryRealtimeSessionTests
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("test-provider") : null,
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => SimpleCallbackAsync(updates, cancellationToken),
+            GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
         using var session = innerSession
@@ -1195,7 +1232,12 @@ public class OpenTelemetryRealtimeSessionTests
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
 
-        await foreach (var response in session.GetStreamingResponseAsync(GetClientMessagesWithImageContentAsync()))
+        await foreach (var msg in GetClientMessagesWithImageContentAsync())
+        {
+            await session.SendClientMessageAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
         {
             // Consume
         }
@@ -1247,15 +1289,10 @@ public class OpenTelemetryRealtimeSessionTests
         yield return new RealtimeClientResponseCreateMessage();
     }
 
-    private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithTextOutputAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithTextOutputAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await Task.Yield();
-
-        await foreach (var _ in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            // Consume
-        }
+        _ = cancellationToken;
 
         yield return new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDone)
         {
@@ -1264,15 +1301,10 @@ public class OpenTelemetryRealtimeSessionTests
         yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
     }
 
-    private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithTranscriptionAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithTranscriptionAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await Task.Yield();
-
-        await foreach (var _ in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            // Consume
-        }
+        _ = cancellationToken;
 
         yield return new RealtimeServerInputAudioTranscriptionMessage(RealtimeServerMessageType.InputAudioTranscriptionCompleted)
         {
@@ -1281,15 +1313,10 @@ public class OpenTelemetryRealtimeSessionTests
         yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
     }
 
-    private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithServerErrorAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithServerErrorAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await Task.Yield();
-
-        await foreach (var _ in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            // Consume
-        }
+        _ = cancellationToken;
 
         yield return new RealtimeServerErrorMessage
         {

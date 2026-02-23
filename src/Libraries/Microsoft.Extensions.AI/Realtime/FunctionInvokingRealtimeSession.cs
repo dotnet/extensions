@@ -250,10 +250,8 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(updates);
-
         // Create an activity to group function invocations together for better observability.
         using Activity? activity = FunctionInvocationHelpers.CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
 
@@ -262,7 +260,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
         int consecutiveErrorCount = 0;
         int iterationCount = 0;
 
-        await foreach (var message in InnerSession.GetStreamingResponseAsync(updates, cancellationToken).ConfigureAwait(false))
+        await foreach (var message in InnerSession.GetStreamingResponseAsync(cancellationToken).ConfigureAwait(false))
         {
             // Check if this message contains function calls
             bool hasFunctionCalls = false;
@@ -307,7 +305,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
                 foreach (var resultMessage in results.functionResults)
                 {
                     // inject back the function result messages to the inner session
-                    await InnerSession.InjectClientMessageAsync(resultMessage, cancellationToken).ConfigureAwait(false);
+                    await InnerSession.SendClientMessageAsync(resultMessage, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

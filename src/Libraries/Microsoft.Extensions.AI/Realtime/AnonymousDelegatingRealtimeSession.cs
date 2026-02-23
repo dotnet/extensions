@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 internal sealed class AnonymousDelegatingRealtimeSession : DelegatingRealtimeSession
 {
     /// <summary>The delegate to use as the implementation of <see cref="GetStreamingResponseAsync"/>.</summary>
-    private readonly Func<IAsyncEnumerable<RealtimeClientMessage>, IRealtimeSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>> _getStreamingResponseFunc;
+    private readonly Func<IRealtimeSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>> _getStreamingResponseFunc;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnonymousDelegatingRealtimeSession"/> class.
@@ -27,7 +27,7 @@ internal sealed class AnonymousDelegatingRealtimeSession : DelegatingRealtimeSes
     /// <exception cref="ArgumentNullException"><paramref name="getStreamingResponseFunc"/> is <see langword="null"/>.</exception>
     public AnonymousDelegatingRealtimeSession(
         IRealtimeSession innerSession,
-        Func<IAsyncEnumerable<RealtimeClientMessage>, IRealtimeSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>> getStreamingResponseFunc)
+        Func<IRealtimeSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>> getStreamingResponseFunc)
         : base(innerSession)
     {
         _getStreamingResponseFunc = Throw.IfNull(getStreamingResponseFunc);
@@ -35,10 +35,8 @@ internal sealed class AnonymousDelegatingRealtimeSession : DelegatingRealtimeSes
 
     /// <inheritdoc/>
     public override IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates, CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(updates);
-
-        return _getStreamingResponseFunc(updates, InnerSession, cancellationToken);
+        return _getStreamingResponseFunc(InnerSession, cancellationToken);
     }
 }

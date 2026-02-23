@@ -68,8 +68,8 @@ public class DelegatingRealtimeSession : IRealtimeSession
     public virtual RealtimeSessionOptions? Options => InnerSession.Options;
 
     /// <inheritdoc />
-    public virtual Task InjectClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default) =>
-        InnerSession.InjectClientMessageAsync(message, cancellationToken);
+    public virtual Task SendClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default) =>
+        InnerSession.SendClientMessageAsync(message, cancellationToken);
 
     /// <inheritdoc />
     public virtual Task UpdateAsync(RealtimeSessionOptions options, CancellationToken cancellationToken = default) =>
@@ -77,8 +77,8 @@ public class DelegatingRealtimeSession : IRealtimeSession
 
     /// <inheritdoc />
     public virtual IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates, CancellationToken cancellationToken = default) =>
-        InnerSession.GetStreamingResponseAsync(updates, cancellationToken);
+        CancellationToken cancellationToken = default) =>
+        InnerSession.GetStreamingResponseAsync(cancellationToken);
 
     /// <inheritdoc />
     public virtual object? GetService(Type serviceType, object? serviceKey = null)

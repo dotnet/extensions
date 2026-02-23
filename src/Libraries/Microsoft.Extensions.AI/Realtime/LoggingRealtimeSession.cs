@@ -90,7 +90,7 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
     }
 
     /// <inheritdoc/>
-    public override async Task InjectClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
+    public override async Task SendClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(message);
 
@@ -98,41 +98,39 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInjectMessageSensitive(GetLoggableString(message));
+                LogSendMessageSensitive(GetLoggableString(message));
             }
             else
             {
-                LogInjectMessage();
+                LogSendMessage();
             }
         }
 
         try
         {
-            await base.InjectClientMessageAsync(message, cancellationToken).ConfigureAwait(false);
+            await base.SendClientMessageAsync(message, cancellationToken).ConfigureAwait(false);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                LogCompleted(nameof(InjectClientMessageAsync));
+                LogCompleted(nameof(SendClientMessageAsync));
             }
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(InjectClientMessageAsync));
+            LogInvocationCanceled(nameof(SendClientMessageAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(InjectClientMessageAsync), ex);
+            LogInvocationFailed(nameof(SendClientMessageAsync), ex);
             throw;
         }
     }
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(updates);
-
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             LogInvoked(nameof(GetStreamingResponseAsync));
@@ -141,7 +139,7 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
         IAsyncEnumerator<RealtimeServerMessage> e;
         try
         {
-            e = base.GetStreamingResponseAsync(WrapUpdatesWithLoggingAsync(updates, cancellationToken), cancellationToken).GetAsyncEnumerator(cancellationToken);
+            e = base.GetStreamingResponseAsync(cancellationToken).GetAsyncEnumerator(cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -248,28 +246,6 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
         return obj.ToJsonString();
     }
 
-    private async IAsyncEnumerable<RealtimeClientMessage> WrapUpdatesWithLoggingAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        await foreach (var message in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                if (_logger.IsEnabled(LogLevel.Trace))
-                {
-                    LogStreamingClientMessageSensitive(GetLoggableString(message));
-                }
-                else
-                {
-                    LogStreamingClientMessage();
-                }
-            }
-
-            yield return message;
-        }
-    }
-
     private string AsJson<T>(T value) => TelemetryHelpers.AsJson(value, _jsonSerializerOptions);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
@@ -278,20 +254,14 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
     [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Options: {Options}.")]
     private partial void LogInvokedSensitive(string methodName, string options);
 
-    [LoggerMessage(LogLevel.Debug, "InjectClientMessageAsync invoked.")]
-    private partial void LogInjectMessage();
+    [LoggerMessage(LogLevel.Debug, "SendClientMessageAsync invoked.")]
+    private partial void LogSendMessage();
 
-    [LoggerMessage(LogLevel.Trace, "InjectClientMessageAsync invoked: Message: {Message}.")]
-    private partial void LogInjectMessageSensitive(string message);
+    [LoggerMessage(LogLevel.Trace, "SendClientMessageAsync invoked: Message: {Message}.")]
+    private partial void LogSendMessageSensitive(string message);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
     private partial void LogCompleted(string methodName);
-
-    [LoggerMessage(LogLevel.Debug, "GetStreamingResponseAsync sending client message.")]
-    private partial void LogStreamingClientMessage();
-
-    [LoggerMessage(LogLevel.Trace, "GetStreamingResponseAsync sending client message: {ClientMessage}")]
-    private partial void LogStreamingClientMessageSensitive(string clientMessage);
 
     [LoggerMessage(LogLevel.Debug, "GetStreamingResponseAsync received server message.")]
     private partial void LogStreamingServerMessage();

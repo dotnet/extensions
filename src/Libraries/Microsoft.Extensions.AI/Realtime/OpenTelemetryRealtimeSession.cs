@@ -200,10 +200,41 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async Task SendClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(updates);
+        if (EnableSensitiveData && _activitySource.HasListeners())
+        {
+            var otelMessage = ExtractClientOtelMessage(message);
+
+            if (otelMessage is not null)
+            {
+                RealtimeSessionOptions? options = Options;
+                string? requestModelId = options?.Model ?? _defaultModelId;
+                Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
+
+                using Activity? inputActivity = CreateAndConfigureActivity(options: null);
+                if (inputActivity is { IsAllDataRequested: true })
+                {
+                    _ = inputActivity.AddTag(OpenTelemetryConsts.GenAI.Input.Messages, SerializeMessage(otelMessage));
+                }
+
+                // Record metrics
+                if (_operationDurationHistogram.Enabled && stopwatch is not null)
+                {
+                    TagList tags = default;
+                    AddMetricTags(ref tags, requestModelId, responseModelId: null);
+                    _operationDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, tags);
+                }
+            }
+        }
+
+        await base.SendClientMessageAsync(message, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
         _jsonSerializerOptions.MakeReadOnly();
 
         RealtimeSessionOptions? options = Options;
@@ -215,15 +246,10 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
         // Determine if we should capture messages for telemetry
         bool captureMessages = EnableSensitiveData && _activitySource.HasListeners();
 
-        // Wrap client messages to capture input content and create input activity
-        IAsyncEnumerable<RealtimeClientMessage> wrappedUpdates = captureMessages
-            ? WrapClientMessagesForTelemetryAsync(updates, options, cancellationToken)
-            : updates;
-
         IAsyncEnumerable<RealtimeServerMessage> responses;
         try
         {
-            responses = base.GetStreamingResponseAsync(wrappedUpdates, cancellationToken);
+            responses = base.GetStreamingResponseAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -304,42 +330,6 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
             }
 
             await responseEnumerator.DisposeAsync().ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>Wraps client messages to capture content for telemetry with its own activity.</summary>
-    private async IAsyncEnumerable<RealtimeClientMessage> WrapClientMessagesForTelemetryAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates,
-        RealtimeSessionOptions? options,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
-        string? requestModelId = options?.Model ?? _defaultModelId;
-
-        await foreach (var message in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            // Capture input content from current client message
-            var otelMessage = ExtractClientOtelMessage(message);
-
-            // Only create activity when there's content to log
-            if (otelMessage is not null)
-            {
-                using Activity? inputActivity = CreateAndConfigureActivity(options: null);
-                if (inputActivity is { IsAllDataRequested: true })
-                {
-                    _ = inputActivity.AddTag(OpenTelemetryConsts.GenAI.Input.Messages, SerializeMessage(otelMessage));
-                }
-
-                // Record metrics
-                if (_operationDurationHistogram.Enabled && stopwatch is not null)
-                {
-                    TagList tags = default;
-                    AddMetricTags(ref tags, requestModelId, responseModelId: null);
-                    _operationDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, tags);
-                }
-            }
-
-            yield return message;
         }
     }
 

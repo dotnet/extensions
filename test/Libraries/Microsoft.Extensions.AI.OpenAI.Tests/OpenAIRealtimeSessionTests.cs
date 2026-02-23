@@ -56,36 +56,22 @@ public class OpenAIRealtimeSessionTests
     }
 
     [Fact]
-    public async Task InjectClientMessageAsync_NullMessage_Throws()
+    public async Task SendClientMessageAsync_NullMessage_Throws()
     {
         using var session = new OpenAIRealtimeSession("key", "model");
-        await Assert.ThrowsAsync<ArgumentNullException>("message", () => session.InjectClientMessageAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>("message", () => session.SendClientMessageAsync(null!));
     }
 
     [Fact]
-    public async Task InjectClientMessageAsync_CancelledToken_ReturnsSilently()
+    public async Task SendClientMessageAsync_CancelledToken_ReturnsSilently()
     {
         using var session = new OpenAIRealtimeSession("key", "model");
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
         // Should not throw when cancellation is requested.
-        await session.InjectClientMessageAsync(new RealtimeClientMessage(), cts.Token);
+        await session.SendClientMessageAsync(new RealtimeClientMessage(), cts.Token);
         Assert.Null(session.Options);
-    }
-
-    [Fact]
-    public async Task GetStreamingResponseAsync_NullUpdates_Throws()
-    {
-        using var session = new OpenAIRealtimeSession("key", "model");
-
-        await Assert.ThrowsAsync<ArgumentNullException>("updates", async () =>
-        {
-            await foreach (var msg in session.GetStreamingResponseAsync(null!))
-            {
-                _ = msg;
-            }
-        });
     }
 
     [Fact]

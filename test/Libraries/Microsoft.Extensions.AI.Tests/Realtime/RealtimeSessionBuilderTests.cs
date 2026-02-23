@@ -64,7 +64,7 @@ public class RealtimeSessionBuilderTests
 
         Assert.Throws<ArgumentNullException>(
             "getStreamingResponseFunc",
-            () => builder.Use((Func<IAsyncEnumerable<RealtimeClientMessage>, IRealtimeSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>>)null!));
+            () => builder.Use((Func<IRealtimeSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>>)null!));
     }
 
     [Fact]
@@ -142,18 +142,18 @@ public class RealtimeSessionBuilderTests
         var intercepted = false;
         using var inner = new TestRealtimeSession
         {
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldSingle(new RealtimeServerMessage { MessageId = "inner" }, ct),
+            GetStreamingResponseAsyncCallback = (ct) => YieldSingle(new RealtimeServerMessage { MessageId = "inner" }, ct),
         };
 
         var builder = new RealtimeSessionBuilder(inner);
-        builder.Use((updates, innerSession, ct) =>
+        builder.Use((innerSession, ct) =>
         {
             intercepted = true;
-            return innerSession.GetStreamingResponseAsync(updates, ct);
+            return innerSession.GetStreamingResponseAsync(ct);
         });
 
         using var pipeline = builder.Build();
-        await foreach (var msg in pipeline.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in pipeline.GetStreamingResponseAsync())
         {
             Assert.Equal("inner", msg.MessageId);
         }
@@ -175,14 +175,6 @@ public class RealtimeSessionBuilderTests
 
         Assert.NotNull(builder);
         Assert.Same(inner, builder.Build());
-    }
-
-    private static async IAsyncEnumerable<RealtimeClientMessage> EmptyUpdates(
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        _ = cancellationToken;
-        await Task.CompletedTask.ConfigureAwait(false);
-        yield break;
     }
 
     private static async IAsyncEnumerable<RealtimeServerMessage> YieldSingle(
@@ -209,11 +201,10 @@ public class RealtimeSessionBuilderTests
         public IRealtimeSession GetInner() => InnerSession;
 
         public override async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
-            IAsyncEnumerable<RealtimeClientMessage> updates,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             _callOrder.Add(Name);
-            await foreach (var msg in base.GetStreamingResponseAsync(updates, cancellationToken).ConfigureAwait(false))
+            await foreach (var msg in base.GetStreamingResponseAsync(cancellationToken).ConfigureAwait(false))
             {
                 yield return msg;
             }

@@ -92,8 +92,8 @@ public sealed class RealtimeSessionBuilder
     /// </summary>
     /// <param name="getStreamingResponseFunc">
     /// A delegate that provides the implementation for <see cref="IRealtimeSession.GetStreamingResponseAsync"/>.
-    /// This delegate is invoked with the sequence of realtime client messages, a delegate that represents invoking
-    /// the inner session, and a cancellation token. The delegate should be passed whatever client messages and
+    /// This delegate is invoked with a delegate that represents invoking
+    /// the inner session, and a cancellation token. The delegate should be passed whatever
     /// cancellation token should be passed along to the next stage in the pipeline.
     /// </param>
     /// <returns>The updated <see cref="RealtimeSessionBuilder"/> instance.</returns>
@@ -103,7 +103,7 @@ public sealed class RealtimeSessionBuilder
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="getStreamingResponseFunc"/> is <see langword="null"/>.</exception>
     public RealtimeSessionBuilder Use(
-        Func<IAsyncEnumerable<RealtimeClientMessage>, IRealtimeSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>> getStreamingResponseFunc)
+        Func<IRealtimeSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>> getStreamingResponseFunc)
     {
         _ = Throw.IfNull(getStreamingResponseFunc);
 

@@ -271,7 +271,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
     }
 
     /// <inheritdoc />
-    public async Task InjectClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
+    public async Task SendClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(message);
 
@@ -572,40 +572,12 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
     /// <inheritdoc />
     public async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(updates);
-
-        var processUpdatesTask = Task.Run(async () =>
-        {
-            try
-            {
-                await foreach (var message in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-                {
-                    await InjectClientMessageAsync(message, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when the session is cancelled.
-            }
-            catch (ObjectDisposedException)
-            {
-                // Expected when the session is disposed concurrently.
-            }
-            catch (WebSocketException)
-            {
-                // Expected when the WebSocket is in an aborted state.
-            }
-        }, cancellationToken);
-
         await foreach (var serverEvent in _eventChannel.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
         {
             yield return serverEvent;
         }
-
-        await processUpdatesTask.ConfigureAwait(false);
     }
 
     /// <inheritdoc />

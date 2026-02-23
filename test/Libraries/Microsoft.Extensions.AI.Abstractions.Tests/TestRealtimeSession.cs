@@ -14,11 +14,11 @@ public sealed class TestRealtimeSession : IRealtimeSession
     /// <summary>Gets or sets the callback to invoke when <see cref="UpdateAsync"/> is called.</summary>
     public Func<RealtimeSessionOptions, CancellationToken, Task>? UpdateAsyncCallback { get; set; }
 
-    /// <summary>Gets or sets the callback to invoke when <see cref="InjectClientMessageAsync"/> is called.</summary>
-    public Func<RealtimeClientMessage, CancellationToken, Task>? InjectClientMessageAsyncCallback { get; set; }
+    /// <summary>Gets or sets the callback to invoke when <see cref="SendClientMessageAsync"/> is called.</summary>
+    public Func<RealtimeClientMessage, CancellationToken, Task>? SendClientMessageAsyncCallback { get; set; }
 
     /// <summary>Gets or sets the callback to invoke when <see cref="GetStreamingResponseAsync"/> is called.</summary>
-    public Func<IAsyncEnumerable<RealtimeClientMessage>, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>>? GetStreamingResponseAsyncCallback { get; set; }
+    public Func<CancellationToken, IAsyncEnumerable<RealtimeServerMessage>>? GetStreamingResponseAsyncCallback { get; set; }
 
     /// <summary>Gets or sets the callback to invoke when <see cref="GetService"/> is called.</summary>
     public Func<Type, object?, object?>? GetServiceCallback { get; set; }
@@ -33,16 +33,16 @@ public sealed class TestRealtimeSession : IRealtimeSession
     }
 
     /// <inheritdoc/>
-    public Task InjectClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
+    public Task SendClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
-        return InjectClientMessageAsyncCallback?.Invoke(message, cancellationToken) ?? Task.CompletedTask;
+        return SendClientMessageAsyncCallback?.Invoke(message, cancellationToken) ?? Task.CompletedTask;
     }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
-        IAsyncEnumerable<RealtimeClientMessage> updates, CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        return GetStreamingResponseAsyncCallback?.Invoke(updates, cancellationToken) ?? EmptyAsyncEnumerable();
+        return GetStreamingResponseAsyncCallback?.Invoke(cancellationToken) ?? EmptyAsyncEnumerable();
     }
 
     /// <inheritdoc/>

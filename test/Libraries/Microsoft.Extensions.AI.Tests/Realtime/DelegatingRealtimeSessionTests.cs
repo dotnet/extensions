@@ -51,13 +51,13 @@ public class DelegatingRealtimeSessionTests
     }
 
     [Fact]
-    public async Task InjectClientMessageAsync_DelegatesToInner()
+    public async Task SendClientMessageAsync_DelegatesToInner()
     {
         var called = false;
         var sentMessage = new RealtimeClientMessage { MessageId = "evt_001" };
         using var inner = new TestRealtimeSession
         {
-            InjectClientMessageAsyncCallback = (msg, _) =>
+            SendClientMessageAsyncCallback = (msg, _) =>
             {
                 Assert.Same(sentMessage, msg);
                 called = true;
@@ -66,7 +66,7 @@ public class DelegatingRealtimeSessionTests
         };
         using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
-        await delegating.InjectClientMessageAsync(sentMessage);
+        await delegating.SendClientMessageAsync(sentMessage);
         Assert.True(called);
     }
 
@@ -76,12 +76,12 @@ public class DelegatingRealtimeSessionTests
         var expected = new RealtimeServerMessage { Type = RealtimeServerMessageType.Error, MessageId = "evt_002" };
         using var inner = new TestRealtimeSession
         {
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldSingle(expected, ct),
+            GetStreamingResponseAsyncCallback = (ct) => YieldSingle(expected, ct),
         };
         using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
         var messages = new List<RealtimeServerMessage>();
-        await foreach (var msg in delegating.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in delegating.GetStreamingResponseAsync())
         {
             messages.Add(msg);
         }
@@ -164,7 +164,7 @@ public class DelegatingRealtimeSessionTests
     }
 
     [Fact]
-    public async Task InjectClientMessageAsync_FlowsCancellationToken()
+    public async Task SendClientMessageAsync_FlowsCancellationToken()
     {
         CancellationToken capturedToken = default;
         using var cts = new CancellationTokenSource();
@@ -172,7 +172,7 @@ public class DelegatingRealtimeSessionTests
 
         using var inner = new TestRealtimeSession
         {
-            InjectClientMessageAsyncCallback = (msg, ct) =>
+            SendClientMessageAsyncCallback = (msg, ct) =>
             {
                 capturedToken = ct;
                 return Task.CompletedTask;
@@ -180,16 +180,8 @@ public class DelegatingRealtimeSessionTests
         };
         using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
-        await delegating.InjectClientMessageAsync(sentMessage, cts.Token);
+        await delegating.SendClientMessageAsync(sentMessage, cts.Token);
         Assert.Equal(cts.Token, capturedToken);
-    }
-
-    private static async IAsyncEnumerable<RealtimeClientMessage> EmptyUpdates(
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        _ = cancellationToken;
-        await Task.CompletedTask.ConfigureAwait(false);
-        yield break;
     }
 
     private static async IAsyncEnumerable<RealtimeServerMessage> YieldSingle(
@@ -224,10 +216,10 @@ public class DelegatingRealtimeSessionTests
 
         public Task UpdateAsync(RealtimeSessionOptions options, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-        public Task InjectClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task SendClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
-            IAsyncEnumerable<RealtimeClientMessage> updates, CancellationToken cancellationToken = default) =>
+            CancellationToken cancellationToken = default) =>
             EmptyUpdatesServer(cancellationToken);
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;

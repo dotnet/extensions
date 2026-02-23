@@ -62,21 +62,6 @@ public class FunctionInvokingRealtimeSessionTests
     }
 
     [Fact]
-    public async Task GetStreamingResponseAsync_NullUpdates_Throws()
-    {
-        using var inner = new TestRealtimeSession();
-        using var session = new FunctionInvokingRealtimeSession(inner);
-
-        await Assert.ThrowsAsync<ArgumentNullException>("updates", async () =>
-        {
-            await foreach (var msg in session.GetStreamingResponseAsync(null!))
-            {
-                _ = msg;
-            }
-        });
-    }
-
-    [Fact]
     public async Task GetStreamingResponseAsync_NoFunctionCalls_PassesThrough()
     {
         var serverMessages = new RealtimeServerMessage[]
@@ -87,12 +72,12 @@ public class FunctionInvokingRealtimeSessionTests
 
         using var inner = new TestRealtimeSession
         {
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(serverMessages, ct),
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(serverMessages, ct),
         };
         using var session = new FunctionInvokingRealtimeSession(inner);
 
         var received = new List<RealtimeServerMessage>();
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             received.Add(msg);
         }
@@ -114,11 +99,11 @@ public class FunctionInvokingRealtimeSessionTests
         using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [getWeather] },
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
                 CreateFunctionCallOutputItemMessage("call_001", "get_weather", new Dictionary<string, object?> { ["city"] = "Seattle" }),
             ], ct),
-            InjectClientMessageAsyncCallback = (msg, _) =>
+            SendClientMessageAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -128,7 +113,7 @@ public class FunctionInvokingRealtimeSessionTests
         using var session = new FunctionInvokingRealtimeSession(inner);
 
         var received = new List<RealtimeServerMessage>();
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             received.Add(msg);
         }
@@ -162,11 +147,11 @@ public class FunctionInvokingRealtimeSessionTests
         var injectedMessages = new List<RealtimeClientMessage>();
         using var inner = new TestRealtimeSession
         {
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
                 CreateFunctionCallOutputItemMessage("call_002", "get_weather", new Dictionary<string, object?> { ["city"] = "London" }),
             ], ct),
-            InjectClientMessageAsyncCallback = (msg, _) =>
+            SendClientMessageAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -178,7 +163,7 @@ public class FunctionInvokingRealtimeSessionTests
             AdditionalTools = [getWeather],
         };
 
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             // consume
         }
@@ -208,8 +193,8 @@ public class FunctionInvokingRealtimeSessionTests
         using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [countFunc] },
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(messages, ct),
-            InjectClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(messages, ct),
+            SendClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
         using var session = new FunctionInvokingRealtimeSession(inner)
@@ -218,7 +203,7 @@ public class FunctionInvokingRealtimeSessionTests
         };
 
         var received = new List<RealtimeServerMessage>();
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             received.Add(msg);
         }
@@ -242,11 +227,11 @@ public class FunctionInvokingRealtimeSessionTests
         using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [myFunc] },
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
                 CreateFunctionCallOutputItemMessage("call_custom", "my_func", null),
             ], ct),
-            InjectClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
+            SendClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
         using var session = new FunctionInvokingRealtimeSession(inner)
@@ -258,7 +243,7 @@ public class FunctionInvokingRealtimeSessionTests
             },
         };
 
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             // consume
         }
@@ -272,11 +257,11 @@ public class FunctionInvokingRealtimeSessionTests
         var injectedMessages = new List<RealtimeClientMessage>();
         using var inner = new TestRealtimeSession
         {
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
                 CreateFunctionCallOutputItemMessage("call_unknown", "nonexistent_func", null),
             ], ct),
-            InjectClientMessageAsyncCallback = (msg, _) =>
+            SendClientMessageAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -285,7 +270,7 @@ public class FunctionInvokingRealtimeSessionTests
 
         using var session = new FunctionInvokingRealtimeSession(inner);
 
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             // consume
         }
@@ -309,11 +294,11 @@ public class FunctionInvokingRealtimeSessionTests
         using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [failFunc] },
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
                 CreateFunctionCallOutputItemMessage("call_fail", "fail_func", null),
             ], ct),
-            InjectClientMessageAsyncCallback = (msg, _) =>
+            SendClientMessageAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -325,7 +310,7 @@ public class FunctionInvokingRealtimeSessionTests
             IncludeDetailedErrors = true,
         };
 
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             // consume
         }
@@ -348,11 +333,11 @@ public class FunctionInvokingRealtimeSessionTests
         using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [failFunc] },
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
                 CreateFunctionCallOutputItemMessage("call_fail2", "fail_func", null),
             ], ct),
-            InjectClientMessageAsyncCallback = (msg, _) =>
+            SendClientMessageAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -364,7 +349,7 @@ public class FunctionInvokingRealtimeSessionTests
             IncludeDetailedErrors = false,
         };
 
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             // consume
         }
@@ -392,12 +377,12 @@ public class FunctionInvokingRealtimeSessionTests
         var injectedMessages = new List<RealtimeClientMessage>();
         using var inner = new TestRealtimeSession
         {
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
                 CreateFunctionCallOutputItemMessage("call_unknown", "nonexistent_func", null),
                 new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseDone, MessageId = "should_not_reach" },
             ], ct),
-            InjectClientMessageAsyncCallback = (msg, _) =>
+            SendClientMessageAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -410,7 +395,7 @@ public class FunctionInvokingRealtimeSessionTests
         };
 
         var received = new List<RealtimeServerMessage>();
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             received.Add(msg);
         }
@@ -428,11 +413,11 @@ public class FunctionInvokingRealtimeSessionTests
         var injectedMessages = new List<RealtimeClientMessage>();
         using var inner = new TestRealtimeSession
         {
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
                 CreateFunctionCallOutputItemMessage("call_unknown", "nonexistent_func", null),
             ], ct),
-            InjectClientMessageAsyncCallback = (msg, _) =>
+            SendClientMessageAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -445,7 +430,7 @@ public class FunctionInvokingRealtimeSessionTests
         };
 
         var received = new List<RealtimeServerMessage>();
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             received.Add(msg);
         }
@@ -513,8 +498,8 @@ public class FunctionInvokingRealtimeSessionTests
         using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [slowFunc] },
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages([combinedMessage], ct),
-            InjectClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages([combinedMessage], ct),
+            SendClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
         using var session = new FunctionInvokingRealtimeSession(inner)
@@ -522,7 +507,7 @@ public class FunctionInvokingRealtimeSessionTests
             AllowConcurrentInvocation = true,
         };
 
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             // consume
         }
@@ -556,8 +541,8 @@ public class FunctionInvokingRealtimeSessionTests
         using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [failFunc] },
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(messages, ct),
-            InjectClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(messages, ct),
+            SendClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
         using var session = new FunctionInvokingRealtimeSession(inner)
@@ -568,7 +553,7 @@ public class FunctionInvokingRealtimeSessionTests
         // Should eventually throw after exceeding the consecutive error limit
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+            await foreach (var msg in session.GetStreamingResponseAsync())
             {
                 // consume
             }
@@ -618,12 +603,12 @@ public class FunctionInvokingRealtimeSessionTests
         using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [declaration] },
-            GetStreamingResponseAsyncCallback = (_, ct) => YieldMessages(
+            GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
                 CreateFunctionCallOutputItemMessage("call_decl", "my_declaration", null),
                 new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseDone, MessageId = "should_not_reach" },
             ], ct),
-            InjectClientMessageAsyncCallback = (msg, _) =>
+            SendClientMessageAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -633,7 +618,7 @@ public class FunctionInvokingRealtimeSessionTests
         using var session = new FunctionInvokingRealtimeSession(inner);
 
         var received = new List<RealtimeServerMessage>();
-        await foreach (var msg in session.GetStreamingResponseAsync(EmptyUpdates()))
+        await foreach (var msg in session.GetStreamingResponseAsync())
         {
             received.Add(msg);
         }
@@ -660,14 +645,6 @@ public class FunctionInvokingRealtimeSessionTests
             OutputIndex = 0,
             Item = item,
         };
-    }
-
-    private static async IAsyncEnumerable<RealtimeClientMessage> EmptyUpdates(
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        _ = cancellationToken;
-        await Task.CompletedTask.ConfigureAwait(false);
-        yield break;
     }
 
     private static async IAsyncEnumerable<RealtimeServerMessage> YieldMessages(

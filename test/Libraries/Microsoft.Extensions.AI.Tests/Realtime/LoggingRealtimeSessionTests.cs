@@ -90,7 +90,7 @@ public class LoggingRealtimeSessionTests
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
     [InlineData(LogLevel.Information)]
-    public async Task InjectClientMessageAsync_LogsInvocationAndCompletion(LogLevel level)
+    public async Task SendClientMessageAsync_LogsInvocationAndCompletion(LogLevel level)
     {
         var collector = new FakeLogCollector();
 
@@ -100,7 +100,7 @@ public class LoggingRealtimeSessionTests
 
         using var innerSession = new TestRealtimeSession
         {
-            InjectClientMessageAsyncCallback = (message, cancellationToken) => Task.CompletedTask,
+            SendClientMessageAsyncCallback = (message, cancellationToken) => Task.CompletedTask,
         };
 
         using var session = innerSession
@@ -108,20 +108,20 @@ public class LoggingRealtimeSessionTests
             .UseLogging()
             .Build(services);
 
-        await session.InjectClientMessageAsync(new RealtimeClientMessage { MessageId = "test-event-123" });
+        await session.SendClientMessageAsync(new RealtimeClientMessage { MessageId = "test-event-123" });
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
         {
             Assert.Collection(logs,
-                entry => Assert.Contains("InjectClientMessageAsync invoked:", entry.Message),
-                entry => Assert.Contains("InjectClientMessageAsync completed.", entry.Message));
+                entry => Assert.Contains("SendClientMessageAsync invoked:", entry.Message),
+                entry => Assert.Contains("SendClientMessageAsync completed.", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.Contains("InjectClientMessageAsync invoked.", entry.Message),
-                entry => Assert.Contains("InjectClientMessageAsync completed.", entry.Message));
+                entry => Assert.Contains("SendClientMessageAsync invoked.", entry.Message),
+                entry => Assert.Contains("SendClientMessageAsync completed.", entry.Message));
         }
         else
         {
@@ -140,7 +140,7 @@ public class LoggingRealtimeSessionTests
 
         using var innerSession = new TestRealtimeSession
         {
-            GetStreamingResponseAsyncCallback = (messages, cancellationToken) => GetMessagesAsync()
+            GetStreamingResponseAsyncCallback = (cancellationToken) => GetMessagesAsync()
         };
 
         static async IAsyncEnumerable<RealtimeServerMessage> GetMessagesAsync()
@@ -155,7 +155,7 @@ public class LoggingRealtimeSessionTests
             .UseLogging(loggerFactory)
             .Build();
 
-        await foreach (var message in session.GetStreamingResponseAsync(EmptyAsyncEnumerableAsync()))
+        await foreach (var message in session.GetStreamingResponseAsync())
         {
             // nop
         }
@@ -250,7 +250,7 @@ public class LoggingRealtimeSessionTests
 
         using var innerSession = new TestRealtimeSession
         {
-            GetStreamingResponseAsyncCallback = (messages, cancellationToken) => ThrowCancellationAsync(cancellationToken)
+            GetStreamingResponseAsyncCallback = (cancellationToken) => ThrowCancellationAsync(cancellationToken)
         };
 
         static async IAsyncEnumerable<RealtimeServerMessage> ThrowCancellationAsync([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -270,7 +270,7 @@ public class LoggingRealtimeSessionTests
         cts.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
         {
-            await foreach (var message in session.GetStreamingResponseAsync(EmptyAsyncEnumerableAsync(), cts.Token))
+            await foreach (var message in session.GetStreamingResponseAsync(cts.Token))
             {
                 // nop
             }
@@ -290,7 +290,7 @@ public class LoggingRealtimeSessionTests
 
         using var innerSession = new TestRealtimeSession
         {
-            GetStreamingResponseAsyncCallback = (messages, cancellationToken) => ThrowErrorAsync()
+            GetStreamingResponseAsyncCallback = (cancellationToken) => ThrowErrorAsync()
         };
 
         static async IAsyncEnumerable<RealtimeServerMessage> ThrowErrorAsync()
@@ -309,7 +309,7 @@ public class LoggingRealtimeSessionTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            await foreach (var message in session.GetStreamingResponseAsync(EmptyAsyncEnumerableAsync()))
+            await foreach (var message in session.GetStreamingResponseAsync())
             {
                 // nop
             }
@@ -338,7 +338,7 @@ public class LoggingRealtimeSessionTests
     }
 
     [Fact]
-    public async Task InjectClientMessageAsync_LogsCancellation()
+    public async Task SendClientMessageAsync_LogsCancellation()
     {
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
@@ -347,7 +347,7 @@ public class LoggingRealtimeSessionTests
 
         using var innerSession = new TestRealtimeSession
         {
-            InjectClientMessageAsyncCallback = (message, cancellationToken) =>
+            SendClientMessageAsyncCallback = (message, cancellationToken) =>
             {
                 throw new OperationCanceledException(cancellationToken);
             },
@@ -360,23 +360,23 @@ public class LoggingRealtimeSessionTests
 
         cts.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            session.InjectClientMessageAsync(new RealtimeClientMessage { MessageId = "evt_cancel" }, cts.Token));
+            session.SendClientMessageAsync(new RealtimeClientMessage { MessageId = "evt_cancel" }, cts.Token));
 
         var logs = collector.GetSnapshot();
         Assert.Collection(logs,
-            entry => Assert.Contains("InjectClientMessageAsync invoked.", entry.Message),
-            entry => Assert.Contains("InjectClientMessageAsync canceled.", entry.Message));
+            entry => Assert.Contains("SendClientMessageAsync invoked.", entry.Message),
+            entry => Assert.Contains("SendClientMessageAsync canceled.", entry.Message));
     }
 
     [Fact]
-    public async Task InjectClientMessageAsync_LogsErrors()
+    public async Task SendClientMessageAsync_LogsErrors()
     {
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
 
         using var innerSession = new TestRealtimeSession
         {
-            InjectClientMessageAsyncCallback = (message, cancellationToken) =>
+            SendClientMessageAsyncCallback = (message, cancellationToken) =>
             {
                 throw new InvalidOperationException("Inject error");
             },
@@ -388,70 +388,12 @@ public class LoggingRealtimeSessionTests
             .Build();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            session.InjectClientMessageAsync(new RealtimeClientMessage()));
+            session.SendClientMessageAsync(new RealtimeClientMessage()));
 
         var logs = collector.GetSnapshot();
         Assert.Collection(logs,
-            entry => Assert.Contains("InjectClientMessageAsync invoked.", entry.Message),
-            entry => Assert.True(entry.Message.Contains("InjectClientMessageAsync failed.") && entry.Level == LogLevel.Error));
-    }
-
-    [Theory]
-    [InlineData(LogLevel.Trace)]
-    [InlineData(LogLevel.Debug)]
-    [InlineData(LogLevel.Information)]
-    public async Task GetStreamingResponseAsync_LogsClientMessages(LogLevel level)
-    {
-        var collector = new FakeLogCollector();
-        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
-
-        using var innerSession = new TestRealtimeSession
-        {
-            GetStreamingResponseAsyncCallback = (updates, cancellationToken) => ConsumeAndYield(updates, cancellationToken)
-        };
-
-        static async IAsyncEnumerable<RealtimeServerMessage> ConsumeAndYield(
-            IAsyncEnumerable<RealtimeClientMessage> updates, [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                // consume
-            }
-
-            yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseDone };
-        }
-
-        using var session = innerSession
-            .AsBuilder()
-            .UseLogging(loggerFactory)
-            .Build();
-
-        var clientMessages = GetClientMessages();
-        await foreach (var message in session.GetStreamingResponseAsync(clientMessages))
-        {
-            // consume
-        }
-
-        var logs = collector.GetSnapshot();
-        if (level is LogLevel.Trace)
-        {
-            // Should log: invoked, client message (sensitive), server message (sensitive), completed
-            Assert.True(logs.Count >= 3);
-            Assert.Contains(logs, entry => entry.Message.Contains("GetStreamingResponseAsync invoked."));
-            Assert.Contains(logs, entry => entry.Message.Contains("sending client message:"));
-            Assert.Contains(logs, entry => entry.Message.Contains("GetStreamingResponseAsync completed."));
-        }
-        else if (level is LogLevel.Debug)
-        {
-            Assert.True(logs.Count >= 3);
-            Assert.Contains(logs, entry => entry.Message.Contains("GetStreamingResponseAsync invoked."));
-            Assert.Contains(logs, entry => entry.Message.Contains("sending client message."));
-            Assert.Contains(logs, entry => entry.Message.Contains("GetStreamingResponseAsync completed."));
-        }
-        else
-        {
-            Assert.Empty(logs);
-        }
+            entry => Assert.Contains("SendClientMessageAsync invoked.", entry.Message),
+            entry => Assert.True(entry.Message.Contains("SendClientMessageAsync failed.") && entry.Level == LogLevel.Error));
     }
 
     [Fact]
@@ -500,17 +442,4 @@ public class LoggingRealtimeSessionTests
         Assert.True(configured);
     }
 
-    private static async IAsyncEnumerable<RealtimeClientMessage> EmptyAsyncEnumerableAsync()
-    {
-        await Task.CompletedTask.ConfigureAwait(false);
-        yield break;
-    }
-
-    private static async IAsyncEnumerable<RealtimeClientMessage> GetClientMessages(
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        _ = cancellationToken;
-        await Task.CompletedTask.ConfigureAwait(false);
-        yield return new RealtimeClientMessage { MessageId = "client_evt_1" };
-    }
 }
