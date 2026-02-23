@@ -540,10 +540,20 @@ internal sealed partial class Parser
             return null;
         }
 
+        if (paramSymbol.IsParams)
+        {
+            Diag(DiagDescriptors.LoggingMethodParameterParams, paramSymbol.GetLocation(), paramName);
+            return null;
+        }
+
         string? qualifier = null;
         if (paramSymbol.RefKind == RefKind.In)
         {
             qualifier = "in";
+        }
+        else if (paramSymbol.RefKind == RefKind.RefReadOnlyParameter)
+        {
+            qualifier = "ref readonly";
         }
         else if (paramSymbol.RefKind != RefKind.None)
         {
@@ -591,6 +601,7 @@ internal sealed partial class Parser
             ImplementsIFormattable = paramTypeSymbol.ImplementsIFormattable(symbols),
             ImplementsISpanFormattable = paramTypeSymbol.ImplementsISpanFormattable(symbols),
             HasCustomToString = paramTypeSymbol.HasCustomToString(),
+            IsScoped = paramSymbol.ScopedKind != ScopedKind.None,
         };
 
         parsingState.FoundLogger |= lp.IsLogger;

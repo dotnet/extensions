@@ -21,6 +21,7 @@ internal sealed class LoggingMethodParameter
     public bool IsException;
     public bool IsLogLevel;
     public bool IsEnumerable;
+    public bool IsScoped;
     public bool IsNullable;
     public bool IsReference;
     public bool ImplementsIConvertible;
