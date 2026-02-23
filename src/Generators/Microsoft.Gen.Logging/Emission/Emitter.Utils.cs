@@ -165,7 +165,10 @@ internal sealed partial class Emitter : EmitterBase
             if (tp.Constraints is not null)
             {
                 OutLn();
-                Out($"    where {tp.Name} : {tp.Constraints}");
+                Indent();
+                OutIndent();
+                Out($"where {tp.Name} : {tp.Constraints}");
+                Unindent();
             }
         }
     }
