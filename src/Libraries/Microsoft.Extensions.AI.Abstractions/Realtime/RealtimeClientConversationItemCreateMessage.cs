@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -20,7 +21,7 @@ public class RealtimeClientConversationItemCreateMessage : RealtimeClientMessage
     public RealtimeClientConversationItemCreateMessage(RealtimeContentItem item, string? previousId = null)
     {
         PreviousId = previousId;
-        Item = item;
+        Item = Throw.IfNull(item);
     }
 
     /// <summary>

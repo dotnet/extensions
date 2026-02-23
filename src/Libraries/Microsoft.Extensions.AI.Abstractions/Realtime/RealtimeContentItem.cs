@@ -20,9 +20,9 @@ public class RealtimeContentItem
     /// <summary>
     /// Initializes a new instance of the <see cref="RealtimeContentItem"/> class.
     /// </summary>
+    /// <param name="contents">The contents of the conversation item.</param>
     /// <param name="id">The ID of the conversation item.</param>
     /// <param name="role">The role of the conversation item.</param>
-    /// <param name="contents">The contents of the conversation item.</param>
     public RealtimeContentItem(IList<AIContent> contents, string? id = null, ChatRole? role = null)
     {
         Id = id;

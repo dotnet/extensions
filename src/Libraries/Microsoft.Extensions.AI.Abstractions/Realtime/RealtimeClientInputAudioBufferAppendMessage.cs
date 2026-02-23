@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -19,7 +20,7 @@ public class RealtimeClientInputAudioBufferAppendMessage : RealtimeClientMessage
     /// <param name="audioContent">The data content containing the audio buffer data to append.</param>
     public RealtimeClientInputAudioBufferAppendMessage(DataContent audioContent)
     {
-        Content = audioContent;
+        Content = Throw.IfNull(audioContent);
     }
 
     /// <summary>

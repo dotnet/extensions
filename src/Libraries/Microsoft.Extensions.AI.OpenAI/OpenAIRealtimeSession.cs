@@ -64,8 +64,8 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
     /// <param name="model">The model to use for the session.</param>
     public OpenAIRealtimeSession(string apiKey, string model)
     {
-        _apiKey = apiKey;
-        _model = model;
+        _apiKey = Throw.IfNull(apiKey);
+        _model = Throw.IfNull(model);
         _eventChannel = Channel.CreateUnbounded<RealtimeServerMessage>();
     }
 
