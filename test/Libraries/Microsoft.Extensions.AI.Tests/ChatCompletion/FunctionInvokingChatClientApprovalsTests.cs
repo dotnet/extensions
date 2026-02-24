@@ -938,15 +938,12 @@ public class FunctionInvokingChatClientApprovalsTests
     }
 
     /// <summary>
-    /// Since we do not have a way of supporting both functions that require approval and those that do not
-    /// in one invocation, we always require all function calls to be approved if any require approval.
-    /// If we are therefore unsure as to whether we will encounter a function call that requires approval,
-    /// we have to wait until we find one before yielding any function call content.
-    /// If we don't have any function calls that require approval at all though, we can just yield all content normally
-    /// since this issue won't apply.
+    /// FunctionCallContent updates are buffered until the end of the stream so that the client can check
+    /// for matching FunctionResultContent from server-handled function calls and mark those FCCs as
+    /// InformationalOnly. This means FCCs are not yielded immediately, even when no approval is required.
     /// </summary>
     [Fact]
-    public async Task FunctionCallContentIsYieldedImmediatelyIfNoApprovalRequiredWhenStreamingAsync()
+    public async Task FunctionCallContentIsBufferedUntilEndOfStreamWhenStreamingAsync()
     {
         var options = new ChatOptions
         {
@@ -997,7 +994,10 @@ public class FunctionInvokingChatClientApprovalsTests
                 if (functionCall.CallId == "callId1")
                 {
                     Assert.Equal("Func1", functionCall.Name);
-                    Assert.Equal(1, updateYieldCount);
+
+                    // FCCs are now buffered until the end of the stream to check for
+                    // matching FunctionResultContent from server-handled function calls.
+                    Assert.Equal(2, updateYieldCount);
                 }
                 else if (functionCall.CallId == "callId2")
                 {

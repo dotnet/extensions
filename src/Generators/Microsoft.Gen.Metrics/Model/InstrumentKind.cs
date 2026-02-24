@@ -11,4 +11,5 @@ internal enum InstrumentKind
     Gauge = 3,
     CounterT = 4,
     HistogramT = 5,
+    GaugeT = 6,
 }

@@ -6,6 +6,7 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -14,6 +15,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Responses;
 
@@ -25,6 +27,7 @@ using OpenAI.Responses;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an <see cref="ResponsesClient"/>.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
 internal sealed class OpenAIResponsesChatClient : IChatClient
 {
     // These delegate instances are used to call the internal overloads of CreateResponseAsync and CreateResponseStreamingAsync that accept
@@ -88,6 +91,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeResponses);
 
         // Convert the inputs into what ResponsesClient expects.
         var openAIOptions = AsCreateResponseOptions(options, out string? openAIConversationId);
@@ -276,6 +281,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeResponses);
 
         var openAIOptions = AsCreateResponseOptions(options, out string? openAIConversationId);
         openAIOptions.StreamingEnabled = true;
@@ -480,6 +487,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             {
                                 RawRepresentation = mtcari,
                             });
+                            break;
+
+                        case FunctionCallOutputResponseItem functionCallOutputItem:
+                            lastRole ??= ChatRole.Assistant;
+                            yield return CreateUpdate(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
                             break;
 
                         case CodeInterpreterCallResponseItem cicri:

@@ -121,8 +121,7 @@ public partial class ParserTests
                 public static partial TotalCount CreateTotalCountCounter(Meter meter);
             }");
 
-        Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorGaugeNotSupported.Id, d[0].Id);
+        Assert.Empty(d);
     }
 
     [Fact]
@@ -188,7 +187,6 @@ public partial class ParserTests
             }");
 
         Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorGaugeNotSupported.Id, d[0].Id);
     }
 
     [Fact]
@@ -383,5 +381,235 @@ public partial class ParserTests
 
         _ = Assert.Single(d);
         Assert.Equal(DiagDescriptors.ErrorTooManyTagNames.Id, d[0].Id);
+    }
+
+    [Theory]
+    [InlineData("ulong")]
+    [InlineData("uint")]
+    [InlineData("ushort")]
+    [InlineData("char")]
+    [InlineData("bool")]
+    public async Task GaugeT_InvalidGenericType(string type)
+    {
+        var d = await RunGenerator(@$"
+        partial class C
+        {{
+            [Gauge<{type}>(""d1"")]
+            static partial TestGauge CreateGauge(Meter meter);
+        }}");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorInvalidAttributeGenericType.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task Gauge_StrongType_CyclicReference()
+    {
+        var d = await RunGenerator(@"
+        public class TypeA
+        {
+            public TypeB B { get; set; }
+        }
+
+        public class TypeB
+        {
+            public TypeA A { get; set; }
+        }
+
+        partial class C
+        {
+            [Gauge(typeof(TypeA), Name=""CyclicTest"")]
+            static partial CyclicTest CreateGauge(Meter meter);
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorTagTypeCycleDetected.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task Gauge_ConflictWithCounterName()
+    {
+        var d = await RunGenerator(@"
+        partial class C
+        {
+            [Counter(""d1"")]
+            static partial SharedMetric CreateCounter(Meter meter);
+
+            [Gauge(""d2"")]
+            static partial SharedMetric CreateGauge(Meter meter);
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorMetricNameReuse.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task Gauge_ConflictWithHistogramName()
+    {
+        var d = await RunGenerator(@"
+        partial class C
+        {
+            [Histogram(""d1"")]
+            static partial SharedMetric CreateHistogram(Meter meter);
+
+            [Gauge(""d2"")]
+            static partial SharedMetric CreateGauge(Meter meter);
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorMetricNameReuse.Id, diag.Id);
+    }
+
+    [Theory]
+    [InlineData("int?")]
+    [InlineData("double?")]
+    [InlineData("System.DateTime?")]
+    [InlineData("System.Nullable<int>")]
+    public async Task Gauge_StrongType_NullableProperty(string type)
+    {
+        var d = await RunGenerator(@$"
+        public class Tags
+        {{
+            public {type} InvalidTag {{ get; set; }}
+        }}
+
+        partial class C
+        {{
+            [Gauge(typeof(Tags), Name=""NullableTest"")]
+            static partial NullableTest CreateGauge(Meter meter);
+        }}");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorInvalidTagNameType.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task Gauge_NotStaticMethod()
+    {
+        var d = await RunGenerator(@"
+        partial class C
+        {
+            [Gauge(""d1"")]
+            partial MemoryUsage CreateMemoryUsage(Meter meter);
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorNotStaticMethod.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task Gauge_NotPartialMethod()
+    {
+        var d = await RunGenerator(@"
+        partial class C
+        {
+            [Gauge(""d1"")]
+            static MemoryUsage CreateMemoryUsage(Meter meter);
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorNotPartialMethod.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task Gauge_MissingMeterParameter()
+    {
+        var d = await RunGenerator(@"
+        partial class C
+        {
+            [Gauge(""d1"")]
+            static partial MemoryUsage CreateMemoryUsage();
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorMissingMeter.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task Gauge_InvalidTagNameWithSpecialChars()
+    {
+        var d = await RunGenerator(@"
+        partial class C
+        {
+            [Gauge(""Invalid*Tag"")]
+            static partial TestGauge CreateGauge(Meter meter);
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorInvalidTagNames.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task Gauge_StrongType_TooManyTags()
+    {
+        var sb = new StringBuilder();
+
+        // Create 31 nested classes (max is 30)
+        for (int i = 0; i < 31; i++)
+        {
+            sb.AppendLine($"public class C{i} : C{i + 1} {{ public string Tag{i} {{ get; set; }} }}");
+        }
+
+        sb.AppendLine("public class C31 { public string Tag31 { get; set; } }");
+
+        sb.AppendLine(@"
+        partial class C
+        {
+            [Gauge(typeof(C0), Name=""TooManyTags"")]
+            static partial TooManyTags CreateGauge(Meter meter);
+        }");
+
+        var d = await RunGenerator(sb.ToString());
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorTooManyTagNames.Id, diag.Id);
+    }
+
+    [Fact]
+    public async Task Gauge_StrongType_DuplicateTagName()
+    {
+        var d = await RunGenerator(@"
+        public class Tags
+        {
+            public string Region { get; set; }
+            public ChildTags Child { get; set; }
+        }
+
+        public class ChildTags
+        {
+            public string Region { get; set; }
+        }
+
+        partial class C
+        {
+            [Gauge(typeof(Tags), Name=""DuplicateTest"")]
+            static partial DuplicateTest CreateGauge(Meter meter);
+        }");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, diag.Id);
+    }
+
+    [Theory]
+    [InlineData("int")]
+    [InlineData("bool")]
+    [InlineData("System.DateTime")]
+    [InlineData("object")]
+    public async Task Gauge_StrongType_InvalidPropertyType(string type)
+    {
+        var d = await RunGenerator(@$"
+        public class Tags
+        {{
+            public {type} InvalidTag {{ get; set; }}
+        }}
+
+        partial class C
+        {{
+            [Gauge(typeof(Tags), Name=""InvalidTest"")]
+            static partial InvalidTest CreateGauge(Meter meter);
+        }}");
+
+        var diag = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorInvalidTagNameType.Id, diag.Id);
     }
 }

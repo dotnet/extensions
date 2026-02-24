@@ -15,7 +15,8 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 {
     private const double One = 1.0;
-    private const long Hundred = 100L;
+    private const double Hundred = 100.0;
+    private const long HundredLong = 100L;
     private const double NanosecondsInSecond = 1_000_000_000;
 
     private readonly object _cpuLocker = new();
@@ -27,6 +28,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly TimeSpan _memoryRefreshInterval;
     private readonly TimeProvider _timeProvider;
     private readonly double _scaleRelativeToCpuRequestForTrackerApi;
+    private readonly double _metricValueMultiplier;
 
     private readonly TimeSpan _retryInterval = TimeSpan.FromMinutes(5);
     private DateTimeOffset _lastFailure = DateTimeOffset.MinValue;
@@ -63,6 +65,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         DateTimeOffset now = _timeProvider.GetUtcNow();
         _cpuRefreshInterval = options.Value.CpuConsumptionRefreshInterval;
         _memoryRefreshInterval = options.Value.MemoryConsumptionRefreshInterval;
+        _metricValueMultiplier = options.Value.UseZeroToOneRangeForLinuxMetrics ? One : Hundred;
         _refreshAfterCpu = now;
         _refreshAfterMemory = now;
         _previousHostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
@@ -221,7 +224,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
                 return _cpuPercentage;
             }
 
-            double percentage = Math.Min(One, (double)deltaCgroup / deltaHost);
+            double percentage = Math.Min(_metricValueMultiplier, (double)deltaCgroup / deltaHost * _metricValueMultiplier);
 
             _logger.CpuUsageData(cgroupCpuTime, hostCpuTime, _previousCgroupCpuTime, _previousHostCpuTime, percentage);
 
@@ -274,16 +277,16 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         ulong memoryUsed = _parser.GetMemoryUsageInBytes();
 
         return new Snapshot(
-            totalTimeSinceStart: TimeSpan.FromTicks(hostTime / Hundred),
+            totalTimeSinceStart: TimeSpan.FromTicks(hostTime / HundredLong),
             kernelTimeSinceStart: TimeSpan.Zero,
-            userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / Hundred * _scaleRelativeToCpuRequestForTrackerApi)),
+            userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / HundredLong * _scaleRelativeToCpuRequestForTrackerApi)),
             memoryUsageInBytes: memoryUsed);
     }
 
     private double MemoryPercentageLimit()
     {
         ulong memoryUsage = MemoryUsage();
-        double memoryPercentage = Math.Min(One, memoryUsage / _memoryLimit);
+        double memoryPercentage = Math.Min(_metricValueMultiplier, memoryUsage / _memoryLimit * _metricValueMultiplier);
 
         _logger.MemoryPercentageLimit(memoryUsage, _memoryLimit, memoryPercentage);
         return memoryPercentage;
@@ -292,7 +295,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private double MemoryPercentageRequest()
     {
         ulong memoryUsage = MemoryUsage();
-        double memoryPercentage = Math.Min(One, memoryUsage / _memoryRequest);
+        double memoryPercentage = Math.Min(_metricValueMultiplier, memoryUsage / _memoryRequest * _metricValueMultiplier);
 
         _logger.MemoryPercentageRequest(memoryUsage, _memoryRequest, memoryPercentage);
         return memoryPercentage;
@@ -340,8 +343,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     // Math.Min() is used below to mitigate margin errors and various kinds of precisions losses
     // due to the fact that the calculation itself is not an atomic operation:
-    private double CpuUtilizationRequest(double cpuRequest) => Math.Min(One, CpuUtilizationV2() / cpuRequest);
-    private double CpuUtilizationLimit(double cpuLimit) => Math.Min(One, CpuUtilizationV2() / cpuLimit);
+    private double CpuUtilizationRequest(double cpuRequest) => Math.Min(_metricValueMultiplier, CpuUtilizationV2() / cpuRequest * _metricValueMultiplier);
+    private double CpuUtilizationLimit(double cpuLimit) => Math.Min(_metricValueMultiplier, CpuUtilizationV2() / cpuLimit * _metricValueMultiplier);
 
     private IEnumerable<Measurement<double>> GetCpuTime()
     {

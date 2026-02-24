@@ -61,6 +61,8 @@ public static partial class AIJsonUtilities
         AddAIContentType(options, typeof(CodeInterpreterToolResultContent), typeDiscriminatorId: "codeInterpreterToolResult", checkBuiltIn: false);
         AddAIContentType(options, typeof(WebSearchToolCallContent), typeDiscriminatorId: "webSearchToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(WebSearchToolResultContent), typeDiscriminatorId: "webSearchToolResult", checkBuiltIn: false);
+        AddAIContentType(options, typeof(ImageGenerationToolCallContent), typeDiscriminatorId: "imageGenerationToolCall", checkBuiltIn: false);
+        AddAIContentType(options, typeof(ImageGenerationToolResultContent), typeDiscriminatorId: "imageGenerationToolResult", checkBuiltIn: false);
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
@@ -137,6 +139,8 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(CodeInterpreterToolResultContent))]
     [JsonSerializable(typeof(WebSearchToolCallContent))]
     [JsonSerializable(typeof(WebSearchToolResultContent))]
+    [JsonSerializable(typeof(ImageGenerationToolCallContent))]
+    [JsonSerializable(typeof(ImageGenerationToolResultContent))]
     [JsonSerializable(typeof(ResponseContinuationToken))]
 
     // IEmbeddingGenerator
