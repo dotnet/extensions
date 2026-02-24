@@ -56,6 +56,7 @@ internal static class DiagnosticIds
         internal const string AIChatReduction = AIExperiments;
         internal const string AIResponseContinuations = AIExperiments;
         internal const string AICodeInterpreter = AIExperiments;
+        internal const string AIShell = AIExperiments;
         internal const string AIRealTime = AIExperiments;
 
         // These diagnostic IDs are defined by the OpenAI package for its experimental APIs.
