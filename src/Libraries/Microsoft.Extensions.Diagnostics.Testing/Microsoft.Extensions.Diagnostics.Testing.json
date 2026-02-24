@@ -59,7 +59,7 @@
         },
         {
           "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.Logging.Testing.FakeLogRecord> Microsoft.Extensions.Logging.Testing.FakeLogCollector.GetLogsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Logging.Testing.FakeLogRecord> Microsoft.Extensions.Logging.Testing.FakeLogCollector.GetSnapshot(bool clear = false);",
