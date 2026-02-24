@@ -6,6 +6,7 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ using OpenAI.Chat;
 using Xunit;
 
 #pragma warning disable S103 // Lines should not be too long
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
 
 namespace Microsoft.Extensions.AI;
 
@@ -1905,5 +1907,172 @@ public class OpenAIChatClientTests
         {
             Reasoning = new ReasoningOptions { Effort = ReasoningEffort.None }
         }));
+    }
+
+    [Fact]
+    public async Task ReasoningContent_NonStreaming_SurfacedAsTextReasoningContent()
+    {
+        const string Input = """
+            {
+                "messages":[{"role":"user","content":"hello"}],
+                "model":"gpt-oss-120b"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "c48a440c7dd64389b7fbe908e006ba3d",
+              "object": "chat.completion",
+              "created": 1770959477,
+              "model": "gpt-oss-120b",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "9.8 is larger.",
+                    "reasoning_content": "We just compare decimals: 9.11 vs 9.8. 9.8 > 9.11. Answer briefly."
+                  },
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 84,
+                "completion_tokens": 44,
+                "total_tokens": 128
+              }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-oss-120b");
+
+        var response = await client.GetResponseAsync("hello");
+        Assert.NotNull(response);
+
+        var message = response.Messages.Single();
+        var reasoning = message.Contents.OfType<TextReasoningContent>().Single();
+        Assert.Equal("We just compare decimals: 9.11 vs 9.8. 9.8 > 9.11. Answer briefly.", reasoning.Text);
+
+        var text = message.Contents.OfType<TextContent>().Single();
+        Assert.Equal("9.8 is larger.", text.Text);
+    }
+
+    [Fact]
+    public async Task ReasoningContent_Streaming_SurfacedAsTextReasoningContent()
+    {
+        // Streaming format captured from Azure gpt-oss-120b. Reasoning chunks have reasoning_content with content:null,
+        // then content chunks have content with reasoning_content:null.
+        const string Input = """
+            {
+                "messages":[{"role":"user","content":"hello"}],
+                "model":"gpt-oss-120b",
+                "stream":true,
+                "stream_options":{"include_usage":true}
+            }
+            """;
+
+        const string Output = """
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"role":"assistant","content":"","reasoning_content":null},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":null,"reasoning_content":"User asks"},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":null,"reasoning_content":": which"},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":null,"reasoning_content":" is larger."},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":"9","reasoning_content":null},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":".8 is larger.","reasoning_content":null},"finish_reason":null}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[{"index":0,"delta":{"content":null,"reasoning_content":null},"finish_reason":"stop"}]}
+
+            data: {"id":"381fb75e8a1f451f8a579c9da104b739","object":"chat.completion.chunk","created":1770959485,"model":"gpt-oss-120b","choices":[],"usage":{"completion_tokens":46,"prompt_tokens":84,"total_tokens":130}}
+
+            data: [DONE]
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-oss-120b");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello"))
+        {
+            updates.Add(update);
+        }
+
+        // Verify reasoning content was captured from the reasoning_content deltas
+        string reasoningText = string.Concat(updates.SelectMany(u => u.Contents).OfType<TextReasoningContent>().Select(r => r.Text));
+        Assert.Equal("User asks: which is larger.", reasoningText);
+
+        // Verify regular content was also captured from the content deltas
+        Assert.Equal("9.8 is larger.", string.Concat(updates.Select(u => u.Text)));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OpenAIApiTypeTag_SetToChatCompletions(bool streaming)
+    {
+        const string Output = """
+            {
+              "id": "chatcmpl-test",
+              "object": "chat.completion",
+              "created": 1727888631,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello!"
+                  },
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 8,
+                "completion_tokens": 2,
+                "total_tokens": 10
+              }
+            }
+            """;
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == sourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => activities.Add(activity),
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        using VerbatimHttpHandler handler = new(new HttpHandlerExpectedInput(), Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
+            .GetChatClient("gpt-4o-mini")
+            .AsIChatClient()
+            .AsBuilder()
+            .UseOpenTelemetry(sourceName: sourceName)
+            .Build();
+
+        if (streaming)
+        {
+            await foreach (var update in client.GetStreamingResponseAsync("hello"))
+            {
+                // Drain the stream.
+            }
+        }
+        else
+        {
+            await client.GetResponseAsync("hello");
+        }
+
+        var activity = Assert.Single(activities);
+        Assert.Equal("chat_completions", activity.GetTagItem("openai.api.type"));
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.38, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.40, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
@@ -39,6 +39,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
     private readonly Histogram<int> _tokenUsageHistogram;
     private readonly Histogram<double> _operationDurationHistogram;
+    private readonly Histogram<double> _timeToFirstChunkHistogram;
+    private readonly Histogram<double> _timePerOutputChunkHistogram;
 
     private readonly string? _defaultModelId;
     private readonly string? _providerName;
@@ -82,6 +84,20 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             OpenTelemetryConsts.SecondsUnit,
             OpenTelemetryConsts.GenAI.Client.OperationDuration.Description,
             advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
+            );
+
+        _timeToFirstChunkHistogram = _meter.CreateHistogram<double>(
+            OpenTelemetryConsts.GenAI.Client.TimeToFirstChunk.Name,
+            OpenTelemetryConsts.SecondsUnit,
+            OpenTelemetryConsts.GenAI.Client.TimeToFirstChunk.Description,
+            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TimeToFirstChunk.ExplicitBucketBoundaries }
+            );
+
+        _timePerOutputChunkHistogram = _meter.CreateHistogram<double>(
+            OpenTelemetryConsts.GenAI.Client.TimePerOutputChunk.Name,
+            OpenTelemetryConsts.SecondsUnit,
+            OpenTelemetryConsts.GenAI.Client.TimePerOutputChunk.Description,
+            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TimePerOutputChunk.ExplicitBucketBoundaries }
             );
 
         _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
@@ -167,7 +183,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         _jsonSerializerOptions.MakeReadOnly();
 
         using Activity? activity = CreateAndConfigureActivity(options);
-        Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
+        bool trackChunkTimes = _timeToFirstChunkHistogram.Enabled || _timePerOutputChunkHistogram.Enabled;
+        Stopwatch? stopwatch = _operationDurationHistogram.Enabled || trackChunkTimes ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _defaultModelId;
 
         AddInputMessagesTags(messages, options, activity);
@@ -185,6 +202,15 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         var responseEnumerator = updates.GetAsyncEnumerator(cancellationToken);
         List<ChatResponseUpdate> trackedUpdates = [];
+        TimeSpan lastChunkElapsed = default;
+        bool isFirstChunk = true;
+        bool responseModelSet = false;
+        TagList chunkMetricTags = default;
+        if (trackChunkTimes)
+        {
+            AddMetricTags(ref chunkMetricTags, requestModelId, response: null);
+        }
+
         Exception? error = null;
         try
         {
@@ -204,6 +230,34 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 {
                     error = ex;
                     throw;
+                }
+
+                if (trackChunkTimes)
+                {
+                    Debug.Assert(stopwatch is not null, "stopwatch should have been initialized when trackChunkTimes is true");
+                    TimeSpan currentElapsed = stopwatch!.Elapsed;
+                    double delta = (currentElapsed - lastChunkElapsed).TotalSeconds;
+
+                    if (!responseModelSet && update.ModelId is string modelId)
+                    {
+                        chunkMetricTags.Add(OpenTelemetryConsts.GenAI.Response.Model, modelId);
+                        responseModelSet = true;
+                    }
+
+                    if (isFirstChunk)
+                    {
+                        isFirstChunk = false;
+                        if (_timeToFirstChunkHistogram.Enabled)
+                        {
+                            _timeToFirstChunkHistogram.Record(delta, chunkMetricTags);
+                        }
+                    }
+                    else if (_timePerOutputChunkHistogram.Enabled)
+                    {
+                        _timePerOutputChunkHistogram.Record(delta, chunkMetricTags);
+                    }
+
+                    lastChunkElapsed = currentElapsed;
                 }
 
                 trackedUpdates.Add(update);
@@ -709,28 +763,28 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 }
             }
         }
+    }
 
-        void AddMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
+    private void AddMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
+    {
+        tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName);
+
+        if (requestModelId is not null)
         {
-            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName);
+            tags.Add(OpenTelemetryConsts.GenAI.Request.Model, requestModelId);
+        }
 
-            if (requestModelId is not null)
-            {
-                tags.Add(OpenTelemetryConsts.GenAI.Request.Model, requestModelId);
-            }
+        tags.Add(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
 
-            tags.Add(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
+        if (_serverAddress is string endpointAddress)
+        {
+            tags.Add(OpenTelemetryConsts.Server.Address, endpointAddress);
+            tags.Add(OpenTelemetryConsts.Server.Port, _serverPort);
+        }
 
-            if (_serverAddress is string endpointAddress)
-            {
-                tags.Add(OpenTelemetryConsts.Server.Address, endpointAddress);
-                tags.Add(OpenTelemetryConsts.Server.Port, _serverPort);
-            }
-
-            if (response?.ModelId is string responseModel)
-            {
-                tags.Add(OpenTelemetryConsts.GenAI.Response.Model, responseModel);
-            }
+        if (response?.ModelId is string responseModel)
+        {
+            tags.Add(OpenTelemetryConsts.GenAI.Response.Model, responseModel);
         }
     }
 

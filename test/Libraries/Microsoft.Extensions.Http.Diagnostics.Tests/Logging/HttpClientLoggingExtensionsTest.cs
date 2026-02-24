@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -402,6 +403,131 @@ public class HttpClientLoggingExtensionsTest
 
         using var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
         Assert.NotNull(httpClient);
+    }
+
+    [Fact]
+    public async Task LatencyInfo_IsPopulated_WhenLoggerWrapsHandlersPipeline()
+    {
+        await using var sp = new ServiceCollection()
+            .AddLatencyContext()
+            .AddRedaction()
+            .AddHttpClientLatencyTelemetry()
+            .AddHttpClient("test")
+            .ConfigurePrimaryHttpMessageHandler(() => new TestMessageHandler(_ =>
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Headers.TryAddWithoutValidation(TelemetryConstants.ServerApplicationNameHeader, "TestServer");
+                return response;
+            }))
+            .AddExtendedHttpClientLogging(wrapHandlersPipeline: true)
+            .Services
+            .AddFakeLogging()
+            .BuildServiceProvider();
+
+        var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+
+        using var response = await client.GetAsync("http://localhost/api");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var collector = sp.GetFakeLogCollector();
+        var record = collector.LatestRecord;
+        Assert.NotNull(record);
+
+        var latencyInfo = record.GetStructuredStateValue("LatencyInfo");
+        Assert.False(string.IsNullOrEmpty(latencyInfo));
+        Assert.StartsWith("v1.0,", latencyInfo);
+        Assert.Contains("TestServer", latencyInfo);
+    }
+
+    [Fact]
+    public async Task AddExtendedHttpClientLogging_WrapHandlersPipelineParameter_LogsCorrectNumberOfAttempts()
+    {
+        int attemptCount = 0;
+        var serviceCollection = new ServiceCollection();
+
+        serviceCollection.AddTransient(_ =>
+            new TestMessageHandler(_ =>
+            {
+                attemptCount++;
+                return attemptCount % 3 == 0 // every 3rd attempt succeeds
+                    ? new HttpResponseMessage(HttpStatusCode.OK)
+                    : throw new HttpRequestException("Simulated failure");
+            }));
+
+        serviceCollection.AddTransient<TestRetryHandler>();
+
+        serviceCollection
+            .AddFakeRedaction()
+            .AddFakeLogging()
+            .AddHttpClient("outer")
+                .ConfigurePrimaryHttpMessageHandler<TestMessageHandler>()
+                .AddHttpMessageHandler<TestRetryHandler>()
+                .AddExtendedHttpClientLogging(o => o.LogRequestStart = true, wrapHandlersPipeline: true);
+
+        serviceCollection
+            .AddHttpClient("inner")
+                .ConfigurePrimaryHttpMessageHandler<TestMessageHandler>()
+                .AddHttpMessageHandler<TestRetryHandler>()
+                .AddExtendedHttpClientLogging(o => o.LogRequestStart = true, wrapHandlersPipeline: false);
+
+        using var services = serviceCollection.BuildServiceProvider();
+        var factory = services.GetRequiredService<IHttpClientFactory>();
+        var collector = services.GetFakeLogCollector();
+
+        var outerClient = factory.CreateClient("outer");
+        attemptCount = 0;
+        collector.Clear();
+
+        _ = await outerClient.GetAsync("http://localhost/api");
+
+        var outerLogs = collector.GetSnapshot();
+        Assert.Equal(2, outerLogs.Count); // 1 request start + 1 request stop
+
+        var innerClient = factory.CreateClient("inner");
+        attemptCount = 0;
+        collector.Clear();
+
+        _ = await innerClient.GetAsync("http://localhost/api");
+
+        var innerLogs = collector.GetSnapshot();
+        Assert.Equal(6, innerLogs.Count); // 3 attempts × (1 start + 1 stop/failed)
+    }
+
+    private sealed class TestMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(responseFactory(request));
+        }
+    }
+
+    private sealed class TestRetryHandler : DelegatingHandler
+    {
+        private const int MaxRetries = 2;
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            HttpRequestException? lastException = null;
+
+            for (int attempt = 0; attempt <= MaxRetries; attempt++)
+            {
+                try
+                {
+                    return await base.SendAsync(request, cancellationToken);
+                }
+                catch (HttpRequestException ex)
+                {
+                    lastException = ex;
+                    if (attempt == MaxRetries)
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            throw lastException!;
+        }
     }
 
     private static void EnsureSingleLogger<T>(IServiceProvider serviceProvider, string serviceKey)

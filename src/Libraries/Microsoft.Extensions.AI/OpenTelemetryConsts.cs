@@ -56,6 +56,20 @@ internal static class OpenTelemetryConsts
                 public const string Name = "gen_ai.client.token.usage";
                 public static readonly int[] ExplicitBucketBoundaries = [1, 4, 16, 64, 256, 1_024, 4_096, 16_384, 65_536, 262_144, 1_048_576, 4_194_304, 16_777_216, 67_108_864];
             }
+
+            public static class TimeToFirstChunk
+            {
+                public const string Description = "Measures the time to receive the first chunk in a streaming operation";
+                public const string Name = "gen_ai.client.operation.time_to_first_chunk";
+                public static readonly double[] ExplicitBucketBoundaries = OperationDuration.ExplicitBucketBoundaries;
+            }
+
+            public static class TimePerOutputChunk
+            {
+                public const string Description = "Measures the time per output chunk in a streaming operation";
+                public const string Name = "gen_ai.client.operation.time_per_output_chunk";
+                public static readonly double[] ExplicitBucketBoundaries = OperationDuration.ExplicitBucketBoundaries;
+            }
         }
 
         public static class Conversation

@@ -6,6 +6,7 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -14,6 +15,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Responses;
 
@@ -25,6 +27,7 @@ using OpenAI.Responses;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an <see cref="ResponsesClient"/>.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
 internal sealed class OpenAIResponsesChatClient : IChatClient
 {
     // These delegate instances are used to call the internal overloads of CreateResponseAsync and CreateResponseStreamingAsync that accept
@@ -88,6 +91,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeResponses);
 
         // Convert the inputs into what ResponsesClient expects.
         var openAIOptions = AsCreateResponseOptions(options, out string? openAIConversationId);
@@ -222,7 +227,17 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case CodeInterpreterCallResponseItem cicri:
-                    AddCodeInterpreterContents(cicri, message.Contents);
+                    message.Contents.Add(new CodeInterpreterToolCallContent
+                    {
+                        CallId = cicri.Id,
+                        Inputs = !string.IsNullOrWhiteSpace(cicri.Code) ? [new DataContent(Encoding.UTF8.GetBytes(cicri.Code), OpenAIClientExtensions.PythonMediaType)] : null,
+
+                        // We purposefully do not set the RawRepresentation on the CodeInterpreterToolCallContent, only on the CodeInterpreterToolResultContent, to avoid
+                        // the same CodeInterpreterCallResponseItem being included on two different AIContent instances. When these are roundtripped, we want only one
+                        // CodeInterpreterCallResponseItem sent back for the pair.
+                    });
+
+                    message.Contents.Add(CreateCodeInterpreterResultContent(cicri));
                     break;
 
                 case ImageGenerationCallResponseItem imageGenItem:
@@ -246,6 +261,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeResponses);
 
         var openAIOptions = AsCreateResponseOptions(options, out string? openAIConversationId);
         openAIOptions.StreamingEnabled = true;
@@ -410,6 +427,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     yield return CreateUpdate(GetImageGenerationResult(streamingImageGenUpdate, options));
                     break;
 
+                case StreamingResponseCodeInterpreterCallCodeDeltaUpdate codeInterpreterDeltaUpdate:
+                    yield return CreateUpdate(new CodeInterpreterToolCallContent
+                    {
+                        CallId = codeInterpreterDeltaUpdate.ItemId,
+                        Inputs = [new DataContent(Encoding.UTF8.GetBytes(codeInterpreterDeltaUpdate.Delta), OpenAIClientExtensions.PythonMediaType)],
+                        RawRepresentation = codeInterpreterDeltaUpdate,
+                    });
+                    break;
+
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate:
                     switch (outputItemDoneUpdate.Item)
                     {
@@ -435,10 +461,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             });
                             break;
 
+                        case FunctionCallOutputResponseItem functionCallOutputItem:
+                            lastRole ??= ChatRole.Assistant;
+                            yield return CreateUpdate(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
+                            break;
+
                         case CodeInterpreterCallResponseItem cicri:
-                            var codeUpdate = CreateUpdate();
-                            AddCodeInterpreterContents(cicri, codeUpdate.Contents);
-                            yield return codeUpdate;
+                            // The CodeInterpreterToolCallContent has already been yielded as part of delta updates.
+                            // Only yield the CodeInterpreterToolResultContent here for the outputs.
+                            yield return CreateUpdate(CreateCodeInterpreterResultContent(cicri));
                             break;
 
                         // MessageResponseItems will have already had their content yielded as part of delta updates.
@@ -450,6 +481,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 PopulateAnnotations(c, annotatedContent);
                             }
                             yield return CreateUpdate(annotatedContent);
+                            break;
+
+                        // For ReasoningResponseItem, if there's encrypted content, we need to yield that
+                        // so that it can be coalesced with the streamed text deltas and roundtripped.
+                        // Since we may have already yielded reasoning deltas, we explicitly avoid setting
+                        // the RawRepresentation here to avoid duplication, as when roundtripping that
+                        // raw representation will be preferred.
+                        case ReasoningResponseItem rri when rri.EncryptedContent is { Length: > 0 } encryptedContent:
+                            yield return CreateUpdate(new TextReasoningContent(null) { ProtectedData = encryptedContent });
                             break;
 
                         // For ResponseItems where we've already yielded partial deltas for the whole content,
@@ -1361,20 +1401,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
     }
 
-    /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="cicri"/> into <paramref name="contents"/>.</summary>
-    private static void AddCodeInterpreterContents(CodeInterpreterCallResponseItem cicri, IList<AIContent> contents)
-    {
-        contents.Add(new CodeInterpreterToolCallContent
-        {
-            CallId = cicri.Id,
-            Inputs = !string.IsNullOrWhiteSpace(cicri.Code) ? [new DataContent(Encoding.UTF8.GetBytes(cicri.Code), "text/x-python")] : null,
-
-            // We purposefully do not set the RawRepresentation on the HostedCodeInterpreterToolCallContent, only on the HostedCodeInterpreterToolResultContent, to avoid
-            // the same CodeInterpreterCallResponseItem being included on two different AIContent instances. When these are roundtripped, we want only one
-            // CodeInterpreterCallResponseItem sent back for the pair.
-        });
-
-        contents.Add(new CodeInterpreterToolResultContent
+    /// <summary>Creates a <see cref="CodeInterpreterToolResultContent"/> for the specified <paramref name="cicri"/>.</summary>
+    private static CodeInterpreterToolResultContent CreateCodeInterpreterResultContent(CodeInterpreterCallResponseItem cicri) =>
+        new()
         {
             CallId = cicri.Id,
             Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
@@ -1385,8 +1414,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     _ => null,
                 }).OfType<AIContent>().ToList() : null,
             RawRepresentation = cicri,
-        });
-    }
+        };
 
     private static void AddImageGenerationContents(ImageGenerationCallResponseItem outputItem, CreateResponseOptions? options, IList<AIContent> contents)
     {

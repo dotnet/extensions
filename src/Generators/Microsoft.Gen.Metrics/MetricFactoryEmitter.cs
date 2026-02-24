@@ -129,6 +129,8 @@ internal sealed class MetricFactoryEmitter : EmitterBase
             InstrumentKind.CounterT => $"CreateCounter<{metricMethod.GenericType}>",
             InstrumentKind.Histogram => $"CreateHistogram<{metricMethod.GenericType}>",
             InstrumentKind.HistogramT => $"CreateHistogram<{metricMethod.GenericType}>",
+            InstrumentKind.Gauge => $"CreateGauge<{metricMethod.GenericType}>",
+            InstrumentKind.GaugeT => $"CreateGauge<{metricMethod.GenericType}>",
             _ => throw new NotSupportedException($"Metric type '{metricMethod.InstrumentKind}' is not supported to generate factory"),
         };
 
