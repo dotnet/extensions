@@ -628,13 +628,12 @@ internal sealed partial class Emitter : EmitterBase
     {
         OutEnumeration(lm.Parameters.Select(static p =>
         {
-            var scoped = p.IsScoped ? "scoped " : string.Empty;
             if (p.Qualifier != null)
             {
-                return $"{scoped}{p.Qualifier} {p.Type} {p.ParameterNameWithAtIfNeeded}";
+                return $"{p.Qualifier} {p.Type} {p.ParameterNameWithAtIfNeeded}";
             }
 
-            return $"{scoped}{p.Type} {p.ParameterNameWithAtIfNeeded}";
+            return $"{p.Type} {p.ParameterNameWithAtIfNeeded}";
         }));
     }
 

@@ -14,8 +14,5 @@ namespace TestClasses
 
         [LoggerMessage(0, LogLevel.Information, "M0 {s}")]
         internal static partial void M0(ILogger logger, ref readonly S s);
-
-        [LoggerMessage(1, LogLevel.Information, "M1 {s}")]
-        internal static partial void M1(ILogger logger, scoped ref readonly S s);
     }
 }

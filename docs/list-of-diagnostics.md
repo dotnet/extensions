@@ -97,7 +97,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `LOGGEN036` | A value being logged doesn't have an effective way to be converted into a string |
 | `LOGGEN037` | Logging method contains malformed format strings |
 | `LOGGEN038` | Primary constructor parameter of type Microsoft.Extensions.Logging.ILogger is hidden by a field |
-| `LOGGEN039` | Logging method parameters can't have the "params" modifier |
+| `LOGGEN039` | Logging method parameters can't have the "params" or "scoped" modifier |
 
 # Metrics
 

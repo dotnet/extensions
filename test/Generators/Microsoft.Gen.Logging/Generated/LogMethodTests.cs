@@ -770,10 +770,6 @@ public class LogMethodTests
         RefReadOnlyParameterTestExtensions.M0(logger, ref s);
         Assert.Equal(1, collector.Count);
         Assert.Contains("Hello from S", collector.LatestRecord.Message);
-
-        RefReadOnlyParameterTestExtensions.M1(logger, ref s);
-        Assert.Equal(2, collector.Count);
-        Assert.Contains("Hello from S", collector.LatestRecord.Message);
     }
 
     [Fact]

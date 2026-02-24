@@ -493,7 +493,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Logging method parameter &quot;{0}&quot; has the &quot;params&quot; modifier which is not supported.
+        ///   Looks up a localized string similar to Logging method parameter &quot;{0}&quot; has an unsupported modifier (&quot;params&quot; or &quot;scoped&quot;).
         /// </summary>
         internal static string LoggingMethodParameterParamsMessage {
             get {
@@ -502,7 +502,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Logging method parameters can&apos;t have the &quot;params&quot; modifier.
+        ///   Looks up a localized string similar to Logging method parameters can&apos;t have the &quot;params&quot; or &quot;scoped&quot; modifier.
         /// </summary>
         internal static string LoggingMethodParameterParamsTitle {
             get {

@@ -331,10 +331,10 @@ public partial class ParserTests
             partial class C
             {
                 [LoggerMessage(0, LogLevel.Debug, ""Parameter {p1}"")]
-                static partial void M(ILogger logger, scoped ref readonly int p1);
+                static partial void M(ILogger logger, scoped ref readonly int /*0+*/p1/*-0*/);
             }";
 
-        await RunGenerator(Source);
+        await RunGenerator(Source, DiagDescriptors.LoggingMethodParameterParams);
     }
 
     [Theory]
