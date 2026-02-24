@@ -493,6 +493,24 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Logging method parameter &quot;{0}&quot; has an unsupported modifier (&quot;params&quot; or &quot;scoped&quot;).
+        /// </summary>
+        internal static string LoggingMethodParameterParamsMessage {
+            get {
+                return ResourceManager.GetString("LoggingMethodParameterParamsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logging method parameters can&apos;t have the &quot;params&quot; or &quot;scoped&quot; modifier.
+        /// </summary>
+        internal static string LoggingMethodParameterParamsTitle {
+            get {
+                return ResourceManager.GetString("LoggingMethodParameterParamsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parameter &quot;{0}&quot; of logging method &quot;{1}&quot; has a sensitive field/property in its type.
         /// </summary>
         internal static string RecordTypeSensitiveArgumentIsInTemplateMessage {

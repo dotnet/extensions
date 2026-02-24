@@ -351,4 +351,10 @@
   <data name="PrimaryConstructorParameterLoggerHiddenMessage" xml:space="preserve">
     <value>Class '{0}' has a primary constructor parameter of type Microsoft.Extensions.Logging.ILogger that is hidden by a field in the class or a base class, preventing its use</value>
   </data>
+  <data name="LoggingMethodParameterParamsMessage" xml:space="preserve">
+    <value>Logging method parameter "{0}" has an unsupported modifier ("params" or "scoped")</value>
+  </data>
+  <data name="LoggingMethodParameterParamsTitle" xml:space="preserve">
+    <value>Logging method parameters can't have the "params" or "scoped" modifier</value>
+  </data>
 </root>

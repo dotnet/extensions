@@ -298,6 +298,45 @@ public partial class ParserTests
         await RunGenerator(source, DiagDescriptors.LoggingMethodParameterRefKind);
     }
 
+    [Fact]
+    public async Task LogMethodParamsModifier()
+    {
+        const string Source = @"
+            partial class C
+            {
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
+                static partial void M(ILogger logger, params int[] /*0+*/values/*-0*/);
+            }";
+
+        await RunGenerator(Source, DiagDescriptors.LoggingMethodParameterParams);
+    }
+
+    [Fact]
+    public async Task LogMethodRefReadOnlyModifier()
+    {
+        const string Source = @"
+            partial class C
+            {
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter {p1}"")]
+                static partial void M(ILogger logger, ref readonly int p1);
+            }";
+
+        await RunGenerator(Source);
+    }
+
+    [Fact]
+    public async Task LogMethodScopedModifier()
+    {
+        const string Source = @"
+            partial class C
+            {
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter {p1}"")]
+                static partial void M(ILogger logger, scoped ref readonly int /*0+*/p1/*-0*/);
+            }";
+
+        await RunGenerator(Source, DiagDescriptors.LoggingMethodParameterParams);
+    }
+
     [Theory]
     [CombinatorialData]
     public async Task LogMethod_DetectsSensitiveMembersInRecord([CombinatorialRange(0, TotalSensitiveCases)] int positionNumber)
