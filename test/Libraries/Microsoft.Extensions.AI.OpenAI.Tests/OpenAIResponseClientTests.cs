@@ -6014,10 +6014,11 @@ public class OpenAIResponseClientTests
     }
 
     [Theory]
+    [InlineData(ReasoningEffort.None, ReasoningOutput.Summary, "none", "concise")]
     [InlineData(ReasoningEffort.Low, ReasoningOutput.Summary, "low", "concise")]
     [InlineData(ReasoningEffort.Medium, ReasoningOutput.Full, "medium", "detailed")]
     [InlineData(ReasoningEffort.High, ReasoningOutput.Summary, "high", "concise")]
-    [InlineData(ReasoningEffort.ExtraHigh, ReasoningOutput.Full, "high", "detailed")] // ExtraHigh maps to high
+    [InlineData(ReasoningEffort.ExtraHigh, ReasoningOutput.Full, "xhigh", "detailed")]
     public async Task ReasoningOptions_EffortAndOutput_ProducesExpectedJson(
         ReasoningEffort effort,
         ReasoningOutput output,
@@ -6070,55 +6071,6 @@ public class OpenAIResponseClientTests
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             Reasoning = new ReasoningOptions { Effort = effort, Output = output }
-        }));
-    }
-
-    [Fact]
-    public async Task ReasoningOptions_NoneValues_ProducesNoReasoningInJson()
-    {
-        const string Input = """
-            {
-                "model": "o4-mini",
-                "input": [{
-                    "type": "message",
-                    "role": "user",
-                    "content": [{"type": "input_text", "text": "hello"}]
-                }]
-            }
-            """;
-
-        const string Output = """
-            {
-              "id": "resp_test",
-              "object": "response",
-              "created_at": 1741891428,
-              "status": "completed",
-              "model": "o4-mini",
-              "output": [
-                {
-                  "id": "msg_test",
-                  "type": "message",
-                  "status": "completed",
-                  "role": "assistant",
-                  "content": [{"type": "output_text", "text": "Hello!"}]
-                }
-              ],
-              "usage": {
-                "input_tokens": 10,
-                "output_tokens": 5,
-                "total_tokens": 15
-              }
-            }
-            """;
-
-        using VerbatimHttpHandler handler = new(Input, Output);
-        using HttpClient httpClient = new(handler);
-        using IChatClient client = CreateResponseClient(httpClient, "o4-mini");
-
-        // None values for both should result in no reasoning options in the request
-        Assert.NotNull(await client.GetResponseAsync("hello", new()
-        {
-            Reasoning = new ReasoningOptions { Effort = ReasoningEffort.None, Output = ReasoningOutput.None }
         }));
     }
 
