@@ -14,7 +14,7 @@
     <PatchVersion>0</PatchVersion>
 
     <Workstream>AI</Workstream>
-    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinCodeCoverage>75</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
 
     <IsPackable>true</IsPackable>
