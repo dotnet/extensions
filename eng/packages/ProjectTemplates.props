@@ -26,8 +26,8 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.67.1-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="1.67.1-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.67.1-preview" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.7.0-preview.1" />
-    <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="0.7.0-preview.1" />
+    <PackageVersion Include="ModelContextProtocol" Version="1.0.0" />
+    <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="1.0.0" />
     <PackageVersion Include="OllamaSharp" Version="5.4.12" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
