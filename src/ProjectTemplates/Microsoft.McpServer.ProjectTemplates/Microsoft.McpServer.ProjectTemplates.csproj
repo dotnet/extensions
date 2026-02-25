@@ -6,12 +6,14 @@
     <Description>MCP Server project templates.</Description>
     <PackageTags>dotnet-new;templates;ai</PackageTags>
 
-    <Stage>normal</Stage>
+    <Stage>preview</Stage>
 
     <!-- Set the version info to align with ModelContextProtocol packages -->
-    <MajorVersion>1</MajorVersion>
-    <MinorVersion>0</MinorVersion>
+    <MajorVersion>0</MajorVersion>
+    <MinorVersion>7</MinorVersion>
     <PatchVersion>0</PatchVersion>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
 
     <Workstream>AI</Workstream>
     <MinCodeCoverage>0</MinCodeCoverage>
