@@ -15,7 +15,7 @@
 
     <Workstream>AI</Workstream>
     <MinCodeCoverage>75</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinMutationScore>50</MinMutationScore>
 
     <IsPackable>true</IsPackable>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
