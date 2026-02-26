@@ -322,4 +322,45 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         collector.WriteTo(log);
         collector.AssertErrors([Log.IdTagInvalidUnicode]);
     }
+
+    [Theory]
+    [InlineData("tag1,tag2", 2)]
+    [InlineData("tag1,tag2,tag3", 3)]
+    public void RoundTrip_WithPendingTags_WhenKnownTagsMismatch(string delimitedTags, int tagCount)
+    {
+        var clock = new FakeTime();
+        using var provider = GetDefaultCache(out var cache, config =>
+        {
+            config.AddSingleton<TimeProvider>(clock);
+        });
+
+        byte[] bytes = new byte[1024];
+        new Random().NextBytes(bytes);
+
+        string key = "my key";
+        string[] tagsArray = delimitedTags.Split(',');
+        var writeTags = TagSet.Create(tagsArray);
+        Assert.Equal(tagCount, writeTags.Count);
+
+        var maxLen = HybridCachePayload.GetMaxBytes(key, writeTags, bytes.Length);
+        var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
+
+        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, writeTags, new(bytes));
+        log.WriteLine($"bytes written: {actualLength}");
+
+        clock.Add(TimeSpan.FromSeconds(10));
+
+        // Inject non-completed tasks for each tag so IsTagExpired returns isPending=true
+        foreach (string tag in tagsArray)
+        {
+            cache.DebugInvalidateTag(tag, new TaskCompletionSource<long>().Task);
+        }
+
+        // Parse with empty knownTags to force all tags into pendingTags via the rented buffer path
+        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, TagSet.Empty, cache,
+            out var payload, out var remaining, out var flags, out var entropy, out var pendingTags, out _);
+        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
+        Assert.True(payload.SequenceEqual(bytes));
+        Assert.Equal(tagCount, pendingTags.Count);
+    }
 }

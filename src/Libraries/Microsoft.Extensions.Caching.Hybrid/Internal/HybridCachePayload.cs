@@ -309,7 +309,7 @@ internal static class HybridCachePayload
                             break;
                         default:
                             string[] final = new string[pendingTagsCount];
-                            pendingTagBuffer.CopyTo(final, 0);
+                            Array.Copy(pendingTagBuffer, final, pendingTagsCount);
                             pendingTags = new(final);
                             break;
                     }
