@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -18,7 +19,7 @@ namespace Microsoft.Extensions.AI;
 /// This is recommended as a base type when building clients that can be chained in any order around an underlying <see cref="ISpeechToTextClient"/>.
 /// The default implementation simply passes each call to the inner client instance.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public class DelegatingSpeechToTextClient : ISpeechToTextClient
 {
     /// <summary>

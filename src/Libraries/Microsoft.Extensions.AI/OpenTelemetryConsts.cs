@@ -11,7 +11,7 @@ internal static class OpenTelemetryConsts
     public const string DefaultSourceName = "Experimental.Microsoft.Extensions.AI";
 
     public const string SecondsUnit = "s";
-    public const string TokensUnit = "token";
+    public const string TokensUnit = "{token}";
 
     /// <summary>Environment variable name for controlling whether sensitive content should be captured in telemetry by default.</summary>
     public const string GenAICaptureMessageContentEnvVar = "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT";
@@ -55,6 +55,20 @@ internal static class OpenTelemetryConsts
                 public const string Description = "Measures number of input and output tokens used";
                 public const string Name = "gen_ai.client.token.usage";
                 public static readonly int[] ExplicitBucketBoundaries = [1, 4, 16, 64, 256, 1_024, 4_096, 16_384, 65_536, 262_144, 1_048_576, 4_194_304, 16_777_216, 67_108_864];
+            }
+
+            public static class TimeToFirstChunk
+            {
+                public const string Description = "Measures the time to receive the first chunk in a streaming operation";
+                public const string Name = "gen_ai.client.operation.time_to_first_chunk";
+                public static readonly double[] ExplicitBucketBoundaries = OperationDuration.ExplicitBucketBoundaries;
+            }
+
+            public static class TimePerOutputChunk
+            {
+                public const string Description = "Measures the time per output chunk in a streaming operation";
+                public const string Name = "gen_ai.client.operation.time_per_output_chunk";
+                public static readonly double[] ExplicitBucketBoundaries = OperationDuration.ExplicitBucketBoundaries;
             }
         }
 
@@ -138,6 +152,7 @@ internal static class OpenTelemetryConsts
         {
             public const string InputTokens = "gen_ai.usage.input_tokens";
             public const string OutputTokens = "gen_ai.usage.output_tokens";
+            public const string CacheReadInputTokens = "gen_ai.usage.cache_read.input_tokens";
         }
     }
 

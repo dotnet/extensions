@@ -22,7 +22,11 @@
 
   <PropertyGroup>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectFilePolyfillsOnLegacy>true</InjectFilePolyfillsOnLegacy>
+    <InjectMediaTypeMapOnLegacy>true</InjectMediaTypeMapOnLegacy>
+    <InjectNullabilityInfoContextOnLegacy>true</InjectNullabilityInfoContextOnLegacy>
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>

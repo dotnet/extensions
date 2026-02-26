@@ -11,8 +11,8 @@ namespace Microsoft.Extensions.AmbientMetadata;
 /// At startup time, the class properties will be initialized from the generated code.
 /// Currently supported CI pipelines:
 /// <list type="bullet">
-/// <item><see href="https://learn.microsoft.com/azure/devops/pipelines/build/variables#build-variables-devops-services">Azure DevOps</see></item>
-/// <item><see href="https://docs.github.com/en/actions/reference/variables-reference#default-environment-variables">GitHub Actions</see></item>
+///   <item><see href="https://learn.microsoft.com/azure/devops/pipelines/build/variables#build-variables-devops-services">Azure DevOps</see></item>
+///   <item><see href="https://docs.github.com/en/actions/reference/variables-reference#default-environment-variables">GitHub Actions</see></item>
 /// </list>
 /// </remarks>
 public class BuildMetadata

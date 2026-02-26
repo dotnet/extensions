@@ -7,7 +7,6 @@ trigger:
   branches:
     include:
       - main
-      - dev
       - release/*
       - internal/release/*
       - validation/*
@@ -30,7 +29,6 @@ pr:
   branches:
     include:
       - main
-      - dev
       - release/*
       - internal/release/*
   paths:
@@ -146,6 +144,8 @@ resources:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    settings:
+      networkIsolationPolicy: Permissive,CFSClean2
     featureFlags:
       binskimScanAllExtensions: true
     sdl:

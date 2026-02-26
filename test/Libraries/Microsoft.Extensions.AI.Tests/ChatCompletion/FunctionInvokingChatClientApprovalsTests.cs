@@ -938,15 +938,12 @@ public class FunctionInvokingChatClientApprovalsTests
     }
 
     /// <summary>
-    /// Since we do not have a way of supporting both functions that require approval and those that do not
-    /// in one invocation, we always require all function calls to be approved if any require approval.
-    /// If we are therefore unsure as to whether we will encounter a function call that requires approval,
-    /// we have to wait until we find one before yielding any function call content.
-    /// If we don't have any function calls that require approval at all though, we can just yield all content normally
-    /// since this issue won't apply.
+    /// FunctionCallContent updates are buffered until the end of the stream so that the client can check
+    /// for matching FunctionResultContent from server-handled function calls and mark those FCCs as
+    /// InformationalOnly. This means FCCs are not yielded immediately, even when no approval is required.
     /// </summary>
     [Fact]
-    public async Task FunctionCallContentIsYieldedImmediatelyIfNoApprovalRequiredWhenStreamingAsync()
+    public async Task FunctionCallContentIsBufferedUntilEndOfStreamWhenStreamingAsync()
     {
         var options = new ChatOptions
         {
@@ -997,7 +994,10 @@ public class FunctionInvokingChatClientApprovalsTests
                 if (functionCall.CallId == "callId1")
                 {
                     Assert.Equal("Func1", functionCall.Name);
-                    Assert.Equal(1, updateYieldCount);
+
+                    // FCCs are now buffered until the end of the stream to check for
+                    // matching FunctionResultContent from server-handled function calls.
+                    Assert.Equal(2, updateYieldCount);
                 }
                 else if (functionCall.CallId == "callId2")
                 {
@@ -1111,6 +1111,98 @@ public class FunctionInvokingChatClientApprovalsTests
 
             updateCount++;
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionCallsWithInformationalOnlyTrueAreNotReplacedWithApprovalsAsync(bool streaming)
+    {
+        var functionInvokedCount = 0;
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(
+                    AIFunctionFactory.Create(() => { functionInvokedCount++; return "Result 1"; }, "Func1")),
+            ]
+        };
+
+        List<ChatMessage> input = [new ChatMessage(ChatRole.User, "hello")];
+
+        // FunctionCallContent with InformationalOnly = true should pass through unchanged
+        var alreadyProcessedFunctionCall = new FunctionCallContent("callId1", "Func1") { InformationalOnly = true };
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]),
+        ];
+
+        // Expected output should contain the same FunctionCallContent, not a FunctionApprovalRequestContent
+        List<ChatMessage> expectedOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [alreadyProcessedFunctionCall]),
+        ];
+
+        if (streaming)
+        {
+            await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, expectedOutput);
+        }
+        else
+        {
+            await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput);
+        }
+
+        // The function should NOT have been invoked since InformationalOnly was true
+        Assert.Equal(0, functionInvokedCount);
+    }
+
+    [Fact]
+    public async Task ApprovalResponsePreservesOriginalRequestMessageMetadata()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+            ]
+        };
+
+        const string OriginalMessageId = "original-message-id";
+
+        // Create input with approval request containing a known MessageId on the containing message
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionApprovalRequestContent("approval-request-id", new FunctionCallContent("function-call-id", "Func1"))
+            ]) { MessageId = OriginalMessageId }, // This MessageId should be preserved
+            new ChatMessage(ChatRole.User,
+            [
+                new FunctionApprovalResponseContent("approval-request-id", true, new FunctionCallContent("function-call-id", "Func1"))
+            ]),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        // The reconstructed function call message should preserve the original MessageId
+        List<ChatMessage> expectedOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("function-call-id", "Func1")]) { MessageId = OriginalMessageId },
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("function-call-id", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        var actualOutput = await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput);
+
+        // Verify that the reconstructed function call message has the original MessageId, not a synthetic one
+        Assert.Equal(OriginalMessageId, actualOutput[0].MessageId);
+
+        actualOutput = await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, expectedOutput);
+        Assert.Equal(OriginalMessageId, actualOutput[0].MessageId);
     }
 
     [Fact]

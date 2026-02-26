@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -11,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a hosted MCP server tool that can be specified to an AI service.
 /// </summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIMcpServers, UrlFormat = DiagnosticIds.UrlFormat)]
 public class HostedMcpServerTool : AITool
 {
     /// <summary>The name of the Authorization header.</summary>

@@ -234,7 +234,6 @@ internal sealed class Parser
             return (InstrumentKind.Histogram, symbols.LongTypeSymbol);
         }
 
-        // Gauge is not supported yet
         if (methodAttributeSymbol.Equals(symbols.GaugeAttribute, SymbolEqualityComparer.Default))
         {
             return (InstrumentKind.Gauge, symbols.LongTypeSymbol);
@@ -248,6 +247,11 @@ internal sealed class Parser
         if (methodAttributeSymbol.OriginalDefinition.Equals(symbols.HistogramOfTAttribute, SymbolEqualityComparer.Default))
         {
             return (InstrumentKind.HistogramT, GetGenericType(methodAttributeSymbol));
+        }
+
+        if (methodAttributeSymbol.OriginalDefinition.Equals(symbols.GaugeOfTAttribute, SymbolEqualityComparer.Default))
+        {
+            return (InstrumentKind.GaugeT, GetGenericType(methodAttributeSymbol));
         }
 
         return (InstrumentKind.None, null);
@@ -407,12 +411,6 @@ internal sealed class Parser
         if (instrumentKind == InstrumentKind.None ||
             genericType == null)
         {
-            return (null, false);
-        }
-
-        if (instrumentKind == InstrumentKind.Gauge)
-        {
-            Diag(DiagDescriptors.ErrorGaugeNotSupported, methodSymbol.GetLocation());
             return (null, false);
         }
 

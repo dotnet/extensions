@@ -75,7 +75,9 @@ public class AIContentTests
             new McpServerToolCallContent("call123", "myTool", "myServer"),
             new McpServerToolResultContent("call123"),
             new McpServerToolApprovalRequestContent("request123", new McpServerToolCallContent("call123", "myTool", "myServer")),
-            new McpServerToolApprovalResponseContent("request123", approved: true)
+            new McpServerToolApprovalResponseContent("request123", approved: true),
+            new ImageGenerationToolCallContent { ImageId = "img123" },
+            new ImageGenerationToolResultContent { ImageId = "img456", Outputs = [new DataContent(new byte[] { 4, 5, 6 }, "image/png")] }
         ]);
 
         var serialized = JsonSerializer.Serialize(message, AIJsonUtilities.DefaultOptions);

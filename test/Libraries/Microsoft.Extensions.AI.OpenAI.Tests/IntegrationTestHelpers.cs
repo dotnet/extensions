@@ -7,6 +7,8 @@ using System.ClientModel.Primitives;
 using Azure.Identity;
 using OpenAI;
 
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Shared utility methods for integration tests.</summary>

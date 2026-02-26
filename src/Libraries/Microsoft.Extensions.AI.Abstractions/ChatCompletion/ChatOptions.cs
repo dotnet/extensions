@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -36,6 +37,7 @@ public class ChatOptions
         ModelId = other.ModelId;
         PresencePenalty = other.PresencePenalty;
         RawRepresentationFactory = other.RawRepresentationFactory;
+        Reasoning = other.Reasoning?.Clone();
         ResponseFormat = other.ResponseFormat;
         Seed = other.Seed;
         Temperature = other.Temperature;
@@ -106,6 +108,11 @@ public class ChatOptions
 
     /// <summary>Gets or sets a seed value used by a service to control the reproducibility of results.</summary>
     public long? Seed { get; set; }
+
+    /// <summary>
+    /// Gets or sets the reasoning options for the chat request.
+    /// </summary>
+    public ReasoningOptions? Reasoning { get; set; }
 
     /// <summary>
     /// Gets or sets the response format for the chat request.
@@ -180,7 +187,7 @@ public class ChatOptions
     /// If the implementation does not support background responses, this property will be ignored.
     /// </para>
     /// </remarks>
-    [Experimental("MEAI001")]
+    [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
     public bool? AllowBackgroundResponses { get; set; }
 
@@ -195,7 +202,7 @@ public class ChatOptions
     /// can be polled for completion by obtaining the token from the <see cref="ChatResponse.ContinuationToken"/> property
     /// and passing it to this property on subsequent calls to <see cref="IChatClient.GetResponseAsync"/>.
     /// </remarks>
-    [Experimental("MEAI001")]
+    [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
     public ResponseContinuationToken? ContinuationToken { get; set; }
 

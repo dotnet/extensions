@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -11,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Provides extension methods for attaching a <see cref="ReducingChatClient"/> to a chat pipeline.
 /// </summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIChatReduction, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class ReducingChatClientBuilderExtensions
 {
     /// <summary>

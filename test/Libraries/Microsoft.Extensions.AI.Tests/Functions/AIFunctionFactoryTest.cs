@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -1312,6 +1313,146 @@ public partial class AIFunctionFactoryTest
         var tool = AIFunctionFactory.Create(TestStaticMethod, null, serializerOptions: JsonContext.Default.Options);
 
         Assert.Equal("TestStaticMethod", tool.Name);
+    }
+
+    [Fact]
+    public void JsonSchema_NullableValueTypeParameters_AllowNull()
+    {
+        // Test that nullable value type parameters (e.g., int?) generate JSON schemas that allow null values.
+        // This should work on all target frameworks.
+        AIFunction func = AIFunctionFactory.Create(
+            (int? nullableInt, int? nullableIntWithDefault = null) => { });
+
+        JsonElement schema = func.JsonSchema;
+        JsonElement properties = schema.GetProperty("properties");
+
+        // nullableInt should have type ["integer", "null"]
+        JsonElement nullableIntSchema = properties.GetProperty("nullableInt");
+        Assert.True(
+            nullableIntSchema.TryGetProperty("type", out JsonElement nullableIntType),
+            "nullableInt schema should have a 'type' property");
+        Assert.Equal(JsonValueKind.Array, nullableIntType.ValueKind);
+        Assert.Contains("integer", nullableIntType.EnumerateArray().Select(e => e.GetString()));
+        Assert.Contains("null", nullableIntType.EnumerateArray().Select(e => e.GetString()));
+
+        // nullableIntWithDefault should have type ["integer", "null"] and default: null
+        JsonElement nullableIntWithDefaultSchema = properties.GetProperty("nullableIntWithDefault");
+        Assert.True(
+            nullableIntWithDefaultSchema.TryGetProperty("type", out JsonElement nullableIntWithDefaultType),
+            "nullableIntWithDefault schema should have a 'type' property");
+        Assert.Equal(JsonValueKind.Array, nullableIntWithDefaultType.ValueKind);
+        Assert.Contains("integer", nullableIntWithDefaultType.EnumerateArray().Select(e => e.GetString()));
+        Assert.Contains("null", nullableIntWithDefaultType.EnumerateArray().Select(e => e.GetString()));
+        Assert.True(
+            nullableIntWithDefaultSchema.TryGetProperty("default", out JsonElement nullableIntWithDefaultDefault),
+            "nullableIntWithDefault schema should have a 'default' property");
+        Assert.Equal(JsonValueKind.Null, nullableIntWithDefaultDefault.ValueKind);
+
+        // Required array should contain only parameters without default values
+        JsonElement required = schema.GetProperty("required");
+        List<string> requiredParams = required.EnumerateArray().Select(e => e.GetString()!).ToList();
+        Assert.Contains("nullableInt", requiredParams);
+        Assert.DoesNotContain("nullableIntWithDefault", requiredParams);
+    }
+
+    [Fact]
+    public void JsonSchema_NullableReferenceTypeParameters_AllowNull()
+    {
+        // Regression test for https://github.com/dotnet/extensions/issues/7182
+        // Nullable reference type parameters (e.g., string?) should generate JSON schemas that allow null values.
+        AIFunction func = AIFunctionFactory.Create(
+            (string? nullableString, int? nullableInt, string? nullableStringWithDefault = null, int? nullableIntWithDefault = null) => { });
+
+        JsonElement schema = func.JsonSchema;
+        JsonElement properties = schema.GetProperty("properties");
+
+        // nullableString should have type ["string", "null"]
+        JsonElement nullableStringSchema = properties.GetProperty("nullableString");
+        Assert.True(
+            nullableStringSchema.TryGetProperty("type", out JsonElement nullableStringType),
+            "nullableString schema should have a 'type' property");
+        Assert.Equal(JsonValueKind.Array, nullableStringType.ValueKind);
+        Assert.Contains("string", nullableStringType.EnumerateArray().Select(e => e.GetString()));
+        Assert.Contains("null", nullableStringType.EnumerateArray().Select(e => e.GetString()));
+
+        // nullableInt should have type ["integer", "null"]
+        JsonElement nullableIntSchema = properties.GetProperty("nullableInt");
+        Assert.True(
+            nullableIntSchema.TryGetProperty("type", out JsonElement nullableIntType),
+            "nullableInt schema should have a 'type' property");
+        Assert.Equal(JsonValueKind.Array, nullableIntType.ValueKind);
+        Assert.Contains("integer", nullableIntType.EnumerateArray().Select(e => e.GetString()));
+        Assert.Contains("null", nullableIntType.EnumerateArray().Select(e => e.GetString()));
+
+        // nullableStringWithDefault should have type ["string", "null"] and default: null
+        JsonElement nullableStringWithDefaultSchema = properties.GetProperty("nullableStringWithDefault");
+        Assert.True(
+            nullableStringWithDefaultSchema.TryGetProperty("type", out JsonElement nullableStringWithDefaultType),
+            "nullableStringWithDefault schema should have a 'type' property");
+        Assert.Equal(JsonValueKind.Array, nullableStringWithDefaultType.ValueKind);
+        Assert.Contains("string", nullableStringWithDefaultType.EnumerateArray().Select(e => e.GetString()));
+        Assert.Contains("null", nullableStringWithDefaultType.EnumerateArray().Select(e => e.GetString()));
+        Assert.True(
+            nullableStringWithDefaultSchema.TryGetProperty("default", out JsonElement nullableStringWithDefaultDefault),
+            "nullableStringWithDefault schema should have a 'default' property");
+        Assert.Equal(JsonValueKind.Null, nullableStringWithDefaultDefault.ValueKind);
+
+        // nullableIntWithDefault should have type ["integer", "null"] and default: null
+        JsonElement nullableIntWithDefaultSchema = properties.GetProperty("nullableIntWithDefault");
+        Assert.True(
+            nullableIntWithDefaultSchema.TryGetProperty("type", out JsonElement nullableIntWithDefaultType),
+            "nullableIntWithDefault schema should have a 'type' property");
+        Assert.Equal(JsonValueKind.Array, nullableIntWithDefaultType.ValueKind);
+        Assert.Contains("integer", nullableIntWithDefaultType.EnumerateArray().Select(e => e.GetString()));
+        Assert.Contains("null", nullableIntWithDefaultType.EnumerateArray().Select(e => e.GetString()));
+        Assert.True(
+            nullableIntWithDefaultSchema.TryGetProperty("default", out JsonElement nullableIntWithDefaultDefault),
+            "nullableIntWithDefault schema should have a 'default' property");
+        Assert.Equal(JsonValueKind.Null, nullableIntWithDefaultDefault.ValueKind);
+
+        // Required array should contain only parameters without default values
+        JsonElement required = schema.GetProperty("required");
+        List<string> requiredParams = required.EnumerateArray().Select(e => e.GetString()!).ToList();
+        Assert.Contains("nullableString", requiredParams);
+        Assert.Contains("nullableInt", requiredParams);
+        Assert.DoesNotContain("nullableStringWithDefault", requiredParams);
+        Assert.DoesNotContain("nullableIntWithDefault", requiredParams);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_DynamicMethod()
+    {
+        DynamicMethod dynamicMethod = new DynamicMethod(
+            "DoubleIt",
+            typeof(Task<int>),
+            new[] { typeof(int) },
+            typeof(AIFunctionFactoryTest).Module);
+
+        dynamicMethod.DefineParameter(1, ParameterAttributes.None, "value");
+
+        ILGenerator il = dynamicMethod.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldc_I4_2);
+        il.Emit(OpCodes.Mul);
+        il.Emit(OpCodes.Call, typeof(Task).GetMethod(nameof(Task.FromResult))!.MakeGenericMethod(typeof(int)));
+        il.Emit(OpCodes.Ret);
+
+        Delegate testDelegate = dynamicMethod.CreateDelegate(typeof(Func<int, Task<int>>));
+
+        AIFunction func = AIFunctionFactory.Create(testDelegate.GetMethodInfo(), testDelegate.Target);
+
+        Assert.Equal("DoubleIt", func.Name);
+
+        JsonElement schema = func.JsonSchema;
+        JsonElement properties = schema.GetProperty("properties");
+        Assert.True(properties.TryGetProperty("value", out _));
+
+#if NET
+        // DynamicMethod invocation via MethodInfo.Invoke is not supported on .NET Framework.
+        object? result = await func.InvokeAsync(new() { ["value"] = 21 });
+        Assert.IsType<JsonElement>(result);
+        Assert.Equal(42, ((JsonElement)result!).GetInt32());
+#endif
     }
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -28,7 +29,7 @@ namespace Microsoft.Extensions.AI;
 /// only one slot for such an object available in <see cref="SpeechToTextResponse.RawRepresentation"/>.
 /// </para>
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public class SpeechToTextResponseUpdate
 {
     private IList<AIContent>? _contents;

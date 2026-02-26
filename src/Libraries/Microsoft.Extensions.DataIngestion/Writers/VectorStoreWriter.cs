@@ -180,6 +180,7 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
             await foreach (var record in _vectorStoreCollection!.GetAsync(
                 filter: record => (string)record[DocumentIdName]! == document.Identifier,
                 top: MaxTopCount,
+                options: new() { Skip = keys.Count },
                 cancellationToken: cancellationToken).ConfigureAwait(false))
             {
                 keys.Add(record[KeyName]!);

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --config html-report/vite.config.ts",
     "build": "tsc -b --verbose && vite build --config html-report/vite.config.ts",
-    "buildtask": "pushd azure-devops-report\\tasks\\PublishAIEvaluationReport && npm install && npm build && popd"
+    "buildtask": "pushd azure-devops-report\\tasks\\PublishAIEvaluationReport && npm ci && npm build && popd"
   },
   "dependencies": {
     "@fluentui/react": "^8.122.14",

@@ -23,6 +23,7 @@ public class ChatOptionsTests
         Assert.Null(options.FrequencyPenalty);
         Assert.Null(options.PresencePenalty);
         Assert.Null(options.Seed);
+        Assert.Null(options.Reasoning);
         Assert.Null(options.ResponseFormat);
         Assert.Null(options.ModelId);
         Assert.Null(options.StopSequences);
@@ -42,6 +43,7 @@ public class ChatOptionsTests
         Assert.Null(clone.FrequencyPenalty);
         Assert.Null(clone.PresencePenalty);
         Assert.Null(clone.Seed);
+        Assert.Null(clone.Reasoning);
         Assert.Null(clone.ResponseFormat);
         Assert.Null(clone.ModelId);
         Assert.Null(clone.StopSequences);
@@ -89,6 +91,7 @@ public class ChatOptionsTests
         options.FrequencyPenalty = 0.4f;
         options.PresencePenalty = 0.5f;
         options.Seed = 12345;
+        options.Reasoning = new ReasoningOptions { Effort = ReasoningEffort.Medium, Output = ReasoningOutput.Summary };
         options.ResponseFormat = ChatResponseFormat.Json;
         options.ModelId = "modelId";
         options.StopSequences = stopSequences;
@@ -109,6 +112,9 @@ public class ChatOptionsTests
         Assert.Equal(0.4f, options.FrequencyPenalty);
         Assert.Equal(0.5f, options.PresencePenalty);
         Assert.Equal(12345, options.Seed);
+        Assert.NotNull(options.Reasoning);
+        Assert.Equal(ReasoningEffort.Medium, options.Reasoning.Effort);
+        Assert.Equal(ReasoningOutput.Summary, options.Reasoning.Output);
         Assert.Same(ChatResponseFormat.Json, options.ResponseFormat);
         Assert.Equal("modelId", options.ModelId);
         Assert.Same(stopSequences, options.StopSequences);
@@ -129,6 +135,10 @@ public class ChatOptionsTests
         Assert.Equal(0.4f, clone.FrequencyPenalty);
         Assert.Equal(0.5f, clone.PresencePenalty);
         Assert.Equal(12345, clone.Seed);
+        Assert.NotNull(clone.Reasoning);
+        Assert.NotSame(options.Reasoning, clone.Reasoning); // Should be a shallow copy
+        Assert.Equal(ReasoningEffort.Medium, clone.Reasoning.Effort);
+        Assert.Equal(ReasoningOutput.Summary, clone.Reasoning.Output);
         Assert.Same(ChatResponseFormat.Json, clone.ResponseFormat);
         Assert.Equal("modelId", clone.ModelId);
         Assert.Equal(stopSequences, clone.StopSequences);
@@ -168,6 +178,7 @@ public class ChatOptionsTests
         options.FrequencyPenalty = 0.4f;
         options.PresencePenalty = 0.5f;
         options.Seed = 12345;
+        options.Reasoning = new ReasoningOptions { Effort = ReasoningEffort.High, Output = ReasoningOutput.Full };
         options.ResponseFormat = ChatResponseFormat.Json;
         options.ModelId = "modelId";
         options.StopSequences = stopSequences;
@@ -197,6 +208,9 @@ public class ChatOptionsTests
         Assert.Equal(0.4f, deserialized.FrequencyPenalty);
         Assert.Equal(0.5f, deserialized.PresencePenalty);
         Assert.Equal(12345, deserialized.Seed);
+        Assert.NotNull(deserialized.Reasoning);
+        Assert.Equal(ReasoningEffort.High, deserialized.Reasoning.Effort);
+        Assert.Equal(ReasoningOutput.Full, deserialized.Reasoning.Output);
         Assert.IsType<ChatResponseFormatJson>(deserialized.ResponseFormat);
         Assert.Equal("modelId", deserialized.ModelId);
         Assert.NotSame(stopSequences, deserialized.StopSequences);

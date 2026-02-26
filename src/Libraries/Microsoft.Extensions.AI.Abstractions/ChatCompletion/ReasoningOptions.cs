@@ -1,0 +1,46 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Microsoft.Extensions.AI;
+
+/// <summary>
+/// Represents options for configuring reasoning behavior in chat requests.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Reasoning options allow control over how much computational effort the model
+/// should put into reasoning about the response, and how that reasoning should
+/// be exposed to the caller.
+/// </para>
+/// <para>
+/// Not all providers support all reasoning options. Implementations should
+/// make a best-effort attempt to map the requested options to the provider's
+/// capabilities. If a provider or model doesn't support reasoning or doesn't support the requested configuration of reasoning, these options may be ignored.
+/// </para>
+/// </remarks>
+public sealed class ReasoningOptions
+{
+    /// <summary>
+    /// Gets or sets the level of reasoning effort to apply.
+    /// </summary>
+    /// <value>
+    /// The reasoning effort level, or <see langword="null"/> to use the provider's default.
+    /// </value>
+    public ReasoningEffort? Effort { get; set; }
+
+    /// <summary>
+    /// Gets or sets how reasoning content should be included in the response.
+    /// </summary>
+    /// <value>
+    /// The reasoning output mode, or <see langword="null"/> to use the provider's default.
+    /// </value>
+    public ReasoningOutput? Output { get; set; }
+
+    /// <summary>Creates a shallow clone of this <see cref="ReasoningOptions"/> instance.</summary>
+    /// <returns>A shallow clone of this instance.</returns>
+    internal ReasoningOptions Clone() => new()
+    {
+        Effort = Effort,
+        Output = Output,
+    };
+}

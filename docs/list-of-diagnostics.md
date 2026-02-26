@@ -24,23 +24,24 @@ if desired.
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
-| `EXTEXP0001` | Resilience experiments |
-| `EXTEXP0002` | Compliance experiments  |
-| `EXTEXP0003` | Telemetry experiments |
-| `EXTEXP0004` | TimeProvider experiments |
-| `EXTEXP0006` | AsyncState experiments |
-| `EXTEXP0007` | Health check experiments |
-| `EXTEXP0008` | Resource monitoring experiments |
-| `EXTEXP0009` | Hosting experiments |
-| `EXTEXP0010` | Object pool experiments |
-| `EXTEXP0011` | Document database experiments |
-| `EXTEXP0012` | Auto-activation experiments |
-| `EXTEXP0013` | HttpLogging middleware experiments |
-| `EXTEXP0014` | ASP.NET Core integration testing experiments |
-| `EXTEXP0015` | Environmental probes experiments |
-| `EXTEXP0016` | Hosting integration testing experiments |
-| `EXTEXP0017` | Contextual options experiments |
-| `EXTEXP0018` | HybridCache experiments |
+| `EXTEXP0001`      | Resilience experiments |
+| `EXTEXP0002`      | Compliance experiments  |
+| `EXTEXP0003`      | Telemetry experiments |
+| `EXTEXP0004`      | TimeProvider experiments |
+| `EXTEXP0006`      | AsyncState experiments |
+| `EXTEXP0007`      | Health check experiments |
+| `EXTEXP0008`      | Resource monitoring experiments |
+| `EXTEXP0009`      | Hosting experiments |
+| `EXTEXP0010`      | Object pool experiments |
+| `EXTEXP0011`      | Document database experiments |
+| `EXTEXP0012`      | Auto-activation experiments |
+| `EXTEXP0013`      | HttpLogging middleware experiments |
+| `EXTEXP0014`      | ASP.NET Core integration testing experiments |
+| `EXTEXP0015`      | Environmental probes experiments |
+| `EXTEXP0016`      | Hosting integration testing experiments |
+| `EXTEXP0017`      | Contextual options experiments |
+| `EXTEXP0018`      | HybridCache experiments |
+| `MEAI001`         | AI experiments |
 
 # Obsoletions
 
@@ -118,7 +119,6 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `METGEN014` | A metering attribute type argument is invalid |
 | `METGEN015` | Metric methods mustn't use any external type as the return type |
 | `METGEN016` | Metric methods mustn't use any generic type as the return type |
-| `METGEN017` | Gauge is not supported yet |
 | `METGEN018` | Xml comment was not parsed correctly |
 | `METGEN019` | A metric class has cycles in its type hierarchy |
 

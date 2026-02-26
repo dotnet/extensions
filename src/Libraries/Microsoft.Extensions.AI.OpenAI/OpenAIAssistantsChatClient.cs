@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Assistants;
 
@@ -21,6 +23,7 @@ using OpenAI.Assistants;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="AssistantClient"/>.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAIAssistants)]
 internal sealed class OpenAIAssistantsChatClient : IChatClient
 {
     /// <summary>The underlying <see cref="AssistantClient" />.</summary>
@@ -202,7 +205,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                         CodeInterpreterToolCallContent hcitcc = new()
                         {
                             CallId = details.ToolCallId,
-                            Inputs = [new DataContent(Encoding.UTF8.GetBytes(details.CodeInterpreterInput), "text/x-python")],
+                            Inputs = [new DataContent(Encoding.UTF8.GetBytes(details.CodeInterpreterInput), OpenAIClientExtensions.PythonMediaType)],
                             RawRepresentation = details,
                         };
 

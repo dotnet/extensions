@@ -824,14 +824,28 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
                 $"Expected to find CPU weight in range [{CpuPodWeightPossibleMin}-{CpuPodWeightPossibleMax}] in '{cpuWeightFile}', but got '{cpuPodWeight}' instead.");
         }
 
-        // The formula to calculate CPU pod weight (measured in millicores) from CPU share:
-        // y = (1 + ((x - 2) * 9999) / 262142),
-        // where y is the CPU pod weight (e.g. cpuPodWeight) and x is the CPU share of cgroup v1 (e.g. cpuUnits).
-        // https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2
-        // We invert the formula to calculate CPU share from CPU pod weight:
-        cpuUnits = ((cpuPodWeight - 1) * 262142 / 9999) + 2;
-
+        cpuUnits = ConvertCpuWeightToShares(cpuPodWeight);
         return true;
+    }
+
+    private static float ConvertCpuWeightToShares(long cpuWeight)
+    {
+        const long MinValueInRange = 2;
+        const long MaxValueInRange = 262144;
+
+        // Inversion of https://github.com/kubernetes/website/blob/main/content/en/blog/_posts/2026-01-30-new-cgroup-v1-to-v2-conversion-formula/index.md#new-conversion-formula
+        // cpu.shares = 2^L
+        // L = (sqrt(16129 + 2448 * log10(cpu.weight)) - 125) / 2
+        double a = Math.Log10(cpuWeight);
+        double b = 2448 * a;
+        double c = 16129 + b;
+        double d = Math.Sqrt(c);
+        double l = (d - 125) / 2;
+
+        double shares = Math.Round(Math.Pow(2, l));
+        shares = Math.Clamp(shares, MinValueInRange, MaxValueInRange);
+
+        return (float)shares;
     }
 
     private long GetMemoryUsageInBytesPod()
