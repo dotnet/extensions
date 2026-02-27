@@ -225,6 +225,61 @@ public static class ChatResponseExtensions
         }
     }
 
+    /// <summary>
+    /// Coalesces web search tool call content elements in the provided list of <see cref="AIContent"/> items.
+    /// Unlike other content coalescing methods, this will coalesce non-sequential items based on their CallId property,
+    /// merging data from all items with the same CallId into the first occurrence.
+    /// </summary>
+    private static void CoalesceWebSearchToolCallContent(IList<AIContent> contents)
+    {
+        Dictionary<string, int>? webSearchCallIndexById = null;
+        bool hasRemovals = false;
+
+        for (int i = 0; i < contents.Count; i++)
+        {
+            if (contents[i] is WebSearchToolCallContent webSearchCall && !string.IsNullOrEmpty(webSearchCall.CallId))
+            {
+                webSearchCallIndexById ??= new(StringComparer.Ordinal);
+
+                if (webSearchCallIndexById.TryGetValue(webSearchCall.CallId!, out int existingIndex))
+                {
+                    // Merge data from the new item into the existing one.
+                    var existing = (WebSearchToolCallContent)contents[existingIndex];
+
+                    if (webSearchCall.Queries is { Count: > 0 })
+                    {
+                        if (existing.Queries is null)
+                        {
+                            existing.Queries = webSearchCall.Queries;
+                        }
+                        else
+                        {
+                            foreach (var query in webSearchCall.Queries)
+                            {
+                                existing.Queries.Add(query);
+                            }
+                        }
+                    }
+
+                    existing.RawRepresentation ??= webSearchCall.RawRepresentation;
+                    existing.AdditionalProperties ??= webSearchCall.AdditionalProperties;
+
+                    contents[i] = null!;
+                    hasRemovals = true;
+                }
+                else
+                {
+                    webSearchCallIndexById[webSearchCall.CallId!] = i;
+                }
+            }
+        }
+
+        if (hasRemovals)
+        {
+            RemoveNullContents(contents);
+        }
+    }
+
     /// <summary>Coalesces sequential <see cref="AIContent"/> content elements.</summary>
     internal static void CoalesceContent(IList<AIContent> contents)
     {
@@ -261,6 +316,8 @@ public static class ChatResponseExtensions
             });
 
         CoalesceImageResultContent(contents);
+
+        CoalesceWebSearchToolCallContent(contents);
 
         Coalesce<DataContent>(
             contents,
