@@ -20,6 +20,7 @@ using OpenAI.Embeddings;
 using OpenAI.Images;
 using OpenAI.Responses;
 
+#pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 
 namespace Microsoft.Extensions.AI;

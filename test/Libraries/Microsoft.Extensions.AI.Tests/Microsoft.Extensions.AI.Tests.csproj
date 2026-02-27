@@ -24,6 +24,7 @@
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestSpeechToTextClient.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestImageGenerator.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestEmbeddingGenerator.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestRealtimeSession.cs" />
   </ItemGroup>
 
   <ItemGroup>

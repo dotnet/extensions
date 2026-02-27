@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.AI;
 /// invocation requests to that same function.
 /// </para>
 /// </remarks>
-public partial class FunctionInvokingChatClient : DelegatingChatClient
+public class FunctionInvokingChatClient : DelegatingChatClient
 {
     /// <summary>The <see cref="FunctionInvocationContext"/> for the current function invocation.</summary>
     private static readonly AsyncLocal<FunctionInvocationContext?> _currentContext = new();
@@ -92,6 +92,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         _activitySource = innerClient.GetService<ActivitySource>();
         FunctionInvocationServices = functionInvocationServices;
     }
+
+    /// <summary>Gets the function invocation processor, creating it lazily.</summary>
+    private FunctionInvocationProcessor Processor => field ??= new FunctionInvocationProcessor(
+        _logger,
+        _activitySource,
+        InvokeFunctionAsync,
+        invokeAgentActivity =>
+            invokeAgentActivity is not null
+                ? invokeAgentActivity.GetCustomProperty(OpenTelemetryChatClient.SensitiveDataEnabledCustomKey) as string is OpenTelemetryChatClient.SensitiveDataEnabledTrueValue
+                : InnerClient.GetService<OpenTelemetryChatClient>()?.EnableSensitiveData is true);
 
     /// <summary>
     /// Gets or sets the <see cref="FunctionInvocationContext"/> for the current function invocation.
@@ -272,7 +282,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability. If there's already a genai "invoke_agent"
         // span that's current, however, we just consider that the group and don't add a new one.
-        using Activity? activity = CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
+        using Activity? activity = FunctionInvocationHelpers.CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
@@ -286,6 +296,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         int consecutiveErrorCount = 0;
+        Dictionary<string, AITool>? toolMap = null;
+        bool anyToolsRequireApproval = false;
 
         if (HasAnyApprovalContent(originalMessages))
         {
@@ -341,7 +353,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // Before we do any function execution, make sure that any functions that require approval have been turned into
             // approval requests so that they don't get executed here. We recompute anyToolsRequireApproval on each iteration
             // because a function may have modified ChatOptions.Tools.
-            bool anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
+            anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
             if (anyToolsRequireApproval)
             {
                 response.Messages = ReplaceFunctionCallsWithApprovalRequests(response.Messages, options?.Tools, AdditionalTools);
@@ -392,9 +404,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // Prepare the history for the next iteration.
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
 
+            // Recompute toolMap on each iteration to respect ChatOptions.Tools modifications by functions.
+            (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, options?.Tools);
+
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: false, cancellationToken);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, toolMap, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: false, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -424,7 +439,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability. If there's already a genai "invoke_agent"
         // span that's current, however, we just consider that the group and don't add a new one.
-        using Activity? activity = CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
+        using Activity? activity = FunctionInvocationHelpers.CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
         UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
@@ -438,8 +453,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         List<ChatResponseUpdate> updates = []; // updates from the current response
         int consecutiveErrorCount = 0;
+        Dictionary<string, AITool>? toolMap = null;
+        bool anyToolsRequireApproval = false;
 
-        // This is a synthetic ID since we're generating the tool messages instead of getting them from
+        // This is a synthetic IDsince we're generating the tool messages instead of getting them from
         // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
         // use the same message ID for all of them within a given iteration, as this is a single logical
         // message with multiple content items. We could also use different message IDs per tool content,
@@ -512,7 +529,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             }
 
             // Recompute anyToolsRequireApproval on each iteration because a function may have modified ChatOptions.Tools.
-            bool anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
+            anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
 
             AITool[]? approvalRequiredFunctions = null; // available tools that require approval
             bool hasApprovalRequiringFcc = false;
@@ -657,8 +674,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // Prepare the history for the next iteration.
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
 
+            // Recompute toolMap on each iteration to respect ChatOptions.Tools modifications by functions.
+            (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, options?.Tools);
+
             // Process all of the functions, adding their results into the history.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: true, cancellationToken);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, toolMap, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: true, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -1109,6 +1129,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <param name="messages">The current chat contents, inclusive of the function call contents being processed.</param>
     /// <param name="options">The options used for the response being processed.</param>
+    /// <param name="toolMap">Map from tool name to available AI tools.</param>
     /// <param name="functionCallContents">The function call contents representing the functions to be invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
     /// <param name="consecutiveErrorCount">The number of consecutive iterations, prior to this one, that were recorded as having function invocation errors.</param>
@@ -1116,7 +1137,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A value indicating how the caller should proceed.</returns>
     private async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        List<ChatMessage> messages, ChatOptions? options,
+        List<ChatMessage> messages, ChatOptions? options, Dictionary<string, AITool>? toolMap,
         List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount,
         bool isStreaming, CancellationToken cancellationToken)
     {
@@ -1124,68 +1145,44 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
 
         Debug.Assert(functionCallContents.Count > 0, "Expected at least one function call.");
-        var shouldTerminate = false;
         var captureCurrentIterationExceptions = consecutiveErrorCount < MaximumConsecutiveErrorsPerRequest;
 
-        // Process all functions. If there's more than one and concurrent invocation is enabled, do so in parallel.
-        if (functionCallContents.Count == 1)
-        {
-            FunctionInvocationResult result = await ProcessFunctionCallAsync(
-                messages, options, functionCallContents,
-                iteration, 0, captureCurrentIterationExceptions, isStreaming, cancellationToken);
-
-            IList<ChatMessage> addedMessages = CreateResponseMessages([result]);
-            ThrowIfNoFunctionResultsAdded(addedMessages);
-            UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
-            messages.AddRange(addedMessages);
-
-            return (result.Terminate, consecutiveErrorCount, addedMessages);
-        }
-        else
-        {
-            List<FunctionInvocationResult> results = [];
-
-            if (AllowConcurrentInvocation)
+        // Use the processor to handle function calls
+        var results = await Processor.ProcessFunctionCallsAsync(
+            functionCallContents,
+            toolMap,
+            AllowConcurrentInvocation,
+            (callContent, aiFunction, callIndex) => new FunctionInvocationContext
             {
-                // Rather than awaiting each function before invoking the next, invoke all of them
-                // and then await all of them. We avoid forcibly introducing parallelism via Task.Run,
-                // but if a function invocation completes asynchronously, its processing can overlap
-                // with the processing of other the other invocation invocations.
-                results.AddRange(await Task.WhenAll(
-                    from callIndex in Enumerable.Range(0, functionCallContents.Count)
-                    select ProcessFunctionCallAsync(
-                        messages, options, functionCallContents,
-                        iteration, callIndex, captureExceptions: true, isStreaming, cancellationToken)));
+                Function = aiFunction,
+                Arguments = new(callContent.Arguments) { Services = FunctionInvocationServices },
+                Messages = messages,
+                Options = options,
+                CallContent = callContent,
+                Iteration = iteration,
+                FunctionCallIndex = callIndex,
+                FunctionCount = functionCallContents.Count,
+                IsStreaming = isStreaming
+            },
+            ctx => CurrentContext = ctx,
+            captureCurrentIterationExceptions,
+            cancellationToken).ConfigureAwait(false);
 
-                shouldTerminate = results.Exists(static r => r.Terminate);
-            }
-            else
-            {
-                // Invoke each function serially.
-                for (int callIndex = 0; callIndex < functionCallContents.Count; callIndex++)
-                {
-                    var functionResult = await ProcessFunctionCallAsync(
-                        messages, options, functionCallContents,
-                        iteration, callIndex, captureCurrentIterationExceptions, isStreaming, cancellationToken);
-
-                    results.Add(functionResult);
-
-                    // If any function requested termination, we should stop right away.
-                    if (functionResult.Terminate)
-                    {
-                        shouldTerminate = true;
-                        break;
-                    }
-                }
-            }
-
-            IList<ChatMessage> addedMessages = CreateResponseMessages(results.ToArray());
-            ThrowIfNoFunctionResultsAdded(addedMessages);
-            UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
-            messages.AddRange(addedMessages);
-
-            return (shouldTerminate, consecutiveErrorCount, addedMessages);
+        // Mark all processed function calls as no longer requiring invocation
+        // This prevents duplicate processing when multiple FunctionInvokingChatClients are in a pipeline
+        foreach (var result in results)
+        {
+            result.CallContent.InformationalOnly = true;
         }
+
+        var shouldTerminate = results.Exists(static r => r.Terminate);
+
+        IList<ChatMessage> addedMessages = CreateResponseMessages(results.ToArray());
+        ThrowIfNoFunctionResultsAdded(addedMessages);
+        UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
+        messages.AddRange(addedMessages);
+
+        return (shouldTerminate, consecutiveErrorCount, addedMessages);
     }
 
     /// <summary>
@@ -1232,88 +1229,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             Throw.InvalidOperationException($"{GetType().Name}.{nameof(CreateResponseMessages)} returned null or an empty collection of messages.");
         }
-    }
-
-    /// <summary>Processes the function call described in <paramref name="callContents"/>[<paramref name="functionCallIndex"/>].</summary>
-    /// <param name="messages">The current chat contents, inclusive of the function call contents being processed.</param>
-    /// <param name="options">The options used for the response being processed.</param>
-    /// <param name="callContents">The function call contents representing all the functions being invoked.</param>
-    /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
-    /// <param name="functionCallIndex">The 0-based index of the function being called out of <paramref name="callContents"/>.</param>
-    /// <param name="captureExceptions">If true, handles function-invocation exceptions by returning a value with <see cref="FunctionInvocationStatus.Exception"/>. Otherwise, rethrows.</param>
-    /// <param name="isStreaming">Whether the function calls are being processed in a streaming context.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>A value indicating how the caller should proceed.</returns>
-    private async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
-        List<ChatMessage> messages, ChatOptions? options,
-        List<FunctionCallContent> callContents,
-        int iteration, int functionCallIndex, bool captureExceptions, bool isStreaming, CancellationToken cancellationToken)
-    {
-        var callContent = callContents[functionCallIndex];
-
-        // Mark the function call as purely informational since we're handling it
-        callContent.InformationalOnly = true;
-
-        // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        AIFunctionDeclaration? tool = FindTool(callContent.Name, options?.Tools, AdditionalTools);
-        if (tool is not AIFunction aiFunction)
-        {
-            if (tool is null)
-            {
-                LogFunctionNotFound(callContent.Name);
-            }
-            else
-            {
-                LogNonInvocableFunction(callContent.Name);
-            }
-
-            return new(terminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
-        }
-
-        FunctionInvocationContext context = new()
-        {
-            Function = aiFunction,
-            Arguments = new(callContent.Arguments) { Services = FunctionInvocationServices },
-            Messages = messages,
-            Options = options,
-            CallContent = callContent,
-            Iteration = iteration,
-            FunctionCallIndex = functionCallIndex,
-            FunctionCount = callContents.Count,
-            IsStreaming = isStreaming
-        };
-
-        object? result;
-        try
-        {
-            result = await InstrumentedInvokeFunctionAsync(context, cancellationToken);
-        }
-        catch (Exception e) when (!cancellationToken.IsCancellationRequested)
-        {
-            if (!captureExceptions)
-            {
-                throw;
-            }
-
-            return new(
-                terminate: false,
-                FunctionInvocationStatus.Exception,
-                callContent,
-                result: null,
-                exception: e);
-        }
-
-        if (context.Terminate)
-        {
-            LogFunctionRequestedTermination(callContent.Name);
-        }
-
-        return new(
-            terminate: context.Terminate,
-            FunctionInvocationStatus.RanToCompletion,
-            callContent,
-            result,
-            exception: null);
     }
 
     /// <summary>Creates one or more response messages for function invocation results.</summary>
@@ -1365,132 +1280,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             return new FunctionResultContent(result.CallContent.CallId, functionResult) { Exception = result.Exception };
         }
-    }
-
-    /// <summary>Gets a value indicating whether <see cref="Activity.Current"/> represents an "invoke_agent" span.</summary>
-    private static bool CurrentActivityIsInvokeAgent
-    {
-        get
-        {
-            string? name = Activity.Current?.DisplayName;
-            return
-                name?.StartsWith(OpenTelemetryConsts.GenAI.InvokeAgentName, StringComparison.Ordinal) is true &&
-                (name.Length == OpenTelemetryConsts.GenAI.InvokeAgentName.Length || name[OpenTelemetryConsts.GenAI.InvokeAgentName.Length] == ' ');
-        }
-    }
-
-    /// <summary>Invokes the function asynchronously.</summary>
-    /// <param name="context">
-    /// The function invocation context detailing the function to be invoked and its arguments along with additional request information.
-    /// </param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The result of the function invocation, or <see langword="null"/> if the function invocation returned <see langword="null"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
-    private async Task<object?> InstrumentedInvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
-    {
-        _ = Throw.IfNull(context);
-
-        // We have multiple possible ActivitySource's we could use. In a chat scenario, we ask the inner client whether it has an ActivitySource.
-        // In an agent scenario, we use the ActivitySource from the surrounding "invoke_agent" activity.
-        Activity? invokeAgentActivity = CurrentActivityIsInvokeAgent ? Activity.Current : null;
-        ActivitySource? source = invokeAgentActivity?.Source ?? _activitySource;
-
-        using Activity? activity = source?.StartActivity(
-            $"{OpenTelemetryConsts.GenAI.ExecuteToolName} {context.Function.Name}",
-            ActivityKind.Internal,
-            default(ActivityContext),
-            [
-                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteToolName),
-                new(OpenTelemetryConsts.GenAI.Tool.Type, OpenTelemetryConsts.ToolTypeFunction),
-                new(OpenTelemetryConsts.GenAI.Tool.Call.Id, context.CallContent.CallId),
-                new(OpenTelemetryConsts.GenAI.Tool.Name, context.Function.Name),
-                new(OpenTelemetryConsts.GenAI.Tool.Description, context.Function.Description),
-            ]);
-
-        long startingTimestamp = Stopwatch.GetTimestamp();
-
-        // If we're in the chat scenario, we determine whether sensitive data is enabled by querying the inner chat client.
-        // If we're in the agent scenario, we determine whether sensitive data is enabled by checking for the relevant custom property on the activity.
-        bool enableSensitiveData =
-            activity is { IsAllDataRequested: true } &&
-            (invokeAgentActivity is not null ?
-             invokeAgentActivity.GetCustomProperty(OpenTelemetryChatClient.SensitiveDataEnabledCustomKey) as string is OpenTelemetryChatClient.SensitiveDataEnabledTrueValue :
-             InnerClient.GetService<OpenTelemetryChatClient>()?.EnableSensitiveData is true);
-
-        bool traceLoggingEnabled = _logger.IsEnabled(LogLevel.Trace);
-        bool loggedInvoke = false;
-        if (enableSensitiveData || traceLoggingEnabled)
-        {
-            string functionArguments = TelemetryHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions);
-
-            if (enableSensitiveData)
-            {
-                _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Arguments, functionArguments);
-            }
-
-            if (traceLoggingEnabled)
-            {
-                LogInvokingSensitive(context.Function.Name, functionArguments);
-                loggedInvoke = true;
-            }
-        }
-
-        if (!loggedInvoke && _logger.IsEnabled(LogLevel.Debug))
-        {
-            LogInvoking(context.Function.Name);
-        }
-
-        object? result = null;
-        try
-        {
-            CurrentContext = context; // doesn't need to be explicitly reset after, as that's handled automatically at async method exit
-            result = await InvokeFunctionAsync(context, cancellationToken);
-        }
-        catch (Exception e)
-        {
-            if (activity is not null)
-            {
-                _ = activity.SetTag(OpenTelemetryConsts.Error.Type, e.GetType().FullName)
-                            .SetStatus(ActivityStatusCode.Error, e.Message);
-            }
-
-            if (e is OperationCanceledException)
-            {
-                LogInvocationCanceled(context.Function.Name);
-            }
-            else
-            {
-                LogInvocationFailed(context.Function.Name, e);
-            }
-
-            throw;
-        }
-        finally
-        {
-            bool loggedResult = false;
-            if (enableSensitiveData || traceLoggingEnabled)
-            {
-                string functionResult = TelemetryHelpers.AsJson(result, context.Function.JsonSerializerOptions);
-
-                if (enableSensitiveData)
-                {
-                    _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Result, functionResult);
-                }
-
-                if (traceLoggingEnabled)
-                {
-                    LogInvocationCompletedSensitive(context.Function.Name, GetElapsedTime(startingTimestamp), functionResult);
-                    loggedResult = true;
-                }
-            }
-
-            if (!loggedResult && _logger.IsEnabled(LogLevel.Debug))
-            {
-                LogInvocationCompleted(context.Function.Name, GetElapsedTime(startingTimestamp));
-            }
-        }
-
-        return result;
     }
 
     /// <summary>This method will invoke the function within the try block.</summary>
@@ -1561,7 +1350,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <remarks>
     /// We return the messages containing the approval requests since these are the same messages that originally contained the FunctionCallContent from the downstream service.
     /// We can then use the metadata from these messages when we re-create the FunctionCallContent messages/updates to return to the caller. This way, when we finally do return
-    /// the FuncionCallContent to users it's part of a message/update that contains the same metadata as originally returned to the downstream service.
+    /// the FunctionCallContent to users it's part of a message/update that contains the same metadata as originally returned to the downstream service.
     /// </remarks>
     private (List<ApprovalResultWithRequestMessage>? approvals, List<ApprovalResultWithRequestMessage>? rejections) ExtractAndRemoveApprovalRequestsAndResponses(
         List<ChatMessage> messages)
@@ -1902,13 +1691,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         return outputMessages;
     }
 
-    private static TimeSpan GetElapsedTime(long startingTimestamp) =>
-#if NET
-        Stopwatch.GetElapsedTime(startingTimestamp);
-#else
-        new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
-#endif
-
     /// <summary>
     /// Execute the provided <see cref="FunctionApprovalResponseContent"/> and return the resulting <see cref="FunctionCallContent"/>
     /// wrapped in <see cref="ChatMessage"/> objects.
@@ -1924,9 +1706,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Check if there are any function calls to do for any approved functions and execute them.
         if (notInvokedApprovals is { Count: > 0 })
         {
+            // Compute the tool map for this invocation
+            var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, options?.Tools);
+
             // The FRC that is generated here is already added to originalMessages by ProcessFunctionCallsAsync.
             var modeAndMessages = await ProcessFunctionCallsAsync(
-                originalMessages, options, notInvokedApprovals.Select(x => x.Response.FunctionCall).ToList(), 0, consecutiveErrorCount, isStreaming, cancellationToken);
+                originalMessages, options, toolMap, notInvokedApprovals.Select(x => x.Response.FunctionCall).ToList(), 0, consecutiveErrorCount, isStreaming, cancellationToken);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
             return (modeAndMessages.MessagesAdded, modeAndMessages.ShouldTerminate, consecutiveErrorCount);
@@ -1935,47 +1720,27 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         return (null, false, consecutiveErrorCount);
     }
 
-    [LoggerMessage(LogLevel.Debug, "Invoking {MethodName}.", SkipEnabledCheck = true)]
-    private partial void LogInvoking(string methodName);
+    // Wrapper methods that delegate to FunctionInvocationLogger for consistency with the refactored architecture
+    private void LogMaximumIterationsReached(int maximumIterationsPerRequest) =>
+        FunctionInvocationLogger.LogMaximumIterationsReached(_logger, maximumIterationsPerRequest);
 
-    [LoggerMessage(LogLevel.Trace, "Invoking {MethodName}({Arguments}).", SkipEnabledCheck = true)]
-    private partial void LogInvokingSensitive(string methodName, string arguments);
+    private void LogFunctionRequiresApproval(string functionName) =>
+        FunctionInvocationLogger.LogFunctionRequiresApproval(_logger, functionName);
 
-    [LoggerMessage(LogLevel.Debug, "{MethodName} invocation completed. Duration: {Duration}", SkipEnabledCheck = true)]
-    private partial void LogInvocationCompleted(string methodName, TimeSpan duration);
+    private void LogProcessingApprovalResponse(string functionName, bool approved) =>
+        FunctionInvocationLogger.LogProcessingApprovalResponse(_logger, functionName, approved);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} invocation completed. Duration: {Duration}. Result: {Result}", SkipEnabledCheck = true)]
-    private partial void LogInvocationCompletedSensitive(string methodName, TimeSpan duration, string result);
+    private void LogFunctionRejected(string functionName, string? reason) =>
+        FunctionInvocationLogger.LogFunctionRejected(_logger, functionName, reason);
 
-    [LoggerMessage(LogLevel.Debug, "{MethodName} invocation canceled.")]
-    private partial void LogInvocationCanceled(string methodName);
+    private void LogMaxConsecutiveErrorsExceeded(int maxErrors) =>
+        FunctionInvocationLogger.LogMaxConsecutiveErrorsExceeded(_logger, maxErrors);
 
-    [LoggerMessage(LogLevel.Error, "{MethodName} invocation failed.")]
-    private partial void LogInvocationFailed(string methodName, Exception error);
+    private void LogFunctionNotFound(string functionName) =>
+        FunctionInvocationLogger.LogFunctionNotFound(_logger, functionName);
 
-    [LoggerMessage(LogLevel.Debug, "Reached maximum iteration count of {MaximumIterationsPerRequest}. Stopping function invocation loop.")]
-    private partial void LogMaximumIterationsReached(int maximumIterationsPerRequest);
-
-    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' requires approval. Converting to approval request.")]
-    private partial void LogFunctionRequiresApproval(string functionName);
-
-    [LoggerMessage(LogLevel.Debug, "Processing approval response for '{FunctionName}'. Approved: {Approved}")]
-    private partial void LogProcessingApprovalResponse(string functionName, bool approved);
-
-    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' was rejected. Reason: {Reason}")]
-    private partial void LogFunctionRejected(string functionName, string? reason);
-
-    [LoggerMessage(LogLevel.Warning, "Maximum consecutive errors ({MaxErrors}) exceeded. Throwing aggregated exceptions.")]
-    private partial void LogMaxConsecutiveErrorsExceeded(int maxErrors);
-
-    [LoggerMessage(LogLevel.Warning, "Function '{FunctionName}' not found.")]
-    private partial void LogFunctionNotFound(string functionName);
-
-    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' is not invocable (declaration only). Terminating loop.")]
-    private partial void LogNonInvocableFunction(string functionName);
-
-    [LoggerMessage(LogLevel.Debug, "Function '{FunctionName}' requested termination of the processing loop.")]
-    private partial void LogFunctionRequestedTermination(string functionName);
+    private void LogNonInvocableFunction(string functionName) =>
+        FunctionInvocationLogger.LogNonInvocableFunction(_logger, functionName);
 
     /// <summary>Provides information about the invocation of a function call.</summary>
     public sealed class FunctionInvocationResult

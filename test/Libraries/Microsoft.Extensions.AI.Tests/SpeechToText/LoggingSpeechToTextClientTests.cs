@@ -70,7 +70,7 @@ public class LoggingSpeechToTextClientTests
         using var audioSpeechStream = new MemoryStream(new byte[] { 1, 2, 3, 4 });
         await client.GetTextAsync(
             audioSpeechStream,
-            new SpeechToTextOptions { SpeechLanguage = "pt" });
+            new SpeechToTextOptions { Transcription = new TranscriptionOptions { SpeechLanguage = "pt" } });
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
@@ -120,7 +120,7 @@ public class LoggingSpeechToTextClientTests
         using var audioSpeechStream = new MemoryStream(new byte[] { 1, 2, 3, 4 });
         await foreach (var update in client.GetStreamingTextAsync(
             audioSpeechStream,
-            new SpeechToTextOptions { SpeechLanguage = "pt" }))
+            new SpeechToTextOptions { Transcription = new TranscriptionOptions { SpeechLanguage = "pt" } }))
         {
             // nop
         }

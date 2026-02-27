@@ -91,7 +91,7 @@ public class OpenTelemetrySpeechToTextClientTests
 
         SpeechToTextOptions options = new()
         {
-            ModelId = "mycoolspeechmodel",
+            Transcription = new TranscriptionOptions { ModelId = "mycoolspeechmodel" },
             AdditionalProperties = new()
             {
                 ["service_tier"] = "value1",
