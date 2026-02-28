@@ -16,6 +16,7 @@ internal sealed class LoggingMethod
 {
     public readonly List<LoggingMethodParameter> Parameters = [];
     public readonly List<string> Templates = [];
+    public readonly List<LoggingMethodTypeParameter> TypeParameters = [];
     public string Name = string.Empty;
     public string Message = string.Empty;
     public int? Level;

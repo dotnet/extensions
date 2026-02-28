@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.Gen.Logging.Parsing;
 using Xunit;
 
@@ -276,12 +277,64 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    static partial void M1/*0+*/<T>/*-0*/(ILogger logger);
+                    [LoggerMessage(0, LogLevel.Debug, ""M1 {value}"")]
+                    static partial void M1<T>(ILogger logger, T value);
                 }
             ";
 
-        await RunGenerator(Source, DiagDescriptors.LoggingMethodIsGeneric);
+        await RunGenerator(Source);
+    }
+
+    [Fact]
+    public async Task MethodGenericWithConstraints()
+    {
+        const string Source = @"
+                partial class C
+                {
+                    [LoggerMessage(0, LogLevel.Debug, ""M1 {code}"")]
+                    static partial void M1<TCode>(ILogger logger, TCode code)
+                        where TCode : struct, System.Enum;
+                }
+            ";
+
+        await RunGenerator(Source);
+    }
+
+    [Fact]
+    public async Task MethodGenericMultipleTypeParams()
+    {
+        const string Source = @"
+                partial class C
+                {
+                    [LoggerMessage(0, LogLevel.Debug, ""M1 {p1} {p2}"")]
+                    static partial void M1<T1, T2>(ILogger logger, T1 p1, T2 p2)
+                        where T1 : class
+                        where T2 : notnull;
+                }
+            ";
+
+        await RunGenerator(Source);
+    }
+
+    [Fact]
+    public async Task MethodGenericWithAllowsRefStructConstraint()
+    {
+        // The 'allows ref struct' detection requires Roslyn 4.9+ (ITypeParameterSymbol.AllowsRefLikeType).
+        // Skip gracefully on older Roslyn versions where the property and syntax are unavailable.
+        if (typeof(ITypeParameterSymbol).GetProperty("AllowsRefLikeType") is null)
+        {
+            return;
+        }
+
+        const string Source = @"
+                partial class C
+                {
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
+                    static partial void /*0+*/M1/*-0*/<T>(ILogger logger) where T : allows ref struct;
+                }
+            ";
+
+        await RunGenerator(Source, DiagDescriptors.LoggingMethodHasAllowsRefStructConstraint);
     }
 
     [Theory]
