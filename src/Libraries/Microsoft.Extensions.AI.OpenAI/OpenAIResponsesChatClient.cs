@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net.Mime;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -49,28 +50,27 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             null, [typeof(GetResponseOptions), typeof(RequestOptions)], null)
         ?.CreateDelegate(typeof(Func<ResponsesClient, GetResponseOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>));
 
-    // Workaround for https://github.com/openai/openai-dotnet/pull/874.
-    // The OpenAI library doesn't yet expose InputImageUrl as a public property, so we access it via reflection.
-    // Replace this with the actual public property once it's available (e.g., part.InputImageUrl).
-    private static readonly PropertyInfo? _inputImageUrlProperty =
-        Type.GetType("OpenAI.Responses.InternalItemContentInputImage, OpenAI")?.GetProperty("ImageUrl");
-
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
     /// <summary>The underlying <see cref="ResponsesClient" />.</summary>
     private readonly ResponsesClient _responseClient;
 
+    /// <summary>The default model ID to use for the chat client.</summary>
+    private readonly string? _defaultModelId;
+
     /// <summary>Initializes a new instance of the <see cref="OpenAIResponsesChatClient"/> class for the specified <see cref="ResponsesClient"/>.</summary>
     /// <param name="responseClient">The underlying client.</param>
+    /// <param name="defaultModelId">The default model ID to use for the chat client.</param>
     /// <exception cref="ArgumentNullException"><paramref name="responseClient"/> is <see langword="null"/>.</exception>
-    public OpenAIResponsesChatClient(ResponsesClient responseClient)
+    public OpenAIResponsesChatClient(ResponsesClient responseClient, string? defaultModelId)
     {
         _ = Throw.IfNull(responseClient);
 
         _responseClient = responseClient;
+        _defaultModelId = defaultModelId;
 
-        _metadata = new("openai", responseClient.Endpoint, responseClient.Model);
+        _metadata = new("openai", responseClient.Endpoint, defaultModelId);
     }
 
     /// <inheritdoc />
@@ -737,7 +737,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             return new()
             {
-                Model = _responseClient.Model,
+                Model = _defaultModelId,
             };
         }
 
@@ -753,7 +753,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         result.BackgroundModeEnabled ??= options.AllowBackgroundResponses;
         result.MaxOutputTokenCount ??= options.MaxOutputTokens;
-        result.Model ??= options.ModelId ?? _responseClient.Model;
+        result.Model ??= options.ModelId ?? _defaultModelId;
         result.Temperature ??= options.Temperature;
         result.TopP ??= options.TopP;
         result.ReasoningOptions ??= ToOpenAIResponseReasoningOptions(options.Reasoning);
@@ -864,7 +864,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         ResponseReasoningEffortLevel? effortLevel = reasoning.Effort switch
         {
-            ReasoningEffort.None => new ResponseReasoningEffortLevel("none"),
+            ReasoningEffort.None => ResponseReasoningEffortLevel.None,
             ReasoningEffort.Low => ResponseReasoningEffortLevel.Low,
             ReasoningEffort.Medium => ResponseReasoningEffortLevel.Medium,
             ReasoningEffort.High => ResponseReasoningEffortLevel.High,
@@ -965,7 +965,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
-                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, GetImageDetail(item)));
+                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(new Uri(dataContent.Uri), GetImageDetail(item)));
                             break;
 
                         case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
@@ -1287,20 +1287,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     {
                         content = new DataContent(part.InputFileBytes, part.InputFileBytesMediaType ?? "application/octet-stream") { Name = part.InputFilename };
                     }
-                    else if (_inputImageUrlProperty?.GetValue(part) is string inputImageUrl)
+                    else if (part.InputImageUri is { } inputImageUrl)
                     {
-                        if (inputImageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                        {
-                            content = new DataContent(inputImageUrl);
-                        }
-                        else if (Uri.TryCreate(inputImageUrl, UriKind.Absolute, out Uri? imageUri))
-                        {
-                            content = new UriContent(imageUri, "image/*");
-                        }
-                        else
-                        {
-                            content = null;
-                        }
+                        content = inputImageUrl.Scheme.Equals("data", StringComparison.OrdinalIgnoreCase) ?
+                            new DataContent(inputImageUrl) :
+                            new UriContent(inputImageUrl, MediaTypeMap.GetMediaType(inputImageUrl.AbsoluteUri) ?? "image/*");
                     }
                     else
                     {

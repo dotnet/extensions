@@ -380,8 +380,7 @@ public class OpenAIConversionTests
     public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithInputImageMask_ProducesValidImageGenerationTool()
     {
         var inputImageMask = new ImageGenerationToolInputImageMask(
-            BinaryData.FromBytes([0x89, 0x50, 0x4E, 0x47]),
-            "image/png");
+            new Uri(new DataContent((byte[])[0x89, 0x50, 0x4E, 0x47], "image/png").Uri));
 
         var imageGenTool = new HostedImageGenerationTool(new Dictionary<string, object?>
         {
@@ -595,12 +594,12 @@ public class OpenAIConversionTests
     [Fact]
     public void AsOpenAIConversationFunctionTool_ProducesValidInstance()
     {
-        var tool = _testFunction.AsOpenAIConversationFunctionTool();
+        var tool = _testFunction.AsOpenAIRealtimeFunctionTool();
 
         Assert.NotNull(tool);
-        Assert.Equal("test_function", tool.Name);
-        Assert.Equal("A test function for conversion", tool.Description);
-        ValidateSchemaParameters(tool.Parameters);
+        Assert.Equal("test_function", tool.FunctionName);
+        Assert.Equal("A test function for conversion", tool.FunctionDescription);
+        ValidateSchemaParameters(tool.FunctionParameters);
     }
 
     [Fact]
@@ -1458,7 +1457,6 @@ public class OpenAIConversionTests
             Temperature = 0.7f,
             TopP = 0.9f,
             PreviousResponseId = "prev-id",
-            Instructions = "Test instructions"
         };
 
         var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Test"))
@@ -1523,7 +1521,7 @@ public class OpenAIConversionTests
         Assert.Equal(500, openAIResponse.MaxOutputTokenCount);
         Assert.True(openAIResponse.ParallelToolCallsEnabled);
         Assert.Equal("conv_123", openAIResponse.ConversationOptions?.ConversationId);
-        Assert.Equal("You are a helpful assistant.", openAIResponse.Instructions);
+        Assert.Equal("You are a helpful assistant.", Assert.IsAssignableFrom<MessageResponseItem>(openAIResponse.Instructions.Single()).Content.Single().Text);
         Assert.Equal(0.8f, openAIResponse.Temperature);
         Assert.Equal(0.95f, openAIResponse.TopP);
     }
@@ -1659,7 +1657,7 @@ public class OpenAIConversionTests
         Assert.Null(openAIResponse.Temperature);
         Assert.Null(openAIResponse.TopP);
         Assert.Null(openAIResponse.ConversationOptions);
-        Assert.Null(openAIResponse.Instructions);
+        Assert.Empty(openAIResponse.Instructions);
         Assert.NotNull(openAIResponse.OutputItems);
     }
 
