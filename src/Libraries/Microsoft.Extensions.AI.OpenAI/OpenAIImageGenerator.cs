@@ -175,15 +175,15 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
 
         if (result.OutputFileFormat is null)
         {
-            if (options?.MediaType?.Equals("image/png", StringComparison.OrdinalIgnoreCase) == true)
+            if (options?.MediaType?.Equals("image/png", StringComparison.OrdinalIgnoreCase) is true)
             {
                 result.OutputFileFormat = GeneratedImageFileFormat.Png;
             }
-            else if (options?.MediaType?.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) == true)
+            else if (options?.MediaType?.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) is true)
             {
                 result.OutputFileFormat = GeneratedImageFileFormat.Jpeg;
             }
-            else if (options?.MediaType?.Equals("image/webp", StringComparison.OrdinalIgnoreCase) == true)
+            else if (options?.MediaType?.Equals("image/webp", StringComparison.OrdinalIgnoreCase) is true)
             {
                 result.OutputFileFormat = GeneratedImageFileFormat.Webp;
             }
@@ -207,6 +207,22 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
     private ImageEditOptions ToOpenAIImageEditOptions(ImageGenerationOptions? options)
     {
         ImageEditOptions result = options?.RawRepresentationFactory?.Invoke(this) as ImageEditOptions ?? new();
+
+        if (result.OutputFileFormat is null)
+        {
+            if (options?.MediaType?.Equals("image/png", StringComparison.OrdinalIgnoreCase) is true)
+            {
+                result.OutputFileFormat = GeneratedImageFileFormat.Png;
+            }
+            else if (options?.MediaType?.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) is true)
+            {
+                result.OutputFileFormat = GeneratedImageFileFormat.Jpeg;
+            }
+            else if (options?.MediaType?.Equals("image/webp", StringComparison.OrdinalIgnoreCase) is true)
+            {
+                result.OutputFileFormat = GeneratedImageFileFormat.Webp;
+            }
+        }
 
         result.ResponseFormat ??= options?.ResponseFormat switch
         {

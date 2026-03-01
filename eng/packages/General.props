@@ -17,7 +17,7 @@
     <PackageVersion Include="Microsoft.Extensions.VectorData.Abstractions" Version="$(MicrosoftExtensionsVectorDataAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="$(MicrosoftMLTokenizersVersion)" />
     <PackageVersion Include="ModelContextProtocol.Core" Version="0.4.0-preview.3" />
-    <PackageVersion Include="OpenAI" Version="2.8.0" />
+    <PackageVersion Include="OpenAI" Version="2.9.0" />
     <PackageVersion Include="Polly" Version="8.4.2" />
     <PackageVersion Include="Polly.Core" Version="8.4.2" />
     <PackageVersion Include="Polly.Extensions" Version="8.4.2" />

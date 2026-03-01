@@ -605,6 +605,8 @@ internal sealed partial class OpenAIChatClient : IChatClient
 #pragma warning restore OPENAI001
 
 #pragma warning disable SCME0001 // JsonPatch is experimental
+        // ISSUE: This worked with OpenAI <= 2.8.0. As of 2.9.0, it's being ignored
+        // such that the model selection via ChatOptions.ModelId is not taking effect.
         OpenAIClientExtensions.PatchModelIfNotSet(ref result.Patch, options.ModelId);
 #pragma warning restore SCME0001
 
@@ -681,7 +683,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     private static ChatReasoningEffortLevel? ToOpenAIChatReasoningEffortLevel(ReasoningEffort? effort) =>
         effort switch
         {
-            ReasoningEffort.None => new ChatReasoningEffortLevel("none"),
+            ReasoningEffort.None => ChatReasoningEffortLevel.None,
             ReasoningEffort.Low => ChatReasoningEffortLevel.Low,
             ReasoningEffort.Medium => ChatReasoningEffortLevel.Medium,
             ReasoningEffort.High => ChatReasoningEffortLevel.High,

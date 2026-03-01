@@ -40,7 +40,7 @@ public class OpenAIResponseClientTests
 
         var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
-        IChatClient chatClient = client.GetResponsesClient(model).AsIChatClient();
+        IChatClient chatClient = client.GetResponsesClient().AsIChatClient(model);
         var metadata = chatClient.GetService<ChatClientMetadata>();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
@@ -50,8 +50,8 @@ public class OpenAIResponseClientTests
     [Fact]
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
-        ResponsesClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetResponsesClient("model");
-        IChatClient chatClient = openAIClient.AsIChatClient();
+        ResponsesClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetResponsesClient();
+        IChatClient chatClient = openAIClient.AsIChatClient("model");
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
         Assert.Same(openAIClient, chatClient.GetService<ResponsesClient>());
@@ -5596,7 +5596,7 @@ public class OpenAIResponseClientTests
         var imageContent = userMessage.Contents.OfType<UriContent>().FirstOrDefault();
         Assert.NotNull(imageContent);
         Assert.Equal("https://example.com/image.png", imageContent.Uri.ToString());
-        Assert.Equal("image/*", imageContent.MediaType);
+        Assert.Equal("image/png", imageContent.MediaType);
 
         var assistantMessage = response.Messages.LastOrDefault(m => m.Role == ChatRole.Assistant);
         Assert.NotNull(assistantMessage);
@@ -6121,8 +6121,8 @@ public class OpenAIResponseClientTests
         using VerbatimHttpHandler handler = new(new HttpHandlerExpectedInput(), Output);
         using HttpClient httpClient = new(handler);
         using IChatClient client = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
-            .GetResponsesClient("gpt-4o-mini")
-            .AsIChatClient()
+            .GetResponsesClient()
+            .AsIChatClient("gpt-4o-mini")
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -6147,8 +6147,8 @@ public class OpenAIResponseClientTests
         new OpenAIClient(
             new ApiKeyCredential("apikey"),
             new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
-        .GetResponsesClient(modelId)
-        .AsIChatClient();
+        .GetResponsesClient()
+        .AsIChatClient(modelId);
 
     private static string ResponseStatusToRequestValue(ResponseStatus status)
     {
