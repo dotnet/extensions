@@ -128,11 +128,11 @@ variables:
   - ${{ if and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
     - name: enableSourceIndex
       value: true
-    - name: sourceIndexBuildCommand
-      value: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
   - ${{ else }}:
     - name: enableSourceIndex
       value: false
+  - name: sourceIndexBuildCommand
+    value: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
 
 resources:
   repositories:
@@ -176,6 +176,8 @@ extends:
           enableMicrobuild: true
           enableTelemetry: true
           enableSourceIndex: ${{ variables['enableSourceIndex'] }}
+          sourceIndexParams:
+            sourceIndexBuildCommand: ${{ variables['sourceIndexBuildCommand'] }}
           runAsPublic: ${{ variables['runAsPublic'] }}
           # Publish test logs
           enablePublishTestResults: true
