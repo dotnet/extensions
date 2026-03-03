@@ -3309,6 +3309,12 @@
     {
       "Type": "class Microsoft.Extensions.AI.ToolCallContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolCallContent.ToolCallContent(string callId);",
+          "Stage": "Stable"
+        }
+      ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.AI.ToolCallContent.CallId { get; }",
@@ -3319,6 +3325,12 @@
     {
       "Type": "class Microsoft.Extensions.AI.ToolResultContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolResultContent.ToolResultContent(string callId);",
+          "Stage": "Stable"
+        }
+      ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.AI.ToolResultContent.CallId { get; }",
