@@ -15,7 +15,7 @@ public class OpenAIRealtimeClientTests
     [Fact]
     public void Ctor_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("apiKey", () => new OpenAIRealtimeClient(null!, "model"));
+        Assert.Throws<ArgumentNullException>("apiKey", () => new OpenAIRealtimeClient((string)null!, "model"));
         Assert.Throws<ArgumentNullException>("model", () => new OpenAIRealtimeClient("key", null!));
     }
 
