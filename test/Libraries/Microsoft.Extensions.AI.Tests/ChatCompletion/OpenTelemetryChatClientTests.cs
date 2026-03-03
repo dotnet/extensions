@@ -333,7 +333,54 @@ public class OpenTelemetryChatClientTests
             Assert.False(tags.ContainsKey("gen_ai.input.messages"));
             Assert.False(tags.ContainsKey("gen_ai.output.messages"));
             Assert.False(tags.ContainsKey("gen_ai.system_instructions"));
-            Assert.False(tags.ContainsKey("gen_ai.tool.definitions"));
+            Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "type": "function",
+                    "name": "GetPersonAge",
+                    "description": "Gets the age of a person by name.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "personName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "personName"
+                      ]
+                    }
+                  },
+                  {
+                    "type": "web_search"
+                  },
+                  {
+                    "type": "file_search"
+                  },
+                  {
+                    "type": "code_interpreter"
+                  },
+                  {
+                    "type": "mcp"
+                  },
+                  {
+                    "type": "function",
+                    "name": "GetCurrentWeather",
+                    "description": "Gets the current weather for a location.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "location": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "location"
+                      ]
+                    }
+                  }
+                ]
+                """), ReplaceWhitespace(tags["gen_ai.tool.definitions"]));
         }
     }
 

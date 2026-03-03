@@ -632,24 +632,24 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         }
                     }
 
+                    if (options.Tools is { Count: > 0 })
+                    {
+                        _ = activity.AddTag(
+                            OpenTelemetryConsts.GenAI.Tool.Definitions,
+                            JsonSerializer.Serialize(options.Tools.Select(t => t switch
+                            {
+                                _ when t.GetService<AIFunctionDeclaration>() is { } af => new OtelFunction
+                                {
+                                    Name = af.Name,
+                                    Description = af.Description,
+                                    Parameters = af.JsonSchema,
+                                },
+                                _ => new OtelFunction { Type = t.Name },
+                            }), OtelContext.Default.IEnumerableOtelFunction));
+                    }
+
                     if (EnableSensitiveData)
                     {
-                        if (options.Tools is { Count: > 0 })
-                        {
-                            _ = activity.AddTag(
-                                OpenTelemetryConsts.GenAI.Tool.Definitions,
-                                JsonSerializer.Serialize(options.Tools.Select(t => t switch
-                                {
-                                    _ when t.GetService<AIFunctionDeclaration>() is { } af => new OtelFunction
-                                    {
-                                        Name = af.Name,
-                                        Description = af.Description,
-                                        Parameters = af.JsonSchema,
-                                    },
-                                    _ => new OtelFunction { Type = t.Name },
-                                }), OtelContext.Default.IEnumerableOtelFunction));
-                        }
-
                         // Log all additional request options as raw values on the span.
                         // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
                         if (options.AdditionalProperties is { } props)
