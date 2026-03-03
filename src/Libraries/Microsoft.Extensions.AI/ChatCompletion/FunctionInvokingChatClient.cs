@@ -456,7 +456,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         Dictionary<string, AITool>? toolMap = null;
         bool anyToolsRequireApproval = false;
 
-        // This is a synthetic IDsince we're generating the tool messages instead of getting them from
+        // This is a synthetic ID since we're generating the tool messages instead of getting them from
         // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
         // use the same message ID for all of them within a given iteration, as this is a single logical
         // message with multiple content items. We could also use different message IDs per tool content,
