@@ -75,13 +75,12 @@ public class OpenAIRealtimeSessionTests
     }
 
     [Fact]
-    public async Task ConnectAsync_CancelledToken_ReturnsFalse()
+    public async Task ConnectAsync_CancelledToken_Throws()
     {
         using var session = new OpenAIRealtimeSession("key", "model");
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        var result = await session.ConnectAsync(cts.Token);
-        Assert.False(result);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => session.ConnectAsync(cts.Token));
     }
 }

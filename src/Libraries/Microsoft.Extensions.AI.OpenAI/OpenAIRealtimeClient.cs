@@ -3,8 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.DiagnosticIds;
@@ -54,19 +52,11 @@ public sealed class OpenAIRealtimeClient : IRealtimeClient
     }
 
     /// <inheritdoc />
-    public async Task<IRealtimeSession?> CreateSessionAsync(RealtimeSessionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<IRealtimeSession> CreateSessionAsync(RealtimeSessionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        RealtimeSessionClient sessionClient;
-        try
-        {
-            sessionClient = options?.SessionKind == RealtimeSessionKind.Transcription
-                ? await _realtimeClient.StartTranscriptionSessionAsync(cancellationToken: cancellationToken).ConfigureAwait(false)
-                : await _realtimeClient.StartConversationSessionAsync(_model, cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is WebSocketException or OperationCanceledException or IOException)
-        {
-            return null;
-        }
+        var sessionClient = options?.SessionKind == RealtimeSessionKind.Transcription
+            ? await _realtimeClient.StartTranscriptionSessionAsync(cancellationToken: cancellationToken).ConfigureAwait(false)
+            : await _realtimeClient.StartConversationSessionAsync(_model, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var session = new OpenAIRealtimeSession(sessionClient, _model);
         try

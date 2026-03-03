@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
@@ -68,24 +67,17 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
 
     /// <summary>Connects the WebSocket to the OpenAI Realtime API.</summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns><see langword="true"/> if the connection succeeded; otherwise, <see langword="false"/>.</returns>
-    public async Task<bool> ConnectAsync(CancellationToken cancellationToken = default)
+    /// <returns>A task representing the asynchronous connect operation.</returns>
+    /// <exception cref="InvalidOperationException">The session was not created with an owned realtime client.</exception>
+    public async Task ConnectAsync(CancellationToken cancellationToken = default)
     {
         if (_ownedRealtimeClient is null)
         {
-            return false;
+            Throw.InvalidOperationException("Cannot connect a session that was not created with an owned realtime client.");
         }
 
-        try
-        {
-            _sessionClient = await _ownedRealtimeClient.StartConversationSessionAsync(
-                _model, cancellationToken: cancellationToken).ConfigureAwait(false);
-            return true;
-        }
-        catch (Exception ex) when (ex is WebSocketException or OperationCanceledException or IOException)
-        {
-            return false;
-        }
+        _sessionClient = await _ownedRealtimeClient.StartConversationSessionAsync(
+            _model, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
