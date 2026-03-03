@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -41,8 +40,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     protected IChatClient? ChatClient { get; }
 
-    protected IEmbeddingGenerator<string, Embedding<float>>? EmbeddingGenerator { get; private set; }
-
     public void Dispose()
     {
         ChatClient?.Dispose();
@@ -50,13 +47,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     protected abstract IChatClient? CreateChatClient();
-
-    /// <summary>
-    /// Optionally supplies an embedding generator for integration tests that exercise
-    /// embedding-based components (e.g., tool reduction). Default returns null and
-    /// tests depending on embeddings will skip if not overridden.
-    /// </summary>
-    protected virtual IEmbeddingGenerator<string, Embedding<float>>? CreateEmbeddingGenerator() => null;
 
     [ConditionalFact]
     public virtual async Task GetResponseAsync_SingleRequestMessage()
@@ -1416,14 +1406,4 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
     }
 
-    [MemberNotNull(nameof(EmbeddingGenerator))]
-    protected void EnsureEmbeddingGenerator()
-    {
-        EmbeddingGenerator ??= CreateEmbeddingGenerator();
-
-        if (EmbeddingGenerator is null)
-        {
-            throw new SkipTestException("Embedding generator is not enabled.");
-        }
-    }
 }
