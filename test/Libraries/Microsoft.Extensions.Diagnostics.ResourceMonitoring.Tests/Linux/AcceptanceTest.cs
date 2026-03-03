@@ -246,7 +246,8 @@ public sealed class AcceptanceTest
                 .AddSingleton<IUserHz>(new FakeUserHz(100))
                 .AddSingleton<IFileSystem>(fileSystem)
                 .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
-                .AddResourceMonitoring())
+                .AddResourceMonitoring()
+                .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV1>()))
             .Build();
 
         meterScope = host.Services.GetRequiredService<IMeterFactory>();

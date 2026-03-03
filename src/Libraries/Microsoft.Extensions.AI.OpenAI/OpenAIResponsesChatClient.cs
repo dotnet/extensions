@@ -92,6 +92,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeResponses);
+
         // Convert the inputs into what ResponsesClient expects.
         var openAIOptions = AsCreateResponseOptions(options, out string? openAIConversationId);
 
@@ -292,6 +294,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
+        OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeResponses);
 
         var openAIOptions = AsCreateResponseOptions(options, out string? openAIConversationId);
         openAIOptions.StreamingEnabled = true;
@@ -507,6 +511,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             {
                                 RawRepresentation = mtcari,
                             });
+                            break;
+
+                        case FunctionCallOutputResponseItem functionCallOutputItem:
+                            lastRole ??= ChatRole.Assistant;
+                            yield return CreateUpdate(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
                             break;
 
                         case CodeInterpreterCallResponseItem cicri:
@@ -931,11 +940,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         ResponseReasoningEffortLevel? effortLevel = reasoning.Effort switch
         {
+            ReasoningEffort.None => new ResponseReasoningEffortLevel("none"),
             ReasoningEffort.Low => ResponseReasoningEffortLevel.Low,
             ReasoningEffort.Medium => ResponseReasoningEffortLevel.Medium,
             ReasoningEffort.High => ResponseReasoningEffortLevel.High,
-            ReasoningEffort.ExtraHigh => ResponseReasoningEffortLevel.High, // Map to highest available
-            _ => (ResponseReasoningEffortLevel?)null, // None or null - let OpenAI use its default
+            ReasoningEffort.ExtraHigh => new ResponseReasoningEffortLevel("xhigh"),
+            _ => (ResponseReasoningEffortLevel?)null,
         };
 
         ResponseReasoningSummaryVerbosity? summary = reasoning.Output switch

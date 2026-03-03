@@ -10,7 +10,7 @@
 - Allowed `FunctionResultContent` returned by `AIFunction`s to be used by `FunctionInvokingChatClient`.
 - Updated `OpenTelemetryChatClient` to include cached input token counts.
 - Updated `OpenTelemetryChatClient` for server tool call addition to the standard convention.
-- Updated the OpenTelemetry instrumentation to conform to the 1.39 specification of the Semantic Conventions for Generative AI systems.
+- Updated the OpenTelemetry instrumentation to conform to the 1.40 specification of the Semantic Conventions for Generative AI systems.
 - Fixed token metric unit in `OpenTelemetryChatClient` to use UCUM format.
 
 ## 10.2.0
