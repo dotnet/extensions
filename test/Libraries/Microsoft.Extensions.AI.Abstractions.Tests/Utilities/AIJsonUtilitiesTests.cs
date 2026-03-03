@@ -428,6 +428,122 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateFunctionJsonSchema_RequiredAttribute_MarksParameterAsRequired()
+    {
+        MethodInfo method = typeof(AIJsonUtilitiesTests).GetMethod(nameof(MethodWithRequiredAttributeCombinations), BindingFlags.NonPublic | BindingFlags.Static)!;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method, title: string.Empty);
+
+        Assert.True(schema.TryGetProperty("required", out JsonElement requiredElement));
+        HashSet<string> requiredParams = new(requiredElement.EnumerateArray().Select(e => e.GetString()!));
+
+        // Non-optional, no default value → required
+        Assert.Contains("valueNoDefault", requiredParams);
+        Assert.Contains("refNoDefault", requiredParams);
+        Assert.Contains("nullableValueNoDefault", requiredParams);
+        Assert.Contains("nullableRefNoDefault", requiredParams);
+
+        // Non-optional, no default, with [Required] → required
+        Assert.Contains("valueNoDefaultRequired", requiredParams);
+
+        // Has [DefaultValue], with [Required] → required
+        Assert.Contains("valueWithDefaultValueAttrRequired", requiredParams);
+
+        // Has C# default, with [Required] → required
+        Assert.Contains("valueWithCSharpDefaultRequired", requiredParams);
+        Assert.Contains("nullableValueWithDefaultRequired", requiredParams);
+        Assert.Contains("refWithDefaultRequired", requiredParams);
+        Assert.Contains("nullableRefWithDefaultRequired", requiredParams);
+
+        // Has [DefaultValue], no [Required] → not required
+        Assert.DoesNotContain("valueWithDefaultValueAttr", requiredParams);
+
+        // Has C# default, no [Required] → not required
+        Assert.DoesNotContain("valueWithCSharpDefault", requiredParams);
+        Assert.DoesNotContain("nullableValueWithDefault", requiredParams);
+        Assert.DoesNotContain("refWithDefault", requiredParams);
+        Assert.DoesNotContain("nullableRefWithDefault", requiredParams);
+
+        Assert.Equal(10, requiredParams.Count);
+    }
+
+#pragma warning disable IDE0060 // Remove unused parameter
+    private static void MethodWithRequiredAttributeCombinations(
+        int valueNoDefault,
+        [Required] int valueNoDefaultRequired,
+        string refNoDefault,
+        int? nullableValueNoDefault,
+        string? nullableRefNoDefault,
+        [DefaultValue(5)] int valueWithDefaultValueAttr,
+        [Required, DefaultValue(5)] int valueWithDefaultValueAttrRequired,
+        int valueWithCSharpDefault = 5,
+        [Required] int valueWithCSharpDefaultRequired = 5,
+        int? nullableValueWithDefault = null,
+        [Required] int? nullableValueWithDefaultRequired = null,
+        string refWithDefault = "default",
+        [Required] string refWithDefaultRequired = "default",
+        string? nullableRefWithDefault = null,
+        [Required] string? nullableRefWithDefaultRequired = null)
+    {
+        // Method intentionally left empty; used only for schema generation reflection.
+    }
+#pragma warning restore IDE0060 // Remove unused parameter
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_RequiredAttribute_MarksNestedPropertyAsRequired()
+    {
+        JsonSerializerOptions options = new(JsonContext.Default.Options);
+        MethodInfo method = typeof(AIJsonUtilitiesTests).GetMethod(nameof(MethodWithRequiredNestedType), BindingFlags.NonPublic | BindingFlags.Static)!;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method, title: string.Empty, serializerOptions: options);
+
+        // Get the "input" parameter's schema under properties
+        Assert.True(schema.TryGetProperty("properties", out JsonElement properties));
+        Assert.True(properties.TryGetProperty("input", out JsonElement inputSchema));
+
+        // The nested type should have its own "required" array for [Required]-attributed properties
+        Assert.True(inputSchema.TryGetProperty("required", out JsonElement requiredElement));
+        HashSet<string> requiredProps = new(requiredElement.EnumerateArray().Select(e => e.GetString()!));
+
+        Assert.Contains("RequiredValue", requiredProps);
+        Assert.Contains("RequiredRef", requiredProps);
+        Assert.DoesNotContain("OptionalValue", requiredProps);
+        Assert.DoesNotContain("OptionalRef", requiredProps);
+    }
+
+    [Fact]
+    public static void CreateJsonSchema_RequiredAttribute_MarksPropertyAsRequired()
+    {
+        JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(TypeWithRequiredMembers), serializerOptions: JsonContext.Default.Options);
+
+        Assert.True(schema.TryGetProperty("required", out JsonElement requiredElement));
+        HashSet<string> requiredProps = new(requiredElement.EnumerateArray().Select(e => e.GetString()!));
+
+        Assert.Contains("RequiredValue", requiredProps);
+        Assert.Contains("RequiredRef", requiredProps);
+        Assert.DoesNotContain("OptionalValue", requiredProps);
+        Assert.DoesNotContain("OptionalRef", requiredProps);
+    }
+
+#pragma warning disable IDE0060 // Remove unused parameter
+    private static void MethodWithRequiredNestedType(TypeWithRequiredMembers input)
+    {
+        // Method intentionally left empty; used only for schema generation reflection.
+    }
+#pragma warning restore IDE0060 // Remove unused parameter
+
+    internal sealed class TypeWithRequiredMembers
+    {
+        [Required]
+        public int RequiredValue { get; set; }
+
+        [Required]
+        public string? RequiredRef { get; set; }
+
+        public int OptionalValue { get; set; }
+
+        public string? OptionalRef { get; set; }
+    }
+
+    [Fact]
     public static void CreateFunctionJsonSchema_DisplayNameAttribute_UsedForTitle()
     {
         [DisplayName("custom_method_name")]
@@ -1564,6 +1680,7 @@ public static partial class AIJsonUtilitiesTests
     [JsonSerializable(typeof(MyEnumValue?))]
     [JsonSerializable(typeof(object[]))]
     [JsonSerializable(typeof(ClassWithNullableMaxLengthProperty))]
+    [JsonSerializable(typeof(TypeWithRequiredMembers))]
     private partial class JsonContext : JsonSerializerContext;
 
     private static bool DeepEquals(JsonElement element1, JsonElement element2)

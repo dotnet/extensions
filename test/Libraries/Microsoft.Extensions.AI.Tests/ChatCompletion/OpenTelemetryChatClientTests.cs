@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using OpenTelemetry.Trace;
 using Xunit;
 
@@ -332,7 +333,54 @@ public class OpenTelemetryChatClientTests
             Assert.False(tags.ContainsKey("gen_ai.input.messages"));
             Assert.False(tags.ContainsKey("gen_ai.output.messages"));
             Assert.False(tags.ContainsKey("gen_ai.system_instructions"));
-            Assert.False(tags.ContainsKey("gen_ai.tool.definitions"));
+            Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "type": "function",
+                    "name": "GetPersonAge",
+                    "description": "Gets the age of a person by name.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "personName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "personName"
+                      ]
+                    }
+                  },
+                  {
+                    "type": "web_search"
+                  },
+                  {
+                    "type": "file_search"
+                  },
+                  {
+                    "type": "code_interpreter"
+                  },
+                  {
+                    "type": "mcp"
+                  },
+                  {
+                    "type": "function",
+                    "name": "GetCurrentWeather",
+                    "description": "Gets the current weather for a location.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "location": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "location"
+                      ]
+                    }
+                  }
+                ]
+                """), ReplaceWhitespace(tags["gen_ai.tool.definitions"]));
         }
     }
 
@@ -833,6 +881,109 @@ public class OpenTelemetryChatClientTests
               }
             ]
             """), ReplaceWhitespace(inputMessages));
+    }
+
+    [Fact]
+    public async Task StreamingChunkMetrics_RecordedForStreamingCalls()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = CallbackAsync,
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("testprovider", new Uri("http://localhost:5000/api"), "testmodel") :
+                null,
+        };
+
+        async static IAsyncEnumerable<ChatResponseUpdate> CallbackAsync(
+            IEnumerable<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "First") { ResponseId = "id1", ModelId = "responsemodel" };
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "Second") { ResponseId = "id1" };
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "Third") { ResponseId = "id1" };
+        }
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName)
+            .Build();
+
+        using var timeToFirstChunkCollector = new MetricCollector<double>(null, sourceName, "gen_ai.client.operation.time_to_first_chunk");
+        using var timePerOutputChunkCollector = new MetricCollector<double>(null, sourceName, "gen_ai.client.operation.time_per_output_chunk");
+
+        await foreach (var update in chatClient.GetStreamingResponseAsync([new(ChatRole.User, "Hello")], new ChatOptions { ModelId = "mymodel" }))
+        {
+            // consume all updates
+        }
+
+        // time_to_first_chunk: exactly 1 measurement for the first chunk
+        var ttfcMeasurements = timeToFirstChunkCollector.GetMeasurementSnapshot();
+        Assert.Single(ttfcMeasurements);
+        Assert.True(ttfcMeasurements[0].Value > 0);
+        Assert.True(ttfcMeasurements[0].ContainsTags(
+            new KeyValuePair<string, object?>("gen_ai.operation.name", "chat"),
+            new KeyValuePair<string, object?>("gen_ai.request.model", "mymodel"),
+            new KeyValuePair<string, object?>("gen_ai.response.model", "responsemodel"),
+            new KeyValuePair<string, object?>("gen_ai.provider.name", "testprovider"),
+            new KeyValuePair<string, object?>("server.address", "localhost"),
+            new KeyValuePair<string, object?>("server.port", 5000)));
+
+        // time_per_output_chunk: one measurement for each chunk after the first (2 chunks)
+        var tpocMeasurements = timePerOutputChunkCollector.GetMeasurementSnapshot();
+        Assert.Equal(2, tpocMeasurements.Count);
+        foreach (var measurement in tpocMeasurements)
+        {
+            Assert.True(measurement.Value > 0);
+            Assert.True(measurement.ContainsTags(
+                new KeyValuePair<string, object?>("gen_ai.operation.name", "chat"),
+                new KeyValuePair<string, object?>("gen_ai.request.model", "mymodel"),
+                new KeyValuePair<string, object?>("gen_ai.response.model", "responsemodel"),
+                new KeyValuePair<string, object?>("gen_ai.provider.name", "testprovider"),
+                new KeyValuePair<string, object?>("server.address", "localhost"),
+                new KeyValuePair<string, object?>("server.port", 5000)));
+        }
+    }
+
+    [Fact]
+    public async Task StreamingChunkMetrics_NotRecordedForNonStreamingCalls()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Response"));
+            },
+        };
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName)
+            .Build();
+
+        using var timeToFirstChunkCollector = new MetricCollector<double>(null, sourceName, "gen_ai.client.operation.time_to_first_chunk");
+        using var timePerOutputChunkCollector = new MetricCollector<double>(null, sourceName, "gen_ai.client.operation.time_per_output_chunk");
+
+        await chatClient.GetResponseAsync([new(ChatRole.User, "Hello")]);
+
+        Assert.Empty(timeToFirstChunkCollector.GetMeasurementSnapshot());
+        Assert.Empty(timePerOutputChunkCollector.GetMeasurementSnapshot());
     }
 
     private sealed class NonSerializableAIContent : AIContent;

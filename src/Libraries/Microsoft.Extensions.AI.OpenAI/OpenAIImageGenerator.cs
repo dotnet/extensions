@@ -8,18 +8,13 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Images;
-
-#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 
 namespace Microsoft.Extensions.AI;
 
@@ -110,20 +105,11 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
     /// <summary>Converts a <see cref="GeneratedImageCollection"/> to a <see cref="ImageGenerationResponse"/>.</summary>
     private static ImageGenerationResponse ToImageGenerationResponse(GeneratedImageCollection generatedImages)
     {
-        string contentType = "image/png"; // Default content type for images
-
-        // OpenAI doesn't expose the content type, so we need to read from the internal JSON representation.
-        // https://github.com/openai/openai-dotnet/issues/561
-        var additionalRawData = typeof(GeneratedImageCollection)
-            .GetProperty("SerializedAdditionalRawData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(generatedImages) as IDictionary<string, BinaryData>;
-
-        if (additionalRawData?.TryGetValue("output_format", out var outputFormat) ?? false)
-        {
-            var stringJsonTypeInfo = (JsonTypeInfo<string>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(string));
-            var outputFormatString = JsonSerializer.Deserialize(outputFormat, stringJsonTypeInfo);
-            contentType = $"image/{outputFormatString}";
-        }
+#pragma warning disable OPENAI001
+        string contentType = generatedImages.OutputFileFormat?.ToString() is { } outputFormat ?
+            $"image/{outputFormat}" :
+            "image/png"; // Default content type for images
+#pragma warning restore OPENAI001
 
         List<AIContent> contents = [];
 
@@ -175,15 +161,15 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
 
         if (result.OutputFileFormat is null)
         {
-            if (options?.MediaType?.Equals("image/png", StringComparison.OrdinalIgnoreCase) == true)
+            if (options?.MediaType?.Equals("image/png", StringComparison.OrdinalIgnoreCase) is true)
             {
                 result.OutputFileFormat = GeneratedImageFileFormat.Png;
             }
-            else if (options?.MediaType?.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) == true)
+            else if (options?.MediaType?.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) is true)
             {
                 result.OutputFileFormat = GeneratedImageFileFormat.Jpeg;
             }
-            else if (options?.MediaType?.Equals("image/webp", StringComparison.OrdinalIgnoreCase) == true)
+            else if (options?.MediaType?.Equals("image/webp", StringComparison.OrdinalIgnoreCase) is true)
             {
                 result.OutputFileFormat = GeneratedImageFileFormat.Webp;
             }
@@ -207,6 +193,22 @@ internal sealed class OpenAIImageGenerator : IImageGenerator
     private ImageEditOptions ToOpenAIImageEditOptions(ImageGenerationOptions? options)
     {
         ImageEditOptions result = options?.RawRepresentationFactory?.Invoke(this) as ImageEditOptions ?? new();
+
+        if (result.OutputFileFormat is null)
+        {
+            if (options?.MediaType?.Equals("image/png", StringComparison.OrdinalIgnoreCase) is true)
+            {
+                result.OutputFileFormat = GeneratedImageFileFormat.Png;
+            }
+            else if (options?.MediaType?.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) is true)
+            {
+                result.OutputFileFormat = GeneratedImageFileFormat.Jpeg;
+            }
+            else if (options?.MediaType?.Equals("image/webp", StringComparison.OrdinalIgnoreCase) is true)
+            {
+                result.OutputFileFormat = GeneratedImageFileFormat.Webp;
+            }
+        }
 
         result.ResponseFormat ??= options?.ResponseFormat switch
         {

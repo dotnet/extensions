@@ -7,6 +7,6 @@ public class OpenAIImageGeneratorIntegrationTests : ImageGeneratorIntegrationTes
 {
     protected override IImageGenerator? CreateGenerator()
         => IntegrationTestHelpers.GetOpenAIClient()?
-            .GetImageClient(TestRunnerConfiguration.Instance["OpenAI:ImageModel"] ?? "dall-e-3")
+            .GetImageClient(TestRunnerConfiguration.Instance["OpenAI:ImageModel"] ?? "gpt-image-1-mini")
             .AsIImageGenerator();
 }

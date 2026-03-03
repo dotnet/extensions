@@ -4,6 +4,7 @@
 using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 using System.Text;
@@ -119,11 +120,12 @@ public static class OpenAIClientExtensions
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="ResponsesClient"/>.</summary>
     /// <param name="responseClient">The client.</param>
+    /// <param name="defaultModelId">The default model ID to use for the chat client.</param>
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ResponsesClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="responseClient"/> is <see langword="null"/>.</exception>
     [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
-    public static IChatClient AsIChatClient(this ResponsesClient responseClient) =>
-        new OpenAIResponsesChatClient(responseClient);
+    public static IChatClient AsIChatClient(this ResponsesClient responseClient, string? defaultModelId = null) =>
+        new OpenAIResponsesChatClient(responseClient, defaultModelId);
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="AssistantClient"/>.</summary>
     /// <param name="assistantClient">The <see cref="AssistantClient"/> instance to be accessed as an <see cref="IChatClient"/>.</param>
@@ -279,5 +281,35 @@ public static class OpenAIClientExtensions
 
         [JsonExtensionData]
         public Dictionary<string, JsonElement>? ExtensionData { get; set; }
+    }
+
+    /// <summary>The "openai.api.type" tag name per the OpenTelemetry semantic conventions for OpenAI.</summary>
+    internal const string OpenAIApiTypeTag = "openai.api.type";
+
+    /// <summary>The "chat_completions" value for the "openai.api.type" tag.</summary>
+    internal const string OpenAIApiTypeChatCompletions = "chat_completions";
+
+    /// <summary>The "responses" value for the "openai.api.type" tag.</summary>
+    internal const string OpenAIApiTypeResponses = "responses";
+
+    /// <summary>The "chat" operation name used by the OpenTelemetry chat client.</summary>
+    private const string ChatOperationName = "chat";
+
+    /// <summary>
+    /// If the current <see cref="Activity"/> represents a "chat" operation span,
+    /// adds the "openai.api.type" tag with the specified value.
+    /// </summary>
+    internal static void AddOpenAIApiType(string apiType)
+    {
+        Activity? activity = Activity.Current;
+        if (activity is { IsAllDataRequested: true })
+        {
+            string name = activity.DisplayName;
+            if (name.StartsWith(ChatOperationName, StringComparison.Ordinal) &&
+                (name.Length == ChatOperationName.Length || name[ChatOperationName.Length] == ' '))
+            {
+                _ = activity.AddTag(OpenAIApiTypeTag, apiType);
+            }
+        }
     }
 }

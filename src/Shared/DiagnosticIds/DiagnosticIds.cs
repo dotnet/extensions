@@ -52,7 +52,7 @@ internal static class DiagnosticIds
         internal const string AISpeechToText = AIExperiments;
         internal const string AIMcpServers = AIExperiments;
         internal const string AIFunctionApprovals = AIExperiments;
-        internal const string AIToolReduction = AIExperiments;
+
         internal const string AIChatReduction = AIExperiments;
         internal const string AIResponseContinuations = AIExperiments;
         internal const string AICodeInterpreter = AIExperiments;
