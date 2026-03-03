@@ -908,6 +908,17 @@ public class OpenAIConversionTests
             BinaryData.FromString("""{"repo":"dotnet/extensions"}"""));
         McpToolCallApprovalResponseItem mcpApprovalResponse = ResponseItem.CreateMcpApprovalResponseItem("mcpr_123", approved: true);
 
+        WebSearchCallResponseItem webSearchItem = ResponseItem.CreateWebSearchCallItem();
+        webSearchItem.Id = "ws_123";
+        FileSearchCallResponseItem fileSearchItem = ModelReaderWriter.Read<FileSearchCallResponseItem>(BinaryData.FromString(
+            """{"type":"file_search_call","id":"fs_123","status":"completed","queries":["test query"],"results":[]}"""))!;
+#pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
+        ComputerCallResponseItem computerItem = ModelReaderWriter.Read<ComputerCallResponseItem>(BinaryData.FromString(
+            """{"type":"computer_call","id":"cu_123","call_id":"call_456","action":{"type":"screenshot"},"pending_safety_checks":[],"status":"completed"}"""))!;
+        ComputerCallOutputResponseItem computerOutput = ModelReaderWriter.Read<ComputerCallOutputResponseItem>(BinaryData.FromString(
+            """{"type":"computer_call_output","id":"co_123","call_id":"call_456","output":{"type":"computer_screenshot","image_url":"https://example.com/screenshot.png"}}"""))!;
+#pragma warning restore OPENAICUA001
+
         List<ChatResponseUpdate> updates = [];
         await foreach (ChatResponseUpdate update in CreateStreamingUpdates().AsChatResponseUpdatesAsync())
         {
@@ -915,7 +926,7 @@ public class OpenAIConversionTests
         }
 
         // Verify we got the expected updates
-        Assert.Equal(4, updates.Count);
+        Assert.Equal(8, updates.Count);
 
         // First update should be FunctionCallContent
         FunctionCallContent? fcc = updates[0].Contents.OfType<FunctionCallContent>().FirstOrDefault();
@@ -964,6 +975,40 @@ public class OpenAIConversionTests
         Assert.NotNull(correlatedMcpCall.Arguments);
         Assert.Equal("dotnet/extensions", correlatedMcpCall.Arguments["repo"]?.ToString());
 
+        // Fifth update: WebSearchCallResponseItem -> ToolCallContent + ToolResultContent
+        ToolCallContent? wsToolCall = updates[4].Contents.OfType<ToolCallContent>().FirstOrDefault();
+        Assert.NotNull(wsToolCall);
+        Assert.Equal("ws_123", wsToolCall.CallId);
+        Assert.Null(wsToolCall.RawRepresentation);
+
+        ToolResultContent? wsToolResult = updates[4].Contents.OfType<ToolResultContent>().FirstOrDefault();
+        Assert.NotNull(wsToolResult);
+        Assert.Equal("ws_123", wsToolResult.CallId);
+        Assert.Same(webSearchItem, wsToolResult.RawRepresentation);
+
+        // Sixth update: FileSearchCallResponseItem -> ToolCallContent + ToolResultContent
+        ToolCallContent? fsToolCall = updates[5].Contents.OfType<ToolCallContent>().FirstOrDefault();
+        Assert.NotNull(fsToolCall);
+        Assert.Equal("fs_123", fsToolCall.CallId);
+        Assert.Null(fsToolCall.RawRepresentation);
+
+        ToolResultContent? fsToolResult = updates[5].Contents.OfType<ToolResultContent>().FirstOrDefault();
+        Assert.NotNull(fsToolResult);
+        Assert.Equal("fs_123", fsToolResult.CallId);
+        Assert.Same(fileSearchItem, fsToolResult.RawRepresentation);
+
+        // Seventh update: ComputerCallResponseItem -> ToolCallContent
+        ToolCallContent? cuToolCall = updates[6].Contents.OfType<ToolCallContent>().FirstOrDefault();
+        Assert.NotNull(cuToolCall);
+        Assert.Equal("cu_123", cuToolCall.CallId);
+        Assert.Same(computerItem, cuToolCall.RawRepresentation);
+
+        // Eighth update: ComputerCallOutputResponseItem -> ToolResultContent
+        ToolResultContent? cuToolResult = updates[7].Contents.OfType<ToolResultContent>().FirstOrDefault();
+        Assert.NotNull(cuToolResult);
+        Assert.Equal("call_456", cuToolResult.CallId);
+        Assert.Same(computerOutput, cuToolResult.RawRepresentation);
+
         async IAsyncEnumerable<StreamingResponseUpdate> CreateStreamingUpdates()
         {
             await Task.Yield();
@@ -972,6 +1017,10 @@ public class OpenAIConversionTests
             yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = mcpToolCall };
             yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = mcpApprovalRequest };
             yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = mcpApprovalResponse };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = webSearchItem };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = fileSearchItem };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = computerItem };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = computerOutput };
         }
     }
 
@@ -1113,7 +1162,23 @@ public class OpenAIConversionTests
         // Use matching ID so response can correlate with the request
         McpToolCallApprovalResponseItem mcpApprovalResponseItem = ResponseItem.CreateMcpApprovalResponseItem("mcpr_123", approved: true);
 
-        ResponseItem[] items = [assistantItem, reasoningItem, functionCallItem, functionOutputItem, mcpToolCallItem, mcpApprovalRequestItem, mcpApprovalResponseItem];
+        WebSearchCallResponseItem webSearchItem = ResponseItem.CreateWebSearchCallItem();
+        webSearchItem.Id = "ws_123";
+        FileSearchCallResponseItem fileSearchItem = ModelReaderWriter.Read<FileSearchCallResponseItem>(BinaryData.FromString(
+            """{"type":"file_search_call","id":"fs_123","status":"completed","queries":["test query"],"results":[]}"""))!;
+#pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
+        ComputerCallResponseItem computerItem = ModelReaderWriter.Read<ComputerCallResponseItem>(BinaryData.FromString(
+            """{"type":"computer_call","id":"cu_123","call_id":"call_456","action":{"type":"screenshot"},"pending_safety_checks":[],"status":"completed"}"""))!;
+        ComputerCallOutputResponseItem computerOutput = ModelReaderWriter.Read<ComputerCallOutputResponseItem>(BinaryData.FromString(
+            """{"type":"computer_call_output","id":"co_123","call_id":"call_456","output":{"type":"computer_screenshot","image_url":"https://example.com/screenshot.png"}}"""))!;
+#pragma warning restore OPENAICUA001
+
+        ResponseItem[] items =
+        [
+            assistantItem, reasoningItem, functionCallItem, functionOutputItem,
+            mcpToolCallItem, mcpApprovalRequestItem, mcpApprovalResponseItem,
+            webSearchItem, fileSearchItem, computerItem, computerOutput,
+        ];
 
         // Convert to ChatMessages
         ChatMessage[] messages = items.AsChatMessages().ToArray();
@@ -1203,6 +1268,34 @@ public class OpenAIConversionTests
         Assert.Equal("deepwiki", correlatedMcpCall.ServerName);
         Assert.NotNull(correlatedMcpCall.Arguments);
         Assert.Equal("dotnet/extensions", correlatedMcpCall.Arguments["repoName"]?.ToString());
+
+        // 8. WebSearchCallResponseItem -> ToolCallContent + ToolResultContent
+        ToolCallContent? webSearchToolCall = message.Contents.OfType<ToolCallContent>().FirstOrDefault(c => c.CallId == "ws_123");
+        Assert.NotNull(webSearchToolCall);
+        Assert.Null(webSearchToolCall.RawRepresentation); // Intentionally null to avoid duplication during roundtrip
+
+        ToolResultContent? webSearchToolResult = message.Contents.OfType<ToolResultContent>().FirstOrDefault(c => c.CallId == "ws_123");
+        Assert.NotNull(webSearchToolResult);
+        Assert.Same(webSearchItem, webSearchToolResult.RawRepresentation);
+
+        // 9. FileSearchCallResponseItem -> ToolCallContent + ToolResultContent
+        ToolCallContent? fileSearchToolCall = message.Contents.OfType<ToolCallContent>().FirstOrDefault(c => c.CallId == "fs_123");
+        Assert.NotNull(fileSearchToolCall);
+        Assert.Null(fileSearchToolCall.RawRepresentation);
+
+        ToolResultContent? fileSearchToolResult = message.Contents.OfType<ToolResultContent>().FirstOrDefault(c => c.CallId == "fs_123");
+        Assert.NotNull(fileSearchToolResult);
+        Assert.Same(fileSearchItem, fileSearchToolResult.RawRepresentation);
+
+        // 10. ComputerCallResponseItem -> ToolCallContent (result comes separately)
+        ToolCallContent? computerToolCall = message.Contents.OfType<ToolCallContent>().FirstOrDefault(c => c.CallId == "cu_123");
+        Assert.NotNull(computerToolCall);
+        Assert.Same(computerItem, computerToolCall.RawRepresentation);
+
+        // 11. ComputerCallOutputResponseItem -> ToolResultContent
+        ToolResultContent? computerToolResult = message.Contents.OfType<ToolResultContent>().FirstOrDefault(c => c.CallId == "call_456");
+        Assert.NotNull(computerToolResult);
+        Assert.Same(computerOutput, computerToolResult.RawRepresentation);
     }
 
     [Fact]

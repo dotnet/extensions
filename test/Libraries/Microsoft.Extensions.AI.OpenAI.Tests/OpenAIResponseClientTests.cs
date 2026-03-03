@@ -820,11 +820,13 @@ public class OpenAIResponseClientTests
         Assert.Equal(ChatRole.Assistant, responseMessage.Role);
         Assert.Equal(2, responseMessage.Contents.Count);
         Assert.Single(responseMessage.Contents, content => content is TextReasoningContent);
-        AIContent computerUserItem = Assert.Single(responseMessage.Contents, content => content.GetType() == typeof(AIContent));
+        AIContent computerUserItem = Assert.Single(responseMessage.Contents, content => content is ToolCallContent);
         Assert.NotNull(computerUserItem.RawRepresentation);
 #pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
         Assert.IsType<ComputerCallResponseItem>(computerUserItem.RawRepresentation);
 #pragma warning restore OPENAICUA001
+        ToolCallContent computerToolCall = Assert.IsType<ToolCallContent>(computerUserItem);
+        Assert.NotNull(computerToolCall.CallId);
         Assert.NotNull(response.Usage);
         Assert.Equal(18, response.Usage.InputTokenCount);
         Assert.Equal(53, response.Usage.OutputTokenCount);
@@ -921,7 +923,8 @@ public class OpenAIResponseClientTests
             Assert.Null(updates[i].Role);
         }
 
-        AIContent content = Assert.Single(updates[3].Contents);
+        ToolCallContent content = Assert.IsType<ToolCallContent>(Assert.Single(updates[3].Contents));
+        Assert.NotNull(content.CallId);
 #pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
         var ccri = Assert.IsType<ComputerCallResponseItem>(content.RawRepresentation);
 #pragma warning restore OPENAICUA001

@@ -801,10 +801,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>
-    /// Gets whether <paramref name="messages"/> contains any <see cref="ToolApprovalRequestContent"/> or <see cref="ToolApprovalResponseContent"/> instances.
+    /// Gets whether <paramref name="messages"/> contains any <see cref="ToolApprovalRequestContent"/> or <see cref="ToolApprovalResponseContent"/>
+    /// instances with a <see cref="FunctionCallContent"/> tool call that the FICC needs to process.
     /// </summary>
     private static bool HasAnyApprovalContent(List<ChatMessage> messages) =>
-        messages.Exists(static m => m.Contents.Any(static c => c is ToolApprovalRequestContent or ToolApprovalResponseContent));
+        messages.Exists(static m => m.Contents.Any(static c =>
+            c is ToolApprovalRequestContent { ToolCall: FunctionCallContent { InformationalOnly: false } }
+            or ToolApprovalResponseContent { ToolCall: FunctionCallContent { InformationalOnly: false } }));
 
     /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="messages"/> to <paramref name="functionCalls"/>.</summary>
     private static bool CopyFunctionCalls(
