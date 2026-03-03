@@ -186,7 +186,7 @@ public static class ChatResponseExtensions
 
     /// <summary>
     /// Coalesces image result content elements in the provided list of <see cref="AIContent"/> items.
-    /// Unlike other content coalescing methods, this will coalesce non-sequential items based on their Name property, 
+    /// Unlike other content coalescing methods, this will coalesce non-sequential items based on their CallId property, 
     /// and it will replace earlier items with later ones when duplicates are found.
     /// </summary>
     private static void CoalesceImageResultContent(IList<AIContent> contents)

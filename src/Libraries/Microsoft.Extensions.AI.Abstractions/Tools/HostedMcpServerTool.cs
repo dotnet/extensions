@@ -138,6 +138,9 @@ public class HostedMcpServerTool : AITool
     /// <para>
     /// This property is useful for specifying the authentication header or other headers required by the MCP server.
     /// </para>
+    /// <para>
+    /// As HTTP header names are case-insensitive, callers should use <see cref="StringComparer.OrdinalIgnoreCase"/> comparison when constructing the dictionary.
+    /// </para>
     /// </remarks>
     public IDictionary<string, string>? Headers { get; set; }
 }
