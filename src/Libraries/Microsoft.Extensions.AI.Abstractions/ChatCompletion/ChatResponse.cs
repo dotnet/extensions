@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -101,8 +99,6 @@ public class ChatResponse
     /// to poll for completion.
     /// </para>
     /// </remarks>
-    [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
-    [JsonIgnore]
     public ResponseContinuationToken? ContinuationToken { get; set; }
 
     /// <summary>Gets or sets the raw representation of the chat response from an underlying implementation.</summary>

@@ -137,7 +137,6 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(CodeInterpreterToolResultContent))]
     [JsonSerializable(typeof(ImageGenerationToolCallContent))]
     [JsonSerializable(typeof(ImageGenerationToolResultContent))]
-    [JsonSerializable(typeof(ResponseContinuationToken))]
 
     // IEmbeddingGenerator
     [JsonSerializable(typeof(EmbeddingGenerationOptions))]

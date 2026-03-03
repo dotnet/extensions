@@ -1013,7 +1013,7 @@
         },
         {
           "Member": "bool? Microsoft.Extensions.AI.ChatOptions.AllowBackgroundResponses { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "bool? Microsoft.Extensions.AI.ChatOptions.AllowMultipleToolCalls { get; set; }",
@@ -1021,7 +1021,7 @@
         },
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatOptions.ContinuationToken { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ChatOptions.ConversationId { get; set; }",
@@ -1121,7 +1121,7 @@
         },
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatResponse.ContinuationToken { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ChatResponse.ConversationId { get; set; }",
@@ -1301,7 +1301,7 @@
         },
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatResponseUpdate.ContinuationToken { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ChatResponseUpdate.ConversationId { get; set; }",
@@ -2940,41 +2940,41 @@
     },
     {
       "Type": "class Microsoft.Extensions.AI.ResponseContinuationToken",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.ResponseContinuationToken();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.ResponseContinuationToken(System.ReadOnlyMemory<byte> bytes);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.AI.ResponseContinuationToken Microsoft.Extensions.AI.ResponseContinuationToken.FromBytes(System.ReadOnlyMemory<byte> bytes);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "virtual System.ReadOnlyMemory<byte> Microsoft.Extensions.AI.ResponseContinuationToken.ToBytes();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.AI.ResponseContinuationToken.Converter",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Converter();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override Microsoft.Extensions.AI.ResponseContinuationToken Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override void Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.ResponseContinuationToken value, System.Text.Json.JsonSerializerOptions options);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
