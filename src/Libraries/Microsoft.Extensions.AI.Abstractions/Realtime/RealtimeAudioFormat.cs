@@ -29,9 +29,5 @@ public class RealtimeAudioFormat
     /// <summary>
     /// Gets the sample rate of the audio in Hertz.
     /// </summary>
-    /// <remarks>
-    /// When constructed via <see cref="RealtimeAudioFormat(string, int)"/>, this property is always set.
-    /// The nullable type allows deserialized instances to omit the sample rate when the server does not provide one.
-    /// </remarks>
-    public int? SampleRate { get; init; }
+    public int SampleRate { get; init; }
 }

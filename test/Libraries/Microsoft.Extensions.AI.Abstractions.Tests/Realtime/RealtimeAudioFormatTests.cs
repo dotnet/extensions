@@ -30,15 +30,4 @@ public class RealtimeAudioFormatTests
         Assert.Equal("audio/wav", format.MediaType);
         Assert.Equal(24000, format.SampleRate);
     }
-
-    [Fact]
-    public void SampleRate_CanBeSetToNull()
-    {
-        var format = new RealtimeAudioFormat("audio/pcm", 16000)
-        {
-            SampleRate = null,
-        };
-
-        Assert.Null(format.SampleRate);
-    }
 }
