@@ -21,4 +21,7 @@ public class VoiceActivityDetection
     /// Gets a value indicating whether to interrupt the response when voice activity is detected.
     /// </summary>
     public bool InterruptResponse { get; init; }
+
+    /// <summary>Gets or sets any additional properties associated with the voice activity detection options.</summary>
+    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 }

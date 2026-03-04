@@ -12,8 +12,4 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public class SemanticVoiceActivityDetection : VoiceActivityDetection
 {
-    /// <summary>
-    /// Gets the eagerness level for semantic voice activity detection.
-    /// </summary>
-    public SemanticEagerness Eagerness { get; init; } = SemanticEagerness.Auto;
 }

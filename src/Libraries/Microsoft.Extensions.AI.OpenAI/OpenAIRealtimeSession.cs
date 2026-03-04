@@ -437,12 +437,18 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
         }
         else if (options.VoiceActivityDetection is SemanticVoiceActivityDetection semanticVad)
         {
-            inputAudioOptions.TurnDetection = new Sdk.RealtimeSemanticVadTurnDetection
+            var turnDetection = new Sdk.RealtimeSemanticVadTurnDetection
             {
                 CreateResponseEnabled = semanticVad.CreateResponse,
                 InterruptResponseEnabled = semanticVad.InterruptResponse,
-                EagernessLevel = new Sdk.RealtimeSemanticVadEagernessLevel(semanticVad.Eagerness.Value),
             };
+
+            if (semanticVad.AdditionalProperties?.TryGetValue("eagerness", out var eagerness) is true && eagerness is string eagernessStr)
+            {
+                turnDetection.EagernessLevel = new Sdk.RealtimeSemanticVadEagernessLevel(eagernessStr);
+            }
+
+            inputAudioOptions.TurnDetection = turnDetection;
         }
         else if (options.VoiceActivityDetection is { } baseVad)
         {
@@ -558,12 +564,18 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
             }
             else if (options.VoiceActivityDetection is SemanticVoiceActivityDetection semanticVad)
             {
-                inputAudioOptions.TurnDetection = new Sdk.RealtimeSemanticVadTurnDetection
+                var turnDetection = new Sdk.RealtimeSemanticVadTurnDetection
                 {
                     CreateResponseEnabled = semanticVad.CreateResponse,
                     InterruptResponseEnabled = semanticVad.InterruptResponse,
-                    EagernessLevel = new Sdk.RealtimeSemanticVadEagernessLevel(semanticVad.Eagerness.Value),
                 };
+
+                if (semanticVad.AdditionalProperties?.TryGetValue("eagerness", out var eagerness) is true && eagerness is string eagernessStr)
+                {
+                    turnDetection.EagernessLevel = new Sdk.RealtimeSemanticVadEagernessLevel(eagernessStr);
+                }
+
+                inputAudioOptions.TurnDetection = turnDetection;
             }
             else if (options.VoiceActivityDetection is { } baseVad)
             {
@@ -949,14 +961,21 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
                 }
                 else if (inputOpts.TurnDetection is Sdk.RealtimeSemanticVadTurnDetection semanticVad)
                 {
-                    vad = new SemanticVoiceActivityDetection
+                    var semanticVadOptions = new SemanticVoiceActivityDetection
                     {
                         CreateResponse = semanticVad.CreateResponseEnabled ?? false,
                         InterruptResponse = semanticVad.InterruptResponseEnabled ?? false,
-                        Eagerness = semanticVad.EagernessLevel.HasValue
-                            ? new SemanticEagerness(semanticVad.EagernessLevel.Value.ToString())
-                            : SemanticEagerness.Auto,
                     };
+
+                    if (semanticVad.EagernessLevel.HasValue)
+                    {
+                        semanticVadOptions.AdditionalProperties = new AdditionalPropertiesDictionary
+                        {
+                            ["eagerness"] = semanticVad.EagernessLevel.Value.ToString(),
+                        };
+                    }
+
+                    vad = semanticVadOptions;
                 }
             }
 
