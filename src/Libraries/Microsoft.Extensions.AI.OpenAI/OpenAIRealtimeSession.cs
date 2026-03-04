@@ -865,12 +865,12 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
         Sdk.RealtimeServerUpdateConversationItemInputAudioTranscriptionFailed e => MapInputTranscriptionFailed(e),
         Sdk.RealtimeServerUpdateConversationItemAdded e => MapConversationItem(e.EventId, e.Item, RealtimeServerMessageType.ResponseOutputItemAdded, e),
         Sdk.RealtimeServerUpdateConversationItemDone e => MapConversationItem(e.EventId, e.Item, RealtimeServerMessageType.ResponseOutputItemDone, e),
-        Sdk.RealtimeServerUpdateResponseMcpCallInProgress e => MapMcpCallEvent(e.EventId, e.ItemId, e.OutputIndex, RealtimeServerMessageType.McpCallInProgress, e),
-        Sdk.RealtimeServerUpdateResponseMcpCallCompleted e => MapMcpCallEvent(e.EventId, e.ItemId, e.OutputIndex, RealtimeServerMessageType.McpCallCompleted, e),
-        Sdk.RealtimeServerUpdateResponseMcpCallFailed e => MapMcpCallEvent(e.EventId, e.ItemId, e.OutputIndex, RealtimeServerMessageType.McpCallFailed, e),
-        Sdk.RealtimeServerUpdateMcpListToolsInProgress e => MapMcpListToolsEvent(e.EventId, e.ItemId, RealtimeServerMessageType.McpListToolsInProgress, e),
-        Sdk.RealtimeServerUpdateMcpListToolsCompleted e => MapMcpListToolsEvent(e.EventId, e.ItemId, RealtimeServerMessageType.McpListToolsCompleted, e),
-        Sdk.RealtimeServerUpdateMcpListToolsFailed e => MapMcpListToolsEvent(e.EventId, e.ItemId, RealtimeServerMessageType.McpListToolsFailed, e),
+        Sdk.RealtimeServerUpdateResponseMcpCallInProgress e => MapMcpCallEvent(e.EventId, e.ItemId, e.OutputIndex, new RealtimeServerMessageType("McpCallInProgress"), e),
+        Sdk.RealtimeServerUpdateResponseMcpCallCompleted e => MapMcpCallEvent(e.EventId, e.ItemId, e.OutputIndex, new RealtimeServerMessageType("McpCallCompleted"), e),
+        Sdk.RealtimeServerUpdateResponseMcpCallFailed e => MapMcpCallEvent(e.EventId, e.ItemId, e.OutputIndex, new RealtimeServerMessageType("McpCallFailed"), e),
+        Sdk.RealtimeServerUpdateMcpListToolsInProgress e => MapMcpListToolsEvent(e.EventId, e.ItemId, new RealtimeServerMessageType("McpListToolsInProgress"), e),
+        Sdk.RealtimeServerUpdateMcpListToolsCompleted e => MapMcpListToolsEvent(e.EventId, e.ItemId, new RealtimeServerMessageType("McpListToolsCompleted"), e),
+        Sdk.RealtimeServerUpdateMcpListToolsFailed e => MapMcpListToolsEvent(e.EventId, e.ItemId, new RealtimeServerMessageType("McpListToolsFailed"), e),
         _ => new RealtimeServerMessage
         {
             Type = RealtimeServerMessageType.RawContentOnly,

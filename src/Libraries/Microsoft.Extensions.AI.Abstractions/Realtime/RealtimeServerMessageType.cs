@@ -17,8 +17,22 @@ namespace Microsoft.Extensions.AI;
 /// This is used to identify the message type being received from the model.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Well-known message types are provided as static properties. Providers may define additional
 /// message types by constructing new instances with custom values.
+/// </para>
+/// <para>
+/// Provider implementations that want to support the built-in middleware pipeline
+/// (<see langword="FunctionInvokingRealtimeSession"/> and
+/// <see langword="OpenTelemetryRealtimeSession"/>) must emit the following
+/// message types at appropriate points during response generation:
+/// <list type="bullet">
+/// <item><see cref="ResponseCreated"/> — when the model begins generating a new response.</item>
+/// <item><see cref="ResponseDone"/> — when the model has finished generating a response (with usage data if available).</item>
+/// <item><see cref="ResponseOutputItemAdded"/> — when a new output item (e.g., function call, message) is added during response generation.</item>
+/// <item><see cref="ResponseOutputItemDone"/> — when an individual output item has completed. This is required for function invocation middleware to detect and invoke tool calls.</item>
+/// </list>
+/// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 [JsonConverter(typeof(Converter))]
@@ -72,24 +86,6 @@ public readonly struct RealtimeServerMessageType : IEquatable<RealtimeServerMess
 
     /// <summary>Gets a message type indicating an error occurred while processing the request.</summary>
     public static RealtimeServerMessageType Error { get; } = new("Error");
-
-    /// <summary>Gets a message type indicating that an MCP tool call is in progress.</summary>
-    public static RealtimeServerMessageType McpCallInProgress { get; } = new("McpCallInProgress");
-
-    /// <summary>Gets a message type indicating that an MCP tool call has completed.</summary>
-    public static RealtimeServerMessageType McpCallCompleted { get; } = new("McpCallCompleted");
-
-    /// <summary>Gets a message type indicating that an MCP tool call has failed.</summary>
-    public static RealtimeServerMessageType McpCallFailed { get; } = new("McpCallFailed");
-
-    /// <summary>Gets a message type indicating that listing MCP tools is in progress.</summary>
-    public static RealtimeServerMessageType McpListToolsInProgress { get; } = new("McpListToolsInProgress");
-
-    /// <summary>Gets a message type indicating that listing MCP tools has completed.</summary>
-    public static RealtimeServerMessageType McpListToolsCompleted { get; } = new("McpListToolsCompleted");
-
-    /// <summary>Gets a message type indicating that listing MCP tools has failed.</summary>
-    public static RealtimeServerMessageType McpListToolsFailed { get; } = new("McpListToolsFailed");
 
     /// <summary>
     /// Gets the value associated with this <see cref="RealtimeServerMessageType"/>.

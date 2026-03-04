@@ -10,7 +10,15 @@ namespace Microsoft.Extensions.AI;
 /// Represents a real-time message representing a new output item added or created during response generation.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Used with the <see cref="RealtimeServerMessageType.ResponseOutputItemDone"/> and <see cref="RealtimeServerMessageType.ResponseOutputItemAdded"/> messages.
+/// </para>
+/// <para>
+/// Provider implementations should emit this message with <see cref="RealtimeServerMessageType.ResponseOutputItemDone"/>
+/// when an output item (such as a function call or text message) has completed. The built-in
+/// <see langword="FunctionInvokingRealtimeSession"/> middleware depends on this message to detect
+/// and invoke tool calls.
+/// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public class RealtimeServerResponseOutputItemMessage : RealtimeServerMessage
