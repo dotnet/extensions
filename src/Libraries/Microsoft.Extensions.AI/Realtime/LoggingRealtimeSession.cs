@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>A delegating realtime session that logs operations to an <see cref="ILogger"/>.</summary>
 /// <remarks>
 /// <para>
-/// The provided implementation of <see cref="IRealtimeSession"/> is thread-safe for concurrent use so long as the
+/// The provided implementation of <see cref="IRealtimeClientSession"/> is thread-safe for concurrent use so long as the
 /// <see cref="ILogger"/> employed is also thread-safe for concurrent use.
 /// </para>
 /// <para>
@@ -37,9 +37,9 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
     private JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>Initializes a new instance of the <see cref="LoggingRealtimeSession"/> class.</summary>
-    /// <param name="innerSession">The underlying <see cref="IRealtimeSession"/>.</param>
+    /// <param name="innerSession">The underlying <see cref="IRealtimeClientSession"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
-    public LoggingRealtimeSession(IRealtimeSession innerSession, ILogger logger)
+    public LoggingRealtimeSession(IRealtimeClientSession innerSession, ILogger logger)
         : base(innerSession)
     {
         _logger = Throw.IfNull(logger);
@@ -90,7 +90,7 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
     }
 
     /// <inheritdoc/>
-    public override async Task SendClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
+    public override async Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(message);
 
@@ -108,21 +108,21 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
 
         try
         {
-            await base.SendClientMessageAsync(message, cancellationToken).ConfigureAwait(false);
+            await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                LogCompleted(nameof(SendClientMessageAsync));
+                LogCompleted(nameof(SendAsync));
             }
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(SendClientMessageAsync));
+            LogInvocationCanceled(nameof(SendAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(SendClientMessageAsync), ex);
+            LogInvocationFailed(nameof(SendAsync), ex);
             throw;
         }
     }
@@ -254,10 +254,10 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
     [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Options: {Options}.")]
     private partial void LogInvokedSensitive(string methodName, string options);
 
-    [LoggerMessage(LogLevel.Debug, "SendClientMessageAsync invoked.")]
+    [LoggerMessage(LogLevel.Debug, "SendAsync invoked.")]
     private partial void LogSendMessage();
 
-    [LoggerMessage(LogLevel.Trace, "SendClientMessageAsync invoked: Message: {Message}.")]
+    [LoggerMessage(LogLevel.Trace, "SendAsync invoked: Message: {Message}.")]
     private partial void LogSendMessageSensitive(string message);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]

@@ -52,7 +52,7 @@ public sealed class OpenAIRealtimeClient : IRealtimeClient
     }
 
     /// <inheritdoc />
-    public async Task<IRealtimeSession> CreateSessionAsync(RealtimeSessionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<IRealtimeClientSession> CreateSessionAsync(RealtimeSessionOptions? options = null, CancellationToken cancellationToken = default)
     {
         var sessionClient = options?.SessionKind == RealtimeSessionKind.Transcription
             ? await _realtimeClient.StartTranscriptionSessionAsync(cancellationToken: cancellationToken).ConfigureAwait(false)

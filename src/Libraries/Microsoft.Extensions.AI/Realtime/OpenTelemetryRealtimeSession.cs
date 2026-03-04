@@ -92,11 +92,11 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
     private JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>Initializes a new instance of the <see cref="OpenTelemetryRealtimeSession"/> class.</summary>
-    /// <param name="innerSession">The underlying <see cref="IRealtimeSession"/>.</param>
+    /// <param name="innerSession">The underlying <see cref="IRealtimeClientSession"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for emitting any logging data from the session.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
 #pragma warning disable IDE0060 // Remove unused parameter; it exists for backwards compatibility and future use
-    public OpenTelemetryRealtimeSession(IRealtimeSession innerSession, ILogger? logger = null, string? sourceName = null)
+    public OpenTelemetryRealtimeSession(IRealtimeClientSession innerSession, ILogger? logger = null, string? sourceName = null)
 #pragma warning restore IDE0060
         : base(innerSession)
     {
@@ -200,7 +200,7 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
     }
 
     /// <inheritdoc/>
-    public override async Task SendClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
+    public override async Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
         if (EnableSensitiveData && _activitySource.HasListeners())
         {
@@ -228,7 +228,7 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
             }
         }
 
-        await base.SendClientMessageAsync(message, cancellationToken).ConfigureAwait(false);
+        await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

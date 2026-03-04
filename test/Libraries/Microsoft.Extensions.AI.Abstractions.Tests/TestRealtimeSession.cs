@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A test <see cref="IRealtimeSession"/> implementation that uses callbacks for verification.</summary>
-public sealed class TestRealtimeSession : IRealtimeSession
+/// <summary>A test <see cref="IRealtimeClientSession"/> implementation that uses callbacks for verification.</summary>
+public sealed class TestRealtimeSession : IRealtimeClientSession
 {
     /// <summary>Gets or sets the callback to invoke when <see cref="UpdateAsync"/> is called.</summary>
     public Func<RealtimeSessionOptions, CancellationToken, Task>? UpdateAsyncCallback { get; set; }
 
-    /// <summary>Gets or sets the callback to invoke when <see cref="SendClientMessageAsync"/> is called.</summary>
-    public Func<RealtimeClientMessage, CancellationToken, Task>? SendClientMessageAsyncCallback { get; set; }
+    /// <summary>Gets or sets the callback to invoke when <see cref="SendAsync"/> is called.</summary>
+    public Func<RealtimeClientMessage, CancellationToken, Task>? SendAsyncCallback { get; set; }
 
     /// <summary>Gets or sets the callback to invoke when <see cref="GetStreamingResponseAsync"/> is called.</summary>
     public Func<CancellationToken, IAsyncEnumerable<RealtimeServerMessage>>? GetStreamingResponseAsyncCallback { get; set; }
@@ -33,9 +33,9 @@ public sealed class TestRealtimeSession : IRealtimeSession
     }
 
     /// <inheritdoc/>
-    public Task SendClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
+    public Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
-        return SendClientMessageAsyncCallback?.Invoke(message, cancellationToken) ?? Task.CompletedTask;
+        return SendAsyncCallback?.Invoke(message, cancellationToken) ?? Task.CompletedTask;
     }
 
     /// <inheritdoc/>

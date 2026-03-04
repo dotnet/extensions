@@ -94,12 +94,12 @@ public class RealtimeSessionOptions
     /// Gets a callback responsible for creating the raw representation of the session options from an underlying implementation.
     /// </summary>
     /// <remarks>
-    /// The underlying <see cref="IRealtimeSession" /> implementation might have its own representation of options.
-    /// When <see cref="IRealtimeSession.UpdateAsync" /> is invoked with a <see cref="RealtimeSessionOptions" />,
+    /// The underlying <see cref="IRealtimeClientSession" /> implementation might have its own representation of options.
+    /// When <see cref="IRealtimeClientSession.UpdateAsync" /> is invoked with a <see cref="RealtimeSessionOptions" />,
     /// that implementation might convert the provided options into its own representation in order to use it while
-    /// performing the operation. For situations where a consumer knows which concrete <see cref="IRealtimeSession" />
+    /// performing the operation. For situations where a consumer knows which concrete <see cref="IRealtimeClientSession" />
     /// is being used and how it represents options, a new instance of that implementation-specific options type can be
-    /// returned by this callback for the <see cref="IRealtimeSession" /> implementation to use, instead of creating a
+    /// returned by this callback for the <see cref="IRealtimeClientSession" /> implementation to use, instead of creating a
     /// new instance. Such implementations might mutate the supplied options instance further based on other settings
     /// supplied on this <see cref="RealtimeSessionOptions" /> instance or from other inputs.
     /// Therefore, it is <b>strongly recommended</b> to not return shared instances and instead make the callback return
@@ -108,5 +108,5 @@ public class RealtimeSessionOptions
     /// properties on <see cref="RealtimeSessionOptions" />.
     /// </remarks>
     [JsonIgnore]
-    public Func<IRealtimeSession, object?>? RawRepresentationFactory { get; init; }
+    public Func<IRealtimeClientSession, object?>? RawRepresentationFactory { get; init; }
 }

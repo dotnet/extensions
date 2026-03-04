@@ -30,7 +30,7 @@ public class LoggingRealtimeSessionTests
         using var innerSession = new TestRealtimeSession();
 
         Assert.Null(innerSession.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(LoggingRealtimeSession)));
-        Assert.Same(innerSession, innerSession.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(IRealtimeSession)));
+        Assert.Same(innerSession, innerSession.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(IRealtimeClientSession)));
 
         using var factory = LoggerFactory.Create(b => b.AddFakeLogging());
         Assert.NotNull(innerSession.AsBuilder().UseLogging(factory).Build().GetService(typeof(LoggingRealtimeSession)));
@@ -90,7 +90,7 @@ public class LoggingRealtimeSessionTests
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
     [InlineData(LogLevel.Information)]
-    public async Task SendClientMessageAsync_LogsInvocationAndCompletion(LogLevel level)
+    public async Task SendAsync_LogsInvocationAndCompletion(LogLevel level)
     {
         var collector = new FakeLogCollector();
 
@@ -100,7 +100,7 @@ public class LoggingRealtimeSessionTests
 
         using var innerSession = new TestRealtimeSession
         {
-            SendClientMessageAsyncCallback = (message, cancellationToken) => Task.CompletedTask,
+            SendAsyncCallback = (message, cancellationToken) => Task.CompletedTask,
         };
 
         using var session = innerSession
@@ -108,20 +108,20 @@ public class LoggingRealtimeSessionTests
             .UseLogging()
             .Build(services);
 
-        await session.SendClientMessageAsync(new RealtimeClientMessage { MessageId = "test-event-123" });
+        await session.SendAsync(new RealtimeClientMessage { MessageId = "test-event-123" });
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
         {
             Assert.Collection(logs,
-                entry => Assert.Contains("SendClientMessageAsync invoked:", entry.Message),
-                entry => Assert.Contains("SendClientMessageAsync completed.", entry.Message));
+                entry => Assert.Contains("SendAsync invoked:", entry.Message),
+                entry => Assert.Contains("SendAsync completed.", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.Contains("SendClientMessageAsync invoked.", entry.Message),
-                entry => Assert.Contains("SendClientMessageAsync completed.", entry.Message));
+                entry => Assert.Contains("SendAsync invoked.", entry.Message),
+                entry => Assert.Contains("SendAsync completed.", entry.Message));
         }
         else
         {
@@ -334,11 +334,11 @@ public class LoggingRealtimeSessionTests
             .Build();
 
         Assert.NotNull(session.GetService(typeof(LoggingRealtimeSession)));
-        Assert.Same(session, session.GetService(typeof(IRealtimeSession)));
+        Assert.Same(session, session.GetService(typeof(IRealtimeClientSession)));
     }
 
     [Fact]
-    public async Task SendClientMessageAsync_LogsCancellation()
+    public async Task SendAsync_LogsCancellation()
     {
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
@@ -347,7 +347,7 @@ public class LoggingRealtimeSessionTests
 
         using var innerSession = new TestRealtimeSession
         {
-            SendClientMessageAsyncCallback = (message, cancellationToken) =>
+            SendAsyncCallback = (message, cancellationToken) =>
             {
                 throw new OperationCanceledException(cancellationToken);
             },
@@ -360,23 +360,23 @@ public class LoggingRealtimeSessionTests
 
         cts.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            session.SendClientMessageAsync(new RealtimeClientMessage { MessageId = "evt_cancel" }, cts.Token));
+            session.SendAsync(new RealtimeClientMessage { MessageId = "evt_cancel" }, cts.Token));
 
         var logs = collector.GetSnapshot();
         Assert.Collection(logs,
-            entry => Assert.Contains("SendClientMessageAsync invoked.", entry.Message),
-            entry => Assert.Contains("SendClientMessageAsync canceled.", entry.Message));
+            entry => Assert.Contains("SendAsync invoked.", entry.Message),
+            entry => Assert.Contains("SendAsync canceled.", entry.Message));
     }
 
     [Fact]
-    public async Task SendClientMessageAsync_LogsErrors()
+    public async Task SendAsync_LogsErrors()
     {
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
 
         using var innerSession = new TestRealtimeSession
         {
-            SendClientMessageAsyncCallback = (message, cancellationToken) =>
+            SendAsyncCallback = (message, cancellationToken) =>
             {
                 throw new InvalidOperationException("Inject error");
             },
@@ -388,12 +388,12 @@ public class LoggingRealtimeSessionTests
             .Build();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            session.SendClientMessageAsync(new RealtimeClientMessage()));
+            session.SendAsync(new RealtimeClientMessage()));
 
         var logs = collector.GetSnapshot();
         Assert.Collection(logs,
-            entry => Assert.Contains("SendClientMessageAsync invoked.", entry.Message),
-            entry => Assert.True(entry.Message.Contains("SendClientMessageAsync failed.") && entry.Level == LogLevel.Error));
+            entry => Assert.Contains("SendAsync invoked.", entry.Message),
+            entry => Assert.True(entry.Message.Contains("SendAsync failed.") && entry.Level == LogLevel.Error));
     }
 
     [Fact]

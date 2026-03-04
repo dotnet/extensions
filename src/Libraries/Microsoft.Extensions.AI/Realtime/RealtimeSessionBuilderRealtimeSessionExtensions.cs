@@ -7,7 +7,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides extension methods for working with <see cref="IRealtimeSession"/> in the context of <see cref="RealtimeSessionBuilder"/>.</summary>
+/// <summary>Provides extension methods for working with <see cref="IRealtimeClientSession"/> in the context of <see cref="RealtimeSessionBuilder"/>.</summary>
 [Experimental("MEAI001")]
 public static class RealtimeSessionBuilderRealtimeSessionExtensions
 {
@@ -19,7 +19,7 @@ public static class RealtimeSessionBuilderRealtimeSessionExtensions
     /// specifying <paramref name="innerSession"/> as the inner session.
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="innerSession"/> is <see langword="null"/>.</exception>
-    public static RealtimeSessionBuilder AsBuilder(this IRealtimeSession innerSession)
+    public static RealtimeSessionBuilder AsBuilder(this IRealtimeClientSession innerSession)
     {
         _ = Throw.IfNull(innerSession);
 

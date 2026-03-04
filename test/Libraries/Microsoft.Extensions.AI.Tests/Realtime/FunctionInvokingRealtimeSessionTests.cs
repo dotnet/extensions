@@ -103,7 +103,7 @@ public class FunctionInvokingRealtimeSessionTests
             [
                 CreateFunctionCallOutputItemMessage("call_001", "get_weather", new Dictionary<string, object?> { ["city"] = "Seattle" }),
             ], ct),
-            SendClientMessageAsyncCallback = (msg, _) =>
+            SendAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -151,7 +151,7 @@ public class FunctionInvokingRealtimeSessionTests
             [
                 CreateFunctionCallOutputItemMessage("call_002", "get_weather", new Dictionary<string, object?> { ["city"] = "London" }),
             ], ct),
-            SendClientMessageAsyncCallback = (msg, _) =>
+            SendAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -194,7 +194,7 @@ public class FunctionInvokingRealtimeSessionTests
         {
             Options = new RealtimeSessionOptions { Tools = [countFunc] },
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(messages, ct),
-            SendClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
+            SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
         using var session = new FunctionInvokingRealtimeSession(inner)
@@ -231,7 +231,7 @@ public class FunctionInvokingRealtimeSessionTests
             [
                 CreateFunctionCallOutputItemMessage("call_custom", "my_func", null),
             ], ct),
-            SendClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
+            SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
         using var session = new FunctionInvokingRealtimeSession(inner)
@@ -261,7 +261,7 @@ public class FunctionInvokingRealtimeSessionTests
             [
                 CreateFunctionCallOutputItemMessage("call_unknown", "nonexistent_func", null),
             ], ct),
-            SendClientMessageAsyncCallback = (msg, _) =>
+            SendAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -298,7 +298,7 @@ public class FunctionInvokingRealtimeSessionTests
             [
                 CreateFunctionCallOutputItemMessage("call_fail", "fail_func", null),
             ], ct),
-            SendClientMessageAsyncCallback = (msg, _) =>
+            SendAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -337,7 +337,7 @@ public class FunctionInvokingRealtimeSessionTests
             [
                 CreateFunctionCallOutputItemMessage("call_fail2", "fail_func", null),
             ], ct),
-            SendClientMessageAsyncCallback = (msg, _) =>
+            SendAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -367,7 +367,7 @@ public class FunctionInvokingRealtimeSessionTests
         using var session = new FunctionInvokingRealtimeSession(inner);
 
         Assert.Same(session, session.GetService(typeof(FunctionInvokingRealtimeSession)));
-        Assert.Same(session, session.GetService(typeof(IRealtimeSession)));
+        Assert.Same(session, session.GetService(typeof(IRealtimeClientSession)));
         Assert.Same(inner, session.GetService(typeof(TestRealtimeSession)));
     }
 
@@ -382,7 +382,7 @@ public class FunctionInvokingRealtimeSessionTests
                 CreateFunctionCallOutputItemMessage("call_unknown", "nonexistent_func", null),
                 new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseDone, MessageId = "should_not_reach" },
             ], ct),
-            SendClientMessageAsyncCallback = (msg, _) =>
+            SendAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -417,7 +417,7 @@ public class FunctionInvokingRealtimeSessionTests
             [
                 CreateFunctionCallOutputItemMessage("call_unknown", "nonexistent_func", null),
             ], ct),
-            SendClientMessageAsyncCallback = (msg, _) =>
+            SendAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;
@@ -499,7 +499,7 @@ public class FunctionInvokingRealtimeSessionTests
         {
             Options = new RealtimeSessionOptions { Tools = [slowFunc] },
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages([combinedMessage], ct),
-            SendClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
+            SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
         using var session = new FunctionInvokingRealtimeSession(inner)
@@ -542,7 +542,7 @@ public class FunctionInvokingRealtimeSessionTests
         {
             Options = new RealtimeSessionOptions { Tools = [failFunc] },
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(messages, ct),
-            SendClientMessageAsyncCallback = (_, _) => Task.CompletedTask,
+            SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
         using var session = new FunctionInvokingRealtimeSession(inner)
@@ -608,7 +608,7 @@ public class FunctionInvokingRealtimeSessionTests
                 CreateFunctionCallOutputItemMessage("call_decl", "my_declaration", null),
                 new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseDone, MessageId = "should_not_reach" },
             ], ct),
-            SendClientMessageAsyncCallback = (msg, _) =>
+            SendAsyncCallback = (msg, _) =>
             {
                 injectedMessages.Add(msg);
                 return Task.CompletedTask;

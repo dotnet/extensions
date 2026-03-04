@@ -18,7 +18,7 @@ public interface IRealtimeClient : IDisposable
     /// <param name="options">The session options.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The created real-time session.</returns>
-    Task<IRealtimeSession> CreateSessionAsync(RealtimeSessionOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IRealtimeClientSession> CreateSessionAsync(RealtimeSessionOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>Asks the <see cref="IRealtimeClient"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>

@@ -23,9 +23,9 @@ using Sdk = OpenAI.Realtime;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents an <see cref="IRealtimeSession"/> for the OpenAI Realtime API over WebSocket.</summary>
+/// <summary>Represents an <see cref="IRealtimeClientSession"/> for the OpenAI Realtime API over WebSocket.</summary>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class OpenAIRealtimeSession : IRealtimeSession
+public sealed class OpenAIRealtimeSession : IRealtimeClientSession
 {
     /// <summary>The model to use for the session.</summary>
     private readonly string _model;
@@ -114,7 +114,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
     }
 
     /// <inheritdoc />
-    public async Task SendClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
+    public async Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(message);
 
@@ -183,7 +183,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
     }
 
     /// <inheritdoc />
-    object? IRealtimeSession.GetService(Type serviceType, object? serviceKey)
+    object? IRealtimeClientSession.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 

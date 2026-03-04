@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents a real-time session.</summary>
 /// <remarks>This interface provides methods to manage a real-time session and to interact with the real-time model.</remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public interface IRealtimeSession : IDisposable, IAsyncDisposable
+public interface IRealtimeClientSession : IDisposable, IAsyncDisposable
 {
     /// <summary>Updates the session with new options.</summary>
     /// <param name="options">The new session options.</param>
@@ -35,7 +35,7 @@ public interface IRealtimeSession : IDisposable, IAsyncDisposable
     /// <remarks>
     /// This method allows for sending client messages to the session at any time, which can be used to influence the session's behavior or state.
     /// </remarks>
-    Task SendClientMessageAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default);
+    Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default);
 
     /// <summary>Streams the response from the real-time session.</summary>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
@@ -46,13 +46,13 @@ public interface IRealtimeSession : IDisposable, IAsyncDisposable
     IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
             CancellationToken cancellationToken = default);
 
-    /// <summary>Asks the <see cref="IRealtimeSession"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
+    /// <summary>Asks the <see cref="IRealtimeClientSession"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>
     /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly typed services that might be provided by the <see cref="IRealtimeSession"/>,
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that might be provided by the <see cref="IRealtimeClientSession"/>,
     /// including itself or any services it might be wrapping.
     /// </remarks>
     object? GetService(Type serviceType, object? serviceKey = null);

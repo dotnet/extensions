@@ -13,7 +13,7 @@ public class RealtimeSessionExtensionsTests
     [Fact]
     public void GetService_NullSession_Throws()
     {
-        Assert.Throws<ArgumentNullException>("session", () => ((IRealtimeSession)null!).GetService<IRealtimeSession>());
+        Assert.Throws<ArgumentNullException>("session", () => ((IRealtimeClientSession)null!).GetService<IRealtimeClientSession>());
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class RealtimeSessionExtensionsTests
     public void GetService_ReturnsInterfaceType()
     {
         using var session = new TestRealtimeSession();
-        var result = session.GetService<IRealtimeSession>();
+        var result = session.GetService<IRealtimeClientSession>();
         Assert.Same(session, result);
     }
 }

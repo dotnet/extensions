@@ -7,21 +7,21 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides a collection of static methods for extending <see cref="IRealtimeSession"/> instances.</summary>
+/// <summary>Provides a collection of static methods for extending <see cref="IRealtimeClientSession"/> instances.</summary>
 [Experimental("MEAI001")]
 public static class RealtimeSessionExtensions
 {
-    /// <summary>Asks the <see cref="IRealtimeSession"/> for an object of type <typeparamref name="TService"/>.</summary>
+    /// <summary>Asks the <see cref="IRealtimeClientSession"/> for an object of type <typeparamref name="TService"/>.</summary>
     /// <typeparam name="TService">The type of the object to be retrieved.</typeparam>
     /// <param name="session">The session.</param>
     /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the <see cref="IRealtimeSession"/>,
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the <see cref="IRealtimeClientSession"/>,
     /// including itself or any services it might be wrapping.
     /// </remarks>
-    public static TService? GetService<TService>(this IRealtimeSession session, object? serviceKey = null)
+    public static TService? GetService<TService>(this IRealtimeClientSession session, object? serviceKey = null)
     {
         _ = Throw.IfNull(session);
 

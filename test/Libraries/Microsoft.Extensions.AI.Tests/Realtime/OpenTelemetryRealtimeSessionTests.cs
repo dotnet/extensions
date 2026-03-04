@@ -87,7 +87,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -339,7 +339,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -388,7 +388,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -480,7 +480,7 @@ public class OpenTelemetryRealtimeSessionTests
         var self = session.GetService(typeof(OpenTelemetryRealtimeSession));
         Assert.Same(session, self);
 
-        var realtime = session.GetService(typeof(IRealtimeSession));
+        var realtime = session.GetService(typeof(IRealtimeClientSession));
         Assert.Same(session, realtime);
     }
 
@@ -523,7 +523,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -574,7 +574,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -613,7 +613,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -653,7 +653,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -692,7 +692,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -729,7 +729,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesWithToolResultAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -772,7 +772,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -815,7 +815,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesWithToolResultAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -900,7 +900,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -943,7 +943,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -986,7 +986,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesWithInstructionsAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -1028,7 +1028,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesWithItemsAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -1070,7 +1070,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -1111,7 +1111,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -1152,7 +1152,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -1193,7 +1193,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesWithTextContentAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())
@@ -1234,7 +1234,7 @@ public class OpenTelemetryRealtimeSessionTests
 
         await foreach (var msg in GetClientMessagesWithImageContentAsync())
         {
-            await session.SendClientMessageAsync(msg);
+            await session.SendAsync(msg);
         }
 
         await foreach (var response in session.GetStreamingResponseAsync())

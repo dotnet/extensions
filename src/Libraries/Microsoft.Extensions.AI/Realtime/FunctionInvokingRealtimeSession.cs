@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// <para>
 /// When this session receives a <see cref="FunctionCallContent"/> in a realtime server message from its inner
-/// <see cref="IRealtimeSession"/>, it responds by invoking the corresponding <see cref="AIFunction"/> defined
+/// <see cref="IRealtimeClientSession"/>, it responds by invoking the corresponding <see cref="AIFunction"/> defined
 /// in <see cref="RealtimeClientResponseCreateMessage.Tools"/> (or in <see cref="AdditionalTools"/>), producing a <see cref="FunctionResultContent"/>
 /// that it sends back to the inner session. This loop is repeated until there are no more function calls to make, or until
 /// another stop condition is met, such as hitting <see cref="MaximumIterationsPerRequest"/>.
@@ -67,10 +67,10 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingRealtimeSession"/> class.
     /// </summary>
-    /// <param name="innerSession">The underlying <see cref="IRealtimeSession"/>, or the next instance in a chain of sessions.</param>
+    /// <param name="innerSession">The underlying <see cref="IRealtimeClientSession"/>, or the next instance in a chain of sessions.</param>
     /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> to use for logging information about function invocation.</param>
     /// <param name="functionInvocationServices">An optional <see cref="IServiceProvider"/> to use for resolving services required by the <see cref="AIFunction"/> instances being invoked.</param>
-    public FunctionInvokingRealtimeSession(IRealtimeSession innerSession, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
+    public FunctionInvokingRealtimeSession(IRealtimeClientSession innerSession, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
         : base(innerSession)
     {
         _logger = (ILogger?)loggerFactory?.CreateLogger<FunctionInvokingRealtimeSession>() ?? NullLogger.Instance;
@@ -98,11 +98,11 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
 
     /// <summary>
     /// Gets or sets a value indicating whether detailed exception information should be included
-    /// in the response when calling the underlying <see cref="IRealtimeSession"/>.
+    /// in the response when calling the underlying <see cref="IRealtimeClientSession"/>.
     /// </summary>
     /// <value>
     /// <see langword="true"/> if the full exception message is added to the response
-    /// when calling the underlying <see cref="IRealtimeSession"/>.
+    /// when calling the underlying <see cref="IRealtimeClientSession"/>.
     /// <see langword="false"/> if a generic error message is included in the response.
     /// The default value is <see langword="false"/>.
     /// </value>
@@ -114,7 +114,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
     /// the <see cref="FunctionResultContent.Exception"/> property.
     /// </para>
     /// <para>
-    /// Setting the value to <see langword="true"/> can help the underlying <see cref="IRealtimeSession"/> bypass problems on
+    /// Setting the value to <see langword="true"/> can help the underlying <see cref="IRealtimeClientSession"/> bypass problems on
     /// its own, for example by retrying the function call with different arguments. However it might
     /// result in disclosing the raw exception information to external users, which can be a security
     /// concern depending on the application scenario.
@@ -186,7 +186,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
     /// <para>
     /// When function invocations fail with an exception, the <see cref="FunctionInvokingRealtimeSession"/>
     /// continues to send responses to the inner session, optionally supplying exception information (as
-    /// controlled by <see cref="IncludeDetailedErrors"/>). This allows the <see cref="IRealtimeSession"/> to
+    /// controlled by <see cref="IncludeDetailedErrors"/>). This allows the <see cref="IRealtimeClientSession"/> to
     /// recover from errors by trying other function parameters that might succeed.
     /// </para>
     /// <para>
@@ -305,7 +305,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
                 foreach (var resultMessage in results.functionResults)
                 {
                     // inject back the function result messages to the inner session
-                    await InnerSession.SendClientMessageAsync(resultMessage, cancellationToken).ConfigureAwait(false);
+                    await InnerSession.SendAsync(resultMessage, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
