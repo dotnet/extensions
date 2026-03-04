@@ -18,6 +18,7 @@ using Xunit;
 
 #pragma warning disable S103 // Lines should not be too long
 #pragma warning disable MEAI001
+#pragma warning disable OPENAI001
 
 namespace Microsoft.Extensions.AI;
 
@@ -84,11 +85,11 @@ public class OpenAIHostedFileClientTests
     }
 
     [Fact]
-    public async Task Upload_DefaultPurpose_SendsAssistants()
+    public async Task Upload_DefaultPurpose_SendsUserData()
     {
         const string ExpectedInput = """
             {
-                "purpose": "assistants"
+                "purpose": "user_data"
             }
             """;
 
@@ -99,7 +100,7 @@ public class OpenAIHostedFileClientTests
                 "bytes": 140,
                 "created_at": 1613677385,
                 "filename": "mydata.jsonl",
-                "purpose": "assistants"
+                "purpose": "user_data"
             }
             """;
 
@@ -111,9 +112,9 @@ public class OpenAIHostedFileClientTests
         var result = await client.UploadAsync(stream);
 
         Assert.NotNull(result);
-        Assert.Equal("file-abc123", result.Id);
+        Assert.Equal("file-abc123", result.FileId);
         Assert.Equal("mydata.jsonl", result.Name);
-        Assert.Equal("Assistants", result.Purpose);
+        Assert.Equal("UserData", result.Purpose);
         Assert.Equal(140, result.SizeInBytes);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_613_677_385), result.CreatedAt);
         Assert.Equal("application/x-ndjson", result.MediaType);
@@ -145,10 +146,10 @@ public class OpenAIHostedFileClientTests
         using IHostedFileClient client = CreateFileClient(httpClient);
 
         using var stream = new MemoryStream(new byte[] { 0x01, 0x02 });
-        var result = await client.UploadAsync(stream, options: new HostedFileUploadOptions { Purpose = "fine-tune" });
+        var result = await client.UploadAsync(stream, options: new HostedFileClientOptions { Purpose = "fine-tune" });
 
         Assert.NotNull(result);
-        Assert.Equal("file-def456", result.Id);
+        Assert.Equal("file-def456", result.FileId);
         Assert.Equal("FineTune", result.Purpose);
     }
 
@@ -200,7 +201,7 @@ public class OpenAIHostedFileClientTests
         var result = await client.GetFileInfoAsync("file-abc123");
 
         Assert.NotNull(result);
-        Assert.Equal("file-abc123", result.Id);
+        Assert.Equal("file-abc123", result.FileId);
         Assert.Equal("mydata.jsonl", result.Name);
         Assert.Equal(140, result.SizeInBytes);
         Assert.Equal("Assistants", result.Purpose);
@@ -260,14 +261,14 @@ public class OpenAIHostedFileClientTests
 
         Assert.Equal(2, files.Count);
 
-        Assert.Equal("file-abc123", files[0].Id);
+        Assert.Equal("file-abc123", files[0].FileId);
         Assert.Equal("a.jsonl", files[0].Name);
         Assert.Equal(140, files[0].SizeInBytes);
         Assert.Equal("Assistants", files[0].Purpose);
         Assert.Equal("application/x-ndjson", files[0].MediaType);
         Assert.NotNull(files[0].RawRepresentation);
 
-        Assert.Equal("file-def456", files[1].Id);
+        Assert.Equal("file-def456", files[1].FileId);
         Assert.Equal("b.jsonl", files[1].Name);
         Assert.Equal(200, files[1].SizeInBytes);
         Assert.Equal("FineTune", files[1].Purpose);
@@ -293,7 +294,7 @@ public class OpenAIHostedFileClientTests
         using HttpClient httpClient = new(handler);
         using IHostedFileClient client = CreateFileClient(httpClient);
 
-        var files = await CollectAsync(client.ListFilesAsync(new HostedFileListOptions { Limit = 2 }));
+        var files = await CollectAsync(client.ListFilesAsync(new HostedFileClientOptions { Limit = 2 }));
 
         Assert.Equal(2, files.Count);
     }
@@ -314,10 +315,10 @@ public class OpenAIHostedFileClientTests
         using HttpClient httpClient = new(handler);
         using IHostedFileClient client = CreateFileClient(httpClient);
 
-        var files = await CollectAsync(client.ListFilesAsync(new HostedFileListOptions { Purpose = "assistants" }));
+        var files = await CollectAsync(client.ListFilesAsync(new HostedFileClientOptions { Purpose = "assistants" }));
 
         Assert.Single(files);
-        Assert.Equal("file-abc123", files[0].Id);
+        Assert.Equal("file-abc123", files[0].FileId);
         Assert.Equal("Assistants", files[0].Purpose);
     }
 
@@ -379,7 +380,7 @@ public class OpenAIHostedFileClientTests
 
         using var stream = new MemoryStream(new byte[] { 0x01 });
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => client.UploadAsync(stream, options: new HostedFileUploadOptions { Scope = "container-123" }));
+            () => client.UploadAsync(stream, options: new HostedFileClientOptions { Scope = "container-123" }));
     }
 
     [Fact]
@@ -389,7 +390,7 @@ public class OpenAIHostedFileClientTests
         using IHostedFileClient client = CreateFileOnlyClient(httpClient);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => client.DownloadAsync("file-abc123", new HostedFileDownloadOptions { Scope = "container-123" }));
+            () => client.DownloadAsync("file-abc123", new HostedFileClientOptions { Scope = "container-123" }));
     }
 
     [Fact]
@@ -399,7 +400,7 @@ public class OpenAIHostedFileClientTests
         using IHostedFileClient client = CreateFileOnlyClient(httpClient);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => client.GetFileInfoAsync("file-abc123", new HostedFileGetOptions { Scope = "container-123" }));
+            () => client.GetFileInfoAsync("file-abc123", new HostedFileClientOptions { Scope = "container-123" }));
     }
 
     [Fact]
@@ -409,7 +410,7 @@ public class OpenAIHostedFileClientTests
         using IHostedFileClient client = CreateFileOnlyClient(httpClient);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await CollectAsync(client.ListFilesAsync(new HostedFileListOptions { Scope = "container-123" })));
+            async () => await CollectAsync(client.ListFilesAsync(new HostedFileClientOptions { Scope = "container-123" })));
     }
 
     [Fact]
@@ -419,7 +420,7 @@ public class OpenAIHostedFileClientTests
         using IHostedFileClient client = CreateFileOnlyClient(httpClient);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => client.DeleteAsync("file-abc123", new HostedFileDeleteOptions { Scope = "container-123" }));
+            () => client.DeleteAsync("file-abc123", new HostedFileClientOptions { Scope = "container-123" }));
     }
 
     [Fact]
@@ -658,9 +659,9 @@ public class OpenAIHostedFileClientTests
         using IHostedFileClient client = CreateFileClient(httpClient);
 
         using var contentStream = new MemoryStream(new byte[] { 1, 2, 3 });
-        var result = await client.UploadAsync(contentStream, "text/csv", "data.csv", new HostedFileUploadOptions { Scope = "ctr-123" });
+        var result = await client.UploadAsync(contentStream, "text/csv", "data.csv", new HostedFileClientOptions { Scope = "ctr-123" });
 
-        Assert.Equal("cfile-abc", result.Id);
+        Assert.Equal("cfile-abc", result.FileId);
         Assert.Equal("data.csv", result.Name);
         Assert.Equal("text/csv", result.MediaType);
     }
@@ -683,7 +684,7 @@ public class OpenAIHostedFileClientTests
         using IHostedFileClient client = CreateFileClient(httpClient);
 
         using var contentStream = new MemoryStream(new byte[] { 1, 2, 3 });
-        await client.UploadAsync(contentStream, "text/csv", "data.csv", new HostedFileUploadOptions { Scope = "ctr-123" });
+        await client.UploadAsync(contentStream, "text/csv", "data.csv", new HostedFileClientOptions { Scope = "ctr-123" });
 
         // The caller's stream should still be usable after upload completes.
         contentStream.Position = 0;
@@ -712,7 +713,7 @@ public class OpenAIHostedFileClientTests
         using HttpClient httpClient = new(handler);
         using IHostedFileClient client = CreateFileClient(httpClient);
 
-        using var stream = await client.DownloadAsync("cfile-1", new HostedFileDownloadOptions { Scope = "ctr-123" });
+        using var stream = await client.DownloadAsync("cfile-1", new HostedFileClientOptions { Scope = "ctr-123" });
 
         Assert.Equal("text/plain", stream.MediaType);
         Assert.Equal("data.txt", stream.FileName);
@@ -739,13 +740,12 @@ public class OpenAIHostedFileClientTests
         using HttpClient httpClient = new(handler);
         using IHostedFileClient client = CreateFileClient(httpClient);
 
-        var result = await client.GetFileInfoAsync("cfile-1", new HostedFileGetOptions { Scope = "ctr-123" });
+        var result = await client.GetFileInfoAsync("cfile-1", new HostedFileClientOptions { Scope = "ctr-123" });
 
         Assert.NotNull(result);
-        Assert.Equal("cfile-1", result.Id);
+        Assert.Equal("cfile-1", result.FileId);
         Assert.Equal("report.pdf", result.Name);
         Assert.Equal("application/pdf", result.MediaType);
-        Assert.NotNull(result.RawRepresentation);
     }
 
     [Fact]
@@ -755,7 +755,7 @@ public class OpenAIHostedFileClientTests
         using HttpClient httpClient = new(handler);
         using IHostedFileClient client = CreateFileClient(httpClient);
 
-        var result = await client.GetFileInfoAsync("cfile-nonexistent", new HostedFileGetOptions { Scope = "ctr-123" });
+        var result = await client.GetFileInfoAsync("cfile-nonexistent", new HostedFileClientOptions { Scope = "ctr-123" });
 
         Assert.Null(result);
     }
@@ -782,19 +782,17 @@ public class OpenAIHostedFileClientTests
         using HttpClient httpClient = new(handler);
         using IHostedFileClient client = CreateFileClient(httpClient);
 
-        var files = await CollectAsync(client.ListFilesAsync(new HostedFileListOptions { Scope = "ctr-123" }));
+        var files = await CollectAsync(client.ListFilesAsync(new HostedFileClientOptions { Scope = "ctr-123" }));
 
         Assert.Equal(2, files.Count);
 
-        Assert.Equal("cfile-1", files[0].Id);
+        Assert.Equal("cfile-1", files[0].FileId);
         Assert.Equal("file1.txt", files[0].Name);
         Assert.Equal("text/plain", files[0].MediaType);
-        Assert.NotNull(files[0].RawRepresentation);
 
-        Assert.Equal("cfile-2", files[1].Id);
+        Assert.Equal("cfile-2", files[1].FileId);
         Assert.Equal("file2.csv", files[1].Name);
         Assert.Equal("text/csv", files[1].MediaType);
-        Assert.NotNull(files[1].RawRepresentation);
     }
 
     [Fact]
@@ -808,7 +806,7 @@ public class OpenAIHostedFileClientTests
         using HttpClient httpClient = new(handler);
         using IHostedFileClient client = CreateFileClient(httpClient);
 
-        var result = await client.DeleteAsync("cfile-1", new HostedFileDeleteOptions { Scope = "ctr-123" });
+        var result = await client.DeleteAsync("cfile-1", new HostedFileClientOptions { Scope = "ctr-123" });
 
         Assert.True(result);
     }
@@ -820,7 +818,7 @@ public class OpenAIHostedFileClientTests
         using HttpClient httpClient = new(handler);
         using IHostedFileClient client = CreateFileClient(httpClient);
 
-        var result = await client.DeleteAsync("cfile-nonexistent", new HostedFileDeleteOptions { Scope = "ctr-123" });
+        var result = await client.DeleteAsync("cfile-nonexistent", new HostedFileClientOptions { Scope = "ctr-123" });
 
         Assert.False(result);
     }
@@ -848,8 +846,41 @@ public class OpenAIHostedFileClientTests
         var result = await client.GetFileInfoAsync("cfile-1");
 
         Assert.NotNull(result);
-        Assert.Equal("cfile-1", result.Id);
+        Assert.Equal("cfile-1", result.FileId);
         Assert.Equal("test.txt", result.Name);
+    }
+
+    [Fact]
+    public async Task Upload_WithScope_RawRepresentationFactory_IsInvoked()
+    {
+        using var handler = new RoutingHandler(request =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                    {
+                        "id": "cfile-abc",
+                        "object": "container.file",
+                        "path": "uploads/data.csv"
+                    }
+                    """, Encoding.UTF8, "application/json")
+            });
+        using HttpClient httpClient = new(handler);
+        using IHostedFileClient client = CreateFileClient(httpClient);
+
+        IHostedFileClient? capturedClient = null;
+        using var contentStream = new MemoryStream(new byte[] { 1, 2, 3 });
+        var result = await client.UploadAsync(contentStream, "text/csv", "data.csv", new HostedFileClientOptions
+        {
+            Scope = "ctr-123",
+            RawRepresentationFactory = c =>
+            {
+                capturedClient = c;
+                return null;
+            }
+        });
+
+        Assert.Same(client, capturedClient);
+        Assert.Equal("cfile-abc", result.FileId);
     }
 
     private static IHostedFileClient CreateFileClient(HttpClient httpClient) =>

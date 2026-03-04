@@ -52,7 +52,7 @@ public abstract class HostedFileDownloadStream : Stream
     public virtual string? FileName => null;
 
     /// <summary>
-    /// Reads the entire stream content and returns it as a <see cref="DataContent"/>.
+    /// Reads the entire stream content from its current position and returns it as a <see cref="DataContent"/>.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="DataContent"/> containing the buffered file content.</returns>

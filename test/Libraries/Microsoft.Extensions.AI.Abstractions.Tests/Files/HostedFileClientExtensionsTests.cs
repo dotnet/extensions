@@ -28,7 +28,7 @@ public class HostedFileClientExtensionsTests
                 capturedStream = stream;
                 capturedMediaType = mediaType;
                 capturedName = fileName;
-                return Task.FromResult(new HostedFile("file-1"));
+                return Task.FromResult(new HostedFileContent("file-1"));
             }
         };
         var result = await client.UploadAsync(content);
@@ -39,7 +39,7 @@ public class HostedFileClientExtensionsTests
         Assert.Equal(data, buffer);
         Assert.Equal("application/pdf", capturedMediaType);
         Assert.Equal("doc.pdf", capturedName);
-        Assert.Equal("file-1", result.Id);
+        Assert.Equal("file-1", result.FileId);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class HostedFileClientExtensionsTests
                     capturedStream = ms;
                     capturedMediaType = mediaType;
                     capturedFileName = fileName;
-                    return new HostedFile("file-2");
+                    return new HostedFileContent("file-2");
                 }
             };
             var result = await client.UploadAsync(tempFile);
@@ -87,7 +87,7 @@ public class HostedFileClientExtensionsTests
             Assert.Equal(fileContent, ((MemoryStream)capturedStream!).ToArray());
             Assert.Equal("text/plain", capturedMediaType);
             Assert.Equal(Path.GetFileName(tempFile), capturedFileName);
-            Assert.Equal("file-2", result.Id);
+            Assert.Equal("file-2", result.FileId);
         }
         finally
         {
@@ -259,6 +259,45 @@ public class HostedFileClientExtensionsTests
     {
         using var client = new TestHostedFileClient();
         await Assert.ThrowsAsync<ArgumentNullException>("hostedFile", () => client.DownloadAsync((HostedFileContent)null!));
+    }
+
+    [Fact]
+    public async Task DownloadAsync_HostedFileContent_FlowsScope()
+    {
+        var hostedFileContent = new HostedFileContent("file-scoped") { Scope = "container-42" };
+        HostedFileClientOptions? capturedOptions = null;
+
+        using var client = new TestHostedFileClient
+        {
+            DownloadAsyncCallback = (fileId, options, ct) =>
+            {
+                capturedOptions = options;
+                return Task.FromResult<HostedFileDownloadStream>(new TestHostedFileDownloadStream([]));
+            }
+        };
+        using var stream = await client.DownloadAsync(hostedFileContent);
+        Assert.NotNull(capturedOptions);
+        Assert.Equal("container-42", capturedOptions.Scope);
+    }
+
+    [Fact]
+    public async Task DownloadAsync_HostedFileContent_ExplicitOptionsScopeWins()
+    {
+        var hostedFileContent = new HostedFileContent("file-scoped") { Scope = "container-from-content" };
+        var explicitOptions = new HostedFileClientOptions { Scope = "container-from-options" };
+        HostedFileClientOptions? capturedOptions = null;
+
+        using var client = new TestHostedFileClient
+        {
+            DownloadAsyncCallback = (fileId, options, ct) =>
+            {
+                capturedOptions = options;
+                return Task.FromResult<HostedFileDownloadStream>(new TestHostedFileDownloadStream([]));
+            }
+        };
+        using var stream = await client.DownloadAsync(hostedFileContent, explicitOptions);
+        Assert.NotNull(capturedOptions);
+        Assert.Equal("container-from-options", capturedOptions.Scope);
     }
 
     [Fact]

@@ -3,6 +3,8 @@
 
 #pragma warning disable MEAI001
 
+using System;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -10,121 +12,58 @@ namespace Microsoft.Extensions.AI;
 public class HostedFileClientOptionsTests
 {
     [Fact]
-    public void UploadOptions_PropsDefault()
+    public void PropsDefault()
     {
-        var options = new HostedFileUploadOptions();
+        var options = new HostedFileClientOptions();
         Assert.Null(options.Purpose);
+        Assert.Null(options.Limit);
         Assert.Null(options.Scope);
+        Assert.Null(options.RawRepresentationFactory);
         Assert.Null(options.AdditionalProperties);
     }
 
     [Fact]
-    public void UploadOptions_PropsRoundtrip()
+    public void PropsRoundtrip()
     {
         var props = new AdditionalPropertiesDictionary { { "key", "value" } };
-        var options = new HostedFileUploadOptions
+        Func<IHostedFileClient, object?> factory = _ => "raw";
+        var options = new HostedFileClientOptions
         {
             Purpose = "fine-tune",
+            Limit = 50,
             Scope = "container-1",
+            RawRepresentationFactory = factory,
             AdditionalProperties = props
         };
 
         Assert.Equal("fine-tune", options.Purpose);
-        Assert.Equal("container-1", options.Scope);
-        Assert.Same(props, options.AdditionalProperties);
-    }
-
-    [Fact]
-    public void DownloadOptions_PropsDefault()
-    {
-        var options = new HostedFileDownloadOptions();
-        Assert.Null(options.Scope);
-        Assert.Null(options.AdditionalProperties);
-    }
-
-    [Fact]
-    public void DownloadOptions_PropsRoundtrip()
-    {
-        var props = new AdditionalPropertiesDictionary { { "key", "value" } };
-        var options = new HostedFileDownloadOptions
-        {
-            Scope = "scope-1",
-            AdditionalProperties = props
-        };
-
-        Assert.Equal("scope-1", options.Scope);
-        Assert.Same(props, options.AdditionalProperties);
-    }
-
-    [Fact]
-    public void GetOptions_PropsDefault()
-    {
-        var options = new HostedFileGetOptions();
-        Assert.Null(options.Scope);
-        Assert.Null(options.AdditionalProperties);
-    }
-
-    [Fact]
-    public void GetOptions_PropsRoundtrip()
-    {
-        var props = new AdditionalPropertiesDictionary { { "k", "v" } };
-        var options = new HostedFileGetOptions
-        {
-            Scope = "scope-2",
-            AdditionalProperties = props
-        };
-
-        Assert.Equal("scope-2", options.Scope);
-        Assert.Same(props, options.AdditionalProperties);
-    }
-
-    [Fact]
-    public void DeleteOptions_PropsDefault()
-    {
-        var options = new HostedFileDeleteOptions();
-        Assert.Null(options.Scope);
-        Assert.Null(options.AdditionalProperties);
-    }
-
-    [Fact]
-    public void DeleteOptions_PropsRoundtrip()
-    {
-        var props = new AdditionalPropertiesDictionary { { "k", "v" } };
-        var options = new HostedFileDeleteOptions
-        {
-            Scope = "scope-3",
-            AdditionalProperties = props
-        };
-
-        Assert.Equal("scope-3", options.Scope);
-        Assert.Same(props, options.AdditionalProperties);
-    }
-
-    [Fact]
-    public void ListOptions_PropsDefault()
-    {
-        var options = new HostedFileListOptions();
-        Assert.Null(options.Purpose);
-        Assert.Null(options.Limit);
-        Assert.Null(options.Scope);
-        Assert.Null(options.AdditionalProperties);
-    }
-
-    [Fact]
-    public void ListOptions_PropsRoundtrip()
-    {
-        var props = new AdditionalPropertiesDictionary { { "k", "v" } };
-        var options = new HostedFileListOptions
-        {
-            Purpose = "assistants",
-            Limit = 50,
-            Scope = "scope-4",
-            AdditionalProperties = props
-        };
-
-        Assert.Equal("assistants", options.Purpose);
         Assert.Equal(50, options.Limit);
-        Assert.Equal("scope-4", options.Scope);
+        Assert.Equal("container-1", options.Scope);
+        Assert.Same(factory, options.RawRepresentationFactory);
         Assert.Same(props, options.AdditionalProperties);
+    }
+
+    [Fact]
+    public void JsonSerialization_Roundtrips()
+    {
+        HostedFileClientOptions options = new()
+        {
+            Purpose = "fine-tune",
+            Limit = 50,
+            Scope = "container-1",
+            AdditionalProperties = new() { { "key", "value" } },
+        };
+
+        string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.HostedFileClientOptions);
+
+        HostedFileClientOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.HostedFileClientOptions);
+        Assert.NotNull(deserialized);
+
+        Assert.Equal("fine-tune", deserialized.Purpose);
+        Assert.Equal(50, deserialized.Limit);
+        Assert.Equal("container-1", deserialized.Scope);
+        Assert.Null(deserialized.RawRepresentationFactory);
+        Assert.NotNull(deserialized.AdditionalProperties);
+        Assert.Equal("value", deserialized.AdditionalProperties["key"]?.ToString());
     }
 }

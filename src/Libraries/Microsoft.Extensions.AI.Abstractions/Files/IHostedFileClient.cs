@@ -40,11 +40,11 @@ public interface IHostedFileClient : IDisposable
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>Information about the uploaded file.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="content"/> is <see langword="null"/>.</exception>
-    Task<HostedFile> UploadAsync(
+    Task<HostedFileContent> UploadAsync(
         Stream content,
         string? mediaType = null,
         string? fileName = null,
-        HostedFileUploadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -60,7 +60,7 @@ public interface IHostedFileClient : IDisposable
     /// <exception cref="ArgumentException"><paramref name="fileId"/> is empty or whitespace.</exception>
     Task<HostedFileDownloadStream> DownloadAsync(
         string fileId,
-        HostedFileDownloadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -72,9 +72,9 @@ public interface IHostedFileClient : IDisposable
     /// <returns>Information about the file, or <see langword="null"/> if not found.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="fileId"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="fileId"/> is empty or whitespace.</exception>
-    Task<HostedFile?> GetFileInfoAsync(
+    Task<HostedFileContent?> GetFileInfoAsync(
         string fileId,
-        HostedFileGetOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -83,8 +83,8 @@ public interface IHostedFileClient : IDisposable
     /// <param name="options">Options to configure the listing.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>An async enumerable of file information.</returns>
-    IAsyncEnumerable<HostedFile> ListFilesAsync(
-        HostedFileListOptions? options = null,
+    IAsyncEnumerable<HostedFileContent> ListFilesAsync(
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -98,7 +98,7 @@ public interface IHostedFileClient : IDisposable
     /// <exception cref="ArgumentException"><paramref name="fileId"/> is empty or whitespace.</exception>
     Task<bool> DeleteAsync(
         string fileId,
-        HostedFileDeleteOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

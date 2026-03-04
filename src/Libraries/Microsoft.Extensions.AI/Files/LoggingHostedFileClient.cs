@@ -56,8 +56,8 @@ public sealed partial class LoggingHostedFileClient : DelegatingHostedFileClient
     }
 
     /// <inheritdoc/>
-    public override async Task<HostedFile> UploadAsync(
-        Stream content, string? mediaType = null, string? fileName = null, HostedFileUploadOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<HostedFileContent> UploadAsync(
+        Stream content, string? mediaType = null, string? fileName = null, HostedFileClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         fileName ??= content is FileStream fs ? Path.GetFileName(fs.Name) : null;
         mediaType ??= fileName is not null ? MediaTypeMap.GetMediaType(fileName) : null;
@@ -106,7 +106,7 @@ public sealed partial class LoggingHostedFileClient : DelegatingHostedFileClient
 
     /// <inheritdoc/>
     public override async Task<HostedFileDownloadStream> DownloadAsync(
-        string fileId, HostedFileDownloadOptions? options = null, CancellationToken cancellationToken = default)
+        string fileId, HostedFileClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
@@ -141,8 +141,8 @@ public sealed partial class LoggingHostedFileClient : DelegatingHostedFileClient
     }
 
     /// <inheritdoc/>
-    public override async Task<HostedFile?> GetFileInfoAsync(
-        string fileId, HostedFileGetOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<HostedFileContent?> GetFileInfoAsync(
+        string fileId, HostedFileClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
@@ -187,8 +187,8 @@ public sealed partial class LoggingHostedFileClient : DelegatingHostedFileClient
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<HostedFile> ListFilesAsync(
-        HostedFileListOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<HostedFileContent> ListFilesAsync(
+        HostedFileClientOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
@@ -202,7 +202,7 @@ public sealed partial class LoggingHostedFileClient : DelegatingHostedFileClient
             }
         }
 
-        IAsyncEnumerator<HostedFile> e;
+        IAsyncEnumerator<HostedFileContent> e;
         try
         {
             e = base.ListFilesAsync(options, cancellationToken).GetAsyncEnumerator(cancellationToken);
@@ -220,7 +220,7 @@ public sealed partial class LoggingHostedFileClient : DelegatingHostedFileClient
 
         try
         {
-            HostedFile? file = null;
+            HostedFileContent? file = null;
             while (true)
             {
                 try
@@ -261,7 +261,7 @@ public sealed partial class LoggingHostedFileClient : DelegatingHostedFileClient
 
     /// <inheritdoc/>
     public override async Task<bool> DeleteAsync(
-        string fileId, HostedFileDeleteOptions? options = null, CancellationToken cancellationToken = default)
+        string fileId, HostedFileClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
@@ -331,8 +331,8 @@ public sealed partial class LoggingHostedFileClient : DelegatingHostedFileClient
     [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {HostedFileResult}.")]
     private partial void LogCompletedSensitive(string methodName, string hostedFileResult);
 
-    [LoggerMessage(LogLevel.Trace, "ListFilesAsync received item: {HostedFile}")]
-    private partial void LogListItemSensitive(string hostedFile);
+    [LoggerMessage(LogLevel.Trace, "ListFilesAsync received item: {HostedFileContent}")]
+    private partial void LogListItemSensitive(string hostedFileContent);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
     private partial void LogInvocationCanceled(string methodName);

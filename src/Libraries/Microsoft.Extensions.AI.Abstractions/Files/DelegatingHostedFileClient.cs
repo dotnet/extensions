@@ -36,38 +36,38 @@ public class DelegatingHostedFileClient : IHostedFileClient
     protected IHostedFileClient InnerClient { get; }
 
     /// <inheritdoc />
-    public virtual Task<HostedFile> UploadAsync(
+    public virtual Task<HostedFileContent> UploadAsync(
         Stream content,
         string? mediaType = null,
         string? fileName = null,
-        HostedFileUploadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
         InnerClient.UploadAsync(content, mediaType, fileName, options, cancellationToken);
 
     /// <inheritdoc />
     public virtual Task<HostedFileDownloadStream> DownloadAsync(
         string fileId,
-        HostedFileDownloadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
         InnerClient.DownloadAsync(fileId, options, cancellationToken);
 
     /// <inheritdoc />
-    public virtual Task<HostedFile?> GetFileInfoAsync(
+    public virtual Task<HostedFileContent?> GetFileInfoAsync(
         string fileId,
-        HostedFileGetOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
         InnerClient.GetFileInfoAsync(fileId, options, cancellationToken);
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<HostedFile> ListFilesAsync(
-        HostedFileListOptions? options = null,
+    public virtual IAsyncEnumerable<HostedFileContent> ListFilesAsync(
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
         InnerClient.ListFilesAsync(options, cancellationToken);
 
     /// <inheritdoc />
     public virtual Task<bool> DeleteAsync(
         string fileId,
-        HostedFileDeleteOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
         InnerClient.DeleteAsync(fileId, options, cancellationToken);
 

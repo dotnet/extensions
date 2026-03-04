@@ -29,10 +29,10 @@ public static class HostedFileClientExtensions
     /// <returns>Information about the uploaded file.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="content"/> is <see langword="null"/>.</exception>
-    public static Task<HostedFile> UploadAsync(
+    public static Task<HostedFileContent> UploadAsync(
         this IHostedFileClient client,
         DataContent content,
-        HostedFileUploadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(client);
@@ -56,10 +56,10 @@ public static class HostedFileClientExtensions
     /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="filePath"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="filePath"/> is empty.</exception>
-    public static async Task<HostedFile> UploadAsync(
+    public static async Task<HostedFileContent> UploadAsync(
         this IHostedFileClient client,
         string filePath,
-        HostedFileUploadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(client);
@@ -68,7 +68,7 @@ public static class HostedFileClientExtensions
         string? mediaType = MediaTypeMap.GetMediaType(filePath);
         string fileName = Path.GetFileName(filePath);
 
-        using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true);
+        using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete, bufferSize: 4096, useAsync: true);
 
         return await client.UploadAsync(stream, mediaType, fileName, options, cancellationToken).ConfigureAwait(false);
     }
@@ -92,7 +92,7 @@ public static class HostedFileClientExtensions
         this IHostedFileClient client,
         string fileId,
         string destinationPath,
-        HostedFileDownloadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(client);
@@ -101,15 +101,26 @@ public static class HostedFileClientExtensions
 
         using HostedFileDownloadStream downloadStream = await client.DownloadAsync(fileId, options, cancellationToken).ConfigureAwait(false);
 
-        // Determine the final path
+        // Determine the final path. If the path is empty, treat it as the current directory.
         string finalPath = destinationPath;
-        if (Directory.Exists(destinationPath))
+        if (destinationPath.Length == 0 || Directory.Exists(destinationPath))
         {
-            string fileName = downloadStream.FileName ?? fileId;
-            finalPath = Path.Combine(destinationPath, fileName);
+            string? fileName = null;
+
+            if (downloadStream.FileName is not null)
+            {
+                fileName = Path.GetFileName(downloadStream.FileName);
+            }
+
+            if (string.IsNullOrEmpty(fileName))
+            {
+                fileName = $"{fileId}{MediaTypeMap.GetExtension(downloadStream.MediaType)}";
+            }
+
+            finalPath = destinationPath.Length == 0 ? fileName! : Path.Combine(destinationPath, fileName);
         }
 
-        using FileStream fileStream = new(finalPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
+        using FileStream fileStream = new(finalPath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, bufferSize: 1, useAsync: true);
 
         await downloadStream.CopyToAsync(fileStream,
 #if !NET
@@ -133,11 +144,17 @@ public static class HostedFileClientExtensions
     public static Task<HostedFileDownloadStream> DownloadAsync(
         this IHostedFileClient client,
         HostedFileContent hostedFile,
-        HostedFileDownloadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(client);
         _ = Throw.IfNull(hostedFile);
+
+        if (hostedFile.Scope is string scope && options?.Scope is null)
+        {
+            options ??= new();
+            options.Scope = scope;
+        }
 
         return client.DownloadAsync(hostedFile.FileId, options, cancellationToken);
     }
@@ -161,7 +178,7 @@ public static class HostedFileClientExtensions
     public static async Task<DataContent> DownloadAsDataContentAsync(
         this IHostedFileClient client,
         string fileId,
-        HostedFileDownloadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(client);

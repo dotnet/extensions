@@ -11,6 +11,7 @@ using Microsoft.TestUtilities;
 using Xunit;
 
 #pragma warning disable MEAI001
+#pragma warning disable OPENAI001
 
 namespace Microsoft.Extensions.AI;
 
@@ -21,34 +22,6 @@ public sealed class OpenAIHostedFileClientIntegrationTests : IDisposable
     public void Dispose()
     {
         _client?.Dispose();
-    }
-
-    /// <summary>Retries a download operation to handle the delay between upload and file availability.</summary>
-    private static async Task<T> RetryAsync<T>(Func<Task<T>> action, int maxRetries = 5, int delayMs = 2000)
-    {
-        for (int i = 0; i < maxRetries; i++)
-        {
-            try
-            {
-                return await action();
-            }
-            catch (ClientResultException) when (i < maxRetries - 1)
-            {
-                await Task.Delay(delayMs * (i + 1));
-            }
-        }
-
-        return await action();
-    }
-
-    private void SkipIfNotEnabled()
-    {
-        string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
-
-        if (skipIntegration is not null || _client is null)
-        {
-            throw new SkipTestException("Client is not enabled.");
-        }
     }
 
     [ConditionalFact]
@@ -65,11 +38,11 @@ public sealed class OpenAIHostedFileClientIntegrationTests : IDisposable
         {
             // Upload with "fine-tune" purpose since "assistants" files cannot be downloaded via the Files API.
             using var uploadStream = new MemoryStream(contentBytes);
-            var uploadedFile = await _client!.UploadAsync(uploadStream, "application/jsonl", fileName, new HostedFileUploadOptions { Purpose = "fine-tune" });
-            uploadedFileId = uploadedFile.Id;
+            var uploadedFile = await _client!.UploadAsync(uploadStream, "application/jsonl", fileName, new HostedFileClientOptions { Purpose = "fine-tune" });
+            uploadedFileId = uploadedFile.FileId;
 
-            Assert.NotNull(uploadedFile.Id);
-            Assert.NotEmpty(uploadedFile.Id);
+            Assert.NotNull(uploadedFile.FileId);
+            Assert.NotEmpty(uploadedFile.FileId);
             Assert.Equal(fileName, uploadedFile.Name);
             Assert.Equal("application/x-ndjson", uploadedFile.MediaType);
             Assert.NotNull(uploadedFile.Purpose);
@@ -96,7 +69,7 @@ public sealed class OpenAIHostedFileClientIntegrationTests : IDisposable
             uploadedFileId = null;
 
             // Verify not found after deletion
-            var fileInfo = await _client.GetFileInfoAsync(uploadedFile.Id);
+            var fileInfo = await _client.GetFileInfoAsync(uploadedFile.FileId);
             Assert.Null(fileInfo);
         }
         finally
@@ -119,16 +92,16 @@ public sealed class OpenAIHostedFileClientIntegrationTests : IDisposable
         try
         {
             using var uploadStream = new MemoryStream("list test"u8.ToArray());
-            var uploadedFile = await _client!.UploadAsync(uploadStream, "text/plain", fileName, new HostedFileUploadOptions { Purpose = "assistants" });
-            uploadedFileId = uploadedFile.Id;
+            var uploadedFile = await _client!.UploadAsync(uploadStream, "text/plain", fileName, new HostedFileClientOptions { Purpose = "assistants" });
+            uploadedFileId = uploadedFile.FileId;
 
-            var files = new List<HostedFile>();
-            await foreach (var file in _client.ListFilesAsync(new HostedFileListOptions { Purpose = "assistants" }))
+            var files = new List<HostedFileContent>();
+            await foreach (var file in _client.ListFilesAsync(new HostedFileClientOptions { Purpose = "assistants" }))
             {
                 files.Add(file);
             }
 
-            Assert.Contains(files, f => f.Id == uploadedFileId && f.MediaType == "text/plain" && f.Name == fileName);
+            Assert.Contains(files, f => f.FileId == uploadedFileId && f.MediaType == "text/plain" && f.Name == fileName);
         }
         finally
         {
@@ -151,13 +124,13 @@ public sealed class OpenAIHostedFileClientIntegrationTests : IDisposable
         try
         {
             using var uploadStream = new MemoryStream(contentBytes);
-            var uploadedFile = await _client!.UploadAsync(uploadStream, "text/plain", fileName, new HostedFileUploadOptions { Purpose = "assistants" });
-            uploadedFileId = uploadedFile.Id;
+            var uploadedFile = await _client!.UploadAsync(uploadStream, "text/plain", fileName, new HostedFileClientOptions { Purpose = "assistants" });
+            uploadedFileId = uploadedFile.FileId;
 
             var fileInfo = await _client.GetFileInfoAsync(uploadedFileId);
 
             Assert.NotNull(fileInfo);
-            Assert.Equal(uploadedFileId, fileInfo.Id);
+            Assert.Equal(uploadedFileId, fileInfo.FileId);
             Assert.Equal(fileName, fileInfo.Name);
             Assert.Equal("text/plain", fileInfo.MediaType);
             Assert.NotNull(fileInfo.SizeInBytes);
@@ -204,11 +177,11 @@ public sealed class OpenAIHostedFileClientIntegrationTests : IDisposable
         try
         {
             var dataContent = new DataContent(contentBytes, "text/plain") { Name = fileName };
-            var uploadedFile = await _client!.UploadAsync(dataContent, new HostedFileUploadOptions { Purpose = "assistants" });
-            uploadedFileId = uploadedFile.Id;
+            var uploadedFile = await _client!.UploadAsync(dataContent, new HostedFileClientOptions { Purpose = "assistants" });
+            uploadedFileId = uploadedFile.FileId;
 
-            Assert.NotNull(uploadedFile.Id);
-            Assert.NotEmpty(uploadedFile.Id);
+            Assert.NotNull(uploadedFile.FileId);
+            Assert.NotEmpty(uploadedFile.FileId);
             Assert.Equal("text/plain", uploadedFile.MediaType);
         }
         finally
@@ -233,8 +206,8 @@ public sealed class OpenAIHostedFileClientIntegrationTests : IDisposable
         try
         {
             using var uploadStream = new MemoryStream(contentBytes);
-            var uploadedFile = await _client!.UploadAsync(uploadStream, "application/jsonl", fileName, new HostedFileUploadOptions { Purpose = "fine-tune" });
-            uploadedFileId = uploadedFile.Id;
+            var uploadedFile = await _client!.UploadAsync(uploadStream, "application/jsonl", fileName, new HostedFileClientOptions { Purpose = "fine-tune" });
+            uploadedFileId = uploadedFile.FileId;
 
             var dataContent = await RetryAsync(() => _client.DownloadAsDataContentAsync(uploadedFileId));
             Assert.Equal(content, Encoding.UTF8.GetString(dataContent.Data.ToArray()));
@@ -263,8 +236,8 @@ public sealed class OpenAIHostedFileClientIntegrationTests : IDisposable
         try
         {
             using var uploadStream = new MemoryStream(contentBytes);
-            var uploadedFile = await _client!.UploadAsync(uploadStream, "application/jsonl", fileName, new HostedFileUploadOptions { Purpose = "fine-tune" });
-            uploadedFileId = uploadedFile.Id;
+            var uploadedFile = await _client!.UploadAsync(uploadStream, "application/jsonl", fileName, new HostedFileClientOptions { Purpose = "fine-tune" });
+            uploadedFileId = uploadedFile.FileId;
 
             tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tempDir);
@@ -286,6 +259,208 @@ public sealed class OpenAIHostedFileClientIntegrationTests : IDisposable
             {
                 Directory.Delete(tempDir, recursive: true);
             }
+        }
+    }
+
+    [ConditionalFact]
+    public async Task Container_Upload_Download_Delete_Roundtrip()
+    {
+        SkipIfNotEnabled();
+
+        // Create a container-scoped file client
+        using var containerClient = IntegrationTestHelpers.GetOpenAIClient()!.GetContainerClient().AsIHostedFileClient();
+
+        // First, use the chat client with code interpreter to get a container ID
+        using var chatClient = IntegrationTestHelpers.GetOpenAIClient()!
+            .GetResponsesClient()
+            .AsIChatClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini");
+
+        var response = await chatClient.GetResponseAsync(
+            "Calculate 2+2 using Python",
+            new ChatOptions { Tools = [new HostedCodeInterpreterTool()] });
+
+        // Extract container ID from the code interpreter result
+        string? containerId = null;
+        foreach (var msg in response.Messages)
+        {
+            foreach (var content in msg.Contents)
+            {
+                if (content is CodeInterpreterToolResultContent { RawRepresentation: OpenAI.Responses.CodeInterpreterCallResponseItem cicri })
+                {
+                    containerId = cicri.ContainerId;
+                }
+            }
+        }
+
+        Assert.NotNull(containerId);
+
+        // Upload a file to the container
+        string content2 = """{"data": "test"}""";
+        byte[] contentBytes = Encoding.UTF8.GetBytes(content2);
+        using var uploadStream = new MemoryStream(contentBytes);
+        var uploadedFile = await containerClient.UploadAsync(
+            uploadStream, "application/json", "test-data.json",
+            new HostedFileClientOptions { Scope = containerId });
+
+        Assert.NotNull(uploadedFile.FileId);
+        Assert.NotEmpty(uploadedFile.FileId);
+        Assert.Equal(containerId, uploadedFile.Scope);
+
+        // List files in the container
+        var files = new List<HostedFileContent>();
+        await foreach (var file in containerClient.ListFilesAsync(new HostedFileClientOptions { Scope = containerId }))
+        {
+            files.Add(file);
+        }
+
+        Assert.Contains(files, f => f.FileId == uploadedFile.FileId);
+
+        // Get file info
+        var fileInfo = await containerClient.GetFileInfoAsync(uploadedFile.FileId, new HostedFileClientOptions { Scope = containerId });
+        Assert.NotNull(fileInfo);
+        Assert.Equal(uploadedFile.FileId, fileInfo.FileId);
+
+        // Download the file
+        using var downloadStream = await containerClient.DownloadAsync(uploadedFile.FileId, new HostedFileClientOptions { Scope = containerId });
+        Assert.NotNull(downloadStream);
+        using var reader = new StreamReader(downloadStream, Encoding.UTF8);
+        string downloadedContent = await reader.ReadToEndAsync();
+        Assert.Equal(content2, downloadedContent);
+
+        // Delete the file
+        bool deleted = await containerClient.DeleteAsync(uploadedFile.FileId, new HostedFileClientOptions { Scope = containerId });
+        Assert.True(deleted);
+    }
+
+    [ConditionalFact]
+    public async Task CodeInterpreter_ProducesDownloadableOutputs()
+    {
+        SkipIfNotEnabled();
+
+        using var chatClient = IntegrationTestHelpers.GetOpenAIClient()!
+            .GetResponsesClient()
+            .AsIChatClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini");
+
+        using var fileClient = IntegrationTestHelpers.GetOpenAIClient()!.GetContainerClient().AsIHostedFileClient();
+
+        // Ask the model to create a file via code interpreter
+        var response = await chatClient.GetResponseAsync(
+            "Use Python to create a JSON file at /mnt/data/output.json containing the numbers 1 through 5 as an array. "
+            + "Do not include any text explanation, just run the code.",
+            new ChatOptions { Tools = [new HostedCodeInterpreterTool()] });
+
+        // Find the code interpreter result and its container
+        string? containerId = null;
+        foreach (var msg in response.Messages)
+        {
+            foreach (var content in msg.Contents)
+            {
+                if (content is CodeInterpreterToolResultContent { RawRepresentation: OpenAI.Responses.CodeInterpreterCallResponseItem cicri })
+                {
+                    containerId = cicri.ContainerId;
+                }
+            }
+        }
+
+        Assert.NotNull(containerId);
+
+        // List files in the container — the code interpreter should have created at least the output file
+        var containerFiles = new List<HostedFileContent>();
+        await foreach (var file in fileClient.ListFilesAsync(new HostedFileClientOptions { Scope = containerId }))
+        {
+            containerFiles.Add(file);
+        }
+
+        Assert.NotEmpty(containerFiles);
+
+        // Download a container file and verify it's non-empty
+        var firstFile = containerFiles[0];
+        using var downloadStream = await fileClient.DownloadAsync(firstFile, new HostedFileClientOptions { Scope = containerId });
+        Assert.NotNull(downloadStream);
+        using var ms = new MemoryStream();
+        await downloadStream.CopyToAsync(ms);
+        Assert.True(ms.Length > 0);
+    }
+
+    [ConditionalFact]
+    public async Task CodeInterpreter_Upload_ProcessedByCodeInterpreter()
+    {
+        SkipIfNotEnabled();
+
+        using var chatClient = IntegrationTestHelpers.GetOpenAIClient()!
+            .GetResponsesClient()
+            .AsIChatClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini");
+
+        using var fileClient = IntegrationTestHelpers.GetOpenAIClient()!.GetContainerClient().AsIHostedFileClient();
+
+        // First, use code interpreter to get a container ID
+        var setupResponse = await chatClient.GetResponseAsync(
+            "Calculate 1+1 using Python",
+            new ChatOptions { Tools = [new HostedCodeInterpreterTool()] });
+
+        string? containerId = null;
+        foreach (var msg in setupResponse.Messages)
+        {
+            foreach (var content in msg.Contents)
+            {
+                if (content is CodeInterpreterToolResultContent { RawRepresentation: OpenAI.Responses.CodeInterpreterCallResponseItem cicri })
+                {
+                    containerId = cicri.ContainerId;
+                }
+            }
+        }
+
+        Assert.NotNull(containerId);
+
+        // Upload a CSV file to the container
+        string csvContent = "name,value\nalpha,1\nbeta,2\ngamma,3";
+        using var uploadStream = new MemoryStream(Encoding.UTF8.GetBytes(csvContent));
+        var uploadedFile = await fileClient.UploadAsync(
+            uploadStream, "text/csv", "data.csv",
+            new HostedFileClientOptions { Scope = containerId });
+
+        Assert.NotNull(uploadedFile.FileId);
+        Assert.Equal(containerId, uploadedFile.Scope);
+
+        // Ask the model to process the uploaded file, continuing the same conversation
+        var processResponse = await chatClient.GetResponseAsync(
+            "Read the CSV file at /mnt/data/data.csv and tell me the sum of the 'value' column. Reply with just the number.",
+            new ChatOptions
+            {
+                Tools = [new HostedCodeInterpreterTool()],
+                ConversationId = setupResponse.ConversationId,
+            });
+
+        // The response should mention "6" (1+2+3)
+        string responseText = processResponse.Text ?? "";
+        Assert.Contains("6", responseText);
+    }
+
+    /// <summary>Retries a download operation to handle the delay between upload and file availability.</summary>
+    private static async Task<T> RetryAsync<T>(Func<Task<T>> action, int maxRetries = 5, int delayMs = 2000)
+    {
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                return await action();
+            }
+            catch (ClientResultException) when (i < maxRetries - 1)
+            {
+                await Task.Delay(delayMs * (i + 1));
+            }
+        }
+
+        return await action();
+    }
+
+    private void SkipIfNotEnabled()
+    {
+        string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
+
+        if (skipIntegration is not null || _client is null)
+        {
+            throw new SkipTestException("Client is not enabled.");
         }
     }
 }

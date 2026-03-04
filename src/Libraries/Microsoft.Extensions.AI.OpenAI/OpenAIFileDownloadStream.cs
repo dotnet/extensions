@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 
 #pragma warning disable S4136 // Method overloads should be grouped together - .NET Core overloads grouped in #if NET block below
 
@@ -13,8 +15,10 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// A <see cref="HostedFileDownloadStream"/> implementation for OpenAI file downloads.
 /// </summary>
+[Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
 internal sealed class OpenAIFileDownloadStream : HostedFileDownloadStream
 {
+    private readonly BinaryData _data;
     private readonly Stream _innerStream;
 
     /// <summary>
@@ -25,6 +29,7 @@ internal sealed class OpenAIFileDownloadStream : HostedFileDownloadStream
     /// <param name="fileName">The file name.</param>
     public OpenAIFileDownloadStream(BinaryData data, string? mediaType, string? fileName)
     {
+        _data = data;
         _innerStream = data.ToStream();
         MediaType = mediaType;
         FileName = fileName;
@@ -35,6 +40,20 @@ internal sealed class OpenAIFileDownloadStream : HostedFileDownloadStream
 
     /// <inheritdoc />
     public override string? FileName { get; }
+
+    /// <inheritdoc />
+    public override Task<DataContent> ToDataContentAsync(CancellationToken cancellationToken = default)
+    {
+        if (_innerStream.Position == 0)
+        {
+            return Task.FromResult(new DataContent(_data.ToMemory(), MediaType ?? "application/octet-stream")
+            {
+                Name = FileName,
+            });
+        }
+
+        return base.ToDataContentAsync(cancellationToken);
+    }
 
     /// <inheritdoc />
     public override bool CanRead => _innerStream.CanRead;

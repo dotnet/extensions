@@ -130,8 +130,8 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
     }
 
     /// <inheritdoc/>
-    public override async Task<HostedFile> UploadAsync(
-        Stream content, string? mediaType = null, string? fileName = null, HostedFileUploadOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<HostedFileContent> UploadAsync(
+        Stream content, string? mediaType = null, string? fileName = null, HostedFileClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         fileName ??= content is FileStream fs ? Path.GetFileName(fs.Name) : null;
         mediaType ??= fileName is not null ? MediaTypeMap.GetMediaType(fileName) : null;
@@ -164,7 +164,7 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
             TagAdditionalProperties(activity, options);
         }
 
-        HostedFile? result = null;
+        HostedFileContent? result = null;
         Exception? error = null;
         try
         {
@@ -180,7 +180,7 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
         {
             if (result is not null && activity is { IsAllDataRequested: true })
             {
-                _ = activity.AddTag(FilesIdAttribute, result.Id);
+                _ = activity.AddTag(FilesIdAttribute, result.FileId);
 
                 if (result.SizeInBytes is long size)
                 {
@@ -195,7 +195,7 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
 
     /// <inheritdoc/>
     public override async Task<HostedFileDownloadStream> DownloadAsync(
-        string fileId, HostedFileDownloadOptions? options = null, CancellationToken cancellationToken = default)
+        string fileId, HostedFileClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         using Activity? activity = StartActivity(DownloadOperationName);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
@@ -231,8 +231,8 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
     }
 
     /// <inheritdoc/>
-    public override async Task<HostedFile?> GetFileInfoAsync(
-        string fileId, HostedFileGetOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<HostedFileContent?> GetFileInfoAsync(
+        string fileId, HostedFileClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         using Activity? activity = StartActivity(GetInfoOperationName);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
@@ -249,7 +249,7 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
             TagAdditionalProperties(activity, options);
         }
 
-        HostedFile? result = null;
+        HostedFileContent? result = null;
         Exception? error = null;
         try
         {
@@ -282,8 +282,8 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<HostedFile> ListFilesAsync(
-        HostedFileListOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<HostedFileContent> ListFilesAsync(
+        HostedFileClientOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using Activity? activity = StartActivity(ListOperationName);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
@@ -303,7 +303,7 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
             TagAdditionalProperties(activity, options);
         }
 
-        IAsyncEnumerator<HostedFile> e;
+        IAsyncEnumerator<HostedFileContent> e;
         Exception? error = null;
         try
         {
@@ -356,7 +356,7 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
 
     /// <inheritdoc/>
     public override async Task<bool> DeleteAsync(
-        string fileId, HostedFileDeleteOptions? options = null, CancellationToken cancellationToken = default)
+        string fileId, HostedFileClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         using Activity? activity = StartActivity(DeleteOperationName);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;

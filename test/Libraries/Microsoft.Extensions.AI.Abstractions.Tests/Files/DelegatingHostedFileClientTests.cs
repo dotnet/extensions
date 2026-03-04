@@ -26,10 +26,10 @@ public class DelegatingHostedFileClientTests
         var expectedStream = new MemoryStream([1, 2, 3]);
         var expectedMediaType = "text/plain";
         var expectedFileName = "test.txt";
-        var expectedOptions = new HostedFileUploadOptions();
+        var expectedOptions = new HostedFileClientOptions();
         var expectedCancellationToken = CancellationToken.None;
-        var expectedResult = new TaskCompletionSource<HostedFile>();
-        var expectedFile = new HostedFile("file-123");
+        var expectedResult = new TaskCompletionSource<HostedFileContent>();
+        var expectedFile = new HostedFileContent("file-123");
         using var inner = new TestHostedFileClient
         {
             UploadAsyncCallback = (content, mediaType, fileName, options, cancellationToken) =>
@@ -55,7 +55,7 @@ public class DelegatingHostedFileClientTests
     public async Task DownloadAsyncDefaultsToInnerClientAsync()
     {
         var expectedFileId = "file-456";
-        var expectedOptions = new HostedFileDownloadOptions();
+        var expectedOptions = new HostedFileClientOptions();
         var expectedCancellationToken = CancellationToken.None;
         var expectedResult = new TaskCompletionSource<HostedFileDownloadStream>();
         using var inner = new TestHostedFileClient
@@ -82,10 +82,10 @@ public class DelegatingHostedFileClientTests
     public async Task GetFileInfoAsyncDefaultsToInnerClientAsync()
     {
         var expectedFileId = "file-789";
-        var expectedOptions = new HostedFileGetOptions();
+        var expectedOptions = new HostedFileClientOptions();
         var expectedCancellationToken = CancellationToken.None;
-        var expectedResult = new TaskCompletionSource<HostedFile?>();
-        var expectedFile = new HostedFile("file-789") { Name = "info.txt" };
+        var expectedResult = new TaskCompletionSource<HostedFileContent?>();
+        var expectedFile = new HostedFileContent("file-789") { Name = "info.txt" };
         using var inner = new TestHostedFileClient
         {
             GetFileInfoAsyncCallback = (fileId, options, cancellationToken) =>
@@ -108,12 +108,12 @@ public class DelegatingHostedFileClientTests
     [Fact]
     public async Task ListFilesAsyncDefaultsToInnerClientAsync()
     {
-        var expectedOptions = new HostedFileListOptions();
+        var expectedOptions = new HostedFileClientOptions();
         var expectedCancellationToken = CancellationToken.None;
-        HostedFile[] expectedFiles =
+        HostedFileContent[] expectedFiles =
         [
-            new HostedFile("file-1"),
-            new HostedFile("file-2")
+            new HostedFileContent("file-1"),
+            new HostedFileContent("file-2")
         ];
 
         using var inner = new TestHostedFileClient
@@ -140,7 +140,7 @@ public class DelegatingHostedFileClientTests
     public async Task DeleteAsyncDefaultsToInnerClientAsync()
     {
         var expectedFileId = "file-del";
-        var expectedOptions = new HostedFileDeleteOptions();
+        var expectedOptions = new HostedFileClientOptions();
         var expectedCancellationToken = CancellationToken.None;
         var expectedResult = new TaskCompletionSource<bool>();
         using var inner = new TestHostedFileClient

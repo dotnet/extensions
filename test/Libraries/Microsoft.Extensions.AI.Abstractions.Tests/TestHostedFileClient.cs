@@ -18,49 +18,49 @@ internal sealed class TestHostedFileClient : IHostedFileClient
         GetServiceCallback = DefaultGetServiceCallback;
     }
 
-    public Func<Stream, string?, string?, HostedFileUploadOptions?, CancellationToken, Task<HostedFile>>? UploadAsyncCallback { get; set; }
+    public Func<Stream, string?, string?, HostedFileClientOptions?, CancellationToken, Task<HostedFileContent>>? UploadAsyncCallback { get; set; }
 
-    public Func<string, HostedFileDownloadOptions?, CancellationToken, Task<HostedFileDownloadStream>>? DownloadAsyncCallback { get; set; }
+    public Func<string, HostedFileClientOptions?, CancellationToken, Task<HostedFileDownloadStream>>? DownloadAsyncCallback { get; set; }
 
-    public Func<string, HostedFileGetOptions?, CancellationToken, Task<HostedFile?>>? GetFileInfoAsyncCallback { get; set; }
+    public Func<string, HostedFileClientOptions?, CancellationToken, Task<HostedFileContent?>>? GetFileInfoAsyncCallback { get; set; }
 
-    public Func<HostedFileListOptions?, CancellationToken, IAsyncEnumerable<HostedFile>>? ListFilesAsyncCallback { get; set; }
+    public Func<HostedFileClientOptions?, CancellationToken, IAsyncEnumerable<HostedFileContent>>? ListFilesAsyncCallback { get; set; }
 
-    public Func<string, HostedFileDeleteOptions?, CancellationToken, Task<bool>>? DeleteAsyncCallback { get; set; }
+    public Func<string, HostedFileClientOptions?, CancellationToken, Task<bool>>? DeleteAsyncCallback { get; set; }
 
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
 
     private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey) =>
         serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
-    public Task<HostedFile> UploadAsync(
+    public Task<HostedFileContent> UploadAsync(
         Stream content,
         string? mediaType = null,
         string? fileName = null,
-        HostedFileUploadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
         UploadAsyncCallback!.Invoke(content, mediaType, fileName, options, cancellationToken);
 
     public Task<HostedFileDownloadStream> DownloadAsync(
         string fileId,
-        HostedFileDownloadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
         DownloadAsyncCallback!.Invoke(fileId, options, cancellationToken);
 
-    public Task<HostedFile?> GetFileInfoAsync(
+    public Task<HostedFileContent?> GetFileInfoAsync(
         string fileId,
-        HostedFileGetOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
         GetFileInfoAsyncCallback!.Invoke(fileId, options, cancellationToken);
 
-    public IAsyncEnumerable<HostedFile> ListFilesAsync(
-        HostedFileListOptions? options = null,
+    public IAsyncEnumerable<HostedFileContent> ListFilesAsync(
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
         ListFilesAsyncCallback!.Invoke(options, cancellationToken);
 
     public Task<bool> DeleteAsync(
         string fileId,
-        HostedFileDeleteOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
         DeleteAsyncCallback!.Invoke(fileId, options, cancellationToken);
 

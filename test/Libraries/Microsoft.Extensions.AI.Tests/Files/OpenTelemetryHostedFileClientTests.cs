@@ -36,7 +36,7 @@ public class OpenTelemetryHostedFileClientTests
         using var innerClient = new TestHostedFileClient
         {
             UploadAsyncCallback = (stream, mediaType, fileName, options, ct) =>
-                Task.FromResult(new HostedFile("file-abc") { Name = "test.txt", SizeInBytes = 1024 }),
+                Task.FromResult(new HostedFileContent("file-abc") { Name = "test.txt", SizeInBytes = 1024 }),
             GetServiceCallback = CreateMetadataCallback(),
         };
 
@@ -46,7 +46,7 @@ public class OpenTelemetryHostedFileClientTests
             .Build();
 
         using var stream = new MemoryStream(new byte[] { 1, 2, 3 });
-        await client.UploadAsync(stream, "text/plain", "test.txt", new HostedFileUploadOptions { Purpose = "assistants", Scope = "container-1" });
+        await client.UploadAsync(stream, "text/plain", "test.txt", new HostedFileClientOptions { Purpose = "assistants", Scope = "container-1" });
 
         var activity = Assert.Single(activities);
         Assert.Equal("files.upload", activity.DisplayName);
@@ -98,7 +98,7 @@ public class OpenTelemetryHostedFileClientTests
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        using var stream = await client.DownloadAsync("file-xyz", new HostedFileDownloadOptions { Scope = "container-2" });
+        using var stream = await client.DownloadAsync("file-xyz", new HostedFileClientOptions { Scope = "container-2" });
 
         var activity = Assert.Single(activities);
         Assert.Equal("files.download", activity.DisplayName);
@@ -129,7 +129,7 @@ public class OpenTelemetryHostedFileClientTests
         using var innerClient = new TestHostedFileClient
         {
             GetFileInfoAsyncCallback = (fileId, options, ct) =>
-                Task.FromResult<HostedFile?>(new HostedFile("file-info") { Name = "report.pdf", SizeInBytes = 2048 }),
+                Task.FromResult<HostedFileContent?>(new HostedFileContent("file-info") { Name = "report.pdf", SizeInBytes = 2048 }),
             GetServiceCallback = CreateMetadataCallback(),
         };
 
@@ -138,7 +138,7 @@ public class OpenTelemetryHostedFileClientTests
             .UseOpenTelemetry(sourceName: sourceName, configure: c => c.EnableSensitiveData = enableSensitiveData)
             .Build();
 
-        await client.GetFileInfoAsync("file-info", new HostedFileGetOptions { Scope = "container-3" });
+        await client.GetFileInfoAsync("file-info", new HostedFileClientOptions { Scope = "container-3" });
 
         var activity = Assert.Single(activities);
         Assert.Equal("files.get_info", activity.DisplayName);
@@ -180,12 +180,12 @@ public class OpenTelemetryHostedFileClientTests
             GetServiceCallback = CreateMetadataCallback(),
         };
 
-        static async IAsyncEnumerable<HostedFile> GetFilesAsync()
+        static async IAsyncEnumerable<HostedFileContent> GetFilesAsync()
         {
             await Task.Yield();
-            yield return new HostedFile("file-1") { Name = "a.txt" };
-            yield return new HostedFile("file-2") { Name = "b.txt" };
-            yield return new HostedFile("file-3") { Name = "c.txt" };
+            yield return new HostedFileContent("file-1") { Name = "a.txt" };
+            yield return new HostedFileContent("file-2") { Name = "b.txt" };
+            yield return new HostedFileContent("file-3") { Name = "c.txt" };
         }
 
         using var client = innerClient
@@ -193,7 +193,7 @@ public class OpenTelemetryHostedFileClientTests
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        await foreach (var file in client.ListFilesAsync(new HostedFileListOptions { Purpose = "assistants", Scope = "container-4" }))
+        await foreach (var file in client.ListFilesAsync(new HostedFileClientOptions { Purpose = "assistants", Scope = "container-4" }))
         {
             _ = file;
         }
@@ -234,7 +234,7 @@ public class OpenTelemetryHostedFileClientTests
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        await client.DeleteAsync("file-del", new HostedFileDeleteOptions { Scope = "container-5" });
+        await client.DeleteAsync("file-del", new HostedFileClientOptions { Scope = "container-5" });
 
         var activity = Assert.Single(activities);
         Assert.Equal("files.delete", activity.DisplayName);
@@ -297,10 +297,10 @@ public class OpenTelemetryHostedFileClientTests
             GetServiceCallback = CreateMetadataCallback(),
         };
 
-        static async IAsyncEnumerable<HostedFile> ThrowOnSecondItem()
+        static async IAsyncEnumerable<HostedFileContent> ThrowOnSecondItem()
         {
             await Task.Yield();
-            yield return new HostedFile("file-1");
+            yield return new HostedFileContent("file-1");
             throw new InvalidOperationException("iteration failed");
         }
 
@@ -354,7 +354,7 @@ public class OpenTelemetryHostedFileClientTests
         using var innerClient = new TestHostedFileClient
         {
             UploadAsyncCallback = (stream, mediaType, fileName, options, ct) =>
-                Task.FromResult(new HostedFile("file-1")),
+                Task.FromResult(new HostedFileContent("file-1")),
         };
 
         using var client = innerClient
@@ -474,7 +474,7 @@ public class OpenTelemetryHostedFileClientTests
         using var innerClient = new TestHostedFileClient
         {
             UploadAsyncCallback = (stream, mediaType, fileName, options, ct) =>
-                Task.FromResult(new HostedFile("file-1")),
+                Task.FromResult(new HostedFileContent("file-1")),
         };
 
         using var client = innerClient
@@ -512,7 +512,7 @@ public class OpenTelemetryHostedFileClientTests
         using var innerClient = new TestHostedFileClient
         {
             UploadAsyncCallback = (stream, mediaType, fileName, options, ct) =>
-                Task.FromResult(new HostedFile("file-1")),
+                Task.FromResult(new HostedFileContent("file-1")),
             GetServiceCallback = CreateMetadataCallback(),
         };
 
@@ -522,7 +522,7 @@ public class OpenTelemetryHostedFileClientTests
             .Build();
 
         using var stream = new MemoryStream(new byte[] { 1 });
-        await client.UploadAsync(stream, options: new HostedFileUploadOptions
+        await client.UploadAsync(stream, options: new HostedFileClientOptions
         {
             AdditionalProperties = new AdditionalPropertiesDictionary
             {
@@ -549,7 +549,7 @@ public class OpenTelemetryHostedFileClientTests
         using var innerClient = new TestHostedFileClient
         {
             UploadAsyncCallback = (stream, mediaType, fileName, options, ct) =>
-                Task.FromResult(new HostedFile("file-1")),
+                Task.FromResult(new HostedFileContent("file-1")),
             GetServiceCallback = CreateMetadataCallback(),
         };
 
@@ -559,7 +559,7 @@ public class OpenTelemetryHostedFileClientTests
             .Build();
 
         using var stream = new MemoryStream(new byte[] { 1 });
-        await client.UploadAsync(stream, options: new HostedFileUploadOptions
+        await client.UploadAsync(stream, options: new HostedFileClientOptions
         {
             AdditionalProperties = new AdditionalPropertiesDictionary
             {

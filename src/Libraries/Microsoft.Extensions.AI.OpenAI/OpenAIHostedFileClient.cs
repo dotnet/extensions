@@ -93,11 +93,11 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
     }
 
     /// <inheritdoc />
-    public async Task<HostedFile> UploadAsync(
+    public async Task<HostedFileContent> UploadAsync(
         Stream content,
         string? mediaType = null,
         string? fileName = null,
-        HostedFileUploadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(content);
@@ -117,49 +117,41 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
 
             using var binaryContent = new HttpContentBinaryContent(multipart);
 
+            var requestOptions = options?.RawRepresentationFactory?.Invoke(this) as RequestOptions ?? new();
+            requestOptions.CancellationToken = cancellationToken;
+
             var result = await GetContainerClient().CreateContainerFileAsync(
                 containerId,
                 binaryContent,
                 multipart.Headers.ContentType!.ToString(),
-                new RequestOptions
-                {
-                    CancellationToken = cancellationToken
-                }).ConfigureAwait(false);
+                requestOptions).ConfigureAwait(false);
 
             using var responseDoc = JsonDocument.Parse(result.GetRawResponse().Content);
-            var root = responseDoc.RootElement;
-
-            string fileId = root.GetProperty("id").GetString()!;
-            string? path = root.TryGetProperty("path", out var pathProp) ? pathProp.GetString() : null;
-            string name = path is not null ? Path.GetFileName(path) : fileName;
-
-            return new HostedFile(fileId)
-            {
-                Name = name,
-                MediaType = MediaTypeMap.GetMediaType(name),
-            };
+            return ParseContainerFileJson(responseDoc.RootElement, containerId)
+                ?? throw new InvalidOperationException("The container file upload response did not include a valid file ID.");
         }
         else
         {
-            var purpose = options?.Purpose switch
-            {
-                "assistants" or null => FileUploadPurpose.Assistants,
-                "fine-tune" => FileUploadPurpose.FineTune,
-                "batch" => FileUploadPurpose.Batch,
-                "vision" => FileUploadPurpose.Vision,
-                _ => new FileUploadPurpose(options.Purpose)
-            };
+            var purpose =
+                options?.Purpose is null ? FileUploadPurpose.UserData :
+                string.Equals("assistants", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FileUploadPurpose.Assistants :
+                string.Equals("batch", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FileUploadPurpose.Batch :
+                string.Equals("evaluations", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FileUploadPurpose.Evaluations :
+                string.Equals("fine-tune", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FileUploadPurpose.FineTune :
+                string.Equals("user_data", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FileUploadPurpose.UserData :
+                string.Equals("vision", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FileUploadPurpose.Vision :
+                new FileUploadPurpose(options.Purpose);
 
             var result = await GetFileClient().UploadFileAsync(content, fileName, purpose, cancellationToken).ConfigureAwait(false);
 
-            return ToHostedFile(result.Value);
+            return ToHostedFileContent(result.Value);
         }
     }
 
     /// <inheritdoc />
     public async Task<HostedFileDownloadStream> DownloadAsync(
         string fileId,
-        HostedFileDownloadOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrWhitespace(fileId);
@@ -168,9 +160,15 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
         {
             var containerClient = GetContainerClient();
             var containerResult = await containerClient.DownloadContainerFileAsync(containerId, fileId, cancellationToken).ConfigureAwait(false);
-            var containerFileInfo = await containerClient.GetContainerFileAsync(containerId, fileId, cancellationToken).ConfigureAwait(false);
 
-            string containerFileName = Path.GetFileName(containerFileInfo.Value.Path);
+            // Use protocol method to get file metadata as raw JSON. This works around
+            // https://github.com/openai/openai-dotnet/issues/733, where the SDK's typed
+            // deserialization crashes on container files with a null "bytes" value.
+            var containerFileInfoResult = await containerClient.GetContainerFileAsync(
+                containerId, fileId, new RequestOptions { CancellationToken = cancellationToken }).ConfigureAwait(false);
+            using var infoDoc = JsonDocument.Parse(containerFileInfoResult.GetRawResponse().Content);
+            string? path = infoDoc.RootElement.TryGetProperty("path", out var pathProp) ? pathProp.GetString() : null;
+            string containerFileName = path is not null ? Path.GetFileName(path) : fileId;
             string? containerMediaType = MediaTypeMap.GetMediaType(containerFileName) ?? "application/octet-stream";
 
             return new OpenAIFileDownloadStream(containerResult.Value, containerMediaType, containerFileName);
@@ -188,9 +186,9 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
     }
 
     /// <inheritdoc />
-    public async Task<HostedFile?> GetFileInfoAsync(
+    public async Task<HostedFileContent?> GetFileInfoAsync(
         string fileId,
-        HostedFileGetOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrWhitespace(fileId);
@@ -199,23 +197,19 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
         {
             if (ResolveScope(options) is string containerId)
             {
+                // Use protocol method to get file metadata as raw JSON. This works around
+                // https://github.com/openai/openai-dotnet/issues/733, where the SDK's typed
+                // deserialization crashes on container files with a null "bytes" value.
                 var containerResult = await GetContainerClient().GetContainerFileAsync(
-                    containerId, fileId, cancellationToken).ConfigureAwait(false);
+                    containerId, fileId, new RequestOptions { CancellationToken = cancellationToken }).ConfigureAwait(false);
 
-                var containerFile = containerResult.Value;
-                string name = Path.GetFileName(containerFile.Path);
-
-                return new HostedFile(containerFile.Id)
-                {
-                    Name = name,
-                    MediaType = MediaTypeMap.GetMediaType(name),
-                    RawRepresentation = containerFile
-                };
+                using var doc = JsonDocument.Parse(containerResult.GetRawResponse().Content);
+                return ParseContainerFileJson(doc.RootElement, containerId);
             }
             else
             {
                 var result = await GetFileClient().GetFileAsync(fileId, cancellationToken).ConfigureAwait(false);
-                return ToHostedFile(result.Value);
+                return ToHostedFileContent(result.Value);
             }
         }
         catch (Exception ex) when (IsNotFoundError(ex))
@@ -225,44 +219,90 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<HostedFile> ListFilesAsync(
-        HostedFileListOptions? options = null,
+    public async IAsyncEnumerable<HostedFileContent> ListFilesAsync(
+        HostedFileClientOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         int limit = options?.Limit ?? int.MaxValue;
 
         if (ResolveScope(options) is string containerId)
         {
+            // Bypass the SDK's collection APIs entirely and use the Pipeline directly.
+            // This works around https://github.com/openai/openai-dotnet/issues/733, where
+            // both the convenience and protocol collection overloads crash during pagination
+            // when deserializing container files with a null "bytes" value.
+            var containerClient = GetContainerClient();
+            var requestOptions = options?.RawRepresentationFactory?.Invoke(this) as RequestOptions ?? new();
+            requestOptions.CancellationToken = cancellationToken;
+
             int count = 0;
-            await foreach (var containerFile in GetContainerClient().GetContainerFilesAsync(containerId, cancellationToken: cancellationToken).ConfigureAwait(false))
+            string? after = null;
+
+            while (true)
             {
-                if (count >= limit)
+                string query = BuildQuery(limit < int.MaxValue ? limit : null, after);
+                string baseUrl = containerClient.Endpoint.GetLeftPart(UriPartial.Path).TrimEnd('/');
+                string requestUrl = $"{baseUrl}/containers/{Uri.EscapeDataString(containerId)}/files{query}";
+
+                using var message = containerClient.Pipeline.CreateMessage();
+                message.Request.Method = "GET";
+                message.Request.Uri = new Uri(requestUrl);
+                message.Request.Headers.Set("Accept", "application/json");
+                message.Apply(requestOptions);
+
+                await containerClient.Pipeline.SendAsync(message).ConfigureAwait(false);
+                PipelineResponse response = message.Response ?? throw new InvalidOperationException("No response received.");
+                if (response.IsError)
                 {
-                    yield break;
+                    throw new ClientResultException(response);
                 }
 
-                string name = Path.GetFileName(containerFile.Path);
+                using var doc = JsonDocument.Parse(response.Content);
+                var root = doc.RootElement;
 
-                yield return new HostedFile(containerFile.Id)
+                if (root.TryGetProperty("data", out JsonElement data) && data.ValueKind is JsonValueKind.Array)
                 {
-                    Name = name,
-                    MediaType = MediaTypeMap.GetMediaType(name),
-                    RawRepresentation = containerFile
-                };
+                    foreach (var fileElement in data.EnumerateArray())
+                    {
+                        if (count >= limit)
+                        {
+                            yield break;
+                        }
 
-                count++;
+                        var file = ParseContainerFileJson(fileElement, containerId);
+                        if (file is null)
+                        {
+                            continue;
+                        }
+
+                        yield return file;
+                        count++;
+                    }
+                }
+
+                bool hasMore = root.TryGetProperty("has_more", out var hm) && hm.ValueKind is JsonValueKind.True;
+                string? lastId = root.TryGetProperty("last_id", out var li) ? li.GetString() : null;
+                if (!hasMore || string.IsNullOrEmpty(lastId))
+                {
+                    break;
+                }
+
+                after = lastId;
             }
         }
         else
         {
-            FilePurpose? purpose = options?.Purpose switch
-            {
-                "assistants" => FilePurpose.Assistants,
-                "fine-tune" => FilePurpose.FineTune,
-                "batch" => FilePurpose.Batch,
-                "vision" => FilePurpose.Vision,
-                _ => null
-            };
+            var purpose =
+                options?.Purpose is null ? FilePurpose.UserData :
+                string.Equals("assistants", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FilePurpose.Assistants :
+                string.Equals("assistants_output", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FilePurpose.AssistantsOutput :
+                string.Equals("batch", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FilePurpose.Batch :
+                string.Equals("batch_output", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FilePurpose.BatchOutput :
+                string.Equals("fine-tune", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FilePurpose.FineTune :
+                string.Equals("fine-tune-results", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FilePurpose.FineTuneResults :
+                string.Equals("vision", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FilePurpose.Vision :
+                string.Equals("evaluations", options.Purpose, StringComparison.OrdinalIgnoreCase) ? FilePurpose.Evaluations :
+                FilePurpose.UserData;
 
             var fileClient = GetFileClient();
             var result = await (purpose is FilePurpose p ?
@@ -277,7 +317,7 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
                     yield break;
                 }
 
-                yield return ToHostedFile(file);
+                yield return ToHostedFileContent(file);
                 count++;
             }
         }
@@ -286,7 +326,7 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
     /// <inheritdoc />
     public async Task<bool> DeleteAsync(
         string fileId,
-        HostedFileDeleteOptions? options = null,
+        HostedFileClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrWhitespace(fileId);
@@ -330,7 +370,7 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
         // Nothing to dispose; the underlying clients are not owned by this instance.
     }
 
-    private static HostedFile ToHostedFile(OpenAIFile openAIFile) =>
+    private static HostedFileContent ToHostedFileContent(OpenAIFile openAIFile) =>
         new(openAIFile.Id)
         {
             Name = openAIFile.Filename,
@@ -341,8 +381,67 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
             RawRepresentation = openAIFile,
         };
 
+    /// <summary>
+    /// Parses container file metadata from a JSON element into a <see cref="HostedFileContent"/>.
+    /// </summary>
+    /// <remarks>
+    /// This parses raw JSON rather than using the OpenAI SDK's typed deserialization,
+    /// as a workaround for <see href="https://github.com/openai/openai-dotnet/issues/733"/>,
+    /// where the SDK crashes deserializing container files when the "bytes" field is null.
+    /// Once the SDK issue is fixed, call sites should revert to using the typed API.
+    /// </remarks>
+    private static HostedFileContent? ParseContainerFileJson(JsonElement element, string? scope)
+    {
+        if (!element.TryGetProperty("id", out var idProp) || idProp.GetString() is not { } id)
+        {
+            return null;
+        }
+
+        string? path = element.TryGetProperty("path", out var pathProp) ? pathProp.GetString() : null;
+        string name = path is not null ? Path.GetFileName(path) : id;
+
+        long? sizeInBytes = element.TryGetProperty("bytes", out var bytesProp) && bytesProp.ValueKind is JsonValueKind.Number
+            ? bytesProp.GetInt64()
+            : null;
+
+        DateTimeOffset? createdAt = element.TryGetProperty("created_at", out var createdProp) && createdProp.ValueKind is JsonValueKind.Number
+            ? DateTimeOffset.FromUnixTimeSeconds(createdProp.GetInt64())
+            : null;
+
+        return new HostedFileContent(id)
+        {
+            Name = name,
+            MediaType = MediaTypeMap.GetMediaType(name),
+            SizeInBytes = sizeInBytes,
+            CreatedAt = createdAt,
+            Scope = scope,
+        };
+    }
+
     private static bool IsNotFoundError(Exception ex) =>
         ex is ClientResultException { Status: 404 };
+
+    /// <summary>Builds a query string for the container files listing endpoint.</summary>
+    private static string BuildQuery(int? limit, string? after)
+    {
+        if (limit is null && after is null)
+        {
+            return string.Empty;
+        }
+
+        var parts = new List<string>(2);
+        if (limit is not null)
+        {
+            parts.Add($"limit={limit.Value}");
+        }
+
+        if (after is not null)
+        {
+            parts.Add($"after={Uri.EscapeDataString(after)}");
+        }
+
+        return "?" + string.Join("&", parts);
+    }
 
     private OpenAIFileClient GetFileClient() =>
         _fileClient ??

@@ -58,7 +58,7 @@ public class LoggingHostedFileClientTests
         using var innerClient = new TestHostedFileClient
         {
             UploadAsyncCallback = (stream, mediaType, fileName, options, ct) =>
-                Task.FromResult(new HostedFile("file-123") { Name = "test.txt" }),
+                Task.FromResult(new HostedFileContent("file-123") { Name = "test.txt" }),
         };
 
         using IHostedFileClient client = innerClient
@@ -67,7 +67,7 @@ public class LoggingHostedFileClientTests
             .Build(services);
 
         using var stream = new MemoryStream(new byte[] { 1, 2, 3 });
-        await client.UploadAsync(stream, "text/plain", "test.txt", new HostedFileUploadOptions { Purpose = "assistants" });
+        await client.UploadAsync(stream, "text/plain", "test.txt", new HostedFileClientOptions { Purpose = "assistants" });
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
@@ -167,7 +167,7 @@ public class LoggingHostedFileClientTests
         using var innerClient = new TestHostedFileClient
         {
             GetFileInfoAsyncCallback = (fileId, options, ct) =>
-                Task.FromResult<HostedFile?>(new HostedFile("file-456") { Name = "report.pdf" }),
+                Task.FromResult<HostedFileContent?>(new HostedFileContent("file-456") { Name = "report.pdf" }),
         };
 
         using IHostedFileClient client = innerClient
@@ -227,11 +227,11 @@ public class LoggingHostedFileClientTests
             ListFilesAsyncCallback = (options, ct) => GetFilesAsync(),
         };
 
-        static async IAsyncEnumerable<HostedFile> GetFilesAsync()
+        static async IAsyncEnumerable<HostedFileContent> GetFilesAsync()
         {
             await Task.Yield();
-            yield return new HostedFile("file-1") { Name = "a.txt" };
-            yield return new HostedFile("file-2") { Name = "b.txt" };
+            yield return new HostedFileContent("file-1") { Name = "a.txt" };
+            yield return new HostedFileContent("file-2") { Name = "b.txt" };
         }
 
         using IHostedFileClient client = innerClient
@@ -504,10 +504,10 @@ public class LoggingHostedFileClientTests
             ListFilesAsyncCallback = (options, ct) => ThrowOnSecondItem(),
         };
 
-        static async IAsyncEnumerable<HostedFile> ThrowOnSecondItem()
+        static async IAsyncEnumerable<HostedFileContent> ThrowOnSecondItem()
         {
             await Task.Yield();
-            yield return new HostedFile("file-1");
+            yield return new HostedFileContent("file-1");
             throw new InvalidOperationException("iteration failed");
         }
 
