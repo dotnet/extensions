@@ -187,20 +187,20 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Logging methods can&apos;t be generic.
+        ///   Looks up a localized string similar to Logging methods can&apos;t use the &apos;allows ref struct&apos; constraint.
         /// </summary>
-        internal static string LoggingMethodIsGenericMessage {
+        internal static string LoggingMethodHasAllowsRefStructConstraintMessage {
             get {
-                return ResourceManager.GetString("LoggingMethodIsGenericMessage", resourceCulture);
+                return ResourceManager.GetString("LoggingMethodHasAllowsRefStructConstraintMessage", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Logging methods can&apos;t be generic.
+        ///   Looks up a localized string similar to Logging methods can&apos;t use the &apos;allows ref struct&apos; constraint.
         /// </summary>
-        internal static string LoggingMethodIsGenericTitle {
+        internal static string LoggingMethodHasAllowsRefStructConstraintTitle {
             get {
-                return ResourceManager.GetString("LoggingMethodIsGenericTitle", resourceCulture);
+                return ResourceManager.GetString("LoggingMethodHasAllowsRefStructConstraintTitle", resourceCulture);
             }
         }
         

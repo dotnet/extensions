@@ -56,10 +56,10 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.LoggingMethodMustBePartialMessage,
         category: Category);
 
-    public static DiagnosticDescriptor LoggingMethodIsGeneric { get; } = Make(
+    public static DiagnosticDescriptor LoggingMethodHasAllowsRefStructConstraint { get; } = Make(
         id: DiagnosticIds.LoggerMessage.LOGGEN007,
-        title: Resources.LoggingMethodIsGenericTitle,
-        messageFormat: Resources.LoggingMethodIsGenericMessage,
+        title: Resources.LoggingMethodHasAllowsRefStructConstraintTitle,
+        messageFormat: Resources.LoggingMethodHasAllowsRefStructConstraintMessage,
         category: Category);
 
     public static DiagnosticDescriptor RedundantQualifierInMessage { get; } = Make(
