@@ -1697,9 +1697,9 @@ public class OpenAIChatClientTests
                 "temperature":0.5,
                 "messages":[{"role":"user","content":"hello"}],
                 "model":"gpt-4o",
+                "max_completion_tokens":20,
                 "stream":true,
-                "stream_options":{"include_usage":true},
-                "max_completion_tokens":20
+                "stream_options":{"include_usage":true}
             }
             """;
 

@@ -19,8 +19,10 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 {
     protected override IChatClient? CreateChatClient() =>
         IntegrationTestHelpers.GetOpenAIClient()
-        ?.GetResponsesClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini")
-        .AsIChatClient();
+        ?.GetResponsesClient()
+        .AsIChatClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini");
+
+    private static string ReasoningModel => "gpt-5-nano";
 
     public override bool FunctionInvokingChatClientSetsConversationId => true;
 
@@ -564,13 +566,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         ChatOptions chatOptions = new()
         {
+            ModelId = ReasoningModel,
+            Reasoning = new()
+            {
+                Effort = ReasoningEffort.Low,
+                Output = ReasoningOutput.Full,
+            },
             RawRepresentationFactory = _ => new CreateResponseOptions
             {
-                ReasoningOptions = new ResponseReasoningOptions
-                {
-                    ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
-                    ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Detailed
-                },
                 StoredOutputEnabled = false,
                 IncludedProperties = { IncludedResponseProperty.ReasoningEncryptedContent },
             },
@@ -599,7 +602,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         var response2 = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
         Assert.NotNull(response2);
-        Assert.Contains("6", response2.Text);
+        Assert.True(response2.Text.Contains("6") || response2.Text.Contains("six"));
 
         // 3. Serialize/deserialize to drop RawRepresentations, then make third request
         string json = JsonSerializer.Serialize(chatHistory, AIJsonUtilities.DefaultOptions);
@@ -644,13 +647,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         ChatOptions chatOptions = new()
         {
+            ModelId = ReasoningModel,
+            Reasoning = new()
+            {
+                Effort = ReasoningEffort.Low,
+                Output = ReasoningOutput.Full,
+            },
             RawRepresentationFactory = _ => new CreateResponseOptions
             {
-                ReasoningOptions = new ResponseReasoningOptions
-                {
-                    ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
-                    ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Detailed
-                },
                 StoredOutputEnabled = false,
                 IncludedProperties = { IncludedResponseProperty.ReasoningEncryptedContent },
             },

@@ -49,8 +49,8 @@ IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = new OllamaApi
 var openAIClient = new OpenAIClient(
     new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key. See the README for details.")));
 
-#pragma warning disable OPENAI001 // GetResponsesClient(string) is experimental and subject to change or removal in future updates.
-var chatClient = openAIClient.GetResponsesClient("gpt-4o-mini").AsIChatClient();
+#pragma warning disable OPENAI001 // GetResponsesClient() is experimental and subject to change or removal in future updates.
+var chatClient = openAIClient.GetResponsesClient().AsIChatClient("gpt-4o-mini");
 #pragma warning restore OPENAI001
 
 var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
@@ -66,7 +66,7 @@ var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small
 #endif
 var azureOpenAIEndpoint = new Uri(new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Endpoint. See the README for details.")), "/openai/v1");
 #if (IsManagedIdentity)
-#pragma warning disable OPENAI001 // OpenAIClient(AuthenticationPolicy, OpenAIClientOptions) and GetResponsesClient(string) are experimental and subject to change or removal in future updates.
+#pragma warning disable OPENAI001 // OpenAIClient(AuthenticationPolicy, OpenAIClientOptions) and GetResponsesClient() are experimental and subject to change or removal in future updates.
 var azureOpenAi = new OpenAIClient(
     new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
     new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint });
@@ -75,9 +75,9 @@ var azureOpenAi = new OpenAIClient(
 var openAIOptions = new OpenAIClientOptions { Endpoint = azureOpenAIEndpoint };
 var azureOpenAi = new OpenAIClient(new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Key. See the README for details.")), openAIOptions);
 
-#pragma warning disable OPENAI001 // GetResponsesClient(string) is experimental and subject to change or removal in future updates.
+#pragma warning disable OPENAI001 // GetResponsesClient() is experimental and subject to change or removal in future updates.
 #endif
-var chatClient = azureOpenAi.GetResponsesClient("gpt-4o-mini").AsIChatClient();
+var chatClient = azureOpenAi.GetResponsesClient().AsIChatClient("gpt-4o-mini");
 #pragma warning restore OPENAI001
 
 var embeddingGenerator = azureOpenAi.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
