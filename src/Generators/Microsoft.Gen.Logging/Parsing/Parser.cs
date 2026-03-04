@@ -540,15 +540,31 @@ internal sealed partial class Parser
             return null;
         }
 
+        if (paramSymbol.IsParams)
+        {
+            Diag(DiagDescriptors.LoggingMethodParameterParams, paramSymbol.GetLocation(), paramName);
+            return null;
+        }
+
         string? qualifier = null;
         if (paramSymbol.RefKind == RefKind.In)
         {
             qualifier = "in";
         }
+        else if (paramSymbol.RefKind == RefKind.RefReadOnlyParameter)
+        {
+            qualifier = "ref readonly";
+        }
         else if (paramSymbol.RefKind != RefKind.None)
         {
             // Parameter has "ref", "out" modifier, no can do
             Diag(DiagDescriptors.LoggingMethodParameterRefKind, paramSymbol.GetLocation(), paramSymbol.ContainingSymbol.Name, paramName);
+            return null;
+        }
+
+        if (paramSymbol.ScopedKind != ScopedKind.None)
+        {
+            Diag(DiagDescriptors.LoggingMethodParameterParams, paramSymbol.GetLocation(), paramName);
             return null;
         }
 
