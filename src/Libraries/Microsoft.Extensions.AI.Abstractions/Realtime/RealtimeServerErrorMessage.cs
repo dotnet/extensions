@@ -32,8 +32,8 @@ public class RealtimeServerErrorMessage : RealtimeServerMessage
     /// Gets or sets the ID of the client message that caused the error.
     /// </summary>
     /// <remarks>
-    /// Unlike <see cref="MessageId"/>, which identifies this server message itself,
+    /// Unlike <see cref="RealtimeServerMessage.MessageId"/>, which identifies this server message itself,
     /// this property identifies the originating client message that triggered the error.
     /// </remarks>
-    public string? ErrorMessageId { get; set; }
+    public string? OriginatingMessageId { get; set; }
 }

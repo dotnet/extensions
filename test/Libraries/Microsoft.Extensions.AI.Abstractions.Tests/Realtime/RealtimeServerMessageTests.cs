@@ -50,7 +50,7 @@ public class RealtimeServerMessageTests
         var message = new RealtimeServerErrorMessage();
 
         Assert.Null(message.Error);
-        Assert.Null(message.ErrorMessageId);
+        Assert.Null(message.OriginatingMessageId);
     }
 
     [Fact]
@@ -60,12 +60,12 @@ public class RealtimeServerMessageTests
         var message = new RealtimeServerErrorMessage
         {
             Error = error,
-            ErrorMessageId = "evt_bad",
+            OriginatingMessageId = "evt_bad",
             MessageId = "evt_err_1",
         };
 
         Assert.Same(error, message.Error);
-        Assert.Equal("evt_bad", message.ErrorMessageId);
+        Assert.Equal("evt_bad", message.OriginatingMessageId);
         Assert.Equal("temperature", message.Error.Details);
         Assert.Equal("evt_err_1", message.MessageId);
         Assert.IsAssignableFrom<RealtimeServerMessage>(message);
