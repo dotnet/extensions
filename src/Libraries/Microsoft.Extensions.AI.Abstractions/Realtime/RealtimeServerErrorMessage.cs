@@ -36,5 +36,4 @@ public class RealtimeServerErrorMessage : RealtimeServerMessage
     /// allowing correlation of the error to the originating client request.
     /// </remarks>
     public string? ErrorMessageId { get; set; }
-
 }
