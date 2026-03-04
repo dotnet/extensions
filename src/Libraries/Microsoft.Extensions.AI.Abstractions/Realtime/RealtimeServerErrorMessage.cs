@@ -29,11 +29,11 @@ public class RealtimeServerErrorMessage : RealtimeServerMessage
     public ErrorContent? Error { get; set; }
 
     /// <summary>
-    /// Gets or sets the message ID of the client message that caused the error.
+    /// Gets or sets the ID of the client message that caused the error.
     /// </summary>
     /// <remarks>
-    /// This is specific to event-driven protocols where multiple client messages may be in-flight,
-    /// allowing correlation of the error to the originating client request.
+    /// Unlike <see cref="MessageId"/>, which identifies this server message itself,
+    /// this property identifies the originating client message that triggered the error.
     /// </remarks>
     public string? ErrorMessageId { get; set; }
 }
