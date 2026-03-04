@@ -134,7 +134,7 @@ public class RealtimeClientMessageTests
         Assert.Null(message.Items);
         Assert.Null(message.OutputAudioOptions);
         Assert.Null(message.OutputVoice);
-        Assert.False(message.ExcludeFromConversation);
+        Assert.Null(message.ExcludeFromConversation);
         Assert.Null(message.Instructions);
         Assert.Null(message.MaxOutputTokens);
         Assert.Null(message.AdditionalProperties);

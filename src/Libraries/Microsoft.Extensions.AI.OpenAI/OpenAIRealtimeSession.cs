@@ -240,9 +240,12 @@ public sealed class OpenAIRealtimeSession : IRealtimeSession
         }
 
         // Conversation mode.
-        responseOptions.DefaultConversationConfiguration = responseCreate.ExcludeFromConversation
-            ? Sdk.RealtimeResponseDefaultConversationConfiguration.None
-            : Sdk.RealtimeResponseDefaultConversationConfiguration.Auto;
+        responseOptions.DefaultConversationConfiguration = responseCreate.ExcludeFromConversation switch
+        {
+            true => Sdk.RealtimeResponseDefaultConversationConfiguration.None,
+            false => Sdk.RealtimeResponseDefaultConversationConfiguration.Auto,
+            _ => null,
+        };
 
         // Input items.
         if (responseCreate.Items is { } items)

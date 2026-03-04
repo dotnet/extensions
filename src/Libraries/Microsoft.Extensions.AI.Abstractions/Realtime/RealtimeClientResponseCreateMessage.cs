@@ -55,10 +55,10 @@ public class RealtimeClientResponseCreateMessage : RealtimeClientMessage
     /// <remarks>
     /// When <see langword="true"/>, the response is generated out-of-band: the model produces output
     /// but the resulting items are not added to the conversation history, so they will not appear
-    /// as context for subsequent responses. Defaults to <see langword="false"/>, meaning response
-    /// output is added to the default conversation.
+    /// as context for subsequent responses.
+    /// If <see langword="null"/>, the provider's default behavior is used.
     /// </remarks>
-    public bool ExcludeFromConversation { get; set; }
+    public bool? ExcludeFromConversation { get; set; }
 
     /// <summary>
     /// Gets or sets the instructions that guide the model on desired responses.
