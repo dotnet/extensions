@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -151,7 +151,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             Assert.NotNull(response);
             Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
             Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
-            Assert.Empty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
+            Assert.Empty(response.Messages.SelectMany(m => m.Contents).OfType<ToolApprovalRequestContent>());
 
             Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
         }
@@ -205,8 +205,8 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 var approvalResponse = new ChatMessage(ChatRole.Tool,
                     response.Messages
                             .SelectMany(m => m.Contents)
-                            .OfType<McpServerToolApprovalRequestContent>()
-                            .Select(c => new McpServerToolApprovalResponseContent(c.ToolCall.CallId, true))
+                            .OfType<ToolApprovalRequestContent>()
+                            .Select(c => c.CreateResponse(true))
                             .ToArray());
                 if (approvalResponse.Contents.Count == 0)
                 {
@@ -379,7 +379,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["RemoteMCP:ConnectorAccessToken"] is not string accessToken)
+        if (TestRunnerConfiguration.Instance["RemoteMCP:ConnectorAccessToken"] is not string { Length: > 0 } accessToken)
         {
             throw new SkipTestException(
                 "To run this test, set a value for RemoteMCP:ConnectorAccessToken. " +
@@ -396,9 +396,9 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 Tools = [new HostedMcpServerTool("calendar", "connector_googlecalendar")
                     {
                         ApprovalMode = approval ?
-                                HostedMcpServerToolApprovalMode.AlwaysRequire :
-                                HostedMcpServerToolApprovalMode.NeverRequire,
-                        AuthorizationToken = accessToken
+                            HostedMcpServerToolApprovalMode.AlwaysRequire :
+                            HostedMcpServerToolApprovalMode.NeverRequire,
+                        Headers = new Dictionary<string, string> { ["Authorization"] = $"Bearer {accessToken}" },
                     }
                 ],
             };
@@ -414,8 +414,9 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             if (approval)
             {
                 input.AddRange(response.Messages);
-                var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
-                Assert.Equal("search_events", approvalRequest.ToolCall.ToolName);
+                var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<ToolApprovalRequestContent>());
+                var mcpCallContent = Assert.IsType<McpServerToolCallContent>(approvalRequest.ToolCall);
+                Assert.Equal("search_events", mcpCallContent.Name);
                 input.Add(new ChatMessage(ChatRole.Tool, [approvalRequest.CreateResponse(true)]));
 
                 response = streaming ?
@@ -425,10 +426,10 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
             Assert.NotNull(response);
             var toolCall = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
-            Assert.Equal("search_events", toolCall.ToolName);
+            Assert.Equal("search_events", toolCall.Name);
 
             var toolResult = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
-            var content = Assert.IsType<TextContent>(Assert.Single(toolResult.Output!));
+            var content = Assert.IsType<TextContent>(Assert.Single(toolResult.Outputs!));
             Assert.Equal(@"{""events"": [], ""next_page_token"": null}", content.Text);
         }
     }

@@ -36,7 +36,7 @@ public static partial class AIJsonUtilities
         _ = Throw.IfNull(options);
         _ = Throw.IfNull(typeDiscriminatorId);
 
-        AddAIContentType(options, typeof(TContent), typeDiscriminatorId, checkBuiltIn: true);
+        AddAIContentType(options, typeof(AIContent), typeof(TContent), typeDiscriminatorId, checkBuiltIn: true);
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public static partial class AIJsonUtilities
             Throw.ArgumentException(nameof(contentType), $"The content type must derive from {nameof(AIContent)}.");
         }
 
-        AddAIContentType(options, contentType, typeDiscriminatorId, checkBuiltIn: true);
+        AddAIContentType(options, typeof(AIContent), contentType, typeDiscriminatorId, checkBuiltIn: true);
     }
 
     /// <summary>Serializes the supplied values and computes a string hash of the resulting JSON.</summary>
@@ -186,7 +186,7 @@ public static partial class AIJsonUtilities
         }
     }
 
-    private static void AddAIContentType(JsonSerializerOptions options, Type contentType, string typeDiscriminatorId, bool checkBuiltIn)
+    private static void AddAIContentType(JsonSerializerOptions options, Type baseType, Type contentType, string typeDiscriminatorId, bool checkBuiltIn)
     {
         if (checkBuiltIn && (contentType.Assembly == typeof(AIContent).Assembly))
         {
@@ -196,7 +196,7 @@ public static partial class AIJsonUtilities
         IJsonTypeInfoResolver resolver = options.TypeInfoResolver ?? DefaultOptions.TypeInfoResolver!;
         options.TypeInfoResolver = resolver.WithAddedModifier(typeInfo =>
         {
-            if (typeInfo.Type == typeof(AIContent))
+            if (typeInfo.Type == baseType)
             {
                 (typeInfo.PolymorphismOptions ??= new()).DerivedTypes.Add(new(contentType, typeDiscriminatorId));
             }

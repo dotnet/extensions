@@ -169,6 +169,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     internal static IEnumerable<ChatMessage> ToChatMessages(IEnumerable<ResponseItem> items, CreateResponseOptions? options = null)
     {
         ChatMessage? message = null;
+        Dictionary<string, ToolApprovalRequestContent>? mcpApprovalRequests = null;
 
         foreach (ResponseItem outputItem in items)
         {
@@ -212,24 +213,39 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case McpToolCallApprovalRequestItem mtcari:
-                    message.Contents.Add(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
+                    // We are reusing the mtcari.Id as the McpServerToolCallContent.CallId since we don't have one yet.
+                    var approvalRequest = new ToolApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
                     {
-                        Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
+                        Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
                         RawRepresentation = mtcari,
                     })
+                    {
+                        RawRepresentation = mtcari,
+                    };
+
+                    // Store for correlation with responses.
+                    (mcpApprovalRequests ??= new())[mtcari.Id] = approvalRequest;
+                    message.Contents.Add(approvalRequest);
+                    break;
+
+                case McpToolCallApprovalResponseItem mtcari
+                    when mcpApprovalRequests?.TryGetValue(mtcari.ApprovalRequestId, out ToolApprovalRequestContent? request) is true:
+                    _ = mcpApprovalRequests.Remove(mtcari.ApprovalRequestId);
+
+                    // Correlate with the original request to reuse its ToolCall.
+                    // McpToolCallApprovalResponseItem without a correlated request falls through to default.
+                    message.Contents.Add(new ToolApprovalResponseContent(
+                        mtcari.ApprovalRequestId,
+                        mtcari.Approved,
+                        request.ToolCall)
                     {
                         RawRepresentation = mtcari,
                     });
                     break;
 
-                case McpToolCallApprovalResponseItem mtcari:
-                    message.Contents.Add(new McpServerToolApprovalResponseContent(mtcari.ApprovalRequestId, mtcari.Approved) { RawRepresentation = mtcari });
-                    break;
-
                 case CodeInterpreterCallResponseItem cicri:
-                    message.Contents.Add(new CodeInterpreterToolCallContent
+                    message.Contents.Add(new CodeInterpreterToolCallContent(cicri.Id)
                     {
-                        CallId = cicri.Id,
                         Inputs = !string.IsNullOrWhiteSpace(cicri.Code) ? [new DataContent(Encoding.UTF8.GetBytes(cicri.Code), OpenAIClientExtensions.PythonMediaType)] : null,
 
                         // We purposefully do not set the RawRepresentation on the CodeInterpreterToolCallContent, only on the CodeInterpreterToolResultContent, to avoid
@@ -242,6 +258,23 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 case ImageGenerationCallResponseItem imageGenItem:
                     AddImageGenerationContents(imageGenItem, options, message.Contents);
+                    break;
+
+                // These tool types don't have dedicated AIContent-derived types. We use the base ToolCallContent/ToolResultContent
+                // to represent them, with the original ResponseItem accessible via RawRepresentation for type-specific data.
+                // WebSearch and FileSearch items contain both the call and results inline, so we emit a call+result pair
+                // (like MCP/CodeInterpreter). ComputerCall results arrive as a separate ComputerCallOutputResponseItem.
+                case WebSearchCallResponseItem or FileSearchCallResponseItem:
+                    message.Contents.Add(new ToolCallContent(outputItem.Id));
+                    message.Contents.Add(new ToolResultContent(outputItem.Id) { RawRepresentation = outputItem });
+                    break;
+
+                case ComputerCallResponseItem:
+                    message.Contents.Add(new ToolCallContent(outputItem.Id) { RawRepresentation = outputItem });
+                    break;
+
+                case ComputerCallOutputResponseItem computerCallOutput:
+                    message.Contents.Add(new ToolResultContent(computerCallOutput.CallId) { RawRepresentation = computerCallOutput });
                     break;
 
                 default:
@@ -307,6 +340,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         ChatRole? lastRole = null;
         bool anyFunctions = false;
         ResponseStatus? latestResponseStatus = null;
+        Dictionary<string, ToolApprovalRequestContent>? mcpApprovalRequests = null;
 
         UpdateConversationId(resumeResponseId);
 
@@ -416,9 +450,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case StreamingResponseImageGenerationCallInProgressUpdate imageGenInProgress:
-                    yield return CreateUpdate(new ImageGenerationToolCallContent
+                    yield return CreateUpdate(new ImageGenerationToolCallContent(imageGenInProgress.ItemId)
                     {
-                        ImageId = imageGenInProgress.ItemId,
                         RawRepresentation = imageGenInProgress,
                     });
                     break;
@@ -428,9 +461,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case StreamingResponseCodeInterpreterCallCodeDeltaUpdate codeInterpreterDeltaUpdate:
-                    yield return CreateUpdate(new CodeInterpreterToolCallContent
+                    yield return CreateUpdate(new CodeInterpreterToolCallContent(codeInterpreterDeltaUpdate.ItemId)
                     {
-                        CallId = codeInterpreterDeltaUpdate.ItemId,
                         Inputs = [new DataContent(Encoding.UTF8.GetBytes(codeInterpreterDeltaUpdate.Delta), OpenAIClientExtensions.PythonMediaType)],
                         RawRepresentation = codeInterpreterDeltaUpdate,
                     });
@@ -451,11 +483,31 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case McpToolCallApprovalRequestItem mtcari:
-                            yield return CreateUpdate(new McpServerToolApprovalRequestContent(mtcari.Id, new(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
+                            // We are reusing the mtcari.Id as the McpServerToolCallContent.CallId since we don't have one yet.
+                            var streamApprovalRequest = new ToolApprovalRequestContent(mtcari.Id, new McpServerToolCallContent(mtcari.Id, mtcari.ToolName, mtcari.ServerLabel)
                             {
-                                Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
+                                Arguments = JsonSerializer.Deserialize(mtcari.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
                                 RawRepresentation = mtcari,
                             })
+                            {
+                                RawRepresentation = mtcari,
+                            };
+
+                            // Store for correlation with responses.
+                            (mcpApprovalRequests ??= new())[mtcari.Id] = streamApprovalRequest;
+                            yield return CreateUpdate(streamApprovalRequest);
+                            break;
+
+                        case McpToolCallApprovalResponseItem mtcari
+                            when mcpApprovalRequests?.TryGetValue(mtcari.ApprovalRequestId, out ToolApprovalRequestContent? request) is true:
+                            _ = mcpApprovalRequests.Remove(mtcari.ApprovalRequestId);
+
+                            // Correlate with the original request to reuse its ToolCall.
+                            // McpToolCallApprovalResponseItem without a correlated request falls through to default.
+                            yield return CreateUpdate(new ToolApprovalResponseContent(
+                                mtcari.ApprovalRequestId,
+                                mtcari.Approved,
+                                request.ToolCall)
                             {
                                 RawRepresentation = mtcari,
                             });
@@ -499,6 +551,24 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         // Just yield an update without AIContent for the ResponseItem.
                         case MessageResponseItem or ReasoningResponseItem or ImageGenerationCallResponseItem:
                             yield return CreateUpdate();
+                            break;
+
+                        // These tool types don't have dedicated AIContent-derived types. We use the base ToolCallContent/ToolResultContent
+                        // to represent them, with the original ResponseItem accessible via RawRepresentation for type-specific data.
+                        // WebSearch and FileSearch items contain both the call and results inline, so we emit a call+result pair
+                        // (like MCP/CodeInterpreter). ComputerCall results arrive as a separate ComputerCallOutputResponseItem.
+                        case WebSearchCallResponseItem or FileSearchCallResponseItem:
+                            var toolCallUpdate = CreateUpdate(new ToolCallContent(outputItemDoneUpdate.Item.Id));
+                            toolCallUpdate.Contents.Add(new ToolResultContent(outputItemDoneUpdate.Item.Id) { RawRepresentation = outputItemDoneUpdate.Item });
+                            yield return toolCallUpdate;
+                            break;
+
+                        case ComputerCallResponseItem:
+                            yield return CreateUpdate(new ToolCallContent(outputItemDoneUpdate.Item.Id) { RawRepresentation = outputItemDoneUpdate.Item });
+                            break;
+
+                        case ComputerCallOutputResponseItem computerCallOutput:
+                            yield return CreateUpdate(new ToolResultContent(computerCallOutput.CallId) { RawRepresentation = computerCallOutput });
                             break;
 
                         // For everything else, yield an AIContent for the ResponseItem.
@@ -644,16 +714,22 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 if (isUrl)
                 {
-                    // For http: favor headers over authorization token. 
-                    if (mcpTool.Headers.Count > 0)
+                    if (mcpTool.Headers is { Count: > 0 })
                     {
                         responsesMcpTool.Headers = mcpTool.Headers;
                     }
                 }
                 else
                 {
-                    // For connectors: Only set AuthorizationToken, do not include headers.
-                    responsesMcpTool.AuthorizationToken = mcpTool.AuthorizationToken;
+                    // For connectors: extract Bearer token from Headers and set as AuthorizationToken.
+                    // Use case-insensitive comparison since auth scheme is case-insensitive per RFC 7235.
+                    // Allow flexible whitespace in the header value.
+                    if (mcpTool.Headers?.TryGetValue("Authorization", out string? authHeader) is true &&
+                        authHeader.AsSpan().Trim() is { Length: > 0 } trimmedAuthHeader &&
+                        trimmedAuthHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        responsesMcpTool.AuthorizationToken = trimmedAuthHeader.Slice("Bearer ".Length).TrimStart().ToString();
+                    }
                 }
 
                 if (mcpTool.AllowedTools is not null)
@@ -896,7 +972,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         _ = options; // currently unused
 
-        Dictionary<string, AIContent>? idToContentMapping = null;
+        Dictionary<string, McpServerToolCallContent>? idToContentMapping = null;
 
         foreach (ChatMessage input in inputs)
         {
@@ -929,7 +1005,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     ResponseItem? directItem = item switch
                     {
                         { RawRepresentation: ResponseItem rawRep } => rawRep,
-                        McpServerToolApprovalResponseContent mcpResp => ResponseItem.CreateMcpApprovalResponseItem(mcpResp.Id, mcpResp.Approved),
+                        ToolApprovalResponseContent { ToolCall: McpServerToolCallContent } toolResp => ResponseItem.CreateMcpApprovalResponseItem(toolResp.RequestId, toolResp.Approved),
                         _ => null
                     };
 
@@ -1009,6 +1085,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     {
                         case AIContent when item.RawRepresentation is ResponseItem rawRep:
                             yield return rawRep;
+                            break;
+
+                        case ToolApprovalResponseContent toolResp when toolResp.ToolCall is McpServerToolCallContent:
+                            yield return ResponseItem.CreateMcpApprovalResponseItem(toolResp.RequestId, toolResp.Approved);
                             break;
 
                         case FunctionResultContent resultContent:
@@ -1125,10 +1205,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                     break;
                             }
                             break;
-
-                        case McpServerToolApprovalResponseContent mcpApprovalResponseContent:
-                            yield return ResponseItem.CreateMcpApprovalResponseItem(mcpApprovalResponseContent.Id, mcpApprovalResponseContent.Approved);
-                            break;
                     }
                 }
 
@@ -1156,6 +1232,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             };
                             break;
 
+                        case McpServerToolCallContent mstcc:
+                            (idToContentMapping ??= [])[mstcc.CallId] = mstcc;
+                            break;
+
                         case FunctionCallContent callContent:
                             yield return ResponseItem.CreateFunctionCallItem(
                                 callContent.CallId,
@@ -1165,34 +1245,33 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                     AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                             break;
 
-                        case McpServerToolApprovalRequestContent mcpApprovalRequestContent:
+                        case ToolApprovalRequestContent toolReq when toolReq.ToolCall is McpServerToolCallContent mcpToolCall:
                             yield return ResponseItem.CreateMcpApprovalRequestItem(
-                                mcpApprovalRequestContent.Id,
-                                mcpApprovalRequestContent.ToolCall.ServerName,
-                                mcpApprovalRequestContent.ToolCall.ToolName,
-                                BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(mcpApprovalRequestContent.ToolCall.Arguments!, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)));
-                            break;
-
-                        case McpServerToolCallContent mstcc:
-                            (idToContentMapping ??= [])[mstcc.CallId] = mstcc;
+                                toolReq.RequestId,
+                                mcpToolCall.ServerName,
+                                mcpToolCall.Name,
+                                BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
+                                    mcpToolCall.Arguments!,
+                                    AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                             break;
 
                         case McpServerToolResultContent mstrc:
-                            if (idToContentMapping?.TryGetValue(mstrc.CallId, out AIContent? callContentFromMapping) is true &&
-                                callContentFromMapping is McpServerToolCallContent associatedCall)
+                            if (idToContentMapping?.TryGetValue(mstrc.CallId, out McpServerToolCallContent? associatedCall) is true)
                             {
                                 _ = idToContentMapping.Remove(mstrc.CallId);
                                 McpToolCallItem mtci = ResponseItem.CreateMcpToolCallItem(
                                     associatedCall.ServerName,
-                                    associatedCall.ToolName,
-                                    BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(associatedCall.Arguments!, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)));
-                                if (mstrc.Output?.OfType<ErrorContent>().FirstOrDefault() is ErrorContent errorContent)
+                                    associatedCall.Name,
+                                    BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
+                                        associatedCall.Arguments!,
+                                        AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
+                                if (mstrc.Outputs?.OfType<ErrorContent>().FirstOrDefault() is ErrorContent errorContent)
                                 {
                                     mtci.Error = BinaryData.FromString(errorContent.Message);
                                 }
                                 else
                                 {
-                                    mtci.ToolOutput = string.Concat(mstrc.Output?.OfType<TextContent>() ?? []);
+                                    mtci.ToolOutput = string.Concat(mstrc.Outputs?.OfType<TextContent>() ?? []);
                                 }
 
                                 yield return mtci;
@@ -1368,7 +1447,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     {
         contents.Add(new McpServerToolCallContent(mtci.Id, mtci.ToolName, mtci.ServerLabel)
         {
-            Arguments = JsonSerializer.Deserialize(mtci.ToolArguments.ToMemory().Span, OpenAIJsonContext.Default.IReadOnlyDictionaryStringObject)!,
+            Arguments = JsonSerializer.Deserialize(mtci.ToolArguments, OpenAIJsonContext.Default.IDictionaryStringObject),
 
             // We purposefully do not set the RawRepresentation on the McpServerToolCallContent, only on the McpServerToolResultContent, to avoid
             // the same McpToolCallItem being included on two different AIContent instances. When these are roundtripped, we want only one
@@ -1378,7 +1457,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         contents.Add(new McpServerToolResultContent(mtci.Id)
         {
             RawRepresentation = mtci,
-            Output = [mtci.Error is not null ?
+            Outputs = [mtci.Error is not null ?
                 new ErrorContent(mtci.Error.ToString()) :
                 new TextContent(mtci.ToolOutput)],
         });
@@ -1395,9 +1474,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
     /// <summary>Creates a <see cref="CodeInterpreterToolResultContent"/> for the specified <paramref name="cicri"/>.</summary>
     private static CodeInterpreterToolResultContent CreateCodeInterpreterResultContent(CodeInterpreterCallResponseItem cicri) =>
-        new()
+        new(cicri.Id)
         {
-            CallId = cicri.Id,
             Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
                 o switch
                 {
@@ -1413,14 +1491,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
         string outputFormat = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
-        contents.Add(new ImageGenerationToolCallContent
-        {
-            ImageId = outputItem.Id,
-        });
+        contents.Add(new ImageGenerationToolCallContent(outputItem.Id));
 
-        contents.Add(new ImageGenerationToolResultContent
+        contents.Add(new ImageGenerationToolResultContent(outputItem.Id)
         {
-            ImageId = outputItem.Id,
             RawRepresentation = outputItem,
             Outputs = [new DataContent(outputItem.ImageResultBytes, $"image/{outputFormat}")]
         });
@@ -1431,9 +1505,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
         var outputType = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
-        return new ImageGenerationToolResultContent
+        return new ImageGenerationToolResultContent(update.ItemId)
         {
-            ImageId = update.ItemId,
             RawRepresentation = update,
             Outputs =
             [
