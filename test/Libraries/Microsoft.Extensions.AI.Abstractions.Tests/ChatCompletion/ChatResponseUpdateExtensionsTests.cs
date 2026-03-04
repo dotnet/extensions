@@ -1020,19 +1020,19 @@ public class ChatResponseUpdateExtensionsTests
             new(null, "Searching..."),
 
             // Initial WebSearchToolCallContent with a query (like first search)
-            new() { Contents = [new WebSearchToolCallContent { CallId = "ws1", Queries = ["first query"] }] },
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["first query"] }] },
 
             // Text in between
             new(null, " found results"),
 
             // Second WebSearchToolCallContent with additional query and RawRepresentation
-            new() { Contents = [new WebSearchToolCallContent { CallId = "ws1", Queries = ["second query"], RawRepresentation = rawRepresentation, AdditionalProperties = additionalProps }] },
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["second query"], RawRepresentation = rawRepresentation, AdditionalProperties = additionalProps }] },
 
             // Different CallId should not be coalesced with the first
-            new() { Contents = [new WebSearchToolCallContent { CallId = "ws2", Queries = ["AI safety"] }] },
+            new() { Contents = [new WebSearchToolCallContent("ws2") { Queries = ["AI safety"] }] },
 
             // Third for ws1, no queries this time
-            new() { Contents = [new WebSearchToolCallContent { CallId = "ws1" }] },
+            new() { Contents = [new WebSearchToolCallContent("ws1")] },
 
             new(null, " done"),
         };
@@ -1064,8 +1064,8 @@ public class ChatResponseUpdateExtensionsTests
         // First item has no queries, second provides them — should assign directly rather than merge.
         ChatResponseUpdate[] updates =
         {
-            new() { Contents = [new WebSearchToolCallContent { CallId = "ws1" }] },
-            new() { Contents = [new WebSearchToolCallContent { CallId = "ws1", Queries = ["query from second"] }] },
+            new() { Contents = [new WebSearchToolCallContent("ws1")] },
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["query from second"] }] },
         };
 
         ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
@@ -1079,13 +1079,13 @@ public class ChatResponseUpdateExtensionsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ToChatResponse_WebSearchToolCallContentWithNullOrEmptyCallId_DoesNotCoalesce(bool useAsync)
+    public async Task ToChatResponse_WebSearchToolCallContentWithDistinctCallIds_DoesNotCoalesce(bool useAsync)
     {
         ChatResponseUpdate[] updates =
         {
-            new() { Contents = [new WebSearchToolCallContent { CallId = null, Queries = ["q1"] }] },
-            new() { Contents = [new WebSearchToolCallContent { CallId = "", Queries = ["q2"] }] },
-            new() { Contents = [new WebSearchToolCallContent { CallId = null, Queries = ["q3"] }] },
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["q1"] }] },
+            new() { Contents = [new WebSearchToolCallContent("ws2") { Queries = ["q2"] }] },
+            new() { Contents = [new WebSearchToolCallContent("ws3") { Queries = ["q3"] }] },
         };
 
         ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();

@@ -11,20 +11,18 @@ public class WebSearchToolCallContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        WebSearchToolCallContent c = new();
+        WebSearchToolCallContent c = new("callId");
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.CallId);
+        Assert.Equal("callId", c.CallId);
         Assert.Null(c.Queries);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        WebSearchToolCallContent c = new();
+        WebSearchToolCallContent c = new("ws_call123");
 
-        Assert.Null(c.CallId);
-        c.CallId = "ws_call123";
         Assert.Equal("ws_call123", c.CallId);
 
         Assert.Null(c.Queries);
@@ -46,9 +44,8 @@ public class WebSearchToolCallContentTests
     [Fact]
     public void Serialization_Roundtrips()
     {
-        WebSearchToolCallContent content = new()
+        WebSearchToolCallContent content = new("ws_call123")
         {
-            CallId = "ws_call123",
             Queries = ["what is .NET 10"],
         };
 
@@ -63,9 +60,8 @@ public class WebSearchToolCallContentTests
     [Fact]
     public void Serialization_AsAIContent_Roundtrips()
     {
-        AIContent content = new WebSearchToolCallContent
+        AIContent content = new WebSearchToolCallContent("ws_call456")
         {
-            CallId = "ws_call456",
             Queries = ["AI safety research", "latest AI alignment papers"],
         };
 

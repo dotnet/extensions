@@ -15,19 +15,16 @@ namespace Microsoft.Extensions.AI;
 /// It is informational only and represents the call itself, not the result.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIWebSearch, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class WebSearchToolCallContent : AIContent
+public sealed class WebSearchToolCallContent : ToolCallContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="WebSearchToolCallContent"/> class.
     /// </summary>
-    public WebSearchToolCallContent()
+    /// <param name="callId">The tool call ID.</param>
+    public WebSearchToolCallContent(string callId)
+        : base(callId)
     {
     }
-
-    /// <summary>
-    /// Gets or sets the tool call ID.
-    /// </summary>
-    public string? CallId { get; set; }
 
     /// <summary>
     /// Gets or sets the search queries issued by the service.

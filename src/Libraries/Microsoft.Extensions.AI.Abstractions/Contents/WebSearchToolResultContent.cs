@@ -12,29 +12,28 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 /// <remarks>
 /// This content type represents the results found by a hosted AI service's web search tool.
-/// The results contain a list of <see cref="WebSearchResult"/> items, each describing a web page
-/// found during the search.
+/// The results contain a list of <see cref="AIContent"/> items describing the web pages
+/// found during the search, typically as <see cref="UriContent"/> instances.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIWebSearch, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class WebSearchToolResultContent : AIContent
+public sealed class WebSearchToolResultContent : ToolResultContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="WebSearchToolResultContent"/> class.
     /// </summary>
-    public WebSearchToolResultContent()
+    /// <param name="callId">The tool call ID.</param>
+    public WebSearchToolResultContent(string callId)
+        : base(callId)
     {
     }
-
-    /// <summary>
-    /// Gets or sets the tool call ID that this result corresponds to.
-    /// </summary>
-    public string? CallId { get; set; }
 
     /// <summary>
     /// Gets or sets the web search results.
     /// </summary>
     /// <remarks>
-    /// Each item represents a web page found during the search.
+    /// Each item represents a web page found during the search, typically as a <see cref="UriContent"/> instance.
+    /// If a title is available for a result, it may be stored in the item's <see cref="AIContent.AdditionalProperties"/>
+    /// under the key <c>"title"</c>.
     /// </remarks>
-    public IList<WebSearchResult>? Results { get; set; }
+    public IList<AIContent>? Results { get; set; }
 }

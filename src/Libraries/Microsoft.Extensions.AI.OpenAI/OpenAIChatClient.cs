@@ -627,7 +627,9 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         break;
 
                     case HostedWebSearchTool:
+#pragma warning disable OPENAI001 // WebSearchOptions is experimental
                         result.WebSearchOptions ??= new();
+#pragma warning restore OPENAI001
                         break;
                 }
             }

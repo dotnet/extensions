@@ -13,26 +13,24 @@ public class WebSearchToolResultContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        WebSearchToolResultContent c = new();
+        WebSearchToolResultContent c = new("callId");
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.CallId);
+        Assert.Equal("callId", c.CallId);
         Assert.Null(c.Results);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        WebSearchToolResultContent c = new();
+        WebSearchToolResultContent c = new("ws_call123");
 
-        Assert.Null(c.CallId);
-        c.CallId = "ws_call123";
         Assert.Equal("ws_call123", c.CallId);
 
         Assert.Null(c.Results);
-        IList<WebSearchResult> results =
+        IList<AIContent> results =
         [
-            new WebSearchResult { Title = "Result 1", Url = new Uri("https://example.com/1"), Snippet = "First result" }
+            new UriContent(new Uri("https://example.com/1"), "text/html") { AdditionalProperties = new() { ["title"] = "Result 1" } }
         ];
         c.Results = results;
         Assert.Same(results, c.Results);
@@ -51,34 +49,38 @@ public class WebSearchToolResultContentTests
     [Fact]
     public void Results_SupportsMultipleItems()
     {
-        WebSearchToolResultContent c = new()
+        WebSearchToolResultContent c = new("ws_call789")
         {
-            CallId = "ws_call789",
             Results =
             [
-                new WebSearchResult { Title = "First", Url = new Uri("https://example.com/1"), Snippet = "First snippet" },
-                new WebSearchResult { Title = "Second", Url = new Uri("https://example.com/2"), Snippet = "Second snippet" },
-                new WebSearchResult { Title = "Third", Url = new Uri("https://example.com/3") },
+                new UriContent(new Uri("https://example.com/1"), "text/html") { AdditionalProperties = new() { ["title"] = "First" } },
+                new UriContent(new Uri("https://example.com/2"), "text/html") { AdditionalProperties = new() { ["title"] = "Second" } },
+                new UriContent(new Uri("https://example.com/3"), "text/html"),
             ]
         };
 
         Assert.NotNull(c.Results);
         Assert.Equal(3, c.Results.Count);
-        Assert.Equal("First", c.Results[0].Title);
-        Assert.Equal("Second", c.Results[1].Title);
-        Assert.Null(c.Results[2].Snippet);
+
+        var first = Assert.IsType<UriContent>(c.Results[0]);
+        Assert.Equal("First", first.AdditionalProperties?["title"]);
+
+        var second = Assert.IsType<UriContent>(c.Results[1]);
+        Assert.Equal("Second", second.AdditionalProperties?["title"]);
+
+        var third = Assert.IsType<UriContent>(c.Results[2]);
+        Assert.Null(third.AdditionalProperties);
     }
 
     [Fact]
     public void Serialization_Roundtrips()
     {
-        WebSearchToolResultContent content = new()
+        WebSearchToolResultContent content = new("ws_call123")
         {
-            CallId = "ws_call123",
             Results =
             [
-                new WebSearchResult { Title = "Example Page", Url = new Uri("https://example.com"), Snippet = "An example" },
-                new WebSearchResult { Title = "Another Page", Url = new Uri("https://another.com") },
+                new UriContent(new Uri("https://example.com"), "text/html") { AdditionalProperties = new() { ["title"] = "Example Page" } },
+                new UriContent(new Uri("https://another.com"), "text/html"),
             ]
         };
 
@@ -89,23 +91,23 @@ public class WebSearchToolResultContentTests
         Assert.Equal("ws_call123", deserialized.CallId);
         Assert.NotNull(deserialized.Results);
         Assert.Equal(2, deserialized.Results.Count);
-        Assert.Equal("Example Page", deserialized.Results[0].Title);
-        Assert.Equal(new Uri("https://example.com"), deserialized.Results[0].Url);
-        Assert.Equal("An example", deserialized.Results[0].Snippet);
-        Assert.Equal("Another Page", deserialized.Results[1].Title);
-        Assert.Equal(new Uri("https://another.com"), deserialized.Results[1].Url);
-        Assert.Null(deserialized.Results[1].Snippet);
+
+        var first = Assert.IsType<UriContent>(deserialized.Results[0]);
+        Assert.Equal(new Uri("https://example.com"), first.Uri);
+        Assert.Equal("Example Page", first.AdditionalProperties?["title"]?.ToString());
+
+        var second = Assert.IsType<UriContent>(deserialized.Results[1]);
+        Assert.Equal(new Uri("https://another.com"), second.Uri);
     }
 
     [Fact]
     public void Serialization_AsAIContent_Roundtrips()
     {
-        AIContent content = new WebSearchToolResultContent
+        AIContent content = new WebSearchToolResultContent("ws_call456")
         {
-            CallId = "ws_call456",
             Results =
             [
-                new WebSearchResult { Title = "Test", Url = new Uri("https://test.com"), Snippet = "A test" },
+                new UriContent(new Uri("https://test.com"), "text/html") { AdditionalProperties = new() { ["title"] = "Test" } },
             ]
         };
 
@@ -116,6 +118,8 @@ public class WebSearchToolResultContentTests
         Assert.Equal("ws_call456", result.CallId);
         Assert.NotNull(result.Results);
         Assert.Single(result.Results);
-        Assert.Equal("Test", result.Results[0].Title);
+
+        var first = Assert.IsType<UriContent>(result.Results[0]);
+        Assert.Equal("Test", first.AdditionalProperties?["title"]?.ToString());
     }
 }

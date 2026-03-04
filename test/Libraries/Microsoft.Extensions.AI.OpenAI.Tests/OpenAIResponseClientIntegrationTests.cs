@@ -80,7 +80,16 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         var response = await ChatClient.GetResponseAsync(
             "Write a paragraph about .NET based on at least three recent news articles. Cite your sources.",
-            new() { Tools = [new HostedWebSearchTool()] });
+            new()
+            {
+                Tools = [new HostedWebSearchTool()],
+                RawRepresentationFactory = _ =>
+                {
+                    var cro = new CreateResponseOptions();
+                    cro.IncludedProperties.Add("web_search_call.action.sources");
+                    return cro;
+                },
+            });
 
         ChatMessage m = Assert.Single(response.Messages);
 
@@ -94,6 +103,15 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         var wsResult = m.Contents.OfType<WebSearchToolResultContent>().FirstOrDefault();
         Assert.NotNull(wsResult);
         Assert.Equal(wsCall.CallId, wsResult.CallId);
+
+        // Verify that sources are populated when opted in.
+        Assert.NotNull(wsResult.Results);
+        Assert.NotEmpty(wsResult.Results);
+        Assert.All(wsResult.Results, r =>
+        {
+            var uriContent = Assert.IsType<UriContent>(r);
+            Assert.NotNull(uriContent.Uri);
+        });
 
         TextContent tc = m.Contents.OfType<TextContent>().First();
         Assert.NotNull(tc.Annotations);

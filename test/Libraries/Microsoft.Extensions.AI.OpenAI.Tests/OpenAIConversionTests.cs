@@ -925,7 +925,7 @@ public class OpenAIConversionTests
         }
 
         // Verify we got the expected updates
-        Assert.Equal(8, updates.Count);
+        Assert.Equal(9, updates.Count);
 
         // First update should be FunctionCallContent
         FunctionCallContent? fcc = updates[0].Contents.OfType<FunctionCallContent>().FirstOrDefault();
@@ -974,36 +974,37 @@ public class OpenAIConversionTests
         Assert.NotNull(correlatedMcpCall.Arguments);
         Assert.Equal("dotnet/extensions", correlatedMcpCall.Arguments["repo"]?.ToString());
 
-        // Fifth update: WebSearchCallResponseItem -> ToolCallContent + ToolResultContent
-        ToolCallContent? wsToolCall = updates[4].Contents.OfType<ToolCallContent>().FirstOrDefault();
+        // Fifth update: WebSearchCallResponseItem -> WebSearchToolCallContent
+        WebSearchToolCallContent? wsToolCall = updates[4].Contents.OfType<WebSearchToolCallContent>().FirstOrDefault();
         Assert.NotNull(wsToolCall);
         Assert.Equal("ws_123", wsToolCall.CallId);
         Assert.Null(wsToolCall.RawRepresentation);
 
-        ToolResultContent? wsToolResult = updates[4].Contents.OfType<ToolResultContent>().FirstOrDefault();
+        // Sixth update: WebSearchCallResponseItem -> WebSearchToolResultContent
+        WebSearchToolResultContent? wsToolResult = updates[5].Contents.OfType<WebSearchToolResultContent>().FirstOrDefault();
         Assert.NotNull(wsToolResult);
         Assert.Equal("ws_123", wsToolResult.CallId);
         Assert.Same(webSearchItem, wsToolResult.RawRepresentation);
 
-        // Sixth update: FileSearchCallResponseItem -> ToolCallContent + ToolResultContent
-        ToolCallContent? fsToolCall = updates[5].Contents.OfType<ToolCallContent>().FirstOrDefault();
+        // Seventh update: FileSearchCallResponseItem -> ToolCallContent + ToolResultContent
+        ToolCallContent? fsToolCall = updates[6].Contents.OfType<ToolCallContent>().FirstOrDefault();
         Assert.NotNull(fsToolCall);
         Assert.Equal("fs_123", fsToolCall.CallId);
         Assert.Null(fsToolCall.RawRepresentation);
 
-        ToolResultContent? fsToolResult = updates[5].Contents.OfType<ToolResultContent>().FirstOrDefault();
+        ToolResultContent? fsToolResult = updates[6].Contents.OfType<ToolResultContent>().FirstOrDefault();
         Assert.NotNull(fsToolResult);
         Assert.Equal("fs_123", fsToolResult.CallId);
         Assert.Same(fileSearchItem, fsToolResult.RawRepresentation);
 
-        // Seventh update: ComputerCallResponseItem -> ToolCallContent
-        ToolCallContent? cuToolCall = updates[6].Contents.OfType<ToolCallContent>().FirstOrDefault();
+        // Eighth update: ComputerCallResponseItem -> ToolCallContent
+        ToolCallContent? cuToolCall = updates[7].Contents.OfType<ToolCallContent>().FirstOrDefault();
         Assert.NotNull(cuToolCall);
         Assert.Equal("cu_123", cuToolCall.CallId);
         Assert.Same(computerItem, cuToolCall.RawRepresentation);
 
-        // Eighth update: ComputerCallOutputResponseItem -> ToolResultContent
-        ToolResultContent? cuToolResult = updates[7].Contents.OfType<ToolResultContent>().FirstOrDefault();
+        // Ninth update: ComputerCallOutputResponseItem -> ToolResultContent
+        ToolResultContent? cuToolResult = updates[8].Contents.OfType<ToolResultContent>().FirstOrDefault();
         Assert.NotNull(cuToolResult);
         Assert.Equal("call_456", cuToolResult.CallId);
         Assert.Same(computerOutput, cuToolResult.RawRepresentation);

@@ -263,9 +263,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 case WebSearchCallResponseItem wscri:
                     _ = wscri.Patch.TryGetValue("$.action.query"u8, out string? wsQuery);
 
-                    message.Contents.Add(new WebSearchToolCallContent
+                    message.Contents.Add(new WebSearchToolCallContent(wscri.Id)
                     {
-                        CallId = wscri.Id,
                         Queries = wsQuery is not null ? [wsQuery] : null,
 
                         // We purposefully do not set the RawRepresentation on the WebSearchToolCallContent, only on the WebSearchToolResultContent, to avoid
@@ -273,9 +272,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         // WebSearchCallResponseItem sent back for the pair.
                     });
 
-                    message.Contents.Add(new WebSearchToolResultContent
+                    message.Contents.Add(new WebSearchToolResultContent(wscri.Id)
                     {
-                        CallId = wscri.Id,
+                        Results = GetWebSearchSources(wscri),
                         RawRepresentation = wscri,
                     });
                     break;
@@ -487,9 +486,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case StreamingResponseWebSearchCallInProgressUpdate webSearchInProgressUpdate:
-                    yield return CreateUpdate(new WebSearchToolCallContent
+                    yield return CreateUpdate(new WebSearchToolCallContent(webSearchInProgressUpdate.ItemId)
                     {
-                        CallId = webSearchInProgressUpdate.ItemId,
                         RawRepresentation = webSearchInProgressUpdate,
                     });
                     break;
@@ -554,16 +552,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             // The WebSearchToolCallContent has already been yielded as part of in-progress updates.
                             // Yield a second one here with queries populated, which coalescing will merge with the first.
                             _ = wscri.Patch.TryGetValue("$.action.query"u8, out string? wsStreamQuery);
-                            yield return CreateUpdate(new WebSearchToolCallContent
+                            yield return CreateUpdate(new WebSearchToolCallContent(wscri.Id)
                             {
-                                CallId = wscri.Id,
                                 Queries = wsStreamQuery is not null ? [wsStreamQuery] : null,
                             });
 
                             // Also yield the WebSearchToolResultContent.
-                            yield return CreateUpdate(new WebSearchToolResultContent
+                            yield return CreateUpdate(new WebSearchToolResultContent(wscri.Id)
                             {
-                                CallId = wscri.Id,
+                                Results = GetWebSearchSources(wscri),
                                 RawRepresentation = wscri,
                             });
                             break;
@@ -1482,6 +1479,66 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 (destination.Annotations ??= []).Add(ca);
             }
         }
+    }
+
+    /// <summary>
+    /// Extracts web search sources from a <see cref="WebSearchCallResponseItem"/> when available.
+    /// Sources are present when the developer opts in via <c>include: ["web_search_call.action.sources"]</c>.
+    /// </summary>
+    private static List<AIContent>? GetWebSearchSources(WebSearchCallResponseItem wscri)
+    {
+        if (!wscri.Patch.TryGetJson("$.action.sources"u8, out ReadOnlyMemory<byte> sourcesJson))
+        {
+            return null;
+        }
+
+        List<AIContent>? results = null;
+        var reader = new Utf8JsonReader(sourcesJson.Span);
+        if (!reader.Read() || reader.TokenType is not JsonTokenType.StartArray)
+        {
+            return null;
+        }
+
+        while (reader.Read() && reader.TokenType is JsonTokenType.StartObject)
+        {
+            string? url = null;
+            string? title = null;
+
+            while (reader.Read() && reader.TokenType is not JsonTokenType.EndObject)
+            {
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    if (reader.ValueTextEquals("url"u8))
+                    {
+                        _ = reader.Read();
+                        url = reader.GetString();
+                    }
+                    else if (reader.ValueTextEquals("title"u8))
+                    {
+                        _ = reader.Read();
+                        title = reader.GetString();
+                    }
+                    else
+                    {
+                        _ = reader.Read();
+                        _ = reader.TrySkip();
+                    }
+                }
+            }
+
+            if (url is not null && Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
+            {
+                UriContent uriContent = new(uri, "text/html");
+                if (title is not null)
+                {
+                    uriContent.AdditionalProperties = new() { ["title"] = title };
+                }
+
+                (results ??= []).Add(uriContent);
+            }
+        }
+
+        return results;
     }
 
     /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="mtci"/> into <paramref name="contents"/>.</summary>
