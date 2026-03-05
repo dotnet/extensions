@@ -19,7 +19,6 @@ public class RealtimeSessionOptionsTests
         Assert.Null(options.Model);
         Assert.Null(options.InputAudioFormat);
         Assert.Null(options.TranscriptionOptions);
-        Assert.Null(options.VoiceActivityDetection);
         Assert.Null(options.OutputAudioFormat);
         Assert.Null(options.Voice);
         Assert.Null(options.Instructions);
@@ -37,7 +36,6 @@ public class RealtimeSessionOptionsTests
         List<string> modalities = ["text", "audio"];
         List<AITool> tools = [AIFunctionFactory.Create(() => 42)];
         var transcriptionOptions = new TranscriptionOptions { SpeechLanguage = "en", ModelId = "whisper-1", Prompt = "greeting" };
-        var vad = new VoiceActivityDetection { CreateResponse = true, InterruptResponse = true };
 
         RealtimeSessionOptions options = new()
         {
@@ -46,7 +44,6 @@ public class RealtimeSessionOptionsTests
             InputAudioFormat = inputFormat,
             OutputAudioFormat = outputFormat,
             TranscriptionOptions = transcriptionOptions,
-            VoiceActivityDetection = vad,
             Voice = "alloy",
             Instructions = "Be helpful",
             MaxOutputTokens = 500,
@@ -60,7 +57,6 @@ public class RealtimeSessionOptionsTests
         Assert.Same(inputFormat, options.InputAudioFormat);
         Assert.Same(outputFormat, options.OutputAudioFormat);
         Assert.Same(transcriptionOptions, options.TranscriptionOptions);
-        Assert.Same(vad, options.VoiceActivityDetection);
         Assert.Equal("alloy", options.Voice);
         Assert.Equal("Be helpful", options.Instructions);
         Assert.Equal(500, options.MaxOutputTokens);
@@ -94,17 +90,4 @@ public class RealtimeSessionOptionsTests
         Assert.Null(options.Prompt);
     }
 
-    [Fact]
-    public void VoiceActivityDetection_Properties_Roundtrip()
-    {
-        var vad = new VoiceActivityDetection();
-
-        Assert.False(vad.CreateResponse);
-        Assert.False(vad.InterruptResponse);
-
-        var vad2 = new VoiceActivityDetection { CreateResponse = true, InterruptResponse = true };
-
-        Assert.True(vad2.CreateResponse);
-        Assert.True(vad2.InterruptResponse);
-    }
 }

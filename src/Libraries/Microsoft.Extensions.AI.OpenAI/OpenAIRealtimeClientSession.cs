@@ -404,43 +404,6 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             };
         }
 
-        if (options.VoiceActivityDetection is ServerVoiceActivityDetection serverVad)
-        {
-            inputAudioOptions.TurnDetection = new Sdk.RealtimeServerVadTurnDetection
-            {
-                CreateResponseEnabled = serverVad.CreateResponse,
-                InterruptResponseEnabled = serverVad.InterruptResponse,
-                DetectionThreshold = (float)serverVad.Threshold,
-                IdleTimeout = TimeSpan.FromMilliseconds(serverVad.IdleTimeoutInMilliseconds),
-                PrefixPadding = TimeSpan.FromMilliseconds(serverVad.PrefixPaddingInMilliseconds),
-                SilenceDuration = TimeSpan.FromMilliseconds(serverVad.SilenceDurationInMilliseconds),
-            };
-        }
-        else if (options.VoiceActivityDetection is SemanticVoiceActivityDetection semanticVad)
-        {
-            var turnDetection = new Sdk.RealtimeSemanticVadTurnDetection
-            {
-                CreateResponseEnabled = semanticVad.CreateResponse,
-                InterruptResponseEnabled = semanticVad.InterruptResponse,
-            };
-
-            if (semanticVad.AdditionalProperties?.TryGetValue("eagerness", out var eagerness) is true && eagerness is string eagernessStr)
-            {
-                turnDetection.EagernessLevel = new Sdk.RealtimeSemanticVadEagernessLevel(eagernessStr);
-            }
-
-            inputAudioOptions.TurnDetection = turnDetection;
-        }
-        else if (options.VoiceActivityDetection is { } baseVad)
-        {
-            // Base VoiceActivityDetection: default to server VAD with basic settings.
-            inputAudioOptions.TurnDetection = new Sdk.RealtimeServerVadTurnDetection
-            {
-                CreateResponseEnabled = baseVad.CreateResponse,
-                InterruptResponseEnabled = baseVad.InterruptResponse,
-            };
-        }
-
         if (options.OutputAudioFormat is not null)
         {
             outputAudioOptions.AudioFormat = ToSdkAudioFormat(options.OutputAudioFormat);
@@ -501,8 +464,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
     {
         var transOptions = new Sdk.RealtimeTranscriptionSessionOptions();
 
-        if (options.InputAudioFormat is not null || options.TranscriptionOptions is not null ||
-            options.VoiceActivityDetection is not null)
+        if (options.InputAudioFormat is not null || options.TranscriptionOptions is not null)
         {
             var inputAudioOptions = new Sdk.RealtimeTranscriptionSessionInputAudioOptions();
 
@@ -518,42 +480,6 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
                     Language = options.TranscriptionOptions.SpeechLanguage,
                     Model = options.TranscriptionOptions.ModelId,
                     Prompt = options.TranscriptionOptions.Prompt,
-                };
-            }
-
-            if (options.VoiceActivityDetection is ServerVoiceActivityDetection serverVad)
-            {
-                inputAudioOptions.TurnDetection = new Sdk.RealtimeServerVadTurnDetection
-                {
-                    CreateResponseEnabled = serverVad.CreateResponse,
-                    InterruptResponseEnabled = serverVad.InterruptResponse,
-                    DetectionThreshold = (float)serverVad.Threshold,
-                    IdleTimeout = TimeSpan.FromMilliseconds(serverVad.IdleTimeoutInMilliseconds),
-                    PrefixPadding = TimeSpan.FromMilliseconds(serverVad.PrefixPaddingInMilliseconds),
-                    SilenceDuration = TimeSpan.FromMilliseconds(serverVad.SilenceDurationInMilliseconds),
-                };
-            }
-            else if (options.VoiceActivityDetection is SemanticVoiceActivityDetection semanticVad)
-            {
-                var turnDetection = new Sdk.RealtimeSemanticVadTurnDetection
-                {
-                    CreateResponseEnabled = semanticVad.CreateResponse,
-                    InterruptResponseEnabled = semanticVad.InterruptResponse,
-                };
-
-                if (semanticVad.AdditionalProperties?.TryGetValue("eagerness", out var eagerness) is true && eagerness is string eagernessStr)
-                {
-                    turnDetection.EagernessLevel = new Sdk.RealtimeSemanticVadEagernessLevel(eagernessStr);
-                }
-
-                inputAudioOptions.TurnDetection = turnDetection;
-            }
-            else if (options.VoiceActivityDetection is { } baseVad)
-            {
-                inputAudioOptions.TurnDetection = new Sdk.RealtimeServerVadTurnDetection
-                {
-                    CreateResponseEnabled = baseVad.CreateResponse,
-                    InterruptResponseEnabled = baseVad.InterruptResponse,
                 };
             }
 
@@ -889,7 +815,6 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
     {
         RealtimeAudioFormat? inputAudioFormat = null;
         TranscriptionOptions? transcription = null;
-        VoiceActivityDetection? vad = null;
         RealtimeAudioFormat? outputAudioFormat = null;
         string? voice = null;
 
@@ -907,37 +832,6 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
                         ModelId = transcriptionOpts.Model,
                         Prompt = transcriptionOpts.Prompt,
                     };
-                }
-
-                if (inputOpts.TurnDetection is Sdk.RealtimeServerVadTurnDetection serverVad)
-                {
-                    vad = new ServerVoiceActivityDetection
-                    {
-                        CreateResponse = serverVad.CreateResponseEnabled ?? false,
-                        InterruptResponse = serverVad.InterruptResponseEnabled ?? false,
-                        Threshold = serverVad.DetectionThreshold ?? 0.5,
-                        IdleTimeoutInMilliseconds = (int)(serverVad.IdleTimeout?.TotalMilliseconds ?? 0),
-                        PrefixPaddingInMilliseconds = (int)(serverVad.PrefixPadding?.TotalMilliseconds ?? 300),
-                        SilenceDurationInMilliseconds = (int)(serverVad.SilenceDuration?.TotalMilliseconds ?? 500),
-                    };
-                }
-                else if (inputOpts.TurnDetection is Sdk.RealtimeSemanticVadTurnDetection semanticVad)
-                {
-                    var semanticVadOptions = new SemanticVoiceActivityDetection
-                    {
-                        CreateResponse = semanticVad.CreateResponseEnabled ?? false,
-                        InterruptResponse = semanticVad.InterruptResponseEnabled ?? false,
-                    };
-
-                    if (semanticVad.EagernessLevel.HasValue)
-                    {
-                        semanticVadOptions.AdditionalProperties = new AdditionalPropertiesDictionary
-                        {
-                            ["eagerness"] = semanticVad.EagernessLevel.Value.ToString(),
-                        };
-                    }
-
-                    vad = semanticVadOptions;
                 }
             }
 
@@ -973,7 +867,6 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             OutputModalities = outputModalities,
             InputAudioFormat = inputAudioFormat,
             TranscriptionOptions = transcription,
-            VoiceActivityDetection = vad,
             OutputAudioFormat = outputAudioFormat,
             Voice = voice,
 

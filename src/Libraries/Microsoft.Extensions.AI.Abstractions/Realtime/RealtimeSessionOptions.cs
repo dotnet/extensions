@@ -17,7 +17,7 @@ public class RealtimeSessionOptions
     /// Gets the session kind.
     /// </summary>
     /// <remarks>
-    /// If set to <see cref="RealtimeSessionKind.Transcription"/>, most of the sessions properties will not apply to the session. Only InputAudioFormat, TranscriptionOptions, and VoiceActivityDetection will be used.
+    /// If set to <see cref="RealtimeSessionKind.Transcription"/>, most of the sessions properties will not apply to the session. Only InputAudioFormat and TranscriptionOptions will be used.
     /// </remarks>
     public RealtimeSessionKind SessionKind { get; init; } = RealtimeSessionKind.Conversation;
 
@@ -35,11 +35,6 @@ public class RealtimeSessionOptions
     /// Gets the transcription options for the session.
     /// </summary>
     public TranscriptionOptions? TranscriptionOptions { get; init; }
-
-    /// <summary>
-    /// Gets the voice activity detection options for the session.
-    /// </summary>
-    public VoiceActivityDetection? VoiceActivityDetection { get; init; }
 
     /// <summary>
     /// Gets the output audio format for the session.
