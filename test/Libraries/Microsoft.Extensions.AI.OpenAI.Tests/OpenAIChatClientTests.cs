@@ -1171,7 +1171,7 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
-    public async Task UnavailableBuiltInFunctionCall_NonStreaming()
+    public async Task HostedWebSearchTool_MapsToWebSearchOptions_NonStreaming()
     {
         const string Input = """
             {
@@ -1181,7 +1181,8 @@ public class OpenAIChatClientTests
                         "content": "What day is it?"
                     }
                 ],
-                "model": "gpt-4o-mini"
+                "model": "gpt-4o-mini",
+                "web_search_options": {}
             }
             """;
 
