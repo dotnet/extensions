@@ -990,7 +990,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
 
         return new RealtimeSessionOptions
         {
-            SessionKind = RealtimeSessionKind.Realtime,
+            SessionKind = RealtimeSessionKind.Conversation,
             Model = session.Model,
             Instructions = session.Instructions,
             MaxOutputTokens = maxOutputTokens,

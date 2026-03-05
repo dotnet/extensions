@@ -19,7 +19,7 @@ public class RealtimeSessionOptions
     /// <remarks>
     /// If set to <see cref="RealtimeSessionKind.Transcription"/>, most of the sessions properties will not apply to the session. Only InputAudioFormat, NoiseReductionOptions, TranscriptionOptions, and VoiceActivityDetection will be used.
     /// </remarks>
-    public RealtimeSessionKind SessionKind { get; init; } = RealtimeSessionKind.Realtime;
+    public RealtimeSessionKind SessionKind { get; init; } = RealtimeSessionKind.Conversation;
 
     /// <summary>
     /// Gets the model name to use for the session.

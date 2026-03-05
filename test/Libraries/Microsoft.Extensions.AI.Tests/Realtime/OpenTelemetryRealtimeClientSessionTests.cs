@@ -37,7 +37,7 @@ public class OpenTelemetryRealtimeClientSessionTests
                 MaxOutputTokens = 500,
                 OutputModalities = ["text", "audio"],
                 Instructions = "Be helpful and friendly.",
-                SessionKind = RealtimeSessionKind.Realtime,
+                SessionKind = RealtimeSessionKind.Conversation,
                 Tools = [AIFunctionFactory.Create((string query) => query, "Search", "Search for information.")],
             },
             GetServiceCallback = (serviceType, serviceKey) =>
@@ -123,7 +123,7 @@ public class OpenTelemetryRealtimeClientSessionTests
         Assert.Equal(500, activity.GetTagItem("gen_ai.request.max_tokens"));
 
         // Realtime-specific attributes
-        Assert.Equal("Realtime", activity.GetTagItem("gen_ai.realtime.session_kind"));
+        Assert.Equal("conversation", activity.GetTagItem("gen_ai.realtime.session_kind"));
         Assert.Equal("alloy", activity.GetTagItem("gen_ai.realtime.voice"));
         Assert.Equal("""["text", "audio"]""", activity.GetTagItem("gen_ai.realtime.output_modalities"));
 
@@ -401,7 +401,7 @@ public class OpenTelemetryRealtimeClientSessionTests
         }
 
         var activity = Assert.Single(activities);
-        Assert.Equal("Transcription", activity.GetTagItem("gen_ai.realtime.session_kind"));
+        Assert.Equal("transcription", activity.GetTagItem("gen_ai.realtime.session_kind"));
     }
 
     [Theory]

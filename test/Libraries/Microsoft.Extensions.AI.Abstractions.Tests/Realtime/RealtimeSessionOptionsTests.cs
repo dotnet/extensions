@@ -15,7 +15,7 @@ public class RealtimeSessionOptionsTests
     {
         RealtimeSessionOptions options = new();
 
-        Assert.Equal(RealtimeSessionKind.Realtime, options.SessionKind);
+        Assert.Equal(RealtimeSessionKind.Conversation, options.SessionKind);
         Assert.Null(options.Model);
         Assert.Null(options.InputAudioFormat);
         Assert.Null(options.NoiseReductionOptions);
