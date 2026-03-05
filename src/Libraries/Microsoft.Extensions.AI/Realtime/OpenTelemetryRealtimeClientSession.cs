@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// </remarks>
 [Experimental("MEAI001")]
-public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSession
+public sealed partial class OpenTelemetryRealtimeClientSession : DelegatingRealtimeClientSession
 {
     private readonly ActivitySource _activitySource;
     private readonly Meter _meter;
@@ -91,12 +91,12 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
 
     private JsonSerializerOptions _jsonSerializerOptions;
 
-    /// <summary>Initializes a new instance of the <see cref="OpenTelemetryRealtimeSession"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="OpenTelemetryRealtimeClientSession"/> class.</summary>
     /// <param name="innerSession">The underlying <see cref="IRealtimeClientSession"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for emitting any logging data from the session.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
 #pragma warning disable IDE0060 // Remove unused parameter; it exists for backwards compatibility and future use
-    public OpenTelemetryRealtimeSession(IRealtimeClientSession innerSession, ILogger? logger = null, string? sourceName = null)
+    public OpenTelemetryRealtimeClientSession(IRealtimeClientSession innerSession, ILogger? logger = null, string? sourceName = null)
 #pragma warning restore IDE0060
         : base(innerSession)
     {

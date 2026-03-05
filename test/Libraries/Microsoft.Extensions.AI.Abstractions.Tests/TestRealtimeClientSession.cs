@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>A test <see cref="IRealtimeClientSession"/> implementation that uses callbacks for verification.</summary>
-public sealed class TestRealtimeSession : IRealtimeClientSession
+public sealed class TestRealtimeClientSession : IRealtimeClientSession
 {
     /// <summary>Gets or sets the callback to invoke when <see cref="SendAsync"/> is called.</summary>
     public Func<RealtimeClientMessage, CancellationToken, Task>? SendAsyncCallback { get; set; }

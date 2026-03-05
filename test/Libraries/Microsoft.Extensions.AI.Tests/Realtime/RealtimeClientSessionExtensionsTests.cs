@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class RealtimeSessionExtensionsTests
+public class RealtimeClientSessionExtensionsTests
 {
     [Fact]
     public void GetService_NullSession_Throws()
@@ -20,15 +20,15 @@ public class RealtimeSessionExtensionsTests
     [Fact]
     public async Task GetService_ReturnsMatchingService()
     {
-        await using var session = new TestRealtimeSession();
-        var result = session.GetService<TestRealtimeSession>();
+        await using var session = new TestRealtimeClientSession();
+        var result = session.GetService<TestRealtimeClientSession>();
         Assert.Same(session, result);
     }
 
     [Fact]
     public async Task GetService_ReturnsNullForNonMatchingType()
     {
-        await using var session = new TestRealtimeSession();
+        await using var session = new TestRealtimeClientSession();
         var result = session.GetService<string>();
         Assert.Null(result);
     }
@@ -36,15 +36,15 @@ public class RealtimeSessionExtensionsTests
     [Fact]
     public async Task GetService_WithServiceKey_ReturnsNull()
     {
-        await using var session = new TestRealtimeSession();
-        var result = session.GetService<TestRealtimeSession>("someKey");
+        await using var session = new TestRealtimeClientSession();
+        var result = session.GetService<TestRealtimeClientSession>("someKey");
         Assert.Null(result);
     }
 
     [Fact]
     public async Task GetService_ReturnsInterfaceType()
     {
-        await using var session = new TestRealtimeSession();
+        await using var session = new TestRealtimeClientSession();
         var result = session.GetService<IRealtimeClientSession>();
         Assert.Same(session, result);
     }

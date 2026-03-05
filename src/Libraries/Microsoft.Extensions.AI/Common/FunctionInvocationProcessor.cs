@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>
 /// A composition-based helper class for processing function invocations.
-/// Used by both <see cref="FunctionInvokingChatClient"/> and <see cref="FunctionInvokingRealtimeSession"/>.
+/// Used by both <see cref="FunctionInvokingChatClient"/> and <see cref="FunctionInvokingRealtimeClientSession"/>.
 /// </summary>
 internal sealed class FunctionInvocationProcessor
 {

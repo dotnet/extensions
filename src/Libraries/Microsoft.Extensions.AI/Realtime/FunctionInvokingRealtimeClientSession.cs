@@ -35,12 +35,12 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// <para>
 /// If a requested function is an <see cref="AIFunctionDeclaration"/> but not an <see cref="AIFunction"/>, the
-/// <see cref="FunctionInvokingRealtimeSession"/> will not attempt to invoke it, and instead allow that <see cref="FunctionCallContent"/>
+/// <see cref="FunctionInvokingRealtimeClientSession"/> will not attempt to invoke it, and instead allow that <see cref="FunctionCallContent"/>
 /// to pass back out to the caller. It is then that caller's responsibility to create the appropriate <see cref="FunctionResultContent"/>
 /// for that call and send it back as part of a subsequent request.
 /// </para>
 /// <para>
-/// A <see cref="FunctionInvokingRealtimeSession"/> instance is thread-safe for concurrent use so long as the
+/// A <see cref="FunctionInvokingRealtimeClientSession"/> instance is thread-safe for concurrent use so long as the
 /// <see cref="AIFunction"/> instances employed as part of the supplied <see cref="RealtimeClientCreateResponseMessage"/> are also safe.
 /// The <see cref="AllowConcurrentInvocation"/> property can be used to control whether multiple function invocation
 /// requests as part of the same request are invocable concurrently, but even with that set to <see langword="false"/>
@@ -49,12 +49,12 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// </remarks>
 [Experimental("MEAI001")]
-public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
+public class FunctionInvokingRealtimeClientSession : DelegatingRealtimeClientSession
 {
     /// <summary>The <see cref="FunctionInvocationContext"/> for the current function invocation.</summary>
     private static readonly AsyncLocal<FunctionInvocationContext?> _currentContext = new();
 
-    /// <summary>Gets the <see cref="IServiceProvider"/> specified when constructing the <see cref="FunctionInvokingRealtimeSession"/>, if any.</summary>
+    /// <summary>Gets the <see cref="IServiceProvider"/> specified when constructing the <see cref="FunctionInvokingRealtimeClientSession"/>, if any.</summary>
     protected IServiceProvider? FunctionInvocationServices { get; }
 
     /// <summary>The logger to use for logging information about function invocation.</summary>
@@ -65,15 +65,15 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
     private readonly ActivitySource? _activitySource;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionInvokingRealtimeSession"/> class.
+    /// Initializes a new instance of the <see cref="FunctionInvokingRealtimeClientSession"/> class.
     /// </summary>
     /// <param name="innerSession">The underlying <see cref="IRealtimeClientSession"/>, or the next instance in a chain of sessions.</param>
     /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> to use for logging information about function invocation.</param>
     /// <param name="functionInvocationServices">An optional <see cref="IServiceProvider"/> to use for resolving services required by the <see cref="AIFunction"/> instances being invoked.</param>
-    public FunctionInvokingRealtimeSession(IRealtimeClientSession innerSession, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
+    public FunctionInvokingRealtimeClientSession(IRealtimeClientSession innerSession, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
         : base(innerSession)
     {
-        _logger = (ILogger?)loggerFactory?.CreateLogger<FunctionInvokingRealtimeSession>() ?? NullLogger.Instance;
+        _logger = (ILogger?)loggerFactory?.CreateLogger<FunctionInvokingRealtimeClientSession>() ?? NullLogger.Instance;
         _activitySource = innerSession.GetService<ActivitySource>();
         FunctionInvocationServices = functionInvocationServices;
     }
@@ -150,7 +150,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
     /// </value>
     /// <remarks>
     /// <para>
-    /// Each streaming request to this <see cref="FunctionInvokingRealtimeSession"/> might end up making
+    /// Each streaming request to this <see cref="FunctionInvokingRealtimeClientSession"/> might end up making
     /// multiple function call invocations. Each time the inner session responds with
     /// a function call request, this session might perform that invocation and send the results
     /// back to the inner session. This property limits the number of times
@@ -184,7 +184,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
     /// </value>
     /// <remarks>
     /// <para>
-    /// When function invocations fail with an exception, the <see cref="FunctionInvokingRealtimeSession"/>
+    /// When function invocations fail with an exception, the <see cref="FunctionInvokingRealtimeClientSession"/>
     /// continues to send responses to the inner session, optionally supplying exception information (as
     /// controlled by <see cref="IncludeDetailedErrors"/>). This allows the <see cref="IRealtimeClientSession"/> to
     /// recover from errors by trying other function parameters that might succeed.
@@ -211,7 +211,7 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
 
     /// <summary>Gets or sets a collection of additional tools the session is able to invoke.</summary>
     /// <remarks>
-    /// These will not impact the requests sent by the <see cref="FunctionInvokingRealtimeSession"/>, which will pass through the
+    /// These will not impact the requests sent by the <see cref="FunctionInvokingRealtimeClientSession"/>, which will pass through the
     /// <see cref="RealtimeClientCreateResponseMessage.Tools" /> unmodified. However, if the inner session requests the invocation of a tool
     /// that was not in <see cref="RealtimeClientCreateResponseMessage.Tools" />, this <see cref="AdditionalTools"/> collection will also be consulted
     /// to look for a corresponding tool to invoke. This is useful when the service might have been preconfigured to be aware
@@ -222,22 +222,22 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
     /// <summary>Gets or sets a value indicating whether a request to call an unknown function should terminate the function calling loop.</summary>
     /// <value>
     /// <see langword="true"/> to terminate the function calling loop and return the response if a request to call a tool
-    /// that isn't available to the <see cref="FunctionInvokingRealtimeSession"/> is received; <see langword="false"/> to create and send a
+    /// that isn't available to the <see cref="FunctionInvokingRealtimeClientSession"/> is received; <see langword="false"/> to create and send a
     /// function result message to the inner session stating that the tool couldn't be found. The default is <see langword="false"/>.
     /// </value>
     /// <remarks>
     /// <para>
-    /// When <see langword="false"/>, call requests to any tools that aren't available to the <see cref="FunctionInvokingRealtimeSession"/>
+    /// When <see langword="false"/>, call requests to any tools that aren't available to the <see cref="FunctionInvokingRealtimeClientSession"/>
     /// will result in a response message automatically being created and returned to the inner session stating that the tool couldn't be
     /// found. This behavior can help in cases where a model hallucinates a function, but it's problematic if the model has been made aware
     /// of the existence of tools outside of the normal mechanisms, and requests one of those. <see cref="AdditionalTools"/> can be used
     /// to help with that. But if instead the consumer wants to know about all function call requests that the session can't handle,
     /// <see cref="TerminateOnUnknownCalls"/> can be set to <see langword="true"/>. Upon receiving a request to call a function
-    /// that the <see cref="FunctionInvokingRealtimeSession"/> doesn't know about, it will terminate the function calling loop and return
+    /// that the <see cref="FunctionInvokingRealtimeClientSession"/> doesn't know about, it will terminate the function calling loop and return
     /// the response, leaving the handling of the function call requests to the consumer of the session.
     /// </para>
     /// <para>
-    /// <see cref="AITool"/>s that the <see cref="FunctionInvokingRealtimeSession"/> is aware of (for example, because they're in
+    /// <see cref="AITool"/>s that the <see cref="FunctionInvokingRealtimeClientSession"/> is aware of (for example, because they're in
     /// <see cref="RealtimeClientCreateResponseMessage.Tools"/> or <see cref="AdditionalTools"/>) but that aren't <see cref="AIFunction"/>s aren't considered
     /// unknown, just not invocable. Any requests to a non-invocable tool will also result in the function calling loop terminating,
     /// regardless of <see cref="TerminateOnUnknownCalls"/>.

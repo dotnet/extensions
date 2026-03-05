@@ -19,14 +19,14 @@ namespace Microsoft.Extensions.AI;
 /// The default implementation simply passes each call to the inner session instance.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public class DelegatingRealtimeSession : IRealtimeClientSession
+public class DelegatingRealtimeClientSession : IRealtimeClientSession
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="DelegatingRealtimeSession"/> class.
+    /// Initializes a new instance of the <see cref="DelegatingRealtimeClientSession"/> class.
     /// </summary>
     /// <param name="innerSession">The wrapped session instance.</param>
     /// <exception cref="ArgumentNullException"><paramref name="innerSession"/> is <see langword="null"/>.</exception>
-    protected DelegatingRealtimeSession(IRealtimeClientSession innerSession)
+    protected DelegatingRealtimeClientSession(IRealtimeClientSession innerSession)
     {
         InnerSession = Throw.IfNull(innerSession);
     }

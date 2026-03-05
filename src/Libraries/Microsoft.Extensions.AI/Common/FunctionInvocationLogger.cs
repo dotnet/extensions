@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Internal logger for function invocation operations shared between <see cref="FunctionInvokingChatClient"/> and <see cref="FunctionInvokingRealtimeSession"/>.
+/// Internal logger for function invocation operations shared between <see cref="FunctionInvokingChatClient"/> and <see cref="FunctionInvokingRealtimeClientSession"/>.
 /// </summary>
 internal static partial class FunctionInvocationLogger
 {

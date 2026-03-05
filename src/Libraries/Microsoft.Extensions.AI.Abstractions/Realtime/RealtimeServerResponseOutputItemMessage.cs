@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// Provider implementations should emit this message with <see cref="RealtimeServerMessageType.ResponseOutputItemDone"/>
 /// when an output item (such as a function call or text message) has completed. The built-in
-/// <see langword="FunctionInvokingRealtimeSession"/> middleware depends on this message to detect
+/// <see langword="FunctionInvokingRealtimeClientSession"/> middleware depends on this message to detect
 /// and invoke tool calls.
 /// </para>
 /// </remarks>

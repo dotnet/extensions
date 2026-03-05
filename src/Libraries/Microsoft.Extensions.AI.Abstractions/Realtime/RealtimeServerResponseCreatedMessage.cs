@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// Provider implementations should emit this message with <see cref="RealtimeServerMessageType.ResponseCreated"/>
 /// when the model begins generating a new response, and with <see cref="RealtimeServerMessageType.ResponseDone"/>
-/// when the response is complete. The built-in <see langword="OpenTelemetryRealtimeSession"/> middleware depends
+/// when the response is complete. The built-in <see langword="OpenTelemetryRealtimeClientSession"/> middleware depends
 /// on these messages for tracing response lifecycle.
 /// </para>
 /// </remarks>

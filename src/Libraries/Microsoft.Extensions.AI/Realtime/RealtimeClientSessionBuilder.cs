@@ -11,25 +11,25 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>A builder for creating pipelines of <see cref="IRealtimeClientSession"/>.</summary>
 [Experimental("MEAI001")]
-public sealed class RealtimeSessionBuilder
+public sealed class RealtimeClientSessionBuilder
 {
     private readonly Func<IServiceProvider, IRealtimeClientSession> _innerSessionFactory;
 
     /// <summary>The registered session factory instances.</summary>
     private List<Func<IRealtimeClientSession, IServiceProvider, IRealtimeClientSession>>? _sessionFactories;
 
-    /// <summary>Initializes a new instance of the <see cref="RealtimeSessionBuilder"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="RealtimeClientSessionBuilder"/> class.</summary>
     /// <param name="innerSession">The inner <see cref="IRealtimeClientSession"/> that represents the underlying backend.</param>
     /// <exception cref="ArgumentNullException"><paramref name="innerSession"/> is <see langword="null"/>.</exception>
-    public RealtimeSessionBuilder(IRealtimeClientSession innerSession)
+    public RealtimeClientSessionBuilder(IRealtimeClientSession innerSession)
     {
         _ = Throw.IfNull(innerSession);
         _innerSessionFactory = _ => innerSession;
     }
 
-    /// <summary>Initializes a new instance of the <see cref="RealtimeSessionBuilder"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="RealtimeClientSessionBuilder"/> class.</summary>
     /// <param name="innerSessionFactory">A callback that produces the inner <see cref="IRealtimeClientSession"/> that represents the underlying backend.</param>
-    public RealtimeSessionBuilder(Func<IServiceProvider, IRealtimeClientSession> innerSessionFactory)
+    public RealtimeClientSessionBuilder(Func<IServiceProvider, IRealtimeClientSession> innerSessionFactory)
     {
         _innerSessionFactory = Throw.IfNull(innerSessionFactory);
     }
@@ -54,7 +54,7 @@ public sealed class RealtimeSessionBuilder
                 if (session is null)
                 {
                     Throw.InvalidOperationException(
-                        $"The {nameof(RealtimeSessionBuilder)} entry at index {i} returned null. " +
+                        $"The {nameof(RealtimeClientSessionBuilder)} entry at index {i} returned null. " +
                         $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IRealtimeClientSession)} instances.");
                 }
             }
@@ -65,9 +65,9 @@ public sealed class RealtimeSessionBuilder
 
     /// <summary>Adds a factory for an intermediate realtime session to the realtime session pipeline.</summary>
     /// <param name="sessionFactory">The session factory function.</param>
-    /// <returns>The updated <see cref="RealtimeSessionBuilder"/> instance.</returns>
+    /// <returns>The updated <see cref="RealtimeClientSessionBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="sessionFactory"/> is <see langword="null"/>.</exception>
-    public RealtimeSessionBuilder Use(Func<IRealtimeClientSession, IRealtimeClientSession> sessionFactory)
+    public RealtimeClientSessionBuilder Use(Func<IRealtimeClientSession, IRealtimeClientSession> sessionFactory)
     {
         _ = Throw.IfNull(sessionFactory);
 
@@ -76,9 +76,9 @@ public sealed class RealtimeSessionBuilder
 
     /// <summary>Adds a factory for an intermediate realtime session to the realtime session pipeline.</summary>
     /// <param name="sessionFactory">The session factory function.</param>
-    /// <returns>The updated <see cref="RealtimeSessionBuilder"/> instance.</returns>
+    /// <returns>The updated <see cref="RealtimeClientSessionBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="sessionFactory"/> is <see langword="null"/>.</exception>
-    public RealtimeSessionBuilder Use(Func<IRealtimeClientSession, IServiceProvider, IRealtimeClientSession> sessionFactory)
+    public RealtimeClientSessionBuilder Use(Func<IRealtimeClientSession, IServiceProvider, IRealtimeClientSession> sessionFactory)
     {
         _ = Throw.IfNull(sessionFactory);
 
@@ -96,17 +96,17 @@ public sealed class RealtimeSessionBuilder
     /// the inner session, and a cancellation token. The delegate should be passed whatever
     /// cancellation token should be passed along to the next stage in the pipeline.
     /// </param>
-    /// <returns>The updated <see cref="RealtimeSessionBuilder"/> instance.</returns>
+    /// <returns>The updated <see cref="RealtimeClientSessionBuilder"/> instance.</returns>
     /// <remarks>
     /// This overload can be used when the anonymous implementation needs to provide pre-processing and/or post-processing
     /// for the streaming response.
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="getStreamingResponseFunc"/> is <see langword="null"/>.</exception>
-    public RealtimeSessionBuilder Use(
+    public RealtimeClientSessionBuilder Use(
         Func<IRealtimeClientSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>> getStreamingResponseFunc)
     {
         _ = Throw.IfNull(getStreamingResponseFunc);
 
-        return Use((innerSession, _) => new AnonymousDelegatingRealtimeSession(innerSession, getStreamingResponseFunc));
+        return Use((innerSession, _) => new AnonymousDelegatingRealtimeClientSession(innerSession, getStreamingResponseFunc));
     }
 }

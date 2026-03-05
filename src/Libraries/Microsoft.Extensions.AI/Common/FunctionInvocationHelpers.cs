@@ -8,7 +8,7 @@ using System.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Internal helper methods shared between <see cref="FunctionInvokingChatClient"/> and <see cref="FunctionInvokingRealtimeSession"/>.
+/// Internal helper methods shared between <see cref="FunctionInvokingChatClient"/> and <see cref="FunctionInvokingRealtimeClientSession"/>.
 /// </summary>
 internal static class FunctionInvocationHelpers
 {

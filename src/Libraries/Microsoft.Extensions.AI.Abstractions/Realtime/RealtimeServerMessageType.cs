@@ -23,8 +23,8 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// <para>
 /// Provider implementations that want to support the built-in middleware pipeline
-/// (<see langword="FunctionInvokingRealtimeSession"/> and
-/// <see langword="OpenTelemetryRealtimeSession"/>) must emit the following
+/// (<see langword="FunctionInvokingRealtimeClientSession"/> and
+/// <see langword="OpenTelemetryRealtimeClientSession"/>) must emit the following
 /// message types at appropriate points during response generation:
 /// <list type="bullet">
 /// <item><see cref="ResponseCreated"/> — when the model begins generating a new response.</item>

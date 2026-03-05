@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class OpenTelemetryRealtimeSessionTests
+public class OpenTelemetryRealtimeClientSessionTests
 {
     [Theory]
     [InlineData(false)]
@@ -28,7 +28,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -190,7 +190,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetStreamingResponseAsyncCallback = (cancellationToken) => ThrowingCallbackAsync(cancellationToken),
@@ -233,7 +233,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetStreamingResponseAsyncCallback = (cancellationToken) => ErrorResponseCallbackAsync(cancellationToken),
@@ -281,7 +281,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddSource("different-source")
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetStreamingResponseAsyncCallback = (cancellationToken) => EmptyCallbackAsync(cancellationToken),
@@ -317,10 +317,10 @@ public class OpenTelemetryRealtimeSessionTests
     [Fact]
     public async Task InvalidArgs_Throws()
     {
-        await using var innerSession = new TestRealtimeSession();
+        await using var innerSession = new TestRealtimeClientSession();
 
-        Assert.Throws<ArgumentNullException>("innerSession", () => new OpenTelemetryRealtimeSession(null!));
-        Assert.Throws<ArgumentNullException>("value", () => new OpenTelemetryRealtimeSession(innerSession).JsonSerializerOptions = null!);
+        Assert.Throws<ArgumentNullException>("innerSession", () => new OpenTelemetryRealtimeClientSession(null!));
+        Assert.Throws<ArgumentNullException>("value", () => new OpenTelemetryRealtimeClientSession(innerSession).JsonSerializerOptions = null!);
     }
 
     [Fact]
@@ -332,8 +332,8 @@ public class OpenTelemetryRealtimeSessionTests
     [Fact]
     public async Task GetService_ReturnsActivitySource()
     {
-        await using var innerSession = new TestRealtimeSession();
-        await using var session = new OpenTelemetryRealtimeSession(innerSession);
+        await using var innerSession = new TestRealtimeClientSession();
+        await using var session = new OpenTelemetryRealtimeClientSession(innerSession);
 
         var activitySource = session.GetService(typeof(ActivitySource));
         Assert.NotNull(activitySource);
@@ -343,10 +343,10 @@ public class OpenTelemetryRealtimeSessionTests
     [Fact]
     public async Task GetService_ReturnsSelf()
     {
-        await using var innerSession = new TestRealtimeSession();
-        await using var session = new OpenTelemetryRealtimeSession(innerSession);
+        await using var innerSession = new TestRealtimeClientSession();
+        await using var session = new OpenTelemetryRealtimeClientSession(innerSession);
 
-        var self = session.GetService(typeof(OpenTelemetryRealtimeSession));
+        var self = session.GetService(typeof(OpenTelemetryRealtimeClientSession));
         Assert.Same(session, self);
 
         var realtime = session.GetService(typeof(IRealtimeClientSession));
@@ -363,7 +363,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -425,7 +425,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -465,7 +465,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -505,7 +505,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -545,7 +545,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -583,7 +583,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -626,7 +626,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -669,7 +669,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -754,7 +754,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -797,7 +797,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -840,7 +840,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -882,7 +882,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -924,7 +924,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -965,7 +965,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -1006,7 +1006,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -1047,7 +1047,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -1088,7 +1088,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        await using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -1200,14 +1200,14 @@ public class OpenTelemetryRealtimeSessionTests
     public void UseOpenTelemetry_NullBuilder_Throws()
     {
         Assert.Throws<ArgumentNullException>("builder", () =>
-            ((RealtimeSessionBuilder)null!).UseOpenTelemetry());
+            ((RealtimeClientSessionBuilder)null!).UseOpenTelemetry());
     }
 
     [Fact]
     public async Task UseOpenTelemetry_ConfigureCallback_IsInvoked()
     {
-        await using var innerSession = new TestRealtimeSession();
-        var builder = new RealtimeSessionBuilder(innerSession);
+        await using var innerSession = new TestRealtimeClientSession();
+        var builder = new RealtimeClientSessionBuilder(innerSession);
 
         bool configured = false;
         builder.UseOpenTelemetry(configure: session =>
@@ -1219,18 +1219,18 @@ public class OpenTelemetryRealtimeSessionTests
         await using var pipeline = builder.Build();
         Assert.True(configured);
 
-        var otelSession = pipeline.GetService(typeof(OpenTelemetryRealtimeSession));
+        var otelSession = pipeline.GetService(typeof(OpenTelemetryRealtimeClientSession));
         Assert.NotNull(otelSession);
 
-        var typedSession = Assert.IsType<OpenTelemetryRealtimeSession>(otelSession);
+        var typedSession = Assert.IsType<OpenTelemetryRealtimeClientSession>(otelSession);
         Assert.True(typedSession.EnableSensitiveData);
     }
 
     [Fact]
     public async Task DisposeAsync_CanBeCalledMultipleTimes()
     {
-        await using var innerSession = new TestRealtimeSession();
-        var session = new OpenTelemetryRealtimeSession(innerSession);
+        await using var innerSession = new TestRealtimeClientSession();
+        var session = new OpenTelemetryRealtimeClientSession(innerSession);
 
         await session.DisposeAsync();
         await session.DisposeAsync();

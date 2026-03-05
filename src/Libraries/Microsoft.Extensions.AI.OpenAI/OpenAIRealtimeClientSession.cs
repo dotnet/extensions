@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IRealtimeClientSession"/> for the OpenAI Realtime API over WebSocket.</summary>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class OpenAIRealtimeSession : IRealtimeClientSession
+public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
 {
     /// <summary>The model to use for the session.</summary>
     private readonly string _model;
@@ -45,20 +45,20 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
     /// <inheritdoc />
     public RealtimeSessionOptions? Options { get; private set; }
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAIRealtimeSession"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="OpenAIRealtimeClientSession"/> class.</summary>
     /// <param name="apiKey">The API key used for authentication.</param>
     /// <param name="model">The model to use for the session.</param>
-    public OpenAIRealtimeSession(string apiKey, string model)
+    public OpenAIRealtimeClientSession(string apiKey, string model)
     {
         _ownedRealtimeClient = new Sdk.RealtimeClient(Throw.IfNull(apiKey));
         _model = Throw.IfNull(model);
         _metadata = new("openai", defaultModelId: _model);
     }
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAIRealtimeSession"/> class from an already-connected session client.</summary>
+    /// <summary>Initializes a new instance of the <see cref="OpenAIRealtimeClientSession"/> class from an already-connected session client.</summary>
     /// <param name="sessionClient">The connected SDK session client.</param>
     /// <param name="model">The model name for metadata.</param>
-    internal OpenAIRealtimeSession(Sdk.RealtimeSessionClient sessionClient, string model)
+    internal OpenAIRealtimeClientSession(Sdk.RealtimeSessionClient sessionClient, string model)
     {
         _sessionClient = Throw.IfNull(sessionClient);
         _model = model ?? string.Empty;

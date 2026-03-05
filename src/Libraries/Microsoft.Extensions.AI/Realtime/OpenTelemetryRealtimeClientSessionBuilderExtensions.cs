@@ -9,9 +9,9 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides extensions for configuring <see cref="OpenTelemetryRealtimeSession"/> instances.</summary>
+/// <summary>Provides extensions for configuring <see cref="OpenTelemetryRealtimeClientSession"/> instances.</summary>
 [Experimental("MEAI001")]
-public static class OpenTelemetryRealtimeSessionBuilderExtensions
+public static class OpenTelemetryRealtimeClientSessionBuilderExtensions
 {
     /// <summary>
     /// Adds OpenTelemetry support to the realtime session pipeline, following the OpenTelemetry Semantic Conventions for Generative AI systems.
@@ -55,22 +55,22 @@ public static class OpenTelemetryRealtimeSessionBuilderExtensions
     /// </list>
     /// </para>
     /// </remarks>
-    /// <param name="builder">The <see cref="RealtimeSessionBuilder"/>.</param>
+    /// <param name="builder">The <see cref="RealtimeClientSessionBuilder"/>.</param>
     /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to use to create a logger for logging events.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
-    /// <param name="configure">An optional callback that can be used to configure the <see cref="OpenTelemetryRealtimeSession"/> instance.</param>
+    /// <param name="configure">An optional callback that can be used to configure the <see cref="OpenTelemetryRealtimeClientSession"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static RealtimeSessionBuilder UseOpenTelemetry(
-        this RealtimeSessionBuilder builder,
+    public static RealtimeClientSessionBuilder UseOpenTelemetry(
+        this RealtimeClientSessionBuilder builder,
         ILoggerFactory? loggerFactory = null,
         string? sourceName = null,
-        Action<OpenTelemetryRealtimeSession>? configure = null) =>
+        Action<OpenTelemetryRealtimeClientSession>? configure = null) =>
         Throw.IfNull(builder).Use((innerSession, services) =>
         {
             loggerFactory ??= services.GetService<ILoggerFactory>();
 
-            var session = new OpenTelemetryRealtimeSession(innerSession, loggerFactory?.CreateLogger(typeof(OpenTelemetryRealtimeSession)), sourceName);
+            var session = new OpenTelemetryRealtimeClientSession(innerSession, loggerFactory?.CreateLogger(typeof(OpenTelemetryRealtimeClientSession)), sourceName);
             configure?.Invoke(session);
 
             return session;

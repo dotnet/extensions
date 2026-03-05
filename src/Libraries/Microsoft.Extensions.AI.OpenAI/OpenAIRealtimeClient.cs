@@ -58,7 +58,7 @@ public sealed class OpenAIRealtimeClient : IRealtimeClient
             ? await _realtimeClient.StartTranscriptionSessionAsync(cancellationToken: cancellationToken).ConfigureAwait(false)
             : await _realtimeClient.StartConversationSessionAsync(_model, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        var session = new OpenAIRealtimeSession(sessionClient, _model);
+        var session = new OpenAIRealtimeClientSession(sessionClient, _model);
         try
         {
             if (options is not null)

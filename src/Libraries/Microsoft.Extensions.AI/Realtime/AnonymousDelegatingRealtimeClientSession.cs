@@ -11,13 +11,13 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating realtime session that wraps an inner session with implementations provided by delegates.</summary>
 [Experimental("MEAI001")]
-internal sealed class AnonymousDelegatingRealtimeSession : DelegatingRealtimeSession
+internal sealed class AnonymousDelegatingRealtimeClientSession : DelegatingRealtimeClientSession
 {
     /// <summary>The delegate to use as the implementation of <see cref="GetStreamingResponseAsync"/>.</summary>
     private readonly Func<IRealtimeClientSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>> _getStreamingResponseFunc;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AnonymousDelegatingRealtimeSession"/> class.
+    /// Initializes a new instance of the <see cref="AnonymousDelegatingRealtimeClientSession"/> class.
     /// </summary>
     /// <param name="innerSession">The inner session.</param>
     /// <param name="getStreamingResponseFunc">
@@ -25,7 +25,7 @@ internal sealed class AnonymousDelegatingRealtimeSession : DelegatingRealtimeSes
     /// </param>
     /// <exception cref="ArgumentNullException"><paramref name="innerSession"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="getStreamingResponseFunc"/> is <see langword="null"/>.</exception>
-    public AnonymousDelegatingRealtimeSession(
+    public AnonymousDelegatingRealtimeClientSession(
         IRealtimeClientSession innerSession,
         Func<IRealtimeClientSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>> getStreamingResponseFunc)
         : base(innerSession)

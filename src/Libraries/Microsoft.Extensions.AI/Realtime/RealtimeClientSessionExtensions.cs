@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides a collection of static methods for extending <see cref="IRealtimeClientSession"/> instances.</summary>
 [Experimental("MEAI001")]
-public static class RealtimeSessionExtensions
+public static class RealtimeClientSessionExtensions
 {
     /// <summary>Asks the <see cref="IRealtimeClientSession"/> for an object of type <typeparamref name="TService"/>.</summary>
     /// <typeparam name="TService">The type of the object to be retrieved.</typeparam>

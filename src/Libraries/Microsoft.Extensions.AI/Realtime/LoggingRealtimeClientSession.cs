@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// </remarks>
 [Experimental("MEAI001")]
-public partial class LoggingRealtimeSession : DelegatingRealtimeSession
+public partial class LoggingRealtimeClientSession : DelegatingRealtimeClientSession
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
     private readonly ILogger _logger;
@@ -36,10 +36,10 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
     /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization of state written to the logger.</summary>
     private JsonSerializerOptions _jsonSerializerOptions;
 
-    /// <summary>Initializes a new instance of the <see cref="LoggingRealtimeSession"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="LoggingRealtimeClientSession"/> class.</summary>
     /// <param name="innerSession">The underlying <see cref="IRealtimeClientSession"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
-    public LoggingRealtimeSession(IRealtimeClientSession innerSession, ILogger logger)
+    public LoggingRealtimeClientSession(IRealtimeClientSession innerSession, ILogger logger)
         : base(innerSession)
     {
         _logger = Throw.IfNull(logger);
