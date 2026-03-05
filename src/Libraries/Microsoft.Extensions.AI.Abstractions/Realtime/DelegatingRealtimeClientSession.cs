@@ -41,11 +41,8 @@ public class DelegatingRealtimeClientSession : IRealtimeClientSession
     /// <summary>Performs async cleanup of managed resources.</summary>
     /// <returns>A task representing the asynchronous dispose operation.</returns>
 #pragma warning disable EA0014 // The async method doesn't support cancellation
-    protected virtual async ValueTask DisposeAsyncCore()
+    protected virtual ValueTask DisposeAsyncCore() => InnerSession.DisposeAsync();
 #pragma warning restore EA0014
-    {
-        await InnerSession.DisposeAsync().ConfigureAwait(false);
-    }
 
     /// <summary>Gets the inner <see cref="IRealtimeClientSession" />.</summary>
     protected IRealtimeClientSession InnerSession { get; }
