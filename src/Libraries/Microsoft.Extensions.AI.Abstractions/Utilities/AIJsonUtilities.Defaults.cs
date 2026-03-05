@@ -55,12 +55,16 @@ public static partial class AIJsonUtilities
         AddAIContentType(options, typeof(AIContent), typeof(CodeInterpreterToolResultContent), typeDiscriminatorId: "codeInterpreterToolResult", checkBuiltIn: false);
         AddAIContentType(options, typeof(AIContent), typeof(ImageGenerationToolCallContent), typeDiscriminatorId: "imageGenerationToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(AIContent), typeof(ImageGenerationToolResultContent), typeDiscriminatorId: "imageGenerationToolResult", checkBuiltIn: false);
+        AddAIContentType(options, typeof(AIContent), typeof(WebSearchToolCallContent), typeDiscriminatorId: "webSearchToolCall", checkBuiltIn: false);
+        AddAIContentType(options, typeof(AIContent), typeof(WebSearchToolResultContent), typeDiscriminatorId: "webSearchToolResult", checkBuiltIn: false);
 
         // Also register the experimental types as derived types of ToolCallContent/ToolResultContent.
         AddAIContentType(options, typeof(ToolCallContent), typeof(CodeInterpreterToolCallContent), "codeInterpreterToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolCallContent), typeof(ImageGenerationToolCallContent), "imageGenerationToolCall", checkBuiltIn: false);
+        AddAIContentType(options, typeof(ToolCallContent), typeof(WebSearchToolCallContent), "webSearchToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolResultContent), typeof(CodeInterpreterToolResultContent), "codeInterpreterToolResult", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolResultContent), typeof(ImageGenerationToolResultContent), "imageGenerationToolResult", checkBuiltIn: false);
+        AddAIContentType(options, typeof(ToolResultContent), typeof(WebSearchToolResultContent), "webSearchToolResult", checkBuiltIn: false);
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
@@ -129,6 +133,8 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(CodeInterpreterToolResultContent))]
     [JsonSerializable(typeof(ImageGenerationToolCallContent))]
     [JsonSerializable(typeof(ImageGenerationToolResultContent))]
+    [JsonSerializable(typeof(WebSearchToolCallContent))]
+    [JsonSerializable(typeof(WebSearchToolResultContent))]
     [JsonSerializable(typeof(ResponseContinuationToken))]
 
     // IEmbeddingGenerator

@@ -1,5 +1,13 @@
 # Microsoft.Extensions.AI.Abstractions Release History
 
+## NOT YET RELEASED
+
+- Added `ToolCallContent` and `ToolResultContent` base classes.
+- Updated the design of the MCP and approvals-related types and marked them as stable.
+- Updated AI function parameter JSON schema generation to honor `[Required]` attributes.
+- Updated `AIFunctionFactory` to work better with `DynamicMethod`-based functions.
+- Removed the experimental `IToolReductionStrategy` type.
+
 ## 10.3.0
 
 - Added `ReasoningOptions` to `ChatOptions` for configuring reasoning effort and output.
