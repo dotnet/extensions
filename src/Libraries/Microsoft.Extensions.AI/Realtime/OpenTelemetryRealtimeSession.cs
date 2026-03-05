@@ -381,7 +381,7 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
     {
         switch (message)
         {
-            case RealtimeClientConversationItemCreateMessage createMsg:
+            case RealtimeClientCreateConversationItemMessage createMsg:
                 return ExtractOtelMessage(createMsg.Item);
 
             case RealtimeClientInputAudioBufferAppendMessage audioAppendMsg:
@@ -402,7 +402,7 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
                     Parts = { new RealtimeOtelGenericPart { Type = "audio_commit" } },
                 };
 
-            case RealtimeClientResponseCreateMessage responseCreateMsg:
+            case RealtimeClientCreateResponseMessage responseCreateMsg:
                 var responseMessage = new RealtimeOtelMessage { Role = "user" };
 
                 // Add instructions if present

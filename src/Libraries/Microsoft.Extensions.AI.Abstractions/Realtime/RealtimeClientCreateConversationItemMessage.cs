@@ -11,14 +11,14 @@ namespace Microsoft.Extensions.AI;
 /// Represents a real-time message for creating a conversation item.
 /// </summary>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public class RealtimeClientConversationItemCreateMessage : RealtimeClientMessage
+public class RealtimeClientCreateConversationItemMessage : RealtimeClientMessage
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RealtimeClientConversationItemCreateMessage"/> class.
+    /// Initializes a new instance of the <see cref="RealtimeClientCreateConversationItemMessage"/> class.
     /// </summary>
     /// <param name="item">The conversation item to create.</param>
     /// <param name="previousId">The optional ID of the previous conversation item to insert the new one after.</param>
-    public RealtimeClientConversationItemCreateMessage(RealtimeContentItem item, string? previousId = null)
+    public RealtimeClientCreateConversationItemMessage(RealtimeContentItem item, string? previousId = null)
     {
         PreviousId = previousId;
         Item = Throw.IfNull(item);

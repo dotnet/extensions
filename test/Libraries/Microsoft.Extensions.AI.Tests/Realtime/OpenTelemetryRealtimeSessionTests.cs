@@ -843,7 +843,7 @@ public class OpenTelemetryRealtimeSessionTests
         await Task.Yield();
         yield return new RealtimeClientInputAudioBufferAppendMessage(new DataContent(new byte[] { 1, 2, 3 }, "audio/pcm"));
         yield return new RealtimeClientInputAudioBufferCommitMessage();
-        yield return new RealtimeClientResponseCreateMessage();
+        yield return new RealtimeClientCreateResponseMessage();
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -852,8 +852,8 @@ public class OpenTelemetryRealtimeSessionTests
     {
         await Task.Yield();
         var contentItem = new RealtimeContentItem([new FunctionResultContent("call_1", "result_value")], role: ChatRole.Tool);
-        yield return new RealtimeClientConversationItemCreateMessage(contentItem);
-        yield return new RealtimeClientResponseCreateMessage();
+        yield return new RealtimeClientCreateConversationItemMessage(contentItem);
+        yield return new RealtimeClientCreateResponseMessage();
     }
 
     private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithToolCallAsync([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -1254,7 +1254,7 @@ public class OpenTelemetryRealtimeSessionTests
 #pragma warning restore IDE0060
     {
         await Task.Yield();
-        yield return new RealtimeClientResponseCreateMessage { Instructions = "Be very helpful" };
+        yield return new RealtimeClientCreateResponseMessage { Instructions = "Be very helpful" };
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -1263,7 +1263,7 @@ public class OpenTelemetryRealtimeSessionTests
     {
         await Task.Yield();
         var item = new RealtimeContentItem([new TextContent("Hello from client")], role: ChatRole.User);
-        yield return new RealtimeClientResponseCreateMessage { Items = [item] };
+        yield return new RealtimeClientCreateResponseMessage { Items = [item] };
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -1272,8 +1272,8 @@ public class OpenTelemetryRealtimeSessionTests
     {
         await Task.Yield();
         var item = new RealtimeContentItem([new TextContent("User text message")], role: ChatRole.User);
-        yield return new RealtimeClientConversationItemCreateMessage(item);
-        yield return new RealtimeClientResponseCreateMessage();
+        yield return new RealtimeClientCreateConversationItemMessage(item);
+        yield return new RealtimeClientCreateResponseMessage();
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -1283,8 +1283,8 @@ public class OpenTelemetryRealtimeSessionTests
         await Task.Yield();
         var imageData = new DataContent(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png");
         var item = new RealtimeContentItem([imageData], role: ChatRole.User);
-        yield return new RealtimeClientConversationItemCreateMessage(item);
-        yield return new RealtimeClientResponseCreateMessage();
+        yield return new RealtimeClientCreateConversationItemMessage(item);
+        yield return new RealtimeClientCreateResponseMessage();
     }
 
     private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithTextOutputAsync([EnumeratorCancellation] CancellationToken cancellationToken)

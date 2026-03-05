@@ -127,11 +127,11 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
         {
             switch (message)
             {
-                case RealtimeClientResponseCreateMessage responseCreate:
+                case RealtimeClientCreateResponseMessage responseCreate:
                     await SendResponseCreateAsync(responseCreate, cancellationToken).ConfigureAwait(false);
                     break;
 
-                case RealtimeClientConversationItemCreateMessage itemCreate:
+                case RealtimeClientCreateConversationItemMessage itemCreate:
                     await SendConversationItemCreateAsync(itemCreate, cancellationToken).ConfigureAwait(false);
                     break;
 
@@ -209,7 +209,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
 
     #region Send Helpers (MEAI → SDK)
 
-    private async Task SendResponseCreateAsync(RealtimeClientResponseCreateMessage responseCreate, CancellationToken cancellationToken)
+    private async Task SendResponseCreateAsync(RealtimeClientCreateResponseMessage responseCreate, CancellationToken cancellationToken)
     {
         var responseOptions = new Sdk.RealtimeResponseOptions();
 
@@ -308,7 +308,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
         }
     }
 
-    private async Task SendConversationItemCreateAsync(RealtimeClientConversationItemCreateMessage itemCreate, CancellationToken cancellationToken)
+    private async Task SendConversationItemCreateAsync(RealtimeClientCreateConversationItemMessage itemCreate, CancellationToken cancellationToken)
     {
         if (itemCreate.Item is null)
         {
