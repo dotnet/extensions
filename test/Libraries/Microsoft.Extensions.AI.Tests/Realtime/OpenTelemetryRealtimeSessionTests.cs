@@ -851,7 +851,7 @@ public class OpenTelemetryRealtimeSessionTests
 #pragma warning restore IDE0060
     {
         await Task.Yield();
-        var contentItem = new RealtimeContentItem([new FunctionResultContent("call_1", "result_value")], role: ChatRole.Tool);
+        var contentItem = new RealtimeConversationItem([new FunctionResultContent("call_1", "result_value")], role: ChatRole.Tool);
         yield return new RealtimeClientCreateConversationItemMessage(contentItem);
         yield return new RealtimeClientCreateResponseMessage();
     }
@@ -862,7 +862,7 @@ public class OpenTelemetryRealtimeSessionTests
         _ = cancellationToken;
 
         // Yield a function call item from the server using RealtimeServerResponseOutputItemMessage
-        var contentItem = new RealtimeContentItem(
+        var contentItem = new RealtimeConversationItem(
             [new FunctionCallContent("call_123", "search", new Dictionary<string, object?> { ["query"] = "test" })],
             role: ChatRole.Assistant);
         yield return new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone)
@@ -1262,7 +1262,7 @@ public class OpenTelemetryRealtimeSessionTests
 #pragma warning restore IDE0060
     {
         await Task.Yield();
-        var item = new RealtimeContentItem([new TextContent("Hello from client")], role: ChatRole.User);
+        var item = new RealtimeConversationItem([new TextContent("Hello from client")], role: ChatRole.User);
         yield return new RealtimeClientCreateResponseMessage { Items = [item] };
     }
 
@@ -1271,7 +1271,7 @@ public class OpenTelemetryRealtimeSessionTests
 #pragma warning restore IDE0060
     {
         await Task.Yield();
-        var item = new RealtimeContentItem([new TextContent("User text message")], role: ChatRole.User);
+        var item = new RealtimeConversationItem([new TextContent("User text message")], role: ChatRole.User);
         yield return new RealtimeClientCreateConversationItemMessage(item);
         yield return new RealtimeClientCreateResponseMessage();
     }
@@ -1282,7 +1282,7 @@ public class OpenTelemetryRealtimeSessionTests
     {
         await Task.Yield();
         var imageData = new DataContent(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png");
-        var item = new RealtimeContentItem([imageData], role: ChatRole.User);
+        var item = new RealtimeConversationItem([imageData], role: ChatRole.User);
         yield return new RealtimeClientCreateConversationItemMessage(item);
         yield return new RealtimeClientCreateResponseMessage();
     }

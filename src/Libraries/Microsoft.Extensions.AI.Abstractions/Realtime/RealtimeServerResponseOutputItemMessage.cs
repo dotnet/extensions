@@ -47,5 +47,5 @@ public class RealtimeServerResponseOutputItemMessage : RealtimeServerMessage
     /// <summary>
     /// Gets or sets the conversation item included in the response.
     /// </summary>
-    public RealtimeContentItem? Item { get; set; }
+    public RealtimeConversationItem? Item { get; set; }
 }

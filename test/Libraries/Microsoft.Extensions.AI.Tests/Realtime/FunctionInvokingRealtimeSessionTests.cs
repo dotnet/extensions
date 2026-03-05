@@ -482,7 +482,7 @@ public class FunctionInvokingRealtimeSessionTests
         var msg2 = CreateFunctionCallOutputItemMessage("call_b", "slow_func", null);
 
         // Combine both into a single ResponseOutputItem with multiple function calls
-        var combinedItem = new RealtimeContentItem(
+        var combinedItem = new RealtimeConversationItem(
         [
             new FunctionCallContent("call_a", "slow_func"),
             new FunctionCallContent("call_b", "slow_func"),
@@ -637,7 +637,7 @@ public class FunctionInvokingRealtimeSessionTests
         string callId, string functionName, IDictionary<string, object?>? arguments)
     {
         var functionCallContent = new FunctionCallContent(callId, functionName, arguments);
-        var item = new RealtimeContentItem([functionCallContent], $"item_{callId}");
+        var item = new RealtimeConversationItem([functionCallContent], $"item_{callId}");
 
         return new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone)
         {

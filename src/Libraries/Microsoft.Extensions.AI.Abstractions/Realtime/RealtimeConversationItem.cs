@@ -15,15 +15,15 @@ namespace Microsoft.Extensions.AI;
 /// or sent as part of a real-time response creation process.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public class RealtimeContentItem
+public class RealtimeConversationItem
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RealtimeContentItem"/> class.
+    /// Initializes a new instance of the <see cref="RealtimeConversationItem"/> class.
     /// </summary>
     /// <param name="contents">The contents of the conversation item.</param>
     /// <param name="id">The ID of the conversation item.</param>
     /// <param name="role">The role of the conversation item.</param>
-    public RealtimeContentItem(IList<AIContent> contents, string? id = null, ChatRole? role = null)
+    public RealtimeConversationItem(IList<AIContent> contents, string? id = null, ChatRole? role = null)
     {
         Id = id;
         Role = role;

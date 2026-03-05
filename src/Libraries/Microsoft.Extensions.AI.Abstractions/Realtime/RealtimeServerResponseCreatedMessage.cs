@@ -72,7 +72,7 @@ public class RealtimeServerResponseCreatedMessage : RealtimeServerMessage
     /// <summary>
     /// Gets or sets the list of the conversation items included in the response.
     /// </summary>
-    public IList<RealtimeContentItem>? Items { get; set; }
+    public IList<RealtimeConversationItem>? Items { get; set; }
 
     /// <summary>
     /// Gets or sets the output modalities for the response. like "text", "audio".

@@ -18,7 +18,7 @@ public class RealtimeClientCreateConversationItemMessage : RealtimeClientMessage
     /// </summary>
     /// <param name="item">The conversation item to create.</param>
     /// <param name="previousId">The optional ID of the previous conversation item to insert the new one after.</param>
-    public RealtimeClientCreateConversationItemMessage(RealtimeContentItem item, string? previousId = null)
+    public RealtimeClientCreateConversationItemMessage(RealtimeConversationItem item, string? previousId = null)
     {
         PreviousId = previousId;
         Item = Throw.IfNull(item);
@@ -33,5 +33,5 @@ public class RealtimeClientCreateConversationItemMessage : RealtimeClientMessage
     /// <summary>
     /// Gets or sets the conversation item to create.
     /// </summary>
-    public RealtimeContentItem Item { get; set; }
+    public RealtimeConversationItem Item { get; set; }
 }

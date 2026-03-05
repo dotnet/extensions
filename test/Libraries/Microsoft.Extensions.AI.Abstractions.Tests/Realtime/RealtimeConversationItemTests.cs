@@ -8,13 +8,13 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class RealtimeContentItemTests
+public class RealtimeConversationItemTests
 {
     [Fact]
     public void Constructor_WithContentsOnly_PropsDefaulted()
     {
         IList<AIContent> contents = [new TextContent("Hello")];
-        var item = new RealtimeContentItem(contents);
+        var item = new RealtimeConversationItem(contents);
 
         Assert.Same(contents, item.Contents);
         Assert.Null(item.Id);
@@ -26,7 +26,7 @@ public class RealtimeContentItemTests
     public void Constructor_WithAllArgs_PropsRoundtrip()
     {
         IList<AIContent> contents = [new TextContent("Hello"), new TextContent("World")];
-        var item = new RealtimeContentItem(contents, "item_123", ChatRole.User);
+        var item = new RealtimeConversationItem(contents, "item_123", ChatRole.User);
 
         Assert.Same(contents, item.Contents);
         Assert.Equal("item_123", item.Id);
@@ -37,7 +37,7 @@ public class RealtimeContentItemTests
     public void Properties_Roundtrip()
     {
         IList<AIContent> contents = [new TextContent("Initial")];
-        var item = new RealtimeContentItem(contents);
+        var item = new RealtimeConversationItem(contents);
 
         IList<AIContent> newContents = [new TextContent("Updated")];
         item.Id = "new_id";
@@ -56,7 +56,7 @@ public class RealtimeContentItemTests
     {
         var functionCall = new FunctionCallContent("call_1", "myFunc");
         IList<AIContent> contents = [functionCall];
-        var item = new RealtimeContentItem(contents);
+        var item = new RealtimeConversationItem(contents);
 
         Assert.Null(item.Id);
         Assert.Null(item.Role);

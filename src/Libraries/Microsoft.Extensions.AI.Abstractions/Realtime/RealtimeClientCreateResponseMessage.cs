@@ -29,7 +29,7 @@ public class RealtimeClientCreateResponseMessage : RealtimeClientMessage
     /// <summary>
     /// Gets or sets the list of the conversation items to create a response for.
     /// </summary>
-    public IList<RealtimeContentItem>? Items { get; set; }
+    public IList<RealtimeConversationItem>? Items { get; set; }
 
     /// <summary>
     /// Gets or sets the output audio options for the response.

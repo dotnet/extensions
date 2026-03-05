@@ -454,8 +454,8 @@ public class FunctionInvokingRealtimeSession : DelegatingRealtimeSession
                 Exception = result.Exception
             };
 
-            // Create the RealtimeContentItem with the function result
-            var contentItem = new RealtimeContentItem([functionResultContent]);
+            // Create the RealtimeConversationItem with the function result
+            var contentItem = new RealtimeConversationItem([functionResultContent]);
 
             // Create the conversation item create message
             var message = new RealtimeClientCreateConversationItemMessage(contentItem);

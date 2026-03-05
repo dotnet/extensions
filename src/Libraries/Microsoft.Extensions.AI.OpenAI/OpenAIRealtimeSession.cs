@@ -684,7 +684,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
         return custom;
     }
 
-    private static Sdk.RealtimeItem? ToRealtimeItem(RealtimeContentItem? contentItem)
+    private static Sdk.RealtimeItem? ToRealtimeItem(RealtimeConversationItem? contentItem)
     {
         if (contentItem?.Contents is null or { Count: 0 })
         {
@@ -1082,10 +1082,10 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
 
         if (response.OutputItems is { Count: > 0 } outputItems)
         {
-            var items = new List<RealtimeContentItem>();
+            var items = new List<RealtimeConversationItem>();
             foreach (var item in outputItems)
             {
-                if (MapRealtimeItem(item) is RealtimeContentItem contentItem)
+                if (MapRealtimeItem(item) is RealtimeConversationItem contentItem)
                 {
                     items.Add(contentItem);
                 }
@@ -1184,7 +1184,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
         return new RealtimeServerResponseOutputItemMessage(type)
         {
             MessageId = eventId,
-            Item = itemId is not null ? new RealtimeContentItem([], itemId) : null,
+            Item = itemId is not null ? new RealtimeConversationItem([], itemId) : null,
             OutputIndex = outputIndex,
             RawRepresentation = update,
         };
@@ -1196,16 +1196,16 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
         return new RealtimeServerResponseOutputItemMessage(type)
         {
             MessageId = eventId,
-            Item = itemId is not null ? new RealtimeContentItem([], itemId) : null,
+            Item = itemId is not null ? new RealtimeConversationItem([], itemId) : null,
             RawRepresentation = update,
         };
     }
 
-    private static RealtimeContentItem? MapRealtimeItem(Sdk.RealtimeItem item) => item switch
+    private static RealtimeConversationItem? MapRealtimeItem(Sdk.RealtimeItem item) => item switch
     {
         Sdk.RealtimeMessageItem messageItem => MapMessageItem(messageItem),
         Sdk.RealtimeFunctionCallItem funcCallItem => MapFunctionCallItem(funcCallItem),
-        Sdk.RealtimeFunctionCallOutputItem funcOutputItem => new RealtimeContentItem(
+        Sdk.RealtimeFunctionCallOutputItem funcOutputItem => new RealtimeConversationItem(
             [new FunctionResultContent(funcOutputItem.CallId ?? string.Empty, funcOutputItem.FunctionOutput)],
             funcOutputItem.Id),
         Sdk.RealtimeMcpToolCallItem mcpItem => MapMcpToolCallItem(mcpItem),
@@ -1214,17 +1214,17 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
         _ => null,
     };
 
-    private static RealtimeContentItem MapFunctionCallItem(Sdk.RealtimeFunctionCallItem funcCallItem)
+    private static RealtimeConversationItem MapFunctionCallItem(Sdk.RealtimeFunctionCallItem funcCallItem)
     {
         var arguments = funcCallItem.FunctionArguments is not null && !funcCallItem.FunctionArguments.IsEmpty
             ? JsonSerializer.Deserialize<IDictionary<string, object?>>(funcCallItem.FunctionArguments)
             : null;
-        return new RealtimeContentItem(
+        return new RealtimeConversationItem(
             [new FunctionCallContent(funcCallItem.CallId ?? string.Empty, funcCallItem.FunctionName, arguments)],
             funcCallItem.Id);
     }
 
-    private static RealtimeContentItem MapMessageItem(Sdk.RealtimeMessageItem messageItem)
+    private static RealtimeConversationItem MapMessageItem(Sdk.RealtimeMessageItem messageItem)
     {
         var contents = new List<AIContent>();
         if (messageItem.Content is not null)
@@ -1270,10 +1270,10 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
             : messageItem.Role == Sdk.RealtimeMessageRole.System ? ChatRole.System
             : null;
 
-        return new RealtimeContentItem(contents, messageItem.Id, role);
+        return new RealtimeConversationItem(contents, messageItem.Id, role);
     }
 
-    private static RealtimeContentItem MapMcpToolCallItem(Sdk.RealtimeMcpToolCallItem mcpItem)
+    private static RealtimeConversationItem MapMcpToolCallItem(Sdk.RealtimeMcpToolCallItem mcpItem)
     {
         string callId = mcpItem.Id ?? string.Empty;
 
@@ -1309,10 +1309,10 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
             });
         }
 
-        return new RealtimeContentItem(contents, mcpItem.Id);
+        return new RealtimeConversationItem(contents, mcpItem.Id);
     }
 
-    private static RealtimeContentItem MapMcpApprovalRequestItem(Sdk.RealtimeMcpToolCallApprovalRequestItem approvalItem)
+    private static RealtimeConversationItem MapMcpApprovalRequestItem(Sdk.RealtimeMcpToolCallApprovalRequestItem approvalItem)
     {
         string approvalId = approvalItem.Id ?? string.Empty;
 
@@ -1332,12 +1332,12 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
             RawRepresentation = approvalItem,
         };
 
-        return new RealtimeContentItem(
+        return new RealtimeConversationItem(
             [new McpServerToolApprovalRequestContent(approvalId, toolCall) { RawRepresentation = approvalItem }],
             approvalItem.Id);
     }
 
-    private static RealtimeContentItem MapMcpToolDefinitionListItem(Sdk.RealtimeMcpToolDefinitionListItem toolListItem)
+    private static RealtimeConversationItem MapMcpToolDefinitionListItem(Sdk.RealtimeMcpToolDefinitionListItem toolListItem)
     {
         var contents = new List<AIContent>();
         foreach (var toolDef in toolListItem.ToolDefinitions)
@@ -1351,7 +1351,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
             }
         }
 
-        return new RealtimeContentItem(contents, toolListItem.Id);
+        return new RealtimeConversationItem(contents, toolListItem.Id);
     }
 
     private static UsageDetails? MapUsageDetails(Sdk.RealtimeResponseUsage? usage)

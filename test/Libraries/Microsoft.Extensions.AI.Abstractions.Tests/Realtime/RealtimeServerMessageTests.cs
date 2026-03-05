@@ -189,9 +189,9 @@ public class RealtimeServerMessageTests
     {
         var audioFormat = new RealtimeAudioFormat("audio/pcm", 24000);
         var metadata = new AdditionalPropertiesDictionary { ["key"] = "value" };
-        var items = new List<RealtimeContentItem>
+        var items = new List<RealtimeConversationItem>
         {
-            new RealtimeContentItem([new TextContent("response")], "item_1"),
+            new RealtimeConversationItem([new TextContent("response")], "item_1"),
         };
         var modalities = new List<string> { "text" };
         var error = new ErrorContent("response error");
@@ -245,7 +245,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void ResponseOutputItemMessage_Properties_Roundtrip()
     {
-        var item = new RealtimeContentItem([new TextContent("output")], "item_out_1", ChatRole.Assistant);
+        var item = new RealtimeConversationItem([new TextContent("output")], "item_out_1", ChatRole.Assistant);
 
         var message = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone)
         {

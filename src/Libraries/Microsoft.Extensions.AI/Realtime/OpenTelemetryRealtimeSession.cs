@@ -538,7 +538,7 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
     }
 
     /// <summary>Extracts content from an AIContent list and converts to OTel format.</summary>
-    private RealtimeOtelMessage? ExtractOtelMessage(RealtimeContentItem? item)
+    private RealtimeOtelMessage? ExtractOtelMessage(RealtimeConversationItem? item)
     {
         if (item?.Contents is null or { Count: 0 })
         {

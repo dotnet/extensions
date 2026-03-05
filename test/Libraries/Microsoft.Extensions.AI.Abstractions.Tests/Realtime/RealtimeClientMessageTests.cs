@@ -38,7 +38,7 @@ public class RealtimeClientMessageTests
     public void ConversationItemCreateMessage_Constructor_SetsProperties()
     {
         var contents = new List<AIContent> { new TextContent("Hello") };
-        var item = new RealtimeContentItem(contents, "item_1", ChatRole.User);
+        var item = new RealtimeConversationItem(contents, "item_1", ChatRole.User);
 
         var message = new RealtimeClientCreateConversationItemMessage(item, "prev_1");
 
@@ -49,7 +49,7 @@ public class RealtimeClientMessageTests
     [Fact]
     public void ConversationItemCreateMessage_Constructor_PreviousIdDefaults()
     {
-        var item = new RealtimeContentItem([new TextContent("Hello")]);
+        var item = new RealtimeConversationItem([new TextContent("Hello")]);
         var message = new RealtimeClientCreateConversationItemMessage(item);
 
         Assert.Same(item, message.Item);
@@ -59,10 +59,10 @@ public class RealtimeClientMessageTests
     [Fact]
     public void ConversationItemCreateMessage_Properties_Roundtrip()
     {
-        var item = new RealtimeContentItem([new TextContent("Hello")]);
+        var item = new RealtimeConversationItem([new TextContent("Hello")]);
         var message = new RealtimeClientCreateConversationItemMessage(item);
 
-        var newItem = new RealtimeContentItem([new TextContent("World")]);
+        var newItem = new RealtimeConversationItem([new TextContent("World")]);
         message.Item = newItem;
         message.PreviousId = "prev_2";
 
@@ -73,7 +73,7 @@ public class RealtimeClientMessageTests
     [Fact]
     public void ConversationItemCreateMessage_InheritsClientMessage()
     {
-        var item = new RealtimeContentItem([new TextContent("Hello")]);
+        var item = new RealtimeConversationItem([new TextContent("Hello")]);
         var message = new RealtimeClientCreateConversationItemMessage(item)
         {
             MessageId = "evt_create_1",
@@ -148,9 +148,9 @@ public class RealtimeClientMessageTests
     {
         var message = new RealtimeClientCreateResponseMessage();
 
-        var items = new List<RealtimeContentItem>
+        var items = new List<RealtimeConversationItem>
         {
-            new RealtimeContentItem([new TextContent("Hello")], "item_1", ChatRole.User),
+            new RealtimeConversationItem([new TextContent("Hello")], "item_1", ChatRole.User),
         };
         var audioFormat = new RealtimeAudioFormat("audio/pcm", 16000);
         var modalities = new List<string> { "text", "audio" };
