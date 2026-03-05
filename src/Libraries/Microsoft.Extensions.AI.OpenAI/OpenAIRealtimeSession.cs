@@ -90,11 +90,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
             // Allow callers to provide a pre-configured SDK-specific options instance.
             object? rawOptions = options.RawRepresentationFactory?.Invoke(this);
 
-            if (rawOptions is Sdk.RealtimeConversationSessionOptions rawConvOptions)
-            {
-                await _sessionClient.ConfigureConversationSessionAsync(rawConvOptions, cancellationToken).ConfigureAwait(false);
-            }
-            else if (rawOptions is Sdk.RealtimeTranscriptionSessionOptions rawTransOptions)
+            if (rawOptions is Sdk.RealtimeTranscriptionSessionOptions rawTransOptions)
             {
                 await _sessionClient.ConfigureTranscriptionSessionAsync(rawTransOptions, cancellationToken).ConfigureAwait(false);
             }
@@ -105,7 +101,7 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
             }
             else
             {
-                var convOpts = BuildConversationSessionOptions(options);
+                var convOpts = BuildConversationSessionOptions(options, rawOptions as Sdk.RealtimeConversationSessionOptions);
                 await _sessionClient.ConfigureConversationSessionAsync(convOpts, cancellationToken).ConfigureAwait(false);
             }
         }
@@ -383,14 +379,14 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
         }
     }
 
-    private static Sdk.RealtimeConversationSessionOptions BuildConversationSessionOptions(RealtimeSessionOptions options)
+    private static Sdk.RealtimeConversationSessionOptions BuildConversationSessionOptions(RealtimeSessionOptions options, Sdk.RealtimeConversationSessionOptions? seedOptions = null)
     {
-        var convOptions = new Sdk.RealtimeConversationSessionOptions();
+        var convOptions = seedOptions ?? new Sdk.RealtimeConversationSessionOptions();
 
-        // Audio configuration.
-        var audioOptions = new Sdk.RealtimeConversationSessionAudioOptions();
-        var inputAudioOptions = new Sdk.RealtimeConversationSessionInputAudioOptions();
-        var outputAudioOptions = new Sdk.RealtimeConversationSessionOutputAudioOptions();
+        // Audio configuration. Reuse any existing options from the seed to preserve provider-specific settings.
+        var audioOptions = convOptions.AudioOptions ?? new Sdk.RealtimeConversationSessionAudioOptions();
+        var inputAudioOptions = audioOptions.InputAudioOptions ?? new Sdk.RealtimeConversationSessionInputAudioOptions();
+        var outputAudioOptions = audioOptions.OutputAudioOptions ?? new Sdk.RealtimeConversationSessionOutputAudioOptions();
 
         if (options.InputAudioFormat is not null)
         {
@@ -456,8 +452,6 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
         {
             outputAudioOptions.AudioFormat = ToSdkAudioFormat(options.OutputAudioFormat);
         }
-
-        outputAudioOptions.Speed = (float)options.VoiceSpeed;
 
         if (options.Voice is not null)
         {
@@ -913,7 +907,6 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
         TranscriptionOptions? transcription = null;
         VoiceActivityDetection? vad = null;
         RealtimeAudioFormat? outputAudioFormat = null;
-        double voiceSpeed = 1.0;
         string? voice = null;
 
         if (session.AudioOptions is { } audioOptions)
@@ -975,11 +968,6 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
             {
                 outputAudioFormat = MapSdkAudioFormat(outputOpts.AudioFormat);
 
-                if (outputOpts.Speed.HasValue)
-                {
-                    voiceSpeed = outputOpts.Speed.Value;
-                }
-
                 if (outputOpts.Voice.HasValue)
                 {
                     voice = outputOpts.Voice.Value.ToString();
@@ -1011,7 +999,6 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
             TranscriptionOptions = transcription,
             VoiceActivityDetection = vad,
             OutputAudioFormat = outputAudioFormat,
-            VoiceSpeed = voiceSpeed,
             Voice = voice,
 
             // Preserve client-side properties that the server cannot round-trip.

@@ -22,7 +22,6 @@ public class RealtimeSessionOptionsTests
         Assert.Null(options.TranscriptionOptions);
         Assert.Null(options.VoiceActivityDetection);
         Assert.Null(options.OutputAudioFormat);
-        Assert.Equal(1.0, options.VoiceSpeed);
         Assert.Null(options.Voice);
         Assert.Null(options.Instructions);
         Assert.Null(options.MaxOutputTokens);
@@ -50,7 +49,6 @@ public class RealtimeSessionOptionsTests
             NoiseReductionOptions = NoiseReductionOptions.NearField,
             TranscriptionOptions = transcriptionOptions,
             VoiceActivityDetection = vad,
-            VoiceSpeed = 1.5,
             Voice = "alloy",
             Instructions = "Be helpful",
             MaxOutputTokens = 500,
@@ -66,7 +64,6 @@ public class RealtimeSessionOptionsTests
         Assert.Equal(NoiseReductionOptions.NearField, options.NoiseReductionOptions);
         Assert.Same(transcriptionOptions, options.TranscriptionOptions);
         Assert.Same(vad, options.VoiceActivityDetection);
-        Assert.Equal(1.5, options.VoiceSpeed);
         Assert.Equal("alloy", options.Voice);
         Assert.Equal("Be helpful", options.Instructions);
         Assert.Equal(500, options.MaxOutputTokens);

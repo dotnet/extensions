@@ -778,13 +778,6 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
                         _ = activity.AddTag(OpenTelemetryConsts.GenAI.Realtime.Voice, options.Voice);
                     }
 
-#pragma warning disable S1244 // Floating point numbers should not be tested for equality
-                    if (options.VoiceSpeed != 1.0)
-#pragma warning restore S1244
-                    {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Realtime.VoiceSpeed, options.VoiceSpeed);
-                    }
-
                     if (options.OutputModalities is { Count: > 0 } modalities)
                     {
                         _ = activity.AddTag(OpenTelemetryConsts.GenAI.Realtime.OutputModalities, $"[{string.Join(", ", modalities.Select(m => $"\"{m}\""))}]");

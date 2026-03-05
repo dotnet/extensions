@@ -192,12 +192,6 @@ internal static class OpenTelemetryConsts
             public const string Voice = "gen_ai.realtime.voice";
 
             /// <summary>
-            /// The speed multiplier for voice output in a realtime session (e.g., 1.0 for normal speed).
-            /// Custom attribute: "gen_ai.realtime.voice_speed".
-            /// </summary>
-            public const string VoiceSpeed = "gen_ai.realtime.voice_speed";
-
-            /// <summary>
             /// The output modalities configured for a realtime session (e.g., "Text", "Audio").
             /// Custom attribute: "gen_ai.realtime.output_modalities".
             /// </summary>

@@ -52,14 +52,6 @@ public class RealtimeSessionOptions
     public RealtimeAudioFormat? OutputAudioFormat { get; init; }
 
     /// <summary>
-    /// Gets the output voice speed for the session.
-    /// </summary>
-    /// <remarks>
-    /// The default value is 1.0, which represents normal speed.
-    /// </remarks>
-    public double VoiceSpeed { get; init; } = 1.0;
-
-    /// <summary>
     /// Gets the output voice for the session.
     /// </summary>
     public string? Voice { get; init; }

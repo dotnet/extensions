@@ -34,7 +34,6 @@ public class OpenTelemetryRealtimeSessionTests
             {
                 Model = "test-model",
                 Voice = "alloy",
-                VoiceSpeed = 1.2,
                 MaxOutputTokens = 500,
                 OutputModalities = ["text", "audio"],
                 Instructions = "Be helpful and friendly.",
@@ -126,7 +125,6 @@ public class OpenTelemetryRealtimeSessionTests
         // Realtime-specific attributes
         Assert.Equal("Realtime", activity.GetTagItem("gen_ai.realtime.session_kind"));
         Assert.Equal("alloy", activity.GetTagItem("gen_ai.realtime.voice"));
-        Assert.Equal(1.2, activity.GetTagItem("gen_ai.realtime.voice_speed"));
         Assert.Equal("""["text", "audio"]""", activity.GetTagItem("gen_ai.realtime.output_modalities"));
 
         // Response attributes
@@ -349,54 +347,6 @@ public class OpenTelemetryRealtimeSessionTests
         Assert.Equal("internal_error", activity.GetTagItem("error.type"));
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal("Something went wrong", activity.StatusDescription);
-    }
-
-    [Fact]
-    public async Task DefaultVoiceSpeed_NotLogged()
-    {
-        var sourceName = Guid.NewGuid().ToString();
-        var activities = new List<Activity>();
-        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
-            .AddSource(sourceName)
-            .AddInMemoryExporter(activities)
-            .Build();
-
-        await using var innerSession = new TestRealtimeSession
-        {
-            Options = new RealtimeSessionOptions
-            {
-                Model = "test-model",
-                VoiceSpeed = 1.0, // Default value should not be logged
-            },
-            GetStreamingResponseAsyncCallback = (cancellationToken) => EmptyCallbackAsync(cancellationToken),
-        };
-
-        static async IAsyncEnumerable<RealtimeServerMessage> EmptyCallbackAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            await Task.Yield();
-            _ = cancellationToken;
-
-            yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
-        }
-
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName)
-            .Build();
-
-        await foreach (var msg in GetClientMessagesAsync())
-        {
-            await session.SendAsync(msg);
-        }
-
-        await foreach (var response in session.GetStreamingResponseAsync())
-        {
-            // Consume
-        }
-
-        var activity = Assert.Single(activities);
-        var tags = activity.Tags.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        Assert.False(tags.ContainsKey("gen_ai.realtime.voice_speed"));
     }
 
     [Fact]
