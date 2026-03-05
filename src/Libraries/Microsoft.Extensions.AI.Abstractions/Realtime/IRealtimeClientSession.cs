@@ -15,12 +15,6 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IRealtimeClientSession : IAsyncDisposable
 {
-    /// <summary>Updates the session with new options.</summary>
-    /// <param name="options">The new session options.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous update operation.</returns>
-    Task UpdateAsync(RealtimeSessionOptions options, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Gets the current session options.
     /// </summary>

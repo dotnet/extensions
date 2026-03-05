@@ -80,11 +80,8 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
             _model, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    public async Task UpdateAsync(RealtimeSessionOptions options, CancellationToken cancellationToken = default)
+    private async Task UpdateSessionAsync(RealtimeSessionOptions options, CancellationToken cancellationToken)
     {
-        _ = Throw.IfNull(options);
-
         if (_sessionClient is not null)
         {
             // Allow callers to provide a pre-configured SDK-specific options instance.
@@ -123,6 +120,10 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
         {
             switch (message)
             {
+                case RealtimeClientSessionUpdateMessage sessionUpdate:
+                    await UpdateSessionAsync(sessionUpdate.Options, cancellationToken).ConfigureAwait(false);
+                    break;
+
                 case RealtimeClientCreateResponseMessage responseCreate:
                     await SendResponseCreateAsync(responseCreate, cancellationToken).ConfigureAwait(false);
                     break;

@@ -49,10 +49,9 @@ public class OpenAIRealtimeSessionTests
     }
 
     [Fact]
-    public async Task UpdateAsync_NullOptions_Throws()
+    public void SessionUpdateMessage_NullOptions_Throws()
     {
-        await using var session = new OpenAIRealtimeSession("key", "model");
-        await Assert.ThrowsAsync<ArgumentNullException>("options", () => session.UpdateAsync(null!));
+        Assert.Throws<ArgumentNullException>("options", () => new RealtimeClientSessionUpdateMessage(null!));
     }
 
     [Fact]

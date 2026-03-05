@@ -54,42 +54,6 @@ public partial class LoggingRealtimeSession : DelegatingRealtimeSession
     }
 
     /// <inheritdoc/>
-    public override async Task UpdateAsync(RealtimeSessionOptions options, CancellationToken cancellationToken = default)
-    {
-        if (_logger.IsEnabled(LogLevel.Debug))
-        {
-            if (_logger.IsEnabled(LogLevel.Trace))
-            {
-                LogInvokedSensitive(nameof(UpdateAsync), AsJson(options));
-            }
-            else
-            {
-                LogInvoked(nameof(UpdateAsync));
-            }
-        }
-
-        try
-        {
-            await base.UpdateAsync(options, cancellationToken).ConfigureAwait(false);
-
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                LogCompleted(nameof(UpdateAsync));
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            LogInvocationCanceled(nameof(UpdateAsync));
-            throw;
-        }
-        catch (Exception ex)
-        {
-            LogInvocationFailed(nameof(UpdateAsync), ex);
-            throw;
-        }
-    }
-
-    /// <inheritdoc/>
     public override async Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(message);

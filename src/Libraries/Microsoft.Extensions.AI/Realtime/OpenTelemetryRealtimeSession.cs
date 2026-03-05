@@ -170,32 +170,6 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
         base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
-    public override async Task UpdateAsync(RealtimeSessionOptions options, CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(options);
-        _jsonSerializerOptions.MakeReadOnly();
-
-        using Activity? activity = CreateAndConfigureActivity(options);
-        Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
-        string? requestModelId = options.Model ?? _defaultModelId;
-
-        Exception? error = null;
-        try
-        {
-            await base.UpdateAsync(options, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            error = ex;
-            throw;
-        }
-        finally
-        {
-            TraceUpdateResponse(activity, requestModelId, error, stopwatch);
-        }
-    }
-
-    /// <inheritdoc/>
     public override async Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
         if (EnableSensitiveData && _activitySource.HasListeners())
@@ -831,34 +805,6 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
         }
 
         return activity;
-    }
-
-    /// <summary>Adds update operation response information to the activity.</summary>
-    private void TraceUpdateResponse(
-        Activity? activity,
-        string? requestModelId,
-        Exception? error,
-        Stopwatch? stopwatch)
-    {
-        if (_operationDurationHistogram.Enabled && stopwatch is not null)
-        {
-            TagList tags = default;
-            AddMetricTags(ref tags, requestModelId, responseModelId: null);
-
-            if (error is not null)
-            {
-                tags.Add(OpenTelemetryConsts.Error.Type, error.GetType().FullName);
-            }
-
-            _operationDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, tags);
-        }
-
-        if (error is not null)
-        {
-            _ = activity?
-                .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                .SetStatus(ActivityStatusCode.Error, error.Message);
-        }
     }
 
     /// <summary>Adds streaming response information to the activity.</summary>

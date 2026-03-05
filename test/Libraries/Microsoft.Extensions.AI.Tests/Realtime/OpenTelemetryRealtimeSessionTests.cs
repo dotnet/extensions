@@ -181,82 +181,6 @@ public class OpenTelemetryRealtimeSessionTests
     }
 
     [Fact]
-    public async Task UpdateAsync_TracesOperation()
-    {
-        var sourceName = Guid.NewGuid().ToString();
-        var activities = new List<Activity>();
-        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
-            .AddSource(sourceName)
-            .AddInMemoryExporter(activities)
-            .Build();
-
-        await using var innerSession = new TestRealtimeSession
-        {
-            UpdateAsyncCallback = (options, cancellationToken) => Task.CompletedTask,
-            GetServiceCallback = (serviceType, serviceKey) =>
-                serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("testprovider", new Uri("http://localhost:8080"), "gpt-4-realtime") :
-                null,
-        };
-
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: instance =>
-            {
-                instance.EnableSensitiveData = true;
-            })
-            .Build();
-
-        var options = new RealtimeSessionOptions
-        {
-            Model = "my-model",
-            Voice = "echo",
-            MaxOutputTokens = 100,
-            Instructions = "Be brief.",
-        };
-
-        await session.UpdateAsync(options);
-
-        var activity = Assert.Single(activities);
-
-        Assert.NotNull(activity.Id);
-        Assert.Equal("realtime my-model", activity.DisplayName);
-        Assert.Equal("chat", activity.GetTagItem("gen_ai.operation.name"));
-        Assert.Equal("my-model", activity.GetTagItem("gen_ai.request.model"));
-        Assert.Equal("testprovider", activity.GetTagItem("gen_ai.provider.name"));
-        Assert.Equal("echo", activity.GetTagItem("gen_ai.realtime.voice"));
-        Assert.Equal(100, activity.GetTagItem("gen_ai.request.max_tokens"));
-        Assert.True(activity.Duration.TotalMilliseconds > 0);
-    }
-
-    [Fact]
-    public async Task UpdateAsync_TracesError()
-    {
-        var sourceName = Guid.NewGuid().ToString();
-        var activities = new List<Activity>();
-        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
-            .AddSource(sourceName)
-            .AddInMemoryExporter(activities)
-            .Build();
-
-        await using var innerSession = new TestRealtimeSession
-        {
-            UpdateAsyncCallback = (options, cancellationToken) => throw new InvalidOperationException("Test error"),
-        };
-
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName)
-            .Build();
-
-        await Assert.ThrowsAsync<InvalidOperationException>(() => session.UpdateAsync(new RealtimeSessionOptions { Model = "test" }));
-
-        var activity = Assert.Single(activities);
-        Assert.Equal("System.InvalidOperationException", activity.GetTagItem("error.type"));
-        Assert.Equal(ActivityStatusCode.Error, activity.Status);
-        Assert.Equal("Test error", activity.StatusDescription);
-    }
-
-    [Fact]
     public async Task GetStreamingResponseAsync_TracesError()
     {
         var sourceName = Guid.NewGuid().ToString();
@@ -400,12 +324,9 @@ public class OpenTelemetryRealtimeSessionTests
     }
 
     [Fact]
-    public async Task UpdateAsync_InvalidArgs_Throws()
+    public void SessionUpdateMessage_NullOptions_Throws()
     {
-        await using var innerSession = new TestRealtimeSession();
-        await using var session = new OpenTelemetryRealtimeSession(innerSession);
-
-        await Assert.ThrowsAsync<ArgumentNullException>("options", () => session.UpdateAsync(null!));
+        Assert.Throws<ArgumentNullException>("options", () => new RealtimeClientSessionUpdateMessage(null!));
     }
 
     [Fact]

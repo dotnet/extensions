@@ -11,9 +11,6 @@ namespace Microsoft.Extensions.AI;
 /// <summary>A test <see cref="IRealtimeClientSession"/> implementation that uses callbacks for verification.</summary>
 public sealed class TestRealtimeSession : IRealtimeClientSession
 {
-    /// <summary>Gets or sets the callback to invoke when <see cref="UpdateAsync"/> is called.</summary>
-    public Func<RealtimeSessionOptions, CancellationToken, Task>? UpdateAsyncCallback { get; set; }
-
     /// <summary>Gets or sets the callback to invoke when <see cref="SendAsync"/> is called.</summary>
     public Func<RealtimeClientMessage, CancellationToken, Task>? SendAsyncCallback { get; set; }
 
@@ -25,12 +22,6 @@ public sealed class TestRealtimeSession : IRealtimeClientSession
 
     /// <inheritdoc/>
     public RealtimeSessionOptions? Options { get; set; }
-
-    /// <inheritdoc/>
-    public Task UpdateAsync(RealtimeSessionOptions options, CancellationToken cancellationToken = default)
-    {
-        return UpdateAsyncCallback?.Invoke(options, cancellationToken) ?? Task.CompletedTask;
-    }
 
     /// <inheritdoc/>
     public Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)

@@ -58,10 +58,6 @@ public class DelegatingRealtimeSession : IRealtimeClientSession
         InnerSession.SendAsync(message, cancellationToken);
 
     /// <inheritdoc />
-    public virtual Task UpdateAsync(RealtimeSessionOptions options, CancellationToken cancellationToken = default) =>
-        InnerSession.UpdateAsync(options, cancellationToken);
-
-    /// <inheritdoc />
     public virtual IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
         CancellationToken cancellationToken = default) =>
         InnerSession.GetStreamingResponseAsync(cancellationToken);

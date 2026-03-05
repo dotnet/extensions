@@ -31,22 +31,23 @@ public class DelegatingRealtimeSessionTests
     }
 
     [Fact]
-    public async Task UpdateAsync_DelegatesToInner()
+    public async Task SendAsync_SessionUpdateMessage_DelegatesToInner()
     {
         var called = false;
         var sentOptions = new RealtimeSessionOptions { Instructions = "Be helpful" };
         await using var inner = new TestRealtimeSession
         {
-            UpdateAsyncCallback = (options, _) =>
+            SendAsyncCallback = (msg, _) =>
             {
-                Assert.Same(sentOptions, options);
+                var updateMsg = Assert.IsType<RealtimeClientSessionUpdateMessage>(msg);
+                Assert.Same(sentOptions, updateMsg.Options);
                 called = true;
                 return Task.CompletedTask;
             },
         };
         await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
-        await delegating.UpdateAsync(sentOptions);
+        await delegating.SendAsync(new RealtimeClientSessionUpdateMessage(sentOptions));
         Assert.True(called);
     }
 
@@ -143,7 +144,7 @@ public class DelegatingRealtimeSessionTests
     }
 
     [Fact]
-    public async Task UpdateAsync_FlowsCancellationToken()
+    public async Task SendAsync_SessionUpdateMessage_FlowsCancellationToken()
     {
         CancellationToken capturedToken = default;
         using var cts = new CancellationTokenSource();
@@ -151,7 +152,7 @@ public class DelegatingRealtimeSessionTests
 
         await using var inner = new TestRealtimeSession
         {
-            UpdateAsyncCallback = (options, ct) =>
+            SendAsyncCallback = (msg, ct) =>
             {
                 capturedToken = ct;
                 return Task.CompletedTask;
@@ -159,7 +160,7 @@ public class DelegatingRealtimeSessionTests
         };
         await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
-        await delegating.UpdateAsync(sentOptions, cts.Token);
+        await delegating.SendAsync(new RealtimeClientSessionUpdateMessage(sentOptions), cts.Token);
         Assert.Equal(cts.Token, capturedToken);
     }
 
@@ -213,8 +214,6 @@ public class DelegatingRealtimeSessionTests
         }
 
         public RealtimeSessionOptions? Options => null;
-
-        public Task UpdateAsync(RealtimeSessionOptions options, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
