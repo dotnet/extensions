@@ -261,11 +261,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case WebSearchCallResponseItem wscri:
-                    _ = wscri.Patch.TryGetValue("$.action.query"u8, out string? wsQuery);
-
                     message.Contents.Add(new WebSearchToolCallContent(wscri.Id)
                     {
-                        Queries = wsQuery is not null ? [wsQuery] : null,
+                        Queries = GetWebSearchQueries(wscri),
 
                         // We purposefully do not set the RawRepresentation on the WebSearchToolCallContent, only on the WebSearchToolResultContent, to avoid
                         // the same WebSearchCallResponseItem being included on two different AIContent instances. When these are roundtripped, we want only one
@@ -551,10 +549,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         case WebSearchCallResponseItem wscri:
                             // The WebSearchToolCallContent has already been yielded as part of in-progress updates.
                             // Yield a second one here with queries populated, which coalescing will merge with the first.
-                            _ = wscri.Patch.TryGetValue("$.action.query"u8, out string? wsStreamQuery);
                             yield return CreateUpdate(new WebSearchToolCallContent(wscri.Id)
                             {
-                                Queries = wsStreamQuery is not null ? [wsStreamQuery] : null,
+                                Queries = GetWebSearchQueries(wscri),
                             });
 
                             // Also yield the WebSearchToolResultContent.
@@ -1479,6 +1476,40 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 (destination.Annotations ??= []).Add(ca);
             }
         }
+    }
+
+    /// <summary>
+    /// Extracts web search queries from a <see cref="WebSearchCallResponseItem"/>.
+    /// OpenAI exposes both a deprecated <c>action.query</c> (singular string) and <c>action.queries</c> (string array).
+    /// This helper reads whichever is present, preferring the array form.
+    /// </summary>
+    private static List<string>? GetWebSearchQueries(WebSearchCallResponseItem wscri)
+    {
+        List<string>? queries = null;
+
+        // Try the newer array field first.
+        if (wscri.Patch.TryGetJson("$.action.queries"u8, out ReadOnlyMemory<byte> queriesJson))
+        {
+            Utf8JsonReader reader = new(queriesJson.Span);
+            if (reader.Read() && reader.TokenType is JsonTokenType.StartArray)
+            {
+                while (reader.Read() && reader.TokenType is JsonTokenType.String)
+                {
+                    if (reader.GetString() is string q)
+                    {
+                        (queries ??= []).Add(q);
+                    }
+                }
+            }
+        }
+
+        // Fall back to the deprecated singular field.
+        if (queries is null && wscri.Patch.TryGetValue("$.action.query"u8, out string? wsQuery) && wsQuery is not null)
+        {
+            queries = [wsQuery];
+        }
+
+        return queries;
     }
 
     /// <summary>

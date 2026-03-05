@@ -630,6 +630,9 @@ internal sealed partial class OpenAIChatClient : IChatClient
 #pragma warning disable OPENAI001 // WebSearchOptions is experimental
                         result.WebSearchOptions ??= new();
 #pragma warning restore OPENAI001
+                        // The Chat Completions API surfaces web search results via message-level annotations
+                        // (handled in FromOpenAIChatCompletion) rather than as separate tool call response items.
+                        // WebSearchToolCallContent/WebSearchToolResultContent are only used by the Responses API path.
                         break;
                 }
             }

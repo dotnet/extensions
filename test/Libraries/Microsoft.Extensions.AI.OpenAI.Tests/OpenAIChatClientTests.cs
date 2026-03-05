@@ -1171,7 +1171,7 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
-    public async Task UnavailableBuiltInFunctionCall_NonStreaming()
+    public async Task HostedWebSearchTool_MapsToWebSearchOptions_NonStreaming()
     {
         const string Input = """
             {
