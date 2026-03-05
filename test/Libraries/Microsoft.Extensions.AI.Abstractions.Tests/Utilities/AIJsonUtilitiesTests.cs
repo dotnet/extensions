@@ -1224,6 +1224,84 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void AddAIContentType_WithBaseType_DerivedToolCallContent()
+    {
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+
+        options.AddAIContentType<DerivedToolCallContent>(typeof(ToolCallContent), "derivedToolCall");
+
+        ToolCallContent c = new DerivedToolCallContent { CustomValue = 42 };
+        string json = JsonSerializer.Serialize(c, options);
+        Assert.Contains("\"$type\":\"derivedToolCall\"", json);
+        Assert.Contains("\"CustomValue\":42", json);
+
+        ToolCallContent? deserialized = JsonSerializer.Deserialize<ToolCallContent>(json, options);
+        Assert.IsType<DerivedToolCallContent>(deserialized);
+    }
+
+    [Fact]
+    public static void AddAIContentType_WithBaseType_NonGeneric_DerivedToolCallContent()
+    {
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+
+        options.AddAIContentType(typeof(ToolCallContent), typeof(DerivedToolCallContent), "derivedToolCall");
+
+        ToolCallContent c = new DerivedToolCallContent { CustomValue = 42 };
+        string json = JsonSerializer.Serialize(c, options);
+        Assert.Contains("\"$type\":\"derivedToolCall\"", json);
+        Assert.Contains("\"CustomValue\":42", json);
+
+        ToolCallContent? deserialized = JsonSerializer.Deserialize<ToolCallContent>(json, options);
+        Assert.IsType<DerivedToolCallContent>(deserialized);
+    }
+
+    [Fact]
+    public static void AddAIContentType_WithBaseType_NullArguments_ThrowsArgumentNullException()
+    {
+        JsonSerializerOptions options = new();
+        Assert.Throws<ArgumentNullException>("options", () => ((JsonSerializerOptions)null!).AddAIContentType<DerivedToolCallContent>(typeof(ToolCallContent), "discriminator"));
+        Assert.Throws<ArgumentNullException>("options", () => ((JsonSerializerOptions)null!).AddAIContentType(typeof(ToolCallContent), typeof(DerivedToolCallContent), "discriminator"));
+        Assert.Throws<ArgumentNullException>("baseType", () => options.AddAIContentType<DerivedToolCallContent>(null!, "discriminator"));
+        Assert.Throws<ArgumentNullException>("baseType", () => options.AddAIContentType(null!, typeof(DerivedToolCallContent), "discriminator"));
+        Assert.Throws<ArgumentNullException>("typeDiscriminatorId", () => options.AddAIContentType<DerivedToolCallContent>(typeof(ToolCallContent), null!));
+        Assert.Throws<ArgumentNullException>("typeDiscriminatorId", () => options.AddAIContentType(typeof(ToolCallContent), typeof(DerivedToolCallContent), null!));
+        Assert.Throws<ArgumentNullException>("contentType", () => options.AddAIContentType(typeof(ToolCallContent), null!, "discriminator"));
+    }
+
+    [Fact]
+    public static void AddAIContentType_WithBaseType_NonAIContent_ThrowsArgumentException()
+    {
+        JsonSerializerOptions options = new();
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(AIContent), typeof(int), "discriminator"));
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(AIContent), typeof(object), "discriminator"));
+    }
+
+    [Fact]
+    public static void AddAIContentType_WithBaseType_IncompatibleBaseType_ThrowsArgumentException()
+    {
+        JsonSerializerOptions options = new();
+
+        // DerivedAIContent does not derive from ToolCallContent
+        Assert.Throws<ArgumentException>("baseType", () => options.AddAIContentType<DerivedAIContent>(typeof(ToolCallContent), "discriminator"));
+        Assert.Throws<ArgumentException>("baseType", () => options.AddAIContentType(typeof(ToolCallContent), typeof(DerivedAIContent), "discriminator"));
+    }
+
+    [Fact]
+    public static void AddAIContentType_WithBaseType_BuiltInAIContent_ThrowsArgumentException()
+    {
+        JsonSerializerOptions options = new();
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(AIContent), typeof(TextContent), "discriminator"));
+    }
+
+    [Fact]
     public static void HashData_Idempotent()
     {
         JsonSerializerOptions customOptions = new()
@@ -1673,9 +1751,20 @@ public static partial class AIJsonUtilitiesTests
         public int DerivedValue { get; set; }
     }
 
+    private class DerivedToolCallContent : ToolCallContent
+    {
+        public DerivedToolCallContent()
+            : base("callId")
+        {
+        }
+
+        public int CustomValue { get; set; }
+    }
+
     [JsonSerializable(typeof(JsonElement))]
     [JsonSerializable(typeof(CreateJsonSchema_IncorporatesTypesAndAnnotations_Type))]
     [JsonSerializable(typeof(DerivedAIContent))]
+    [JsonSerializable(typeof(DerivedToolCallContent))]
     [JsonSerializable(typeof(MyPoco))]
     [JsonSerializable(typeof(MyEnumValue?))]
     [JsonSerializable(typeof(object[]))]

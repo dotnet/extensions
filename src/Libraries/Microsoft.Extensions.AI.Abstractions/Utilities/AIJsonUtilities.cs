@@ -46,7 +46,7 @@ public static partial class AIJsonUtilities
     /// <param name="contentType">The custom content type to configure.</param>
     /// <param name="typeDiscriminatorId">The type discriminator id for the content type.</param>
     /// <exception cref="ArgumentNullException"><paramref name="options"/>, <paramref name="contentType"/>, or <paramref name="typeDiscriminatorId"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="contentType"/> is a built-in content type or does not derived from <see cref="AIContent"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="contentType"/> is a built-in content type or does not derive from <see cref="AIContent"/>.</exception>
     /// <exception cref="InvalidOperationException"><paramref name="options"/> is a read-only instance.</exception>
     public static void AddAIContentType(this JsonSerializerOptions options, Type contentType, string typeDiscriminatorId)
     {
@@ -60,6 +60,61 @@ public static partial class AIJsonUtilities
         }
 
         AddAIContentType(options, typeof(AIContent), contentType, typeDiscriminatorId, checkBuiltIn: true);
+    }
+
+    /// <summary>
+    /// Adds a custom content type to the polymorphic configuration for the specified <paramref name="baseType"/>.
+    /// </summary>
+    /// <typeparam name="TContent">The custom content type to configure.</typeparam>
+    /// <param name="options">The options instance to configure.</param>
+    /// <param name="baseType">The base type in the polymorphic hierarchy to which the content type should be added.</param>
+    /// <param name="typeDiscriminatorId">The type discriminator id for the content type.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/>, <paramref name="baseType"/>, or <paramref name="typeDiscriminatorId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><typeparamref name="TContent"/> is a built-in content type or <paramref name="baseType"/> is not assignable from <typeparamref name="TContent"/>.</exception>
+    /// <exception cref="InvalidOperationException"><paramref name="options"/> is a read-only instance.</exception>
+    public static void AddAIContentType<TContent>(this JsonSerializerOptions options, Type baseType, string typeDiscriminatorId)
+        where TContent : AIContent
+    {
+        _ = Throw.IfNull(options);
+        _ = Throw.IfNull(baseType);
+        _ = Throw.IfNull(typeDiscriminatorId);
+
+        if (!baseType.IsAssignableFrom(typeof(TContent)))
+        {
+            Throw.ArgumentException(nameof(baseType), $"The base type must be assignable from {typeof(TContent).Name}.");
+        }
+
+        AddAIContentType(options, baseType, typeof(TContent), typeDiscriminatorId, checkBuiltIn: true);
+    }
+
+    /// <summary>
+    /// Adds a custom content type to the polymorphic configuration for the specified <paramref name="baseType"/>.
+    /// </summary>
+    /// <param name="options">The options instance to configure.</param>
+    /// <param name="baseType">The base type in the polymorphic hierarchy to which the content type should be added.</param>
+    /// <param name="contentType">The custom content type to configure.</param>
+    /// <param name="typeDiscriminatorId">The type discriminator id for the content type.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/>, <paramref name="baseType"/>, <paramref name="contentType"/>, or <paramref name="typeDiscriminatorId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="contentType"/> is a built-in content type, does not derive from <see cref="AIContent"/>, or <paramref name="baseType"/> is not assignable from <paramref name="contentType"/>.</exception>
+    /// <exception cref="InvalidOperationException"><paramref name="options"/> is a read-only instance.</exception>
+    public static void AddAIContentType(this JsonSerializerOptions options, Type baseType, Type contentType, string typeDiscriminatorId)
+    {
+        _ = Throw.IfNull(options);
+        _ = Throw.IfNull(baseType);
+        _ = Throw.IfNull(contentType);
+        _ = Throw.IfNull(typeDiscriminatorId);
+
+        if (!typeof(AIContent).IsAssignableFrom(contentType))
+        {
+            Throw.ArgumentException(nameof(contentType), $"The content type must derive from {nameof(AIContent)}.");
+        }
+
+        if (!baseType.IsAssignableFrom(contentType))
+        {
+            Throw.ArgumentException(nameof(baseType), $"The base type must be assignable from {contentType.Name}.");
+        }
+
+        AddAIContentType(options, baseType, contentType, typeDiscriminatorId, checkBuiltIn: true);
     }
 
     /// <summary>Serializes the supplied values and computes a string hash of the resulting JSON.</summary>
