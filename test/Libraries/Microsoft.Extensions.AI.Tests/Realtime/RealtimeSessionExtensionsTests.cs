@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Threading.Tasks;
 using Xunit;
 
 #pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
@@ -17,33 +18,33 @@ public class RealtimeSessionExtensionsTests
     }
 
     [Fact]
-    public void GetService_ReturnsMatchingService()
+    public async Task GetService_ReturnsMatchingService()
     {
-        using var session = new TestRealtimeSession();
+        await using var session = new TestRealtimeSession();
         var result = session.GetService<TestRealtimeSession>();
         Assert.Same(session, result);
     }
 
     [Fact]
-    public void GetService_ReturnsNullForNonMatchingType()
+    public async Task GetService_ReturnsNullForNonMatchingType()
     {
-        using var session = new TestRealtimeSession();
+        await using var session = new TestRealtimeSession();
         var result = session.GetService<string>();
         Assert.Null(result);
     }
 
     [Fact]
-    public void GetService_WithServiceKey_ReturnsNull()
+    public async Task GetService_WithServiceKey_ReturnsNull()
     {
-        using var session = new TestRealtimeSession();
+        await using var session = new TestRealtimeSession();
         var result = session.GetService<TestRealtimeSession>("someKey");
         Assert.Null(result);
     }
 
     [Fact]
-    public void GetService_ReturnsInterfaceType()
+    public async Task GetService_ReturnsInterfaceType()
     {
-        using var session = new TestRealtimeSession();
+        await using var session = new TestRealtimeSession();
         var result = session.GetService<IRealtimeClientSession>();
         Assert.Same(session, result);
     }

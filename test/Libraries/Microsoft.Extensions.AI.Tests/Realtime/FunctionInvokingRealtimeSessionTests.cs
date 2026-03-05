@@ -24,10 +24,10 @@ public class FunctionInvokingRealtimeSessionTests
     }
 
     [Fact]
-    public void Properties_DefaultValues()
+    public async Task Properties_DefaultValues()
     {
-        using var inner = new TestRealtimeSession();
-        using var session = new FunctionInvokingRealtimeSession(inner);
+        await using var inner = new TestRealtimeSession();
+        await using var session = new FunctionInvokingRealtimeSession(inner);
 
         Assert.False(session.IncludeDetailedErrors);
         Assert.False(session.AllowConcurrentInvocation);
@@ -39,20 +39,20 @@ public class FunctionInvokingRealtimeSessionTests
     }
 
     [Fact]
-    public void MaximumIterationsPerRequest_InvalidValue_Throws()
+    public async Task MaximumIterationsPerRequest_InvalidValue_Throws()
     {
-        using var inner = new TestRealtimeSession();
-        using var session = new FunctionInvokingRealtimeSession(inner);
+        await using var inner = new TestRealtimeSession();
+        await using var session = new FunctionInvokingRealtimeSession(inner);
 
         Assert.Throws<ArgumentOutOfRangeException>("value", () => session.MaximumIterationsPerRequest = 0);
         Assert.Throws<ArgumentOutOfRangeException>("value", () => session.MaximumIterationsPerRequest = -1);
     }
 
     [Fact]
-    public void MaximumConsecutiveErrorsPerRequest_InvalidValue_Throws()
+    public async Task MaximumConsecutiveErrorsPerRequest_InvalidValue_Throws()
     {
-        using var inner = new TestRealtimeSession();
-        using var session = new FunctionInvokingRealtimeSession(inner);
+        await using var inner = new TestRealtimeSession();
+        await using var session = new FunctionInvokingRealtimeSession(inner);
 
         Assert.Throws<ArgumentOutOfRangeException>("value", () => session.MaximumConsecutiveErrorsPerRequest = -1);
 
@@ -70,11 +70,11 @@ public class FunctionInvokingRealtimeSessionTests
             new() { Type = RealtimeServerMessageType.ResponseDone, MessageId = "evt_002" },
         };
 
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(serverMessages, ct),
         };
-        using var session = new FunctionInvokingRealtimeSession(inner);
+        await using var session = new FunctionInvokingRealtimeSession(inner);
 
         var received = new List<RealtimeServerMessage>();
         await foreach (var msg in session.GetStreamingResponseAsync())
@@ -96,7 +96,7 @@ public class FunctionInvokingRealtimeSessionTests
             "Gets the weather");
 
         var injectedMessages = new List<RealtimeClientMessage>();
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [getWeather] },
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
@@ -110,7 +110,7 @@ public class FunctionInvokingRealtimeSessionTests
             },
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner);
+        await using var session = new FunctionInvokingRealtimeSession(inner);
 
         var received = new List<RealtimeServerMessage>();
         await foreach (var msg in session.GetStreamingResponseAsync())
@@ -145,7 +145,7 @@ public class FunctionInvokingRealtimeSessionTests
             "Gets weather");
 
         var injectedMessages = new List<RealtimeClientMessage>();
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
@@ -158,7 +158,7 @@ public class FunctionInvokingRealtimeSessionTests
             },
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner)
+        await using var session = new FunctionInvokingRealtimeSession(inner)
         {
             AdditionalTools = [getWeather],
         };
@@ -190,14 +190,14 @@ public class FunctionInvokingRealtimeSessionTests
         var messages = Enumerable.Range(0, 5).Select<int, RealtimeServerMessage>(i =>
             CreateFunctionCallOutputItemMessage($"call_{i}", "counter", null)).ToList();
 
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [countFunc] },
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(messages, ct),
             SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner)
+        await using var session = new FunctionInvokingRealtimeSession(inner)
         {
             MaximumIterationsPerRequest = 2,
         };
@@ -224,7 +224,7 @@ public class FunctionInvokingRealtimeSessionTests
             "my_func",
             "Test");
 
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [myFunc] },
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
@@ -234,7 +234,7 @@ public class FunctionInvokingRealtimeSessionTests
             SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner)
+        await using var session = new FunctionInvokingRealtimeSession(inner)
         {
             FunctionInvoker = (context, ct) =>
             {
@@ -255,7 +255,7 @@ public class FunctionInvokingRealtimeSessionTests
     public async Task GetStreamingResponseAsync_UnknownFunction_SendsErrorByDefault()
     {
         var injectedMessages = new List<RealtimeClientMessage>();
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
@@ -268,7 +268,7 @@ public class FunctionInvokingRealtimeSessionTests
             },
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner);
+        await using var session = new FunctionInvokingRealtimeSession(inner);
 
         await foreach (var msg in session.GetStreamingResponseAsync())
         {
@@ -291,7 +291,7 @@ public class FunctionInvokingRealtimeSessionTests
             "Fails");
 
         var injectedMessages = new List<RealtimeClientMessage>();
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [failFunc] },
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
@@ -305,7 +305,7 @@ public class FunctionInvokingRealtimeSessionTests
             },
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner)
+        await using var session = new FunctionInvokingRealtimeSession(inner)
         {
             IncludeDetailedErrors = true,
         };
@@ -330,7 +330,7 @@ public class FunctionInvokingRealtimeSessionTests
             "Fails");
 
         var injectedMessages = new List<RealtimeClientMessage>();
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [failFunc] },
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
@@ -344,7 +344,7 @@ public class FunctionInvokingRealtimeSessionTests
             },
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner)
+        await using var session = new FunctionInvokingRealtimeSession(inner)
         {
             IncludeDetailedErrors = false,
         };
@@ -361,10 +361,10 @@ public class FunctionInvokingRealtimeSessionTests
     }
 
     [Fact]
-    public void GetService_ReturnsSelf()
+    public async Task GetService_ReturnsSelf()
     {
-        using var inner = new TestRealtimeSession();
-        using var session = new FunctionInvokingRealtimeSession(inner);
+        await using var inner = new TestRealtimeSession();
+        await using var session = new FunctionInvokingRealtimeSession(inner);
 
         Assert.Same(session, session.GetService(typeof(FunctionInvokingRealtimeSession)));
         Assert.Same(session, session.GetService(typeof(IRealtimeClientSession)));
@@ -375,7 +375,7 @@ public class FunctionInvokingRealtimeSessionTests
     public async Task GetStreamingResponseAsync_TerminateOnUnknownCalls_StopsLoop()
     {
         var injectedMessages = new List<RealtimeClientMessage>();
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
@@ -389,7 +389,7 @@ public class FunctionInvokingRealtimeSessionTests
             },
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner)
+        await using var session = new FunctionInvokingRealtimeSession(inner)
         {
             TerminateOnUnknownCalls = true,
         };
@@ -411,7 +411,7 @@ public class FunctionInvokingRealtimeSessionTests
     public async Task GetStreamingResponseAsync_TerminateOnUnknownCalls_False_SendsError()
     {
         var injectedMessages = new List<RealtimeClientMessage>();
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
             [
@@ -424,7 +424,7 @@ public class FunctionInvokingRealtimeSessionTests
             },
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner)
+        await using var session = new FunctionInvokingRealtimeSession(inner)
         {
             TerminateOnUnknownCalls = false,
         };
@@ -495,14 +495,14 @@ public class FunctionInvokingRealtimeSessionTests
             Item = combinedItem,
         };
 
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [slowFunc] },
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages([combinedMessage], ct),
             SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner)
+        await using var session = new FunctionInvokingRealtimeSession(inner)
         {
             AllowConcurrentInvocation = true,
         };
@@ -538,14 +538,14 @@ public class FunctionInvokingRealtimeSessionTests
             CreateFunctionCallOutputItemMessage("call_4", "fail_func", null),
         };
 
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [failFunc] },
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(messages, ct),
             SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner)
+        await using var session = new FunctionInvokingRealtimeSession(inner)
         {
             MaximumConsecutiveErrorsPerRequest = 1,
         };
@@ -568,9 +568,9 @@ public class FunctionInvokingRealtimeSessionTests
     }
 
     [Fact]
-    public void UseFunctionInvocation_ConfigureCallback_IsInvoked()
+    public async Task UseFunctionInvocation_ConfigureCallback_IsInvoked()
     {
-        using var inner = new TestRealtimeSession();
+        await using var inner = new TestRealtimeSession();
         var builder = new RealtimeSessionBuilder(inner);
 
         bool configured = false;
@@ -581,7 +581,7 @@ public class FunctionInvokingRealtimeSessionTests
             session.MaximumIterationsPerRequest = 10;
         });
 
-        using var pipeline = builder.Build();
+        await using var pipeline = builder.Build();
         Assert.True(configured);
 
         var funcSession = pipeline.GetService(typeof(FunctionInvokingRealtimeSession));
@@ -600,7 +600,7 @@ public class FunctionInvokingRealtimeSessionTests
         var declaration = AIFunctionFactory.CreateDeclaration("my_declaration", "A non-invocable tool", schema);
 
         var injectedMessages = new List<RealtimeClientMessage>();
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Tools = [declaration] },
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(
@@ -615,7 +615,7 @@ public class FunctionInvokingRealtimeSessionTests
             },
         };
 
-        using var session = new FunctionInvokingRealtimeSession(inner);
+        await using var session = new FunctionInvokingRealtimeSession(inner);
 
         var received = new List<RealtimeServerMessage>();
         await foreach (var msg in session.GetStreamingResponseAsync())

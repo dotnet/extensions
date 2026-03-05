@@ -196,17 +196,6 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
     }
 
     /// <inheritdoc />
-    public void Dispose()
-    {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
-        {
-            return;
-        }
-
-        _sessionClient?.Dispose();
-    }
-
-    /// <inheritdoc />
     public ValueTask DisposeAsync()
     {
         if (Interlocked.Exchange(ref _disposed, 1) != 0)

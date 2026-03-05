@@ -32,13 +32,6 @@ public class DelegatingRealtimeSession : IRealtimeClientSession
     }
 
     /// <inheritdoc />
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         await DisposeAsyncCore().ConfigureAwait(false);
@@ -51,14 +44,7 @@ public class DelegatingRealtimeSession : IRealtimeClientSession
     protected virtual async ValueTask DisposeAsyncCore()
 #pragma warning restore EA0014
     {
-        if (InnerSession is IAsyncDisposable asyncDisposable)
-        {
-            await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-        }
-        else
-        {
-            InnerSession.Dispose();
-        }
+        await InnerSession.DisposeAsync().ConfigureAwait(false);
     }
 
     /// <summary>Gets the inner <see cref="IRealtimeClientSession" />.</summary>
@@ -89,15 +75,5 @@ public class DelegatingRealtimeSession : IRealtimeClientSession
         return
             serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
             InnerSession.GetService(serviceType, serviceKey);
-    }
-
-    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
-    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            InnerSession.Dispose();
-        }
     }
 }

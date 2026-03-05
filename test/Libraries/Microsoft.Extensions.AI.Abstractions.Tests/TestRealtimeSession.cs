@@ -57,12 +57,6 @@ public sealed class TestRealtimeSession : IRealtimeClientSession
     }
 
     /// <inheritdoc/>
-    public void Dispose()
-    {
-        // No-op for test implementation
-    }
-
-    /// <inheritdoc/>
     public ValueTask DisposeAsync()
     {
         // No-op for test implementation

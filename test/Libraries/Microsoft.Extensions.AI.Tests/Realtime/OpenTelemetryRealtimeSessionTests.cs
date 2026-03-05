@@ -28,7 +28,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -76,7 +76,7 @@ public class OpenTelemetryRealtimeSessionTests
             };
         }
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: instance =>
             {
@@ -194,7 +194,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             UpdateAsyncCallback = (options, cancellationToken) => Task.CompletedTask,
             GetServiceCallback = (serviceType, serviceKey) =>
@@ -202,7 +202,7 @@ public class OpenTelemetryRealtimeSessionTests
                 null,
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: instance =>
             {
@@ -242,12 +242,12 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             UpdateAsyncCallback = (options, cancellationToken) => throw new InvalidOperationException("Test error"),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -270,7 +270,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetStreamingResponseAsyncCallback = (cancellationToken) => ThrowingCallbackAsync(cancellationToken),
@@ -284,7 +284,7 @@ public class OpenTelemetryRealtimeSessionTests
             throw new InvalidOperationException("Streaming error");
         }
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -313,7 +313,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetStreamingResponseAsyncCallback = (cancellationToken) => ErrorResponseCallbackAsync(cancellationToken),
@@ -332,7 +332,7 @@ public class OpenTelemetryRealtimeSessionTests
             };
         }
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -363,7 +363,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -381,7 +381,7 @@ public class OpenTelemetryRealtimeSessionTests
             yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
         }
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -409,7 +409,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddSource("different-source")
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetStreamingResponseAsyncCallback = (cancellationToken) => EmptyCallbackAsync(cancellationToken),
@@ -426,7 +426,7 @@ public class OpenTelemetryRealtimeSessionTests
         }
 
         var sourceName = Guid.NewGuid().ToString();
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -443,9 +443,9 @@ public class OpenTelemetryRealtimeSessionTests
     }
 
     [Fact]
-    public void InvalidArgs_Throws()
+    public async Task InvalidArgs_Throws()
     {
-        using var innerSession = new TestRealtimeSession();
+        await using var innerSession = new TestRealtimeSession();
 
         Assert.Throws<ArgumentNullException>("innerSession", () => new OpenTelemetryRealtimeSession(null!));
         Assert.Throws<ArgumentNullException>("value", () => new OpenTelemetryRealtimeSession(innerSession).JsonSerializerOptions = null!);
@@ -454,17 +454,17 @@ public class OpenTelemetryRealtimeSessionTests
     [Fact]
     public async Task UpdateAsync_InvalidArgs_Throws()
     {
-        using var innerSession = new TestRealtimeSession();
-        using var session = new OpenTelemetryRealtimeSession(innerSession);
+        await using var innerSession = new TestRealtimeSession();
+        await using var session = new OpenTelemetryRealtimeSession(innerSession);
 
         await Assert.ThrowsAsync<ArgumentNullException>("options", () => session.UpdateAsync(null!));
     }
 
     [Fact]
-    public void GetService_ReturnsActivitySource()
+    public async Task GetService_ReturnsActivitySource()
     {
-        using var innerSession = new TestRealtimeSession();
-        using var session = new OpenTelemetryRealtimeSession(innerSession);
+        await using var innerSession = new TestRealtimeSession();
+        await using var session = new OpenTelemetryRealtimeSession(innerSession);
 
         var activitySource = session.GetService(typeof(ActivitySource));
         Assert.NotNull(activitySource);
@@ -472,10 +472,10 @@ public class OpenTelemetryRealtimeSessionTests
     }
 
     [Fact]
-    public void GetService_ReturnsSelf()
+    public async Task GetService_ReturnsSelf()
     {
-        using var innerSession = new TestRealtimeSession();
-        using var session = new OpenTelemetryRealtimeSession(innerSession);
+        await using var innerSession = new TestRealtimeSession();
+        await using var session = new OpenTelemetryRealtimeSession(innerSession);
 
         var self = session.GetService(typeof(OpenTelemetryRealtimeSession));
         Assert.Same(session, self);
@@ -494,7 +494,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -516,7 +516,7 @@ public class OpenTelemetryRealtimeSessionTests
             yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
         }
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -556,7 +556,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -567,7 +567,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -596,7 +596,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -606,7 +606,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -636,7 +636,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -646,7 +646,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -676,7 +676,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions
             {
@@ -685,7 +685,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -714,7 +714,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -722,7 +722,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
@@ -757,7 +757,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -765,7 +765,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithToolCallAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
@@ -800,7 +800,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -808,7 +808,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithToolCallAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = false)
             .Build();
@@ -885,7 +885,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -893,7 +893,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
@@ -928,7 +928,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -936,7 +936,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
@@ -971,7 +971,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -979,7 +979,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
@@ -1013,7 +1013,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -1021,7 +1021,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
@@ -1055,7 +1055,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -1063,7 +1063,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithTextOutputAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
@@ -1096,7 +1096,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -1104,7 +1104,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithTranscriptionAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
@@ -1137,7 +1137,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -1145,7 +1145,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithServerErrorAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
@@ -1178,7 +1178,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -1186,7 +1186,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
@@ -1219,7 +1219,7 @@ public class OpenTelemetryRealtimeSessionTests
             .AddInMemoryExporter(activities)
             .Build();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
             GetServiceCallback = (serviceType, _) =>
@@ -1227,7 +1227,7 @@ public class OpenTelemetryRealtimeSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
             .Build();
@@ -1335,9 +1335,9 @@ public class OpenTelemetryRealtimeSessionTests
     }
 
     [Fact]
-    public void UseOpenTelemetry_ConfigureCallback_IsInvoked()
+    public async Task UseOpenTelemetry_ConfigureCallback_IsInvoked()
     {
-        using var innerSession = new TestRealtimeSession();
+        await using var innerSession = new TestRealtimeSession();
         var builder = new RealtimeSessionBuilder(innerSession);
 
         bool configured = false;
@@ -1347,7 +1347,7 @@ public class OpenTelemetryRealtimeSessionTests
             session.EnableSensitiveData = true;
         });
 
-        using var pipeline = builder.Build();
+        await using var pipeline = builder.Build();
         Assert.True(configured);
 
         var otelSession = pipeline.GetService(typeof(OpenTelemetryRealtimeSession));
@@ -1358,13 +1358,13 @@ public class OpenTelemetryRealtimeSessionTests
     }
 
     [Fact]
-    public void Dispose_CanBeCalledMultipleTimes()
+    public async Task DisposeAsync_CanBeCalledMultipleTimes()
     {
-        using var innerSession = new TestRealtimeSession();
+        await using var innerSession = new TestRealtimeSession();
         var session = new OpenTelemetryRealtimeSession(innerSession);
 
-        session.Dispose();
-        session.Dispose();
+        await session.DisposeAsync();
+        await session.DisposeAsync();
 
         // Verifying no exception is thrown on double dispose
         Assert.NotNull(session);

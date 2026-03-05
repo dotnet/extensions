@@ -21,11 +21,11 @@ public class DelegatingRealtimeSessionTests
     }
 
     [Fact]
-    public void Options_DelegatesToInner()
+    public async Task Options_DelegatesToInner()
     {
         var expectedOptions = new RealtimeSessionOptions { Model = "test-model" };
-        using var inner = new TestRealtimeSession { Options = expectedOptions };
-        using var delegating = new NoOpDelegatingRealtimeSession(inner);
+        await using var inner = new TestRealtimeSession { Options = expectedOptions };
+        await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
         Assert.Same(expectedOptions, delegating.Options);
     }
@@ -35,7 +35,7 @@ public class DelegatingRealtimeSessionTests
     {
         var called = false;
         var sentOptions = new RealtimeSessionOptions { Instructions = "Be helpful" };
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             UpdateAsyncCallback = (options, _) =>
             {
@@ -44,7 +44,7 @@ public class DelegatingRealtimeSessionTests
                 return Task.CompletedTask;
             },
         };
-        using var delegating = new NoOpDelegatingRealtimeSession(inner);
+        await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
         await delegating.UpdateAsync(sentOptions);
         Assert.True(called);
@@ -55,7 +55,7 @@ public class DelegatingRealtimeSessionTests
     {
         var called = false;
         var sentMessage = new RealtimeClientMessage { MessageId = "evt_001" };
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             SendAsyncCallback = (msg, _) =>
             {
@@ -64,7 +64,7 @@ public class DelegatingRealtimeSessionTests
                 return Task.CompletedTask;
             },
         };
-        using var delegating = new NoOpDelegatingRealtimeSession(inner);
+        await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
         await delegating.SendAsync(sentMessage);
         Assert.True(called);
@@ -74,11 +74,11 @@ public class DelegatingRealtimeSessionTests
     public async Task GetStreamingResponseAsync_DelegatesToInner()
     {
         var expected = new RealtimeServerMessage { Type = RealtimeServerMessageType.Error, MessageId = "evt_002" };
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             GetStreamingResponseAsyncCallback = (ct) => YieldSingle(expected, ct),
         };
-        using var delegating = new NoOpDelegatingRealtimeSession(inner);
+        await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
         var messages = new List<RealtimeServerMessage>();
         await foreach (var msg in delegating.GetStreamingResponseAsync())
@@ -91,10 +91,10 @@ public class DelegatingRealtimeSessionTests
     }
 
     [Fact]
-    public void GetService_ReturnsSelfForMatchingType()
+    public async Task GetService_ReturnsSelfForMatchingType()
     {
-        using var inner = new TestRealtimeSession();
-        using var delegating = new NoOpDelegatingRealtimeSession(inner);
+        await using var inner = new TestRealtimeSession();
+        await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
         Assert.Same(delegating, delegating.GetService(typeof(NoOpDelegatingRealtimeSession)));
         Assert.Same(delegating, delegating.GetService(typeof(DelegatingRealtimeSession)));
@@ -102,10 +102,10 @@ public class DelegatingRealtimeSessionTests
     }
 
     [Fact]
-    public void GetService_DelegatesToInnerForUnknownType()
+    public async Task GetService_DelegatesToInnerForUnknownType()
     {
-        using var inner = new TestRealtimeSession();
-        using var delegating = new NoOpDelegatingRealtimeSession(inner);
+        await using var inner = new TestRealtimeSession();
+        await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
         // TestRealtimeSession returns itself for matching types
         Assert.Same(inner, delegating.GetService(typeof(TestRealtimeSession)));
@@ -113,32 +113,32 @@ public class DelegatingRealtimeSessionTests
     }
 
     [Fact]
-    public void GetService_WithServiceKey_DelegatesToInner()
+    public async Task GetService_WithServiceKey_DelegatesToInner()
     {
-        using var inner = new TestRealtimeSession();
-        using var delegating = new NoOpDelegatingRealtimeSession(inner);
+        await using var inner = new TestRealtimeSession();
+        await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
         // With a non-null key, delegating should NOT return itself even for matching types
         Assert.Null(delegating.GetService(typeof(NoOpDelegatingRealtimeSession), "someKey"));
     }
 
     [Fact]
-    public void GetService_NullServiceType_Throws()
+    public async Task GetService_NullServiceType_Throws()
     {
-        using var inner = new TestRealtimeSession();
-        using var delegating = new NoOpDelegatingRealtimeSession(inner);
+        await using var inner = new TestRealtimeSession();
+        await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
         Assert.Throws<ArgumentNullException>("serviceType", () => delegating.GetService(null!));
     }
 
     [Fact]
-    public void Dispose_DisposesInner()
+    public async Task DisposeAsync_DisposesInner()
     {
         var disposed = false;
-        using var inner = new DisposableTestRealtimeSession(() => disposed = true);
+        await using var inner = new DisposableTestRealtimeSession(() => disposed = true);
         var delegating = new NoOpDelegatingRealtimeSession(inner);
 
-        delegating.Dispose();
+        await delegating.DisposeAsync();
         Assert.True(disposed);
     }
 
@@ -149,7 +149,7 @@ public class DelegatingRealtimeSessionTests
         using var cts = new CancellationTokenSource();
         var sentOptions = new RealtimeSessionOptions();
 
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             UpdateAsyncCallback = (options, ct) =>
             {
@@ -157,7 +157,7 @@ public class DelegatingRealtimeSessionTests
                 return Task.CompletedTask;
             },
         };
-        using var delegating = new NoOpDelegatingRealtimeSession(inner);
+        await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
         await delegating.UpdateAsync(sentOptions, cts.Token);
         Assert.Equal(cts.Token, capturedToken);
@@ -170,7 +170,7 @@ public class DelegatingRealtimeSessionTests
         using var cts = new CancellationTokenSource();
         var sentMessage = new RealtimeClientMessage();
 
-        using var inner = new TestRealtimeSession
+        await using var inner = new TestRealtimeSession
         {
             SendAsyncCallback = (msg, ct) =>
             {
@@ -178,7 +178,7 @@ public class DelegatingRealtimeSessionTests
                 return Task.CompletedTask;
             },
         };
-        using var delegating = new NoOpDelegatingRealtimeSession(inner);
+        await using var delegating = new NoOpDelegatingRealtimeSession(inner);
 
         await delegating.SendAsync(sentMessage, cts.Token);
         Assert.Equal(cts.Token, capturedToken);
@@ -223,8 +223,6 @@ public class DelegatingRealtimeSessionTests
             EmptyUpdatesServer(cancellationToken);
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;
-
-        public void Dispose() => _onDispose();
 
         public ValueTask DisposeAsync()
         {

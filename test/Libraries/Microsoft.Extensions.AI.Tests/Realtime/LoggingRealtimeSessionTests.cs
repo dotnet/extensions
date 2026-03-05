@@ -17,17 +17,17 @@ namespace Microsoft.Extensions.AI;
 public class LoggingRealtimeSessionTests
 {
     [Fact]
-    public void LoggingRealtimeSession_InvalidArgs_Throws()
+    public async Task LoggingRealtimeSession_InvalidArgs_Throws()
     {
-        using var innerSession = new TestRealtimeSession();
+        await using var innerSession = new TestRealtimeSession();
         Assert.Throws<ArgumentNullException>("innerSession", () => new LoggingRealtimeSession(null!, NullLogger.Instance));
         Assert.Throws<ArgumentNullException>("logger", () => new LoggingRealtimeSession(innerSession, null!));
     }
 
     [Fact]
-    public void UseLogging_AvoidsInjectingNopSession()
+    public async Task UseLogging_AvoidsInjectingNopSession()
     {
-        using var innerSession = new TestRealtimeSession();
+        await using var innerSession = new TestRealtimeSession();
 
         Assert.Null(innerSession.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(LoggingRealtimeSession)));
         Assert.Same(innerSession, innerSession.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(IRealtimeClientSession)));
@@ -55,12 +55,12 @@ public class LoggingRealtimeSessionTests
         c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
         var services = c.BuildServiceProvider();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             UpdateAsyncCallback = (options, cancellationToken) => Task.CompletedTask,
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseLogging()
             .Build(services);
@@ -98,12 +98,12 @@ public class LoggingRealtimeSessionTests
         c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
         var services = c.BuildServiceProvider();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             SendAsyncCallback = (message, cancellationToken) => Task.CompletedTask,
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseLogging()
             .Build(services);
@@ -138,7 +138,7 @@ public class LoggingRealtimeSessionTests
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             GetStreamingResponseAsyncCallback = (cancellationToken) => GetMessagesAsync()
         };
@@ -150,7 +150,7 @@ public class LoggingRealtimeSessionTests
             yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.OutputAudioDelta, MessageId = "event-2" };
         }
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
@@ -191,7 +191,7 @@ public class LoggingRealtimeSessionTests
 
         using var cts = new CancellationTokenSource();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             UpdateAsyncCallback = (options, cancellationToken) =>
             {
@@ -199,7 +199,7 @@ public class LoggingRealtimeSessionTests
             },
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
@@ -219,7 +219,7 @@ public class LoggingRealtimeSessionTests
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             UpdateAsyncCallback = (options, cancellationToken) =>
             {
@@ -227,7 +227,7 @@ public class LoggingRealtimeSessionTests
             },
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
@@ -248,7 +248,7 @@ public class LoggingRealtimeSessionTests
 
         using var cts = new CancellationTokenSource();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             GetStreamingResponseAsyncCallback = (cancellationToken) => ThrowCancellationAsync(cancellationToken)
         };
@@ -262,7 +262,7 @@ public class LoggingRealtimeSessionTests
 #pragma warning restore CS0162
         }
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
@@ -288,7 +288,7 @@ public class LoggingRealtimeSessionTests
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             GetStreamingResponseAsyncCallback = (cancellationToken) => ThrowErrorAsync()
         };
@@ -302,7 +302,7 @@ public class LoggingRealtimeSessionTests
 #pragma warning restore CS0162
         }
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
@@ -322,13 +322,13 @@ public class LoggingRealtimeSessionTests
     }
 
     [Fact]
-    public void GetService_ReturnsLoggingSessionWhenRequested()
+    public async Task GetService_ReturnsLoggingSessionWhenRequested()
     {
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddFakeLogging());
 
-        using var innerSession = new TestRealtimeSession();
+        await using var innerSession = new TestRealtimeSession();
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
@@ -345,7 +345,7 @@ public class LoggingRealtimeSessionTests
 
         using var cts = new CancellationTokenSource();
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             SendAsyncCallback = (message, cancellationToken) =>
             {
@@ -353,7 +353,7 @@ public class LoggingRealtimeSessionTests
             },
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
@@ -374,7 +374,7 @@ public class LoggingRealtimeSessionTests
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
 
-        using var innerSession = new TestRealtimeSession
+        await using var innerSession = new TestRealtimeSession
         {
             SendAsyncCallback = (message, cancellationToken) =>
             {
@@ -382,7 +382,7 @@ public class LoggingRealtimeSessionTests
             },
         };
 
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
@@ -397,19 +397,19 @@ public class LoggingRealtimeSessionTests
     }
 
     [Fact]
-    public void JsonSerializerOptions_NullValue_Throws()
+    public async Task JsonSerializerOptions_NullValue_Throws()
     {
-        using var innerSession = new TestRealtimeSession();
-        using var session = new LoggingRealtimeSession(innerSession, NullLogger.Instance);
+        await using var innerSession = new TestRealtimeSession();
+        await using var session = new LoggingRealtimeSession(innerSession, NullLogger.Instance);
 
         Assert.Throws<ArgumentNullException>("value", () => session.JsonSerializerOptions = null!);
     }
 
     [Fact]
-    public void JsonSerializerOptions_Roundtrip()
+    public async Task JsonSerializerOptions_Roundtrip()
     {
-        using var innerSession = new TestRealtimeSession();
-        using var session = new LoggingRealtimeSession(innerSession, NullLogger.Instance);
+        await using var innerSession = new TestRealtimeSession();
+        await using var session = new LoggingRealtimeSession(innerSession, NullLogger.Instance);
 
         var customOptions = new System.Text.Json.JsonSerializerOptions();
         session.JsonSerializerOptions = customOptions;
@@ -425,13 +425,13 @@ public class LoggingRealtimeSessionTests
     }
 
     [Fact]
-    public void UseLogging_ConfigureCallback_IsInvoked()
+    public async Task UseLogging_ConfigureCallback_IsInvoked()
     {
-        using var innerSession = new TestRealtimeSession();
+        await using var innerSession = new TestRealtimeSession();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddFakeLogging());
 
         bool configured = false;
-        using var session = innerSession
+        await using var session = innerSession
             .AsBuilder()
             .UseLogging(loggerFactory, configure: s =>
             {

@@ -140,15 +140,11 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
     }
 
     /// <inheritdoc/>
-    protected override void Dispose(bool disposing)
+    protected override async ValueTask DisposeAsyncCore()
     {
-        if (disposing)
-        {
-            _activitySource.Dispose();
-            _meter.Dispose();
-        }
-
-        base.Dispose(disposing);
+        _activitySource.Dispose();
+        _meter.Dispose();
+        await base.DisposeAsyncCore().ConfigureAwait(false);
     }
 
     /// <summary>
