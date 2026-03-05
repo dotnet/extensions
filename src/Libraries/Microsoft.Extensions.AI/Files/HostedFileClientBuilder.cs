@@ -20,6 +20,7 @@ public sealed class HostedFileClientBuilder
 
     /// <summary>Initializes a new instance of the <see cref="HostedFileClientBuilder"/> class.</summary>
     /// <param name="innerClient">The inner <see cref="IHostedFileClient"/> that represents the underlying backend.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     public HostedFileClientBuilder(IHostedFileClient innerClient)
     {
         _ = Throw.IfNull(innerClient);
@@ -28,6 +29,7 @@ public sealed class HostedFileClientBuilder
 
     /// <summary>Initializes a new instance of the <see cref="HostedFileClientBuilder"/> class.</summary>
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="IHostedFileClient"/> that represents the underlying backend.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClientFactory"/> is <see langword="null"/>.</exception>
     public HostedFileClientBuilder(Func<IServiceProvider, IHostedFileClient> innerClientFactory)
     {
         _innerClientFactory = Throw.IfNull(innerClientFactory);
@@ -36,9 +38,10 @@ public sealed class HostedFileClientBuilder
     /// <summary>Builds an <see cref="IHostedFileClient"/> that represents the entire pipeline. Calls to this instance will pass through each of the pipeline stages in turn.</summary>
     /// <param name="services">
     /// The <see cref="IServiceProvider"/> that should provide services to the <see cref="IHostedFileClient"/> instances.
-    /// If null, an empty <see cref="IServiceProvider"/> will be used.
+    /// If <see langword="null"/>, an empty <see cref="IServiceProvider"/> will be used.
     /// </param>
     /// <returns>An instance of <see cref="IHostedFileClient"/> that represents the entire pipeline.</returns>
+    /// <exception cref="InvalidOperationException">A factory returned <see langword="null"/>.</exception>
     public IHostedFileClient Build(IServiceProvider? services = null)
     {
         services ??= EmptyServiceProvider.Instance;
@@ -49,10 +52,13 @@ public sealed class HostedFileClientBuilder
         {
             for (var i = _clientFactories.Count - 1; i >= 0; i--)
             {
-                fileClient = _clientFactories[i](fileClient, services) ??
-                    throw new InvalidOperationException(
+                fileClient = _clientFactories[i](fileClient, services);
+                if (fileClient is null)
+                {
+                    Throw.InvalidOperationException(
                         $"The {nameof(HostedFileClientBuilder)} entry at index {i} returned null. " +
                         $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IHostedFileClient)} instances.");
+                }
             }
         }
 
@@ -62,6 +68,7 @@ public sealed class HostedFileClientBuilder
     /// <summary>Adds a factory for an intermediate hosted file client to the hosted file client pipeline.</summary>
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="HostedFileClientBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
     public HostedFileClientBuilder Use(Func<IHostedFileClient, IHostedFileClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);
@@ -72,6 +79,7 @@ public sealed class HostedFileClientBuilder
     /// <summary>Adds a factory for an intermediate hosted file client to the hosted file client pipeline.</summary>
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="HostedFileClientBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
     public HostedFileClientBuilder Use(Func<IHostedFileClient, IServiceProvider, IHostedFileClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);

@@ -13,6 +13,32 @@ namespace Microsoft.Extensions.AI;
 public class HostedFileClientOptions
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="HostedFileClientOptions"/> class.
+    /// </summary>
+    public HostedFileClientOptions()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HostedFileClientOptions"/> class
+    /// by cloning the properties of another instance.
+    /// </summary>
+    /// <param name="other">The instance to clone.</param>
+    protected HostedFileClientOptions(HostedFileClientOptions? other)
+    {
+        if (other is null)
+        {
+            return;
+        }
+
+        Scope = other.Scope;
+        Purpose = other.Purpose;
+        Limit = other.Limit;
+        RawRepresentationFactory = other.RawRepresentationFactory;
+        AdditionalProperties = other.AdditionalProperties?.Clone();
+    }
+
+    /// <summary>
     /// Gets or sets a provider-specific scope or location identifier for the file operation.
     /// </summary>
     /// <remarks>
@@ -65,4 +91,8 @@ public class HostedFileClientOptions
 
     /// <summary>Gets or sets additional properties for the request.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
+
+    /// <summary>Creates a shallow clone of the current <see cref="HostedFileClientOptions"/> instance.</summary>
+    /// <returns>A shallow clone of the current <see cref="HostedFileClientOptions"/> instance.</returns>
+    public virtual HostedFileClientOptions Clone() => new(this);
 }

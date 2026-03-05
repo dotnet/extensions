@@ -211,6 +211,17 @@ public class DelegatingHostedFileClientTests
         Assert.Same(expectedResult, result);
     }
 
+    [Fact]
+    public void DisposeDisposesInnerClient()
+    {
+        using var inner = new TestHostedFileClient();
+        using var delegating = new NoOpDelegatingHostedFileClient(inner);
+
+        Assert.False(inner.IsDisposed);
+        delegating.Dispose();
+        Assert.True(inner.IsDisposed);
+    }
+
     private static async IAsyncEnumerable<T> YieldAsync<T>(IEnumerable<T> input)
     {
         await Task.Yield();

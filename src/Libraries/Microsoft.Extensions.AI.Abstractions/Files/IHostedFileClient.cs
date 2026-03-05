@@ -37,9 +37,10 @@ public interface IHostedFileClient : IDisposable
     /// <param name="mediaType">The media type (MIME type) of the content.</param>
     /// <param name="fileName">The name of the file.</param>
     /// <param name="options">Options to configure the upload.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Information about the uploaded file.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="content"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="mediaType"/> is not a valid media type.</exception>
     Task<HostedFileContent> UploadAsync(
         Stream content,
         string? mediaType = null,
@@ -52,7 +53,7 @@ public interface IHostedFileClient : IDisposable
     /// </summary>
     /// <param name="fileId">The ID of the file to download.</param>
     /// <param name="options">Options to configure the download.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>
     /// A <see cref="HostedFileDownloadStream"/> containing the file content. The stream should be disposed when no longer needed.
     /// </returns>
@@ -68,7 +69,7 @@ public interface IHostedFileClient : IDisposable
     /// </summary>
     /// <param name="fileId">The ID of the file.</param>
     /// <param name="options">Options to configure the request.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Information about the file, or <see langword="null"/> if not found.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="fileId"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="fileId"/> is empty or whitespace.</exception>
@@ -81,7 +82,7 @@ public interface IHostedFileClient : IDisposable
     /// Lists files accessible by this client.
     /// </summary>
     /// <param name="options">Options to configure the listing.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An async enumerable of file information.</returns>
     IAsyncEnumerable<HostedFileContent> ListFilesAsync(
         HostedFileClientOptions? options = null,
@@ -92,7 +93,7 @@ public interface IHostedFileClient : IDisposable
     /// </summary>
     /// <param name="fileId">The ID of the file to delete.</param>
     /// <param name="options">Options to configure the request.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns><see langword="true"/> if the file was deleted; <see langword="false"/> if the file was not found.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="fileId"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="fileId"/> is empty or whitespace.</exception>

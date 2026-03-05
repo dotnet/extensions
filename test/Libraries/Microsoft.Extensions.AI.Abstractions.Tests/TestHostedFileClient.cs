@@ -67,8 +67,10 @@ internal sealed class TestHostedFileClient : IHostedFileClient
     public object? GetService(Type serviceType, object? serviceKey = null) =>
         GetServiceCallback(serviceType, serviceKey);
 
+    public bool IsDisposed { get; private set; }
+
     void IDisposable.Dispose()
     {
-        // No resources need disposing.
+        IsDisposed = true;
     }
 }

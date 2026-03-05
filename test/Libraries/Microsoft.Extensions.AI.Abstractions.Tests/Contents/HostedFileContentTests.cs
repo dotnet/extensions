@@ -207,4 +207,25 @@ public class HostedFileContentTests
         Assert.Equal("fine-tune", deserialized.Purpose);
         Assert.Equal("container-1", deserialized.Scope);
     }
+
+    [Theory]
+    [InlineData("image/gif", "image", true)]
+    [InlineData("IMAGE/JPEG", "image", true)]
+    [InlineData("image/vnd.microsoft.icon", "imAge", true)]
+    [InlineData("audio/mpeg", "image", false)]
+    [InlineData("audio/mpeg", "audio/mpeg", false)]
+    [InlineData("audio/mpeg", "audio/", false)]
+    public void HasTopLevelMediaType_ReturnsExpected(string mediaType, string topLevelType, bool expected)
+    {
+        HostedFileContent c = new("id123") { MediaType = mediaType };
+        Assert.Equal(expected, c.HasTopLevelMediaType(topLevelType));
+    }
+
+    [Fact]
+    public void HasTopLevelMediaType_NullMediaType_ReturnsFalse()
+    {
+        HostedFileContent c = new("id123");
+        Assert.Null(c.MediaType);
+        Assert.False(c.HasTopLevelMediaType("image"));
+    }
 }

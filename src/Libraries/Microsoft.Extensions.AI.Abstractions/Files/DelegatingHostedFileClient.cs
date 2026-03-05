@@ -97,6 +97,9 @@ public class DelegatingHostedFileClient : IHostedFileClient
     /// </param>
     protected virtual void Dispose(bool disposing)
     {
-        // By default, do not dispose the inner client, as it may be shared.
+        if (disposing)
+        {
+            InnerClient.Dispose();
+        }
     }
 }

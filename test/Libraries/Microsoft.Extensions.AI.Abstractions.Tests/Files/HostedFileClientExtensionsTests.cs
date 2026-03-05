@@ -194,6 +194,56 @@ public class HostedFileClientExtensionsTests
     }
 
     [Fact]
+    public async Task DownloadToAsync_EmptyDestinationPath_UsesCurrentDirectory()
+    {
+        var data = new byte[] { 42, 43 };
+        var originalDir = Directory.GetCurrentDirectory();
+        var tempDir = Path.Combine(Path.GetTempPath(), $"dlcwd-{Guid.NewGuid()}");
+        Directory.CreateDirectory(tempDir);
+
+        using var client = new TestHostedFileClient
+        {
+            DownloadAsyncCallback = (fileId, options, ct) =>
+                Task.FromResult<HostedFileDownloadStream>(new TestHostedFileDownloadStream(data, fileName: "output.bin"))
+        };
+
+        try
+        {
+            Directory.SetCurrentDirectory(tempDir);
+            var savedPath = await client.DownloadToAsync("file-cwd", string.Empty);
+            Assert.Equal("output.bin", savedPath);
+            Assert.Equal(data, await File.ReadAllBytesAsync(Path.Combine(tempDir, savedPath)));
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalDir);
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DownloadToAsync_FileAlreadyExists_Throws()
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), $"existing-{Guid.NewGuid()}.bin");
+        await File.WriteAllBytesAsync(tempFile, new byte[] { 1, 2, 3 });
+
+        using var client = new TestHostedFileClient
+        {
+            DownloadAsyncCallback = (fileId, options, ct) =>
+                Task.FromResult<HostedFileDownloadStream>(new TestHostedFileDownloadStream(new byte[] { 4, 5, 6 }))
+        };
+
+        try
+        {
+            await Assert.ThrowsAsync<IOException>(() => client.DownloadToAsync("file-dup", tempFile));
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
     public async Task DownloadToAsync_NullClient_Throws()
     {
         IHostedFileClient client = null!;

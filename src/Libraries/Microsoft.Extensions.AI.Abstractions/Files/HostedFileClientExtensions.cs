@@ -79,7 +79,8 @@ public static class HostedFileClientExtensions
     /// <param name="client">The file client.</param>
     /// <param name="fileId">The ID of the file to download.</param>
     /// <param name="destinationPath">
-    /// The path to save the file to. If the path is a directory, the file name will be inferred.
+    /// The path to save the file to. If the path is a directory or empty, the file name will be inferred.
+    /// An empty path is treated as the current directory.
     /// </param>
     /// <param name="options">Options to configure the download.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
@@ -88,6 +89,7 @@ public static class HostedFileClientExtensions
     /// <exception cref="ArgumentNullException"><paramref name="fileId"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="fileId"/> is empty or whitespace.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="destinationPath"/> is <see langword="null"/>.</exception>
+    /// <exception cref="IOException">A file at the destination path already exists.</exception>
     public static async Task<string> DownloadToAsync(
         this IHostedFileClient client,
         string fileId,
@@ -120,7 +122,10 @@ public static class HostedFileClientExtensions
             finalPath = destinationPath.Length == 0 ? fileName! : Path.Combine(destinationPath, fileName);
         }
 
-        using FileStream fileStream = new(finalPath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, bufferSize: 1, useAsync: true);
+        using FileStream fileStream = new(
+            finalPath, FileMode.CreateNew, FileAccess.Write, FileShare.Read,
+            bufferSize: 1, // buffering in FileStream is a nop as CopyToAsync will use its own, larger buffer
+            useAsync: true);
 
         await downloadStream.CopyToAsync(fileStream,
 #if !NET
@@ -152,7 +157,7 @@ public static class HostedFileClientExtensions
 
         if (hostedFile.Scope is string scope && options?.Scope is null)
         {
-            options ??= new();
+            options = options?.Clone() ?? new();
             options.Scope = scope;
         }
 
