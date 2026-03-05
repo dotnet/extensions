@@ -11,7 +11,6 @@ namespace TestClasses
     [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Test code")]
     [SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Test code")]
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Test code")]
-    [SuppressMessage("Major Code Smell", "S2376:Write-only properties should not be used", Justification = "Test code")]
     internal static partial class SensitiveRecordExtensions
     {
         internal const string Sensitive = "SENSITIVE";

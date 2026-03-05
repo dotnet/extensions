@@ -4,8 +4,6 @@
 using System.IO;
 using System.Text;
 
-#pragma warning disable S2333 // Redundant modifiers should not be used
-
 namespace System.Net.ServerSentEvents
 {
     /// <summary>Provides a parser for parsing server-sent events.</summary>

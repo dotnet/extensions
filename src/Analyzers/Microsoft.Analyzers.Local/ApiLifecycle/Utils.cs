@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -23,11 +23,9 @@ internal static class Utils
 
         var substrings = typeSignature.Split(_colon);
 
-#pragma warning disable S109 // Magic numbers should not be used
         return substrings.Length == 2
             ? substrings[1].Split(_comma).Select(x => x.Trim()).ToArray()
             : substrings[2].Split(_comma).Select(x => x.Trim()).ToArray();
-#pragma warning restore S109 // Magic numbers should not be used
     }
 
     public static string StripBaseAndConstraints(string typeSignature)

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -98,9 +98,7 @@ public class ImageGeneratorBuilderTests
 
     private sealed class InnerGeneratorCapturingImageGenerator(string name, IImageGenerator innerGenerator) : DelegatingImageGenerator(innerGenerator)
     {
-#pragma warning disable S3604 // False positive: Member initializer values should not be redundant
         public string Name { get; } = name;
-#pragma warning restore S3604
         public new IImageGenerator InnerGenerator => base.InnerGenerator;
     }
 }

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -119,7 +119,6 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
         }
     }
 
-    [SuppressMessage("Blocker Bug", "S2190:Loops and recursions should not be infinite", Justification = "Terminate when Delay throws an exception on cancellation")]
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         while (true)

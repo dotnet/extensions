@@ -12,8 +12,6 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
-#pragma warning disable S3872 // Parameter names should not duplicate the names of their methods
-
 /// <summary>
 /// Extensions for <see cref="IStandardHedgingHandlerBuilder"/>.
 /// </summary>

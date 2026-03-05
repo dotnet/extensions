@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -128,7 +128,6 @@ internal class ApiProcessor
                 && property.DeclaringType.Equals(type);
     }
 
-    [SuppressMessage("Critical Code Smell", "S1067:Expressions should not be too complex", Justification = "Cannot reduce it.")]
     private static void ProcessMethods(ITypeDefinition type, ApiType finalTypeApi, ApiStage classStage)
     {
         var methods = type.Methods

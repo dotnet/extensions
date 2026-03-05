@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -78,7 +78,6 @@ internal sealed class TcpEndpointProbesService : BackgroundService
         _listener.Stop();
     }
 
-    [SuppressMessage("Blocker Bug", "S2190:Recursion should not be infinite", Justification = "runs in background")]
     private async Task OpenTcpAsync(CancellationToken cancellationToken)
     {
         while (true)

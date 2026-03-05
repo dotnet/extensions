@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -46,11 +46,9 @@ internal readonly struct TagSet
     public Span<string> GetSpanPrechecked() => (string[])_tagOrTags!; // we expect this to fail if used on incorrect types
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Intentional; should not be used")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S3877:Exceptions should not be thrown from unexpected methods", Justification = "Intentional; should not be used")]
     public override bool Equals(object? obj) => throw new NotSupportedException();
 
     // [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Intentional; should not be used")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S3877:Exceptions should not be thrown from unexpected methods", Justification = "Intentional; should not be used")]
     public override int GetHashCode() => throw new NotSupportedException();
 
     public override string ToString() => _tagOrTags switch
@@ -217,8 +215,6 @@ internal readonly struct TagSet
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3928:Parameter names used into ArgumentException constructors should match an existing one ",
-        Justification = "Using parameter name from public callable API")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "Using parameter name from public callable API")]
     private static void Validate(string tag)
     {

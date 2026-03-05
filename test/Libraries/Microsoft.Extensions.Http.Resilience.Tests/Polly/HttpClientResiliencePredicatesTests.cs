@@ -13,14 +13,12 @@ namespace Microsoft.Extensions.Http.Resilience.Test.Polly;
 
 public class HttpClientResiliencePredicatesTests
 {
-#pragma warning disable S2330 // Array covariance should not be used
     public static readonly IEnumerable<object[]> HandledExceptionsClassified = new[]
     {
         new object[] { new InvalidCastException(), false },
         new object[] { new HttpRequestException(), true },
         new object[] { new TimeoutRejectedException(), true },
     };
-#pragma warning restore S2330 // Array covariance should not be used
 
     [Fact]
     public void IsTransientHttpException_NullException_ShouldThrow()

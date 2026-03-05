@@ -14,10 +14,8 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// memory and CPU maximum and baseline allocations that may be imposed by container orchestrators,
 /// resource management systems, or other runtime constraints.
 /// </remarks>
-#pragma warning disable S1694 // An abstract class should have both abstract and concrete methods. It's for better .NET Framework support, to have more flexible API if we add more methods here.
 [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class ResourceQuotaProvider
-#pragma warning restore S1694 // An abstract class should have both abstract and concrete methods
 {
     /// <summary>
     /// Gets the current resource quota containing memory and CPU maximum and baseline allocations.

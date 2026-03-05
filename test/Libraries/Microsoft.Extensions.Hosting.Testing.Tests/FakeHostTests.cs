@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -180,9 +180,7 @@ public class FakeHostTests
 
         var sut = new FakeHost(hostMock.Object, new FakeHostOptions()) { TimeProvider = new FakeTimeProvider() };
         sut.Dispose();
-#pragma warning disable S3966
         sut.Dispose();
-#pragma warning restore S3966
 
         hostMock.Verify(x => x.Dispose(), Times.Once);
     }

@@ -684,7 +684,6 @@ public partial class ParserTests
             .UseDirectory(Path.Combine("..", "Verified"));
     }
 
-#pragma warning disable S107 // Methods should not have too many parameters
     private static async Task RunGenerator(
         string code,
         DiagnosticDescriptor? expectedDiagnostic = null,
@@ -694,7 +693,6 @@ public partial class ParserTests
         bool includeLoggingReferences = true,
         DiagnosticDescriptor? ignoreDiag = null,
         CancellationToken cancellationToken = default)
-#pragma warning restore S107 // Methods should not have too many parameters
     {
         var text = code;
         if (wrap)

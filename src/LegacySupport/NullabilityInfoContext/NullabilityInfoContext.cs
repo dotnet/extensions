@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if !NET6_0_OR_GREATER
@@ -8,9 +8,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable S109 // Magic numbers should not be used
-#pragma warning disable S1067 // Expressions should not be too complex
-#pragma warning disable S4136 // Method overloads should be grouped together
 #pragma warning disable SA1202 // Elements should be ordered by access
 #pragma warning disable IDE1006 // Naming Styles
 

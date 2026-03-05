@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -19,7 +19,6 @@ using OpenAI;
 using OpenAI.Responses;
 using Xunit;
 
-#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable OPENAI001 // Experimental OpenAI APIs
 
 namespace Microsoft.Extensions.AI;
@@ -286,7 +285,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","sequence_number":29,"response":{"id":"resp_68b5ebab461881969ed94149372c2a530698ecbf1b9f2704","object":"response","created_at":1756752811,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"o4-mini-2025-04-16","output":[{"id":"rs_68b5ebabc0088196afb9fa86b487732d0698ecbf1b9f2704","type":"reasoning","summary":[{"type":"summary_text","text":"**Calculating a simple sum**"}]},{"id":"msg_68b5ebae5a708196b74b94f22ca8995e0698ecbf1b9f2704","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"The sum of the first 5 positive integers is 15."}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"low","summary":"detailed"},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":17,"input_tokens_details":{"cached_tokens":0},"output_tokens":122,"output_tokens_details":{"reasoning_tokens":64},"total_tokens":139},"user":null,"metadata":{}}}
 
-
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -415,7 +413,6 @@ public class OpenAIResponseClientTests
 
             event: response.completed
             data: {"type":"response.completed","sequence_number":14,"response":{"id":"resp_reasoning123","object":"response","created_at":1756752900,"status":"completed","model":"o4-mini-2025-04-16","output":[{"id":"rs_reasoning123","type":"reasoning","text":"First, let's analyze the problem."},{"id":"msg_reasoning123","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"text":"The solution is 42."}],"role":"assistant"}],"usage":{"input_tokens":10,"output_tokens":25,"total_tokens":35}}}
-
 
             """;
 
@@ -646,7 +643,6 @@ public class OpenAIResponseClientTests
 
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello! How can I assist you today?","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
-
 
             """;
 
@@ -881,7 +877,6 @@ public class OpenAIResponseClientTests
 
             event: response.completed
             data: {"type":"response.completed","sequence_number":4,"response":{"id":"resp_0b949080ec8e4b8a006920e0661d00819383ed81438ab11299","object":"response","created_at":1763762278,"status":"completed","background":false,"content_filters":null,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"computer-use-preview-2025-03-11","output":[{"type":"computer_call","id":"cu_0b949080ec8e4b8a006920e067a7c0819384d047d21b484357","status":"completed","call_id":"call_p7K8YjFwNjqMgkKhSiExgFH6","action":{"type":"screenshot"},"pending_safety_checks":[]}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":"medium","generate_summary":"concise","summary":"concise"},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":null,"tools":[{"type":"computer-use-preview-2025-03-11","environment":"browser","display_width":1024,"display_height":768}],"top_logprobs":0,"top_p":1.0,"truncation":"auto","usage":{"input_tokens":18,"input_tokens_details":{"cached_tokens":0},"output_tokens":53,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":71},"user":null,"metadata":{}}}
-
 
             """;
 
@@ -2297,7 +2292,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","sequence_number":105,"response":{"id":"resp_68be44fd7298819e82fd82c8516e970d03a2537be0e84a54","object":"response","created_at":1757299965,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-mini-2024-07-18","output":[{"id":"mcpl_68be44fd8f68819eba7a74a2f6d27a5a03a2537be0e84a54","type":"mcp_list_tools","server_label":"deepwiki","tools":[{"annotations":{"read_only":false},"description":"Get a list of documentation topics for a GitHub repository","input_schema":{"type":"object","properties":{"repoName":{"type":"string","description":"GitHub repository: owner/repo (e.g. \"facebook/react\")"}},"required":["repoName"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"},"name":"read_wiki_structure"},{"annotations":{"read_only":false},"description":"View documentation about a GitHub repository","input_schema":{"type":"object","properties":{"repoName":{"type":"string","description":"GitHub repository: owner/repo (e.g. \"facebook/react\")"}},"required":["repoName"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"},"name":"read_wiki_contents"},{"annotations":{"read_only":false},"description":"Ask any question about a GitHub repository","input_schema":{"type":"object","properties":{"repoName":{"type":"string","description":"GitHub repository: owner/repo (e.g. \"facebook/react\")"},"question":{"type":"string","description":"The question to ask about the repository"}},"required":["repoName","question"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"},"name":"ask_question"}]},{"id":"mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54","type":"mcp_call","approval_request_id":null,"arguments":"{\"repoName\":\"dotnet/extensions\"}","error":null,"name":"read_wiki_structure","output":"Available pages for dotnet/extensions:\n\n- 1 Overview\n- 2 Build System and CI/CD\n- 3 AI Extensions Framework\n  - 3.1 Core Abstractions\n  - 3.2 AI Function System\n  - 3.3 Chat Completion\n  - 3.4 Caching System\n  - 3.5 Evaluation and Reporting\n- 4 HTTP Resilience and Diagnostics\n  - 4.1 Standard Resilience\n  - 4.2 Hedging Strategies\n- 5 Telemetry and Compliance\n- 6 Testing Infrastructure\n  - 6.1 AI Service Integration Testing\n  - 6.2 Time Provider Testing","server_label":"deepwiki"},{"id":"mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54","type":"mcp_call","approval_request_id":null,"arguments":"{\"repoName\":\"dotnet/extensions\",\"question\":\"What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?\"}","error":null,"name":"ask_question","output":"The path to the `README.md` file for `Microsoft.Extensions.AI.Abstractions` is `src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md` . This file provides an overview of the `Microsoft.Extensions.AI.Abstractions` library, including installation instructions and usage examples for its core components like `IChatClient` and `IEmbeddingGenerator`   .\n\n## README.md Content Overview\nThe `README.md` file for `Microsoft.Extensions.AI.Abstractions` details the purpose of the library, which is to provide abstractions for generative AI components . It includes instructions on how to install the NuGet package `Microsoft.Extensions.AI.Abstractions` .\n\nThe document also provides usage examples for the `IChatClient` interface, which defines methods for interacting with AI services that offer \"chat\" capabilities . This includes examples for requesting both complete and streaming chat responses  .\n\nFurthermore, the `README.md` explains the `IEmbeddingGenerator` interface, which is used for generating vector embeddings from input values . It demonstrates how to use `GenerateAsync` to create embeddings . The file also discusses how both `IChatClient` and `IEmbeddingGenerator` implementations can be layered to create pipelines of functionality, incorporating features like caching and telemetry  .\n\nNotes:\nThe user's query specifically asked for the path to the `README.md` file for `Microsoft.Extensions.AI.Abstractions`. The provided codebase context, particularly the wiki page for \"AI Extensions Framework\", directly lists this file as a relevant source file . The content of the `README.md` file itself further confirms its relevance to the `Microsoft.Extensions.AI.Abstractions` library.\n\nWiki pages you might want to explore:\n- [AI Extensions Framework (dotnet/extensions)](/wiki/dotnet/extensions#3)\n- [Chat Completion (dotnet/extensions)](/wiki/dotnet/extensions#3.3)\n\nView this search on DeepWiki: https://deepwiki.com/search/what-is-the-path-to-the-readme_bb6bee43-3136-4b21-bc5d-02ca1611d857\n","server_label":"deepwiki"},{"id":"msg_68be450c39e8819eb9bf6fcb9fd16ecb03a2537be0e84a54","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"The path to the `README.md` file for `Microsoft.Extensions.AI.Abstractions` in the `dotnet/extensions` repository is:\n\n```\nsrc/Libraries/Microsoft.Extensions.AI.Abstractions/README.md\n```\n\nThis file provides an overview of the library, installation instructions, and usage examples for its core components. If you have any more questions about it, feel free to ask!"}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"mcp","allowed_tools":null,"headers":null,"require_approval":"never","server_description":null,"server_label":"deepwiki","server_url":"https://mcp.deepwiki.com/<redacted>"}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":1420,"input_tokens_details":{"cached_tokens":0},"output_tokens":149,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":1569},"user":null,"metadata":{}}}
             
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -3013,7 +3007,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","sequence_number":17,"response":{"truncation":"disabled","id":"resp_68d401a7b36c81a288600e95a5a119d4073420ed59d5f559","tool_choice":"auto","temperature":1.0,"top_p":1.0,"status":"completed","top_logprobs":0,"usage":{"total_tokens":18,"input_tokens_details":{"cached_tokens":0},"output_tokens_details":{"reasoning_tokens":0},"output_tokens":10,"input_tokens":8},"object":"response","created_at":1758724519,"prompt_cache_key":null,"text":{"format":{"type":"text"},"verbosity":"medium"},"incomplete_details":null,"model":"gpt-4o-2024-08-06","previous_response_id":null,"safety_identifier":null,"metadata":{},"store":true,"output":[{"id":"msg_68d401aa78d481a2ab30776a79c691a6073420ed59d5f559","content":[{"text":"Hello! How can I assist you today?","logprobs":[],"type":"output_text","annotations":[]}],"role":"assistant","status":"completed","type":"message"}],"parallel_tool_calls":true,"error":null,"background":true,"instructions":null,"service_tier":"default","max_tool_calls":null,"max_output_tokens":null,"tools":[],"user":null,"reasoning":{"effort":null,"summary":null}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -3094,7 +3087,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","sequence_number":17,"response":{"truncation":"disabled","id":"resp_68d40dc671a0819cb0ee920078333451029e611c3cc4a34b","tool_choice":"auto","temperature":1.0,"top_p":1.0,"status":"completed","top_logprobs":0,"usage":{"total_tokens":18,"input_tokens_details":{"cached_tokens":0},"output_tokens_details":{"reasoning_tokens":0},"output_tokens":10,"input_tokens":8},"object":"response","created_at":1758727622,"prompt_cache_key":null,"text":{"format":{"type":"text"},"verbosity":"medium"},"incomplete_details":null,"model":"gpt-4o-2024-08-06","previous_response_id":null,"safety_identifier":null,"metadata":{},"store":true,"output":[{"id":"msg_68d40dcb2d34819c88f5d6a8ca7b0308029e611c3cc4a34b","content":[{"text":"Hello! How can I assist you today?","logprobs":[],"type":"output_text","annotations":[]}],"role":"assistant","status":"completed","type":"message"}],"parallel_tool_calls":true,"error":null,"background":true,"instructions":null,"service_tier":"default","max_tool_calls":null,"max_output_tokens":null,"tools":[],"user":null,"reasoning":{"effort":null,"summary":null}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(expectedInput, Output);
@@ -3181,10 +3173,8 @@ public class OpenAIResponseClientTests
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             await foreach (var update in client.GetStreamingResponseAsync("Please book a hotel for me", chatOptions))
-#pragma warning disable S108 // Nested blocks of code should not be left empty
             {
             }
-#pragma warning restore S108 // Nested blocks of code should not be left empty
         });
     }
 
@@ -3505,7 +3495,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","sequence_number":55,"response":{"id":"resp_05d8f42f04f94cb80068fc3b7e07bc819eaf0d6e2c1923e564","object":"response","created_at":1761360766,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[{"id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","type":"code_interpreter_call","status":"completed","code":"# Calculate the sum of numbers from 1 to 10\nsum_of_numbers = sum(range(1, 11))\nsum_of_numbers","container_id":"cntr_68fc3b80043c8191990a5837d7617af704511ed77cec9447","outputs":null},{"id":"msg_05d8f42f04f94cb80068fc3b86cc0c819ebae29aac8563d48d","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"The sum of numbers from 1 to 10 is 55."}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"code_interpreter","container":{"type":"auto"}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":219,"input_tokens_details":{"cached_tokens":0},"output_tokens":50,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":269},"user":null,"metadata":{}}}
 
-
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -3591,7 +3580,6 @@ public class OpenAIResponseClientTests
 
             event: response.completed
             data: {"type":"response.completed","sequence_number":9,"response":{"id":"resp_05d8f42f04f94cb80068fc3b7e07bc819eaf0d6e2c1923e564","object":"response","created_at":1761360766,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[{"id":"ci_05d8f42f04f94cb80068fc3b80fba8819ea3bfbdd36e94bcf3","type":"code_interpreter_call","status":"completed","code":"# sum(range(1, 11))","container_id":"cntr_68fc3b80043c8191990a5837d7617af704511ed77cec9447","outputs":null}],"parallel_tool_calls":true,"previous_response_id":null,"prompt_cache_key":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"code_interpreter","container":{"type":"auto"}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":100,"input_tokens_details":{"cached_tokens":0},"output_tokens":20,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":120},"user":null,"metadata":{}}}
-
 
             """;
 
@@ -4089,7 +4077,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -4170,7 +4157,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":false,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -4251,7 +4237,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -4329,7 +4314,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -4526,7 +4510,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-2024-08-06","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -5408,7 +5391,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}]}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -5443,7 +5425,6 @@ public class OpenAIResponseClientTests
             event: response.failed
             data: {"type":"response.failed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[],"error":{"code":"internal_error","message":"Internal error"}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -5478,7 +5459,6 @@ public class OpenAIResponseClientTests
             event: response.incomplete
             data: {"type":"response.incomplete","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"incomplete","model":"gpt-4o-mini","output":[],"incomplete_details":{"reason":"max_output_tokens"}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -5516,7 +5496,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}]}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -5554,7 +5533,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[]}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -5612,7 +5590,6 @@ public class OpenAIResponseClientTests
             event: response.failed
             data: {"type":"response.failed","sequence_number":2,"response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[],"error":{"code":"rate_limit_exceeded","message":"Rate limit exceeded"}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -5655,7 +5632,6 @@ public class OpenAIResponseClientTests
             event: response.failed
             data: {"type":"response.failed","sequence_number":2,"response":{"id":"resp_002","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[],"error":{"code":"content_filter","message":"Content filter triggered"}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -5698,7 +5674,6 @@ public class OpenAIResponseClientTests
             event: response.failed
             data: {"type":"response.failed","sequence_number":2,"response":{"id":"resp_003","object":"response","created_at":1741892091,"status":"failed","model":"gpt-4o-mini","output":[]}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -5741,7 +5716,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Annotated text","annotations":[{"type":"file_citation","file_id":"file_123","start_index":0,"end_index":14}]}]}]}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -5816,7 +5790,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"function_call","id":"fc_001","call_id":"call_123","name":"get_weather","arguments":"{\"city\":\"Paris\"}","status":"completed"},{"type":"function_call_output","id":"fc_output_001","call_id":"call_123","output":"25°C and sunny"},{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"It's 25°C and sunny in Paris.","annotations":[]}]}],"usage":{"input_tokens":10,"output_tokens":15,"total_tokens":25}}}
 
-            
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -6219,7 +6192,6 @@ public class OpenAIResponseClientTests
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_def456","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-2024-11-20","output":[{"type":"image_generation_call","id":"img_call_def456","image_result_b64":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}],"usage":{"input_tokens":15,"output_tokens":0,"total_tokens":15}}}
 
-
             """;
 
         using VerbatimHttpHandler handler = new(Input, Output);
@@ -6335,7 +6307,6 @@ public class OpenAIResponseClientTests
 
             event: response.completed
             data: {"type":"response.completed","response":{"id":"resp_ghi789","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-2024-11-20","output":[{"type":"image_generation_call","id":"img_call_ghi789","image_result_b64":"SGVsbG8z"}],"usage":{"input_tokens":18,"output_tokens":0,"total_tokens":18}}}
-
 
             """;
 
@@ -6647,4 +6618,3 @@ public class OpenAIResponseClientTests
         }
     }
 }
-

@@ -21,7 +21,6 @@ using System.Threading.Tasks;
 #pragma warning disable IDE0011 // Add braces
 #pragma warning disable SA1114 // Parameter list should follow declaration
 #pragma warning disable SA1106 // Code should not contain empty statements
-#pragma warning disable S109 // Magic numbers should not be used
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 #pragma warning disable SA1108 // Block statements should not contain embedded comments
 #pragma warning disable format

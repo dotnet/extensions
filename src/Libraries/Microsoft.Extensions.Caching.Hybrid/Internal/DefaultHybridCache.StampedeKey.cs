@@ -40,8 +40,6 @@ internal partial class DefaultHybridCache
         // this is a constant-time operation against a known value.
         internal int HashCode => _hashCode;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S2178:Short-circuit logic should be used in boolean contexts",
-            Justification = "Non-short-circuiting intentional to remove unnecessary branch")]
         public bool Equals(StampedeKey other) => _flags == other._flags & _key == other._key;
 
         public override bool Equals([NotNullWhen(true)] object? obj)

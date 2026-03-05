@@ -3,7 +3,6 @@
 
 #pragma warning disable IDE0079
 #pragma warning disable CPR103
-#pragma warning disable S3903
 
 using System.Diagnostics.CodeAnalysis;
 

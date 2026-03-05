@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -102,14 +102,12 @@ public class ResultsTests
         return null;
     }
 
-#pragma warning disable S1067 // Expressions should not be too complex.
     private static EvaluationMetricInterpretation? FailIfValueIsMissing(EvaluationMetric m) =>
         (m is NumericMetric s && s.Value is not null) ||
         (m is BooleanMetric b && b.Value is not null) ||
         (m is StringMetric e && e.Value is not null)
             ? new EvaluationMetricInterpretation(EvaluationRating.Good)
             : new EvaluationMetricInterpretation(EvaluationRating.Unacceptable, failed: true, "Value is missing");
-#pragma warning restore S1067
 
     private enum MeasurementSystem
     {

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -153,7 +153,6 @@ internal sealed partial class Parser
                             lp.TagProvider = null;
                         }
 
-#pragma warning disable S1067 // Expressions should not be too complex
                         if (lp.IsNormalParameter
                             && (logPropertiesAttribute is null)
                             && (tagProviderAttribute is null)
@@ -162,7 +161,6 @@ internal sealed partial class Parser
                         {
                             Diag(DiagDescriptors.DefaultToString, paramSymbol.GetLocation(), paramSymbol.Type, paramSymbol.Name);
                         }
-#pragma warning restore S1067 // Expressions should not be too complex
 
                         bool forceAsTemplateParam = false;
 
@@ -456,14 +454,12 @@ internal sealed partial class Parser
             }
 
             var msg = lm.Message;
-#pragma warning disable S1067 // Expressions should not be too complex
             if (msg.StartsWith("INFORMATION:", StringComparison.OrdinalIgnoreCase)
                 || msg.StartsWith("INFO:", StringComparison.OrdinalIgnoreCase)
                 || msg.StartsWith("WARNING:", StringComparison.OrdinalIgnoreCase)
                 || msg.StartsWith("WARN:", StringComparison.OrdinalIgnoreCase)
                 || msg.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase)
                 || msg.StartsWith("ERR:", StringComparison.OrdinalIgnoreCase))
-#pragma warning restore S1067 // Expressions should not be too complex
             {
                 Diag(DiagDescriptors.RedundantQualifierInMessage, attrLoc, methodSymbol.Name);
             }
@@ -701,7 +697,6 @@ internal sealed partial class Parser
         INamedTypeSymbol? currentClassType = classType;
         bool onMostDerivedType = true;
 
-#pragma warning disable S125 // Sections of code should not be commented out
         /*
          We keep track of the names of all non-logger fields, since they prevent referring to logger
          primary constructor parameters with the same name. Example:
@@ -713,7 +708,6 @@ internal sealed partial class Parser
              public partial void M1(); // The ILogger primary constructor parameter cannot be used here.
          }
         */
-#pragma warning restore S125 // Sections of code should not be commented out
 
         HashSet<string> shadowedNames = new(StringComparer.Ordinal);
 

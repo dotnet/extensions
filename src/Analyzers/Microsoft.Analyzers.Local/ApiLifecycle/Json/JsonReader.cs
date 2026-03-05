@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // Forked from StyleCop.Analyzers repo.
@@ -218,7 +218,6 @@ internal sealed class JsonReader
     private int ReadHexDigit()
     {
         var errorPosition = _scanner.Position;
-#pragma warning disable S109 // Magic numbers should not be used
         return char.ToUpperInvariant(_scanner.Read()) switch
         {
             '0' => 0,
@@ -254,7 +253,7 @@ internal sealed class JsonReader
 
         return (char)value;
     }
-#pragma warning restore S109 // Magic numbers should not be used
+
     private JsonObject ReadObject()
     {
         return ReadObject([]);

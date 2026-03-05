@@ -8,9 +8,7 @@ using System.Runtime.InteropServices;
 
 #pragma warning disable SA1405 // Debug.Assert should provide message text
 #pragma warning disable IDE0032 // Use auto property
-#pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable SA1202 // Elements should be ordered by access
-#pragma warning disable S109 // Magic numbers should not be used
 
 namespace System.Net
 {

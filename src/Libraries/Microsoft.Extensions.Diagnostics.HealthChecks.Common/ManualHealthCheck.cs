@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -30,7 +30,6 @@ internal sealed class ManualHealthCheck<T> : IManualHealthCheck<T>
 
     private readonly ManualHealthCheckTracker _tracker;
 
-    [SuppressMessage("Major Code Smell", "S3366:\"this\" should not be exposed from constructors", Justification = "It's OK, just registering into a list")]
     public ManualHealthCheck(ManualHealthCheckTracker tracker)
     {
         Result = HealthCheckResult.Unhealthy("Initial state");

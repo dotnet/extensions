@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -297,9 +297,7 @@ public sealed partial class LegacyLoggingFixer
             {
                 if (braceOccurrenceCount > 0 && message[scanIndex] != brace)
                 {
-#pragma warning disable S109 // Magic numbers should not be used
                     if (braceOccurrenceCount % 2 == 0)
-#pragma warning restore S109 // Magic numbers should not be used
                     {
                         // Even number of '{' or '}' found. Proceed search with next occurrence of '{' or '}'.
                         braceOccurrenceCount = 0;

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #pragma warning disable CA1307 // Specify StringComparison for clarity
-#pragma warning disable S2302 // "nameof" should be used
 
 using System;
 using System.Collections.Concurrent;

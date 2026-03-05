@@ -16,9 +16,6 @@ using OpenAI.Assistants;
 
 #pragma warning disable SA1005 // Single line comments should begin with single space
 #pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable S125 // Sections of code should not be commented out
-#pragma warning disable S1751 // Loops with at most one iteration should be refactored
-#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 
 namespace Microsoft.Extensions.AI;
 

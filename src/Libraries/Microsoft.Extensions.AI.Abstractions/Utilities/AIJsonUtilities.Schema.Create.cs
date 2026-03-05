@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -19,9 +19,6 @@ using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA1505 // Avoid unmaintainable code
-#pragma warning disable S1075 // URIs should not be hardcoded
-#pragma warning disable S1199 // Nested block
-#pragma warning disable S1696 // NullReferenceException should not be caught
 #pragma warning disable SA1118 // Parameter should not span multiple lines
 
 namespace Microsoft.Extensions.AI;

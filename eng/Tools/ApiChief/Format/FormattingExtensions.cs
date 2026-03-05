@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -37,9 +37,7 @@ internal static class FormattingExtensions
                 }
 
                 sb.Append(next);
-#pragma warning disable S127 // "for" loop stop conditions should be invariant
                 i = index;
-#pragma warning restore S127 // "for" loop stop conditions should be invariant
             }
             else if (current == ',')
             {
@@ -103,11 +101,8 @@ internal static class FormattingExtensions
                 }
 
                 sb.Append(next);
-#pragma warning disable S127 // "for" loop stop conditions should be invariant
                 i = initial;
-#pragma warning restore S127 // "for" loop stop conditions should be invariant
             }
-#pragma warning disable S2583 // Conditionally executed code should be reachable
             else if (current == '=')
             {
                 sawEqualitySign = true;
@@ -117,14 +112,12 @@ internal static class FormattingExtensions
                 var initial = i + 1;
                 var next = memberDecl[initial];
 
-#pragma warning disable S1067 // Expressions should not be too complex
                 while (char.IsDigit(next) || (char.IsDigit(memberDecl[initial - 1]) && _possibleSpecialCharactersInANumber.Contains(next)))
                 {
                     sb.Append(next);
                     initial++;
                     next = memberDecl[initial];
                 }
-#pragma warning restore S1067 // Expressions should not be too complex
 
                 if (!_numberLiterals.Contains(next))
                 {
@@ -134,12 +127,9 @@ internal static class FormattingExtensions
                 {
                     initial++;
                 }
-#pragma warning disable S127 // "for" loop stop conditions should be invariant
                 i = initial;
-#pragma warning restore S127 // "for" loop stop conditions should be invariant
                 sawEqualitySign = false;
             }
-#pragma warning restore S2583 // Conditionally executed code should be reachable
 
         }
 

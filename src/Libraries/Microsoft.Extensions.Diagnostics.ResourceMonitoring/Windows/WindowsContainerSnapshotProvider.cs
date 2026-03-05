@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -35,10 +35,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
     private double _memoryLimit;
     private double _cpuLimit;
-#pragma warning disable S1450 // Private fields only used as local variables in methods should become local variables. Those will be used once we bring relevant meters.
     private double _memoryRequest;
     private double _cpuRequest;
-#pragma warning restore S1450 // Private fields only used as local variables in methods should become local variables
 
     private long _oldCpuUsageTicks;
     private long _oldCpuTimeTicks;

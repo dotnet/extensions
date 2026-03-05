@@ -131,9 +131,7 @@ public class DelegatingImageGeneratorTests
         Assert.True(inner.DisposeInvoked);
 
         // Second dispose should not throw
-#pragma warning disable S3966
         delegating.Dispose();
-#pragma warning restore S3966
         Assert.True(inner.DisposeInvoked);
     }
 

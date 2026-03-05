@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -73,9 +73,7 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configure">The action used to configure the options.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-#pragma warning disable S3872 // Parameter names should not duplicate the names of their methods
     public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<IOptionsContext, TOptions> configure)
-#pragma warning restore S3872 // Parameter names should not duplicate the names of their methods
         where TOptions : class
         => services.Configure(Options.Options.DefaultName, Throw.IfNull(configure));
 
@@ -87,9 +85,7 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// <param name="name">The name of the options to configure.</param>
     /// <param name="configure">The action used to configure the options.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-#pragma warning disable S3872 // Parameter names should not duplicate the names of their methods
     public static IServiceCollection Configure<TOptions>(this IServiceCollection services, string? name, Action<IOptionsContext, TOptions> configure)
-#pragma warning restore S3872 // Parameter names should not duplicate the names of their methods
         where TOptions : class
     {
         return services.AddContextualOptions().AddSingleton<ILoadContextualOptions<TOptions>>(

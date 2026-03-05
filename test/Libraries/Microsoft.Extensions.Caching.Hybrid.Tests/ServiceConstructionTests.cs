@@ -577,8 +577,6 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
     [InlineData(true, 43, 42, null, true, 45, 44, null, 45, 44)]
     [InlineData(true, 43, 42, null, true, null, 45, null, 43, 45)]
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters",
-        Justification = "Most pragmatic and readable way of expressing multiple scenarios.")]
     public void VerifyCacheEntryOptionsScenarios(
         bool defaultsSpecified, int? defaultExpiration, int? defaultLocalCacheExpiration, HybridCacheEntryFlags? defaultFlags,
         bool perItemSpecified, int? perItemExpiration, int? perItemLocalCacheExpiration, HybridCacheEntryFlags? perItemFlags,

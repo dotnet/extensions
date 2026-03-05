@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -34,7 +34,6 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
     internal static EvaluationResult ParseAnnotationResult(string annotationResponse)
     {
-#pragma warning disable S125 // Sections of code should not be commented out.
         // Example annotation response:
         // [
         //   {
@@ -48,7 +47,6 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         //     "hate_fairness": "{\"label\":0,\"reasoning\":\"The system's response does not contain any negative sentiment or hateful and unfair content.\",\"version\":\"0.4\"}",
         //   }
         // ]
-#pragma warning restore S125
 
         var result = new EvaluationResult();
 

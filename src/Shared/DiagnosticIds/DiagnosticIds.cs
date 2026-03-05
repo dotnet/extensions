@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable S1144 // Remove the unused internal class
-
 #pragma warning disable CA1716
 namespace Microsoft.Shared.DiagnosticIds;
 #pragma warning restore CA1716
@@ -16,9 +14,7 @@ namespace Microsoft.Shared.DiagnosticIds;
 /// </remarks>
 internal static class DiagnosticIds
 {
-#pragma warning disable S1075 // URIs should not be hardcoded
     internal const string UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}";
-#pragma warning restore S1075 // URIs should not be hardcoded
 
     internal static class ContextualOptions
     {
@@ -156,5 +152,3 @@ internal static class DiagnosticIds
             "This API is obsolete and will be removed in a future version. Instead of the AddServiceLogEnricher() methods, consider using the respective AddApplicationLogEnricher() methods.";
     }
 }
-
-#pragma warning restore S1144

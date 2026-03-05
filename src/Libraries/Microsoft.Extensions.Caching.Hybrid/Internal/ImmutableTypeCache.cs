@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -41,8 +41,6 @@ internal static class ImmutableTypeCache
 #endif
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S2178:Short-circuit logic should be used in boolean contexts",
-        Justification = "Non-short-circuiting intentional to remove unnecessary branch")]
     internal static bool IsTypeImmutable(Type type)
     {
         // check for known types

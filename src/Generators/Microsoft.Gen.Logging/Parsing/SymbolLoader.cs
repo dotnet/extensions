@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -64,7 +64,6 @@ internal static class SymbolLoader
         var dataClassificationAttribute = compilation.GetBestTypeByMetadataName(DataClassificationAttribute);
         var noDataClassificationAttribute = compilation.GetBestTypeByMetadataName(NoDataClassificationAttribute);
 
-#pragma warning disable S1067 // Expressions should not be too complex
         if (loggerSymbol == null
             || logLevelSymbol == null
             || loggerMessageAttributeSymbol == null
@@ -77,7 +76,6 @@ internal static class SymbolLoader
             // nothing to do if these types aren't available
             return null;
         }
-#pragma warning restore S1067 // Expressions should not be too complex
 
         var exceptionSymbol = compilation.GetBestTypeByMetadataName(ExceptionType);
         if (exceptionSymbol == null)

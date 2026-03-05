@@ -5,7 +5,6 @@ using System;
 using Microsoft.Extensions.Logging;
 
 #pragma warning disable SA1402 // File may only contain a single type
-#pragma warning disable S1186 // Methods should not be empty
 
 namespace TestClasses
 {

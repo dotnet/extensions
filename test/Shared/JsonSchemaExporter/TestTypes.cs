@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -19,14 +19,11 @@ using System.Xml.Linq;
 
 #pragma warning disable SA1118 // Parameter should not span multiple lines
 #pragma warning disable JSON001 // Comments not allowed
-#pragma warning disable S2344 // Enumeration type names should not have "Flags" or "Enum" suffixes
 #pragma warning disable SA1502 // Element should not be on a single line
 #pragma warning disable SA1136 // Enum values should be on separate lines
 #pragma warning disable SA1133 // Do not combine attributes
-#pragma warning disable S3604 // Member initializer values should not be redundant
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 #pragma warning disable CA1052 // Static holder types should be Static or NotInheritable
-#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 #pragma warning disable IDE0073 // The file header is missing or not located at the top of the file
 
 namespace Microsoft.Extensions.AI.JsonSchemaExporter;

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -9,8 +9,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Gen.Logging.Model;
 using Microsoft.Gen.Shared;
-
-#pragma warning disable S1067 // Expressions should not be too complex
 
 namespace Microsoft.Gen.Logging.Parsing;
 
@@ -218,7 +216,6 @@ internal partial class Parser
 
                     if (property.Type.IsValueType && !property.Type.IsNullableOfT())
                     {
-#pragma warning disable S125
                         // deal with an oddity in Roslyn. If you have this case:
                         //
                         // class Gen<T>
@@ -234,7 +231,6 @@ internal partial class Parser
                         // then Roslyn claims that MyInt has nullable annotations. Yet, doing x.MyInt?.ToString isn't valid.
                         // So we explicitly check whether the value is indeed a Nullable<T>.
                         lp.IsNullable = false;
-#pragma warning restore S125
                     }
 
                     // Check if this property hides a base property

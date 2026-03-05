@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
@@ -35,10 +35,8 @@ public class LatencyContextTests
         Assert.False(latencyContext.IsDisposed);
         latencyContext.Dispose();
         Assert.True(latencyContext.IsDisposed);
-#pragma warning disable S3966 // Objects should not be disposed more than once
         latencyContext.Dispose();
         latencyContext.Dispose();
-#pragma warning restore S3966 // Objects should not be disposed more than once
     }
 
     [Fact]

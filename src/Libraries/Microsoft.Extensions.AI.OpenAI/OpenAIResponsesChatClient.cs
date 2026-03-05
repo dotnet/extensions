@@ -20,9 +20,6 @@ using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Responses;
 
-#pragma warning disable S1226 // Method parameters, caught exceptions and foreach variables' initial values should not be ignored
-#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning disable S3254 // Default parameter values should not be passed as arguments
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;

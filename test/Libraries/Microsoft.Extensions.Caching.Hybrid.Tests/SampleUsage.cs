@@ -134,8 +134,6 @@ public class SampleUsage : IClassFixture<TestEventListener>
         return Task.FromResult(new SomeInformation { Id = id, Name = name });
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3398:\"private\" methods called only by inner classes should be moved to those classes",
-        Justification = "Allow future sharing")]
     private static Task<SomeInformationReuse> SomeExpensiveOperationReuseAsync(string name, int id,
         CancellationToken token = default)
     {
