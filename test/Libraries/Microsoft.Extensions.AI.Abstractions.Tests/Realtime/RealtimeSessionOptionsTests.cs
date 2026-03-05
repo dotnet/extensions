@@ -18,7 +18,6 @@ public class RealtimeSessionOptionsTests
         Assert.Equal(RealtimeSessionKind.Conversation, options.SessionKind);
         Assert.Null(options.Model);
         Assert.Null(options.InputAudioFormat);
-        Assert.Null(options.NoiseReductionOptions);
         Assert.Null(options.TranscriptionOptions);
         Assert.Null(options.VoiceActivityDetection);
         Assert.Null(options.OutputAudioFormat);
@@ -46,7 +45,6 @@ public class RealtimeSessionOptionsTests
             Model = "gpt-4-realtime",
             InputAudioFormat = inputFormat,
             OutputAudioFormat = outputFormat,
-            NoiseReductionOptions = NoiseReductionOptions.NearField,
             TranscriptionOptions = transcriptionOptions,
             VoiceActivityDetection = vad,
             Voice = "alloy",
@@ -61,7 +59,6 @@ public class RealtimeSessionOptionsTests
         Assert.Equal("gpt-4-realtime", options.Model);
         Assert.Same(inputFormat, options.InputAudioFormat);
         Assert.Same(outputFormat, options.OutputAudioFormat);
-        Assert.Equal(NoiseReductionOptions.NearField, options.NoiseReductionOptions);
         Assert.Same(transcriptionOptions, options.TranscriptionOptions);
         Assert.Same(vad, options.VoiceActivityDetection);
         Assert.Equal("alloy", options.Voice);

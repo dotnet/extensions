@@ -17,7 +17,7 @@ public class RealtimeSessionOptions
     /// Gets the session kind.
     /// </summary>
     /// <remarks>
-    /// If set to <see cref="RealtimeSessionKind.Transcription"/>, most of the sessions properties will not apply to the session. Only InputAudioFormat, NoiseReductionOptions, TranscriptionOptions, and VoiceActivityDetection will be used.
+    /// If set to <see cref="RealtimeSessionKind.Transcription"/>, most of the sessions properties will not apply to the session. Only InputAudioFormat, TranscriptionOptions, and VoiceActivityDetection will be used.
     /// </remarks>
     public RealtimeSessionKind SessionKind { get; init; } = RealtimeSessionKind.Conversation;
 
@@ -30,11 +30,6 @@ public class RealtimeSessionOptions
     /// Gets the input audio format for the session.
     /// </summary>
     public RealtimeAudioFormat? InputAudioFormat { get; init; }
-
-    /// <summary>
-    /// Gets the noise reduction options for the session.
-    /// </summary>
-    public NoiseReductionOptions? NoiseReductionOptions { get; init; }
 
     /// <summary>
     /// Gets the transcription options for the session.

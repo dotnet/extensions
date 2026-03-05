@@ -394,14 +394,6 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             inputAudioOptions.AudioFormat = ToSdkAudioFormat(options.InputAudioFormat);
         }
 
-        if (options.NoiseReductionOptions.HasValue)
-        {
-            inputAudioOptions.NoiseReduction = new Sdk.RealtimeNoiseReduction(
-                options.NoiseReductionOptions.Value == NoiseReductionOptions.NearField
-                    ? Sdk.RealtimeNoiseReductionKind.NearField
-                    : Sdk.RealtimeNoiseReductionKind.FarField);
-        }
-
         if (options.TranscriptionOptions is not null)
         {
             inputAudioOptions.AudioTranscriptionOptions = new Sdk.RealtimeAudioTranscriptionOptions
@@ -510,7 +502,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         var transOptions = new Sdk.RealtimeTranscriptionSessionOptions();
 
         if (options.InputAudioFormat is not null || options.TranscriptionOptions is not null ||
-            options.VoiceActivityDetection is not null || options.NoiseReductionOptions.HasValue)
+            options.VoiceActivityDetection is not null)
         {
             var inputAudioOptions = new Sdk.RealtimeTranscriptionSessionInputAudioOptions();
 
@@ -527,14 +519,6 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
                     Model = options.TranscriptionOptions.ModelId,
                     Prompt = options.TranscriptionOptions.Prompt,
                 };
-            }
-
-            if (options.NoiseReductionOptions.HasValue)
-            {
-                inputAudioOptions.NoiseReduction = new Sdk.RealtimeNoiseReduction(
-                    options.NoiseReductionOptions.Value == NoiseReductionOptions.NearField
-                        ? Sdk.RealtimeNoiseReductionKind.NearField
-                        : Sdk.RealtimeNoiseReductionKind.FarField);
             }
 
             if (options.VoiceActivityDetection is ServerVoiceActivityDetection serverVad)
@@ -904,7 +888,6 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
     private RealtimeSessionOptions MapConversationSessionToOptions(Sdk.RealtimeConversationSession session)
     {
         RealtimeAudioFormat? inputAudioFormat = null;
-        NoiseReductionOptions? noiseReduction = null;
         TranscriptionOptions? transcription = null;
         VoiceActivityDetection? vad = null;
         RealtimeAudioFormat? outputAudioFormat = null;
@@ -915,13 +898,6 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             if (audioOptions.InputAudioOptions is { } inputOpts)
             {
                 inputAudioFormat = MapSdkAudioFormat(inputOpts.AudioFormat);
-
-                if (inputOpts.NoiseReduction is { } nr)
-                {
-                    noiseReduction = nr.Kind == Sdk.RealtimeNoiseReductionKind.NearField
-                        ? NoiseReductionOptions.NearField
-                        : NoiseReductionOptions.FarField;
-                }
 
                 if (inputOpts.AudioTranscriptionOptions is { } transcriptionOpts)
                 {
@@ -996,7 +972,6 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             MaxOutputTokens = maxOutputTokens,
             OutputModalities = outputModalities,
             InputAudioFormat = inputAudioFormat,
-            NoiseReductionOptions = noiseReduction,
             TranscriptionOptions = transcription,
             VoiceActivityDetection = vad,
             OutputAudioFormat = outputAudioFormat,
