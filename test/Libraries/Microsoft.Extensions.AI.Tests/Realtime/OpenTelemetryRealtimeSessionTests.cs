@@ -60,7 +60,6 @@ public class OpenTelemetryRealtimeSessionTests
             yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone)
             {
                 ResponseId = "resp_12345",
-                ConversationId = "conv_67890",
                 Status = "completed",
                 Usage = new UsageDetails
                 {
@@ -132,7 +131,6 @@ public class OpenTelemetryRealtimeSessionTests
 
         // Response attributes
         Assert.Equal("resp_12345", activity.GetTagItem("gen_ai.response.id"));
-        Assert.Equal("conv_67890", activity.GetTagItem("gen_ai.conversation.id"));
         Assert.Equal("""["completed"]""", activity.GetTagItem("gen_ai.response.finish_reasons"));
         Assert.Equal(15, activity.GetTagItem("gen_ai.usage.input_tokens"));
         Assert.Equal(25, activity.GetTagItem("gen_ai.usage.output_tokens"));

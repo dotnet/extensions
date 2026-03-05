@@ -963,11 +963,6 @@ public sealed partial class OpenTelemetryRealtimeSession : DelegatingRealtimeSes
                 _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Id, response.ResponseId);
             }
 
-            if (!string.IsNullOrWhiteSpace(response.ConversationId))
-            {
-                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Conversation.Id, response.ConversationId);
-            }
-
             if (!string.IsNullOrWhiteSpace(response.Status))
             {
                 _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.FinishReasons, $"[\"{response.Status}\"]");

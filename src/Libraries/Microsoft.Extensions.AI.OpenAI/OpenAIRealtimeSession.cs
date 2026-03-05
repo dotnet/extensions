@@ -1035,7 +1035,6 @@ public sealed class OpenAIRealtimeSession : IRealtimeClientSession
         }
 
         msg.ResponseId = response.Id;
-        msg.ConversationId = response.ConversationId;
         msg.Status = response.Status?.ToString();
 
         if (response.AudioOptions?.OutputAudioOptions is { } audioOut)
