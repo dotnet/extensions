@@ -15,19 +15,16 @@ namespace Microsoft.Extensions.AI;
 /// It is informational only and represents the call itself, not the result.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AICodeInterpreter, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class CodeInterpreterToolCallContent : AIContent
+public sealed class CodeInterpreterToolCallContent : ToolCallContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CodeInterpreterToolCallContent"/> class.
     /// </summary>
-    public CodeInterpreterToolCallContent()
+    /// <param name="callId">The tool call ID.</param>
+    public CodeInterpreterToolCallContent(string callId)
+        : base(callId)
     {
     }
-
-    /// <summary>
-    /// Gets or sets the tool call ID.
-    /// </summary>
-    public string? CallId { get; set; }
 
     /// <summary>
     /// Gets or sets the inputs to the code interpreter tool.

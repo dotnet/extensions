@@ -148,16 +148,6 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.AI.ChatClientBuilderToolReductionExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.ChatClientBuilderToolReductionExtensions.UseToolReduction(this Microsoft.Extensions.AI.ChatClientBuilder builder, Microsoft.Extensions.AI.IToolReductionStrategy strategy);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.AI.ChatClientStructuredOutputExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -468,42 +458,6 @@
         {
           "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.DependencyInjection.EmbeddingGeneratorBuilderServiceCollectionExtensions.AddKeyedEmbeddingGenerator<TInput, TEmbedding>(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding>> innerGeneratorFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
           "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.AI.EmbeddingToolReductionStrategy : Microsoft.Extensions.AI.IToolReductionStrategy",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.EmbeddingToolReductionStrategy(Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>> embeddingGenerator, int toolLimit);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AITool>> Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.SelectToolsForRequestAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "System.Func<Microsoft.Extensions.AI.AITool, bool> Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.IsRequiredTool { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Func<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage>, System.Threading.Tasks.ValueTask<string>> Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.MessagesEmbeddingTextSelector { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.PreserveOriginalOrdering { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Func<System.ReadOnlyMemory<float>, System.ReadOnlyMemory<float>, float> Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.Similarity { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Func<Microsoft.Extensions.AI.AITool, string> Microsoft.Extensions.AI.EmbeddingToolReductionStrategy.ToolEmbeddingTextSelector { get; set; }",
-          "Stage": "Experimental"
         }
       ]
     },
@@ -1211,24 +1165,6 @@
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.AI.SummarizingChatReducer.SummarizationPrompt { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.AI.ToolReducingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.ToolReducingChatClient.ToolReducingChatClient(Microsoft.Extensions.AI.IChatClient innerClient, Microsoft.Extensions.AI.IToolReductionStrategy strategy);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.ToolReducingChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.ToolReducingChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ]

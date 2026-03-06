@@ -52,10 +52,11 @@ internal static class DiagnosticIds
         internal const string AISpeechToText = AIExperiments;
         internal const string AIMcpServers = AIExperiments;
         internal const string AIFunctionApprovals = AIExperiments;
-        internal const string AIToolReduction = AIExperiments;
+
         internal const string AIChatReduction = AIExperiments;
         internal const string AIResponseContinuations = AIExperiments;
         internal const string AICodeInterpreter = AIExperiments;
+        internal const string AIWebSearch = AIExperiments;
         internal const string AIShell = AIExperiments;
         internal const string AIRealTime = AIExperiments;
 
@@ -114,6 +115,7 @@ internal static class DiagnosticIds
         internal const string LOGGEN036 = nameof(LOGGEN036);
         internal const string LOGGEN037 = nameof(LOGGEN037);
         internal const string LOGGEN038 = nameof(LOGGEN038);
+        internal const string LOGGEN039 = nameof(LOGGEN039);
     }
 
     internal static class Metrics

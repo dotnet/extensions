@@ -119,11 +119,12 @@ public static class OpenAIClientExtensions
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="ResponsesClient"/>.</summary>
     /// <param name="responseClient">The client.</param>
+    /// <param name="defaultModelId">The default model ID to use for the chat client.</param>
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ResponsesClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="responseClient"/> is <see langword="null"/>.</exception>
     [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
-    public static IChatClient AsIChatClient(this ResponsesClient responseClient) =>
-        new OpenAIResponsesChatClient(responseClient);
+    public static IChatClient AsIChatClient(this ResponsesClient responseClient, string? defaultModelId = null) =>
+        new OpenAIResponsesChatClient(responseClient, defaultModelId);
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="AssistantClient"/>.</summary>
     /// <param name="assistantClient">The <see cref="AssistantClient"/> instance to be accessed as an <see cref="IChatClient"/>.</param>

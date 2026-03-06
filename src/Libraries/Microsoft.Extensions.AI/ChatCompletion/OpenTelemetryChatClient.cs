@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -394,7 +394,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     case ImageGenerationToolCallContent igtcc:
                         m.Parts.Add(new OtelServerToolCallPart<OtelImageGenerationToolCall>
                         {
-                            Id = igtcc.ImageId,
+                            Id = igtcc.CallId,
                             Name = "image_generation",
                             ServerToolCall = new OtelImageGenerationToolCall(),
                         });
@@ -403,7 +403,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     case ImageGenerationToolResultContent igtrc:
                         m.Parts.Add(new OtelServerToolCallResponsePart<OtelImageGenerationToolCallResponse>
                         {
-                            Id = igtrc.ImageId,
+                            Id = igtrc.CallId,
                             ServerToolCallResponse = new OtelImageGenerationToolCallResponse
                             {
                                 Output = igtrc.Outputs,
@@ -415,7 +415,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         m.Parts.Add(new OtelServerToolCallPart<OtelMcpToolCall>
                         {
                             Id = mstcc.CallId,
-                            Name = mstcc.ToolName,
+                            Name = mstcc.Name,
                             ServerToolCall = new OtelMcpToolCall
                             {
                                 Arguments = mstcc.Arguments,
@@ -430,31 +430,31 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                             Id = mstrc.CallId,
                             ServerToolCallResponse = new OtelMcpToolCallResponse
                             {
-                                Output = mstrc.Output,
+                                Output = mstrc.Outputs,
                             },
                         });
                         break;
 
-                    case McpServerToolApprovalRequestContent mstarc:
+                    case ToolApprovalRequestContent fareqc when fareqc.ToolCall is McpServerToolCallContent mcpToolCall:
                         m.Parts.Add(new OtelServerToolCallPart<OtelMcpApprovalRequest>
                         {
-                            Id = mstarc.Id,
-                            Name = mstarc.ToolCall.ToolName,
+                            Id = fareqc.RequestId,
+                            Name = mcpToolCall.Name,
                             ServerToolCall = new OtelMcpApprovalRequest
                             {
-                                Arguments = mstarc.ToolCall.Arguments,
-                                ServerName = mstarc.ToolCall.ServerName,
+                                Arguments = mcpToolCall.Arguments,
+                                ServerName = mcpToolCall.ServerName,
                             },
                         });
                         break;
 
-                    case McpServerToolApprovalResponseContent mstaresp:
+                    case ToolApprovalResponseContent farespc when farespc.ToolCall is McpServerToolCallContent:
                         m.Parts.Add(new OtelServerToolCallResponsePart<OtelMcpApprovalResponse>
                         {
-                            Id = mstaresp.Id,
+                            Id = farespc.RequestId,
                             ServerToolCallResponse = new OtelMcpApprovalResponse
                             {
-                                Approved = mstaresp.Approved,
+                                Approved = farespc.Approved,
                             },
                         });
                         break;
@@ -632,24 +632,24 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         }
                     }
 
+                    if (options.Tools is { Count: > 0 })
+                    {
+                        _ = activity.AddTag(
+                            OpenTelemetryConsts.GenAI.Tool.Definitions,
+                            JsonSerializer.Serialize(options.Tools.Select(t => t switch
+                            {
+                                _ when t.GetService<AIFunctionDeclaration>() is { } af => new OtelFunction
+                                {
+                                    Name = af.Name,
+                                    Description = af.Description,
+                                    Parameters = af.JsonSchema,
+                                },
+                                _ => new OtelFunction { Type = t.Name },
+                            }), OtelContext.Default.IEnumerableOtelFunction));
+                    }
+
                     if (EnableSensitiveData)
                     {
-                        if (options.Tools is { Count: > 0 })
-                        {
-                            _ = activity.AddTag(
-                                OpenTelemetryConsts.GenAI.Tool.Definitions,
-                                JsonSerializer.Serialize(options.Tools.Select(t => t switch
-                                {
-                                    _ when t.GetService<AIFunctionDeclaration>() is { } af => new OtelFunction
-                                    {
-                                        Name = af.Name,
-                                        Description = af.Description,
-                                        Parameters = af.JsonSchema,
-                                    },
-                                    _ => new OtelFunction { Type = t.Name },
-                                }), OtelContext.Default.IEnumerableOtelFunction));
-                        }
-
                         // Log all additional request options as raw values on the span.
                         // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
                         if (options.AdditionalProperties is { } props)
@@ -912,7 +912,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     {
         public string Type { get; set; } = "mcp";
         public string? ServerName { get; set; }
-        public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
+        public IDictionary<string, object?>? Arguments { get; set; }
     }
 
     private sealed class OtelMcpToolCallResponse
@@ -925,7 +925,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     {
         public string Type { get; set; } = "mcp_approval_request";
         public string? ServerName { get; set; }
-        public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
+        public IDictionary<string, object?>? Arguments { get; set; }
     }
 
     private sealed class OtelMcpApprovalResponse
@@ -981,3 +981,4 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
     private sealed partial class OtelContext : JsonSerializerContext;
 }
+

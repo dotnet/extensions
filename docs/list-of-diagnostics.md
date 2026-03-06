@@ -65,7 +65,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `LOGGEN004` | A static logging method must have a parameter that implements the "Microsoft.Extensions.Logging.ILogger" interface |
 | `LOGGEN005` | Logging methods must be static |
 | `LOGGEN006` | Logging methods must be partial |
-| `LOGGEN007` | Logging methods can't be generic |
+| `LOGGEN007` | Logging methods can't use the `allows ref struct` constraint |
 | `LOGGEN008` | Redundant qualifier in the logging message |
 | `LOGGEN009` | Don't include exception parameters as templates in the logging message |
 | `LOGGEN010` | The logging template has no corresponding method parameter |
@@ -97,6 +97,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `LOGGEN036` | A value being logged doesn't have an effective way to be converted into a string |
 | `LOGGEN037` | Logging method contains malformed format strings |
 | `LOGGEN038` | Primary constructor parameter of type Microsoft.Extensions.Logging.ILogger is hidden by a field |
+| `LOGGEN039` | Logging method parameters can't have the "params" or "scoped" modifier |
 
 # Metrics
 

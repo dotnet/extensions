@@ -1,5 +1,14 @@
 # Microsoft.Extensions.AI Release History
 
+## NOT YET RELEASED
+
+- Added `time_to_first_chunk` and `time_per_output_chunk` streaming metrics to `OpenTelemetryChatClient`.
+- Fixed `OpenTelemetryChatClient` to emit tool definitions even when EnableSensitiveData is false.
+- Updated the OpenTelemetry instrumentation to conform to the latest 1.49 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated `FunctionInvokingChatClient` to automatically mark `FunctionCallContent` as `InformationalOnly=true` when it detects an existing corresponding `FunctionResultContent`.
+- Fixed parenting of child spans in `FunctionInvokingChatClient` when an `invoke_agent` span is present.
+- Removed the experimental `ToolReducingChatClient` type and related APIs.
+
 ## 10.3.0
 
 - Fixed `FunctionInvokingChatClient` to respect `ChatOptions.Tools` modifications made by function tools.
@@ -39,7 +48,7 @@
 
 ## 9.10.2
 
-- Updated the Open Telemetry instrumentation to conform to the latest 1.38 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated the OpenTelemetry instrumentation to conform to the latest 1.38 draft specification of the Semantic Conventions for Generative AI systems.
 
 ## 9.10.1
 
@@ -48,7 +57,7 @@
 
 ## 9.10.0
 
-- Added `OpenTelemetrySpeechToTextClient` to provide Open Telemetry instrumentation for `ISpeechToTextClient` implementations.
+- Added `OpenTelemetrySpeechToTextClient` to provide OpenTelemetry instrumentation for `ISpeechToTextClient` implementations.
 - Augmented `OpenTelemetryChatClient` to output tool information for all tools rather than only `AIFunctionDeclaration`-based tools.
 - Fixed `OpenTelemetryChatClient` to avoid throwing exceptions when trying to serialize unknown `AIContent`-derived types.
 - Fixed issue with `FunctionInvokingChatClient` where some buffered updates in the face of possible approvals weren't being propagated.
@@ -64,7 +73,7 @@
 
 - Added `FunctionInvokingChatClient` support for non-invocable tools and `TerminateOnUnknownCalls` property.
 - Added support to `FunctionInvokingChatClient` for user approval of function invocations.
-- Updated the Open Telemetry instrumentation to conform to the latest 1.37 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated the OpenTelemetry instrumentation to conform to the latest 1.37 draft specification of the Semantic Conventions for Generative AI systems.
 - Fixed `GetResponseAsync<T>` to only look at the contents of the last message in the response.
 
 ## 9.8.0
@@ -77,20 +86,20 @@
 
 - Added `FunctionInvokingChatClient.FunctionInvoker` to simplify customizing how functions are invoked.
 - Increased the default `FunctionInvokingChatClient.MaximumIterationsPerRequest` value from 10 to 40.
-- Updated the Open Telemetry instrumentation to conform to the latest 1.36 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated the OpenTelemetry instrumentation to conform to the latest 1.36 draft specification of the Semantic Conventions for Generative AI systems.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.7.0
 
 - Added `DistributedCachingChatClient/EmbeddingGenerator.AdditionalCacheKeyValues` to allow adding additional values to the cache key.
 - Allowed a `CachingChatClient` to control per-request caching.
-- Updated the Open Telemetry instrumentation to conform to the latest 1.35 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated the OpenTelemetry instrumentation to conform to the latest 1.35 draft specification of the Semantic Conventions for Generative AI systems.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.6.0
 
 - Fixed hashing in `CachingChatClient` and `CachingEmbeddingGenerator` to be stable with respect to indentation settings and property ordering.
-- Updated the Open Telemetry instrumentation to conform to the latest 1.34 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated the OpenTelemetry instrumentation to conform to the latest 1.34 draft specification of the Semantic Conventions for Generative AI systems.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.5.0
