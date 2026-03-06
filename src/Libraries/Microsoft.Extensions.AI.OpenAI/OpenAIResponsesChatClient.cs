@@ -1603,18 +1603,100 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     /// <summary>Creates a <see cref="CodeInterpreterToolResultContent"/> for the specified <paramref name="cicri"/>.</summary>
-    private static CodeInterpreterToolResultContent CreateCodeInterpreterResultContent(CodeInterpreterCallResponseItem cicri) =>
-        new(cicri.Id)
+    private static CodeInterpreterToolResultContent CreateCodeInterpreterResultContent(CodeInterpreterCallResponseItem cicri)
+    {
+        List<AIContent>? outputContents = null;
+
+        if (cicri.Outputs is { Count: > 0 } outputs)
         {
-            Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
-                o switch
+            outputContents = [];
+            foreach (var o in outputs)
+            {
+                switch (o)
                 {
-                    CodeInterpreterCallImageOutput cicio => new UriContent(cicio.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(cicio.ImageUri)) { RawRepresentation = cicio },
-                    CodeInterpreterCallLogsOutput ciclo => new TextContent(ciclo.Logs) { RawRepresentation = ciclo },
-                    _ => null,
-                }).OfType<AIContent>().ToList() : null,
+                    case CodeInterpreterCallImageOutput cicio:
+                        outputContents.Add(new UriContent(cicio.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(cicio.ImageUri)) { RawRepresentation = cicio });
+                        break;
+
+                    case CodeInterpreterCallLogsOutput ciclo:
+                        outputContents.Add(new TextContent(ciclo.Logs) { RawRepresentation = ciclo });
+                        break;
+
+                    default:
+                        // The SDK doesn't publicly expose file output types, so try to extract
+                        // file references from the raw JSON via the Patch property.
+                        AddHostedFileContents(outputContents, o, cicri.ContainerId);
+                        break;
+                }
+            }
+
+            if (outputContents.Count == 0)
+            {
+                outputContents = null;
+            }
+        }
+
+        return new(cicri.Id)
+        {
+            Outputs = outputContents,
             RawRepresentation = cicri,
         };
+    }
+
+    /// <summary>
+    /// Tries to extract file references from an unknown <see cref="CodeInterpreterCallOutput"/> by
+    /// reading its JSON data via the <see cref="CodeInterpreterCallOutput.Patch"/> property.
+    /// </summary>
+    private static void AddHostedFileContents(List<AIContent> contents, CodeInterpreterCallOutput output, string? containerId)
+    {
+        // Try to read a "files" array from the output's raw JSON. The OpenAI API returns file outputs
+        // with a "files" array containing objects with "file_id" and "mime_type" properties, but the
+        // SDK doesn't expose a public type for them.
+        if (!output.Patch.TryGetJson("$.files"u8, out ReadOnlyMemory<byte> filesJson))
+        {
+            return;
+        }
+
+        JsonDocument doc;
+        try
+        {
+            doc = JsonDocument.Parse(filesJson);
+        }
+        catch (JsonException)
+        {
+            return;
+        }
+
+        using (doc)
+        {
+            if (doc.RootElement.ValueKind != JsonValueKind.Array)
+            {
+                return;
+            }
+
+            foreach (var fileElement in doc.RootElement.EnumerateArray())
+            {
+                string? fileId =
+                    (fileElement.TryGetProperty("file_id", out var idProp) ? idProp.GetString() : null) ??
+                    (fileElement.TryGetProperty("id", out idProp) ? idProp.GetString() : null);
+
+                if (fileId is null)
+                {
+                    continue;
+                }
+
+                string? mimeType = fileElement.TryGetProperty("mime_type", out var mimeProp) ? mimeProp.GetString() : null;
+
+                var hfc = new HostedFileContent(fileId) { MediaType = mimeType, RawRepresentation = output };
+                if (containerId is not null)
+                {
+                    hfc.Scope = containerId;
+                }
+
+                contents.Add(hfc);
+            }
+        }
+    }
 
     private static void AddImageGenerationContents(ImageGenerationCallResponseItem outputItem, CreateResponseOptions? options, IList<AIContent> contents)
     {
