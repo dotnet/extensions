@@ -168,15 +168,20 @@ steps:
       displayName: Pack docs transport package
 
     - pwsh: |
+          Write-Host "--- npm config diagnostics ---"
+          npm config list
+          Write-Host "--- end diagnostics ---"
           $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.VSIXOutputPath)
       displayName: Build Azure DevOps plugin
       env:
-        # Some CI agents have stale npm auth tokens in the user-level .npmrc
-        # (e.g. C:\Users\cloudtest\.npmrc). npm sends these stale credentials
-        # to the public dotnet-public-npm feed, causing E401 errors. Override
-        # the user config path to a non-existent file so npm ignores stale
-        # credentials and uses anonymous access for the public feed.
+        # Some CI agents have stale npm auth tokens in user or global .npmrc
+        # files (e.g. C:\Users\cloudtest\.npmrc). npm sends these stale
+        # credentials to the public dotnet-public-npm feed, causing E401.
+        # Override both user and global config paths to non-existent files
+        # so npm only reads the project-level .npmrc (which has the registry
+        # URL but no auth tokens).
         NPM_CONFIG_USERCONFIG: $(Agent.TempDirectory)/.npmrc-not-exists
+        NPM_CONFIG_GLOBALCONFIG: $(Agent.TempDirectory)/.npmrc-not-exists
 
     - script: ${{ parameters.buildScript }}
               -restore
