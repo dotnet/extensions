@@ -1223,82 +1223,88 @@ public static partial class AIJsonUtilitiesTests
         Assert.Throws<ArgumentNullException>("contentType", () => options.AddAIContentType(null!, "discriminator"));
     }
 
-    [Fact]
-    public static void AddAIContentType_WithBaseType_DerivedToolCallContent()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public static void AddAIContentType_LeafContent_RegistersInChain(bool useGenericOverload)
     {
         JsonSerializerOptions options = new()
         {
             TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
-        options.AddAIContentType<DerivedToolCallContent>(typeof(ToolCallContent), "derivedToolCall");
+        if (useGenericOverload)
+        {
+            options.AddAIContentType<LeafContent>("leaf");
+        }
+        else
+        {
+            options.AddAIContentType(typeof(LeafContent), "leaf");
+        }
 
-        ToolCallContent c = new DerivedToolCallContent { CustomValue = 42 };
-        string json = JsonSerializer.Serialize(c, options);
-        Assert.Contains("\"$type\":\"derivedToolCall\"", json);
-        Assert.Contains("\"CustomValue\":42", json);
+        // Verify serialization/deserialization works when typed as DerivedAIContent.
+        DerivedAIContent dc = new LeafContent { DerivedValue = 1, LeafValue = 42 };
+        string json = JsonSerializer.Serialize(dc, options);
+        Assert.Contains("\"$type\":\"leaf\"", json);
+        Assert.Contains("\"DerivedValue\":1", json);
+        Assert.Contains("\"LeafValue\":42", json);
 
-        ToolCallContent? deserialized = JsonSerializer.Deserialize<ToolCallContent>(json, options);
-        Assert.IsType<DerivedToolCallContent>(deserialized);
+        LeafContent deserializedDc = Assert.IsType<LeafContent>(JsonSerializer.Deserialize<DerivedAIContent>(json, options));
+        Assert.Equal(1, deserializedDc.DerivedValue);
+        Assert.Equal(42, deserializedDc.LeafValue);
+
+        // Verify serialization/deserialization works when typed as AIContent.
+        AIContent ac = new LeafContent { DerivedValue = 2, LeafValue = 99 };
+        string json2 = JsonSerializer.Serialize(ac, options);
+        Assert.Contains("\"$type\":\"leaf\"", json2);
+        Assert.Contains("\"DerivedValue\":2", json2);
+        Assert.Contains("\"LeafValue\":99", json2);
+
+        LeafContent deserializedAc = Assert.IsType<LeafContent>(JsonSerializer.Deserialize<AIContent>(json2, options));
+        Assert.Equal(2, deserializedAc.DerivedValue);
+        Assert.Equal(99, deserializedAc.LeafValue);
     }
 
-    [Fact]
-    public static void AddAIContentType_WithBaseType_NonGeneric_DerivedToolCallContent()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public static void AddAIContentType_ChainWalksThroughBuiltInBaseTypes(bool useGenericOverload)
     {
+        // Verifies that the chain registration walks through built-in intermediate types.
+        // For DerivedToolCallContent : ToolCallContent : AIContent, a single call should
+        // register against both ToolCallContent (built-in) and AIContent (built-in), so that
+        // deserialization works regardless of which base type the variable is declared as.
         JsonSerializerOptions options = new()
         {
             TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
-        options.AddAIContentType(typeof(ToolCallContent), typeof(DerivedToolCallContent), "derivedToolCall");
+        if (useGenericOverload)
+        {
+            options.AddAIContentType<DerivedToolCallContent>("derivedToolCall");
+        }
+        else
+        {
+            options.AddAIContentType(typeof(DerivedToolCallContent), "derivedToolCall");
+        }
 
-        ToolCallContent c = new DerivedToolCallContent { CustomValue = 42 };
-        string json = JsonSerializer.Serialize(c, options);
+        // Verify roundtrip when typed as ToolCallContent (built-in intermediate base).
+        ToolCallContent tc = new DerivedToolCallContent { CustomValue = 42 };
+        string json = JsonSerializer.Serialize(tc, options);
         Assert.Contains("\"$type\":\"derivedToolCall\"", json);
         Assert.Contains("\"CustomValue\":42", json);
 
-        ToolCallContent? deserialized = JsonSerializer.Deserialize<ToolCallContent>(json, options);
-        Assert.IsType<DerivedToolCallContent>(deserialized);
-    }
+        DerivedToolCallContent deserializedTc = Assert.IsType<DerivedToolCallContent>(JsonSerializer.Deserialize<ToolCallContent>(json, options));
+        Assert.Equal(42, deserializedTc.CustomValue);
 
-    [Fact]
-    public static void AddAIContentType_WithBaseType_NullArguments_ThrowsArgumentNullException()
-    {
-        JsonSerializerOptions options = new();
-        Assert.Throws<ArgumentNullException>("options", () => ((JsonSerializerOptions)null!).AddAIContentType<DerivedToolCallContent>(typeof(ToolCallContent), "discriminator"));
-        Assert.Throws<ArgumentNullException>("options", () => ((JsonSerializerOptions)null!).AddAIContentType(typeof(ToolCallContent), typeof(DerivedToolCallContent), "discriminator"));
-        Assert.Throws<ArgumentNullException>("baseType", () => options.AddAIContentType<DerivedToolCallContent>(null!, "discriminator"));
-        Assert.Throws<ArgumentNullException>("baseType", () => options.AddAIContentType(null!, typeof(DerivedToolCallContent), "discriminator"));
-        Assert.Throws<ArgumentNullException>("typeDiscriminatorId", () => options.AddAIContentType<DerivedToolCallContent>(typeof(ToolCallContent), null!));
-        Assert.Throws<ArgumentNullException>("typeDiscriminatorId", () => options.AddAIContentType(typeof(ToolCallContent), typeof(DerivedToolCallContent), null!));
-        Assert.Throws<ArgumentNullException>("contentType", () => options.AddAIContentType(typeof(ToolCallContent), null!, "discriminator"));
-    }
+        // Verify roundtrip when typed as AIContent (root base).
+        AIContent ac = new DerivedToolCallContent { CustomValue = 99 };
+        string json2 = JsonSerializer.Serialize(ac, options);
+        Assert.Contains("\"$type\":\"derivedToolCall\"", json2);
+        Assert.Contains("\"CustomValue\":99", json2);
 
-    [Fact]
-    public static void AddAIContentType_WithBaseType_NonAIContent_ThrowsArgumentException()
-    {
-        JsonSerializerOptions options = new();
-        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(AIContent), typeof(int), "discriminator"));
-        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(AIContent), typeof(object), "discriminator"));
-    }
-
-    [Fact]
-    public static void AddAIContentType_WithBaseType_IncompatibleBaseType_ThrowsArgumentException()
-    {
-        JsonSerializerOptions options = new();
-
-        // DerivedAIContent does not derive from ToolCallContent
-        Assert.Throws<ArgumentException>("baseType", () => options.AddAIContentType<DerivedAIContent>(typeof(ToolCallContent), "discriminator"));
-        Assert.Throws<ArgumentException>("baseType", () => options.AddAIContentType(typeof(ToolCallContent), typeof(DerivedAIContent), "discriminator"));
-    }
-
-    [Fact]
-    public static void AddAIContentType_WithBaseType_BuiltInAIContent_ThrowsArgumentException()
-    {
-        JsonSerializerOptions options = new();
-        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(AIContent), typeof(TextContent), "discriminator"));
+        DerivedToolCallContent deserializedAc = Assert.IsType<DerivedToolCallContent>(JsonSerializer.Deserialize<AIContent>(json2, options));
+        Assert.Equal(99, deserializedAc.CustomValue);
     }
 
     [Fact]
@@ -1746,6 +1752,11 @@ public static partial class AIJsonUtilitiesTests
         }
     }
 
+    private class LeafContent : DerivedAIContent
+    {
+        public int LeafValue { get; set; }
+    }
+
     private class DerivedAIContent : AIContent
     {
         public int DerivedValue { get; set; }
@@ -1765,6 +1776,7 @@ public static partial class AIJsonUtilitiesTests
     [JsonSerializable(typeof(CreateJsonSchema_IncorporatesTypesAndAnnotations_Type))]
     [JsonSerializable(typeof(DerivedAIContent))]
     [JsonSerializable(typeof(DerivedToolCallContent))]
+    [JsonSerializable(typeof(LeafContent))]
     [JsonSerializable(typeof(MyPoco))]
     [JsonSerializable(typeof(MyEnumValue?))]
     [JsonSerializable(typeof(object[]))]

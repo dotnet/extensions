@@ -654,15 +654,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static void Microsoft.Extensions.AI.AIJsonUtilities.AddAIContentType<TContent>(this System.Text.Json.JsonSerializerOptions options, System.Type baseType, string typeDiscriminatorId);",
-          "Stage": "Stable"
-        },
-        {
           "Member": "static void Microsoft.Extensions.AI.AIJsonUtilities.AddAIContentType(this System.Text.Json.JsonSerializerOptions options, System.Type contentType, string typeDiscriminatorId);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static void Microsoft.Extensions.AI.AIJsonUtilities.AddAIContentType(this System.Text.Json.JsonSerializerOptions options, System.Type baseType, System.Type contentType, string typeDiscriminatorId);",
           "Stage": "Stable"
         },
         {
