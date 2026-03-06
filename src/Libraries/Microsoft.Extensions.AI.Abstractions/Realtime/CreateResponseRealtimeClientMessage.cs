@@ -17,12 +17,12 @@ namespace Microsoft.Extensions.AI;
 /// for this response only.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public class RealtimeClientCreateResponseMessage : RealtimeClientMessage
+public class CreateResponseRealtimeClientMessage : RealtimeClientMessage
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RealtimeClientCreateResponseMessage"/> class.
+    /// Initializes a new instance of the <see cref="CreateResponseRealtimeClientMessage"/> class.
     /// </summary>
-    public RealtimeClientCreateResponseMessage()
+    public CreateResponseRealtimeClientMessage()
     {
     }
 

@@ -13,16 +13,16 @@ namespace Microsoft.Extensions.AI;
 /// Used when having InputAudioTranscriptionCompleted, InputAudioTranscriptionDelta, or InputAudioTranscriptionFailed response types.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public class RealtimeServerInputAudioTranscriptionMessage : RealtimeServerMessage
+public class InputAudioTranscriptionRealtimeServerMessage : RealtimeServerMessage
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RealtimeServerInputAudioTranscriptionMessage"/> class.
+    /// Initializes a new instance of the <see cref="InputAudioTranscriptionRealtimeServerMessage"/> class.
     /// </summary>
     /// <param name="type">The type of the real-time server response.</param>
     /// <remarks>
     /// The <paramref name="type"/> parameter should be InputAudioTranscriptionCompleted, InputAudioTranscriptionDelta, or InputAudioTranscriptionFailed.
     /// </remarks>
-    public RealtimeServerInputAudioTranscriptionMessage(RealtimeServerMessageType type)
+    public InputAudioTranscriptionRealtimeServerMessage(RealtimeServerMessageType type)
     {
         Type = type;
     }

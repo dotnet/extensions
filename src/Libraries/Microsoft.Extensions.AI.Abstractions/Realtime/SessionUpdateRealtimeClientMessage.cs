@@ -22,13 +22,13 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public class RealtimeClientSessionUpdateMessage : RealtimeClientMessage
+public class SessionUpdateRealtimeClientMessage : RealtimeClientMessage
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RealtimeClientSessionUpdateMessage"/> class.
+    /// Initializes a new instance of the <see cref="SessionUpdateRealtimeClientMessage"/> class.
     /// </summary>
     /// <param name="options">The session options to apply.</param>
-    public RealtimeClientSessionUpdateMessage(RealtimeSessionOptions options)
+    public SessionUpdateRealtimeClientMessage(RealtimeSessionOptions options)
     {
         Options = Throw.IfNull(options);
     }

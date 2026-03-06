@@ -120,23 +120,23 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         {
             switch (message)
             {
-                case RealtimeClientSessionUpdateMessage sessionUpdate:
+                case SessionUpdateRealtimeClientMessage sessionUpdate:
                     await UpdateSessionAsync(sessionUpdate.Options, cancellationToken).ConfigureAwait(false);
                     break;
 
-                case RealtimeClientCreateResponseMessage responseCreate:
+                case CreateResponseRealtimeClientMessage responseCreate:
                     await SendResponseCreateAsync(responseCreate, cancellationToken).ConfigureAwait(false);
                     break;
 
-                case RealtimeClientCreateConversationItemMessage itemCreate:
+                case CreateConversationItemRealtimeClientMessage itemCreate:
                     await SendConversationItemCreateAsync(itemCreate, cancellationToken).ConfigureAwait(false);
                     break;
 
-                case RealtimeClientInputAudioBufferAppendMessage audioAppend:
+                case InputAudioBufferAppendRealtimeClientMessage audioAppend:
                     await SendInputAudioAppendAsync(audioAppend, cancellationToken).ConfigureAwait(false);
                     break;
 
-                case RealtimeClientInputAudioBufferCommitMessage:
+                case InputAudioBufferCommitRealtimeClientMessage:
                     if (message.MessageId is not null)
                     {
                         var cmd = new Sdk.RealtimeClientCommandInputAudioBufferCommit { EventId = message.MessageId };
@@ -206,7 +206,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
 
     #region Send Helpers (MEAI → SDK)
 
-    private async Task SendResponseCreateAsync(RealtimeClientCreateResponseMessage responseCreate, CancellationToken cancellationToken)
+    private async Task SendResponseCreateAsync(CreateResponseRealtimeClientMessage responseCreate, CancellationToken cancellationToken)
     {
         var responseOptions = new Sdk.RealtimeResponseOptions();
 
@@ -305,7 +305,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         }
     }
 
-    private async Task SendConversationItemCreateAsync(RealtimeClientCreateConversationItemMessage itemCreate, CancellationToken cancellationToken)
+    private async Task SendConversationItemCreateAsync(CreateConversationItemRealtimeClientMessage itemCreate, CancellationToken cancellationToken)
     {
         if (itemCreate.Item is null)
         {
@@ -333,7 +333,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         }
     }
 
-    private async Task SendInputAudioAppendAsync(RealtimeClientInputAudioBufferAppendMessage audioAppend, CancellationToken cancellationToken)
+    private async Task SendInputAudioAppendAsync(InputAudioBufferAppendRealtimeClientMessage audioAppend, CancellationToken cancellationToken)
     {
         if (audioAppend.Content is null || !audioAppend.Content.HasTopLevelMediaType("audio"))
         {
@@ -718,7 +718,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         Sdk.RealtimeServerUpdateResponseDone e => MapResponseCreatedOrDone(e.EventId, e.Response, RealtimeServerMessageType.ResponseDone, e),
         Sdk.RealtimeServerUpdateResponseOutputItemAdded e => MapResponseOutputItem(e.EventId, e.ResponseId, e.OutputIndex, e.Item, RealtimeServerMessageType.ResponseOutputItemAdded, e),
         Sdk.RealtimeServerUpdateResponseOutputItemDone e => MapResponseOutputItem(e.EventId, e.ResponseId, e.OutputIndex, e.Item, RealtimeServerMessageType.ResponseOutputItemDone, e),
-        Sdk.RealtimeServerUpdateResponseOutputAudioDelta e => new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputAudioDelta)
+        Sdk.RealtimeServerUpdateResponseOutputAudioDelta e => new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputAudioDelta)
         {
             MessageId = e.EventId,
             ResponseId = e.ResponseId,
@@ -728,7 +728,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             Audio = e.Delta is not null ? Convert.ToBase64String(e.Delta.ToArray()) : null,
             RawRepresentation = e,
         },
-        Sdk.RealtimeServerUpdateResponseOutputAudioDone e => new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputAudioDone)
+        Sdk.RealtimeServerUpdateResponseOutputAudioDone e => new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputAudioDone)
         {
             MessageId = e.EventId,
             ResponseId = e.ResponseId,
@@ -737,7 +737,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             ContentIndex = e.ContentIndex,
             RawRepresentation = e,
         },
-        Sdk.RealtimeServerUpdateResponseOutputAudioTranscriptDelta e => new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputAudioTranscriptionDelta)
+        Sdk.RealtimeServerUpdateResponseOutputAudioTranscriptDelta e => new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputAudioTranscriptionDelta)
         {
             MessageId = e.EventId,
             ResponseId = e.ResponseId,
@@ -747,7 +747,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             Text = e.Delta,
             RawRepresentation = e,
         },
-        Sdk.RealtimeServerUpdateResponseOutputAudioTranscriptDone e => new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputAudioTranscriptionDone)
+        Sdk.RealtimeServerUpdateResponseOutputAudioTranscriptDone e => new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputAudioTranscriptionDone)
         {
             MessageId = e.EventId,
             ResponseId = e.ResponseId,
@@ -775,9 +775,9 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         },
     };
 
-    private static RealtimeServerErrorMessage MapError(Sdk.RealtimeServerUpdateError e)
+    private static ErrorRealtimeServerMessage MapError(Sdk.RealtimeServerUpdateError e)
     {
-        var msg = new RealtimeServerErrorMessage
+        var msg = new ErrorRealtimeServerMessage
         {
             MessageId = e.EventId,
             Error = new ErrorContent(e.Error?.Message),
@@ -876,10 +876,10 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         };
     }
 
-    private static RealtimeServerResponseCreatedMessage MapResponseCreatedOrDone(
+    private static ResponseCreatedRealtimeServerMessage MapResponseCreatedOrDone(
         string? eventId, Sdk.RealtimeResponse? response, RealtimeServerMessageType type, Sdk.RealtimeServerUpdate update)
     {
-        var msg = new RealtimeServerResponseCreatedMessage(type)
+        var msg = new ResponseCreatedRealtimeServerMessage(type)
         {
             MessageId = eventId,
             RawRepresentation = update,
@@ -953,11 +953,11 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         return msg;
     }
 
-    private static RealtimeServerResponseOutputItemMessage MapResponseOutputItem(
+    private static ResponseOutputItemRealtimeServerMessage MapResponseOutputItem(
         string? eventId, string? responseId, int outputIndex, Sdk.RealtimeItem? item,
         RealtimeServerMessageType type, Sdk.RealtimeServerUpdate update)
     {
-        return new RealtimeServerResponseOutputItemMessage(type)
+        return new ResponseOutputItemRealtimeServerMessage(type)
         {
             MessageId = eventId,
             ResponseId = responseId,
@@ -967,20 +967,20 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         };
     }
 
-    private static RealtimeServerResponseOutputItemMessage MapConversationItem(
+    private static ResponseOutputItemRealtimeServerMessage MapConversationItem(
         string? eventId, Sdk.RealtimeItem? item, RealtimeServerMessageType type, Sdk.RealtimeServerUpdate update)
     {
         var mapped = item is not null ? MapRealtimeItem(item) : null;
         if (mapped is null)
         {
-            return new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.RawContentOnly)
+            return new ResponseOutputItemRealtimeServerMessage(RealtimeServerMessageType.RawContentOnly)
             {
                 MessageId = eventId,
                 RawRepresentation = update,
             };
         }
 
-        return new RealtimeServerResponseOutputItemMessage(type)
+        return new ResponseOutputItemRealtimeServerMessage(type)
         {
             MessageId = eventId,
             Item = mapped,
@@ -988,9 +988,9 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         };
     }
 
-    private static RealtimeServerInputAudioTranscriptionMessage MapInputTranscriptionDelta(Sdk.RealtimeServerUpdateConversationItemInputAudioTranscriptionDelta e)
+    private static InputAudioTranscriptionRealtimeServerMessage MapInputTranscriptionDelta(Sdk.RealtimeServerUpdateConversationItemInputAudioTranscriptionDelta e)
     {
-        return new RealtimeServerInputAudioTranscriptionMessage(RealtimeServerMessageType.InputAudioTranscriptionDelta)
+        return new InputAudioTranscriptionRealtimeServerMessage(RealtimeServerMessageType.InputAudioTranscriptionDelta)
         {
             MessageId = e.EventId,
             ItemId = e.ItemId,
@@ -1000,9 +1000,9 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         };
     }
 
-    private static RealtimeServerInputAudioTranscriptionMessage MapInputTranscriptionCompleted(Sdk.RealtimeServerUpdateConversationItemInputAudioTranscriptionCompleted e)
+    private static InputAudioTranscriptionRealtimeServerMessage MapInputTranscriptionCompleted(Sdk.RealtimeServerUpdateConversationItemInputAudioTranscriptionCompleted e)
     {
-        return new RealtimeServerInputAudioTranscriptionMessage(RealtimeServerMessageType.InputAudioTranscriptionCompleted)
+        return new InputAudioTranscriptionRealtimeServerMessage(RealtimeServerMessageType.InputAudioTranscriptionCompleted)
         {
             MessageId = e.EventId,
             ItemId = e.ItemId,
@@ -1012,9 +1012,9 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         };
     }
 
-    private static RealtimeServerInputAudioTranscriptionMessage MapInputTranscriptionFailed(Sdk.RealtimeServerUpdateConversationItemInputAudioTranscriptionFailed e)
+    private static InputAudioTranscriptionRealtimeServerMessage MapInputTranscriptionFailed(Sdk.RealtimeServerUpdateConversationItemInputAudioTranscriptionFailed e)
     {
-        var msg = new RealtimeServerInputAudioTranscriptionMessage(RealtimeServerMessageType.InputAudioTranscriptionFailed)
+        var msg = new InputAudioTranscriptionRealtimeServerMessage(RealtimeServerMessageType.InputAudioTranscriptionFailed)
         {
             MessageId = e.EventId,
             ItemId = e.ItemId,
@@ -1034,10 +1034,10 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         return msg;
     }
 
-    private static RealtimeServerResponseOutputItemMessage MapMcpCallEvent(
+    private static ResponseOutputItemRealtimeServerMessage MapMcpCallEvent(
         string? eventId, string? itemId, int outputIndex, RealtimeServerMessageType type, Sdk.RealtimeServerUpdate update)
     {
-        return new RealtimeServerResponseOutputItemMessage(type)
+        return new ResponseOutputItemRealtimeServerMessage(type)
         {
             MessageId = eventId,
             Item = itemId is not null ? new RealtimeConversationItem([], itemId) : null,
@@ -1046,10 +1046,10 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         };
     }
 
-    private static RealtimeServerResponseOutputItemMessage MapMcpListToolsEvent(
+    private static ResponseOutputItemRealtimeServerMessage MapMcpListToolsEvent(
         string? eventId, string? itemId, RealtimeServerMessageType type, Sdk.RealtimeServerUpdate update)
     {
-        return new RealtimeServerResponseOutputItemMessage(type)
+        return new ResponseOutputItemRealtimeServerMessage(type)
         {
             MessageId = eventId,
             Item = itemId is not null ? new RealtimeConversationItem([], itemId) : null,

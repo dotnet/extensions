@@ -21,14 +21,14 @@ using FunctionInvocationStatus = Microsoft.Extensions.AI.FunctionInvokingChatCli
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// A delegating realtime session that invokes functions defined on <see cref="RealtimeClientCreateResponseMessage"/>.
+/// A delegating realtime session that invokes functions defined on <see cref="CreateResponseRealtimeClientMessage"/>.
 /// Include this in a realtime session pipeline to resolve function calls automatically.
 /// </summary>
 /// <remarks>
 /// <para>
 /// When this session receives a <see cref="FunctionCallContent"/> in a realtime server message from its inner
 /// <see cref="IRealtimeClientSession"/>, it responds by invoking the corresponding <see cref="AIFunction"/> defined
-/// in <see cref="RealtimeClientCreateResponseMessage.Tools"/> (or in <see cref="AdditionalTools"/>), producing a <see cref="FunctionResultContent"/>
+/// in <see cref="CreateResponseRealtimeClientMessage.Tools"/> (or in <see cref="AdditionalTools"/>), producing a <see cref="FunctionResultContent"/>
 /// that it sends back to the inner session. This loop is repeated until there are no more function calls to make, or until
 /// another stop condition is met, such as hitting <see cref="MaximumIterationsPerRequest"/>.
 /// </para>
@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// <para>
 /// A <see cref="FunctionInvokingRealtimeClientSession"/> instance is thread-safe for concurrent use so long as the
-/// <see cref="AIFunction"/> instances employed as part of the supplied <see cref="RealtimeClientCreateResponseMessage"/> are also safe.
+/// <see cref="AIFunction"/> instances employed as part of the supplied <see cref="CreateResponseRealtimeClientMessage"/> are also safe.
 /// The <see cref="AllowConcurrentInvocation"/> property can be used to control whether multiple function invocation
 /// requests as part of the same request are invocable concurrently, but even with that set to <see langword="false"/>
 /// (the default), multiple concurrent requests to this same instance and using the same tools could result in those
@@ -155,7 +155,7 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
         {
             // Check if this message contains function calls
             bool hasFunctionCalls = false;
-            if (message is RealtimeServerResponseOutputItemMessage responseOutputItemMessage && responseOutputItemMessage.Type == RealtimeServerMessageType.ResponseOutputItemDone)
+            if (message is ResponseOutputItemRealtimeServerMessage responseOutputItemMessage && responseOutputItemMessage.Type == RealtimeServerMessageType.ResponseOutputItemDone)
             {
                 // Extract function calls from the message
                 functionCallContents ??= [];
@@ -203,7 +203,7 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
     }
 
     /// <summary>Extracts function calls from a realtime server message.</summary>
-    private static bool ExtractFunctionCalls(RealtimeServerResponseOutputItemMessage message, List<FunctionCallContent> functionCallContents)
+    private static bool ExtractFunctionCalls(ResponseOutputItemRealtimeServerMessage message, List<FunctionCallContent> functionCallContents)
     {
         if (message.Item is null)
         {
@@ -349,14 +349,14 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
             var contentItem = new RealtimeConversationItem([functionResultContent]);
 
             // Create the conversation item create message
-            var message = new RealtimeClientCreateConversationItemMessage(contentItem);
+            var message = new CreateConversationItemRealtimeClientMessage(contentItem);
             messages.Add(message);
         }
 
         // Add a response create message so the model responds to the function results.
         // Do not hardcode output modalities; let the session defaults apply so audio sessions
         // continue to work correctly.
-        messages.Add(new RealtimeClientCreateResponseMessage());
+        messages.Add(new CreateResponseRealtimeClientMessage());
 
         return messages;
     }

@@ -10,10 +10,10 @@ namespace Microsoft.Extensions.AI;
 /// Represents a real-time server message for output text and audio.
 /// </summary>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public class RealtimeServerOutputTextAudioMessage : RealtimeServerMessage
+public class OutputTextAudioRealtimeServerMessage : RealtimeServerMessage
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RealtimeServerOutputTextAudioMessage"/> class for handling output text delta responses.
+    /// Initializes a new instance of the <see cref="OutputTextAudioRealtimeServerMessage"/> class for handling output text delta responses.
     /// </summary>
     /// <param name="type">The type of the real-time server response.</param>
     /// <remarks>
@@ -21,7 +21,7 @@ public class RealtimeServerOutputTextAudioMessage : RealtimeServerMessage
     /// <see cref="RealtimeServerMessageType.OutputAudioTranscriptionDelta"/>, <see cref="RealtimeServerMessageType.OutputAudioTranscriptionDone"/>,
     /// <see cref="RealtimeServerMessageType.OutputAudioDelta"/>, or <see cref="RealtimeServerMessageType.OutputAudioDone"/>.
     /// </remarks>
-    public RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType type)
+    public OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType type)
     {
         Type = type;
     }

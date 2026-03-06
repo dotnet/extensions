@@ -13,14 +13,14 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// A delegating realtime client that invokes functions defined on <see cref="RealtimeClientCreateResponseMessage"/>.
+/// A delegating realtime client that invokes functions defined on <see cref="CreateResponseRealtimeClientMessage"/>.
 /// Include this in a realtime client pipeline to resolve function calls automatically.
 /// </summary>
 /// <remarks>
 /// <para>
 /// When sessions created by this client receive a <see cref="FunctionCallContent"/> in a realtime server message from the inner
 /// <see cref="IRealtimeClientSession"/>, they respond by invoking the corresponding <see cref="AIFunction"/> defined
-/// in <see cref="RealtimeClientCreateResponseMessage.Tools"/> (or in <see cref="AdditionalTools"/>), producing a <see cref="FunctionResultContent"/>
+/// in <see cref="CreateResponseRealtimeClientMessage.Tools"/> (or in <see cref="AdditionalTools"/>), producing a <see cref="FunctionResultContent"/>
 /// that is sent back to the inner session. This loop is repeated until there are no more function calls to make, or until
 /// another stop condition is met, such as hitting <see cref="MaximumIterationsPerRequest"/>.
 /// </para>

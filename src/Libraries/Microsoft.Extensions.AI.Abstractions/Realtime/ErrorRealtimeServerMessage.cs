@@ -13,12 +13,12 @@ namespace Microsoft.Extensions.AI;
 /// Used with the <see cref="RealtimeServerMessageType.Error"/>.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public class RealtimeServerErrorMessage : RealtimeServerMessage
+public class ErrorRealtimeServerMessage : RealtimeServerMessage
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RealtimeServerErrorMessage"/> class.
+    /// Initializes a new instance of the <see cref="ErrorRealtimeServerMessage"/> class.
     /// </summary>
-    public RealtimeServerErrorMessage()
+    public ErrorRealtimeServerMessage()
     {
         Type = RealtimeServerMessageType.Error;
     }

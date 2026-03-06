@@ -51,7 +51,7 @@ public class OpenAIRealtimeClientSessionTests
     [Fact]
     public void SessionUpdateMessage_NullOptions_Throws()
     {
-        Assert.Throws<ArgumentNullException>("options", () => new RealtimeClientSessionUpdateMessage(null!));
+        Assert.Throws<ArgumentNullException>("options", () => new SessionUpdateRealtimeClientMessage(null!));
     }
 
     [Fact]

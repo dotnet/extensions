@@ -52,11 +52,11 @@ public class OpenTelemetryRealtimeClientTests
             _ = cancellationToken;
 
             yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.ResponseCreated, MessageId = "evt_001" };
-            yield return new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDelta) { OutputIndex = 0, Text = "Hello" };
-            yield return new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDelta) { OutputIndex = 0, Text = " there!" };
-            yield return new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDone) { OutputIndex = 0, Text = "Hello there!" };
+            yield return new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputTextDelta) { OutputIndex = 0, Text = "Hello" };
+            yield return new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputTextDelta) { OutputIndex = 0, Text = " there!" };
+            yield return new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputTextDone) { OutputIndex = 0, Text = "Hello there!" };
 
-            yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone)
+            yield return new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone)
             {
                 ResponseId = "resp_12345",
                 Status = "completed",
@@ -243,7 +243,7 @@ public class OpenTelemetryRealtimeClientTests
             await Task.Yield();
             _ = cancellationToken;
 
-            yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone)
+            yield return new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone)
             {
                 ResponseId = "resp_error",
                 Status = "failed",
@@ -331,7 +331,7 @@ public class OpenTelemetryRealtimeClientTests
     [Fact]
     public void SessionUpdateMessage_NullOptions_Throws()
     {
-        Assert.Throws<ArgumentNullException>("options", () => new RealtimeClientSessionUpdateMessage(null!));
+        Assert.Throws<ArgumentNullException>("options", () => new SessionUpdateRealtimeClientMessage(null!));
     }
 
     [Fact]
@@ -385,11 +385,11 @@ public class OpenTelemetryRealtimeClientTests
             await Task.Yield();
             _ = cancellationToken;
 
-            yield return new RealtimeServerInputAudioTranscriptionMessage(RealtimeServerMessageType.InputAudioTranscriptionCompleted)
+            yield return new InputAudioTranscriptionRealtimeServerMessage(RealtimeServerMessageType.InputAudioTranscriptionCompleted)
             {
                 Transcription = "Hello world",
             };
-            yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
+            yield return new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone);
         }
 
         using var innerClient = new TestRealtimeClient(innerSession);
@@ -721,7 +721,7 @@ public class OpenTelemetryRealtimeClientTests
         await Task.Yield();
         _ = cancellationToken;
 
-        yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
+        yield return new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone);
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -729,9 +729,9 @@ public class OpenTelemetryRealtimeClientTests
 #pragma warning restore IDE0060
     {
         await Task.Yield();
-        yield return new RealtimeClientInputAudioBufferAppendMessage(new DataContent(new byte[] { 1, 2, 3 }, "audio/pcm"));
-        yield return new RealtimeClientInputAudioBufferCommitMessage();
-        yield return new RealtimeClientCreateResponseMessage();
+        yield return new InputAudioBufferAppendRealtimeClientMessage(new DataContent(new byte[] { 1, 2, 3 }, "audio/pcm"));
+        yield return new InputAudioBufferCommitRealtimeClientMessage();
+        yield return new CreateResponseRealtimeClientMessage();
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -740,8 +740,8 @@ public class OpenTelemetryRealtimeClientTests
     {
         await Task.Yield();
         var contentItem = new RealtimeConversationItem([new FunctionResultContent("call_1", "result_value")], role: ChatRole.Tool);
-        yield return new RealtimeClientCreateConversationItemMessage(contentItem);
-        yield return new RealtimeClientCreateResponseMessage();
+        yield return new CreateConversationItemRealtimeClientMessage(contentItem);
+        yield return new CreateResponseRealtimeClientMessage();
     }
 
     private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithToolCallAsync([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -749,16 +749,16 @@ public class OpenTelemetryRealtimeClientTests
         await Task.Yield();
         _ = cancellationToken;
 
-        // Yield a function call item from the server using RealtimeServerResponseOutputItemMessage
+        // Yield a function call item from the server using ResponseOutputItemRealtimeServerMessage
         var contentItem = new RealtimeConversationItem(
             [new FunctionCallContent("call_123", "search", new Dictionary<string, object?> { ["query"] = "test" })],
             role: ChatRole.Assistant);
-        yield return new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone)
+        yield return new ResponseOutputItemRealtimeServerMessage(RealtimeServerMessageType.ResponseOutputItemDone)
         {
             Item = contentItem,
         };
 
-        yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
+        yield return new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone);
     }
 
     [Fact]
@@ -1142,7 +1142,7 @@ public class OpenTelemetryRealtimeClientTests
 #pragma warning restore IDE0060
     {
         await Task.Yield();
-        yield return new RealtimeClientCreateResponseMessage { Instructions = "Be very helpful" };
+        yield return new CreateResponseRealtimeClientMessage { Instructions = "Be very helpful" };
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -1151,7 +1151,7 @@ public class OpenTelemetryRealtimeClientTests
     {
         await Task.Yield();
         var item = new RealtimeConversationItem([new TextContent("Hello from client")], role: ChatRole.User);
-        yield return new RealtimeClientCreateResponseMessage { Items = [item] };
+        yield return new CreateResponseRealtimeClientMessage { Items = [item] };
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -1160,8 +1160,8 @@ public class OpenTelemetryRealtimeClientTests
     {
         await Task.Yield();
         var item = new RealtimeConversationItem([new TextContent("User text message")], role: ChatRole.User);
-        yield return new RealtimeClientCreateConversationItemMessage(item);
-        yield return new RealtimeClientCreateResponseMessage();
+        yield return new CreateConversationItemRealtimeClientMessage(item);
+        yield return new CreateResponseRealtimeClientMessage();
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -1171,8 +1171,8 @@ public class OpenTelemetryRealtimeClientTests
         await Task.Yield();
         var imageData = new DataContent(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png");
         var item = new RealtimeConversationItem([imageData], role: ChatRole.User);
-        yield return new RealtimeClientCreateConversationItemMessage(item);
-        yield return new RealtimeClientCreateResponseMessage();
+        yield return new CreateConversationItemRealtimeClientMessage(item);
+        yield return new CreateResponseRealtimeClientMessage();
     }
 
     private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithTextOutputAsync([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -1180,11 +1180,11 @@ public class OpenTelemetryRealtimeClientTests
         await Task.Yield();
         _ = cancellationToken;
 
-        yield return new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDone)
+        yield return new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputTextDone)
         {
             Text = "Hello from server",
         };
-        yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
+        yield return new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone);
     }
 
     private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithTranscriptionAsync([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -1192,11 +1192,11 @@ public class OpenTelemetryRealtimeClientTests
         await Task.Yield();
         _ = cancellationToken;
 
-        yield return new RealtimeServerInputAudioTranscriptionMessage(RealtimeServerMessageType.InputAudioTranscriptionCompleted)
+        yield return new InputAudioTranscriptionRealtimeServerMessage(RealtimeServerMessageType.InputAudioTranscriptionCompleted)
         {
             Transcription = "Transcribed audio content",
         };
-        yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
+        yield return new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone);
     }
 
     private static async IAsyncEnumerable<RealtimeServerMessage> CallbackWithServerErrorAsync([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -1204,11 +1204,11 @@ public class OpenTelemetryRealtimeClientTests
         await Task.Yield();
         _ = cancellationToken;
 
-        yield return new RealtimeServerErrorMessage
+        yield return new ErrorRealtimeServerMessage
         {
             Error = new ErrorContent("Something went wrong on server"),
         };
-        yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
+        yield return new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone);
     }
 
     private static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();

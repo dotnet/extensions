@@ -80,7 +80,7 @@ public class LoggingRealtimeClientTests
             .Build(services);
         await using var session = await client.CreateSessionAsync();
 
-        await session.SendAsync(new RealtimeClientSessionUpdateMessage(new RealtimeSessionOptions { Model = "test-model", Instructions = "Be helpful" }));
+        await session.SendAsync(new SessionUpdateRealtimeClientMessage(new RealtimeSessionOptions { Model = "test-model", Instructions = "Be helpful" }));
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
@@ -226,7 +226,7 @@ public class LoggingRealtimeClientTests
         await using var session = await client.CreateSessionAsync();
 
         cts.Cancel();
-        await Assert.ThrowsAsync<OperationCanceledException>(() => session.SendAsync(new RealtimeClientSessionUpdateMessage(new RealtimeSessionOptions()), cts.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => session.SendAsync(new SessionUpdateRealtimeClientMessage(new RealtimeSessionOptions()), cts.Token));
 
         var logs = collector.GetSnapshot();
         Assert.Collection(logs,
@@ -255,7 +255,7 @@ public class LoggingRealtimeClientTests
             .Build();
         await using var session = await client.CreateSessionAsync();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => session.SendAsync(new RealtimeClientSessionUpdateMessage(new RealtimeSessionOptions())));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => session.SendAsync(new SessionUpdateRealtimeClientMessage(new RealtimeSessionOptions())));
 
         var logs = collector.GetSnapshot();
         Assert.Collection(logs,

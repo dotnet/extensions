@@ -39,7 +39,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void ErrorMessage_Constructor_SetsType()
     {
-        var message = new RealtimeServerErrorMessage();
+        var message = new ErrorRealtimeServerMessage();
 
         Assert.Equal(RealtimeServerMessageType.Error, message.Type);
     }
@@ -47,7 +47,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void ErrorMessage_DefaultProperties()
     {
-        var message = new RealtimeServerErrorMessage();
+        var message = new ErrorRealtimeServerMessage();
 
         Assert.Null(message.Error);
         Assert.Null(message.OriginatingMessageId);
@@ -57,7 +57,7 @@ public class RealtimeServerMessageTests
     public void ErrorMessage_Properties_Roundtrip()
     {
         var error = new ErrorContent("Test error") { Details = "temperature" };
-        var message = new RealtimeServerErrorMessage
+        var message = new ErrorRealtimeServerMessage
         {
             Error = error,
             OriginatingMessageId = "evt_bad",
@@ -74,7 +74,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void InputAudioTranscriptionMessage_Constructor_SetsType()
     {
-        var message = new RealtimeServerInputAudioTranscriptionMessage(
+        var message = new InputAudioTranscriptionRealtimeServerMessage(
             RealtimeServerMessageType.InputAudioTranscriptionCompleted);
 
         Assert.Equal(RealtimeServerMessageType.InputAudioTranscriptionCompleted, message.Type);
@@ -83,7 +83,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void InputAudioTranscriptionMessage_DefaultProperties()
     {
-        var message = new RealtimeServerInputAudioTranscriptionMessage(
+        var message = new InputAudioTranscriptionRealtimeServerMessage(
             RealtimeServerMessageType.InputAudioTranscriptionDelta);
 
         Assert.Null(message.ContentIndex);
@@ -99,7 +99,7 @@ public class RealtimeServerMessageTests
         var usage = new UsageDetails { InputTokenCount = 10, OutputTokenCount = 20 };
         var error = new ErrorContent("transcription error");
 
-        var message = new RealtimeServerInputAudioTranscriptionMessage(
+        var message = new InputAudioTranscriptionRealtimeServerMessage(
             RealtimeServerMessageType.InputAudioTranscriptionCompleted)
         {
             ContentIndex = 0,
@@ -120,7 +120,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void OutputTextAudioMessage_Constructor_SetsType()
     {
-        var message = new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDelta);
+        var message = new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputTextDelta);
 
         Assert.Equal(RealtimeServerMessageType.OutputTextDelta, message.Type);
     }
@@ -128,7 +128,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void OutputTextAudioMessage_DefaultProperties()
     {
-        var message = new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDelta);
+        var message = new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputTextDelta);
 
         Assert.Null(message.ContentIndex);
         Assert.Null(message.Text);
@@ -141,7 +141,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void OutputTextAudioMessage_Properties_Roundtrip()
     {
-        var message = new RealtimeServerOutputTextAudioMessage(RealtimeServerMessageType.OutputTextDone)
+        var message = new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputTextDone)
         {
             ContentIndex = 0,
             Text = "Hello there!",
@@ -162,7 +162,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void ResponseCreatedMessage_Constructor_SetsType()
     {
-        var message = new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseCreated);
+        var message = new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseCreated);
 
         Assert.Equal(RealtimeServerMessageType.ResponseCreated, message.Type);
     }
@@ -170,7 +170,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void ResponseCreatedMessage_DefaultProperties()
     {
-        var message = new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
+        var message = new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone);
 
         Assert.Null(message.OutputAudioOptions);
         Assert.Null(message.OutputVoice);
@@ -197,7 +197,7 @@ public class RealtimeServerMessageTests
         var error = new ErrorContent("response error");
         var usage = new UsageDetails { InputTokenCount = 15, OutputTokenCount = 25, TotalTokenCount = 40 };
 
-        var message = new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone)
+        var message = new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone)
         {
             OutputAudioOptions = audioFormat,
             OutputVoice = "alloy",
@@ -227,7 +227,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void ResponseOutputItemMessage_Constructor_SetsType()
     {
-        var message = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone);
+        var message = new ResponseOutputItemRealtimeServerMessage(RealtimeServerMessageType.ResponseOutputItemDone);
 
         Assert.Equal(RealtimeServerMessageType.ResponseOutputItemDone, message.Type);
     }
@@ -235,7 +235,7 @@ public class RealtimeServerMessageTests
     [Fact]
     public void ResponseOutputItemMessage_DefaultProperties()
     {
-        var message = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemAdded);
+        var message = new ResponseOutputItemRealtimeServerMessage(RealtimeServerMessageType.ResponseOutputItemAdded);
 
         Assert.Null(message.ResponseId);
         Assert.Null(message.OutputIndex);
@@ -247,7 +247,7 @@ public class RealtimeServerMessageTests
     {
         var item = new RealtimeConversationItem([new TextContent("output")], "item_out_1", ChatRole.Assistant);
 
-        var message = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone)
+        var message = new ResponseOutputItemRealtimeServerMessage(RealtimeServerMessageType.ResponseOutputItemDone)
         {
             ResponseId = "resp_1",
             OutputIndex = 0,

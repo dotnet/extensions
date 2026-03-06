@@ -77,7 +77,7 @@ public class RealtimeSessionOptions
     /// </summary>
     /// <remarks>
     /// The underlying <see cref="IRealtimeClientSession" /> implementation might have its own representation of options.
-    /// When a <see cref="RealtimeClientSessionUpdateMessage" /> is sent with a <see cref="RealtimeSessionOptions" />,
+    /// When a <see cref="SessionUpdateRealtimeClientMessage" /> is sent with a <see cref="RealtimeSessionOptions" />,
     /// that implementation might convert the provided options into its own representation in order to use it while
     /// performing the operation. For situations where a consumer knows which concrete <see cref="IRealtimeClientSession" />
     /// is being used and how it represents options, a new instance of that implementation-specific options type can be

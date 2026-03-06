@@ -11,15 +11,15 @@ namespace Microsoft.Extensions.AI;
 /// Represents a real-time message for appending audio buffer input.
 /// </summary>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public class RealtimeClientInputAudioBufferAppendMessage : RealtimeClientMessage
+public class InputAudioBufferAppendRealtimeClientMessage : RealtimeClientMessage
 {
     private DataContent _content;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RealtimeClientInputAudioBufferAppendMessage"/> class.
+    /// Initializes a new instance of the <see cref="InputAudioBufferAppendRealtimeClientMessage"/> class.
     /// </summary>
     /// <param name="audioContent">The data content containing the audio buffer data to append.</param>
-    public RealtimeClientInputAudioBufferAppendMessage(DataContent audioContent)
+    public InputAudioBufferAppendRealtimeClientMessage(DataContent audioContent)
     {
         _content = Throw.IfNull(audioContent);
     }

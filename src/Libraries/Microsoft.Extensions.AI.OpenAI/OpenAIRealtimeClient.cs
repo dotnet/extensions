@@ -63,7 +63,7 @@ public sealed class OpenAIRealtimeClient : IRealtimeClient
         {
             if (options is not null)
             {
-                await session.SendAsync(new RealtimeClientSessionUpdateMessage(options), cancellationToken).ConfigureAwait(false);
+                await session.SendAsync(new SessionUpdateRealtimeClientMessage(options), cancellationToken).ConfigureAwait(false);
             }
 
             return session;

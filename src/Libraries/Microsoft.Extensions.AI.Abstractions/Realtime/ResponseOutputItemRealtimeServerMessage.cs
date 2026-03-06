@@ -21,15 +21,15 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public class RealtimeServerResponseOutputItemMessage : RealtimeServerMessage
+public class ResponseOutputItemRealtimeServerMessage : RealtimeServerMessage
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RealtimeServerResponseOutputItemMessage"/> class.
+    /// Initializes a new instance of the <see cref="ResponseOutputItemRealtimeServerMessage"/> class.
     /// </summary>
     /// <remarks>
     /// The <paramref name="type"/> should be <see cref="RealtimeServerMessageType.ResponseOutputItemDone"/> or <see cref="RealtimeServerMessageType.ResponseOutputItemAdded"/>.
     /// </remarks>
-    public RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType type)
+    public ResponseOutputItemRealtimeServerMessage(RealtimeServerMessageType type)
     {
         Type = type;
     }

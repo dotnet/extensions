@@ -124,14 +124,14 @@ public class FunctionInvokingRealtimeClientTests
         Assert.Equal(2, injectedMessages.Count);
 
         // First injected: conversation.item.create with function result
-        var resultMsg = Assert.IsType<RealtimeClientCreateConversationItemMessage>(injectedMessages[0]);
+        var resultMsg = Assert.IsType<CreateConversationItemRealtimeClientMessage>(injectedMessages[0]);
         Assert.NotNull(resultMsg.Item);
         var functionResult = Assert.IsType<FunctionResultContent>(resultMsg.Item.Contents[0]);
         Assert.Equal("call_001", functionResult.CallId);
         Assert.Contains("Sunny in Seattle", functionResult.Result?.ToString());
 
         // Second injected: response.create (no hardcoded modalities)
-        var responseCreate = Assert.IsType<RealtimeClientCreateResponseMessage>(injectedMessages[1]);
+        var responseCreate = Assert.IsType<CreateResponseRealtimeClientMessage>(injectedMessages[1]);
         Assert.Null(responseCreate.OutputModalities);
     }
 
@@ -167,7 +167,7 @@ public class FunctionInvokingRealtimeClientTests
         }
 
         Assert.Equal(2, injectedMessages.Count);
-        var resultMsg = Assert.IsType<RealtimeClientCreateConversationItemMessage>(injectedMessages[0]);
+        var resultMsg = Assert.IsType<CreateConversationItemRealtimeClientMessage>(injectedMessages[0]);
         var functionResult = Assert.IsType<FunctionResultContent>(resultMsg.Item.Contents[0]);
         Assert.Contains("Rainy in London", functionResult.Result?.ToString());
     }
@@ -274,7 +274,7 @@ public class FunctionInvokingRealtimeClientTests
 
         // Should inject error result + response.create
         Assert.Equal(2, injectedMessages.Count);
-        var resultMsg = Assert.IsType<RealtimeClientCreateConversationItemMessage>(injectedMessages[0]);
+        var resultMsg = Assert.IsType<CreateConversationItemRealtimeClientMessage>(injectedMessages[0]);
         var functionResult = Assert.IsType<FunctionResultContent>(resultMsg.Item.Contents[0]);
         Assert.Contains("not found", functionResult.Result?.ToString(), StringComparison.OrdinalIgnoreCase);
     }
@@ -312,7 +312,7 @@ public class FunctionInvokingRealtimeClientTests
         }
 
         Assert.Equal(2, injectedMessages.Count);
-        var resultMsg = Assert.IsType<RealtimeClientCreateConversationItemMessage>(injectedMessages[0]);
+        var resultMsg = Assert.IsType<CreateConversationItemRealtimeClientMessage>(injectedMessages[0]);
         var functionResult = Assert.IsType<FunctionResultContent>(resultMsg.Item.Contents[0]);
         Assert.Contains("Something broke", functionResult.Result?.ToString());
     }
@@ -349,7 +349,7 @@ public class FunctionInvokingRealtimeClientTests
             // consume
         }
 
-        var resultMsg = Assert.IsType<RealtimeClientCreateConversationItemMessage>(injectedMessages[0]);
+        var resultMsg = Assert.IsType<CreateConversationItemRealtimeClientMessage>(injectedMessages[0]);
         var functionResult = Assert.IsType<FunctionResultContent>(resultMsg.Item.Contents[0]);
         Assert.DoesNotContain("Secret error info", functionResult.Result?.ToString());
         Assert.Contains("failed", functionResult.Result?.ToString(), StringComparison.OrdinalIgnoreCase);
@@ -433,7 +433,7 @@ public class FunctionInvokingRealtimeClientTests
 
         // Error result + response.create should be injected (default behavior)
         Assert.Equal(2, injectedMessages.Count);
-        var resultMsg = Assert.IsType<RealtimeClientCreateConversationItemMessage>(injectedMessages[0]);
+        var resultMsg = Assert.IsType<CreateConversationItemRealtimeClientMessage>(injectedMessages[0]);
         var functionResult = Assert.IsType<FunctionResultContent>(resultMsg.Item.Contents[0]);
         Assert.Contains("not found", functionResult.Result?.ToString(), StringComparison.OrdinalIgnoreCase);
     }
@@ -482,7 +482,7 @@ public class FunctionInvokingRealtimeClientTests
             new FunctionCallContent("call_b", "slow_func"),
         ], "item_combined");
 
-        var combinedMessage = new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone)
+        var combinedMessage = new ResponseOutputItemRealtimeServerMessage(RealtimeServerMessageType.ResponseOutputItemDone)
         {
             ResponseId = "resp_combined",
             OutputIndex = 0,
@@ -635,13 +635,13 @@ public class FunctionInvokingRealtimeClientTests
     }
 #pragma warning restore CA2000
 
-    private static RealtimeServerResponseOutputItemMessage CreateFunctionCallOutputItemMessage(
+    private static ResponseOutputItemRealtimeServerMessage CreateFunctionCallOutputItemMessage(
         string callId, string functionName, IDictionary<string, object?>? arguments)
     {
         var functionCallContent = new FunctionCallContent(callId, functionName, arguments);
         var item = new RealtimeConversationItem([functionCallContent], $"item_{callId}");
 
-        return new RealtimeServerResponseOutputItemMessage(RealtimeServerMessageType.ResponseOutputItemDone)
+        return new ResponseOutputItemRealtimeServerMessage(RealtimeServerMessageType.ResponseOutputItemDone)
         {
             ResponseId = $"resp_{callId}",
             OutputIndex = 0,

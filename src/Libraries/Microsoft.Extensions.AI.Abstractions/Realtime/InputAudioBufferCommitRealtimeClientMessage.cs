@@ -10,12 +10,12 @@ namespace Microsoft.Extensions.AI;
 /// Represents a real-time message for committing audio buffer input.
 /// </summary>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
-public class RealtimeClientInputAudioBufferCommitMessage : RealtimeClientMessage
+public class InputAudioBufferCommitRealtimeClientMessage : RealtimeClientMessage
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RealtimeClientInputAudioBufferCommitMessage"/> class.
+    /// Initializes a new instance of the <see cref="InputAudioBufferCommitRealtimeClientMessage"/> class.
     /// </summary>
-    public RealtimeClientInputAudioBufferCommitMessage()
+    public InputAudioBufferCommitRealtimeClientMessage()
     {
     }
 }

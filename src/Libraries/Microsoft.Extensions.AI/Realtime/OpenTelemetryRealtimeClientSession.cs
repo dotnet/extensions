@@ -270,7 +270,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                 }
 
                 // Create activity for ResponseDone message for telemetry
-                if (message is RealtimeServerResponseCreatedMessage responseDoneMsg &&
+                if (message is ResponseCreatedRealtimeServerMessage responseDoneMsg &&
                     responseDoneMsg.Type == RealtimeServerMessageType.ResponseDone)
                 {
                     using Activity? responseActivity = CreateAndConfigureActivity(options);
@@ -320,7 +320,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     /// <summary>Gets the output modality from a server message, if applicable.</summary>
     private static string? GetOutputModality(RealtimeServerMessage message)
     {
-        if (message is RealtimeServerOutputTextAudioMessage textAudio)
+        if (message is OutputTextAudioRealtimeServerMessage textAudio)
         {
             if (textAudio.Type == RealtimeServerMessageType.OutputTextDelta || textAudio.Type == RealtimeServerMessageType.OutputTextDone)
             {
@@ -338,7 +338,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
             }
         }
 
-        if (message is RealtimeServerResponseOutputItemMessage)
+        if (message is ResponseOutputItemRealtimeServerMessage)
         {
             return "item";
         }
@@ -351,10 +351,10 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     {
         switch (message)
         {
-            case RealtimeClientCreateConversationItemMessage createMsg:
+            case CreateConversationItemRealtimeClientMessage createMsg:
                 return ExtractOtelMessage(createMsg.Item);
 
-            case RealtimeClientInputAudioBufferAppendMessage audioAppendMsg:
+            case InputAudioBufferAppendRealtimeClientMessage audioAppendMsg:
                 var audioMessage = new RealtimeOtelMessage { Role = "user" };
                 audioMessage.Parts.Add(new RealtimeOtelBlobPart
                 {
@@ -364,7 +364,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                 });
                 return audioMessage;
 
-            case RealtimeClientInputAudioBufferCommitMessage:
+            case InputAudioBufferCommitRealtimeClientMessage:
                 // Commit message has no content, just a signal
                 return new RealtimeOtelMessage
                 {
@@ -372,7 +372,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                     Parts = { new RealtimeOtelGenericPart { Type = "audio_commit" } },
                 };
 
-            case RealtimeClientCreateResponseMessage responseCreateMsg:
+            case CreateResponseRealtimeClientMessage responseCreateMsg:
                 var responseMessage = new RealtimeOtelMessage { Role = "user" };
 
                 // Add instructions if present
@@ -413,10 +413,10 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     {
         switch (message)
         {
-            case RealtimeServerResponseOutputItemMessage outputItemMsg:
+            case ResponseOutputItemRealtimeServerMessage outputItemMsg:
                 return ExtractOtelMessage(outputItemMsg.Item);
 
-            case RealtimeServerOutputTextAudioMessage textAudioMsg:
+            case OutputTextAudioRealtimeServerMessage textAudioMsg:
                 string partType;
                 string? content;
 
@@ -450,7 +450,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                 });
                 return textAudioOtelMessage;
 
-            case RealtimeServerInputAudioTranscriptionMessage transcriptionMsg when !string.IsNullOrEmpty(transcriptionMsg.Transcription):
+            case InputAudioTranscriptionRealtimeServerMessage transcriptionMsg when !string.IsNullOrEmpty(transcriptionMsg.Transcription):
                 var transcriptionOtelMessage = new RealtimeOtelMessage { Role = "user" };
                 transcriptionOtelMessage.Parts.Add(new RealtimeOtelGenericPart
                 {
@@ -459,7 +459,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                 });
                 return transcriptionOtelMessage;
 
-            case RealtimeServerErrorMessage errorMsg when errorMsg.Error is not null:
+            case ErrorRealtimeServerMessage errorMsg when errorMsg.Error is not null:
                 var errorOtelMessage = new RealtimeOtelMessage { Role = "system" };
                 errorOtelMessage.Parts.Add(new RealtimeOtelGenericPart
                 {
@@ -468,7 +468,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                 });
                 return errorOtelMessage;
 
-            case RealtimeServerResponseCreatedMessage responseCreatedMsg when responseCreatedMsg.Items is { Count: > 0 }:
+            case ResponseCreatedRealtimeServerMessage responseCreatedMsg when responseCreatedMsg.Items is { Count: > 0 }:
                 // Only capture items from ResponseCreated, not ResponseDone (which we use for tracing)
                 if (responseCreatedMsg.Type == RealtimeServerMessageType.ResponseCreated)
                 {
@@ -807,7 +807,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     private void TraceStreamingResponse(
         Activity? activity,
         string? requestModelId,
-        RealtimeServerResponseCreatedMessage? response,
+        ResponseCreatedRealtimeServerMessage? response,
         Exception? error,
         Stopwatch? stopwatch)
     {

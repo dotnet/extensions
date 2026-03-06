@@ -40,7 +40,7 @@ public class RealtimeClientMessageTests
         var contents = new List<AIContent> { new TextContent("Hello") };
         var item = new RealtimeConversationItem(contents, "item_1", ChatRole.User);
 
-        var message = new RealtimeClientCreateConversationItemMessage(item, "prev_1");
+        var message = new CreateConversationItemRealtimeClientMessage(item, "prev_1");
 
         Assert.Same(item, message.Item);
         Assert.Equal("prev_1", message.PreviousId);
@@ -50,7 +50,7 @@ public class RealtimeClientMessageTests
     public void ConversationItemCreateMessage_Constructor_PreviousIdDefaults()
     {
         var item = new RealtimeConversationItem([new TextContent("Hello")]);
-        var message = new RealtimeClientCreateConversationItemMessage(item);
+        var message = new CreateConversationItemRealtimeClientMessage(item);
 
         Assert.Same(item, message.Item);
         Assert.Null(message.PreviousId);
@@ -60,7 +60,7 @@ public class RealtimeClientMessageTests
     public void ConversationItemCreateMessage_Properties_Roundtrip()
     {
         var item = new RealtimeConversationItem([new TextContent("Hello")]);
-        var message = new RealtimeClientCreateConversationItemMessage(item);
+        var message = new CreateConversationItemRealtimeClientMessage(item);
 
         var newItem = new RealtimeConversationItem([new TextContent("World")]);
         message.Item = newItem;
@@ -74,7 +74,7 @@ public class RealtimeClientMessageTests
     public void ConversationItemCreateMessage_InheritsClientMessage()
     {
         var item = new RealtimeConversationItem([new TextContent("Hello")]);
-        var message = new RealtimeClientCreateConversationItemMessage(item)
+        var message = new CreateConversationItemRealtimeClientMessage(item)
         {
             MessageId = "evt_create_1",
         };
@@ -87,7 +87,7 @@ public class RealtimeClientMessageTests
     public void InputAudioBufferAppendMessage_Constructor_SetsContent()
     {
         var audioContent = new DataContent(new byte[] { 1, 2, 3 }, "audio/pcm");
-        var message = new RealtimeClientInputAudioBufferAppendMessage(audioContent);
+        var message = new InputAudioBufferAppendRealtimeClientMessage(audioContent);
 
         Assert.Same(audioContent, message.Content);
     }
@@ -96,7 +96,7 @@ public class RealtimeClientMessageTests
     public void InputAudioBufferAppendMessage_Properties_Roundtrip()
     {
         var audioContent = new DataContent(new byte[] { 1, 2, 3 }, "audio/pcm");
-        var message = new RealtimeClientInputAudioBufferAppendMessage(audioContent);
+        var message = new InputAudioBufferAppendRealtimeClientMessage(audioContent);
 
         var newContent = new DataContent(new byte[] { 4, 5, 6 }, "audio/wav");
         message.Content = newContent;
@@ -108,7 +108,7 @@ public class RealtimeClientMessageTests
     public void InputAudioBufferAppendMessage_InheritsClientMessage()
     {
         var audioContent = new DataContent(new byte[] { 1, 2, 3 }, "audio/pcm");
-        var message = new RealtimeClientInputAudioBufferAppendMessage(audioContent)
+        var message = new InputAudioBufferAppendRealtimeClientMessage(audioContent)
         {
             MessageId = "evt_append_1",
         };
@@ -120,7 +120,7 @@ public class RealtimeClientMessageTests
     [Fact]
     public void InputAudioBufferCommitMessage_Constructor()
     {
-        var message = new RealtimeClientInputAudioBufferCommitMessage();
+        var message = new InputAudioBufferCommitRealtimeClientMessage();
 
         Assert.IsAssignableFrom<RealtimeClientMessage>(message);
         Assert.Null(message.MessageId);
@@ -129,7 +129,7 @@ public class RealtimeClientMessageTests
     [Fact]
     public void ResponseCreateMessage_DefaultProperties()
     {
-        var message = new RealtimeClientCreateResponseMessage();
+        var message = new CreateResponseRealtimeClientMessage();
 
         Assert.Null(message.Items);
         Assert.Null(message.OutputAudioOptions);
@@ -146,7 +146,7 @@ public class RealtimeClientMessageTests
     [Fact]
     public void ResponseCreateMessage_Properties_Roundtrip()
     {
-        var message = new RealtimeClientCreateResponseMessage();
+        var message = new CreateResponseRealtimeClientMessage();
 
         var items = new List<RealtimeConversationItem>
         {
@@ -183,7 +183,7 @@ public class RealtimeClientMessageTests
     [Fact]
     public void ResponseCreateMessage_InheritsClientMessage()
     {
-        var message = new RealtimeClientCreateResponseMessage
+        var message = new CreateResponseRealtimeClientMessage
         {
             MessageId = "evt_resp_1",
             RawRepresentation = "raw",
