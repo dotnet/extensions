@@ -1242,6 +1242,12 @@ public static partial class AIJsonUtilitiesTests
             options.AddAIContentType(typeof(LeafContent), "leaf");
         }
 
+        // Verify LeafContent is registered as a derived type of both DerivedAIContent and AIContent.
+        var derivedAIContentTypes = options.GetTypeInfo(typeof(DerivedAIContent)).PolymorphismOptions!.DerivedTypes;
+        var aiContentTypes = options.GetTypeInfo(typeof(AIContent)).PolymorphismOptions!.DerivedTypes;
+        Assert.Contains(derivedAIContentTypes, dt => dt.DerivedType == typeof(LeafContent));
+        Assert.Contains(aiContentTypes, dt => dt.DerivedType == typeof(LeafContent));
+
         // Verify serialization/deserialization works when typed as DerivedAIContent.
         DerivedAIContent dc = new LeafContent { DerivedValue = 1, LeafValue = 42 };
         string json = JsonSerializer.Serialize(dc, options);
@@ -1288,6 +1294,12 @@ public static partial class AIJsonUtilitiesTests
             options.AddAIContentType(typeof(DerivedToolCallContent), "derivedToolCall");
         }
 
+        // Verify DerivedToolCallContent is registered as a derived type of both ToolCallContent and AIContent.
+        var toolCallTypes = options.GetTypeInfo(typeof(ToolCallContent)).PolymorphismOptions!.DerivedTypes;
+        var aiContentTypes = options.GetTypeInfo(typeof(AIContent)).PolymorphismOptions!.DerivedTypes;
+        Assert.Contains(toolCallTypes, dt => dt.DerivedType == typeof(DerivedToolCallContent));
+        Assert.Contains(aiContentTypes, dt => dt.DerivedType == typeof(DerivedToolCallContent));
+
         // Verify roundtrip when typed as ToolCallContent (built-in intermediate base).
         ToolCallContent tc = new DerivedToolCallContent { CustomValue = 42 };
         string json = JsonSerializer.Serialize(tc, options);
@@ -1305,6 +1317,84 @@ public static partial class AIJsonUtilitiesTests
 
         DerivedToolCallContent deserializedAc = Assert.IsType<DerivedToolCallContent>(JsonSerializer.Deserialize<AIContent>(json2, options));
         Assert.Equal(99, deserializedAc.CustomValue);
+    }
+
+    [Fact]
+    public static void AddAIContentType_OverlappingChains_RegistersBothCorrectly()
+    {
+        // Registers DerivedAIContent and LeafContent (which derives from DerivedAIContent).
+        // Both types should coexist: DerivedAIContent is registered under AIContent,
+        // and LeafContent is registered under both DerivedAIContent and AIContent.
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
+        };
+
+        options.AddAIContentType<DerivedAIContent>("derived");
+        options.AddAIContentType<LeafContent>("leaf");
+
+        // Verify registrations: AIContent should have both derived and leaf; DerivedAIContent should have leaf.
+        var aiContentDerivedTypes = options.GetTypeInfo(typeof(AIContent)).PolymorphismOptions!.DerivedTypes;
+        var derivedAIContentTypes = options.GetTypeInfo(typeof(DerivedAIContent)).PolymorphismOptions!.DerivedTypes;
+        Assert.Contains(aiContentDerivedTypes, dt => dt.DerivedType == typeof(DerivedAIContent));
+        Assert.Contains(aiContentDerivedTypes, dt => dt.DerivedType == typeof(LeafContent));
+        Assert.Contains(derivedAIContentTypes, dt => dt.DerivedType == typeof(LeafContent));
+
+        // DerivedAIContent roundtrips when typed as AIContent.
+        AIContent ac = new DerivedAIContent { DerivedValue = 1 };
+        string json = JsonSerializer.Serialize(ac, options);
+        Assert.Contains("\"$type\":\"derived\"", json);
+        DerivedAIContent deserializedDc = Assert.IsType<DerivedAIContent>(JsonSerializer.Deserialize<AIContent>(json, options));
+        Assert.Equal(1, deserializedDc.DerivedValue);
+
+        // LeafContent roundtrips when typed as DerivedAIContent.
+        DerivedAIContent dc = new LeafContent { DerivedValue = 2, LeafValue = 42 };
+        string json2 = JsonSerializer.Serialize(dc, options);
+        Assert.Contains("\"$type\":\"leaf\"", json2);
+        LeafContent deserializedLeaf = Assert.IsType<LeafContent>(JsonSerializer.Deserialize<DerivedAIContent>(json2, options));
+        Assert.Equal(2, deserializedLeaf.DerivedValue);
+        Assert.Equal(42, deserializedLeaf.LeafValue);
+
+        // LeafContent roundtrips when typed as AIContent.
+        AIContent ac2 = new LeafContent { DerivedValue = 3, LeafValue = 99 };
+        string json3 = JsonSerializer.Serialize(ac2, options);
+        Assert.Contains("\"$type\":\"leaf\"", json3);
+        LeafContent deserializedAc = Assert.IsType<LeafContent>(JsonSerializer.Deserialize<AIContent>(json3, options));
+        Assert.Equal(3, deserializedAc.DerivedValue);
+        Assert.Equal(99, deserializedAc.LeafValue);
+    }
+
+    [Fact]
+    public static void AddAIContentType_DoesNotRegisterIntermediateTypes()
+    {
+        // Registering LeafContent should NOT automatically register DerivedAIContent.
+        // Only the explicitly provided type gets a discriminator. This is by design:
+        // auto-registering intermediates would make it impossible to register multiple
+        // leaf types sharing a common base (the intermediate would be registered twice
+        // with no discriminator, or a conflicting one).
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
+        };
+
+        options.AddAIContentType<LeafContent>("leaf");
+
+        // Verify LeafContent is registered under both bases, but DerivedAIContent is NOT.
+        var aiContentDerivedTypes = options.GetTypeInfo(typeof(AIContent)).PolymorphismOptions!.DerivedTypes;
+        var derivedAIContentTypes = options.GetTypeInfo(typeof(DerivedAIContent)).PolymorphismOptions!.DerivedTypes;
+        Assert.Contains(aiContentDerivedTypes, dt => dt.DerivedType == typeof(LeafContent));
+        Assert.DoesNotContain(aiContentDerivedTypes, dt => dt.DerivedType == typeof(DerivedAIContent));
+        Assert.Contains(derivedAIContentTypes, dt => dt.DerivedType == typeof(LeafContent));
+
+        // LeafContent roundtrips fine when typed as AIContent.
+        AIContent ac = new LeafContent { DerivedValue = 1, LeafValue = 42 };
+        string json = JsonSerializer.Serialize(ac, options);
+        Assert.Contains("\"$type\":\"leaf\"", json);
+        Assert.IsType<LeafContent>(JsonSerializer.Deserialize<AIContent>(json, options));
+
+        // But a plain DerivedAIContent instance is NOT known to AIContent — no discriminator was registered for it.
+        AIContent unregistered = new DerivedAIContent { DerivedValue = 99 };
+        Assert.Throws<NotSupportedException>(() => JsonSerializer.Serialize(unregistered, options));
     }
 
     [Fact]
