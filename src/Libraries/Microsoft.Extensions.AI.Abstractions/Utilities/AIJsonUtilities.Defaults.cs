@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -55,6 +55,8 @@ public static partial class AIJsonUtilities
         AddAIContentTypeChain(options, typeof(CodeInterpreterToolResultContent), typeDiscriminatorId: "codeInterpreterToolResult", checkBuiltIn: false);
         AddAIContentTypeChain(options, typeof(ImageGenerationToolCallContent), typeDiscriminatorId: "imageGenerationToolCall", checkBuiltIn: false);
         AddAIContentTypeChain(options, typeof(ImageGenerationToolResultContent), typeDiscriminatorId: "imageGenerationToolResult", checkBuiltIn: false);
+        AddAIContentTypeChain(options, typeof(WebSearchToolCallContent), typeDiscriminatorId: "webSearchToolCall", checkBuiltIn: false);
+        AddAIContentTypeChain(options, typeof(WebSearchToolResultContent), typeDiscriminatorId: "webSearchToolResult", checkBuiltIn: false);
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
@@ -123,6 +125,8 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(CodeInterpreterToolResultContent))]
     [JsonSerializable(typeof(ImageGenerationToolCallContent))]
     [JsonSerializable(typeof(ImageGenerationToolResultContent))]
+    [JsonSerializable(typeof(WebSearchToolCallContent))]
+    [JsonSerializable(typeof(WebSearchToolResultContent))]
     [JsonSerializable(typeof(ResponseContinuationToken))]
 
     // IEmbeddingGenerator
@@ -147,6 +151,10 @@ public static partial class AIJsonUtilities
     // IImageGenerator
     [JsonSerializable(typeof(ImageGenerationOptions))]
     [JsonSerializable(typeof(ImageGenerationResponse))]
+
+    // IHostedFileClient
+    [JsonSerializable(typeof(HostedFileClientOptions))]
+    [JsonSerializable(typeof(HostedFileClientMetadata))]
 
     [EditorBrowsable(EditorBrowsableState.Never)] // Never use JsonContext directly, use DefaultOptions instead.
     private sealed partial class JsonContext : JsonSerializerContext;

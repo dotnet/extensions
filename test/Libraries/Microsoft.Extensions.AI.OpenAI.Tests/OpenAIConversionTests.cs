@@ -925,7 +925,7 @@ public class OpenAIConversionTests
         }
 
         // Verify we got the expected updates
-        Assert.Equal(8, updates.Count);
+        Assert.Equal(9, updates.Count);
 
         // First update should be FunctionCallContent
         FunctionCallContent? fcc = updates[0].Contents.OfType<FunctionCallContent>().FirstOrDefault();
@@ -974,36 +974,37 @@ public class OpenAIConversionTests
         Assert.NotNull(correlatedMcpCall.Arguments);
         Assert.Equal("dotnet/extensions", correlatedMcpCall.Arguments["repo"]?.ToString());
 
-        // Fifth update: WebSearchCallResponseItem -> ToolCallContent + ToolResultContent
-        ToolCallContent? wsToolCall = updates[4].Contents.OfType<ToolCallContent>().FirstOrDefault();
+        // Fifth update: WebSearchCallResponseItem -> WebSearchToolCallContent
+        WebSearchToolCallContent? wsToolCall = updates[4].Contents.OfType<WebSearchToolCallContent>().FirstOrDefault();
         Assert.NotNull(wsToolCall);
         Assert.Equal("ws_123", wsToolCall.CallId);
         Assert.Null(wsToolCall.RawRepresentation);
 
-        ToolResultContent? wsToolResult = updates[4].Contents.OfType<ToolResultContent>().FirstOrDefault();
+        // Sixth update: WebSearchCallResponseItem -> WebSearchToolResultContent
+        WebSearchToolResultContent? wsToolResult = updates[5].Contents.OfType<WebSearchToolResultContent>().FirstOrDefault();
         Assert.NotNull(wsToolResult);
         Assert.Equal("ws_123", wsToolResult.CallId);
         Assert.Same(webSearchItem, wsToolResult.RawRepresentation);
 
-        // Sixth update: FileSearchCallResponseItem -> ToolCallContent + ToolResultContent
-        ToolCallContent? fsToolCall = updates[5].Contents.OfType<ToolCallContent>().FirstOrDefault();
+        // Seventh update: FileSearchCallResponseItem -> ToolCallContent + ToolResultContent
+        ToolCallContent? fsToolCall = updates[6].Contents.OfType<ToolCallContent>().FirstOrDefault();
         Assert.NotNull(fsToolCall);
         Assert.Equal("fs_123", fsToolCall.CallId);
         Assert.Null(fsToolCall.RawRepresentation);
 
-        ToolResultContent? fsToolResult = updates[5].Contents.OfType<ToolResultContent>().FirstOrDefault();
+        ToolResultContent? fsToolResult = updates[6].Contents.OfType<ToolResultContent>().FirstOrDefault();
         Assert.NotNull(fsToolResult);
         Assert.Equal("fs_123", fsToolResult.CallId);
         Assert.Same(fileSearchItem, fsToolResult.RawRepresentation);
 
-        // Seventh update: ComputerCallResponseItem -> ToolCallContent
-        ToolCallContent? cuToolCall = updates[6].Contents.OfType<ToolCallContent>().FirstOrDefault();
+        // Eighth update: ComputerCallResponseItem -> ToolCallContent
+        ToolCallContent? cuToolCall = updates[7].Contents.OfType<ToolCallContent>().FirstOrDefault();
         Assert.NotNull(cuToolCall);
         Assert.Equal("cu_123", cuToolCall.CallId);
         Assert.Same(computerItem, cuToolCall.RawRepresentation);
 
-        // Eighth update: ComputerCallOutputResponseItem -> ToolResultContent
-        ToolResultContent? cuToolResult = updates[7].Contents.OfType<ToolResultContent>().FirstOrDefault();
+        // Ninth update: ComputerCallOutputResponseItem -> ToolResultContent
+        ToolResultContent? cuToolResult = updates[8].Contents.OfType<ToolResultContent>().FirstOrDefault();
         Assert.NotNull(cuToolResult);
         Assert.Equal("call_456", cuToolResult.CallId);
         Assert.Same(computerOutput, cuToolResult.RawRepresentation);
@@ -1268,12 +1269,12 @@ public class OpenAIConversionTests
         Assert.NotNull(correlatedMcpCall.Arguments);
         Assert.Equal("dotnet/extensions", correlatedMcpCall.Arguments["repoName"]?.ToString());
 
-        // 8. WebSearchCallResponseItem -> ToolCallContent + ToolResultContent
-        ToolCallContent? webSearchToolCall = message.Contents.OfType<ToolCallContent>().FirstOrDefault(c => c.CallId == "ws_123");
+        // 8. WebSearchCallResponseItem -> WebSearchToolCallContent + WebSearchToolResultContent
+        WebSearchToolCallContent? webSearchToolCall = message.Contents.OfType<WebSearchToolCallContent>().FirstOrDefault(c => c.CallId == "ws_123");
         Assert.NotNull(webSearchToolCall);
         Assert.Null(webSearchToolCall.RawRepresentation); // Intentionally null to avoid duplication during roundtrip
 
-        ToolResultContent? webSearchToolResult = message.Contents.OfType<ToolResultContent>().FirstOrDefault(c => c.CallId == "ws_123");
+        WebSearchToolResultContent? webSearchToolResult = message.Contents.OfType<WebSearchToolResultContent>().FirstOrDefault(c => c.CallId == "ws_123");
         Assert.NotNull(webSearchToolResult);
         Assert.Same(webSearchItem, webSearchToolResult.RawRepresentation);
 
@@ -2116,6 +2117,54 @@ public class OpenAIConversionTests
     }
 
     /// <summary>Helper class for testing WebSearchTool with additional properties.</summary>
+    [Fact]
+    public void AsChatMessages_WebSearchCallResponseItem_QueriesArrayPreferredOverDeprecatedQuery()
+    {
+        // Both "queries" (array) and deprecated "query" (string) are present.
+        // The array form should be preferred.
+        WebSearchCallResponseItem wsItem = ModelReaderWriter.Read<WebSearchCallResponseItem>(BinaryData.FromString(
+            """{"type":"web_search_call","id":"ws_1","status":"completed","action":{"type":"search","queries":[".NET 10 release","dotnet latest"],"query":".NET 10 release"}}"""))!;
+
+        ChatMessage[] messages = new ResponseItem[] { wsItem }.AsChatMessages().ToArray();
+        Assert.Single(messages);
+
+        WebSearchToolCallContent wsCall = Assert.Single(messages[0].Contents.OfType<WebSearchToolCallContent>());
+        Assert.Equal("ws_1", wsCall.CallId);
+        Assert.NotNull(wsCall.Queries);
+        Assert.Equal(new[] { ".NET 10 release", "dotnet latest" }, wsCall.Queries);
+    }
+
+    [Fact]
+    public void AsChatMessages_WebSearchCallResponseItem_FallsBackToDeprecatedQueryWhenNoQueriesArray()
+    {
+        // Only the deprecated "query" field is present (no "queries" array).
+        WebSearchCallResponseItem wsItem = ModelReaderWriter.Read<WebSearchCallResponseItem>(BinaryData.FromString(
+            """{"type":"web_search_call","id":"ws_2","status":"completed","action":{"type":"search","query":"what is .NET"}}"""))!;
+
+        ChatMessage[] messages = new ResponseItem[] { wsItem }.AsChatMessages().ToArray();
+        Assert.Single(messages);
+
+        WebSearchToolCallContent wsCall = Assert.Single(messages[0].Contents.OfType<WebSearchToolCallContent>());
+        Assert.Equal("ws_2", wsCall.CallId);
+        Assert.NotNull(wsCall.Queries);
+        Assert.Equal(new[] { "what is .NET" }, wsCall.Queries);
+    }
+
+    [Fact]
+    public void AsChatMessages_WebSearchCallResponseItem_NullQueriesWhenNeitherFieldPresent()
+    {
+        // Neither "queries" nor "query" is present in the action.
+        WebSearchCallResponseItem wsItem = ModelReaderWriter.Read<WebSearchCallResponseItem>(BinaryData.FromString(
+            """{"type":"web_search_call","id":"ws_3","status":"completed","action":{"type":"search"}}"""))!;
+
+        ChatMessage[] messages = new ResponseItem[] { wsItem }.AsChatMessages().ToArray();
+        Assert.Single(messages);
+
+        WebSearchToolCallContent wsCall = Assert.Single(messages[0].Contents.OfType<WebSearchToolCallContent>());
+        Assert.Equal("ws_3", wsCall.CallId);
+        Assert.Null(wsCall.Queries);
+    }
+
     private sealed class HostedWebSearchToolWithProperties : HostedWebSearchTool
     {
         private readonly Dictionary<string, object?> _additionalProperties;

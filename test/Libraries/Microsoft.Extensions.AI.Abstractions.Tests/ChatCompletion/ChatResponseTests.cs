@@ -88,6 +88,7 @@ public class ChatResponseTests
         {
             ResponseId = "id",
             ModelId = "modelId",
+            ConversationId = "conv123",
             CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
             FinishReason = ChatFinishReason.ContentFilter,
             Usage = new UsageDetails(),
@@ -105,6 +106,7 @@ public class ChatResponseTests
 
         Assert.Equal("id", result.ResponseId);
         Assert.Equal("modelId", result.ModelId);
+        Assert.Equal("conv123", result.ConversationId);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
         Assert.NotNull(result.Usage);
@@ -114,6 +116,46 @@ public class ChatResponseTests
         Assert.True(result.AdditionalProperties.TryGetValue("key", out object? value));
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
+    }
+
+    [Fact]
+    public void JsonSerialization_Roundtrips_DefaultOptions()
+    {
+        ChatResponse original = new(new ChatMessage(ChatRole.Assistant, "the message"))
+        {
+            ResponseId = "id",
+            ModelId = "modelId",
+            ConversationId = "conv123",
+            CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            FinishReason = ChatFinishReason.ContentFilter,
+            Usage = new UsageDetails(),
+            RawRepresentation = new(),
+            AdditionalProperties = new() { ["key"] = "value" },
+            ContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3 }),
+        };
+
+        string json = JsonSerializer.Serialize(original, AIJsonUtilities.DefaultOptions);
+
+        ChatResponse? result = JsonSerializer.Deserialize<ChatResponse>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal(ChatRole.Assistant, result.Messages.Single().Role);
+        Assert.Equal("the message", result.Messages.Single().Text);
+
+        Assert.Equal("id", result.ResponseId);
+        Assert.Equal("modelId", result.ModelId);
+        Assert.Equal("conv123", result.ConversationId);
+        Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
+        Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
+        Assert.NotNull(result.Usage);
+
+        Assert.NotNull(result.ContinuationToken);
+        Assert.Equal(new byte[] { 1, 2, 3 }, result.ContinuationToken.ToBytes().ToArray());
+
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Single(result.AdditionalProperties);
+        Assert.True(result.AdditionalProperties.TryGetValue("key", out object? value));
+        Assert.Equal("value", value?.ToString());
     }
 
     [Fact]

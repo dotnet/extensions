@@ -260,11 +260,26 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     AddImageGenerationContents(imageGenItem, options, message.Contents);
                     break;
 
+                case WebSearchCallResponseItem wscri:
+                    message.Contents.Add(new WebSearchToolCallContent(wscri.Id)
+                    {
+                        Queries = GetWebSearchQueries(wscri),
+
+                        // We purposefully do not set the RawRepresentation on the WebSearchToolCallContent, only on the WebSearchToolResultContent, to avoid
+                        // the same WebSearchCallResponseItem being included on two different AIContent instances. When these are roundtripped, we want only one
+                        // WebSearchCallResponseItem sent back for the pair.
+                    });
+
+                    message.Contents.Add(new WebSearchToolResultContent(wscri.Id)
+                    {
+                        Results = GetWebSearchSources(wscri),
+                        RawRepresentation = wscri,
+                    });
+                    break;
+
                 // These tool types don't have dedicated AIContent-derived types. We use the base ToolCallContent/ToolResultContent
                 // to represent them, with the original ResponseItem accessible via RawRepresentation for type-specific data.
-                // WebSearch and FileSearch items contain both the call and results inline, so we emit a call+result pair
-                // (like MCP/CodeInterpreter). ComputerCall results arrive as a separate ComputerCallOutputResponseItem.
-                case WebSearchCallResponseItem or FileSearchCallResponseItem:
+                case FileSearchCallResponseItem:
                     message.Contents.Add(new ToolCallContent(outputItem.Id));
                     message.Contents.Add(new ToolResultContent(outputItem.Id) { RawRepresentation = outputItem });
                     break;
@@ -468,6 +483,13 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     });
                     break;
 
+                case StreamingResponseWebSearchCallInProgressUpdate webSearchInProgressUpdate:
+                    yield return CreateUpdate(new WebSearchToolCallContent(webSearchInProgressUpdate.ItemId)
+                    {
+                        RawRepresentation = webSearchInProgressUpdate,
+                    });
+                    break;
+
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate:
                     switch (outputItemDoneUpdate.Item)
                     {
@@ -524,6 +546,22 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             yield return CreateUpdate(CreateCodeInterpreterResultContent(cicri));
                             break;
 
+                        case WebSearchCallResponseItem wscri:
+                            // The WebSearchToolCallContent has already been yielded as part of in-progress updates.
+                            // Yield a second one here with queries populated, which coalescing will merge with the first.
+                            yield return CreateUpdate(new WebSearchToolCallContent(wscri.Id)
+                            {
+                                Queries = GetWebSearchQueries(wscri),
+                            });
+
+                            // Also yield the WebSearchToolResultContent.
+                            yield return CreateUpdate(new WebSearchToolResultContent(wscri.Id)
+                            {
+                                Results = GetWebSearchSources(wscri),
+                                RawRepresentation = wscri,
+                            });
+                            break;
+
                         // MessageResponseItems will have already had their content yielded as part of delta updates.
                         // However, those deltas didn't yield annotations. If there are any annotations, yield them now.
                         case MessageResponseItem mri when mri.Content is { Count: > 0 } mriContent && mriContent.Any(c => c.OutputTextAnnotations is { Count: > 0 }):
@@ -553,11 +591,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             yield return CreateUpdate();
                             break;
 
-                        // These tool types don't have dedicated AIContent-derived types. We use the base ToolCallContent/ToolResultContent
-                        // to represent them, with the original ResponseItem accessible via RawRepresentation for type-specific data.
-                        // WebSearch and FileSearch items contain both the call and results inline, so we emit a call+result pair
-                        // (like MCP/CodeInterpreter). ComputerCall results arrive as a separate ComputerCallOutputResponseItem.
-                        case WebSearchCallResponseItem or FileSearchCallResponseItem:
+                        // FileSearch items contain both the call and results inline, so we emit a call+result pair.
+                        // ComputerCall results arrive as a separate ComputerCallOutputResponseItem.
+                        case FileSearchCallResponseItem:
                             var toolCallUpdate = CreateUpdate(new ToolCallContent(outputItemDoneUpdate.Item.Id));
                             toolCallUpdate.Contents.Add(new ToolResultContent(outputItemDoneUpdate.Item.Id) { RawRepresentation = outputItemDoneUpdate.Item });
                             yield return toolCallUpdate;
@@ -1442,6 +1478,100 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
     }
 
+    /// <summary>
+    /// Extracts web search queries from a <see cref="WebSearchCallResponseItem"/>.
+    /// OpenAI exposes both a deprecated <c>action.query</c> (singular string) and <c>action.queries</c> (string array).
+    /// This helper reads whichever is present, preferring the array form.
+    /// </summary>
+    private static List<string>? GetWebSearchQueries(WebSearchCallResponseItem wscri)
+    {
+        List<string>? queries = null;
+
+        // Try the newer array field first.
+        if (wscri.Patch.TryGetJson("$.action.queries"u8, out ReadOnlyMemory<byte> queriesJson))
+        {
+            Utf8JsonReader reader = new(queriesJson.Span);
+            if (reader.Read() && reader.TokenType is JsonTokenType.StartArray)
+            {
+                while (reader.Read() && reader.TokenType is JsonTokenType.String)
+                {
+                    if (reader.GetString() is string q)
+                    {
+                        (queries ??= []).Add(q);
+                    }
+                }
+            }
+        }
+
+        // Fall back to the deprecated singular field.
+        if (queries is null && wscri.Patch.TryGetValue("$.action.query"u8, out string? wsQuery) && wsQuery is not null)
+        {
+            queries = [wsQuery];
+        }
+
+        return queries;
+    }
+
+    /// <summary>
+    /// Extracts web search sources from a <see cref="WebSearchCallResponseItem"/> when available.
+    /// Sources are present when the developer opts in via <c>include: ["web_search_call.action.sources"]</c>.
+    /// </summary>
+    private static List<AIContent>? GetWebSearchSources(WebSearchCallResponseItem wscri)
+    {
+        if (!wscri.Patch.TryGetJson("$.action.sources"u8, out ReadOnlyMemory<byte> sourcesJson))
+        {
+            return null;
+        }
+
+        List<AIContent>? results = null;
+        var reader = new Utf8JsonReader(sourcesJson.Span);
+        if (!reader.Read() || reader.TokenType is not JsonTokenType.StartArray)
+        {
+            return null;
+        }
+
+        while (reader.Read() && reader.TokenType is JsonTokenType.StartObject)
+        {
+            string? url = null;
+            string? title = null;
+
+            while (reader.Read() && reader.TokenType is not JsonTokenType.EndObject)
+            {
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    if (reader.ValueTextEquals("url"u8))
+                    {
+                        _ = reader.Read();
+                        url = reader.GetString();
+                    }
+                    else if (reader.ValueTextEquals("title"u8))
+                    {
+                        _ = reader.Read();
+                        title = reader.GetString();
+                    }
+                    else
+                    {
+                        _ = reader.Read();
+                        _ = reader.TrySkip();
+                    }
+                }
+            }
+
+            if (url is not null && Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
+            {
+                UriContent uriContent = new(uri, "text/html");
+                if (title is not null)
+                {
+                    uriContent.AdditionalProperties = new() { ["title"] = title };
+                }
+
+                (results ??= []).Add(uriContent);
+            }
+        }
+
+        return results;
+    }
+
     /// <summary>Adds new <see cref="AIContent"/> for the specified <paramref name="mtci"/> into <paramref name="contents"/>.</summary>
     private static void AddMcpToolCallContent(McpToolCallItem mtci, IList<AIContent> contents)
     {
@@ -1473,18 +1603,100 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     /// <summary>Creates a <see cref="CodeInterpreterToolResultContent"/> for the specified <paramref name="cicri"/>.</summary>
-    private static CodeInterpreterToolResultContent CreateCodeInterpreterResultContent(CodeInterpreterCallResponseItem cicri) =>
-        new(cicri.Id)
+    private static CodeInterpreterToolResultContent CreateCodeInterpreterResultContent(CodeInterpreterCallResponseItem cicri)
+    {
+        List<AIContent>? outputContents = null;
+
+        if (cicri.Outputs is { Count: > 0 } outputs)
         {
-            Outputs = cicri.Outputs is { Count: > 0 } outputs ? outputs.Select<CodeInterpreterCallOutput, AIContent?>(o =>
-                o switch
+            outputContents = [];
+            foreach (var o in outputs)
+            {
+                switch (o)
                 {
-                    CodeInterpreterCallImageOutput cicio => new UriContent(cicio.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(cicio.ImageUri)) { RawRepresentation = cicio },
-                    CodeInterpreterCallLogsOutput ciclo => new TextContent(ciclo.Logs) { RawRepresentation = ciclo },
-                    _ => null,
-                }).OfType<AIContent>().ToList() : null,
+                    case CodeInterpreterCallImageOutput cicio:
+                        outputContents.Add(new UriContent(cicio.ImageUri, OpenAIClientExtensions.ImageUriToMediaType(cicio.ImageUri)) { RawRepresentation = cicio });
+                        break;
+
+                    case CodeInterpreterCallLogsOutput ciclo:
+                        outputContents.Add(new TextContent(ciclo.Logs) { RawRepresentation = ciclo });
+                        break;
+
+                    default:
+                        // The SDK doesn't publicly expose file output types, so try to extract
+                        // file references from the raw JSON via the Patch property.
+                        AddHostedFileContents(outputContents, o, cicri.ContainerId);
+                        break;
+                }
+            }
+
+            if (outputContents.Count == 0)
+            {
+                outputContents = null;
+            }
+        }
+
+        return new(cicri.Id)
+        {
+            Outputs = outputContents,
             RawRepresentation = cicri,
         };
+    }
+
+    /// <summary>
+    /// Tries to extract file references from an unknown <see cref="CodeInterpreterCallOutput"/> by
+    /// reading its JSON data via the <see cref="CodeInterpreterCallOutput.Patch"/> property.
+    /// </summary>
+    private static void AddHostedFileContents(List<AIContent> contents, CodeInterpreterCallOutput output, string? containerId)
+    {
+        // Try to read a "files" array from the output's raw JSON. The OpenAI API returns file outputs
+        // with a "files" array containing objects with "file_id" and "mime_type" properties, but the
+        // SDK doesn't expose a public type for them.
+        if (!output.Patch.TryGetJson("$.files"u8, out ReadOnlyMemory<byte> filesJson))
+        {
+            return;
+        }
+
+        JsonDocument doc;
+        try
+        {
+            doc = JsonDocument.Parse(filesJson);
+        }
+        catch (JsonException)
+        {
+            return;
+        }
+
+        using (doc)
+        {
+            if (doc.RootElement.ValueKind != JsonValueKind.Array)
+            {
+                return;
+            }
+
+            foreach (var fileElement in doc.RootElement.EnumerateArray())
+            {
+                string? fileId =
+                    (fileElement.TryGetProperty("file_id", out var idProp) ? idProp.GetString() : null) ??
+                    (fileElement.TryGetProperty("id", out idProp) ? idProp.GetString() : null);
+
+                if (fileId is null)
+                {
+                    continue;
+                }
+
+                string? mimeType = fileElement.TryGetProperty("mime_type", out var mimeProp) ? mimeProp.GetString() : null;
+
+                var hfc = new HostedFileContent(fileId) { MediaType = mimeType, RawRepresentation = output };
+                if (containerId is not null)
+                {
+                    hfc.Scope = containerId;
+                }
+
+                contents.Add(hfc);
+            }
+        }
+    }
 
     private static void AddImageGenerationContents(ImageGenerationCallResponseItem outputItem, CreateResponseOptions? options, IList<AIContent> contents)
     {

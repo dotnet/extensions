@@ -620,9 +620,20 @@ internal sealed partial class OpenAIChatClient : IChatClient
         {
             foreach (AITool tool in tools)
             {
-                if (tool is AIFunctionDeclaration af)
+                switch (tool)
                 {
-                    result.Tools.Add(ToOpenAIChatTool(af, options));
+                    case AIFunctionDeclaration af:
+                        result.Tools.Add(ToOpenAIChatTool(af, options));
+                        break;
+
+                    case HostedWebSearchTool:
+#pragma warning disable OPENAI001 // WebSearchOptions is experimental
+                        result.WebSearchOptions ??= new();
+#pragma warning restore OPENAI001
+                        // The Chat Completions API surfaces web search results via message-level annotations
+                        // (handled in FromOpenAIChatCompletion) rather than as separate tool call response items.
+                        // WebSearchToolCallContent/WebSearchToolResultContent are only used by the Responses API path.
+                        break;
                 }
             }
 

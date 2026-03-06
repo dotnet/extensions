@@ -21,6 +21,7 @@ namespace Microsoft.Extensions.AI;
 // as well as the [JsonSerializable] attributes for them on the JsonContext should be removed.
 // [JsonDerivedType(typeof(CodeInterpreterToolResultContent), "codeInterpreterToolResult")]
 // [JsonDerivedType(typeof(ImageGenerationToolResultContent), "imageGenerationToolResult")]
+// [JsonDerivedType(typeof(WebSearchToolResultContent), "webSearchToolResult")]
 public class ToolResultContent : AIContent
 {
     /// <summary>
