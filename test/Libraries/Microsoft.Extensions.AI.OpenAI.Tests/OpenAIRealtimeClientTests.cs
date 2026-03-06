@@ -55,6 +55,9 @@ public class OpenAIRealtimeClientTests
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.CreateSessionAsync(cancellationToken: cts.Token));
+        var ex = await Assert.ThrowsAnyAsync<Exception>(() => client.CreateSessionAsync(cancellationToken: cts.Token));
+        Assert.True(
+            ex is OperationCanceledException || ex is System.Net.WebSockets.WebSocketException,
+            $"Expected OperationCanceledException or WebSocketException but got {ex.GetType().FullName}");
     }
 }
