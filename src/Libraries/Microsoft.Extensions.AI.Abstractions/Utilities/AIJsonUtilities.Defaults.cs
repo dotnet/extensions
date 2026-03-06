@@ -57,14 +57,18 @@ public static partial class AIJsonUtilities
         AddAIContentType(options, typeof(AIContent), typeof(ImageGenerationToolResultContent), typeDiscriminatorId: "imageGenerationToolResult", checkBuiltIn: false);
         AddAIContentType(options, typeof(AIContent), typeof(WebSearchToolCallContent), typeDiscriminatorId: "webSearchToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(AIContent), typeof(WebSearchToolResultContent), typeDiscriminatorId: "webSearchToolResult", checkBuiltIn: false);
+        AddAIContentType(options, typeof(AIContent), typeof(ShellCallContent), typeDiscriminatorId: "shellCall", checkBuiltIn: false);
+        AddAIContentType(options, typeof(AIContent), typeof(ShellResultContent), typeDiscriminatorId: "shellResult", checkBuiltIn: false);
 
         // Also register the experimental types as derived types of ToolCallContent/ToolResultContent.
         AddAIContentType(options, typeof(ToolCallContent), typeof(CodeInterpreterToolCallContent), "codeInterpreterToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolCallContent), typeof(ImageGenerationToolCallContent), "imageGenerationToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolCallContent), typeof(WebSearchToolCallContent), "webSearchToolCall", checkBuiltIn: false);
+        AddAIContentType(options, typeof(ToolCallContent), typeof(ShellCallContent), "shellCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolResultContent), typeof(CodeInterpreterToolResultContent), "codeInterpreterToolResult", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolResultContent), typeof(ImageGenerationToolResultContent), "imageGenerationToolResult", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolResultContent), typeof(WebSearchToolResultContent), "webSearchToolResult", checkBuiltIn: false);
+        AddAIContentType(options, typeof(ToolResultContent), typeof(ShellResultContent), "shellResult", checkBuiltIn: false);
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
@@ -135,6 +139,9 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(ImageGenerationToolResultContent))]
     [JsonSerializable(typeof(WebSearchToolCallContent))]
     [JsonSerializable(typeof(WebSearchToolResultContent))]
+    [JsonSerializable(typeof(ShellCallContent))]
+    [JsonSerializable(typeof(ShellResultContent))]
+    [JsonSerializable(typeof(ShellCommandOutput))]
     [JsonSerializable(typeof(ResponseContinuationToken))]
 
     // IEmbeddingGenerator
