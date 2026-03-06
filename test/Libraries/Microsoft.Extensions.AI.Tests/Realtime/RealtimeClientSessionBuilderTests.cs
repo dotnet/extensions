@@ -57,17 +57,6 @@ public class RealtimeClientSessionBuilderTests
     }
 
     [Fact]
-    public async Task Use_StreamingDelegate_NullFunc_Throws()
-    {
-        await using var inner = new TestRealtimeClientSession();
-        var builder = new RealtimeClientSessionBuilder(inner);
-
-        Assert.Throws<ArgumentNullException>(
-            "getStreamingResponseFunc",
-            () => builder.Use((Func<IRealtimeClientSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>>)null!));
-    }
-
-    [Fact]
     public async Task Build_PipelineOrder_FirstAddedIsOutermost()
     {
         var callOrder = new List<string>();
@@ -137,31 +126,6 @@ public class RealtimeClientSessionBuilderTests
     }
 
     [Fact]
-    public async Task Use_WithStreamingDelegate_InterceptsStreaming()
-    {
-        var intercepted = false;
-        await using var inner = new TestRealtimeClientSession
-        {
-            GetStreamingResponseAsyncCallback = (ct) => YieldSingle(new RealtimeServerMessage { MessageId = "inner" }, ct),
-        };
-
-        var builder = new RealtimeClientSessionBuilder(inner);
-        builder.Use((innerSession, ct) =>
-        {
-            intercepted = true;
-            return innerSession.GetStreamingResponseAsync(ct);
-        });
-
-        await using var pipeline = builder.Build();
-        await foreach (var msg in pipeline.GetStreamingResponseAsync())
-        {
-            Assert.Equal("inner", msg.MessageId);
-        }
-
-        Assert.True(intercepted);
-    }
-
-    [Fact]
     public void AsBuilder_NullSession_Throws()
     {
         Assert.Throws<ArgumentNullException>("innerSession", () => ((IRealtimeClientSession)null!).AsBuilder());
@@ -175,15 +139,6 @@ public class RealtimeClientSessionBuilderTests
 
         Assert.NotNull(builder);
         Assert.Same(inner, builder.Build());
-    }
-
-    private static async IAsyncEnumerable<RealtimeServerMessage> YieldSingle(
-        RealtimeServerMessage message,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        _ = cancellationToken;
-        await Task.CompletedTask.ConfigureAwait(false);
-        yield return message;
     }
 
     private sealed class OrderTrackingClientSession : DelegatingRealtimeClientSession

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -86,27 +85,4 @@ public sealed class RealtimeClientSessionBuilder
         return this;
     }
 
-    /// <summary>
-    /// Adds to the realtime session pipeline an anonymous delegating realtime session based on a delegate that provides
-    /// an implementation for <see cref="IRealtimeClientSession.GetStreamingResponseAsync"/>.
-    /// </summary>
-    /// <param name="getStreamingResponseFunc">
-    /// A delegate that provides the implementation for <see cref="IRealtimeClientSession.GetStreamingResponseAsync"/>.
-    /// This delegate is invoked with a delegate that represents invoking
-    /// the inner session, and a cancellation token. The delegate should be passed whatever
-    /// cancellation token should be passed along to the next stage in the pipeline.
-    /// </param>
-    /// <returns>The updated <see cref="RealtimeClientSessionBuilder"/> instance.</returns>
-    /// <remarks>
-    /// This overload can be used when the anonymous implementation needs to provide pre-processing and/or post-processing
-    /// for the streaming response.
-    /// </remarks>
-    /// <exception cref="ArgumentNullException"><paramref name="getStreamingResponseFunc"/> is <see langword="null"/>.</exception>
-    public RealtimeClientSessionBuilder Use(
-        Func<IRealtimeClientSession, CancellationToken, IAsyncEnumerable<RealtimeServerMessage>> getStreamingResponseFunc)
-    {
-        _ = Throw.IfNull(getStreamingResponseFunc);
-
-        return Use((innerSession, _) => new AnonymousDelegatingRealtimeClientSession(innerSession, getStreamingResponseFunc));
-    }
 }
