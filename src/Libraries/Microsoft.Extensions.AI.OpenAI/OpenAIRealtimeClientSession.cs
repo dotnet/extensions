@@ -529,11 +529,6 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         else
         {
             sdkTool = new Sdk.RealtimeMcpTool(mcpTool.ServerName, new Sdk.RealtimeMcpToolConnectorId(mcpTool.ServerAddress));
-
-            if (mcpTool.AuthorizationToken is not null)
-            {
-                sdkTool.AuthorizationToken = mcpTool.AuthorizationToken;
-            }
         }
 
         if (mcpTool.ServerDescription is not null)
@@ -616,10 +611,10 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
                 arguments);
         }
 
-        if (firstContent is McpServerToolApprovalResponseContent approvalResponse)
+        if (firstContent is ToolApprovalResponseContent approvalResponse)
         {
             return Sdk.RealtimeItem.CreateMcpApprovalResponseItem(
-                approvalResponse.Id ?? string.Empty,
+                approvalResponse.RequestId ?? string.Empty,
                 approvalResponse.Approved);
         }
 
@@ -1133,13 +1128,13 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
     {
         string callId = mcpItem.Id ?? string.Empty;
 
-        IReadOnlyDictionary<string, object?>? arguments = null;
+        IDictionary<string, object?>? arguments = null;
         if (mcpItem.ToolArguments is not null)
         {
             string argsJson = mcpItem.ToolArguments.ToString();
             if (!string.IsNullOrEmpty(argsJson))
             {
-                arguments = JsonSerializer.Deserialize<IReadOnlyDictionary<string, object?>>(argsJson);
+                arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(argsJson);
             }
         }
 
@@ -1160,7 +1155,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
 
             contents.Add(new McpServerToolResultContent(callId)
             {
-                Output = [resultContent],
+                Outputs = [resultContent],
                 RawRepresentation = mcpItem,
             });
         }
@@ -1172,13 +1167,13 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
     {
         string approvalId = approvalItem.Id ?? string.Empty;
 
-        IReadOnlyDictionary<string, object?>? arguments = null;
+        IDictionary<string, object?>? arguments = null;
         if (approvalItem.ToolArguments is not null)
         {
             string argsJson = approvalItem.ToolArguments.ToString();
             if (!string.IsNullOrEmpty(argsJson))
             {
-                arguments = JsonSerializer.Deserialize<IReadOnlyDictionary<string, object?>>(argsJson);
+                arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(argsJson);
             }
         }
 
@@ -1189,7 +1184,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         };
 
         return new RealtimeConversationItem(
-            [new McpServerToolApprovalRequestContent(approvalId, toolCall) { RawRepresentation = approvalItem }],
+            [new ToolApprovalRequestContent(approvalId, toolCall) { RawRepresentation = approvalItem }],
             approvalItem.Id);
     }
 

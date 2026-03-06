@@ -173,7 +173,15 @@ public class ChatResponseUpdate
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
-    public ResponseContinuationToken? ContinuationToken { get; set; }
+    public ResponseContinuationToken? ContinuationToken
+    {
+        get => ContinuationTokenCore;
+        set => ContinuationTokenCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("continuationToken")]
+    internal ResponseContinuationToken? ContinuationTokenCore { get; set; }
 
     /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

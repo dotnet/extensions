@@ -595,10 +595,10 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                     message.Parts.Add(new RealtimeOtelServerToolCallPart<RealtimeOtelMcpToolCall>
                     {
                         Id = mstcc.CallId,
-                        Name = mstcc.ToolName,
+                        Name = mstcc.Name,
                         ServerToolCall = new RealtimeOtelMcpToolCall
                         {
-                            Arguments = mstcc.Arguments,
+                            Arguments = mstcc.Arguments as IReadOnlyDictionary<string, object?> ?? mstcc.Arguments?.ToDictionary(k => k.Key, v => v.Value),
                             ServerName = mstcc.ServerName,
                         },
                     });
@@ -610,31 +610,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                         Id = mstrc.CallId,
                         ServerToolCallResponse = new RealtimeOtelMcpToolCallResponse
                         {
-                            Output = mstrc.Output,
-                        },
-                    });
-                    break;
-
-                case McpServerToolApprovalRequestContent mstarc:
-                    message.Parts.Add(new RealtimeOtelServerToolCallPart<RealtimeOtelMcpApprovalRequest>
-                    {
-                        Id = mstarc.Id,
-                        Name = mstarc.ToolCall.ToolName,
-                        ServerToolCall = new RealtimeOtelMcpApprovalRequest
-                        {
-                            Arguments = mstarc.ToolCall.Arguments,
-                            ServerName = mstarc.ToolCall.ServerName,
-                        },
-                    });
-                    break;
-
-                case McpServerToolApprovalResponseContent mstaresp:
-                    message.Parts.Add(new RealtimeOtelServerToolCallResponsePart<RealtimeOtelMcpApprovalResponse>
-                    {
-                        Id = mstaresp.Id,
-                        ServerToolCallResponse = new RealtimeOtelMcpApprovalResponse
-                        {
-                            Approved = mstaresp.Approved,
+                            Output = mstrc.Outputs,
                         },
                     });
                     break;
@@ -1064,19 +1040,6 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
         public object? Output { get; set; }
     }
 
-    private sealed class RealtimeOtelMcpApprovalRequest
-    {
-        public string Type { get; set; } = "mcp_approval_request";
-        public string? ServerName { get; set; }
-        public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
-    }
-
-    private sealed class RealtimeOtelMcpApprovalResponse
-    {
-        public string Type { get; set; } = "mcp_approval_response";
-        public bool Approved { get; set; }
-    }
-
     #endregion
 
     [JsonSourceGenerationOptions(
@@ -1095,7 +1058,6 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     [JsonSerializable(typeof(RealtimeOtelToolCallResponsePart))]
     [JsonSerializable(typeof(RealtimeOtelServerToolCallPart<RealtimeOtelMcpToolCall>))]
     [JsonSerializable(typeof(RealtimeOtelServerToolCallResponsePart<RealtimeOtelMcpToolCallResponse>))]
-    [JsonSerializable(typeof(RealtimeOtelServerToolCallPart<RealtimeOtelMcpApprovalRequest>))]
-    [JsonSerializable(typeof(RealtimeOtelServerToolCallResponsePart<RealtimeOtelMcpApprovalResponse>))]
+
     private sealed partial class RealtimeOtelContext : JsonSerializerContext;
 }

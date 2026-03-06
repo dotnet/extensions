@@ -405,4 +405,31 @@ public class FunctionCallContentTests
         Assert.Throws<ArgumentNullException>("name", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", null!, _ => null));
         Assert.Throws<ArgumentNullException>("argumentParser", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", "functionName", null!));
     }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new FunctionCallContent("call123", "myFunction")
+        {
+            Arguments = new Dictionary<string, object?> { { "arg1", "value1" } }
+        };
+
+        AssertSerializationRoundtrips<FunctionCallContent>(content);
+        AssertSerializationRoundtrips<ToolCallContent>(content);
+        AssertSerializationRoundtrips<AIContent>(content);
+
+        static void AssertSerializationRoundtrips<T>(FunctionCallContent content)
+            where T : AIContent
+        {
+            T contentAsT = (T)(object)content;
+            string json = JsonSerializer.Serialize(contentAsT, AIJsonUtilities.DefaultOptions);
+            T? deserialized = JsonSerializer.Deserialize<T>(json, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            var deserializedContent = Assert.IsType<FunctionCallContent>(deserialized);
+            Assert.Equal(content.CallId, deserializedContent.CallId);
+            Assert.Equal(content.Name, deserializedContent.Name);
+            Assert.NotNull(deserializedContent.Arguments);
+            Assert.Equal("value1", deserializedContent.Arguments["arg1"]?.ToString());
+        }
+    }
 }
