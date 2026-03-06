@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -166,6 +166,10 @@ public static partial class AIJsonUtilities
     // IImageGenerator
     [JsonSerializable(typeof(ImageGenerationOptions))]
     [JsonSerializable(typeof(ImageGenerationResponse))]
+
+    // IHostedFileClient
+    [JsonSerializable(typeof(HostedFileClientOptions))]
+    [JsonSerializable(typeof(HostedFileClientMetadata))]
 
     [EditorBrowsable(EditorBrowsableState.Never)] // Never use JsonContext directly, use DefaultOptions instead.
     private sealed partial class JsonContext : JsonSerializerContext;

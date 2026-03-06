@@ -3,6 +3,9 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -50,6 +53,67 @@ public sealed class HostedFileContent : AIContent
     /// <summary>Gets or sets an optional name associated with the file.</summary>
     public string? Name { get; set; }
 
+    /// <summary>Gets or sets the size of the file in bytes.</summary>
+    [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public long? SizeInBytes
+    {
+        get => SizeInBytesCore;
+        set => SizeInBytesCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("sizeInBytes")]
+    internal long? SizeInBytesCore { get; set; }
+
+    /// <summary>Gets or sets when the file was created.</summary>
+    [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public DateTimeOffset? CreatedAt
+    {
+        get => CreatedAtCore;
+        set => CreatedAtCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("createdAt")]
+    internal DateTimeOffset? CreatedAtCore { get; set; }
+
+    /// <summary>Gets or sets the purpose for which the file was uploaded.</summary>
+    /// <remarks>
+    /// Common values include "assistants", "fine-tune", "batch", or "vision",
+    /// but the specific values supported depend on the provider.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public string? Purpose
+    {
+        get => PurposeCore;
+        set => PurposeCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("purpose")]
+    internal string? PurposeCore { get; set; }
+
+    /// <summary>Gets or sets the scope (e.g. container ID) in which the file resides.</summary>
+    /// <remarks>
+    /// When set, file operations such as downloading will target this scope.
+    /// For example, files created by a code interpreter tool are stored in a container,
+    /// and the container ID is the scope needed to access them.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public string? Scope
+    {
+        get => ScopeCore;
+        set => ScopeCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("scope")]
+    internal string? ScopeCore { get; set; }
+
     /// <summary>
     /// Determines whether the <see cref="MediaType"/>'s top-level type matches the specified <paramref name="topLevelType"/>.
     /// </summary>
@@ -84,6 +148,11 @@ public sealed class HostedFileContent : AIContent
             if (Name is string name)
             {
                 display += $", Name = \"{name}\"";
+            }
+
+            if (SizeInBytes is not null)
+            {
+                display += $", Size = {SizeInBytes} bytes";
             }
 
             return display;
