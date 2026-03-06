@@ -14,8 +14,9 @@
     <PatchVersion>0</PatchVersion>
 
     <Workstream>AI</Workstream>
-    <MinCodeCoverage>75</MinCodeCoverage>
-    <MinMutationScore>50</MinMutationScore>
+    <!-- Template-only package (no Compile items or tests), so coverage/mutation thresholds are not applicable. -->
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
 
     <IsPackable>true</IsPackable>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
