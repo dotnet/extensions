@@ -228,6 +228,43 @@ public class ChatOptionsTests
     }
 
     [Fact]
+    public void JsonSerialization_Roundtrips_DefaultOptions()
+    {
+        ChatOptions original = new()
+        {
+            ConversationId = "12345",
+            Instructions = "Some instructions",
+            Temperature = 0.1f,
+            MaxOutputTokens = 2,
+            ModelId = "modelId",
+            AllowBackgroundResponses = true,
+            ContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3 }),
+            AdditionalProperties = new() { ["key"] = "value" },
+        };
+
+        string json = JsonSerializer.Serialize(original, AIJsonUtilities.DefaultOptions);
+
+        ChatOptions? result = JsonSerializer.Deserialize<ChatOptions>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal("12345", result.ConversationId);
+        Assert.Equal("Some instructions", result.Instructions);
+        Assert.Equal(0.1f, result.Temperature);
+        Assert.Equal(2, result.MaxOutputTokens);
+        Assert.Equal("modelId", result.ModelId);
+
+        Assert.True(result.AllowBackgroundResponses);
+
+        Assert.NotNull(result.ContinuationToken);
+        Assert.Equal(new byte[] { 1, 2, 3 }, result.ContinuationToken.ToBytes().ToArray());
+
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Single(result.AdditionalProperties);
+        Assert.True(result.AdditionalProperties.TryGetValue("key", out object? value));
+        Assert.Equal("value", value?.ToString());
+    }
+
+    [Fact]
     public void CopyConstructors_EnableHierarchyCloning()
     {
         OptionsB b = new()

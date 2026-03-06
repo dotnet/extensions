@@ -189,7 +189,15 @@ public class ChatOptions
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
-    public bool? AllowBackgroundResponses { get; set; }
+    public bool? AllowBackgroundResponses
+    {
+        get => AllowBackgroundResponsesCore;
+        set => AllowBackgroundResponsesCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("allowBackgroundResponses")]
+    internal bool? AllowBackgroundResponsesCore { get; set; }
 
     /// <summary>Gets or sets the continuation token for resuming and getting the result of the chat response identified by this token.</summary>
     /// <remarks>
@@ -204,7 +212,15 @@ public class ChatOptions
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
-    public ResponseContinuationToken? ContinuationToken { get; set; }
+    public ResponseContinuationToken? ContinuationToken
+    {
+        get => ContinuationTokenCore;
+        set => ContinuationTokenCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("continuationToken")]
+    internal ResponseContinuationToken? ContinuationTokenCore { get; set; }
 
     /// <summary>
     /// Gets or sets a callback responsible for creating the raw representation of the chat options from an underlying implementation.
