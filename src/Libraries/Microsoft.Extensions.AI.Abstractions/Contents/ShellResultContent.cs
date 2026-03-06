@@ -3,31 +3,22 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents the result of a shell tool invocation.
+/// Represents the result of a shell tool invocation by a hosted service.
 /// </summary>
-/// <remarks>
-/// This content type extends <see cref="FunctionResultContent"/> with structured shell output data.
-/// It can be produced by <see cref="ShellTool"/> subclasses for local execution or by
-/// <see cref="IChatClient"/> implementations for hosted shell execution results.
-/// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIShell, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class ShellResultContent : FunctionResultContent
+public sealed class ShellResultContent : ToolResultContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ShellResultContent"/> class.
     /// </summary>
-    /// <param name="callId">The function call ID for which this is the result.</param>
-    /// <param name="result">The result of the shell tool invocation.</param>
-    [JsonConstructor]
-    public ShellResultContent(string callId, object? result = null)
-        : base(Throw.IfNull(callId), result)
+    /// <param name="callId">The tool call ID.</param>
+    public ShellResultContent(string callId)
+        : base(callId)
     {
     }
 

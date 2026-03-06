@@ -14,17 +14,8 @@ public class ShellResultContentTests
     {
         ShellResultContent content = new("call123");
         Assert.Equal("call123", content.CallId);
-        Assert.Null(content.Result);
         Assert.Null(content.Output);
         Assert.Null(content.MaxOutputLength);
-    }
-
-    [Fact]
-    public void Constructor_WithResult()
-    {
-        ShellResultContent content = new("call123", "some result");
-        Assert.Equal("call123", content.CallId);
-        Assert.Equal("some result", content.Result);
     }
 
     [Fact]

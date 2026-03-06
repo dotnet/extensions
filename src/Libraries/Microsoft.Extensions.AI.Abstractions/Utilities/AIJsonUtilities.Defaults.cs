@@ -64,9 +64,11 @@ public static partial class AIJsonUtilities
         AddAIContentType(options, typeof(ToolCallContent), typeof(CodeInterpreterToolCallContent), "codeInterpreterToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolCallContent), typeof(ImageGenerationToolCallContent), "imageGenerationToolCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolCallContent), typeof(WebSearchToolCallContent), "webSearchToolCall", checkBuiltIn: false);
+        AddAIContentType(options, typeof(ToolCallContent), typeof(ShellCallContent), "shellCall", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolResultContent), typeof(CodeInterpreterToolResultContent), "codeInterpreterToolResult", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolResultContent), typeof(ImageGenerationToolResultContent), "imageGenerationToolResult", checkBuiltIn: false);
         AddAIContentType(options, typeof(ToolResultContent), typeof(WebSearchToolResultContent), "webSearchToolResult", checkBuiltIn: false);
+        AddAIContentType(options, typeof(ToolResultContent), typeof(ShellResultContent), "shellResult", checkBuiltIn: false);
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {

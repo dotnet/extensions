@@ -10,14 +10,8 @@ namespace Microsoft.Extensions.AI;
 /// Represents the output of a single shell command execution.
 /// </summary>
 [Experimental(DiagnosticIds.Experiments.AIShell, UrlFormat = DiagnosticIds.UrlFormat)]
-public class ShellCommandOutput
+public class ShellCommandOutput : AIContent
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ShellCommandOutput"/> class.
-    /// </summary>
-    public ShellCommandOutput()
-    {
-    }
 
     /// <summary>
     /// Gets or sets the standard output of the command.
