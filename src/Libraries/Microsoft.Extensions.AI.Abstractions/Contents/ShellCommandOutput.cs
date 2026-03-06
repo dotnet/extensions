@@ -12,7 +12,6 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AIShell, UrlFormat = DiagnosticIds.UrlFormat)]
 public class ShellCommandOutput : AIContent
 {
-
     /// <summary>
     /// Gets or sets the standard output of the command.
     /// </summary>
