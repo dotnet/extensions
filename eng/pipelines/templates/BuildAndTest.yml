@@ -167,6 +167,16 @@ steps:
               $(_OfficialBuildIdArgs)
       displayName: Pack docs transport package
 
+    - task: npmAuthenticate@0
+      inputs:
+        workingFile: $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/.npmrc
+      displayName: Authenticate npm for Azure DevOps plugin (root)
+
+    - task: npmAuthenticate@0
+      inputs:
+        workingFile: $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/tasks/PublishAIEvaluationReport/.npmrc
+      displayName: Authenticate npm for Azure DevOps plugin (task)
+
     - pwsh: |
           $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.VSIXOutputPath)
       displayName: Build Azure DevOps plugin
