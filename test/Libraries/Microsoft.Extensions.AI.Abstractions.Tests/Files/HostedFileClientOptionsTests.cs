@@ -20,6 +20,13 @@ public class HostedFileClientOptionsTests
         Assert.Null(options.Scope);
         Assert.Null(options.RawRepresentationFactory);
         Assert.Null(options.AdditionalProperties);
+
+        HostedFileClientOptions clone = options.Clone();
+        Assert.Null(clone.Purpose);
+        Assert.Null(clone.Limit);
+        Assert.Null(clone.Scope);
+        Assert.Null(clone.RawRepresentationFactory);
+        Assert.Null(clone.AdditionalProperties);
     }
 
     [Fact]
@@ -41,6 +48,79 @@ public class HostedFileClientOptionsTests
         Assert.Equal("container-1", options.Scope);
         Assert.Same(factory, options.RawRepresentationFactory);
         Assert.Same(props, options.AdditionalProperties);
+
+        HostedFileClientOptions clone = options.Clone();
+        Assert.Equal("fine-tune", clone.Purpose);
+        Assert.Equal(50, clone.Limit);
+        Assert.Equal("container-1", clone.Scope);
+        Assert.Same(factory, clone.RawRepresentationFactory);
+        Assert.Equal(props, clone.AdditionalProperties);
+    }
+
+    [Fact]
+    public void CopyConstructors_EnableHierarchyCloning()
+    {
+        OptionsB b = new()
+        {
+            Purpose = "test",
+            A = 42,
+            B = 84,
+        };
+
+        HostedFileClientOptions clone = b.Clone();
+
+        Assert.Equal("test", clone.Purpose);
+        Assert.Equal(42, Assert.IsType<OptionsA>(clone, exactMatch: false).A);
+        Assert.Equal(84, Assert.IsType<OptionsB>(clone, exactMatch: true).B);
+    }
+
+    private class OptionsA : HostedFileClientOptions
+    {
+        public OptionsA()
+        {
+        }
+
+        protected OptionsA(OptionsA other)
+            : base(other)
+        {
+            A = other.A;
+        }
+
+        public int A { get; set; }
+
+        public override HostedFileClientOptions Clone() => new OptionsA(this);
+    }
+
+    private class OptionsB : OptionsA
+    {
+        public OptionsB()
+        {
+        }
+
+        protected OptionsB(OptionsB other)
+            : base(other)
+        {
+            B = other.B;
+        }
+
+        public int B { get; set; }
+
+        public override HostedFileClientOptions Clone() => new OptionsB(this);
+    }
+
+    [Fact]
+    public void CopyConstructor_Null_Valid()
+    {
+        PassedNullToBaseOptions options = new();
+        Assert.NotNull(options);
+    }
+
+    private class PassedNullToBaseOptions : HostedFileClientOptions
+    {
+        public PassedNullToBaseOptions()
+            : base(null)
+        {
+        }
     }
 
     [Fact]
