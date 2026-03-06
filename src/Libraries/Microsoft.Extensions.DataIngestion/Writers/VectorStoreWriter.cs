@@ -171,24 +171,26 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
         // Each Vector Store has a different max top count limit, so we use low value and loop.
         const int MaxTopCount = 1_000;
 
-        List<object> keys = [];
-        int insertedCount;
+        HashSet<object> seenKeys = [];
+        int newCount;
         do
         {
-            insertedCount = 0;
+            newCount = 0;
 
             await foreach (var record in _vectorStoreCollection!.GetAsync(
                 filter: record => (string)record[DocumentIdName]! == document.Identifier,
                 top: MaxTopCount,
-                options: new() { Skip = keys.Count },
+                options: new() { Skip = seenKeys.Count },
                 cancellationToken: cancellationToken).ConfigureAwait(false))
             {
-                keys.Add(record[KeyName]!);
-                insertedCount++;
+                if (seenKeys.Add(record[KeyName]!))
+                {
+                    newCount++;
+                }
             }
         }
-        while (insertedCount == MaxTopCount);
+        while (newCount == MaxTopCount);
 
-        return keys;
+        return [.. seenKeys];
     }
 }
