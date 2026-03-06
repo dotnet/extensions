@@ -227,67 +227,73 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
 
         if (ResolveScope(options) is string containerId)
         {
-            // Bypass the SDK's collection APIs entirely and use the Pipeline directly.
-            // This works around https://github.com/openai/openai-dotnet/issues/733, where
-            // both the convenience and protocol collection overloads crash during pagination
-            // when deserializing container files with a null "bytes" value.
+            // Use OpenAI's protocol overload to make single-page requests, handling paging manually.
+            // This works around https://github.com/openai/openai-dotnet/issues/733, where both
+            // the convenience and protocol collection overloads crash during auto-pagination when
+            // deserializing container files with a null "bytes" value. By only taking the first raw
+            // page from each request, the SDK's internal deserialization for pagination is never triggered.
             var containerClient = GetContainerClient();
-            var requestOptions = options?.RawRepresentationFactory?.Invoke(this) as RequestOptions ?? new();
-            requestOptions.CancellationToken = cancellationToken;
 
             int count = 0;
             string? after = null;
 
             while (true)
             {
-                string query = BuildQuery(limit < int.MaxValue ? limit : null, after);
-                string baseUrl = containerClient.Endpoint.GetLeftPart(UriPartial.Path).TrimEnd('/');
-                string requestUrl = $"{baseUrl}/containers/{Uri.EscapeDataString(containerId)}/files{query}";
+                AsyncCollectionResult result = containerClient.GetContainerFilesAsync(
+                    containerId, limit < int.MaxValue ? limit : null,
+                    null, after, new() { CancellationToken = cancellationToken });
 
-                using var message = containerClient.Pipeline.CreateMessage();
-                message.Request.Method = "GET";
-                message.Request.Uri = new Uri(requestUrl);
-                message.Request.Headers.Set("Accept", "application/json");
-                message.Apply(requestOptions);
-
-                await containerClient.Pipeline.SendAsync(message).ConfigureAwait(false);
-                PipelineResponse response = message.Response ?? throw new InvalidOperationException("No response received.");
-                if (response.IsError)
+                // Get only the first raw page. We must not let the SDK auto-paginate
+                // because its pagination logic deserializes the full response, which crashes.
+                IAsyncEnumerator<ClientResult> pages = result.GetRawPagesAsync().GetAsyncEnumerator(cancellationToken);
+                JsonDocument doc;
+                try
                 {
-                    throw new ClientResultException(response);
-                }
-
-                using var doc = JsonDocument.Parse(response.Content);
-                var root = doc.RootElement;
-
-                if (root.TryGetProperty("data", out JsonElement data) && data.ValueKind is JsonValueKind.Array)
-                {
-                    foreach (var fileElement in data.EnumerateArray())
+                    if (!await pages.MoveNextAsync().ConfigureAwait(false))
                     {
-                        if (count >= limit)
-                        {
-                            yield break;
-                        }
-
-                        var file = ParseContainerFileJson(fileElement, containerId);
-                        if (file is null)
-                        {
-                            continue;
-                        }
-
-                        yield return file;
-                        count++;
+                        break;
                     }
-                }
 
-                bool hasMore = root.TryGetProperty("has_more", out var hm) && hm.ValueKind is JsonValueKind.True;
-                string? lastId = root.TryGetProperty("last_id", out var li) ? li.GetString() : null;
-                if (!hasMore || string.IsNullOrEmpty(lastId))
+                    doc = JsonDocument.Parse(pages.Current.GetRawResponse().Content);
+                }
+                finally
                 {
-                    break;
+                    await pages.DisposeAsync().ConfigureAwait(false);
                 }
 
-                after = lastId;
+                using (doc)
+                {
+                    var root = doc.RootElement;
+
+                    if (root.TryGetProperty("data", out JsonElement data) && data.ValueKind is JsonValueKind.Array)
+                    {
+                        foreach (var fileElement in data.EnumerateArray())
+                        {
+                            if (count >= limit)
+                            {
+                                yield break;
+                            }
+
+                            var file = ParseContainerFileJson(fileElement, containerId);
+                            if (file is null)
+                            {
+                                continue;
+                            }
+
+                            yield return file;
+                            count++;
+                        }
+                    }
+
+                    bool hasMore = root.TryGetProperty("has_more", out var hm) && hm.ValueKind is JsonValueKind.True;
+                    string? lastId = root.TryGetProperty("last_id", out var li) ? li.GetString() : null;
+                    if (!hasMore || string.IsNullOrEmpty(lastId))
+                    {
+                        break;
+                    }
+
+                    after = lastId;
+                }
             }
         }
         else
@@ -420,28 +426,6 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
 
     private static bool IsNotFoundError(Exception ex) =>
         ex is ClientResultException { Status: 404 };
-
-    /// <summary>Builds a query string for the container files listing endpoint.</summary>
-    private static string BuildQuery(int? limit, string? after)
-    {
-        if (limit is null && after is null)
-        {
-            return string.Empty;
-        }
-
-        var parts = new List<string>(2);
-        if (limit is not null)
-        {
-            parts.Add($"limit={limit.Value}");
-        }
-
-        if (after is not null)
-        {
-            parts.Add($"after={Uri.EscapeDataString(after)}");
-        }
-
-        return "?" + string.Join("&", parts);
-    }
 
     private OpenAIFileClient GetFileClient() =>
         _fileClient ??
