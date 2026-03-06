@@ -1,0 +1,189 @@
+parameters:
+  - name: buildScript
+    type: string
+  - name: buildConfig
+    type: string
+  - name: repoLogPath
+    type: string
+  - name: repoTestResultsPath
+    type: string
+  - name: isWindows
+    type: string
+  - name: skipTests
+    type: boolean
+    default: false
+  - name: skipQualityGates
+    type: boolean
+    default: false
+  - name: warnAsError
+    type: number
+    default: 1
+  - name: runAsPublic
+    type: boolean
+    default: false
+
+steps:
+  - task: NodeTool@0
+    displayName: Add NodeJS/npm
+    inputs:
+      versionSpec: "20.x"
+      checkLatest: true
+
+  - script: ${{ parameters.buildScript }}
+            -restore
+            -warnAsError ${{ parameters.warnAsError }}
+            /bl:${{ parameters.repoLogPath }}/restore.binlog
+    displayName: Restore
+
+  - pwsh: |
+        $(Build.SourcesDirectory)/scripts/Slngen.ps1 -All -NoLaunch
+    displayName: Create solution
+
+  - script: ${{ parameters.buildScript }}
+            -restore
+            -warnAsError ${{ parameters.warnAsError }}
+            /bl:${{ parameters.repoLogPath }}/restore2.binlog
+    displayName: Restore solution
+
+  - script: ${{ parameters.buildScript }}
+            -build
+            -configuration ${{ parameters.buildConfig }}
+            -warnAsError ${{ parameters.warnAsError }}
+            /bl:${{ parameters.repoLogPath }}/build.binlog
+            $(_OfficialBuildIdArgs)
+    displayName: Build
+
+  - ${{ if ne(parameters.skipTests, 'true') }}:
+    - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
+              --settings $(Build.SourcesDirectory)/eng/CodeCoverage.config
+              --output ${{ parameters.repoTestResultsPath }}/$(Agent.JobName)_CodeCoverageResults/$(Agent.JobName)_cobertura.xml
+              "${{ parameters.buildScript }} -test -configuration ${{ parameters.buildConfig }} /bl:${{ parameters.repoLogPath }}/tests.binlog $(_OfficialBuildIdArgs)"
+      displayName: Run unit tests
+
+  - script: ${{ parameters.buildScript }}
+            -pack
+            -configuration ${{ parameters.buildConfig }}
+            -warnAsError ${{ parameters.warnAsError }}
+            /bl:${{ parameters.repoLogPath }}/pack.binlog
+            /p:Restore=false /p:Build=false
+            $(_OfficialBuildIdArgs)
+    displayName: Pack
+    
+  - ${{ if ne(parameters.skipTests, 'true') }}:
+    - script: ${{ parameters.buildScript }}
+              -integrationTest
+              -configuration ${{ parameters.buildConfig }}
+              -warnAsError ${{ parameters.warnAsError }}
+              /bl:${{ parameters.repoLogPath }}/integration_tests.binlog
+              $(_OfficialBuildIdArgs)
+      displayName: Run integration tests
+
+    - pwsh: |
+        $SourcesDirectory = '$(Build.SourcesDirectory)';
+
+        $destinationPath = "${{ parameters.repoLogPath }}/FailedAssertions"
+        if (-not (Test-Path -Path $destinationPath)) {
+            New-Item -Path $destinationPath -ItemType Directory -Force | Out-Null
+        }
+
+        Get-ChildItem $SourcesDirectory -Filter "*.received.*" -Recurse | `
+            ForEach-Object {
+                # Exclude files that are already in the test results path
+                if ($_.FullName -like "*FailedAssertions*") {
+                    return
+                }
+
+                if ($_.PSIsContainer) {
+                    # Delete the folder if it exists
+                    $dest = Join-Path -Path $destinationPath -ChildPath $_.Name
+                    if (Test-Path -Path $dest) {
+                        Remove-Item -Path $dest -Recurse -Force
+                    }
+                    # Copy folder to logs
+                    Copy-Item -Path $_.FullName -Destination $destinationPath -Recurse -Force
+                }
+                else {
+                    # Calculates the relative path of the file with respect to `$SourcesDirectory`.
+                    $relativePath = [System.IO.Path]::GetRelativePath($SourcesDirectory, $_.FullName)
+                    # Constructs the full destination path for the file, preserving the relative directory structure.
+                    $destinationFile = Join-Path -Path $destinationPath -ChildPath $relativePath
+                    $destinationDirectory = [System.IO.Path]::GetDirectoryName($destinationFile)
+                    # Ensures the destination directory exists (creates it if necessary).
+                    if (-not (Test-Path -Path $destinationDirectory)) {
+                        New-Item -Path $destinationDirectory -ItemType Directory -Force | Out-Null
+                    }
+                    # Copies the file to the destination path.
+                    Copy-Item -Path $_.FullName -Destination $destinationFile -Force
+                }
+            }
+      displayName: Copy failed assertions results to logs
+      condition: always()
+      continueOnError: true
+
+    - pwsh: |
+        Get-ChildItem ${{ parameters.repoTestResultsPath }} -Include "*_hangdump.dmp","Sequence_*.xml" -Recurse | `
+            ForEach-Object {
+                $sourceFolder = $_.Directory.Name;
+                # The folder must be a GUID, see https://learn.microsoft.com/dotnet/core/tools/dotnet-test#options
+                $not_used = [System.Guid]::Empty;
+                if ([System.Guid]::TryParse($sourceFolder, [System.Management.Automation.PSReference]$not_used)) {
+                    $destinationFolder = $(New-Item -Path ${{ parameters.repoLogPath }} -Name $sourceFolder -ItemType "Directory" -Force).FullName;
+                    $destination = "$destinationFolder\$($_.Name)";
+                    Copy-Item -Path $_.FullName -Destination $destination -Force;
+                }
+            }
+      displayName: Copy crash results to logs
+      condition: always()
+      continueOnError: true
+
+    - script: $(Build.SourcesDirectory)/.dotnet/dotnet publish
+      workingDirectory: $(Build.SourcesDirectory)/test/Libraries/Microsoft.Extensions.AotCompatibility.TestApp
+      displayName: Publish AOT Test
+      
+    - ${{ if ne(parameters.skipQualityGates, 'true') }}:
+      - ${{ if eq(parameters.runAsPublic, 'true') }}:
+        - task: PublishPipelineArtifact@1
+          displayName: Publish coverage results (cobertura.xml)
+          inputs:
+            targetPath: '${{ parameters.repoTestResultsPath }}/$(Agent.JobName)_CodeCoverageResults'
+            artifactName: "$(Agent.JobName)_CodeCoverageResults"
+            publishLocation: 'pipeline'
+
+      - ${{ if ne(parameters.runAsPublic, 'true') }}:
+        - task: 1ES.PublishPipelineArtifact@1
+          displayName: Publish coverage results (cobertura.xml)
+          inputs:
+            targetPath: '${{ parameters.repoTestResultsPath }}/$(Agent.JobName)_CodeCoverageResults'
+            artifactName: "$(Agent.JobName)_CodeCoverageResults"
+
+  - ${{ if eq(parameters.isWindows, 'true') }}:
+    # Publishing will happen in a subsequent step
+    - script: ${{ parameters.buildScript }}
+              -projects $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj
+              -warnAsError ${{ parameters.warnAsError }}
+              -pack
+              -configuration ${{ parameters.buildConfig }}
+              /bl:${{ parameters.repoLogPath }}/transport.binlog
+              $(_OfficialBuildIdArgs)
+      displayName: Pack docs transport package
+
+    - task: npmAuthenticate@0
+      inputs:
+        workingFile: $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/tasks/PublishAIEvaluationReport/.npmrc
+      displayName: Authenticate npm for Azure DevOps plugin
+
+    - pwsh: |
+          $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.VSIXOutputPath)
+      displayName: Build Azure DevOps plugin
+
+    - script: ${{ parameters.buildScript }}
+              -restore
+              -sign $(_SignArgs)
+              -publish $(_PublishArgs)
+              -configuration ${{ parameters.buildConfig }}
+              -warnAsError ${{ parameters.warnAsError }}
+              /bl:${{ parameters.repoLogPath }}/publish.binlog
+              /p:Build=false
+              $(_OfficialBuildIdArgs)
+      displayName: Sign and publish
+
