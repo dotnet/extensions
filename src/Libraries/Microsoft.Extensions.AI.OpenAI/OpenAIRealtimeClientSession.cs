@@ -373,7 +373,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             // Inject event_id if the message has one but the raw JSON does not.
             if (message.MessageId is not null && !jsonString.Contains("\"event_id\"", StringComparison.Ordinal))
             {
-                jsonString = jsonString.Insert(1, $"\"event_id\":\"{message.MessageId}\",");
+                jsonString = jsonString.Insert(1, $"\"event_id\":{JsonSerializer.Serialize(message.MessageId)},");
             }
 
             await _sessionClient!.SendCommandAsync(BinaryData.FromString(jsonString), null).ConfigureAwait(false);
