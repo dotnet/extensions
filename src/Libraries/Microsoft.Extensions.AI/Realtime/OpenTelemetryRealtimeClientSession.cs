@@ -178,22 +178,10 @@ public sealed partial class OpenTelemetryRealtimeClientSession : DelegatingRealt
 
             if (otelMessage is not null)
             {
-                RealtimeSessionOptions? options = Options;
-                string? requestModelId = options?.Model ?? _defaultModelId;
-                Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
-
                 using Activity? inputActivity = CreateAndConfigureActivity(options: null);
                 if (inputActivity is { IsAllDataRequested: true })
                 {
                     _ = inputActivity.AddTag(OpenTelemetryConsts.GenAI.Input.Messages, SerializeMessage(otelMessage));
-                }
-
-                // Record metrics
-                if (_operationDurationHistogram.Enabled && stopwatch is not null)
-                {
-                    TagList tags = default;
-                    AddMetricTags(ref tags, requestModelId, responseModelId: null);
-                    _operationDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, tags);
                 }
             }
         }
