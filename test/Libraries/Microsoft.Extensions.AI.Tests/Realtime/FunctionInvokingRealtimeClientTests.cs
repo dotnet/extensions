@@ -15,50 +15,47 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class FunctionInvokingRealtimeClientSessionTests
+public class FunctionInvokingRealtimeClientTests
 {
     [Fact]
-    public void Ctor_NullInnerSession_Throws()
+    public void Ctor_NullArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("innerSession", () => new FunctionInvokingRealtimeClientSession(null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => new FunctionInvokingRealtimeClient(null!));
     }
 
     [Fact]
-    public async Task Properties_DefaultValues()
+    public void Properties_DefaultValues()
     {
-        await using var inner = new TestRealtimeClientSession();
-        await using var session = new FunctionInvokingRealtimeClientSession(inner);
+        using var client = CreateClient();
 
-        Assert.False(session.IncludeDetailedErrors);
-        Assert.False(session.AllowConcurrentInvocation);
-        Assert.Equal(40, session.MaximumIterationsPerRequest);
-        Assert.Equal(3, session.MaximumConsecutiveErrorsPerRequest);
-        Assert.Null(session.AdditionalTools);
-        Assert.False(session.TerminateOnUnknownCalls);
-        Assert.Null(session.FunctionInvoker);
+        Assert.False(client.IncludeDetailedErrors);
+        Assert.False(client.AllowConcurrentInvocation);
+        Assert.Equal(40, client.MaximumIterationsPerRequest);
+        Assert.Equal(3, client.MaximumConsecutiveErrorsPerRequest);
+        Assert.Null(client.AdditionalTools);
+        Assert.False(client.TerminateOnUnknownCalls);
+        Assert.Null(client.FunctionInvoker);
     }
 
     [Fact]
-    public async Task MaximumIterationsPerRequest_InvalidValue_Throws()
+    public void MaximumIterationsPerRequest_InvalidValue_Throws()
     {
-        await using var inner = new TestRealtimeClientSession();
-        await using var session = new FunctionInvokingRealtimeClientSession(inner);
+        using var client = CreateClient();
 
-        Assert.Throws<ArgumentOutOfRangeException>("value", () => session.MaximumIterationsPerRequest = 0);
-        Assert.Throws<ArgumentOutOfRangeException>("value", () => session.MaximumIterationsPerRequest = -1);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => client.MaximumIterationsPerRequest = 0);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => client.MaximumIterationsPerRequest = -1);
     }
 
     [Fact]
-    public async Task MaximumConsecutiveErrorsPerRequest_InvalidValue_Throws()
+    public void MaximumConsecutiveErrorsPerRequest_InvalidValue_Throws()
     {
-        await using var inner = new TestRealtimeClientSession();
-        await using var session = new FunctionInvokingRealtimeClientSession(inner);
+        using var client = CreateClient();
 
-        Assert.Throws<ArgumentOutOfRangeException>("value", () => session.MaximumConsecutiveErrorsPerRequest = -1);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => client.MaximumConsecutiveErrorsPerRequest = -1);
 
         // 0 is valid (means immediately rethrow on any error)
-        session.MaximumConsecutiveErrorsPerRequest = 0;
-        Assert.Equal(0, session.MaximumConsecutiveErrorsPerRequest);
+        client.MaximumConsecutiveErrorsPerRequest = 0;
+        Assert.Equal(0, client.MaximumConsecutiveErrorsPerRequest);
     }
 
     [Fact]
@@ -74,7 +71,8 @@ public class FunctionInvokingRealtimeClientSessionTests
         {
             GetStreamingResponseAsyncCallback = (ct) => YieldMessages(serverMessages, ct),
         };
-        await using var session = new FunctionInvokingRealtimeClientSession(inner);
+        using var client = CreateClient(inner);
+        await using var session = await client.CreateSessionAsync();
 
         var received = new List<RealtimeServerMessage>();
         await foreach (var msg in session.GetStreamingResponseAsync())
@@ -110,7 +108,8 @@ public class FunctionInvokingRealtimeClientSessionTests
             },
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner);
+        using var client = CreateClient(inner);
+        await using var session = await client.CreateSessionAsync();
 
         var received = new List<RealtimeServerMessage>();
         await foreach (var msg in session.GetStreamingResponseAsync())
@@ -158,10 +157,9 @@ public class FunctionInvokingRealtimeClientSessionTests
             },
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner)
-        {
-            AdditionalTools = [getWeather],
-        };
+        using var client = CreateClient(inner);
+        client.AdditionalTools = [getWeather];
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in session.GetStreamingResponseAsync())
         {
@@ -197,10 +195,9 @@ public class FunctionInvokingRealtimeClientSessionTests
             SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner)
-        {
-            MaximumIterationsPerRequest = 2,
-        };
+        using var client = CreateClient(inner);
+        client.MaximumIterationsPerRequest = 2;
+        await using var session = await client.CreateSessionAsync();
 
         var received = new List<RealtimeServerMessage>();
         await foreach (var msg in session.GetStreamingResponseAsync())
@@ -234,14 +231,13 @@ public class FunctionInvokingRealtimeClientSessionTests
             SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner)
+        using var client = CreateClient(inner);
+        client.FunctionInvoker = (context, ct) =>
         {
-            FunctionInvoker = (context, ct) =>
-            {
-                customInvoked = true;
-                return new ValueTask<object?>("custom_result");
-            },
+            customInvoked = true;
+            return new ValueTask<object?>("custom_result");
         };
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in session.GetStreamingResponseAsync())
         {
@@ -268,7 +264,8 @@ public class FunctionInvokingRealtimeClientSessionTests
             },
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner);
+        using var client = CreateClient(inner);
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in session.GetStreamingResponseAsync())
         {
@@ -305,10 +302,9 @@ public class FunctionInvokingRealtimeClientSessionTests
             },
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner)
-        {
-            IncludeDetailedErrors = true,
-        };
+        using var client = CreateClient(inner);
+        client.IncludeDetailedErrors = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in session.GetStreamingResponseAsync())
         {
@@ -344,10 +340,9 @@ public class FunctionInvokingRealtimeClientSessionTests
             },
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner)
-        {
-            IncludeDetailedErrors = false,
-        };
+        using var client = CreateClient(inner);
+        client.IncludeDetailedErrors = false;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in session.GetStreamingResponseAsync())
         {
@@ -364,9 +359,10 @@ public class FunctionInvokingRealtimeClientSessionTests
     public async Task GetService_ReturnsSelf()
     {
         await using var inner = new TestRealtimeClientSession();
-        await using var session = new FunctionInvokingRealtimeClientSession(inner);
+        using var client = CreateClient(inner);
+        await using var session = await client.CreateSessionAsync();
 
-        Assert.Same(session, session.GetService(typeof(FunctionInvokingRealtimeClientSession)));
+        Assert.Same(client, client.GetService(typeof(FunctionInvokingRealtimeClient)));
         Assert.Same(session, session.GetService(typeof(IRealtimeClientSession)));
         Assert.Same(inner, session.GetService(typeof(TestRealtimeClientSession)));
     }
@@ -389,10 +385,9 @@ public class FunctionInvokingRealtimeClientSessionTests
             },
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner)
-        {
-            TerminateOnUnknownCalls = true,
-        };
+        using var client = CreateClient(inner);
+        client.TerminateOnUnknownCalls = true;
+        await using var session = await client.CreateSessionAsync();
 
         var received = new List<RealtimeServerMessage>();
         await foreach (var msg in session.GetStreamingResponseAsync())
@@ -424,10 +419,9 @@ public class FunctionInvokingRealtimeClientSessionTests
             },
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner)
-        {
-            TerminateOnUnknownCalls = false,
-        };
+        using var client = CreateClient(inner);
+        client.TerminateOnUnknownCalls = false;
+        await using var session = await client.CreateSessionAsync();
 
         var received = new List<RealtimeServerMessage>();
         await foreach (var msg in session.GetStreamingResponseAsync())
@@ -502,10 +496,9 @@ public class FunctionInvokingRealtimeClientSessionTests
             SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner)
-        {
-            AllowConcurrentInvocation = true,
-        };
+        using var client = CreateClient(inner);
+        client.AllowConcurrentInvocation = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in session.GetStreamingResponseAsync())
         {
@@ -545,10 +538,9 @@ public class FunctionInvokingRealtimeClientSessionTests
             SendAsyncCallback = (_, _) => Task.CompletedTask,
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner)
-        {
-            MaximumConsecutiveErrorsPerRequest = 1,
-        };
+        using var client = CreateClient(inner);
+        client.MaximumConsecutiveErrorsPerRequest = 1;
+        await using var session = await client.CreateSessionAsync();
 
         // Should eventually throw after exceeding the consecutive error limit
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -564,32 +556,34 @@ public class FunctionInvokingRealtimeClientSessionTests
     public void UseFunctionInvocation_NullBuilder_Throws()
     {
         Assert.Throws<ArgumentNullException>("builder", () =>
-            ((RealtimeClientSessionBuilder)null!).UseFunctionInvocation());
+            ((RealtimeClientBuilder)null!).UseFunctionInvocation());
     }
 
     [Fact]
     public async Task UseFunctionInvocation_ConfigureCallback_IsInvoked()
     {
         await using var inner = new TestRealtimeClientSession();
-        var builder = new RealtimeClientSessionBuilder(inner);
+        using var innerClient = new TestRealtimeClient(inner);
+        var builder = new RealtimeClientBuilder(innerClient);
 
         bool configured = false;
-        builder.UseFunctionInvocation(configure: session =>
+        builder.UseFunctionInvocation(configure: client =>
         {
             configured = true;
-            session.IncludeDetailedErrors = true;
-            session.MaximumIterationsPerRequest = 10;
+            client.IncludeDetailedErrors = true;
+            client.MaximumIterationsPerRequest = 10;
         });
 
-        await using var pipeline = builder.Build();
+        using var pipeline = builder.Build();
         Assert.True(configured);
 
-        var funcSession = pipeline.GetService(typeof(FunctionInvokingRealtimeClientSession));
-        Assert.NotNull(funcSession);
+        await using var session = await pipeline.CreateSessionAsync();
 
-        var typedSession = Assert.IsType<FunctionInvokingRealtimeClientSession>(funcSession);
-        Assert.True(typedSession.IncludeDetailedErrors);
-        Assert.Equal(10, typedSession.MaximumIterationsPerRequest);
+        var funcClient = pipeline.GetService(typeof(FunctionInvokingRealtimeClient));
+        Assert.NotNull(funcClient);
+        var typedClient = Assert.IsType<FunctionInvokingRealtimeClient>(funcClient);
+        Assert.True(typedClient.IncludeDetailedErrors);
+        Assert.Equal(10, typedClient.MaximumIterationsPerRequest);
     }
 
     [Fact]
@@ -615,7 +609,8 @@ public class FunctionInvokingRealtimeClientSessionTests
             },
         };
 
-        await using var session = new FunctionInvokingRealtimeClientSession(inner);
+        using var client = CreateClient(inner);
+        await using var session = await client.CreateSessionAsync();
 
         var received = new List<RealtimeServerMessage>();
         await foreach (var msg in session.GetStreamingResponseAsync())
@@ -632,6 +627,13 @@ public class FunctionInvokingRealtimeClientSessionTests
     }
 
     #region Helpers
+
+#pragma warning disable CA2000 // Dispose objects before losing scope - ownership transferred to FunctionInvokingRealtimeClient
+    private static FunctionInvokingRealtimeClient CreateClient(IRealtimeClientSession? session = null)
+    {
+        return new FunctionInvokingRealtimeClient(new TestRealtimeClient(session ?? new TestRealtimeClientSession()));
+    }
+#pragma warning restore CA2000
 
     private static RealtimeServerResponseOutputItemMessage CreateFunctionCallOutputItemMessage(
         string callId, string functionName, IDictionary<string, object?>? arguments)
@@ -660,4 +662,24 @@ public class FunctionInvokingRealtimeClientSessionTests
     }
 
     #endregion
+
+    private sealed class TestRealtimeClient : IRealtimeClient
+    {
+        private readonly IRealtimeClientSession _session;
+
+        public TestRealtimeClient(IRealtimeClientSession session)
+        {
+            _session = session;
+        }
+
+        public Task<IRealtimeClientSession> CreateSessionAsync(RealtimeSessionOptions? options = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(_session);
+
+        public object? GetService(Type serviceType, object? serviceKey = null) =>
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this : _session.GetService(serviceType, serviceKey);
+
+        public void Dispose()
+        {
+        }
+    }
 }

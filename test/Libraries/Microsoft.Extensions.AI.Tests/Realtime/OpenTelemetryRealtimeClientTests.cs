@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class OpenTelemetryRealtimeClientSessionTests
+public class OpenTelemetryRealtimeClientTests
 {
     [Theory]
     [InlineData(false)]
@@ -74,14 +74,11 @@ public class OpenTelemetryRealtimeClientSessionTests
             };
         }
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: instance =>
-            {
-                instance.EnableSensitiveData = enableSensitiveData;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
-            })
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = enableSensitiveData;
+        client.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -204,10 +201,12 @@ public class OpenTelemetryRealtimeClientSessionTests
             throw new InvalidOperationException("Streaming error");
         }
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
@@ -252,10 +251,12 @@ public class OpenTelemetryRealtimeClientSessionTests
             };
         }
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -298,10 +299,12 @@ public class OpenTelemetryRealtimeClientSessionTests
         }
 
         var sourceName = Guid.NewGuid().ToString();
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         // This should work without errors even without listeners
         var count = 0;
@@ -318,9 +321,11 @@ public class OpenTelemetryRealtimeClientSessionTests
     public async Task InvalidArgs_Throws()
     {
         await using var innerSession = new TestRealtimeClientSession();
+        using var innerClient = new TestRealtimeClient(innerSession);
 
-        Assert.Throws<ArgumentNullException>("innerSession", () => new OpenTelemetryRealtimeClientSession(null!));
-        Assert.Throws<ArgumentNullException>("value", () => new OpenTelemetryRealtimeClientSession(innerSession).JsonSerializerOptions = null!);
+        Assert.Throws<ArgumentNullException>("innerClient", () => new OpenTelemetryRealtimeClient(null!));
+        using var client = new OpenTelemetryRealtimeClient(innerClient);
+        Assert.Throws<ArgumentNullException>("value", () => client.JsonSerializerOptions = null!);
     }
 
     [Fact]
@@ -333,7 +338,9 @@ public class OpenTelemetryRealtimeClientSessionTests
     public async Task GetService_ReturnsActivitySource()
     {
         await using var innerSession = new TestRealtimeClientSession();
-        await using var session = new OpenTelemetryRealtimeClientSession(innerSession);
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient);
+        await using var session = await client.CreateSessionAsync();
 
         var activitySource = session.GetService(typeof(ActivitySource));
         Assert.NotNull(activitySource);
@@ -344,13 +351,13 @@ public class OpenTelemetryRealtimeClientSessionTests
     public async Task GetService_ReturnsSelf()
     {
         await using var innerSession = new TestRealtimeClientSession();
-        await using var session = new OpenTelemetryRealtimeClientSession(innerSession);
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient);
 
-        var self = session.GetService(typeof(OpenTelemetryRealtimeClientSession));
-        Assert.Same(session, self);
+        Assert.Same(client, client.GetService(typeof(OpenTelemetryRealtimeClient)));
 
-        var realtime = session.GetService(typeof(IRealtimeClientSession));
-        Assert.Same(session, realtime);
+        await using var session = await client.CreateSessionAsync();
+        Assert.Same(session, session.GetService(typeof(IRealtimeClientSession)));
     }
 
     [Fact]
@@ -385,10 +392,12 @@ public class OpenTelemetryRealtimeClientSessionTests
             yield return new RealtimeServerResponseCreatedMessage(RealtimeServerMessageType.ResponseDone);
         }
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -436,10 +445,12 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -475,10 +486,12 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -515,10 +528,12 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -554,10 +569,12 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -591,10 +608,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesWithToolResultAsync())
         {
@@ -634,10 +651,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithToolCallAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -677,10 +694,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithToolCallAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = false)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = false;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesWithToolResultAsync())
         {
@@ -762,10 +779,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -805,10 +822,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -848,10 +865,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesWithInstructionsAsync())
         {
@@ -890,10 +907,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesWithItemsAsync())
         {
@@ -932,10 +949,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithTextOutputAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -973,10 +990,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithTranscriptionAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -1014,10 +1031,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackWithServerErrorAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
         {
@@ -1055,10 +1072,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesWithTextContentAsync())
         {
@@ -1096,10 +1113,10 @@ public class OpenTelemetryRealtimeClientSessionTests
             GetStreamingResponseAsyncCallback = (cancellationToken) => SimpleCallbackAsync(cancellationToken),
         };
 
-        await using var session = innerSession
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName, configure: s => s.EnableSensitiveData = true)
-            .Build();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesWithImageContentAsync())
         {
@@ -1200,42 +1217,61 @@ public class OpenTelemetryRealtimeClientSessionTests
     public void UseOpenTelemetry_NullBuilder_Throws()
     {
         Assert.Throws<ArgumentNullException>("builder", () =>
-            ((RealtimeClientSessionBuilder)null!).UseOpenTelemetry());
+            ((RealtimeClientBuilder)null!).UseOpenTelemetry());
     }
 
     [Fact]
-    public async Task UseOpenTelemetry_ConfigureCallback_IsInvoked()
+    public async Task UseOpenTelemetry_BuildsPipeline()
     {
         await using var innerSession = new TestRealtimeClientSession();
-        var builder = new RealtimeClientSessionBuilder(innerSession);
+        using var innerClient = new TestRealtimeClient(innerSession);
+        var builder = new RealtimeClientBuilder(innerClient);
 
-        bool configured = false;
-        builder.UseOpenTelemetry(configure: session =>
-        {
-            configured = true;
-            session.EnableSensitiveData = true;
-        });
+        builder.UseOpenTelemetry();
 
-        await using var pipeline = builder.Build();
-        Assert.True(configured);
+        using var pipeline = builder.Build();
+        await using var session = await pipeline.CreateSessionAsync();
 
-        var otelSession = pipeline.GetService(typeof(OpenTelemetryRealtimeClientSession));
-        Assert.NotNull(otelSession);
+        var otelClient = pipeline.GetService(typeof(OpenTelemetryRealtimeClient));
+        Assert.NotNull(otelClient);
 
-        var typedSession = Assert.IsType<OpenTelemetryRealtimeClientSession>(otelSession);
-        Assert.True(typedSession.EnableSensitiveData);
+        var typedClient = Assert.IsType<OpenTelemetryRealtimeClient>(otelClient);
+        typedClient.EnableSensitiveData = true;
+        Assert.True(typedClient.EnableSensitiveData);
     }
 
     [Fact]
     public async Task DisposeAsync_CanBeCalledMultipleTimes()
     {
         await using var innerSession = new TestRealtimeClientSession();
-        var session = new OpenTelemetryRealtimeClientSession(innerSession);
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient);
+        var session = await client.CreateSessionAsync();
 
         await session.DisposeAsync();
         await session.DisposeAsync();
 
         // Verifying no exception is thrown on double dispose
         Assert.NotNull(session);
+    }
+
+    private sealed class TestRealtimeClient : IRealtimeClient
+    {
+        private readonly IRealtimeClientSession _session;
+
+        public TestRealtimeClient(IRealtimeClientSession session)
+        {
+            _session = session;
+        }
+
+        public Task<IRealtimeClientSession> CreateSessionAsync(RealtimeSessionOptions? options = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(_session);
+
+        public object? GetService(Type serviceType, object? serviceKey = null) =>
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this : _session.GetService(serviceType, serviceKey);
+
+        public void Dispose()
+        {
+        }
     }
 }

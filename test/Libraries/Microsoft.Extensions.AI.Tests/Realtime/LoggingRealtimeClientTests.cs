@@ -14,14 +14,15 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class LoggingRealtimeClientSessionTests
+public class LoggingRealtimeClientTests
 {
     [Fact]
-    public async Task LoggingRealtimeClientSession_InvalidArgs_Throws()
+    public async Task LoggingRealtimeClient_InvalidArgs_Throws()
     {
         await using var innerSession = new TestRealtimeClientSession();
-        Assert.Throws<ArgumentNullException>("innerSession", () => new LoggingRealtimeClientSession(null!, NullLogger.Instance));
-        Assert.Throws<ArgumentNullException>("logger", () => new LoggingRealtimeClientSession(innerSession, null!));
+        using var innerClient = new TestRealtimeClient(innerSession);
+        Assert.Throws<ArgumentNullException>("innerClient", () => new LoggingRealtimeClient(null!, NullLogger.Instance));
+        Assert.Throws<ArgumentNullException>("logger", () => new LoggingRealtimeClient(innerClient, null!));
     }
 
     [Fact]
@@ -29,18 +30,33 @@ public class LoggingRealtimeClientSessionTests
     {
         await using var innerSession = new TestRealtimeClientSession();
 
-        Assert.Null(innerSession.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(LoggingRealtimeClientSession)));
-        Assert.Same(innerSession, innerSession.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(IRealtimeClientSession)));
+        using var c1 = new TestRealtimeClient(innerSession);
+        using var pipeline1 = c1.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build();
+        await using var s1 = await pipeline1.CreateSessionAsync();
+        Assert.Null(pipeline1.GetService(typeof(LoggingRealtimeClient)));
+        Assert.Same(innerSession, s1.GetService(typeof(IRealtimeClientSession)));
 
         using var factory = LoggerFactory.Create(b => b.AddFakeLogging());
-        Assert.NotNull(innerSession.AsBuilder().UseLogging(factory).Build().GetService(typeof(LoggingRealtimeClientSession)));
+        using var c2 = new TestRealtimeClient(innerSession);
+        using var pipeline2 = c2.AsBuilder().UseLogging(factory).Build();
+        await using var s2 = await pipeline2.CreateSessionAsync();
+        Assert.NotNull(pipeline2.GetService(typeof(LoggingRealtimeClient)));
 
         ServiceCollection c = new();
         c.AddFakeLogging();
         var services = c.BuildServiceProvider();
-        Assert.NotNull(innerSession.AsBuilder().UseLogging().Build(services).GetService(typeof(LoggingRealtimeClientSession)));
-        Assert.NotNull(innerSession.AsBuilder().UseLogging(null).Build(services).GetService(typeof(LoggingRealtimeClientSession)));
-        Assert.Null(innerSession.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build(services).GetService(typeof(LoggingRealtimeClientSession)));
+        using var c3 = new TestRealtimeClient(innerSession);
+        using var pipeline3 = c3.AsBuilder().UseLogging().Build(services);
+        await using var s3 = await pipeline3.CreateSessionAsync();
+        Assert.NotNull(pipeline3.GetService(typeof(LoggingRealtimeClient)));
+        using var c4 = new TestRealtimeClient(innerSession);
+        using var pipeline4 = c4.AsBuilder().UseLogging(null).Build(services);
+        await using var s4 = await pipeline4.CreateSessionAsync();
+        Assert.NotNull(pipeline4.GetService(typeof(LoggingRealtimeClient)));
+        using var c5 = new TestRealtimeClient(innerSession);
+        using var pipeline5 = c5.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build(services);
+        await using var s5 = await pipeline5.CreateSessionAsync();
+        Assert.Null(pipeline5.GetService(typeof(LoggingRealtimeClient)));
     }
 
     [Theory]
@@ -57,10 +73,12 @@ public class LoggingRealtimeClientSessionTests
 
         await using var innerSession = new TestRealtimeClientSession();
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseLogging()
             .Build(services);
+        await using var session = await client.CreateSessionAsync();
 
         await session.SendAsync(new RealtimeClientSessionUpdateMessage(new RealtimeSessionOptions { Model = "test-model", Instructions = "Be helpful" }));
 
@@ -100,10 +118,12 @@ public class LoggingRealtimeClientSessionTests
             SendAsyncCallback = (message, cancellationToken) => Task.CompletedTask,
         };
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseLogging()
             .Build(services);
+        await using var session = await client.CreateSessionAsync();
 
         await session.SendAsync(new RealtimeClientMessage { MessageId = "test-event-123" });
 
@@ -147,10 +167,12 @@ public class LoggingRealtimeClientSessionTests
             yield return new RealtimeServerMessage { Type = RealtimeServerMessageType.OutputAudioDelta, MessageId = "event-2" };
         }
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         await foreach (var message in session.GetStreamingResponseAsync())
         {
@@ -196,10 +218,12 @@ public class LoggingRealtimeClientSessionTests
             },
         };
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         cts.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(() => session.SendAsync(new RealtimeClientSessionUpdateMessage(new RealtimeSessionOptions()), cts.Token));
@@ -224,10 +248,12 @@ public class LoggingRealtimeClientSessionTests
             },
         };
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => session.SendAsync(new RealtimeClientSessionUpdateMessage(new RealtimeSessionOptions())));
 
@@ -259,10 +285,12 @@ public class LoggingRealtimeClientSessionTests
 #pragma warning restore CS0162
         }
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         cts.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
@@ -299,10 +327,12 @@ public class LoggingRealtimeClientSessionTests
 #pragma warning restore CS0162
         }
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
@@ -319,18 +349,20 @@ public class LoggingRealtimeClientSessionTests
     }
 
     [Fact]
-    public async Task GetService_ReturnsLoggingSessionWhenRequested()
+    public async Task GetService_ReturnsLoggingClientWhenRequested()
     {
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddFakeLogging());
 
         await using var innerSession = new TestRealtimeClientSession();
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
-        Assert.NotNull(session.GetService(typeof(LoggingRealtimeClientSession)));
+        Assert.NotNull(client.GetService(typeof(LoggingRealtimeClient)));
         Assert.Same(session, session.GetService(typeof(IRealtimeClientSession)));
     }
 
@@ -350,10 +382,12 @@ public class LoggingRealtimeClientSessionTests
             },
         };
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         cts.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
@@ -379,10 +413,12 @@ public class LoggingRealtimeClientSessionTests
             },
         };
 
-        await using var session = innerSession
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = innerClient
             .AsBuilder()
             .UseLogging(loggerFactory)
             .Build();
+        await using var session = await client.CreateSessionAsync();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             session.SendAsync(new RealtimeClientMessage()));
@@ -397,46 +433,49 @@ public class LoggingRealtimeClientSessionTests
     public async Task JsonSerializerOptions_NullValue_Throws()
     {
         await using var innerSession = new TestRealtimeClientSession();
-        await using var session = new LoggingRealtimeClientSession(innerSession, NullLogger.Instance);
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new LoggingRealtimeClient(innerClient, NullLogger.Instance);
 
-        Assert.Throws<ArgumentNullException>("value", () => session.JsonSerializerOptions = null!);
+        Assert.Throws<ArgumentNullException>("value", () => client.JsonSerializerOptions = null!);
     }
 
     [Fact]
     public async Task JsonSerializerOptions_Roundtrip()
     {
         await using var innerSession = new TestRealtimeClientSession();
-        await using var session = new LoggingRealtimeClientSession(innerSession, NullLogger.Instance);
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new LoggingRealtimeClient(innerClient, NullLogger.Instance);
 
         var customOptions = new System.Text.Json.JsonSerializerOptions();
-        session.JsonSerializerOptions = customOptions;
+        client.JsonSerializerOptions = customOptions;
 
-        Assert.Same(customOptions, session.JsonSerializerOptions);
+        Assert.Same(customOptions, client.JsonSerializerOptions);
     }
 
     [Fact]
     public void UseLogging_NullBuilder_Throws()
     {
         Assert.Throws<ArgumentNullException>("builder", () =>
-            ((RealtimeClientSessionBuilder)null!).UseLogging());
+            ((RealtimeClientBuilder)null!).UseLogging());
     }
 
-    [Fact]
-    public async Task UseLogging_ConfigureCallback_IsInvoked()
+    private sealed class TestRealtimeClient : IRealtimeClient
     {
-        await using var innerSession = new TestRealtimeClientSession();
-        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddFakeLogging());
+        private readonly IRealtimeClientSession _session;
 
-        bool configured = false;
-        await using var session = innerSession
-            .AsBuilder()
-            .UseLogging(loggerFactory, configure: s =>
-            {
-                configured = true;
-            })
-            .Build();
+        public TestRealtimeClient(IRealtimeClientSession session)
+        {
+            _session = session;
+        }
 
-        Assert.True(configured);
+        public Task<IRealtimeClientSession> CreateSessionAsync(RealtimeSessionOptions? options = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(_session);
+
+        public object? GetService(Type serviceType, object? serviceKey = null) =>
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this : _session.GetService(serviceType, serviceKey);
+
+        public void Dispose()
+        {
+        }
     }
-
 }

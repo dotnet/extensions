@@ -3,12 +3,13 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides a collection of static methods for extending <see cref="IRealtimeClientSession"/> instances.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class RealtimeClientSessionExtensions
 {
     /// <summary>Asks the <see cref="IRealtimeClientSession"/> for an object of type <typeparamref name="TService"/>.</summary>

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,14 +47,13 @@ namespace Microsoft.Extensions.AI;
 /// tools being used concurrently (one per request).
 /// </para>
 /// </remarks>
-[Experimental("MEAI001")]
-public class FunctionInvokingRealtimeClientSession : DelegatingRealtimeClientSession
+internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSession
 {
     /// <summary>The <see cref="FunctionInvocationContext"/> for the current function invocation.</summary>
     private static readonly AsyncLocal<FunctionInvocationContext?> _currentContext = new();
 
     /// <summary>Gets the <see cref="IServiceProvider"/> specified when constructing the <see cref="FunctionInvokingRealtimeClientSession"/>, if any.</summary>
-    protected IServiceProvider? FunctionInvocationServices { get; }
+    private IServiceProvider? FunctionInvocationServices { get; }
 
     /// <summary>The logger to use for logging information about function invocation.</summary>
     private readonly ILogger _logger;
@@ -64,15 +62,23 @@ public class FunctionInvokingRealtimeClientSession : DelegatingRealtimeClientSes
     /// <remarks>This component does not own the instance and should not dispose it.</remarks>
     private readonly ActivitySource? _activitySource;
 
+    /// <summary>The inner session to delegate to.</summary>
+    private readonly IRealtimeClientSession _innerSession;
+
+    /// <summary>The owning client that holds configuration.</summary>
+    private readonly FunctionInvokingRealtimeClient _client;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingRealtimeClientSession"/> class.
     /// </summary>
     /// <param name="innerSession">The underlying <see cref="IRealtimeClientSession"/>, or the next instance in a chain of sessions.</param>
+    /// <param name="client">The owning <see cref="FunctionInvokingRealtimeClient"/> that holds configuration.</param>
     /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> to use for logging information about function invocation.</param>
     /// <param name="functionInvocationServices">An optional <see cref="IServiceProvider"/> to use for resolving services required by the <see cref="AIFunction"/> instances being invoked.</param>
-    public FunctionInvokingRealtimeClientSession(IRealtimeClientSession innerSession, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
-        : base(innerSession)
+    public FunctionInvokingRealtimeClientSession(IRealtimeClientSession innerSession, FunctionInvokingRealtimeClient client, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
     {
+        _innerSession = Throw.IfNull(innerSession);
+        _client = Throw.IfNull(client);
         _logger = (ILogger?)loggerFactory?.CreateLogger<FunctionInvokingRealtimeClientSession>() ?? NullLogger.Instance;
         _activitySource = innerSession.GetService<ActivitySource>();
         FunctionInvocationServices = functionInvocationServices;
@@ -90,166 +96,51 @@ public class FunctionInvokingRealtimeClientSession : DelegatingRealtimeClientSes
     /// <remarks>
     /// This value flows across async calls.
     /// </remarks>
-    public static FunctionInvocationContext? CurrentContext
+    internal static FunctionInvocationContext? CurrentContext
     {
         get => _currentContext.Value;
-        protected set => _currentContext.Value = value;
+        set => _currentContext.Value = value;
     }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether detailed exception information should be included
-    /// in the response when calling the underlying <see cref="IRealtimeClientSession"/>.
-    /// </summary>
-    /// <value>
-    /// <see langword="true"/> if the full exception message is added to the response
-    /// when calling the underlying <see cref="IRealtimeClientSession"/>.
-    /// <see langword="false"/> if a generic error message is included in the response.
-    /// The default value is <see langword="false"/>.
-    /// </value>
-    /// <remarks>
-    /// <para>
-    /// Setting the value to <see langword="false"/> prevents the underlying model from disclosing
-    /// raw exception details to the end user, since it doesn't receive that information. Even in this
-    /// case, the raw <see cref="Exception"/> object is available to application code by inspecting
-    /// the <see cref="FunctionResultContent.Exception"/> property.
-    /// </para>
-    /// <para>
-    /// Setting the value to <see langword="true"/> can help the underlying <see cref="IRealtimeClientSession"/> bypass problems on
-    /// its own, for example by retrying the function call with different arguments. However it might
-    /// result in disclosing the raw exception information to external users, which can be a security
-    /// concern depending on the application scenario.
-    /// </para>
-    /// <para>
-    /// Changing the value of this property while the session is in use might result in inconsistencies
-    /// as to whether detailed errors are provided during an in-flight request.
-    /// </para>
-    /// </remarks>
-    public bool IncludeDetailedErrors { get; set; }
+    private bool IncludeDetailedErrors => _client.IncludeDetailedErrors;
 
-    /// <summary>
-    /// Gets or sets a value indicating whether to allow concurrent invocation of functions.
-    /// </summary>
-    /// <value>
-    /// <see langword="true"/> if multiple function calls can execute in parallel.
-    /// <see langword="false"/> if function calls are processed serially.
-    /// The default value is <see langword="false"/>.
-    /// </value>
-    /// <remarks>
-    /// An individual response from the inner session might contain multiple function call requests.
-    /// By default, such function calls are processed serially. Set <see cref="AllowConcurrentInvocation"/> to
-    /// <see langword="true"/> to enable concurrent invocation such that multiple function calls can execute in parallel.
-    /// </remarks>
-    public bool AllowConcurrentInvocation { get; set; }
+    private bool AllowConcurrentInvocation => _client.AllowConcurrentInvocation;
 
-    /// <summary>
-    /// Gets or sets the maximum number of iterations per request.
-    /// </summary>
-    /// <value>
-    /// The maximum number of iterations per request.
-    /// The default value is 40.
-    /// </value>
-    /// <remarks>
-    /// <para>
-    /// Each streaming request to this <see cref="FunctionInvokingRealtimeClientSession"/> might end up making
-    /// multiple function call invocations. Each time the inner session responds with
-    /// a function call request, this session might perform that invocation and send the results
-    /// back to the inner session. This property limits the number of times
-    /// such an invocation is performed.
-    /// </para>
-    /// <para>
-    /// Changing the value of this property while the session is in use might result in inconsistencies
-    /// as to how many iterations are allowed for an in-flight request.
-    /// </para>
-    /// </remarks>
-    public int MaximumIterationsPerRequest
+    private int MaximumIterationsPerRequest => _client.MaximumIterationsPerRequest;
+
+    private int MaximumConsecutiveErrorsPerRequest => _client.MaximumConsecutiveErrorsPerRequest;
+
+    private IList<AITool>? AdditionalTools => _client.AdditionalTools;
+
+    private bool TerminateOnUnknownCalls => _client.TerminateOnUnknownCalls;
+
+    private Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>>? FunctionInvoker => _client.FunctionInvoker;
+
+    /// <inheritdoc />
+    public RealtimeSessionOptions? Options => _innerSession.Options;
+
+    /// <inheritdoc />
+    public Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default) =>
+        _innerSession.SendAsync(message, cancellationToken);
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
     {
-        get;
-        set
-        {
-            if (value < 1)
-            {
-                Throw.ArgumentOutOfRangeException(nameof(value));
-            }
+        _ = Throw.IfNull(serviceType);
 
-            field = value;
-        }
-    } = 40;
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            _innerSession.GetService(serviceType, serviceKey);
+    }
 
-    /// <summary>
-    /// Gets or sets the maximum number of consecutive iterations that are allowed to fail with an error.
-    /// </summary>
-    /// <value>
-    /// The maximum number of consecutive iterations that are allowed to fail with an error.
-    /// The default value is 3.
-    /// </value>
-    /// <remarks>
-    /// <para>
-    /// When function invocations fail with an exception, the <see cref="FunctionInvokingRealtimeClientSession"/>
-    /// continues to send responses to the inner session, optionally supplying exception information (as
-    /// controlled by <see cref="IncludeDetailedErrors"/>). This allows the <see cref="IRealtimeClientSession"/> to
-    /// recover from errors by trying other function parameters that might succeed.
-    /// </para>
-    /// <para>
-    /// However, in case function invocations continue to produce exceptions, this property can be used to
-    /// limit the number of consecutive failing attempts. When the limit is reached, the exception will be
-    /// rethrown to the caller.
-    /// </para>
-    /// <para>
-    /// If the value is set to zero, all function calling exceptions immediately terminate the function
-    /// invocation loop and the exception will be rethrown to the caller.
-    /// </para>
-    /// <para>
-    /// Changing the value of this property while the session is in use might result in inconsistencies
-    /// as to how many iterations are allowed for an in-flight request.
-    /// </para>
-    /// </remarks>
-    public int MaximumConsecutiveErrorsPerRequest
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
     {
-        get;
-        set => field = Throw.IfLessThan(value, 0);
-    } = 3;
-
-    /// <summary>Gets or sets a collection of additional tools the session is able to invoke.</summary>
-    /// <remarks>
-    /// These will not impact the requests sent by the <see cref="FunctionInvokingRealtimeClientSession"/>, which will pass through the
-    /// <see cref="RealtimeClientCreateResponseMessage.Tools" /> unmodified. However, if the inner session requests the invocation of a tool
-    /// that was not in <see cref="RealtimeClientCreateResponseMessage.Tools" />, this <see cref="AdditionalTools"/> collection will also be consulted
-    /// to look for a corresponding tool to invoke. This is useful when the service might have been preconfigured to be aware
-    /// of certain tools that aren't also sent on each individual request.
-    /// </remarks>
-    public IList<AITool>? AdditionalTools { get; set; }
-
-    /// <summary>Gets or sets a value indicating whether a request to call an unknown function should terminate the function calling loop.</summary>
-    /// <value>
-    /// <see langword="true"/> to terminate the function calling loop and return the response if a request to call a tool
-    /// that isn't available to the <see cref="FunctionInvokingRealtimeClientSession"/> is received; <see langword="false"/> to create and send a
-    /// function result message to the inner session stating that the tool couldn't be found. The default is <see langword="false"/>.
-    /// </value>
-    /// <remarks>
-    /// <para>
-    /// When <see langword="false"/>, call requests to any tools that aren't available to the <see cref="FunctionInvokingRealtimeClientSession"/>
-    /// will result in a response message automatically being created and returned to the inner session stating that the tool couldn't be
-    /// found. This behavior can help in cases where a model hallucinates a function, but it's problematic if the model has been made aware
-    /// of the existence of tools outside of the normal mechanisms, and requests one of those. <see cref="AdditionalTools"/> can be used
-    /// to help with that. But if instead the consumer wants to know about all function call requests that the session can't handle,
-    /// <see cref="TerminateOnUnknownCalls"/> can be set to <see langword="true"/>. Upon receiving a request to call a function
-    /// that the <see cref="FunctionInvokingRealtimeClientSession"/> doesn't know about, it will terminate the function calling loop and return
-    /// the response, leaving the handling of the function call requests to the consumer of the session.
-    /// </para>
-    /// <para>
-    /// <see cref="AITool"/>s that the <see cref="FunctionInvokingRealtimeClientSession"/> is aware of (for example, because they're in
-    /// <see cref="RealtimeClientCreateResponseMessage.Tools"/> or <see cref="AdditionalTools"/>) but that aren't <see cref="AIFunction"/>s aren't considered
-    /// unknown, just not invocable. Any requests to a non-invocable tool will also result in the function calling loop terminating,
-    /// regardless of <see cref="TerminateOnUnknownCalls"/>.
-    /// </para>
-    /// </remarks>
-    public bool TerminateOnUnknownCalls { get; set; }
-
-    /// <summary>Gets or sets a delegate used to invoke <see cref="AIFunction"/> instances.</summary>
-    public Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>>? FunctionInvoker { get; set; }
+        await _innerSession.DisposeAsync().ConfigureAwait(false);
+    }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
+    public async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Create an activity to group function invocations together for better observability.
@@ -260,7 +151,7 @@ public class FunctionInvokingRealtimeClientSession : DelegatingRealtimeClientSes
         int consecutiveErrorCount = 0;
         int iterationCount = 0;
 
-        await foreach (var message in InnerSession.GetStreamingResponseAsync(cancellationToken).ConfigureAwait(false))
+        await foreach (var message in _innerSession.GetStreamingResponseAsync(cancellationToken).ConfigureAwait(false))
         {
             // Check if this message contains function calls
             bool hasFunctionCalls = false;
@@ -305,7 +196,7 @@ public class FunctionInvokingRealtimeClientSession : DelegatingRealtimeClientSes
                 foreach (var resultMessage in results.functionResults)
                 {
                     // inject back the function result messages to the inner session
-                    await InnerSession.SendAsync(resultMessage, cancellationToken).ConfigureAwait(false);
+                    await _innerSession.SendAsync(resultMessage, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -341,7 +232,7 @@ public class FunctionInvokingRealtimeClientSession : DelegatingRealtimeClientSes
     /// </remarks>
     private bool ShouldTerminateBasedOnFunctionCalls(List<FunctionCallContent> functionCallContents)
     {
-        var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, InnerSession.Options?.Tools as IList<AITool>);
+        var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, _innerSession.Options?.Tools as IList<AITool>);
 
         if (toolMap is null || toolMap.Count == 0)
         {
@@ -389,7 +280,7 @@ public class FunctionInvokingRealtimeClientSession : DelegatingRealtimeClientSes
         CancellationToken cancellationToken)
     {
         // Compute toolMap to ensure we always use the latest tools
-        var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, InnerSession.Options?.Tools as IList<AITool>);
+        var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, _innerSession.Options?.Tools as IList<AITool>);
 
         var captureCurrentIterationExceptions = consecutiveErrorCount < MaximumConsecutiveErrorsPerRequest;
 
@@ -474,7 +365,7 @@ public class FunctionInvokingRealtimeClientSession : DelegatingRealtimeClientSes
     /// <param name="context">The function invocation context.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The function result.</returns>
-    protected virtual ValueTask<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
+    private ValueTask<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);
 

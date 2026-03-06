@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -27,11 +26,13 @@ namespace Microsoft.Extensions.AI;
 /// Messages and options are not logged at other logging levels.
 /// </para>
 /// </remarks>
-[Experimental("MEAI001")]
-public partial class LoggingRealtimeClientSession : DelegatingRealtimeClientSession
+internal sealed partial class LoggingRealtimeClientSession : IRealtimeClientSession
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
     private readonly ILogger _logger;
+
+    /// <summary>The inner session to delegate to.</summary>
+    private readonly IRealtimeClientSession _innerSession;
 
     /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization of state written to the logger.</summary>
     private JsonSerializerOptions _jsonSerializerOptions;
@@ -40,11 +41,14 @@ public partial class LoggingRealtimeClientSession : DelegatingRealtimeClientSess
     /// <param name="innerSession">The underlying <see cref="IRealtimeClientSession"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
     public LoggingRealtimeClientSession(IRealtimeClientSession innerSession, ILogger logger)
-        : base(innerSession)
     {
+        _innerSession = Throw.IfNull(innerSession);
         _logger = Throw.IfNull(logger);
         _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
     }
+
+    /// <inheritdoc />
+    public RealtimeSessionOptions? Options => _innerSession.Options;
 
     /// <summary>Gets or sets JSON serialization options to use when serializing logging data.</summary>
     public JsonSerializerOptions JsonSerializerOptions
@@ -53,8 +57,24 @@ public partial class LoggingRealtimeClientSession : DelegatingRealtimeClientSess
         set => _jsonSerializerOptions = Throw.IfNull(value);
     }
 
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        await _innerSession.DisposeAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            _innerSession.GetService(serviceType, serviceKey);
+    }
+
     /// <inheritdoc/>
-    public override async Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
+    public async Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(message);
 
@@ -72,7 +92,7 @@ public partial class LoggingRealtimeClientSession : DelegatingRealtimeClientSess
 
         try
         {
-            await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
+            await _innerSession.SendAsync(message, cancellationToken).ConfigureAwait(false);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
@@ -92,7 +112,7 @@ public partial class LoggingRealtimeClientSession : DelegatingRealtimeClientSess
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
+    public async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
@@ -103,7 +123,7 @@ public partial class LoggingRealtimeClientSession : DelegatingRealtimeClientSess
         IAsyncEnumerator<RealtimeServerMessage> e;
         try
         {
-            e = base.GetStreamingResponseAsync(cancellationToken).GetAsyncEnumerator(cancellationToken);
+            e = _innerSession.GetStreamingResponseAsync(cancellationToken).GetAsyncEnumerator(cancellationToken);
         }
         catch (OperationCanceledException)
         {

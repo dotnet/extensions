@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -75,8 +74,7 @@ namespace Microsoft.Extensions.AI;
 /// </list>
 /// </para>
 /// </remarks>
-[Experimental("MEAI001")]
-public sealed partial class OpenTelemetryRealtimeClientSession : DelegatingRealtimeClientSession
+internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClientSession
 {
     private readonly ActivitySource _activitySource;
     private readonly Meter _meter;
@@ -89,6 +87,8 @@ public sealed partial class OpenTelemetryRealtimeClientSession : DelegatingRealt
     private readonly string? _serverAddress;
     private readonly int _serverPort;
 
+    private readonly IRealtimeClientSession _innerSession;
+
     private JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>Initializes a new instance of the <see cref="OpenTelemetryRealtimeClientSession"/> class.</summary>
@@ -98,12 +98,11 @@ public sealed partial class OpenTelemetryRealtimeClientSession : DelegatingRealt
 #pragma warning disable IDE0060 // Remove unused parameter; it exists for backwards compatibility and future use
     public OpenTelemetryRealtimeClientSession(IRealtimeClientSession innerSession, ILogger? logger = null, string? sourceName = null)
 #pragma warning restore IDE0060
-        : base(innerSession)
     {
-        Debug.Assert(innerSession is not null, "Should have been validated by the base ctor");
+        _innerSession = Throw.IfNull(innerSession);
 
         // Try to get metadata from the inner session's ChatClientMetadata if available
-        if (innerSession!.GetService(typeof(ChatClientMetadata)) is ChatClientMetadata metadata)
+        if (innerSession.GetService(typeof(ChatClientMetadata)) is ChatClientMetadata metadata)
         {
             _defaultModelId = metadata.DefaultModelId;
             _providerName = metadata.ProviderName;
@@ -139,12 +138,15 @@ public sealed partial class OpenTelemetryRealtimeClientSession : DelegatingRealt
         set => _jsonSerializerOptions = Throw.IfNull(value);
     }
 
-    /// <inheritdoc/>
-    protected override async ValueTask DisposeAsyncCore()
+    /// <inheritdoc />
+    public RealtimeSessionOptions? Options => _innerSession.Options;
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
     {
         _activitySource.Dispose();
         _meter.Dispose();
-        await base.DisposeAsyncCore().ConfigureAwait(false);
+        await _innerSession.DisposeAsync().ConfigureAwait(false);
     }
 
     /// <summary>
@@ -165,12 +167,18 @@ public sealed partial class OpenTelemetryRealtimeClientSession : DelegatingRealt
     public bool EnableSensitiveData { get; set; } = TelemetryHelpers.EnableSensitiveDataDefault;
 
     /// <inheritdoc/>
-    public override object? GetService(Type serviceType, object? serviceKey = null) =>
-        serviceType == typeof(ActivitySource) ? _activitySource :
-        base.GetService(serviceType, serviceKey);
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceType == typeof(ActivitySource) ? _activitySource :
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            _innerSession.GetService(serviceType, serviceKey);
+    }
 
     /// <inheritdoc/>
-    public override async Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
+    public async Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
         if (EnableSensitiveData && _activitySource.HasListeners())
         {
@@ -186,11 +194,11 @@ public sealed partial class OpenTelemetryRealtimeClientSession : DelegatingRealt
             }
         }
 
-        await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
+        await _innerSession.SendAsync(message, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
+    public async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _jsonSerializerOptions.MakeReadOnly();
@@ -207,7 +215,7 @@ public sealed partial class OpenTelemetryRealtimeClientSession : DelegatingRealt
         IAsyncEnumerable<RealtimeServerMessage> responses;
         try
         {
-            responses = base.GetStreamingResponseAsync(cancellationToken);
+            responses = _innerSession.GetStreamingResponseAsync(cancellationToken);
         }
         catch (Exception ex)
         {

@@ -5,21 +5,22 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides extensions for configuring <see cref="OpenTelemetryRealtimeClientSession"/> instances.</summary>
-[Experimental("MEAI001")]
-public static class OpenTelemetryRealtimeClientSessionBuilderExtensions
+/// <summary>Provides extensions for configuring OpenTelemetry on an <see cref="IRealtimeClient"/> pipeline.</summary>
+[Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
+public static class OpenTelemetryRealtimeClientBuilderExtensions
 {
     /// <summary>
-    /// Adds OpenTelemetry support to the realtime session pipeline, following the OpenTelemetry Semantic Conventions for Generative AI systems.
+    /// Adds OpenTelemetry support to the realtime client pipeline, following the OpenTelemetry Semantic Conventions for Generative AI systems.
     /// </summary>
     /// <remarks>
     /// <para>
     /// The draft specification this follows is available at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
-    /// The specification is still experimental and subject to change; as such, the telemetry output by this session is also subject to change.
+    /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
     /// </para>
     /// <para>
     /// The following standard OpenTelemetry GenAI conventions are supported:
@@ -55,24 +56,24 @@ public static class OpenTelemetryRealtimeClientSessionBuilderExtensions
     /// </list>
     /// </para>
     /// </remarks>
-    /// <param name="builder">The <see cref="RealtimeClientSessionBuilder"/>.</param>
+    /// <param name="builder">The <see cref="RealtimeClientBuilder"/>.</param>
     /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to use to create a logger for logging events.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
-    /// <param name="configure">An optional callback that can be used to configure the <see cref="OpenTelemetryRealtimeClientSession"/> instance.</param>
+    /// <param name="configure">An optional callback that can be used to configure the <see cref="OpenTelemetryRealtimeClient"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static RealtimeClientSessionBuilder UseOpenTelemetry(
-        this RealtimeClientSessionBuilder builder,
+    public static RealtimeClientBuilder UseOpenTelemetry(
+        this RealtimeClientBuilder builder,
         ILoggerFactory? loggerFactory = null,
         string? sourceName = null,
-        Action<OpenTelemetryRealtimeClientSession>? configure = null) =>
-        Throw.IfNull(builder).Use((innerSession, services) =>
+        Action<OpenTelemetryRealtimeClient>? configure = null) =>
+        Throw.IfNull(builder).Use((innerClient, services) =>
         {
             loggerFactory ??= services.GetService<ILoggerFactory>();
 
-            var session = new OpenTelemetryRealtimeClientSession(innerSession, loggerFactory?.CreateLogger(typeof(OpenTelemetryRealtimeClientSession)), sourceName);
-            configure?.Invoke(session);
-
-            return session;
+            var logger = loggerFactory?.CreateLogger(typeof(OpenTelemetryRealtimeClient));
+            var client = new OpenTelemetryRealtimeClient(innerClient, logger, sourceName);
+            configure?.Invoke(client);
+            return client;
         });
 }
