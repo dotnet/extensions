@@ -37,6 +37,9 @@ public class ResponseOutputItemRealtimeServerMessage : RealtimeServerMessage
     /// <summary>
     /// Gets or sets the unique response ID.
     /// </summary>
+    /// <remarks>
+    /// May be <see langword="null"/> for providers that do not natively track response lifecycle.
+    /// </remarks>
     public string? ResponseId { get; set; }
 
     /// <summary>

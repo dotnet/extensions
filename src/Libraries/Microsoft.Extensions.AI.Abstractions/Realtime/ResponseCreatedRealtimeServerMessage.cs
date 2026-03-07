@@ -20,6 +20,11 @@ namespace Microsoft.Extensions.AI;
 /// when the response is complete. The built-in <see langword="OpenTelemetryRealtimeClientSession"/> middleware depends
 /// on these messages for tracing response lifecycle.
 /// </para>
+/// <para>
+/// Providers that do not natively support response lifecycle events (e.g., those that only stream content parts
+/// and signal turn completion) should synthesize these messages to ensure correct middleware behavior.
+/// In such cases, <see cref="ResponseId"/> may be set to a synthetic value or left <see langword="null"/>.
+/// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public class ResponseCreatedRealtimeServerMessage : RealtimeServerMessage
@@ -48,6 +53,11 @@ public class ResponseCreatedRealtimeServerMessage : RealtimeServerMessage
     /// <summary>
     /// Gets or sets the unique response ID.
     /// </summary>
+    /// <remarks>
+    /// Some providers (e.g., OpenAI) assign a unique ID to each response. Providers that do not
+    /// natively track response lifecycles may set this to <see langword="null"/> or generate a synthetic ID.
+    /// Consumers should not assume this value correlates to a provider-specific concept.
+    /// </remarks>
     public string? ResponseId { get; set; }
 
     /// <summary>
