@@ -588,7 +588,7 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Theory]
-    [MemberData(nameof(TestTypes.GetTestDataUsingAllValues), MemberType = typeof(TestTypes))]
+    [MemberData(nameof(TestTypes.GetTestDataUsingAllValues), MemberType = typeof(TestTypes), DisableDiscoveryEnumeration = true)]
     public static void CreateJsonSchema_ValidateWithTestData(ITestData testData)
     {
         // Stress tests the schema generation method using types from the JsonSchemaExporter test battery.
@@ -1730,7 +1730,7 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Theory]
-    [MemberData(nameof(TestTypes.GetTestDataUsingAllValues), MemberType = typeof(TestTypes))]
+    [MemberData(nameof(TestTypes.GetTestDataUsingAllValues), MemberType = typeof(TestTypes), DisableDiscoveryEnumeration = true)]
     public static void TransformJsonSchema_ValidateWithTestData(ITestData testData)
     {
         // Stress tests the schema generation method using types from the JsonSchemaExporter test battery.
