@@ -1,5 +1,16 @@
 # Microsoft.Extensions.AI.Abstractions Release History
 
+## NOT YET RELEASED
+
+- `AddAIContentType` now automatically registers the content type against every base in the inheritance chain up to `AIContent`.
+- Added `IHostedFileClient` interface and related types for interacting with files hosted by the service.
+- Added `WebSearchToolCallContent` and `WebSearchToolResultContent` for representing web search tool calls and results.
+- Added `ToolCallContent` and `ToolResultContent` base classes.
+- Updated the design of the MCP and approvals-related types and marked them as stable.
+- Updated AI function parameter JSON schema generation to honor `[Required]` attributes.
+- Updated `AIFunctionFactory` to work better with `DynamicMethod`-based functions.
+- Removed the experimental `IToolReductionStrategy` type.
+
 ## 10.3.0
 
 - Added `ReasoningOptions` to `ChatOptions` for configuring reasoning effort and output.

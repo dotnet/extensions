@@ -761,6 +761,18 @@ public class LogMethodTests
     }
 
     [Fact]
+    public void RefReadOnlyParameterTests()
+    {
+        using var logger = Utils.GetLogger();
+        var collector = logger.FakeLogCollector;
+
+        RefReadOnlyParameterTestExtensions.S s;
+        RefReadOnlyParameterTestExtensions.M0(logger, ref s);
+        Assert.Equal(1, collector.Count);
+        Assert.Contains("Hello from S", collector.LatestRecord.Message);
+    }
+
+    [Fact]
     public void AtSymbolsTest()
     {
         using var logger = Utils.GetLogger();

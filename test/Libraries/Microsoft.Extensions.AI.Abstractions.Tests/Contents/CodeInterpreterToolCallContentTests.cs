@@ -12,20 +12,18 @@ public class CodeInterpreterToolCallContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        CodeInterpreterToolCallContent c = new();
+        CodeInterpreterToolCallContent c = new("callId1");
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.CallId);
+        Assert.Equal("callId1", c.CallId);
         Assert.Null(c.Inputs);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        CodeInterpreterToolCallContent c = new();
+        CodeInterpreterToolCallContent c = new("call123");
 
-        Assert.Null(c.CallId);
-        c.CallId = "call123";
         Assert.Equal("call123", c.CallId);
 
         Assert.Null(c.Inputs);
@@ -47,9 +45,8 @@ public class CodeInterpreterToolCallContentTests
     [Fact]
     public void Inputs_SupportsMultipleContentTypes()
     {
-        CodeInterpreterToolCallContent c = new()
+        CodeInterpreterToolCallContent c = new("call456")
         {
-            CallId = "call456",
             Inputs =
             [
                 new TextContent("import numpy as np"),
@@ -68,9 +65,8 @@ public class CodeInterpreterToolCallContentTests
     [Fact]
     public void Serialization_Roundtrips()
     {
-        CodeInterpreterToolCallContent content = new()
+        CodeInterpreterToolCallContent content = new("call123")
         {
-            CallId = "call123",
             Inputs =
             [
                 new TextContent("print('hello')"),

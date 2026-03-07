@@ -931,16 +931,16 @@ public class ChatResponseUpdateExtensionsTests
             new(null, " some images"),
 
             // Initial ImageGenerationToolResultContent with ID "img1"
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img1", Outputs = [image1] }] },
+            new() { Contents = [new ImageGenerationToolResultContent("img1") { Outputs = [image1] }] },
 
             // Another ImageGenerationToolResultContent with different ID "img2" 
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img2", Outputs = [image2] }] },
+            new() { Contents = [new ImageGenerationToolResultContent("img2") { Outputs = [image2] }] },
 
             // Another ImageGenerationToolResultContent with same ID "img1" - should replace the first one
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img1", Outputs = [image3] }] },
+            new() { Contents = [new ImageGenerationToolResultContent("img1") { Outputs = [image3] }] },
 
             // ImageGenerationToolResultContent with same ID "img2" - should replace the second one
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img2", Outputs = [image4] }] },
+            new() { Contents = [new ImageGenerationToolResultContent("img2") { Outputs = [image4] }] },
 
             // Final text
             new(null, "Here are those generated images"),
@@ -961,13 +961,13 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(2, imageResults.Length);
 
         // Verify the first image result (ID "img1") has the latest content (image3)
-        var firstImageResult = imageResults.First(ir => ir.ImageId == "img1");
+        var firstImageResult = imageResults.First(ir => ir.CallId == "img1");
         Assert.NotNull(firstImageResult.Outputs);
         var firstOutput = Assert.Single(firstImageResult.Outputs);
         Assert.Same(image3, firstOutput); // Should be the later image, not image1
 
         // Verify the second image result (ID "img2") has the latest content (image4)
-        var secondImageResult = imageResults.First(ir => ir.ImageId == "img2");
+        var secondImageResult = imageResults.First(ir => ir.CallId == "img2");
         Assert.NotNull(secondImageResult.Outputs);
         var secondOutput = Assert.Single(secondImageResult.Outputs);
         Assert.Same(image4, secondOutput); // Should be the later image, not image2
@@ -976,7 +976,7 @@ public class ChatResponseUpdateExtensionsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ToChatResponse_ImageGenerationToolResultContentWithNullOrEmptyImageId_DoesNotCoalesce(bool useAsync)
+    public async Task ToChatResponse_ImageGenerationToolResultContentWithDistinctCallIds_DoesNotCoalesce(bool useAsync)
     {
         var image1 = new DataContent((byte[])[1, 2, 3, 4], "image/png") { Name = "image1.png" };
         var image2 = new DataContent((byte[])[5, 6, 7, 8], "image/jpeg") { Name = "image2.jpg" };
@@ -984,20 +984,20 @@ public class ChatResponseUpdateExtensionsTests
 
         ChatResponseUpdate[] updates =
         {
-            // ImageGenerationToolResultContent with null ImageId - should not coalesce
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = null, Outputs = [image1] }] },
+            // ImageGenerationToolResultContent with unique CallId - should not coalesce
+            new() { Contents = [new ImageGenerationToolResultContent("id-1") { Outputs = [image1] }] },
 
-            // ImageGenerationToolResultContent with empty ImageId - should not coalesce
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "", Outputs = [image2] }] },
+            // ImageGenerationToolResultContent with different CallId - should not coalesce
+            new() { Contents = [new ImageGenerationToolResultContent("id-2") { Outputs = [image2] }] },
 
-            // Another with null ImageId - should not coalesce with the first
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = null, Outputs = [image3] }] },
+            // Another with unique CallId - should not coalesce with the others
+            new() { Contents = [new ImageGenerationToolResultContent("id-3") { Outputs = [image3] }] },
         };
 
         ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
         ChatMessage message = Assert.Single(response.Messages);
 
-        // Should have all 3 image result contents since they can't be coalesced
+        // Should have all 3 image result contents since they have distinct CallIds
         var imageResults = message.Contents.OfType<ImageGenerationToolResultContent>().ToArray();
         Assert.Equal(3, imageResults.Length);
 
@@ -1005,6 +1005,94 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Same(image1, imageResults[0].Outputs![0]);
         Assert.Same(image2, imageResults[1].Outputs![0]);
         Assert.Same(image3, imageResults[2].Outputs![0]);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_CoalescesWebSearchToolCallContent(bool useAsync)
+    {
+        object rawRepresentation = new();
+        AdditionalPropertiesDictionary additionalProps = new() { { "key", "value" } };
+
+        ChatResponseUpdate[] updates =
+        {
+            new(null, "Searching..."),
+
+            // Initial WebSearchToolCallContent with a query (like first search)
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["first query"] }] },
+
+            // Text in between
+            new(null, " found results"),
+
+            // Second WebSearchToolCallContent with additional query and RawRepresentation
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["second query"], RawRepresentation = rawRepresentation, AdditionalProperties = additionalProps }] },
+
+            // Different CallId should not be coalesced with the first
+            new() { Contents = [new WebSearchToolCallContent("ws2") { Queries = ["AI safety"] }] },
+
+            // Third for ws1, no queries this time
+            new() { Contents = [new WebSearchToolCallContent("ws1")] },
+
+            new(null, " done"),
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        var webSearchCalls = message.Contents.OfType<WebSearchToolCallContent>().ToArray();
+        Assert.Equal(2, webSearchCalls.Length);
+
+        // ws1 should have queries combined from both updates
+        var ws1 = webSearchCalls.First(ws => ws.CallId == "ws1");
+        Assert.Equal(["first query", "second query"], ws1.Queries);
+
+        // RawRepresentation and AdditionalProperties should be merged from the second update
+        Assert.Same(rawRepresentation, ws1.RawRepresentation);
+        Assert.Same(additionalProps, ws1.AdditionalProperties);
+
+        // ws2 should be unchanged
+        var ws2 = webSearchCalls.First(ws => ws.CallId == "ws2");
+        Assert.Equal(["AI safety"], ws2.Queries);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_CoalescesWebSearchToolCallContent_NullQueriesFirst(bool useAsync)
+    {
+        // First item has no queries, second provides them — should assign directly rather than merge.
+        ChatResponseUpdate[] updates =
+        {
+            new() { Contents = [new WebSearchToolCallContent("ws1")] },
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["query from second"] }] },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        var ws1 = Assert.Single(message.Contents.OfType<WebSearchToolCallContent>());
+        Assert.Equal("ws1", ws1.CallId);
+        Assert.Equal(["query from second"], ws1.Queries);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_WebSearchToolCallContentWithDistinctCallIds_DoesNotCoalesce(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        {
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["q1"] }] },
+            new() { Contents = [new WebSearchToolCallContent("ws2") { Queries = ["q2"] }] },
+            new() { Contents = [new WebSearchToolCallContent("ws3") { Queries = ["q3"] }] },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        var webSearchCalls = message.Contents.OfType<WebSearchToolCallContent>().ToArray();
+        Assert.Equal(3, webSearchCalls.Length);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)

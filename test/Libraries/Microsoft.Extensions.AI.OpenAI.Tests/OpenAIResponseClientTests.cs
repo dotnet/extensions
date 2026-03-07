@@ -40,7 +40,7 @@ public class OpenAIResponseClientTests
 
         var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
-        IChatClient chatClient = client.GetResponsesClient(model).AsIChatClient();
+        IChatClient chatClient = client.GetResponsesClient().AsIChatClient(model);
         var metadata = chatClient.GetService<ChatClientMetadata>();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
@@ -50,8 +50,8 @@ public class OpenAIResponseClientTests
     [Fact]
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
-        ResponsesClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetResponsesClient("model");
-        IChatClient chatClient = openAIClient.AsIChatClient();
+        ResponsesClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetResponsesClient();
+        IChatClient chatClient = openAIClient.AsIChatClient("model");
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
         Assert.Same(openAIClient, chatClient.GetService<ResponsesClient>());
@@ -296,14 +296,11 @@ public class OpenAIResponseClientTests
         List<ChatResponseUpdate> updates = [];
         await foreach (var update in client.GetStreamingResponseAsync("Calculate the sum of the first 5 positive integers.", new()
         {
-            RawRepresentationFactory = options => new CreateResponseOptions
+            Reasoning = new()
             {
-                ReasoningOptions = new()
-                {
-                    ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
-                    ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Detailed
-                }
-            }
+                Effort = ReasoningEffort.Low,
+                Output = ReasoningOutput.Full,
+            },
         }))
         {
             updates.Add(update);
@@ -821,11 +818,13 @@ public class OpenAIResponseClientTests
         Assert.Equal(ChatRole.Assistant, responseMessage.Role);
         Assert.Equal(2, responseMessage.Contents.Count);
         Assert.Single(responseMessage.Contents, content => content is TextReasoningContent);
-        AIContent computerUserItem = Assert.Single(responseMessage.Contents, content => content.GetType() == typeof(AIContent));
+        AIContent computerUserItem = Assert.Single(responseMessage.Contents, content => content is ToolCallContent);
         Assert.NotNull(computerUserItem.RawRepresentation);
 #pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
         Assert.IsType<ComputerCallResponseItem>(computerUserItem.RawRepresentation);
 #pragma warning restore OPENAICUA001
+        ToolCallContent computerToolCall = Assert.IsType<ToolCallContent>(computerUserItem);
+        Assert.NotNull(computerToolCall.CallId);
         Assert.NotNull(response.Usage);
         Assert.Equal(18, response.Usage.InputTokenCount);
         Assert.Equal(53, response.Usage.OutputTokenCount);
@@ -922,7 +921,8 @@ public class OpenAIResponseClientTests
             Assert.Null(updates[i].Role);
         }
 
-        AIContent content = Assert.Single(updates[3].Contents);
+        ToolCallContent content = Assert.IsType<ToolCallContent>(Assert.Single(updates[3].Contents));
+        Assert.NotNull(content.CallId);
 #pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
         var ccri = Assert.IsType<ComputerCallResponseItem>(content.RawRepresentation);
 #pragma warning restore OPENAICUA001
@@ -1397,7 +1397,7 @@ public class OpenAIResponseClientTests
         {
             Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))]
         };
-        McpServerToolApprovalRequestContent approvalRequest;
+        ToolApprovalRequestContent approvalRequest;
 
         using (VerbatimHttpHandler handler = new(input, output))
         using (HttpClient httpClient = new(handler))
@@ -1407,7 +1407,7 @@ public class OpenAIResponseClientTests
                 "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository",
                 chatOptions);
 
-            approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
+            approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<ToolApprovalRequestContent>());
             chatOptions.ConversationId = response.ConversationId;
         }
 
@@ -1544,7 +1544,7 @@ public class OpenAIResponseClientTests
             var call = Assert.IsType<McpServerToolCallContent>(message.Contents[0]);
             Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", call.CallId);
             Assert.Equal("deepwiki", call.ServerName);
-            Assert.Equal("ask_question", call.ToolName);
+            Assert.Equal("ask_question", call.Name);
             Assert.NotNull(call.Arguments);
             Assert.Equal(2, call.Arguments.Count);
             Assert.Equal("dotnet/extensions", ((JsonElement)call.Arguments["repoName"]!).GetString());
@@ -1552,14 +1552,136 @@ public class OpenAIResponseClientTests
 
             var result = Assert.IsType<McpServerToolResultContent>(message.Contents[1]);
             Assert.Equal("mcp_06ee3b1962eeb8470068e6b21cbaa081a3b5aa2a6c989f4c6f", result.CallId);
-            Assert.NotNull(result.Output);
-            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(result.Output)).Text);
+            Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(result.Outputs!)).Text);
 
             Assert.NotNull(response.Usage);
             Assert.Equal(542, response.Usage.InputTokenCount);
             Assert.Equal(72, response.Usage.OutputTokenCount);
             Assert.Equal(614, response.Usage.TotalTokenCount);
         }
+    }
+
+    [Theory]
+    [InlineData("user")]
+    [InlineData("tool")]
+    public async Task ToolApprovalResponse_NonMcpToolCall_SilentlyIgnored_NonStreaming(string role)
+    {
+        // When a ToolApprovalResponseContent wraps a non-MCP tool call (e.g. CodeInterpreterToolCallContent
+        // or ImageGenerationToolCallContent), the client should silently drop it from the request payload.
+        // For the user role, the text content is preserved; for the tool role, the function result is preserved.
+        string input = role == "user"
+            ? """
+            {
+                "model": "gpt-4o-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """
+            : """
+            {
+                "model": "gpt-4o-mini",
+                "input": [
+                    {
+                        "type": "function_call_output",
+                        "call_id": "call-1",
+                        "output": "tool result"
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_fallthrough_test_001",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": null,
+              "max_tool_calls": null,
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_fallthrough_test_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello! How can I help?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "reasoning": {
+                "effort": null,
+                "summary": null
+              },
+              "store": true,
+              "temperature": 1.0,
+              "text": {
+                "format": {
+                  "type": "text"
+                }
+              },
+              "tool_choice": "auto",
+              "tools": [],
+              "top_p": 1.0,
+              "usage": {
+                "input_tokens": 10,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 8,
+                "output_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "total_tokens": 18
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        // Build a message with role-appropriate content + non-MCP approval responses that should be silently dropped.
+        var codeInterpreterApproval = new ToolApprovalResponseContent("req-ci-1", true, new CodeInterpreterToolCallContent("ci-call-1"));
+        var imageGenApproval = new ToolApprovalResponseContent("req-ig-1", false, new ImageGenerationToolCallContent("ig-call-1"));
+
+        AIContent anchorContent = role == "user"
+            ? new TextContent("hello")
+            : new FunctionResultContent("call-1", "tool result");
+
+        var messages = new List<ChatMessage>
+        {
+            new(new ChatRole(role), [anchorContent, codeInterpreterApproval, imageGenApproval]),
+        };
+
+        var response = await client.GetResponseAsync(messages);
+
+        Assert.NotNull(response);
+        var message = Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, message.Role);
+        Assert.Equal("Hello! How can I help?", message.Text);
     }
 
     [Theory]
@@ -1799,28 +1921,26 @@ public class OpenAIResponseClientTests
         var firstCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
         Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstCall.CallId);
         Assert.Equal("deepwiki", firstCall.ServerName);
-        Assert.Equal("read_wiki_structure", firstCall.ToolName);
+        Assert.Equal("read_wiki_structure", firstCall.Name);
         Assert.NotNull(firstCall.Arguments);
         Assert.Single(firstCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)firstCall.Arguments["repoName"]!).GetString());
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4166acfc8191bc5e0a751eed358b0384f747588fc3f5", firstResult.CallId);
-        Assert.NotNull(firstResult.Output);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Output)).Text);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Outputs!)).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondCall.CallId);
         Assert.Equal("deepwiki", secondCall.ServerName);
-        Assert.Equal("ask_question", secondCall.ToolName);
+        Assert.Equal("ask_question", secondCall.Name);
         Assert.NotNull(secondCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)secondCall.Arguments["repoName"]!).GetString());
         Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)secondCall.Arguments["question"]!).GetString());
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be416900f88191837ae0718339a4ce0384f747588fc3f5", secondResult.CallId);
-        Assert.NotNull(secondResult.Output);
-        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(secondResult.Output)).Text);
+        Assert.StartsWith("The `README.md` file for `Microsoft.Extensions.AI.Abstractions` is located at", Assert.IsType<TextContent>(Assert.Single(secondResult.Outputs!)).Text);
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1329, response.Usage.InputTokenCount);
@@ -2212,33 +2332,228 @@ public class OpenAIResponseClientTests
         var firstCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
         Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstCall.CallId);
         Assert.Equal("deepwiki", firstCall.ServerName);
-        Assert.Equal("read_wiki_structure", firstCall.ToolName);
+        Assert.Equal("read_wiki_structure", firstCall.Name);
         Assert.NotNull(firstCall.Arguments);
         Assert.Single(firstCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)firstCall.Arguments["repoName"]!).GetString());
 
         var firstResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
         Assert.Equal("mcp_68be4503d45c819e89cb574361c8eba003a2537be0e84a54", firstResult.CallId);
-        Assert.NotNull(firstResult.Output);
-        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Output)).Text);
+        Assert.StartsWith("Available pages for dotnet/extensions", Assert.IsType<TextContent>(Assert.Single(firstResult.Outputs!)).Text);
 
         var secondCall = Assert.IsType<McpServerToolCallContent>(message.Contents[3]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondCall.CallId);
         Assert.Equal("deepwiki", secondCall.ServerName);
-        Assert.Equal("ask_question", secondCall.ToolName);
+        Assert.Equal("ask_question", secondCall.Name);
         Assert.NotNull(secondCall.Arguments);
         Assert.Equal("dotnet/extensions", ((JsonElement)secondCall.Arguments["repoName"]!).GetString());
         Assert.Equal("What is the path to the README.md file for Microsoft.Extensions.AI.Abstractions?", ((JsonElement)secondCall.Arguments["question"]!).GetString());
 
         var secondResult = Assert.IsType<McpServerToolResultContent>(message.Contents[4]);
         Assert.Equal("mcp_68be4505f134819e806c002f27cce0c303a2537be0e84a54", secondResult.CallId);
-        Assert.NotNull(secondResult.Output);
-        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(Assert.Single(secondResult.Output)).Text);
+        Assert.StartsWith("The path to the `README.md` file", Assert.IsType<TextContent>(Assert.Single(secondResult.Outputs!)).Text);
 
         Assert.NotNull(response.Usage);
         Assert.Equal(1420, response.Usage.InputTokenCount);
         Assert.Equal(149, response.Usage.OutputTokenCount);
         Assert.Equal(1569, response.Usage.TotalTokenCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task McpToolCall_ErrorResponse_NonStreaming(bool rawTool)
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "server_label": "mymcp",
+                        "server_url": "https://mcp.example.com/mcp",
+                        "require_approval": "never"
+                    }
+                ],
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "Test error handling"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+                "id": "resp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                "object": "response",
+                "created_at": 1757299100,
+                "status": "completed",
+                "background": false,
+                "error": null,
+                "incomplete_details": null,
+                "instructions": null,
+                "max_output_tokens": null,
+                "max_tool_calls": null,
+                "model": "gpt-4o-mini-2024-07-18",
+                "output": [
+                    {
+                        "id": "mcpl_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                        "type": "mcp_list_tools",
+                        "server_label": "mymcp",
+                        "tools": [
+                            {
+                                "annotations": {
+                                    "read_only": false
+                                },
+                                "description": "A tool that always errors",
+                                "input_schema": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": false,
+                                    "$schema": "http://json-schema.org/draft-07/schema#"
+                                },
+                                "name": "test_error"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                        "type": "mcp_call",
+                        "approval_request_id": null,
+                        "arguments": "{}",
+                        "error": {
+                            "type": "mcp_tool_execution_error",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": "An error occurred invoking 'test_error'.",
+                                    "annotations": null,
+                                    "meta": null
+                                }
+                            ]
+                        },
+                        "name": "test_error",
+                        "output": null,
+                        "server_label": "mymcp"
+                    },
+                    {
+                        "id": "msg_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0",
+                        "type": "message",
+                        "status": "completed",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "annotations": [],
+                                "logprobs": [],
+                                "text": "The tool encountered an error during execution."
+                            }
+                        ],
+                        "role": "assistant"
+                    }
+                ],
+                "parallel_tool_calls": true,
+                "previous_response_id": null,
+                "prompt_cache_key": null,
+                "reasoning": {
+                    "effort": null,
+                    "summary": null
+                },
+                "safety_identifier": null,
+                "service_tier": "default",
+                "store": true,
+                "temperature": 1,
+                "text": {
+                    "format": {
+                        "type": "text"
+                    },
+                    "verbosity": "medium"
+                },
+                "tool_choice": "auto",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "allowed_tools": null,
+                        "headers": null,
+                        "require_approval": "never",
+                        "server_description": null,
+                        "server_label": "mymcp",
+                        "server_url": "https://mcp.example.com/<redacted>"
+                    }
+                ],
+                "top_logprobs": 0,
+                "top_p": 1,
+                "truncation": "disabled",
+                "usage": {
+                    "input_tokens": 500,
+                    "input_tokens_details": {
+                        "cached_tokens": 0
+                    },
+                    "output_tokens": 50,
+                    "output_tokens_details": {
+                        "reasoning_tokens": 0
+                    },
+                    "total_tokens": 550
+                },
+                "user": null,
+                "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        AITool mcpTool = rawTool ?
+            ResponseTool.CreateMcpTool("mymcp", serverUri: new("https://mcp.example.com/mcp"), toolCallApprovalPolicy: new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval)).AsAITool() :
+            new HostedMcpServerTool("mymcp", new Uri("https://mcp.example.com/mcp"))
+            {
+                ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+            };
+
+        ChatOptions chatOptions = new()
+        {
+            Tools = [mcpTool],
+        };
+
+        var response = await client.GetResponseAsync("Test error handling", chatOptions);
+        Assert.NotNull(response);
+
+        Assert.Equal("resp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", response.ResponseId);
+        Assert.Equal("resp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", response.ConversationId);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_757_299_100), response.CreatedAt);
+        Assert.Null(response.FinishReason);
+
+        var message = Assert.Single(response.Messages);
+        Assert.Equal(ChatRole.Assistant, response.Messages[0].Role);
+        Assert.Equal("The tool encountered an error during execution.", response.Messages[0].Text);
+
+        Assert.Equal(4, message.Contents.Count);
+
+        var toolCall = Assert.IsType<McpServerToolCallContent>(message.Contents[1]);
+        Assert.Equal("mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", toolCall.CallId);
+        Assert.Equal("mymcp", toolCall.ServerName);
+        Assert.Equal("test_error", toolCall.Name);
+        Assert.NotNull(toolCall.Arguments);
+        Assert.Empty(toolCall.Arguments);
+
+        var toolResult = Assert.IsType<McpServerToolResultContent>(message.Contents[2]);
+        Assert.Equal("mcp_689023b0fa88819f99f48aff343d5ad50475557f6fefb5f0", toolResult.CallId);
+        var errorContent = Assert.IsType<ErrorContent>(Assert.Single(toolResult.Outputs!));
+        Assert.Contains("An error occurred invoking 'test_error'.", errorContent.Message);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(500, response.Usage.InputTokenCount);
+        Assert.Equal(50, response.Usage.OutputTokenCount);
+        Assert.Equal(550, response.Usage.TotalTokenCount);
     }
 
     [Fact]
@@ -2310,10 +2625,12 @@ public class OpenAIResponseClientTests
         var mcpTool = new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
         {
             ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
-            AuthorizationToken = "test-auth-token-12345"
+            Headers = new Dictionary<string, string>
+            {
+                ["Authorization"] = "Bearer test-auth-token-12345",
+                ["X-Custom-Header"] = "custom-value"
+            }
         };
-
-        mcpTool.Headers!["X-Custom-Header"] = "custom-value";
 
         var response = await client.GetResponseAsync("hello", new ChatOptions { Tools = [mcpTool] });
 
@@ -2321,6 +2638,94 @@ public class OpenAIResponseClientTests
         Assert.Equal("resp_auth01", response.ResponseId);
         var message = Assert.Single(response.Messages);
         Assert.Equal("Hi!", message.Text);
+    }
+
+    [Theory]
+    [InlineData("bearer test-auth-token-12345")]
+    [InlineData("BEARER test-auth-token-12345")]
+    [InlineData("BeArEr test-auth-token-12345")]
+    [InlineData("  Bearer test-auth-token-12345")]
+    [InlineData("Bearer test-auth-token-12345  ")]
+    [InlineData("  Bearer test-auth-token-12345  ")]
+    [InlineData("Bearer   test-auth-token-12345")]
+    public async Task McpToolCall_WithCaseInsensitiveBearerToken_ExtractsToken(string authHeaderValue)
+    {
+        // Use a connector ID (non-URL) to trigger the Bearer token extraction code path
+        string expectedToken = "test-auth-token-12345";
+        string expectedInput = $$"""
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "server_label": "my-connector",
+                        "connector_id": "connector-id-123",
+                        "authorization": "{{expectedToken}}",
+                        "require_approval": "never"
+                    }
+                ],
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+                "id": "resp_bearer01",
+                "object": "response",
+                "created_at": 1757299043,
+                "status": "completed",
+                "model": "gpt-4o-mini-2024-07-18",
+                "output": [
+                    {
+                        "id": "msg_bearer01",
+                        "type": "message",
+                        "status": "completed",
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "text": "Hi!"
+                            }
+                        ]
+                    }
+                ],
+                "usage": {
+                    "input_tokens": 10,
+                    "output_tokens": 2,
+                    "total_tokens": 12
+                }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(expectedInput, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        // Use string constructor with non-URL to trigger connector ID path
+        var mcpTool = new HostedMcpServerTool("my-connector", "connector-id-123")
+        {
+            ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+            Headers = new Dictionary<string, string>
+            {
+                ["Authorization"] = authHeaderValue,
+            }
+        };
+
+        var response = await client.GetResponseAsync("hello", new ChatOptions { Tools = [mcpTool] });
+
+        Assert.NotNull(response);
+        Assert.Equal("resp_bearer01", response.ResponseId);
     }
 
     [Fact]
@@ -5596,7 +6001,7 @@ public class OpenAIResponseClientTests
         var imageContent = userMessage.Contents.OfType<UriContent>().FirstOrDefault();
         Assert.NotNull(imageContent);
         Assert.Equal("https://example.com/image.png", imageContent.Uri.ToString());
-        Assert.Equal("image/*", imageContent.MediaType);
+        Assert.Equal("image/png", imageContent.MediaType);
 
         var assistantMessage = response.Messages.LastOrDefault(m => m.Role == ChatRole.Assistant);
         Assert.NotNull(assistantMessage);
@@ -5745,12 +6150,12 @@ public class OpenAIResponseClientTests
         // First content should be the tool call
         var toolCall = contents[0] as ImageGenerationToolCallContent;
         Assert.NotNull(toolCall);
-        Assert.Equal("img_call_abc123", toolCall.ImageId);
+        Assert.Equal("img_call_abc123", toolCall.CallId);
 
         // Second content should be the result with image data
         var toolResult = contents[1] as ImageGenerationToolResultContent;
         Assert.NotNull(toolResult);
-        Assert.Equal("img_call_abc123", toolResult.ImageId);
+        Assert.Equal("img_call_abc123", toolResult.CallId);
         Assert.Single(toolResult.Outputs!);
 
         var imageData = toolResult.Outputs![0] as DataContent;
@@ -5851,7 +6256,7 @@ public class OpenAIResponseClientTests
             u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolCallContent));
         Assert.NotNull(toolCallUpdate);
         var toolCall = toolCallUpdate.Contents.OfType<ImageGenerationToolCallContent>().First();
-        Assert.Equal("img_call_def456", toolCall.ImageId);
+        Assert.Equal("img_call_def456", toolCall.CallId);
 
         // Should have partial image content
         var partialImageUpdate = updates.FirstOrDefault(u =>
@@ -6010,7 +6415,7 @@ public class OpenAIResponseClientTests
             u.Contents != null && u.Contents.Any(c => c is ImageGenerationToolCallContent));
         Assert.NotNull(toolCallUpdate);
         var toolCall = toolCallUpdate.Contents.OfType<ImageGenerationToolCallContent>().First();
-        Assert.Equal("img_call_ghi789", toolCall.ImageId);
+        Assert.Equal("img_call_ghi789", toolCall.CallId);
     }
 
     [Theory]
@@ -6121,8 +6526,8 @@ public class OpenAIResponseClientTests
         using VerbatimHttpHandler handler = new(new HttpHandlerExpectedInput(), Output);
         using HttpClient httpClient = new(handler);
         using IChatClient client = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
-            .GetResponsesClient("gpt-4o-mini")
-            .AsIChatClient()
+            .GetResponsesClient()
+            .AsIChatClient("gpt-4o-mini")
             .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
@@ -6147,8 +6552,8 @@ public class OpenAIResponseClientTests
         new OpenAIClient(
             new ApiKeyCredential("apikey"),
             new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
-        .GetResponsesClient(modelId)
-        .AsIChatClient();
+        .GetResponsesClient()
+        .AsIChatClient(modelId);
 
     private static string ResponseStatusToRequestValue(ResponseStatus status)
     {
@@ -6241,4 +6646,323 @@ public class OpenAIResponseClientTests
             return stream.ToArray();
         }
     }
+
+    [Fact]
+    public async Task WebSearchTool_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-2024-08-06",
+                "input":[{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"What is the latest news about .NET?"}]
+                }],
+                "tools":[{
+                    "type":"web_search"
+                }]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_0ed9cd9f8606486b006988807187cc8190a1089cf7510bdd4c",
+              "object": "response",
+              "created_at": 1770553457,
+              "status": "completed",
+              "background": false,
+              "billing": {
+                "payer": "developer"
+              },
+              "completed_at": 1770553468,
+              "error": null,
+              "frequency_penalty": 0.0,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": null,
+              "max_tool_calls": null,
+              "model": "gpt-4o-2024-08-06",
+              "output": [
+                {
+                  "id": "ws_0ed9cd9f8606486b0069888072b3d08190818b61da9cf032a7",
+                  "type": "web_search_call",
+                  "status": "completed",
+                  "action": {
+                    "type": "search",
+                    "queries": [
+                      ".NET latest news 2023"
+                    ],
+                    "query": ".NET latest news 2023",
+                    "sources": [
+                      {
+                        "url": "https://devblogs.microsoft.com/dotnet/announcing-dotnet-10",
+                        "title": "Announcing .NET 10 - .NET Blog"
+                      },
+                      {
+                        "url": "https://dotnet.microsoft.com/en-us/download/dotnet/10.0",
+                        "title": "Download .NET 10"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "msg_0ed9cd9f8606486b0069888075248081908bf6a2a2fdc5d7c3",
+                  "type": "message",
+                  "status": "completed",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "annotations": [
+                        {
+                          "type": "url_citation",
+                          "end_index": 555,
+                          "start_index": 448,
+                          "title": "Announcing .NET 10 - .NET Blog",
+                          "url": "https://devblogs.microsoft.com/dotnet/announcing-dotnet-10?utm_source=openai"
+                        },
+                        {
+                          "type": "url_citation",
+                          "end_index": 1322,
+                          "start_index": 1170,
+                          "title": "Download .NET 10",
+                          "url": "https://dotnet.microsoft.com/en-us/download/dotnet/10.0?utm_source=openai"
+                        }
+                      ],
+                      "logprobs": [],
+                      "text": ".NET 10 was officially released in November 2025 as an LTS release."
+                    }
+                  ],
+                  "role": "assistant"
+                }
+              ],
+              "parallel_tool_calls": true,
+              "presence_penalty": 0.0,
+              "previous_response_id": null,
+              "prompt_cache_key": null,
+              "prompt_cache_retention": null,
+              "reasoning": {
+                "effort": null,
+                "summary": null
+              },
+              "safety_identifier": null,
+              "service_tier": "default",
+              "store": true,
+              "temperature": 1.0,
+              "text": {
+                "format": {
+                  "type": "text"
+                },
+                "verbosity": "medium"
+              },
+              "tool_choice": "auto",
+              "tools": [
+                {
+                  "type": "web_search",
+                  "filters": null,
+                  "search_context_size": "medium",
+                  "user_location": {
+                    "type": "approximate",
+                    "city": null,
+                    "country": "US",
+                    "region": null,
+                    "timezone": null
+                  }
+                }
+              ],
+              "top_logprobs": 0,
+              "top_p": 1.0,
+              "truncation": "disabled",
+              "usage": {
+                "input_tokens": 17071,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 1449,
+                "output_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "total_tokens": 18520
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-2024-08-06");
+
+        var response = await client.GetResponseAsync("What is the latest news about .NET?", new()
+        {
+            Tools = [new HostedWebSearchTool()],
+        });
+
+        Assert.NotNull(response);
+        Assert.Single(response.Messages);
+
+        var message = response.Messages[0];
+        Assert.Equal(ChatRole.Assistant, message.Role);
+        Assert.Equal(3, message.Contents.Count);
+
+        var wsCall = Assert.IsType<WebSearchToolCallContent>(message.Contents[0]);
+        Assert.Equal("ws_0ed9cd9f8606486b0069888072b3d08190818b61da9cf032a7", wsCall.CallId);
+        Assert.Equal([".NET latest news 2023"], wsCall.Queries);
+
+        var wsResult = Assert.IsType<WebSearchToolResultContent>(message.Contents[1]);
+        Assert.Equal("ws_0ed9cd9f8606486b0069888072b3d08190818b61da9cf032a7", wsResult.CallId);
+        Assert.NotNull(wsResult.RawRepresentation);
+        Assert.NotNull(wsResult.Results);
+        Assert.Equal(2, wsResult.Results.Count);
+
+        var source0 = Assert.IsType<UriContent>(wsResult.Results[0]);
+        Assert.Equal(new Uri("https://devblogs.microsoft.com/dotnet/announcing-dotnet-10"), source0.Uri);
+        Assert.Equal("Announcing .NET 10 - .NET Blog", source0.AdditionalProperties?["title"]);
+
+        var source1 = Assert.IsType<UriContent>(wsResult.Results[1]);
+        Assert.Equal(new Uri("https://dotnet.microsoft.com/en-us/download/dotnet/10.0"), source1.Uri);
+        Assert.Equal("Download .NET 10", source1.AdditionalProperties?["title"]);
+
+        var textContent = Assert.IsType<TextContent>(message.Contents[2]);
+        Assert.Equal(".NET 10 was officially released in November 2025 as an LTS release.", textContent.Text);
+        Assert.NotNull(textContent.Annotations);
+        Assert.Equal(2, textContent.Annotations.Count);
+        var citation = Assert.IsType<CitationAnnotation>(textContent.Annotations[0]);
+        Assert.Equal(new Uri("https://devblogs.microsoft.com/dotnet/announcing-dotnet-10?utm_source=openai"), citation.Url);
+        Assert.Equal("Announcing .NET 10 - .NET Blog", citation.Title);
+    }
+
+    [Fact]
+    public async Task WebSearchTool_Streaming()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-2024-08-06",
+                "input":[{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"What is the latest news about .NET?"}]
+                }],
+                "tools":[{
+                    "type":"web_search"
+                }],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_02441a08b3f3bf4b006988809034f4819e8525bfe16c85a287","object":"response","created_at":1770553488,"status":"in_progress","background":false,"completed_at":null,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"web_search","filters":null,"search_context_size":"medium","user_location":{"type":"approximate","city":null,"country":"US","region":null,"timezone":null}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}},"sequence_number":0}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_02441a08b3f3bf4b006988809034f4819e8525bfe16c85a287","object":"response","created_at":1770553488,"status":"in_progress","background":false,"completed_at":null,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"web_search","filters":null,"search_context_size":"medium","user_location":{"type":"approximate","city":null,"country":"US","region":null,"timezone":null}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}},"sequence_number":1}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","item":{"id":"ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3","type":"web_search_call","status":"in_progress","action":{"type":"search"}},"output_index":0,"sequence_number":2}
+
+            event: response.web_search_call.in_progress
+            data: {"type":"response.web_search_call.in_progress","item_id":"ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3","output_index":0,"sequence_number":3}
+
+            event: response.web_search_call.searching
+            data: {"type":"response.web_search_call.searching","item_id":"ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3","output_index":0,"sequence_number":4}
+
+            event: response.web_search_call.completed
+            data: {"type":"response.web_search_call.completed","item_id":"ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3","output_index":0,"sequence_number":5}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","item":{"id":"ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3","type":"web_search_call","status":"completed","action":{"type":"search","queries":[".NET latest news October 2023"],"query":".NET latest news October 2023","sources":[{"url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10","title":"Announcing .NET 10 - .NET Blog"}]}},"output_index":0,"sequence_number":6}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","item":{"id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","type":"message","status":"in_progress","content":[],"role":"assistant"},"output_index":1,"sequence_number":7}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","content_index":0,"item_id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","output_index":1,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":""},"sequence_number":8}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","content_index":0,"delta":".NET 10 was ","item_id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","logprobs":[],"output_index":1,"sequence_number":9}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","content_index":0,"delta":"officially released.","item_id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","logprobs":[],"output_index":1,"sequence_number":10}
+
+            event: response.output_text.annotation.added
+            data: {"type":"response.output_text.annotation.added","annotation":{"type":"url_citation","end_index":538,"start_index":434,"title":"Announcing .NET 10 - .NET Blog","url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10?utm_source=openai"},"annotation_index":0,"content_index":0,"item_id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","output_index":1,"sequence_number":11}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","content_index":0,"item_id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","logprobs":[],"output_index":1,"sequence_number":12,"text":".NET 10 was officially released."}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","content_index":0,"item_id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","output_index":1,"part":{"type":"output_text","annotations":[{"type":"url_citation","end_index":538,"start_index":434,"title":"Announcing .NET 10 - .NET Blog","url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10?utm_source=openai"}],"logprobs":[],"text":".NET 10 was officially released."},"sequence_number":13}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","item":{"id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","type":"message","status":"completed","content":[{"type":"output_text","annotations":[{"type":"url_citation","end_index":538,"start_index":434,"title":"Announcing .NET 10 - .NET Blog","url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10?utm_source=openai"}],"logprobs":[],"text":".NET 10 was officially released."}],"role":"assistant"},"output_index":1,"sequence_number":14}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_02441a08b3f3bf4b006988809034f4819e8525bfe16c85a287","object":"response","created_at":1770553488,"status":"completed","background":false,"completed_at":1770553497,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[{"id":"ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3","type":"web_search_call","status":"completed","action":{"type":"search","queries":[".NET latest news October 2023"],"query":".NET latest news October 2023","sources":[{"url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10","title":"Announcing .NET 10 - .NET Blog"}]}},{"id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","type":"message","status":"completed","content":[{"type":"output_text","annotations":[{"type":"url_citation","end_index":538,"start_index":434,"title":"Announcing .NET 10 - .NET Blog","url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10?utm_source=openai"}],"logprobs":[],"text":".NET 10 was officially released."}],"role":"assistant"}],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"web_search","filters":null,"search_context_size":"medium","user_location":{"type":"approximate","city":null,"country":"US","region":null,"timezone":null}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":17013,"input_tokens_details":{"cached_tokens":0},"output_tokens":1138,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":18151},"user":null,"metadata":{}},"sequence_number":15}
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-2024-08-06");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("What is the latest news about .NET?", new()
+        {
+            Tools = [new HostedWebSearchTool()],
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.NotEmpty(updates);
+
+        // The stream should yield two WebSearchToolCallContent updates:
+        // 1) From the in-progress event (has RawRepresentation, no Queries)
+        // 2) From the output_item.done event (has Queries, no RawRepresentation)
+        var wsCallUpdates = updates.Where(u => u.Contents.OfType<WebSearchToolCallContent>().Any()).ToList();
+        Assert.Equal(2, wsCallUpdates.Count);
+
+        var wsCallInProgress = wsCallUpdates[0].Contents.OfType<WebSearchToolCallContent>().Single();
+        Assert.Equal("ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3", wsCallInProgress.CallId);
+        Assert.NotNull(wsCallInProgress.RawRepresentation);
+        Assert.Null(wsCallInProgress.Queries);
+
+        var wsCallDone = wsCallUpdates[1].Contents.OfType<WebSearchToolCallContent>().Single();
+        Assert.Equal("ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3", wsCallDone.CallId);
+        Assert.Null(wsCallDone.RawRepresentation);
+        Assert.Equal([".NET latest news October 2023"], wsCallDone.Queries);
+
+        // Find web search result content in the stream
+        var wsResultUpdate = updates.FirstOrDefault(u => u.Contents.OfType<WebSearchToolResultContent>().Any());
+        Assert.NotNull(wsResultUpdate);
+        var wsResult = wsResultUpdate.Contents.OfType<WebSearchToolResultContent>().First();
+        Assert.Equal("ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3", wsResult.CallId);
+        Assert.NotNull(wsResult.RawRepresentation);
+        Assert.NotNull(wsResult.Results);
+        Assert.Single(wsResult.Results);
+        var streamSource = Assert.IsType<UriContent>(wsResult.Results[0]);
+        Assert.Equal(new Uri("https://devblogs.microsoft.com/dotnet/announcing-dotnet-10"), streamSource.Uri);
+        Assert.Equal("Announcing .NET 10 - .NET Blog", streamSource.AdditionalProperties?["title"]);
+
+        // Find text content
+        var textUpdates = updates.Where(u => u.Contents.OfType<TextContent>().Any()).ToList();
+        Assert.NotEmpty(textUpdates);
+
+        // Verify that streaming updates coalesce correctly into a ChatResponse.
+        // The in-progress update yields a WebSearchToolCallContent without queries,
+        // and the output_item.done yields another with queries — these must merge.
+        var response = updates.ToChatResponse();
+        var message = Assert.Single(response.Messages);
+
+        var coalescedWsCall = message.Contents.OfType<WebSearchToolCallContent>().Single();
+        Assert.Equal("ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3", coalescedWsCall.CallId);
+        Assert.Equal([".NET latest news October 2023"], coalescedWsCall.Queries);
+
+        var coalescedWsResult = message.Contents.OfType<WebSearchToolResultContent>().Single();
+        Assert.Equal(coalescedWsCall.CallId, coalescedWsResult.CallId);
+        Assert.NotNull(coalescedWsResult.RawRepresentation);
+
+        var textContent = message.Contents.OfType<TextContent>().Single();
+        Assert.Equal(".NET 10 was officially released.", textContent.Text);
+    }
 }
+
