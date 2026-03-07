@@ -93,6 +93,13 @@ public class ResponseCreatedRealtimeServerMessage : RealtimeServerMessage
     /// <summary>
     /// Gets or sets the status of the response.
     /// </summary>
+    /// <remarks>
+    /// Typically set on <see cref="RealtimeServerMessageType.ResponseDone"/> messages to indicate
+    /// how the response ended. See <see cref="RealtimeResponseStatus"/> for well-known values
+    /// such as <see cref="RealtimeResponseStatus.Completed"/>, <see cref="RealtimeResponseStatus.Cancelled"/>
+    /// (e.g., due to user barge-in), <see cref="RealtimeResponseStatus.Incomplete"/>,
+    /// and <see cref="RealtimeResponseStatus.Failed"/>.
+    /// </remarks>
     public string? Status { get; set; }
 
     /// <summary>
