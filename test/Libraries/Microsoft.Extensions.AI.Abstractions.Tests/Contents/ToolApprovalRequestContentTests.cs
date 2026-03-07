@@ -28,7 +28,7 @@ public class ToolApprovalRequestContentTests
     };
 
     [Theory]
-    [MemberData(nameof(ToolCallContentInstances))]
+    [MemberData(nameof(ToolCallContentInstances), DisableDiscoveryEnumeration = true)]
     public void Constructor_Roundtrips(ToolCallContent toolCall)
     {
         string id = "req-1";
@@ -39,7 +39,7 @@ public class ToolApprovalRequestContentTests
     }
 
     [Theory]
-    [MemberData(nameof(ToolCallContentInstances))]
+    [MemberData(nameof(ToolCallContentInstances), DisableDiscoveryEnumeration = true)]
     public void CreateResponse_ReturnsExpectedResponse(ToolCallContent toolCall)
     {
         string id = "req-1";
@@ -76,7 +76,7 @@ public class ToolApprovalRequestContentTests
     }
 
     [Theory]
-    [MemberData(nameof(ToolCallContentInstances))]
+    [MemberData(nameof(ToolCallContentInstances), DisableDiscoveryEnumeration = true)]
     public void Serialization_Roundtrips(ToolCallContent toolCall)
     {
         var content = new ToolApprovalRequestContent("request123", toolCall);
