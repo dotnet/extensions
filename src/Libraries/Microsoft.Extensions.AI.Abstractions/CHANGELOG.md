@@ -2,6 +2,7 @@
 
 ## NOT YET RELEASED
 
+- `AddAIContentType` now automatically registers the content type against every base in the inheritance chain up to `AIContent`.
 - Added `IHostedFileClient` interface and related types for interacting with files hosted by the service.
 - Added `WebSearchToolCallContent` and `WebSearchToolResultContent` for representing web search tool calls and results.
 - Added `ToolCallContent` and `ToolResultContent` base classes.
