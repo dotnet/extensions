@@ -127,6 +127,8 @@ public class ChatResponseUpdateTests
             RawRepresentation = new object(),
             ResponseId = "id",
             MessageId = "messageid",
+            ModelId = "gpt-4",
+            ConversationId = "conv123",
             CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
             FinishReason = ChatFinishReason.ContentFilter,
             AdditionalProperties = new() { ["key"] = "value" },
@@ -158,6 +160,8 @@ public class ChatResponseUpdateTests
         Assert.Equal(ChatRole.Assistant, result.Role);
         Assert.Equal("id", result.ResponseId);
         Assert.Equal("messageid", result.MessageId);
+        Assert.Equal("gpt-4", result.ModelId);
+        Assert.Equal("conv123", result.ConversationId);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
 
@@ -166,6 +170,72 @@ public class ChatResponseUpdateTests
         Assert.True(result.AdditionalProperties.TryGetValue("key", out object? value));
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
+    }
+
+    [Fact]
+    public void JsonSerialization_Roundtrips_DefaultOptions()
+    {
+        ChatResponseUpdate original = new()
+        {
+            AuthorName = "author",
+            Role = ChatRole.Assistant,
+            Contents =
+            [
+                new TextContent("text-1"),
+                new DataContent("data:image/png;base64,aGVsbG8="),
+                new FunctionCallContent("callId1", "fc1"),
+                new DataContent("data"u8.ToArray(), "text/plain"),
+                new TextContent("text-2"),
+            ],
+            RawRepresentation = new object(),
+            ResponseId = "id",
+            MessageId = "messageid",
+            ModelId = "gpt-4",
+            ConversationId = "conv123",
+            CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            FinishReason = ChatFinishReason.ContentFilter,
+            AdditionalProperties = new() { ["key"] = "value" },
+            ContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3 }),
+        };
+
+        string json = JsonSerializer.Serialize(original, AIJsonUtilities.DefaultOptions);
+
+        ChatResponseUpdate? result = JsonSerializer.Deserialize<ChatResponseUpdate>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal(5, result.Contents.Count);
+
+        Assert.IsType<TextContent>(result.Contents[0]);
+        Assert.Equal("text-1", ((TextContent)result.Contents[0]).Text);
+
+        Assert.IsType<DataContent>(result.Contents[1]);
+        Assert.Equal("data:image/png;base64,aGVsbG8=", ((DataContent)result.Contents[1]).Uri);
+
+        Assert.IsType<FunctionCallContent>(result.Contents[2]);
+        Assert.Equal("fc1", ((FunctionCallContent)result.Contents[2]).Name);
+
+        Assert.IsType<DataContent>(result.Contents[3]);
+        Assert.Equal("data"u8.ToArray(), ((DataContent)result.Contents[3]).Data.ToArray());
+
+        Assert.IsType<TextContent>(result.Contents[4]);
+        Assert.Equal("text-2", ((TextContent)result.Contents[4]).Text);
+
+        Assert.Equal("author", result.AuthorName);
+        Assert.Equal(ChatRole.Assistant, result.Role);
+        Assert.Equal("id", result.ResponseId);
+        Assert.Equal("messageid", result.MessageId);
+        Assert.Equal("gpt-4", result.ModelId);
+        Assert.Equal("conv123", result.ConversationId);
+        Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
+        Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
+
+        Assert.NotNull(result.ContinuationToken);
+        Assert.Equal(new byte[] { 1, 2, 3 }, result.ContinuationToken.ToBytes().ToArray());
+
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Single(result.AdditionalProperties);
+        Assert.True(result.AdditionalProperties.TryGetValue("key", out object? value));
+        Assert.Equal("value", value?.ToString());
     }
 
     [Fact]

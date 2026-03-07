@@ -103,7 +103,15 @@ public class ChatResponse
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
-    public ResponseContinuationToken? ContinuationToken { get; set; }
+    public ResponseContinuationToken? ContinuationToken
+    {
+        get => ContinuationTokenCore;
+        set => ContinuationTokenCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("continuationToken")]
+    internal ResponseContinuationToken? ContinuationTokenCore { get; set; }
 
     /// <summary>Gets or sets the raw representation of the chat response from an underlying implementation.</summary>
     /// <remarks>
