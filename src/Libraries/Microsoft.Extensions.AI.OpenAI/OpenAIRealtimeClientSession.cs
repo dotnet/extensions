@@ -85,7 +85,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         if (_sessionClient is not null)
         {
             // Allow callers to provide a pre-configured SDK-specific options instance.
-            object? rawOptions = options.RawRepresentationFactory?.Invoke(this);
+            object? rawOptions = options.RawRepresentationFactory?.Invoke();
 
             if (rawOptions is Sdk.RealtimeTranscriptionSessionOptions rawTransOptions)
             {

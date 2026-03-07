@@ -88,7 +88,12 @@ public class RealtimeSessionOptions
     /// a new instance on each call.
     /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly typed
     /// properties on <see cref="RealtimeSessionOptions" />.
+    /// <para>
+    /// Unlike similar factories on other options types, this callback does not receive the session instance
+    /// as a parameter because some providers need to evaluate it before the session is created
+    /// (e.g., to produce connection configuration).
+    /// </para>
     /// </remarks>
     [JsonIgnore]
-    public Func<IRealtimeClientSession, object?>? RawRepresentationFactory { get; init; }
+    public Func<object?>? RawRepresentationFactory { get; init; }
 }
