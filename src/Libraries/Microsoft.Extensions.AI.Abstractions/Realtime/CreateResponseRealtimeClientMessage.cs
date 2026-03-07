@@ -11,10 +11,18 @@ namespace Microsoft.Extensions.AI;
 /// Represents a client message that triggers model inference to generate a response.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Sending this message instructs the provider to generate a new response from the model.
 /// The response may include one or more output items (text, audio, or tool calls).
 /// Properties on this message optionally override the session-level configuration
 /// for this response only.
+/// </para>
+/// <para>
+/// Not all providers support explicit response triggering. Voice-activity-detection (VAD) driven
+/// providers may respond automatically when speech is detected or input is committed, in which case
+/// this message may be treated as a no-op. Per-response overrides (instructions, tools, voice, etc.)
+/// are advisory and may be silently ignored by providers that do not support them.
+/// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public class CreateResponseRealtimeClientMessage : RealtimeClientMessage
