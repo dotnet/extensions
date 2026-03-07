@@ -20,7 +20,6 @@ using OpenAI;
 using OpenAI.Chat;
 
 #pragma warning disable CA1308 // Normalize strings to uppercase
-#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;

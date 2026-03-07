@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.HeaderParsing;
 /// </summary>
 /// <typeparam name="T">The type of the header value.</typeparam>
 [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Header keys are never disposed, so we don't bother with this.")]
-[SuppressMessage("Blocker Bug", "S2931:Classes with \"IDisposable\" members should implement \"IDisposable\"", Justification = "Header keys are never disposed, so we don't bother with this.")]
 public sealed class HeaderKey<T>
     where T : notnull
 {

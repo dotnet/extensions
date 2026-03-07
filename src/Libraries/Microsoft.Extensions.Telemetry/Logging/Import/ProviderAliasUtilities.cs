@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // This source file was lovingly 'borrowed' from dotnet/runtime/src/libraries/Microsoft.Extensions.Logging
-#pragma warning disable S1128 // Unused "using" should be removed
 
 using System;
 using System.Collections.Generic;

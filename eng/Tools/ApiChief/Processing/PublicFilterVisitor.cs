@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
@@ -74,7 +74,6 @@ internal sealed class PublicFilterVisitor : CSharpOutputVisitor
             foreach (var attribute in methodDeclaration.Attributes)
             {
                 var s = attribute.ToString();
-#pragma warning disable S1067
                 if (s.Contains("SkipLocalsInit")
                     || s.Contains("ExcludeFromCodeCoverage")
                     || s.Contains("DebuggerStepThrough")
@@ -83,7 +82,6 @@ internal sealed class PublicFilterVisitor : CSharpOutputVisitor
                     || s.Contains("DynamicDependency")
                     || s.Contains("RequiresUnreferencedCode")
                     || s.Contains("AsyncStateMachine"))
-#pragma warning restore S1067
                 {
                     attribute.Remove();
                 }

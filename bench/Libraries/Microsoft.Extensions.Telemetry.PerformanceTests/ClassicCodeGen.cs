@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -6,12 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Telemetry.Bench;
 
-#pragma warning disable S103
 #pragma warning disable SA1121
-#pragma warning disable S2148
 #pragma warning disable IDE0055
 #pragma warning disable IDE1006
-#pragma warning disable S3235
 
 internal static class ClassicCodeGen
 {

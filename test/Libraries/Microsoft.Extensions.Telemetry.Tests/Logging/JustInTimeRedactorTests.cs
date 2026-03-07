@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -10,7 +10,6 @@ namespace Microsoft.Extensions.Logging.Test;
 
 public static class JustInTimeRedactorTests
 {
-#pragma warning disable S103
     [Theory]
     [InlineData("ABC", "", "ABC")]
     [InlineData("ABC", "123", "ABC:123")]
@@ -82,7 +81,6 @@ public static class JustInTimeRedactorTests
         r.Return();
 #endif
     }
-#pragma warning restore S103
 
     private sealed class Formattable : IFormattable
     {

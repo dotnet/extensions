@@ -52,14 +52,12 @@ public class EmitterTests
 ;
 
         // we need this "Where()" hack because Roslyn 4.0 doesn't recognize #pragma warning disable for generator-produced warnings
-#pragma warning disable S1067 // Expressions should not be too complex
         Assert.DoesNotContain(d, diag
             => diag.Id != DiagDescriptors.ShouldntMentionExceptionInMessage.Id
             && diag.Id != DiagDescriptors.ShouldntMentionLoggerInMessage.Id
             && diag.Id != DiagDescriptors.ShouldntMentionLogLevelInMessage.Id
             && diag.Id != DiagDescriptors.EmptyLoggingMethod.Id
             && diag.Id != DiagDescriptors.ParameterHasNoCorrespondingTemplate.Id);
-#pragma warning restore S1067 // Expressions should not be too complex
 
         _ = Assert.Single(r);
 

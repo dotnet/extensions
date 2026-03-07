@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -103,8 +103,6 @@ public static class FakeHostingExtensions
     /// <param name="configure">Configures the <see cref="IHostBuilder"/> instance.</param>
     /// <returns>The <see cref="IHostBuilder"/> instance.</returns>
     /// <remarks>Designed to ease host configuration in unit tests by defining common configuration methods.</remarks>
-    [SuppressMessage("Minor Code Smell", "S3872:Parameter names should not duplicate the names of their methods",
-        Justification = "We want to keep the parameter name for consistency.")]
     public static IHostBuilder Configure(this IHostBuilder builder, Action<IHostBuilder> configure)
     {
         _ = Throw.IfNull(builder);

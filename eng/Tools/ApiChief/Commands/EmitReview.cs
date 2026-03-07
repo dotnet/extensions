@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -21,8 +21,6 @@ namespace ApiChief.Commands;
 
 internal static class EmitReview
 {
-    [SuppressMessage("Minor Code Smell", "S3459:Unassigned members should be removed", Justification = "Written through reflection.")]
-    [SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Written through reflection.")]
     private sealed class EmitReviewArgs
     {
         public FileInfo? AssemblyPath { get; set; }
@@ -51,7 +49,6 @@ internal static class EmitReview
     private static async Task<int> ExecuteAsync(EmitReviewArgs args)
     {
         // once with XML comments, once without
-#pragma warning disable S109 // Magic numbers should not be used
         for (int i = 0; i < 2; i++)
         {
             var formatting = Formatter.FormattingWithXmlComments;
@@ -240,7 +237,6 @@ internal static class EmitReview
                 }
             }
         }
-#pragma warning restore S109 // Magic numbers should not be used
 
         return 0;
     }

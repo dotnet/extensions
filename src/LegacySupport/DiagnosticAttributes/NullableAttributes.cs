@@ -13,7 +13,6 @@
 #pragma warning disable SA1623
 #pragma warning disable SA1642
 #pragma warning disable SA1649
-#pragma warning disable S3903
 #pragma warning disable IDE0021 // Use block body for constructors
 #pragma warning disable CA1019
 

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
@@ -91,7 +91,6 @@ internal partial class Parser
             {
                 visitedLoop = true;
 
-#pragma warning disable S1067 // Expressions should not be too complex
                 if (method.IsStatic
                     && method.ReturnsVoid
                     && !method.IsGenericMethod
@@ -100,7 +99,6 @@ internal partial class Parser
                     && method.Parameters[1].RefKind == RefKind.None
                     && SymbolEqualityComparer.Default.Equals(tagCollectorType, method.Parameters[0].Type)
                     && IsAssignableTo(complexObjType, method.Parameters[1].Type))
-#pragma warning restore S1067 // Expressions should not be too complex
                 {
                     if (IsProviderMethodVisible(method))
                     {

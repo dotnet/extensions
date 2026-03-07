@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -412,9 +412,7 @@ public abstract class HttpDependencyMetadataResolver
                 }
 
                 // Advance i to the next separator index
-#pragma warning disable S127 // "for" loop stop conditions should be invariant
                 i = nextDelimiterIndex;
-#pragma warning restore S127 // "for" loop stop conditions should be invariant
 
                 trieCurrent = delimChildNode;
 

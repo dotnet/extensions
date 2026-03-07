@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -172,7 +172,6 @@ public sealed class IngestionDocumentTable : IngestionDocumentElement
     /// <param name="cells">The cells of the table.</param>
     /// <exception cref="ArgumentNullException"><paramref name="cells"/> is <see langword="null"/>.</exception>
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-#pragma warning disable S3967 // Multidimensional arrays should not be used
     public IngestionDocumentTable(string markdown, IngestionDocumentElement?[,] cells)
         : base(markdown)
     {
@@ -190,7 +189,6 @@ public sealed class IngestionDocumentTable : IngestionDocumentElement
 #pragma warning disable CA1819 // Properties should not return arrays
     public IngestionDocumentElement?[,] Cells { get; }
 #pragma warning restore CA1819 // Properties should not return arrays
-#pragma warning restore S3967 // Multidimensional arrays should not be used
 #pragma warning restore CA1814 // Prefer jagged arrays over multidimensional
 }
 

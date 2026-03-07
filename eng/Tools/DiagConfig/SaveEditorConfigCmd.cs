@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -12,8 +12,6 @@ namespace DiagConfig;
 
 internal static class SaveEditorConfigCmd
 {
-#pragma warning disable S3459 // Unassigned members should be removed
-#pragma warning disable S1144 // Unused private types or members should be removed
     private sealed class SaveEditorConfigArgs
     {
         public string ConfigDirectory { get; set; } = string.Empty;
@@ -24,8 +22,6 @@ internal static class SaveEditorConfigCmd
         public bool IsGlobal { get; set; }
         public int MaxTier { get; set; } = int.MaxValue;
     }
-#pragma warning restore S1144 // Unused private types or members should be removed
-#pragma warning restore S3459 // Unassigned members should be removed
 
     public static Command Create()
     {

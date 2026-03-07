@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // Forked from StyleCop.Analyzers repo.
@@ -16,8 +16,6 @@ namespace Microsoft.Extensions.LocalAnalyzers.Json;
 /// </summary>
 [DebuggerDisplay("{ToString(),nq}", Type = "JsonValue({Type})")]
 [DebuggerTypeProxy(typeof(JsonValueDebugView))]
-[SuppressMessage("Major Bug", "S1244:Floating point numbers should not be tested for equality",
-    Justification = "Would require unnecessary refactor.")]
 internal readonly struct JsonValue : IEquatable<JsonValue>
 {
     /// <summary>
@@ -153,9 +151,7 @@ internal readonly struct JsonValue : IEquatable<JsonValue>
     /// Gets a value indicating whether this JsonValue is an Integer.
     /// </summary>
     /// <value>A value indicating whether this JsonValue is an Integer.</value>
-#pragma warning disable S2589 // Boolean expressions should not be gratuitous
     public bool IsInteger => IsNumber && unchecked((int)_value) == _value;
-#pragma warning restore S2589 // Boolean expressions should not be gratuitous
 
     /// <summary>
     /// Gets a value indicating whether this JsonValue is a Number.
@@ -256,7 +252,6 @@ internal readonly struct JsonValue : IEquatable<JsonValue>
     /// Gets this value as an JsonObject.
     /// </summary>
     /// <value>This value as an JsonObject.</value>
-#pragma warning disable S1168 // Empty arrays and collections should be returned instead of null
     public JsonObject? AsJsonObject => IsJsonObject ? (JsonObject?)_reference : null;
 
     /// <summary>
@@ -264,7 +259,6 @@ internal readonly struct JsonValue : IEquatable<JsonValue>
     /// </summary>
     /// <value>This value as an JsonArray.</value>
     public JsonArray? AsJsonArray => IsJsonArray ? (JsonArray?)_reference : null;
-#pragma warning restore S1168 // Empty arrays and collections should be returned instead of null
 
     /// <summary>
     /// Gets this value as a system.DateTime.
@@ -595,14 +589,12 @@ internal readonly struct JsonValue : IEquatable<JsonValue>
     {
         private readonly JsonValue _jsonValue;
 
-        [SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Used by debugger.")]
         public JsonValueDebugView(JsonValue jsonValue)
         {
             _jsonValue = jsonValue;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-#pragma warning disable S1168 // Empty arrays and collections should be returned instead of null
         public JsonObject? ObjectView => _jsonValue.IsJsonObject
                     ? (JsonObject?)_jsonValue._reference
                     : null;
@@ -611,7 +603,6 @@ internal readonly struct JsonValue : IEquatable<JsonValue>
         public JsonArray? ArrayView => _jsonValue.IsJsonArray
                     ? (JsonArray?)_jsonValue._reference
                     : null;
-#pragma warning restore S1168 // Empty arrays and collections should be returned instead of null
 
         public JsonValueType Type => _jsonValue.Type;
 

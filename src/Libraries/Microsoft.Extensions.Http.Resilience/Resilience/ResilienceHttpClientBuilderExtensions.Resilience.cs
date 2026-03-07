@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -124,9 +124,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
     {
         // this piece of code eagerly checks that the pipeline key provider is correctly configured
         // combined with HttpClient auto-activation we can detect any issues on startup
-#pragma warning disable S1075 // URIs should not be hardcoded - this URL is not used for any real request, nor in any telemetry
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:123");
-#pragma warning restore S1075 // URIs should not be hardcoded
         _ = provider(request);
     }
 

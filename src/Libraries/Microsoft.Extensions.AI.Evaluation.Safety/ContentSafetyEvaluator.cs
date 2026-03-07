@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -173,11 +173,9 @@ public abstract class ContentSafetyEvaluator(
                     metric.AddDiagnostics(diagnostics);
                 }
 
-#pragma warning disable S125 // Sections of code should not be commented out.
                 // The following commented code can be useful for debugging purposes.
                 // metric.LogJsonData(payload);
                 // metric.LogJsonData(annotationResult);
-#pragma warning restore S125
 
                 updatedResult.Metrics.Add(metric.Name, metric);
             }

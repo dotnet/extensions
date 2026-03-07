@@ -8,7 +8,6 @@
 #pragma warning disable SA1512
 #pragma warning disable SA1623
 #pragma warning disable SA1642
-#pragma warning disable S3903
 
 namespace System.Diagnostics.CodeAnalysis;
 

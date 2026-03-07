@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -12,7 +12,6 @@ namespace TestClasses
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Test code")]
     [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Test code")]
     [SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Test code")]
-    [SuppressMessage("Major Code Smell", "S2376:Write-only properties should not be used", Justification = "Test code")]
     internal static partial class LogPropertiesExtensions
     {
         public delegate void TestDelegate();

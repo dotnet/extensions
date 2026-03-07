@@ -26,9 +26,7 @@ public static class DataClassificationSetTests
         var dc6 = dc1.Union(FakeTaxonomy.PrivateData);
         Assert.NotEqual(dc1, dc6);
 
-#pragma warning disable CA1508 // Avoid dead conditional code
         Assert.False(dc1.Equals(null));
-#pragma warning restore CA1508 // Avoid dead conditional code
     }
 
     [Fact]

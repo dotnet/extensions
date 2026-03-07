@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -10,7 +10,6 @@ using Microsoft.ML.Tokenizers;
 using Microsoft.Shared.Diagnostics;
 using Xunit;
 
-#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable SA1402 // File may only contain a single type
 
 namespace Microsoft.Extensions.AI;

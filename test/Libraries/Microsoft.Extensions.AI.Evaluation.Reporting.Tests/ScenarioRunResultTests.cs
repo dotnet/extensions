@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -391,7 +391,6 @@ public class ScenarioRunResultTests
     {
         public static ChatTurnDetailsComparer Instance { get; } = new ChatTurnDetailsComparer();
 
-#pragma warning disable S1067 // Expressions should not be too complex.
         public bool Equals(ChatTurnDetails? x, ChatTurnDetails? y) =>
             x?.Latency == y?.Latency &&
             x?.Model == y?.Model &&
@@ -401,7 +400,6 @@ public class ScenarioRunResultTests
             x?.Usage?.TotalTokenCount == y?.Usage?.TotalTokenCount &&
             x?.CacheKey == y?.CacheKey &&
             x?.CacheHit == y?.CacheHit;
-#pragma warning restore S1067
 
         public int GetHashCode(ChatTurnDetails obj)
             => obj.GetHashCode();

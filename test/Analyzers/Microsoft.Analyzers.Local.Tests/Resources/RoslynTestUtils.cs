@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -283,7 +283,6 @@ internal static class RoslynTestUtils
     /// <summary>
     /// Runs a Roslyn analyzer and fixer.
     /// </summary>
-    [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Hey, that's life")]
     public static async Task<IReadOnlyList<string>> RunAnalyzerAndFixer(
         DiagnosticAnalyzer analyzer,
         CodeFixProvider fixer,

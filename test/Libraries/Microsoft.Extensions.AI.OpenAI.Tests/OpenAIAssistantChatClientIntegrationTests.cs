@@ -1,9 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #pragma warning disable CA1822 // Mark members as static
 #pragma warning disable CA2000 // Dispose objects before losing scope
-#pragma warning disable S1135 // Track uses of "TODO" tags
 #pragma warning disable xUnit1013 // Public method should be marked as test
 
 using System;

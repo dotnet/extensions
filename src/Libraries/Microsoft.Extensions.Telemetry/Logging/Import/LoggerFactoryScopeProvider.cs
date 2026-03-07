@@ -11,7 +11,6 @@
 #pragma warning disable IDE0058 // Expression value is never used
 #pragma warning disable SA1505 // Opening braces should not be followed by blank line
 #pragma warning disable CA2002 // Do not lock on objects with weak identity
-#pragma warning disable S2551 // Lock on a dedicated object instance instead
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 #pragma warning disable SA1402 // File may only contain a single type
 

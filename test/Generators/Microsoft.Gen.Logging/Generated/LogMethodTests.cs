@@ -1005,7 +1005,6 @@ public class LogMethodTests
         }
     }
 
-    [SuppressMessage("Minor Code Smell", "S4056:Overloads with a \"CultureInfo\" or an \"IFormatProvider\" parameter should be used", Justification = "Not appropriate here")]
     private static void TestCollection(int expected, FakeLogCollector collector)
     {
         var rol = (collector.LatestRecord.State as IReadOnlyList<KeyValuePair<string, string?>>)!;

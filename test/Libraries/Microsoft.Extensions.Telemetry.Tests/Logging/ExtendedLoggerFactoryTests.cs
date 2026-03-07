@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -47,9 +47,7 @@ public static class ExtendedLoggerFactoryTests
     {
         var factory = Utils.CreateLoggerFactory();
         factory.Dispose();
-#pragma warning disable S3966 // Objects should not be disposed more than once
         factory.Dispose();
-#pragma warning restore S3966 // Objects should not be disposed more than once
 
         // just trying to make sure we didn't crash
         Assert.True(true);

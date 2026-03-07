@@ -92,9 +92,7 @@ public class ImageGeneratorTests
         Assert.True(generator.DisposeInvoked);
 
         // Second dispose should not throw
-#pragma warning disable S3966
         generator.Dispose();
-#pragma warning restore S3966
         Assert.True(generator.DisposeInvoked);
     }
 

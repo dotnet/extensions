@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
@@ -208,7 +208,6 @@ public class SizeTests(ITestOutputHelper log) : IClassFixture<TestEventListener>
     [InlineData("some value", true, 1, 1, 0, false, false)]
     [InlineData("read fail", true, 1, 1, 0, false, false)]
     [InlineData("write fail", true, 1, 1, 0, true, false, Log.IdSerializationFailure)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Test scenario range; reducing duplication")]
     public async Task BrokenSerializer_Immutable(string value, bool same, int runCount, int serializeCount, int deserializeCount, bool expectKnownFailure, bool withL2,
         params int[] errorIds)
     {

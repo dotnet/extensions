@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -105,9 +105,7 @@ internal sealed class JustInTimeRedactor : IResettable
         }
         else
 #endif
-#pragma warning disable S1199
         {
-#pragma warning restore S1199
             ReadOnlySpan<char> inputAsSpan = default;
             if (value is IFormattable f)
             {

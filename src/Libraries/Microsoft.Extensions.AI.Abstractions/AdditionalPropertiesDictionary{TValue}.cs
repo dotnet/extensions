@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -10,7 +10,6 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S4039 // Interface methods should be callable by derived types
 #pragma warning disable CA1033 // Interface methods should be callable by derived types
 
 namespace Microsoft.Extensions.AI;
@@ -252,9 +251,7 @@ public class AdditionalPropertiesDictionary<TValue> : IDictionary<string, TValue
         private readonly AdditionalPropertiesDictionary<TValue> _properties = Throw.IfNull(properties);
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-#pragma warning disable S2365 // Properties should not make collection or array copies
         public AdditionalProperty[] Items => (from p in _properties select new AdditionalProperty(p.Key, p.Value)).ToArray();
-#pragma warning restore S2365
 
         [DebuggerDisplay("{Value}", Name = "[{Key}]")]
         public readonly struct AdditionalProperty(string key, TValue value)

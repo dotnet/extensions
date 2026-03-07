@@ -5,7 +5,6 @@
 #pragma warning disable CA2217
 #pragma warning disable SA1413
 #pragma warning disable SA1512
-#pragma warning disable S4070
 
 namespace System.Diagnostics.CodeAnalysis;
 

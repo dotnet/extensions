@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -32,10 +32,8 @@ internal sealed class Timer : ITimer
         var dueTimeMs = (long)dueTime.TotalMilliseconds;
         var periodMs = (long)period.TotalMilliseconds;
 
-#pragma warning disable S3236 // Caller information arguments should not be provided explicitly
         _ = Throw.IfOutOfRange(dueTimeMs, -1, MaxSupportedTimeout, nameof(dueTime));
         _ = Throw.IfOutOfRange(periodMs, -1, MaxSupportedTimeout, nameof(period));
-#pragma warning restore S3236 // Caller information arguments should not be provided explicitly
 
         var timeProvider = _timeProvider;
         if (timeProvider is null)
