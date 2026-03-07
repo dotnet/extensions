@@ -318,12 +318,18 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             return;
         }
 
-        if (itemCreate.MessageId is not null || itemCreate.PreviousId is not null)
+        string? previousId = null;
+        if (itemCreate.RawRepresentation is Sdk.RealtimeClientCommandConversationItemCreate rawCmd)
+        {
+            previousId = rawCmd.PreviousItemId;
+        }
+
+        if (itemCreate.MessageId is not null || previousId is not null)
         {
             var cmd = new Sdk.RealtimeClientCommandConversationItemCreate(sdkItem)
             {
                 EventId = itemCreate.MessageId,
-                PreviousItemId = itemCreate.PreviousId,
+                PreviousItemId = previousId,
             };
             await _sessionClient!.SendCommandAsync(cmd, cancellationToken).ConfigureAwait(false);
         }

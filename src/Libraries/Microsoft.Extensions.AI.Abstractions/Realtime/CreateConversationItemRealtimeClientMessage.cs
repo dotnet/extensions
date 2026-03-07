@@ -17,18 +17,10 @@ public class CreateConversationItemRealtimeClientMessage : RealtimeClientMessage
     /// Initializes a new instance of the <see cref="CreateConversationItemRealtimeClientMessage"/> class.
     /// </summary>
     /// <param name="item">The conversation item to create.</param>
-    /// <param name="previousId">The optional ID of the previous conversation item to insert the new one after.</param>
-    public CreateConversationItemRealtimeClientMessage(RealtimeConversationItem item, string? previousId = null)
+    public CreateConversationItemRealtimeClientMessage(RealtimeConversationItem item)
     {
-        PreviousId = previousId;
         Item = Throw.IfNull(item);
     }
-
-    /// <summary>
-    /// Gets or sets the optional previous conversation item ID.
-    /// If not set, the new item will be appended to the end of the conversation.
-    /// </summary>
-    public string? PreviousId { get; set; }
 
     /// <summary>
     /// Gets or sets the conversation item to create.

@@ -40,20 +40,9 @@ public class RealtimeClientMessageTests
         var contents = new List<AIContent> { new TextContent("Hello") };
         var item = new RealtimeConversationItem(contents, "item_1", ChatRole.User);
 
-        var message = new CreateConversationItemRealtimeClientMessage(item, "prev_1");
-
-        Assert.Same(item, message.Item);
-        Assert.Equal("prev_1", message.PreviousId);
-    }
-
-    [Fact]
-    public void ConversationItemCreateMessage_Constructor_PreviousIdDefaults()
-    {
-        var item = new RealtimeConversationItem([new TextContent("Hello")]);
         var message = new CreateConversationItemRealtimeClientMessage(item);
 
         Assert.Same(item, message.Item);
-        Assert.Null(message.PreviousId);
     }
 
     [Fact]
@@ -64,10 +53,8 @@ public class RealtimeClientMessageTests
 
         var newItem = new RealtimeConversationItem([new TextContent("World")]);
         message.Item = newItem;
-        message.PreviousId = "prev_2";
 
         Assert.Same(newItem, message.Item);
-        Assert.Equal("prev_2", message.PreviousId);
     }
 
     [Fact]
