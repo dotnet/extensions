@@ -432,4 +432,37 @@ public class FunctionCallContentTests
             Assert.Equal("value1", deserializedContent.Arguments["arg1"]?.ToString());
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "functionCall",
+              "callId": "call123",
+              "name": "myFunction",
+              "arguments": {
+                "arg1": "value1",
+                "arg2": 42
+              },
+              "informationalOnly": true,
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var funcCall = Assert.IsType<FunctionCallContent>(result);
+        Assert.Equal("call123", funcCall.CallId);
+        Assert.Equal("myFunction", funcCall.Name);
+        Assert.True(funcCall.InformationalOnly);
+        Assert.NotNull(funcCall.Arguments);
+        Assert.Equal("value1", funcCall.Arguments["arg1"]?.ToString());
+        Assert.Equal("42", funcCall.Arguments["arg2"]?.ToString());
+        Assert.NotNull(funcCall.AdditionalProperties);
+        Assert.Equal("val", funcCall.AdditionalProperties["key"]?.ToString());
+    }
 }

@@ -57,6 +57,41 @@ public class InputResponseContentTests
         }
     }
 
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "toolApprovalResponse",
+              "requestId": "req-abc123",
+              "approved": false,
+              "toolCall": {
+                "$type": "functionCall",
+                "callId": "call1",
+                "name": "myFunc"
+              },
+              "reason": "Denied",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        InputResponseContent? result = JsonSerializer.Deserialize<InputResponseContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var approvalResponse = Assert.IsType<ToolApprovalResponseContent>(result);
+        Assert.Equal("req-abc123", approvalResponse.RequestId);
+        Assert.False(approvalResponse.Approved);
+        Assert.NotNull(approvalResponse.ToolCall);
+        var funcCall = Assert.IsType<FunctionCallContent>(approvalResponse.ToolCall);
+        Assert.Equal("call1", funcCall.CallId);
+        Assert.Equal("myFunc", funcCall.Name);
+        Assert.Equal("Denied", approvalResponse.Reason);
+        Assert.NotNull(approvalResponse.AdditionalProperties);
+        Assert.Equal("val", approvalResponse.AdditionalProperties["key"]?.ToString());
+    }
+
     private class TestInputResponseContent : InputResponseContent
     {
         public TestInputResponseContent(string requestId)

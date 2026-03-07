@@ -99,4 +99,35 @@ public class ToolApprovalRequestContentTests
             Assert.Equal(content.ToolCall.CallId, deserializedContent.ToolCall.CallId);
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "toolApprovalRequest",
+              "requestId": "req-abc123",
+              "toolCall": {
+                "$type": "functionCall",
+                "callId": "call1",
+                "name": "myFunc"
+              },
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var approvalRequest = Assert.IsType<ToolApprovalRequestContent>(result);
+        Assert.Equal("req-abc123", approvalRequest.RequestId);
+        Assert.NotNull(approvalRequest.ToolCall);
+        var funcCall = Assert.IsType<FunctionCallContent>(approvalRequest.ToolCall);
+        Assert.Equal("call1", funcCall.CallId);
+        Assert.Equal("myFunc", funcCall.Name);
+        Assert.NotNull(approvalRequest.AdditionalProperties);
+        Assert.Equal("val", approvalRequest.AdditionalProperties["key"]?.ToString());
+    }
 }
