@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -118,7 +118,7 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
 
         using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
-        string? requestModelId = options?.ModelId ?? _defaultModelId;
+        string? requestModelId = options?.Transcription?.ModelId ?? _defaultModelId;
 
         SpeechToTextResponse? response = null;
         Exception? error = null;
@@ -146,7 +146,7 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
 
         using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
-        string? requestModelId = options?.ModelId ?? _defaultModelId;
+        string? requestModelId = options?.Transcription?.ModelId ?? _defaultModelId;
 
         IAsyncEnumerable<SpeechToTextResponseUpdate> updates;
         try
@@ -201,7 +201,7 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
         Activity? activity = null;
         if (_activitySource.HasListeners())
         {
-            string? modelId = options?.ModelId ?? _defaultModelId;
+            string? modelId = options?.Transcription?.ModelId ?? _defaultModelId;
 
             activity = _activitySource.StartActivity(
                 string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.GenerateContentName : $"{OpenTelemetryConsts.GenAI.GenerateContentName} {modelId}",

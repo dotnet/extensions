@@ -86,7 +86,7 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         var response = await client.GetTextAsync(audioSpeechStream, new SpeechToTextOptions
         {
-            SpeechLanguage = speechLanguage,
+            Transcription = new TranscriptionOptions { SpeechLanguage = speechLanguage },
             TextLanguage = textLanguage
         });
 
@@ -161,7 +161,7 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         await foreach (var update in client.GetStreamingTextAsync(audioSpeechStream, new SpeechToTextOptions
         {
-            SpeechLanguage = speechLanguage,
+            Transcription = new TranscriptionOptions { SpeechLanguage = speechLanguage },
             TextLanguage = textLanguage
         }))
         {
@@ -196,7 +196,7 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         await foreach (var update in client.GetStreamingTextAsync(audioSpeechStream, new SpeechToTextOptions
         {
-            SpeechLanguage = "pt",
+            Transcription = new TranscriptionOptions { SpeechLanguage = "pt" },
             TextLanguage = textLanguage
         }))
         {
@@ -233,7 +233,7 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         Assert.NotNull(await client.GetTextAsync(audioSpeechStream, new()
         {
-            SpeechLanguage = "en",
+            Transcription = new TranscriptionOptions { SpeechLanguage = "en" },
             RawRepresentationFactory = (s) =>
             new AudioTranscriptionOptions
             {
@@ -270,7 +270,6 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         Assert.NotNull(await client.GetTextAsync(audioSpeechStream, new()
         {
-            SpeechLanguage = null,
             TextLanguage = "pt",
             RawRepresentationFactory = (s) =>
             new AudioTranslationOptions

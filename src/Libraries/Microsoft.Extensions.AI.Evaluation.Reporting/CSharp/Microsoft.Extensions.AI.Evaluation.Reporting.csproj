@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- 
+  <!--
     NOTE: To build and test the TypeScript code that this project depends on, set the 'EnableEvaluationReportBuild'
     environment variable to 'true'. Note that the TypeScript build depends on Node.js tools. So you will need to
     install the latest version of Node.js from https://nodejs.org/ as a prerequisite before setting the

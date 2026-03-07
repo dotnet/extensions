@@ -1,9 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -38,6 +41,38 @@ public class UsageDetails
     /// </remarks>
     public long? ReasoningTokenCount { get; set; }
 
+    /// <summary>Gets or sets the number of audio input tokens used.</summary>
+    /// <remarks>
+    /// Audio input tokens should be counted as part of <see cref="InputTokenCount"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public long? InputAudioTokenCount { get; set; }
+
+    /// <summary>Gets or sets the number of text input tokens used.</summary>
+    /// <remarks>
+    /// Text input tokens should be counted as part of <see cref="InputTokenCount"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public long? InputTextTokenCount { get; set; }
+
+    /// <summary>Gets or sets the number of audio output tokens used.</summary>
+    /// <remarks>
+    /// Audio output tokens should be counted as part of <see cref="OutputTokenCount"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public long? OutputAudioTokenCount { get; set; }
+
+    /// <summary>Gets or sets the number of text output tokens used.</summary>
+    /// <remarks>
+    /// Text output tokens should be counted as part of <see cref="OutputTokenCount"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public long? OutputTextTokenCount { get; set; }
+
     /// <summary>Gets or sets a dictionary of additional usage counts.</summary>
     /// <remarks>
     /// All values set here are assumed to be summable. For example, when middleware makes multiple calls to an underlying
@@ -57,6 +92,10 @@ public class UsageDetails
         TotalTokenCount = NullableSum(TotalTokenCount, usage.TotalTokenCount);
         CachedInputTokenCount = NullableSum(CachedInputTokenCount, usage.CachedInputTokenCount);
         ReasoningTokenCount = NullableSum(ReasoningTokenCount, usage.ReasoningTokenCount);
+        InputAudioTokenCount = NullableSum(InputAudioTokenCount, usage.InputAudioTokenCount);
+        InputTextTokenCount = NullableSum(InputTextTokenCount, usage.InputTextTokenCount);
+        OutputAudioTokenCount = NullableSum(OutputAudioTokenCount, usage.OutputAudioTokenCount);
+        OutputTextTokenCount = NullableSum(OutputTextTokenCount, usage.OutputTextTokenCount);
 
         if (usage.AdditionalCounts is { } countsToAdd)
         {
@@ -109,6 +148,25 @@ public class UsageDetails
                 parts.Add($"{nameof(ReasoningTokenCount)} = {reasoning}");
             }
 
+            if (InputAudioTokenCount is { } inputAudio)
+            {
+                parts.Add($"{nameof(InputAudioTokenCount)} = {inputAudio}");
+            }
+
+            if (InputTextTokenCount is { } inputText)
+            {
+                parts.Add($"{nameof(InputTextTokenCount)} = {inputText}");
+            }
+
+            if (OutputAudioTokenCount is { } outputAudio)
+            {
+                parts.Add($"{nameof(OutputAudioTokenCount)} = {outputAudio}");
+            }
+
+            if (OutputTextTokenCount is { } outputText)
+            {
+                parts.Add($"{nameof(OutputTextTokenCount)} = {outputText}");
+            }
             if (AdditionalCounts is { } additionalCounts)
             {
                 foreach (var entry in additionalCounts)

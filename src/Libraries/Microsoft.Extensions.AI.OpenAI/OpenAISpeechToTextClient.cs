@@ -134,7 +134,7 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
             {
                 SpeechToTextResponseUpdate result = new()
                 {
-                    ModelId = options?.ModelId,
+                    ModelId = options?.Transcription?.ModelId,
                     RawRepresentation = update,
                 };
 
@@ -165,14 +165,14 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     private static bool IsTranslationRequest(SpeechToTextOptions? options) =>
         options is not null &&
         options.TextLanguage is not null &&
-        (options.SpeechLanguage is null || options.SpeechLanguage != options.TextLanguage);
+        (options.Transcription?.SpeechLanguage is null || options.Transcription.SpeechLanguage != options.TextLanguage);
 
     /// <summary>Converts an extensions options instance to an OpenAI transcription options instance.</summary>
     private AudioTranscriptionOptions ToOpenAITranscriptionOptions(SpeechToTextOptions? options)
     {
         AudioTranscriptionOptions result = options?.RawRepresentationFactory?.Invoke(this) as AudioTranscriptionOptions ?? new();
 
-        result.Language ??= options?.SpeechLanguage;
+        result.Language ??= options?.Transcription?.SpeechLanguage;
 
         return result;
     }

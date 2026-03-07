@@ -38,7 +38,7 @@ public class SpeechToTextClientMetadata
     /// <summary>Gets the ID of the default model used by this speech to text client.</summary>
     /// <remarks>
     /// This value can be null if either the name is unknown or there are multiple possible models associated with this instance.
-    /// An individual request may override this value via <see cref="SpeechToTextOptions.ModelId"/>.
+    /// An individual request may override this value via <see cref="SpeechToTextOptions.Transcription"/>.
     /// </remarks>
     public string? DefaultModelId { get; }
 }
