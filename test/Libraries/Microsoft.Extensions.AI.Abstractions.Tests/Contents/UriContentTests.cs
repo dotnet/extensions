@@ -127,4 +127,28 @@ public sealed class UriContentTests
         var content = new UriContent("http://localhost", mediaType);
         Assert.False(content.HasTopLevelMediaType(prefix));
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "uri",
+              "uri": "http://localhost/something",
+              "mediaType": "image/png",
+              "additionalProperties": {
+                "title": "My Image"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var uriContent = Assert.IsType<UriContent>(result);
+        Assert.Equal(new Uri("http://localhost/something"), uriContent.Uri);
+        Assert.Equal("image/png", uriContent.MediaType);
+        Assert.NotNull(uriContent.AdditionalProperties);
+        Assert.Equal("My Image", uriContent.AdditionalProperties["title"]?.ToString());
+    }
 }

@@ -187,4 +187,33 @@ public class UsageDetailsTests
         Assert.Null(deserialized.CachedInputTokenCount);
         Assert.Null(deserialized.ReasoningTokenCount);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "inputTokenCount": 10,
+              "outputTokenCount": 20,
+              "totalTokenCount": 30,
+              "cachedInputTokenCount": 5,
+              "reasoningTokenCount": 8,
+              "additionalCounts": {
+                "custom": 100
+              }
+            }
+            """;
+
+        UsageDetails? result = JsonSerializer.Deserialize<UsageDetails>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal(10, result.InputTokenCount);
+        Assert.Equal(20, result.OutputTokenCount);
+        Assert.Equal(30, result.TotalTokenCount);
+        Assert.Equal(5, result.CachedInputTokenCount);
+        Assert.Equal(8, result.ReasoningTokenCount);
+        Assert.NotNull(result.AdditionalCounts);
+        Assert.Single(result.AdditionalCounts);
+        Assert.Equal(100, result.AdditionalCounts["custom"]);
+    }
 }

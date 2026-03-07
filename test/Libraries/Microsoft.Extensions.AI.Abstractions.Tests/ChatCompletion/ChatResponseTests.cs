@@ -159,6 +159,75 @@ public class ChatResponseTests
     }
 
     [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "messages": [
+                {
+                  "role": "assistant",
+                  "contents": [
+                    {
+                      "$type": "text",
+                      "text": "the message"
+                    }
+                  ],
+                  "authorName": "bot",
+                  "messageId": "msg1",
+                  "createdAt": "2022-01-01T00:00:00+00:00",
+                  "additionalProperties": {
+                    "msgKey": "msgVal"
+                  }
+                }
+              ],
+              "responseId": "id",
+              "conversationId": "conv123",
+              "modelId": "modelId",
+              "createdAt": "2022-01-01T00:00:00+00:00",
+              "finishReason": "content_filter",
+              "usage": {
+                "inputTokenCount": 10,
+                "outputTokenCount": 20,
+                "totalTokenCount": 30
+              },
+              "continuationToken": "AQID",
+              "additionalProperties": {
+                "key": "value"
+              }
+            }
+            """;
+
+        ChatResponse? result = JsonSerializer.Deserialize<ChatResponse>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Single(result.Messages);
+        Assert.Equal(ChatRole.Assistant, result.Messages[0].Role);
+        Assert.Equal("the message", result.Messages[0].Text);
+        Assert.Equal("bot", result.Messages[0].AuthorName);
+        Assert.Equal("msg1", result.Messages[0].MessageId);
+        Assert.NotNull(result.Messages[0].AdditionalProperties);
+        Assert.Equal("msgVal", result.Messages[0].AdditionalProperties!["msgKey"]?.ToString());
+
+        Assert.Equal("id", result.ResponseId);
+        Assert.Equal("conv123", result.ConversationId);
+        Assert.Equal("modelId", result.ModelId);
+        Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
+        Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
+
+        Assert.NotNull(result.Usage);
+        Assert.Equal(10, result.Usage.InputTokenCount);
+        Assert.Equal(20, result.Usage.OutputTokenCount);
+        Assert.Equal(30, result.Usage.TotalTokenCount);
+
+        Assert.NotNull(result.ContinuationToken);
+        Assert.Equal(new byte[] { 1, 2, 3 }, result.ContinuationToken.ToBytes().ToArray());
+
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Single(result.AdditionalProperties);
+        Assert.Equal("value", result.AdditionalProperties["key"]?.ToString());
+    }
+
+    [Fact]
     public void ToString_OutputsText()
     {
         ChatResponse response = new(new ChatMessage(ChatRole.Assistant, $"This is a test.{Environment.NewLine}It's multiple lines."));
