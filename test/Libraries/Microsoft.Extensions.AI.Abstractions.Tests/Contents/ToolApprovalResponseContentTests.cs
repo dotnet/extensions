@@ -28,7 +28,7 @@ public class ToolApprovalResponseContentTests
     };
 
     [Theory]
-    [MemberData(nameof(ToolCallContentInstances))]
+    [MemberData(nameof(ToolCallContentInstances), DisableDiscoveryEnumeration = true)]
     public void Constructor_Roundtrips(ToolCallContent toolCall)
     {
         ToolApprovalResponseContent content = new("req-1", true, toolCall);
@@ -45,7 +45,7 @@ public class ToolApprovalResponseContentTests
     }
 
     [Theory]
-    [MemberData(nameof(ToolCallContentInstances))]
+    [MemberData(nameof(ToolCallContentInstances), DisableDiscoveryEnumeration = true)]
     public void Serialization_Roundtrips(ToolCallContent toolCall)
     {
         var content = new ToolApprovalResponseContent("request123", true, toolCall)
