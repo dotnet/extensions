@@ -92,7 +92,7 @@ public class WebSearchToolCallContentTests
         Assert.NotNull(result);
         var wsCall = Assert.IsType<WebSearchToolCallContent>(result);
         Assert.Equal("ws-call1", wsCall.CallId);
-        Assert.Equal(new[] { "query one", "query two" }, wsCall.Queries);
+        Assert.Equal(["query one", "query two"], wsCall.Queries);
         Assert.NotNull(wsCall.AdditionalProperties);
         Assert.Equal("val", wsCall.AdditionalProperties["key"]?.ToString());
     }
