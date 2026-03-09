@@ -165,4 +165,46 @@ public class OpenTelemetryImageGeneratorTests
 
         static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
     }
+
+    [Fact]
+    public async Task ExceptionLogged_Async()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        var expectedException = new InvalidOperationException("test exception message");
+
+        using var innerGenerator = new TestImageGenerator
+        {
+            GenerateImagesAsyncCallback = (request, options, cancellationToken) => throw expectedException,
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(ImageGeneratorMetadata) ? new ImageGeneratorMetadata("testservice", new Uri("http://localhost:12345"), "testmodel") :
+                null,
+        };
+
+        using var g = innerGenerator
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName)
+            .Build();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            g.GenerateAsync(new ImageGenerationRequest { Prompt = "a cat" }));
+
+        var activity = Assert.Single(activities);
+
+        // Existing error behavior is preserved
+        Assert.Equal(expectedException.GetType().FullName, activity.GetTagItem("error.type"));
+        Assert.Equal(ActivityStatusCode.Error, activity.Status);
+
+        // Exception event is emitted
+        var exceptionEvent = Assert.Single(activity.Events);
+        Assert.Equal("gen_ai.client.operation.exception", exceptionEvent.Name);
+        Assert.Equal(expectedException.GetType().FullName, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.type").Value);
+        Assert.Equal(expectedException.Message, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.message").Value);
+        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.stacktrace").Value);
+    }
 }

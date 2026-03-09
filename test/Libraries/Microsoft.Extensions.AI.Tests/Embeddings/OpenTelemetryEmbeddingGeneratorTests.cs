@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -93,5 +94,47 @@ public class OpenTelemetryEmbeddingGeneratorTests
         Assert.Equal(enableSensitiveData ? "value3" : null, activity.GetTagItem("AndSomethingElse"));
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
+    }
+
+    [Fact]
+    public async Task ExceptionLogged_Async()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        var expectedException = new InvalidOperationException("test exception message");
+
+        using var innerGenerator = new TestEmbeddingGenerator
+        {
+            GenerateAsyncCallback = (values, options, cancellationToken) => throw expectedException,
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(EmbeddingGeneratorMetadata) ? new EmbeddingGeneratorMetadata("testservice", new Uri("http://localhost:12345"), "testmodel") :
+                null,
+        };
+
+        using var generator = innerGenerator
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName)
+            .Build();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            generator.GenerateAsync(["hello"]));
+
+        var activity = Assert.Single(activities);
+
+        // Existing error behavior is preserved
+        Assert.Equal(expectedException.GetType().FullName, activity.GetTagItem("error.type"));
+        Assert.Equal(ActivityStatusCode.Error, activity.Status);
+
+        // Exception event is emitted
+        var exceptionEvent = Assert.Single(activity.Events);
+        Assert.Equal("gen_ai.client.operation.exception", exceptionEvent.Name);
+        Assert.Equal(expectedException.GetType().FullName, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.type").Value);
+        Assert.Equal(expectedException.Message, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.message").Value);
+        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.stacktrace").Value);
     }
 }

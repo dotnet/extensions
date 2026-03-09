@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using OpenTelemetry.Trace;
 using Xunit;
@@ -569,6 +570,47 @@ public class OpenTelemetryHostedFileClientTests
 
         var activity = Assert.Single(activities);
         Assert.Null(activity.GetTagItem("custom.tag1"));
+    }
+
+    [Fact]
+    public async Task ExceptionLogged_Async()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        var expectedException = new InvalidOperationException("test exception message");
+
+        using var innerClient = new TestHostedFileClient
+        {
+            UploadAsyncCallback = (stream, mediaType, fileName, options, ct) => throw expectedException,
+            GetServiceCallback = CreateMetadataCallback(),
+        };
+
+        using var client = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(sourceName: sourceName)
+            .Build();
+
+        using var stream = new MemoryStream(new byte[] { 1 });
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            client.UploadAsync(stream));
+
+        var activity = Assert.Single(activities);
+
+        // Existing error behavior is preserved
+        Assert.Equal(expectedException.GetType().FullName, activity.GetTagItem("error.type"));
+        Assert.Equal(ActivityStatusCode.Error, activity.Status);
+
+        // Exception event is emitted
+        var exceptionEvent = Assert.Single(activity.Events);
+        Assert.Equal("gen_ai.client.operation.exception", exceptionEvent.Name);
+        Assert.Equal(expectedException.GetType().FullName, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.type").Value);
+        Assert.Equal(expectedException.Message, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.message").Value);
+        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.stacktrace").Value);
     }
 
     private static Func<Type, object?, object?> CreateMetadataCallback() =>

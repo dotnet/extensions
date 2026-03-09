@@ -147,4 +147,62 @@ public class OpenTelemetrySpeechToTextClientTests
 
         static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExceptionLogged_Async(bool streaming)
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        var expectedException = new InvalidOperationException("test exception message");
+
+        using var innerClient = new TestSpeechToTextClient
+        {
+            GetTextAsyncCallback = (stream, options, cancellationToken) => throw expectedException,
+            GetStreamingTextAsyncCallback = (stream, options, cancellationToken) => throw expectedException,
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(SpeechToTextClientMetadata) ? new SpeechToTextClientMetadata("testservice", new Uri("http://localhost:12345"), "testmodel") :
+                null,
+        };
+
+        using var client = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName)
+            .Build();
+
+        if (streaming)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await foreach (var update in client.GetStreamingTextAsync(Stream.Null))
+                {
+                    _ = update;
+                }
+            });
+        }
+        else
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                client.GetTextAsync(Stream.Null));
+        }
+
+        var activity = Assert.Single(activities);
+
+        // Existing error behavior is preserved
+        Assert.Equal(expectedException.GetType().FullName, activity.GetTagItem("error.type"));
+        Assert.Equal(ActivityStatusCode.Error, activity.Status);
+
+        // Exception event is emitted
+        var exceptionEvent = Assert.Single(activity.Events);
+        Assert.Equal("gen_ai.client.operation.exception", exceptionEvent.Name);
+        Assert.Equal(expectedException.GetType().FullName, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.type").Value);
+        Assert.Equal(expectedException.Message, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.message").Value);
+        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.stacktrace").Value);
+    }
 }
