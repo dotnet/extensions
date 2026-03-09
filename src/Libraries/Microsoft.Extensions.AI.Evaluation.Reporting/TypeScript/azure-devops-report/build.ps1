@@ -21,16 +21,35 @@ if ($null -eq $PackageVersion)
 
 Write-Host "Using version $PackageVersion"
 
-# Some CI agents have stale npm auth tokens in multiple config sources (user-level
-# .npmrc, global .npmrc, parent directory .npmrc files, or builtin npm config).
-# The dotnet-public-npm feed is public and needs no auth. Force anonymous access
-# by clearing the auth token via CLI flags (highest precedence in npm config).
-$npmPublicRegistry = "//pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/"
-$npmNoAuth = "--${npmPublicRegistry}:_authToken="
+# Some CI agents have stale npm auth tokens in various config sources that cause
+# E401 errors against the public dotnet-public-npm feed. Diagnose where tokens
+# come from, then neutralize them by injecting an empty _authToken into each
+# project .npmrc (project-level config overrides user/global/builtin).
+$registryScope = "//pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/"
+$broadScope = "//pkgs.dev.azure.com/"
+
+function Clear-NpmAuth {
+    param([string]$NpmrcPath)
+    # Append empty auth token lines to the project .npmrc so they override
+    # any stale tokens found in user, global, or builtin npm config.
+    $lines = @(
+        "${registryScope}:_authToken="
+        "${broadScope}:_authToken="
+        "${broadScope}:username="
+        "${broadScope}:_password="
+        "always-auth=false"
+    )
+    Add-Content -Path $NpmrcPath -Value ($lines -join "`n")
+    Write-Host "Patched $NpmrcPath to clear stale auth tokens"
+    Write-Host "--- npm config list ---"
+    npm config list
+    Write-Host "--- end npm config list ---"
+}
 
 # Write-Information "Building Report Publishing task"
 Set-Location $PSScriptRoot/tasks/PublishAIEvaluationReport
-npm ci --omit=dev $npmNoAuth
+Clear-NpmAuth -NpmrcPath ./.npmrc
+npm ci --omit=dev
 # Copy task files to dist folder
 New-Item -ItemType Directory -Path ./dist -Force
 copy-item -Path ./task.json -Destination ./dist/ -Force
@@ -46,7 +65,8 @@ remove-item -Path ./dist/node_modules/resolve/test -Recurse -Force -ErrorAction 
     
 # Write-Information "Building Extension Package" 
 Set-Location $PSScriptRoot
-npm ci $npmNoAuth
+Clear-NpmAuth -NpmrcPath ./.npmrc
+npm ci
 npx tsc -b
 npx vite build
     
