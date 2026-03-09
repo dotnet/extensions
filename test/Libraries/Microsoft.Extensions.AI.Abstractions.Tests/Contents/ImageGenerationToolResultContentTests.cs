@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
@@ -12,21 +13,19 @@ public class ImageGenerationToolResultContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        ImageGenerationToolResultContent c = new();
+        ImageGenerationToolResultContent c = new("call123");
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.ImageId);
+        Assert.Equal("call123", c.CallId);
         Assert.Null(c.Outputs);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        ImageGenerationToolResultContent c = new();
+        ImageGenerationToolResultContent c = new("img123");
 
-        Assert.Null(c.ImageId);
-        c.ImageId = "img123";
-        Assert.Equal("img123", c.ImageId);
+        Assert.Equal("img123", c.CallId);
 
         Assert.Null(c.Outputs);
         IList<AIContent> outputs = [new DataContent(new byte[] { 1, 2, 3 }, "image/png")];
@@ -47,9 +46,8 @@ public class ImageGenerationToolResultContentTests
     [Fact]
     public void Outputs_SupportsMultipleContentTypes()
     {
-        ImageGenerationToolResultContent c = new()
+        ImageGenerationToolResultContent c = new("img456")
         {
-            ImageId = "img456",
             Outputs =
             [
                 new DataContent(new byte[] { 1, 2, 3 }, "image/png"),
@@ -68,9 +66,8 @@ public class ImageGenerationToolResultContentTests
     [Fact]
     public void Serialization_Roundtrips()
     {
-        ImageGenerationToolResultContent content = new()
+        ImageGenerationToolResultContent content = new("img123")
         {
-            ImageId = "img123",
             Outputs =
             [
                 new DataContent(new byte[] { 1, 2, 3 }, "image/png"),
@@ -82,7 +79,7 @@ public class ImageGenerationToolResultContentTests
         var deserializedSut = JsonSerializer.Deserialize<ImageGenerationToolResultContent>(json, AIJsonUtilities.DefaultOptions);
 
         Assert.NotNull(deserializedSut);
-        Assert.Equal("img123", deserializedSut.ImageId);
+        Assert.Equal("img123", deserializedSut.CallId);
         Assert.NotNull(deserializedSut.Outputs);
         Assert.Equal(2, deserializedSut.Outputs.Count);
         Assert.IsType<DataContent>(deserializedSut.Outputs[0]);
@@ -94,9 +91,8 @@ public class ImageGenerationToolResultContentTests
     [Fact]
     public void Serialization_PolymorphicAsAIContent_Roundtrips()
     {
-        AIContent content = new ImageGenerationToolResultContent
+        AIContent content = new ImageGenerationToolResultContent("img789")
         {
-            ImageId = "img789",
             Outputs =
             [
                 new DataContent(new byte[] { 7, 8, 9 }, "image/png"),
@@ -114,10 +110,44 @@ public class ImageGenerationToolResultContentTests
         Assert.IsType<ImageGenerationToolResultContent>(deserialized);
 
         var imageResult = (ImageGenerationToolResultContent)deserialized;
-        Assert.Equal("img789", imageResult.ImageId);
+        Assert.Equal("img789", imageResult.CallId);
         Assert.NotNull(imageResult.Outputs);
         Assert.Equal(2, imageResult.Outputs.Count);
         Assert.IsType<DataContent>(imageResult.Outputs[0]);
         Assert.IsType<UriContent>(imageResult.Outputs[1]);
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "imageGenerationToolResult",
+              "callId": "img-call1",
+              "outputs": [
+                {
+                  "$type": "uri",
+                  "uri": "http://example.com/image.png",
+                  "mediaType": "image/png"
+                }
+              ],
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var imgResult = Assert.IsType<ImageGenerationToolResultContent>(result);
+        Assert.Equal("img-call1", imgResult.CallId);
+        Assert.NotNull(imgResult.Outputs);
+        Assert.Single(imgResult.Outputs);
+        var uriOutput = Assert.IsType<UriContent>(imgResult.Outputs[0]);
+        Assert.Equal(new Uri("http://example.com/image.png"), uriOutput.Uri);
+        Assert.Equal("image/png", uriOutput.MediaType);
+        Assert.NotNull(imgResult.AdditionalProperties);
+        Assert.Equal("val", imgResult.AdditionalProperties["key"]?.ToString());
     }
 }

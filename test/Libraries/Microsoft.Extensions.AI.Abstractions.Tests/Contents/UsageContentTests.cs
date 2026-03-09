@@ -82,4 +82,32 @@ public class UsageContentTests
         Assert.Equal(content.Details.CachedInputTokenCount, deserializedContent.Details.CachedInputTokenCount);
         Assert.Equal(content.Details.ReasoningTokenCount, deserializedContent.Details.ReasoningTokenCount);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "usage",
+              "details": {
+                "inputTokenCount": 10,
+                "outputTokenCount": 20,
+                "totalTokenCount": 30,
+                "cachedInputTokenCount": 5,
+                "reasoningTokenCount": 8
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var usageContent = Assert.IsType<UsageContent>(result);
+        Assert.NotNull(usageContent.Details);
+        Assert.Equal(10, usageContent.Details.InputTokenCount);
+        Assert.Equal(20, usageContent.Details.OutputTokenCount);
+        Assert.Equal(30, usageContent.Details.TotalTokenCount);
+        Assert.Equal(5, usageContent.Details.CachedInputTokenCount);
+        Assert.Equal(8, usageContent.Details.ReasoningTokenCount);
+    }
 }

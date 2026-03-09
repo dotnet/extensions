@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -19,8 +19,10 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 {
     protected override IChatClient? CreateChatClient() =>
         IntegrationTestHelpers.GetOpenAIClient()
-        ?.GetResponsesClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini")
-        .AsIChatClient();
+        ?.GetResponsesClient()
+        .AsIChatClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini");
+
+    private static string ReasoningModel => "gpt-5-nano";
 
     public override bool FunctionInvokingChatClientSetsConversationId => true;
 
@@ -78,9 +80,39 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         var response = await ChatClient.GetResponseAsync(
             "Write a paragraph about .NET based on at least three recent news articles. Cite your sources.",
-            new() { Tools = [new HostedWebSearchTool()] });
+            new()
+            {
+                Tools = [new HostedWebSearchTool()],
+                RawRepresentationFactory = _ =>
+                {
+                    var cro = new CreateResponseOptions();
+                    cro.IncludedProperties.Add("web_search_call.action.sources");
+                    return cro;
+                },
+            });
 
         ChatMessage m = Assert.Single(response.Messages);
+
+        // Verify that the web search tool call and result content are present.
+        var wsCall = m.Contents.OfType<WebSearchToolCallContent>().FirstOrDefault();
+        Assert.NotNull(wsCall);
+        Assert.NotNull(wsCall.CallId);
+        Assert.NotNull(wsCall.Queries);
+        Assert.NotEmpty(wsCall.Queries);
+
+        var wsResult = m.Contents.OfType<WebSearchToolResultContent>().FirstOrDefault();
+        Assert.NotNull(wsResult);
+        Assert.Equal(wsCall.CallId, wsResult.CallId);
+
+        // Verify that sources are populated when opted in.
+        Assert.NotNull(wsResult.Results);
+        Assert.NotEmpty(wsResult.Results);
+        Assert.All(wsResult.Results, r =>
+        {
+            var uriContent = Assert.IsType<UriContent>(r);
+            Assert.NotNull(uriContent.Uri);
+        });
+
         TextContent tc = m.Contents.OfType<TextContent>().First();
         Assert.NotNull(tc.Annotations);
         Assert.NotEmpty(tc.Annotations);
@@ -149,7 +181,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             Assert.NotNull(response);
             Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
             Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
-            Assert.Empty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
+            Assert.Empty(response.Messages.SelectMany(m => m.Contents).OfType<ToolApprovalRequestContent>());
 
             Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
         }
@@ -203,8 +235,8 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 var approvalResponse = new ChatMessage(ChatRole.Tool,
                     response.Messages
                             .SelectMany(m => m.Contents)
-                            .OfType<McpServerToolApprovalRequestContent>()
-                            .Select(c => new McpServerToolApprovalResponseContent(c.ToolCall.CallId, true))
+                            .OfType<ToolApprovalRequestContent>()
+                            .Select(c => c.CreateResponse(true))
                             .ToArray());
                 if (approvalResponse.Contents.Count == 0)
                 {
@@ -377,7 +409,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["RemoteMCP:ConnectorAccessToken"] is not string accessToken)
+        if (TestRunnerConfiguration.Instance["RemoteMCP:ConnectorAccessToken"] is not string { Length: > 0 } accessToken)
         {
             throw new SkipTestException(
                 "To run this test, set a value for RemoteMCP:ConnectorAccessToken. " +
@@ -394,9 +426,9 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 Tools = [new HostedMcpServerTool("calendar", "connector_googlecalendar")
                     {
                         ApprovalMode = approval ?
-                                HostedMcpServerToolApprovalMode.AlwaysRequire :
-                                HostedMcpServerToolApprovalMode.NeverRequire,
-                        AuthorizationToken = accessToken
+                            HostedMcpServerToolApprovalMode.AlwaysRequire :
+                            HostedMcpServerToolApprovalMode.NeverRequire,
+                        Headers = new Dictionary<string, string> { ["Authorization"] = $"Bearer {accessToken}" },
                     }
                 ],
             };
@@ -412,8 +444,9 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             if (approval)
             {
                 input.AddRange(response.Messages);
-                var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
-                Assert.Equal("search_events", approvalRequest.ToolCall.ToolName);
+                var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<ToolApprovalRequestContent>());
+                var mcpCallContent = Assert.IsType<McpServerToolCallContent>(approvalRequest.ToolCall);
+                Assert.Equal("search_events", mcpCallContent.Name);
                 input.Add(new ChatMessage(ChatRole.Tool, [approvalRequest.CreateResponse(true)]));
 
                 response = streaming ?
@@ -423,10 +456,10 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
             Assert.NotNull(response);
             var toolCall = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
-            Assert.Equal("search_events", toolCall.ToolName);
+            Assert.Equal("search_events", toolCall.Name);
 
             var toolResult = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
-            var content = Assert.IsType<TextContent>(Assert.Single(toolResult.Output!));
+            var content = Assert.IsType<TextContent>(Assert.Single(toolResult.Outputs!));
             Assert.Equal(@"{""events"": [], ""next_page_token"": null}", content.Text);
         }
     }
@@ -563,13 +596,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         ChatOptions chatOptions = new()
         {
+            ModelId = ReasoningModel,
+            Reasoning = new()
+            {
+                Effort = ReasoningEffort.Low,
+                Output = ReasoningOutput.Full,
+            },
             RawRepresentationFactory = _ => new CreateResponseOptions
             {
-                ReasoningOptions = new ResponseReasoningOptions
-                {
-                    ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
-                    ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Detailed
-                },
                 StoredOutputEnabled = false,
                 IncludedProperties = { IncludedResponseProperty.ReasoningEncryptedContent },
             },
@@ -598,7 +632,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         var response2 = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
         Assert.NotNull(response2);
-        Assert.Contains("6", response2.Text);
+        Assert.True(response2.Text.Contains("6") || response2.Text.Contains("six"));
 
         // 3. Serialize/deserialize to drop RawRepresentations, then make third request
         string json = JsonSerializer.Serialize(chatHistory, AIJsonUtilities.DefaultOptions);
@@ -643,13 +677,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         ChatOptions chatOptions = new()
         {
+            ModelId = ReasoningModel,
+            Reasoning = new()
+            {
+                Effort = ReasoningEffort.Low,
+                Output = ReasoningOutput.Full,
+            },
             RawRepresentationFactory = _ => new CreateResponseOptions
             {
-                ReasoningOptions = new ResponseReasoningOptions
-                {
-                    ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
-                    ReasoningSummaryVerbosity = ResponseReasoningSummaryVerbosity.Detailed
-                },
                 StoredOutputEnabled = false,
                 IncludedProperties = { IncludedResponseProperty.ReasoningEncryptedContent },
             },

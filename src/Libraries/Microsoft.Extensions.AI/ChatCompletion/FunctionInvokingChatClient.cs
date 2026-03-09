@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -41,9 +41,9 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// <para>
 /// Further, if a requested function is an <see cref="ApprovalRequiredAIFunction"/>, the <see cref="FunctionInvokingChatClient"/> will not
-/// attempt to invoke it directly. Instead, it will replace that <see cref="FunctionCallContent"/> with a <see cref="FunctionApprovalRequestContent"/>
+/// attempt to invoke it directly. Instead, it will replace that <see cref="FunctionCallContent"/> with a <see cref="ToolApprovalRequestContent"/>
 /// that wraps the <see cref="FunctionCallContent"/> and indicates that the function requires approval before it can be invoked. The caller is then
-/// responsible for responding to that approval request by sending a corresponding <see cref="FunctionApprovalResponseContent"/> in a subsequent
+/// responsible for responding to that approval request by sending a corresponding <see cref="ToolApprovalResponseContent"/> in a subsequent
 /// request. The <see cref="FunctionInvokingChatClient"/> will then process that approval response and invoke the function as appropriate.
 /// </para>
 /// <para>
@@ -294,10 +294,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // approval requests, we need to process them now. This entails removing these manufactured approval requests from the chat message
             // list and replacing them with the appropriate FunctionCallContents and FunctionResultContents that would have been generated if
             // the inner client had returned them directly.
-            (responseMessages, var notInvokedApprovals, var approvalRequestIndices) = ProcessFunctionApprovalResponses(
+            (responseMessages, var notInvokedApprovals) = ProcessFunctionApprovalResponses(
                 originalMessages, !string.IsNullOrWhiteSpace(options?.ConversationId), toolMessageId: null, functionCallContentFallbackMessageId: null);
             (IList<ChatMessage>? invokedApprovedFunctionApprovalResponses, bool shouldTerminate, consecutiveErrorCount) =
-                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, originalMessages, options, consecutiveErrorCount, approvalRequestIndices, isStreaming: false, cancellationToken);
+                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, originalMessages, options, consecutiveErrorCount, isStreaming: false, cancellationToken);
 
             if (invokedApprovedFunctionApprovalResponses is not null)
             {
@@ -394,7 +394,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents!, iteration, consecutiveErrorCount, insertionIndex: -1, isStreaming: false, cancellationToken);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: false, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -457,7 +457,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // approval requests, we need to process them now. This entails removing these manufactured approval requests from the chat message
             // list and replacing them with the appropriate FunctionCallContents and FunctionResultContents that would have been generated if
             // the inner client had returned them directly.
-            var (preDownstreamCallHistory, notInvokedApprovals, approvalRequestIndices) = ProcessFunctionApprovalResponses(
+            var (preDownstreamCallHistory, notInvokedApprovals) = ProcessFunctionApprovalResponses(
                 originalMessages, !string.IsNullOrWhiteSpace(options?.ConversationId), toolMessageId, functionCallContentFallbackMessageId);
             if (preDownstreamCallHistory is not null)
             {
@@ -473,7 +473,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Invoke approved approval responses, which generates some additional FRC wrapped in ChatMessage.
             (IList<ChatMessage>? invokedApprovedFunctionApprovalResponses, bool shouldTerminate, consecutiveErrorCount) =
-                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, originalMessages, options, consecutiveErrorCount, approvalRequestIndices, isStreaming: true, cancellationToken);
+                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, originalMessages, options, consecutiveErrorCount, isStreaming: true, cancellationToken);
 
             if (invokedApprovedFunctionApprovalResponses is not null)
             {
@@ -658,7 +658,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
 
             // Process all of the functions, adding their results into the history.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents!, iteration, consecutiveErrorCount, insertionIndex: -1, isStreaming: true, cancellationToken);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: true, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -839,10 +839,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>
-    /// Gets whether <paramref name="messages"/> contains any <see cref="FunctionApprovalRequestContent"/> or <see cref="FunctionApprovalResponseContent"/> instances.
+    /// Gets whether <paramref name="messages"/> contains any <see cref="ToolApprovalRequestContent"/> or <see cref="ToolApprovalResponseContent"/>
+    /// instances with a <see cref="FunctionCallContent"/> tool call that the FICC needs to process.
     /// </summary>
     private static bool HasAnyApprovalContent(List<ChatMessage> messages) =>
-        messages.Exists(static m => m.Contents.Any(static c => c is FunctionApprovalRequestContent or FunctionApprovalResponseContent));
+        messages.Exists(static m => m.Contents.Any(static c =>
+            c is ToolApprovalRequestContent { ToolCall: FunctionCallContent { InformationalOnly: false } }
+            or ToolApprovalResponseContent { ToolCall: FunctionCallContent { InformationalOnly: false } }));
 
     /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="messages"/> to <paramref name="functionCalls"/>.</summary>
     private static bool CopyFunctionCalls(
@@ -878,7 +881,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     /// <summary>
     /// Marks any <see cref="FunctionCallContent"/> in <paramref name="messages"/> as <see cref="FunctionCallContent.InformationalOnly"/>
-    /// if there is a matching <see cref="FunctionResultContent"/> with the same <see cref="FunctionCallContent.CallId"/> in the same set of messages,
+    /// if there is a matching <see cref="FunctionResultContent"/> with the same <see cref="ToolCallContent.CallId"/> in the same set of messages,
     /// regardless of order. This handles cases where the server has already executed the function and returned both the call and result.
     /// </summary>
     private static void MarkServerHandledFunctionCalls(IList<ChatMessage> messages)
@@ -921,7 +924,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     /// <summary>
     /// Marks any <see cref="FunctionCallContent"/> in the streaming <paramref name="updates"/> as <see cref="FunctionCallContent.InformationalOnly"/>
-    /// if there is a matching <see cref="FunctionResultContent"/> with the same <see cref="FunctionCallContent.CallId"/>, regardless of order.
+    /// if there is a matching <see cref="FunctionResultContent"/> with the same <see cref="ToolCallContent.CallId"/>, regardless of order.
     /// Any matched entries are also removed from <paramref name="functionCallContents"/> so they won't be invoked locally.
     /// If <paramref name="functionCallContents"/> is <see langword="null"/> or empty, this method is a no-op.
     /// </summary>
@@ -1112,14 +1115,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="functionCallContents">The function call contents representing the functions to be invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
     /// <param name="consecutiveErrorCount">The number of consecutive iterations, prior to this one, that were recorded as having function invocation errors.</param>
-    /// <param name="insertionIndex">The index at which to insert the function result messages, or -1 to append to the end.</param>
     /// <param name="isStreaming">Whether the function calls are being processed in a streaming context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A value indicating how the caller should proceed.</returns>
     private async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
         List<ChatMessage> messages, ChatOptions? options,
         List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount,
-        int insertionIndex, bool isStreaming, CancellationToken cancellationToken)
+        bool isStreaming, CancellationToken cancellationToken)
     {
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
@@ -1138,16 +1140,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             IList<ChatMessage> addedMessages = CreateResponseMessages([result]);
             ThrowIfNoFunctionResultsAdded(addedMessages);
             UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
-
-            // Insert at the specified position or append if no valid insertion index
-            if (insertionIndex >= 0 && insertionIndex <= messages.Count)
-            {
-                messages.InsertRange(insertionIndex, addedMessages);
-            }
-            else
-            {
-                messages.AddRange(addedMessages);
-            }
+            messages.AddRange(addedMessages);
 
             return (result.Terminate, consecutiveErrorCount, addedMessages);
         }
@@ -1192,16 +1185,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             IList<ChatMessage> addedMessages = CreateResponseMessages(results.ToArray());
             ThrowIfNoFunctionResultsAdded(addedMessages);
             UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
-
-            // Insert at the specified position or append if no valid insertion index
-            if (insertionIndex >= 0 && insertionIndex <= messages.Count)
-            {
-                messages.InsertRange(insertionIndex, addedMessages);
-            }
-            else
-            {
-                messages.AddRange(addedMessages);
-            }
+            messages.AddRange(addedMessages);
 
             return (shouldTerminate, consecutiveErrorCount, addedMessages);
         }
@@ -1526,95 +1510,51 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>
-    /// 1. Remove all <see cref="FunctionApprovalRequestContent"/> and <see cref="FunctionApprovalResponseContent"/> from the <paramref name="originalMessages"/>.
-    /// 2. Recreate <see cref="FunctionCallContent"/> for any <see cref="FunctionApprovalResponseContent"/> that haven't been executed yet.
-    /// 3. Generate failed <see cref="FunctionResultContent"/> for any rejected <see cref="FunctionApprovalResponseContent"/>.
+    /// 1. Remove all <see cref="ToolApprovalRequestContent"/> and <see cref="ToolApprovalResponseContent"/> from the <paramref name="originalMessages"/>.
+    /// 2. Recreate <see cref="FunctionCallContent"/> for any <see cref="ToolApprovalResponseContent"/> that haven't been executed yet.
+    /// 3. Generate failed <see cref="FunctionResultContent"/> for any rejected <see cref="ToolApprovalResponseContent"/>.
     /// 4. add all the new content items to <paramref name="originalMessages"/> and return them as the pre-invocation history.
     /// </summary>
-    private (List<ChatMessage>? preDownstreamCallHistory, List<ApprovalResultWithRequestMessage>? approvals, Dictionary<string, int>? approvalRequestIndices) ProcessFunctionApprovalResponses(
+    private (List<ChatMessage>? preDownstreamCallHistory, List<ApprovalResultWithRequestMessage>? approvals) ProcessFunctionApprovalResponses(
         List<ChatMessage> originalMessages, bool hasConversationId, string? toolMessageId, string? functionCallContentFallbackMessageId)
     {
         // Extract any approval responses where we need to execute or reject the function calls.
         // The original messages are also modified to remove all approval requests and responses.
-        var (notInvokedApprovalsResult, notInvokedRejectionsResult, approvalRequestIndices) = ExtractAndRemoveApprovalRequestsAndResponses(originalMessages);
-        var notInvokedResponses = (approvals: notInvokedApprovalsResult, rejections: notInvokedRejectionsResult);
+        var notInvokedResponses = ExtractAndRemoveApprovalRequestsAndResponses(originalMessages);
 
-        // Group approvals and rejections by their original index for proper insertion
-        var allResults = new List<ApprovalResultWithRequestMessage>();
-        if (notInvokedResponses.rejections is not null)
-        {
-            allResults.AddRange(notInvokedResponses.rejections);
-        }
+        // Wrap the function call content in message(s).
+        ICollection<ChatMessage>? allPreDownstreamCallMessages = ConvertToFunctionCallContentMessages(
+            [.. notInvokedResponses.rejections ?? Enumerable.Empty<ApprovalResultWithRequestMessage>(), .. notInvokedResponses.approvals ?? Enumerable.Empty<ApprovalResultWithRequestMessage>()],
+            functionCallContentFallbackMessageId);
 
-        if (notInvokedResponses.approvals is not null)
-        {
-            allResults.AddRange(notInvokedResponses.approvals);
-        }
+        // Generate failed function result contents for any rejected requests and wrap it in a message.
+        List<AIContent>? rejectedFunctionCallResults = GenerateRejectedFunctionResults(notInvokedResponses.rejections);
+        ChatMessage? rejectedPreDownstreamCallResultsMessage = rejectedFunctionCallResults is not null ?
+            new ChatMessage(ChatRole.Tool, rejectedFunctionCallResults) { MessageId = toolMessageId } :
+            null;
 
-        // Sort by index in descending order so we can insert from end to start without index shifting issues
-        var sortedResults = allResults
-            .Where(r => approvalRequestIndices?.ContainsKey(r.Response.FunctionCall.CallId) == true)
-            .OrderByDescending(r => approvalRequestIndices![r.Response.FunctionCall.CallId])
-            .ToList();
-
+        // Add all the FCC that we generated to the pre-downstream-call history so that they can be returned to the caller as part of the next response.
+        // Also, if we are not dealing with a service thread (i.e. we don't have a conversation ID), add them
+        // into the original messages list so that they are passed to the inner client and can be used to generate a result.
         List<ChatMessage>? preDownstreamCallHistory = null;
-
-        // Process each approval/rejection and insert at its original position
-        foreach (var result in sortedResults)
+        if (allPreDownstreamCallMessages is not null)
         {
-            string callId = result.Response.FunctionCall.CallId;
-            int insertionIndex = approvalRequestIndices![callId];
-
-            // Convert this specific result to FunctionCallContent message
-            var fccMessages = ConvertToFunctionCallContentMessages([result], functionCallContentFallbackMessageId);
-            if (fccMessages is not null)
+            preDownstreamCallHistory = [.. allPreDownstreamCallMessages];
+            if (!hasConversationId)
             {
-                // Add to history
-                if (preDownstreamCallHistory is null)
-                {
-                    preDownstreamCallHistory = [.. fccMessages];
-                }
-                else
-                {
-                    preDownstreamCallHistory.InsertRange(0, fccMessages);
-                }
-
-                // Insert into original messages if not using conversation ID
-                if (!hasConversationId && insertionIndex >= 0 && insertionIndex <= originalMessages.Count)
-                {
-                    originalMessages.InsertRange(insertionIndex, fccMessages);
-                }
-            }
-
-            // For rejections, also insert the rejection result
-            if (!result.Response.Approved)
-            {
-                var rejectedContent = GenerateRejectedFunctionResults([result]);
-                if (rejectedContent is not null)
-                {
-                    var rejectedMessage = new ChatMessage(ChatRole.Tool, rejectedContent) { MessageId = toolMessageId };
-
-                    // Add to history
-                    if (preDownstreamCallHistory is null)
-                    {
-                        preDownstreamCallHistory = [rejectedMessage];
-                    }
-                    else
-                    {
-                        preDownstreamCallHistory.Insert(fccMessages?.Count ?? 0, rejectedMessage);
-                    }
-
-                    // Insert rejection result right after the FCC messages
-                    int rejectedInsertionIndex = insertionIndex + (fccMessages?.Count ?? 0);
-                    if (rejectedInsertionIndex >= 0 && rejectedInsertionIndex <= originalMessages.Count)
-                    {
-                        originalMessages.Insert(rejectedInsertionIndex, rejectedMessage);
-                    }
-                }
+                originalMessages.AddRange(preDownstreamCallHistory);
             }
         }
 
-        return (preDownstreamCallHistory, notInvokedResponses.approvals, approvalRequestIndices);
+        // Add all the FRC that we generated to the pre-downstream-call history so that they can be returned to the caller as part of the next response.
+        // Also, add them into the original messages list so that they are passed to the inner client and can be used to generate a result.
+        if (rejectedPreDownstreamCallResultsMessage is not null)
+        {
+            (preDownstreamCallHistory ??= []).Add(rejectedPreDownstreamCallResultsMessage);
+            originalMessages.Add(rejectedPreDownstreamCallResultsMessage);
+        }
+
+        return (preDownstreamCallHistory, notInvokedResponses.approvals);
     }
 
     /// <summary>
@@ -1626,21 +1566,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// We can then use the metadata from these messages when we re-create the FunctionCallContent messages/updates to return to the caller. This way, when we finally do return
     /// the FuncionCallContent to users it's part of a message/update that contains the same metadata as originally returned to the downstream service.
     /// </remarks>
-    private (List<ApprovalResultWithRequestMessage>? approvals, List<ApprovalResultWithRequestMessage>? rejections, Dictionary<string, int>? approvalRequestIndices) ExtractAndRemoveApprovalRequestsAndResponses(
+    private (List<ApprovalResultWithRequestMessage>? approvals, List<ApprovalResultWithRequestMessage>? rejections) ExtractAndRemoveApprovalRequestsAndResponses(
         List<ChatMessage> messages)
     {
         Dictionary<string, ChatMessage>? allApprovalRequestsMessages = null;
-        List<FunctionApprovalResponseContent>? allApprovalResponses = null;
+        List<ToolApprovalResponseContent>? allApprovalResponses = null;
         HashSet<string>? approvalRequestCallIds = null;
         HashSet<string>? functionResultCallIds = null;
-        Dictionary<string, int>? approvalRequestIndices = null;
 
         // 1st iteration, over all messages and content:
         // - Build a list of all function call ids that are already executed.
         // - Build a list of all function approval requests and responses.
         // - Build a list of the content we want to keep (everything except approval requests and responses) and create a new list of messages for those.
         // - Validate that we have an approval response for each approval request.
-        // - Track the original index of each approval request by call ID
         bool anyRemoved = false;
         int i = 0;
         for (; i < messages.Count; i++)
@@ -1655,24 +1593,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 var content = message.Contents[j];
                 switch (content)
                 {
-                    case FunctionApprovalRequestContent farc:
+                    case ToolApprovalRequestContent tarc when tarc.ToolCall is FunctionCallContent { InformationalOnly: false }:
                         // Validation: Capture each call id for each approval request to ensure later we have a matching response.
-                        _ = (approvalRequestCallIds ??= []).Add(farc.FunctionCall.CallId);
-                        (allApprovalRequestsMessages ??= []).Add(farc.Id, message);
-
-                        // Track the original index for each approval request by call ID
-                        var indices = approvalRequestIndices ??= [];
-                        if (!indices.ContainsKey(farc.FunctionCall.CallId))
-                        {
-                            indices.Add(farc.FunctionCall.CallId, i);
-                        }
-
+                        _ = (approvalRequestCallIds ??= []).Add(tarc.ToolCall.CallId);
+                        (allApprovalRequestsMessages ??= []).Add(tarc.RequestId, message);
                         break;
 
-                    case FunctionApprovalResponseContent farc:
+                    case ToolApprovalResponseContent tarc when tarc.ToolCall is FunctionCallContent { InformationalOnly: false }:
                         // Validation: Remove the call id for each approval response, to check it off the list of requests we need responses for.
-                        _ = approvalRequestCallIds?.Remove(farc.FunctionCall.CallId);
-                        (allApprovalResponses ??= []).Add(farc);
+                        _ = approvalRequestCallIds?.Remove(tarc.ToolCall.CallId);
+                        (allApprovalResponses ??= []).Add(tarc);
                         break;
 
                     case FunctionResultContent frc:
@@ -1708,40 +1638,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         // Clean up any messages that were marked for removal during the iteration.
-        // Also adjust the approval request indices to account for removed messages.
         if (anyRemoved)
         {
-            // Build a map of how many messages were removed before each index
-            int[] removedBeforeIndex = new int[messages.Count];
-            int removedCount = 0;
-            for (int idx = 0; idx < messages.Count; idx++)
-            {
-                removedBeforeIndex[idx] = removedCount;
-                if (messages[idx] is null)
-                {
-                    removedCount++;
-                }
-            }
-
             _ = messages.RemoveAll(static m => m is null);
-
-            // Adjust all approval request indices
-            if (approvalRequestIndices is not null)
-            {
-                List<string> callIds = [.. approvalRequestIndices.Keys];
-                foreach (var callId in callIds)
-                {
-                    int originalIndex = approvalRequestIndices[callId];
-                    approvalRequestIndices[callId] = originalIndex - removedBeforeIndex[originalIndex];
-                }
-            }
         }
 
         // Validation: If we got an approval for each request, we should have no call ids left.
         if (approvalRequestCallIds is { Count: > 0 })
         {
             Throw.InvalidOperationException(
-                $"FunctionApprovalRequestContent found with FunctionCall.CallId(s) '{string.Join(", ", approvalRequestCallIds)}' that have no matching FunctionApprovalResponseContent.");
+                $"ToolApprovalRequestContent found with FunctionCall.CallId(s) '{string.Join(", ", approvalRequestCallIds)}' that have no matching ToolApprovalResponseContent.");
         }
 
         // 2nd iteration, over all approval responses:
@@ -1749,60 +1655,29 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // - Find the matching function approval request for any response (where available).
         // - Split the approval responses into two lists: approved and rejected, with their request messages (where available).
         List<ApprovalResultWithRequestMessage>? approvedFunctionCalls = null, rejectedFunctionCalls = null;
-        bool hasAlreadyExecutedApprovals = false;
         if (allApprovalResponses is { Count: > 0 })
         {
             foreach (var approvalResponse in allApprovalResponses)
             {
                 // Skip any approval responses that have already been processed.
-                if (functionResultCallIds?.Contains(approvalResponse.FunctionCall.CallId) is true)
+                if (approvalResponse.ToolCall is not FunctionCallContent fcc || functionResultCallIds?.Contains(fcc.CallId) is true)
                 {
-                    hasAlreadyExecutedApprovals = true;
                     continue;
                 }
 
-                LogProcessingApprovalResponse(approvalResponse.FunctionCall.Name, approvalResponse.Approved);
+                LogProcessingApprovalResponse(fcc.Name, approvalResponse.Approved);
 
                 // Split the responses into approved and rejected.
                 ref List<ApprovalResultWithRequestMessage>? targetList = ref approvalResponse.Approved ? ref approvedFunctionCalls : ref rejectedFunctionCalls;
 
                 ChatMessage? requestMessage = null;
-                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.Id, out requestMessage);
+                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.RequestId, out requestMessage);
 
                 (targetList ??= []).Add(new() { Response = approvalResponse, RequestMessage = requestMessage });
             }
         }
 
-        // If there are already-executed function results for the approval requests we're processing,
-        // adjust their indices to append at the end instead
-        // to preserve the ordering of already-present function calls and results. This handles scenarios where:
-        // 1. Previous approval responses have been processed and their function calls/results are present in the message list
-        // 2. New approval responses are being processed
-        // In this case, we want the new function calls to come AFTER the existing ones, not at the position
-        // where the first (already-processed) approval request was originally located.
-        //
-        // Example:
-        //   Before extraction (original user input with approval messages):
-        //     [User, FunctionApprovalRequest(A), FunctionApprovalResponse(A), FunctionResult(A), FunctionApprovalRequest(B), FunctionApprovalResponse(B)]
-        //   After extraction of approval requests/responses (state of 'messages' at this point):
-        //     [User, FunctionResult(A)]
-        //   After processing approval for B, if we inserted at the original index where B's approval request was,
-        //   we'd incorrectly interleave new calls with existing results:
-        //     [User, FunctionCall(B), FunctionResult(B), FunctionResult(A)]  // Wrong order
-        //   But if there are already function results present (e.g., for A), we instead append new function calls/results
-        //   for B at the end to preserve chronological ordering:
-        //     [User, FunctionResult(A), FunctionCall(B), FunctionResult(B)]  // Correct order
-        if (hasAlreadyExecutedApprovals && approvalRequestIndices is not null)
-        {
-            // Set all indices to append at end
-            List<string> callIds = [.. approvalRequestIndices.Keys];
-            foreach (var callId in callIds)
-            {
-                approvalRequestIndices[callId] = messages.Count;
-            }
-        }
-
-        return (approvedFunctionCalls, rejectedFunctionCalls, approvalRequestIndices);
+        return (approvedFunctionCalls, rejectedFunctionCalls);
     }
 
     /// <summary>
@@ -1814,7 +1689,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         rejections is { Count: > 0 } ?
             rejections.ConvertAll(m =>
             {
-                LogFunctionRejected(m.Response.FunctionCall.Name, m.Response.Reason);
+                LogFunctionRejected(m.FunctionCallContent.Name, m.Response.Reason);
 
                 string result = "Tool call invocation rejected.";
                 if (!string.IsNullOrWhiteSpace(m.Response.Reason))
@@ -1823,13 +1698,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 }
 
                 // Mark the function call as purely informational since we're handling it (by rejecting it)
-                m.Response.FunctionCall.InformationalOnly = true;
-                return (AIContent)new FunctionResultContent(m.Response.FunctionCall.CallId, result);
+                m.FunctionCallContent.InformationalOnly = true;
+                return (AIContent)new FunctionResultContent(m.FunctionCallContent.CallId, result);
             }) :
             null;
 
     /// <summary>
-    /// Extracts the <see cref="FunctionCallContent"/> from the provided <see cref="FunctionApprovalResponseContent"/> to recreate the original function call messages.
+    /// Extracts the <see cref="FunctionCallContent"/> from the provided <see cref="ToolApprovalResponseContent"/> to recreate the original function call messages.
     /// The output messages tries to mimic the original messages that contained the <see cref="FunctionCallContent"/>, e.g. if the <see cref="FunctionCallContent"/>
     /// had been split into separate messages, this method will recreate similarly split messages, each with their own <see cref="FunctionCallContent"/>.
     /// </summary>
@@ -1879,7 +1754,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 }
                 else
                 {
-                    currentMessage.Contents.Add(resultWithRequestMessage.Response.FunctionCall);
+                    currentMessage.Contents.Add(resultWithRequestMessage.Response.ToolCall);
                 }
 
 #pragma warning disable IDE0058 // Temporary workaround for Roslyn analyzer issue (see https://github.com/dotnet/roslyn/issues/80499)
@@ -1908,7 +1783,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     private static ChatMessage ConvertToFunctionCallContentMessage(ApprovalResultWithRequestMessage resultWithRequestMessage, string? fallbackMessageId)
     {
         ChatMessage functionCallMessage = resultWithRequestMessage.RequestMessage?.Clone() ?? new() { Role = ChatRole.Assistant };
-        functionCallMessage.Contents = [resultWithRequestMessage.Response.FunctionCall];
+        functionCallMessage.Contents = [resultWithRequestMessage.Response.ToolCall];
         functionCallMessage.MessageId ??= fallbackMessageId;
         return functionCallMessage;
     }
@@ -1951,7 +1826,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>
-    /// Replaces all <see cref="FunctionCallContent"/> with <see cref="FunctionApprovalRequestContent"/> and ouputs a new list if any of them were replaced.
+    /// Replaces all <see cref="FunctionCallContent"/> with <see cref="ToolApprovalRequestContent"/> and ouputs a new list if any of them were replaced.
     /// </summary>
     /// <returns>true if any <see cref="FunctionCallContent"/> was replaced, false otherwise.</returns>
     private static bool TryReplaceFunctionCallsWithApprovalRequests(IList<AIContent> content, out List<AIContent>? updatedContent)
@@ -1965,7 +1840,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 if (content[i] is FunctionCallContent fcc && !fcc.InformationalOnly)
                 {
                     updatedContent ??= [.. content]; // Clone the list if we haven't already
-                    updatedContent[i] = new FunctionApprovalRequestContent(fcc.CallId, fcc);
+                    updatedContent[i] = new ToolApprovalRequestContent(ComposeApprovalRequestId(fcc.CallId), fcc);
                 }
             }
         }
@@ -1974,7 +1849,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>
-    /// Replaces all <see cref="FunctionCallContent"/> from <paramref name="messages"/> with <see cref="FunctionApprovalRequestContent"/>
+    /// Replaces all <see cref="FunctionCallContent"/> from <paramref name="messages"/> with <see cref="ToolApprovalRequestContent"/>
     /// if any one of them requires approval.
     /// </summary>
     private IList<ChatMessage> ReplaceFunctionCallsWithApprovalRequests(
@@ -2020,7 +1895,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 var functionCall = (FunctionCallContent)message.Contents[contentIndex];
                 LogFunctionRequiresApproval(functionCall.Name);
-                message.Contents[contentIndex] = new FunctionApprovalRequestContent(functionCall.CallId, functionCall);
+                message.Contents[contentIndex] = new ToolApprovalRequestContent(ComposeApprovalRequestId(functionCall.CallId), functionCall);
                 outputMessages[messageIndex] = message;
 
                 lastMessageIndex = messageIndex;
@@ -2037,8 +1912,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
 #endif
 
+    /// <summary>Composes an approval request ID from a function call ID.</summary>
+    private static string ComposeApprovalRequestId(string callId) => $"ficc_{callId}";
+
     /// <summary>
-    /// Execute the provided <see cref="FunctionApprovalResponseContent"/> and return the resulting <see cref="FunctionCallContent"/>
+    /// Execute the provided <see cref="ToolApprovalResponseContent"/> and return the resulting <see cref="FunctionCallContent"/>
     /// wrapped in <see cref="ChatMessage"/> objects.
     /// </summary>
     private async Task<(IList<ChatMessage>? FunctionResultContentMessages, bool ShouldTerminate, int ConsecutiveErrorCount)> InvokeApprovedFunctionApprovalResponsesAsync(
@@ -2046,28 +1924,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage> originalMessages,
         ChatOptions? options,
         int consecutiveErrorCount,
-        Dictionary<string, int>? approvalRequestIndices,
         bool isStreaming,
         CancellationToken cancellationToken)
     {
         // Check if there are any function calls to do for any approved functions and execute them.
         if (notInvokedApprovals is { Count: > 0 })
         {
-            // For now, use the first approval's index, or -1 if not found
-            // Future enhancement: Process each approval individually at its correct position
-            int insertionIndex = -1;
-            if (approvalRequestIndices is not null && notInvokedApprovals.Count > 0)
-            {
-                string firstCallId = notInvokedApprovals[0].Response.FunctionCall.CallId;
-                if (approvalRequestIndices.TryGetValue(firstCallId, out int index))
-                {
-                    insertionIndex = index;
-                }
-            }
-
             // The FRC that is generated here is already added to originalMessages by ProcessFunctionCallsAsync.
             var modeAndMessages = await ProcessFunctionCallsAsync(
-                originalMessages, options, notInvokedApprovals.Select(x => x.Response.FunctionCall).ToList(), 0, consecutiveErrorCount, insertionIndex, isStreaming, cancellationToken);
+                originalMessages, options, notInvokedApprovals.Select(x => x.Response.ToolCall).OfType<FunctionCallContent>().ToList(), 0, consecutiveErrorCount, isStreaming, cancellationToken);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
             return (modeAndMessages.MessagesAdded, modeAndMessages.ShouldTerminate, consecutiveErrorCount);
@@ -2167,9 +2032,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         Exception,
     }
 
-    private struct ApprovalResultWithRequestMessage
+    private readonly struct ApprovalResultWithRequestMessage
     {
-        public FunctionApprovalResponseContent Response { get; set; }
-        public ChatMessage? RequestMessage { get; set; }
+        public ToolApprovalResponseContent Response { get; init; }
+        public ChatMessage? RequestMessage { get; init; }
+        public FunctionCallContent FunctionCallContent => (FunctionCallContent)Response.ToolCall;
     }
 }

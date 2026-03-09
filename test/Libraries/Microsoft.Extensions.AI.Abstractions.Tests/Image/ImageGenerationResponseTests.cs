@@ -151,4 +151,35 @@ public class ImageGenerationResponseTests
         Assert.IsType<DataContent>(deserialized.Contents[1]);
         Assert.IsType<TextContent>(deserialized.Contents[2]);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "contents": [
+                {
+                  "$type": "uri",
+                  "uri": "http://example.com/image.png",
+                  "mediaType": "image/png"
+                }
+              ],
+              "usage": {
+                "inputTokenCount": 50,
+                "outputTokenCount": 100
+              }
+            }
+            """;
+
+        ImageGenerationResponse? result = JsonSerializer.Deserialize<ImageGenerationResponse>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Single(result.Contents);
+        var uriContent = Assert.IsType<UriContent>(result.Contents[0]);
+        Assert.Equal(new Uri("http://example.com/image.png"), uriContent.Uri);
+        Assert.Equal("image/png", uriContent.MediaType);
+        Assert.NotNull(result.Usage);
+        Assert.Equal(50, result.Usage.InputTokenCount);
+        Assert.Equal(100, result.Usage.OutputTokenCount);
+    }
 }

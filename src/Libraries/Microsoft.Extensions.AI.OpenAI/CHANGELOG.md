@@ -1,5 +1,13 @@
 # Microsoft.Extensions.AI.OpenAI Release History
 
+## NOT YET RELEASED
+
+- Updated to depend on OpenAI 2.9.1.
+- Updated the OpenAI Chat Completions `IChatClient` to surface OpenAI-compatible `reasoning_content` as `TextReasoningContent`.
+- Updated the OpenAI `IChatClient` implementations to emit the `openai.api.type` OpenTelemetry attribute when an appropriate active span is detected.
+- Fixed the OpenAI Chat Completions `IChatClient` to map `ReasoningEffort.None` and `ExtraHigh` correctly.
+- Fixed the OpenAI Responses `FunctionCallOutputResponseItem` to correctly preserve `RawRepresentation`.
+
 ## 10.3.0
 
 - Marked Microsoft.Extensions.AI.OpenAI as stable. Portions of the surface area are still marked as [Experimental], e.g. because the OpenAI Responses surface area from the OpenAI library is [Experimental], the corresponding `AsIChatClient` in Microsoft.Extensions.AI.OpenAI is as well.

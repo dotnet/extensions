@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -333,7 +333,54 @@ public class OpenTelemetryChatClientTests
             Assert.False(tags.ContainsKey("gen_ai.input.messages"));
             Assert.False(tags.ContainsKey("gen_ai.output.messages"));
             Assert.False(tags.ContainsKey("gen_ai.system_instructions"));
-            Assert.False(tags.ContainsKey("gen_ai.tool.definitions"));
+            Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "type": "function",
+                    "name": "GetPersonAge",
+                    "description": "Gets the age of a person by name.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "personName": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "personName"
+                      ]
+                    }
+                  },
+                  {
+                    "type": "web_search"
+                  },
+                  {
+                    "type": "file_search"
+                  },
+                  {
+                    "type": "code_interpreter"
+                  },
+                  {
+                    "type": "mcp"
+                  },
+                  {
+                    "type": "function",
+                    "name": "GetCurrentWeather",
+                    "description": "Gets the current weather for a location.",
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "location": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "location"
+                      ]
+                    }
+                  }
+                ]
+                """), ReplaceWhitespace(tags["gen_ai.tool.definitions"]));
         }
     }
 
@@ -611,12 +658,12 @@ public class OpenTelemetryChatClientTests
                 return new ChatResponse(new ChatMessage(ChatRole.Assistant,
                 [
                     new TextContent("Processing with tools..."),
-                    new CodeInterpreterToolCallContent { CallId = "ci-call-1", Inputs = [new TextContent("print('hello')")] },
-                    new CodeInterpreterToolResultContent { CallId = "ci-call-1", Outputs = [new TextContent("hello")] },
-                    new ImageGenerationToolCallContent { ImageId = "img-123" },
-                    new ImageGenerationToolResultContent { ImageId = "img-123", Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")] },
+                    new CodeInterpreterToolCallContent("ci-call-1") { Inputs = [new TextContent("print('hello')")] },
+                    new CodeInterpreterToolResultContent("ci-call-1") { Outputs = [new TextContent("hello")] },
+                    new ImageGenerationToolCallContent("img-123"),
+                    new ImageGenerationToolResultContent("img-123") { Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")] },
                     new McpServerToolCallContent("mcp-call-1", "myTool", "myServer") { Arguments = new Dictionary<string, object?> { ["param1"] = "value1" } },
-                    new McpServerToolResultContent("mcp-call-1") { Output = [new TextContent("Tool result")] },
+                    new McpServerToolResultContent("mcp-call-1") { Outputs = [new TextContent("Tool result")] },
                 ]));
             },
             GetStreamingResponseAsyncCallback = CallbackAsync,
@@ -627,12 +674,21 @@ public class OpenTelemetryChatClientTests
         {
             await Task.Yield();
             yield return new(ChatRole.Assistant, "Processing with tools...");
-            yield return new() { Contents = [new CodeInterpreterToolCallContent { CallId = "ci-call-1", Inputs = [new TextContent("print('hello')")] }] };
-            yield return new() { Contents = [new CodeInterpreterToolResultContent { CallId = "ci-call-1", Outputs = [new TextContent("hello")] }] };
-            yield return new() { Contents = [new ImageGenerationToolCallContent { ImageId = "img-123" }] };
-            yield return new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img-123", Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")] }] };
+            yield return new() { Contents = [new CodeInterpreterToolCallContent("ci-call-1") { Inputs = [new TextContent("print('hello')")] }] };
+            yield return new() { Contents = [new CodeInterpreterToolResultContent("ci-call-1") { Outputs = [new TextContent("hello")] }] };
+            yield return new() { Contents = [new ImageGenerationToolCallContent("img-123")] };
+            yield return new()
+            {
+                Contents =
+                [
+                    new ImageGenerationToolResultContent("img-123")
+                    {
+                        Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")]
+                    }
+                ]
+            };
             yield return new() { Contents = [new McpServerToolCallContent("mcp-call-1", "myTool", "myServer") { Arguments = new Dictionary<string, object?> { ["param1"] = "value1" } }] };
-            yield return new() { Contents = [new McpServerToolResultContent("mcp-call-1") { Output = [new TextContent("Tool result")] }] };
+            yield return new() { Contents = [new McpServerToolResultContent("mcp-call-1") { Outputs = [new TextContent("Tool result")] }] };
         }
 
         using var chatClient = innerClient
@@ -786,11 +842,11 @@ public class OpenTelemetryChatClientTests
         [
             new(ChatRole.Assistant,
             [
-                new McpServerToolApprovalRequestContent("approval-1", toolCall),
+                new ToolApprovalRequestContent("approval-1", toolCall),
             ]),
             new(ChatRole.User,
             [
-                new McpServerToolApprovalResponseContent("approval-1", true),
+                new ToolApprovalResponseContent("approval-1", true, toolCall),
             ]),
         ];
 
@@ -943,3 +999,4 @@ public class OpenTelemetryChatClientTests
 
     private static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
 }
+

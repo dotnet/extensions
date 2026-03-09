@@ -91,4 +91,50 @@ public class FunctionResultContentTests
         Assert.Equal(sut.Result, deserializedSut.Result?.ToString());
         Assert.Null(deserializedSut.Exception);
     }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new FunctionResultContent("call123", "result");
+
+        AssertSerializationRoundtrips<FunctionResultContent>(content);
+        AssertSerializationRoundtrips<ToolResultContent>(content);
+        AssertSerializationRoundtrips<AIContent>(content);
+
+        static void AssertSerializationRoundtrips<T>(FunctionResultContent content)
+            where T : AIContent
+        {
+            T contentAsT = (T)(object)content;
+            string json = JsonSerializer.Serialize(contentAsT, AIJsonUtilities.DefaultOptions);
+            T? deserialized = JsonSerializer.Deserialize<T>(json, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            var deserializedContent = Assert.IsType<FunctionResultContent>(deserialized);
+            Assert.Equal(content.CallId, deserializedContent.CallId);
+            Assert.Equal("result", deserializedContent.Result?.ToString());
+        }
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "functionResult",
+              "callId": "call123",
+              "result": "the result",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var funcResult = Assert.IsType<FunctionResultContent>(result);
+        Assert.Equal("call123", funcResult.CallId);
+        Assert.Equal("the result", funcResult.Result?.ToString());
+        Assert.NotNull(funcResult.AdditionalProperties);
+        Assert.Equal("val", funcResult.AdditionalProperties["key"]?.ToString());
+    }
 }
