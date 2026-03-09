@@ -6,7 +6,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Bcl.Memory" Version="9.0.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>b520113f9a5a20494f01f860fa1f2a7dfe8d8f72</Sha>
+      <Sha>19c07820cb72aafc554c3bc8fe3c54010f5123f0</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Bcl.TimeProvider" Version="9.0.14" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -126,7 +126,7 @@
     </Dependency>
     <Dependency Name="System.Memory.Data" Version="9.0.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>b520113f9a5a20494f01f860fa1f2a7dfe8d8f72</Sha>
+      <Sha>19c07820cb72aafc554c3bc8fe3c54010f5123f0</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.Json" Version="9.0.14" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -134,7 +134,7 @@
     </Dependency>
     <Dependency Name="System.Numerics.Tensors" Version="9.0.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>b520113f9a5a20494f01f860fa1f2a7dfe8d8f72</Sha>
+      <Sha>19c07820cb72aafc554c3bc8fe3c54010f5123f0</Sha>
     </Dependency>
     <Dependency Name="System.Runtime.Caching" Version="9.0.14" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
