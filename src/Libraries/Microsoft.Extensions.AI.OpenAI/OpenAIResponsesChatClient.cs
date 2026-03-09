@@ -698,7 +698,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         (response is not null && response.Patch.TryGetValue("$.store"u8, out bool store) && !store);
 #pragma warning restore SCME0001
 
-    internal static ResponseTool? ToResponseTool(AITool tool, ChatOptions? options = null)
+    internal static ResponseTool? ToResponseTool(AITool tool, HostedToolSearchTool? toolSearchTool, ChatOptions? options)
     {
         switch (tool)
         {
@@ -707,7 +707,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             case AIFunctionDeclaration aiFunction:
                 var functionTool = ToResponseTool(aiFunction, options);
-                if (FindToolSearchTool(options) is { } toolSearch && IsDeferredLoading(aiFunction.Name, toolSearch))
+                if (toolSearchTool is not null && IsDeferredLoading(aiFunction.Name, toolSearchTool))
                 {
                     functionTool.Patch.Set("$.defer_loading"u8, "true"u8);
                 }
@@ -932,9 +932,19 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Populate tools if there are any.
         if (options.Tools is { Count: > 0 } tools)
         {
+            HostedToolSearchTool? toolSearchTool = null;
             foreach (AITool tool in tools)
             {
-                if (ToResponseTool(tool, options) is { } responseTool)
+                if (tool is HostedToolSearchTool tst)
+                {
+                    toolSearchTool = tst;
+                    break;
+                }
+            }
+
+            foreach (AITool tool in tools)
+            {
+                if (ToResponseTool(tool, toolSearchTool, options) is { } responseTool)
                 {
                     result.Tools.Add(responseTool);
                 }
@@ -1825,23 +1835,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 ResponseImageDetailLevel detail => detail,
                 _ => null
             };
-        }
-
-        return null;
-    }
-
-    /// <summary>Finds the <see cref="HostedToolSearchTool"/> in the options' tools list, if present.</summary>
-    private static HostedToolSearchTool? FindToolSearchTool(ChatOptions? options)
-    {
-        if (options?.Tools is { } tools)
-        {
-            foreach (AITool t in tools)
-            {
-                if (t is HostedToolSearchTool toolSearch)
-                {
-                    return toolSearch;
-                }
-            }
         }
 
         return null;
