@@ -37,10 +37,7 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     {
         _ = Throw.IfNull(tool);
 
-        return OpenAIResponsesChatClient.ToResponseTool(
-            tool,
-            OpenAIResponsesChatClient.FindToolSearchTool(options?.Tools),
-            options);
+        return OpenAIResponsesChatClient.ToResponseTool(tool, options);
     }
 
     /// <summary>

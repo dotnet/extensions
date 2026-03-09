@@ -686,7 +686,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Nothing to dispose.
     }
 
-    internal static ResponseTool? ToResponseTool(AITool tool, HostedToolSearchTool? toolSearchTool, ChatOptions? options)
+    internal static ResponseTool? ToResponseTool(AITool tool, ChatOptions? options) =>
+        ToResponseTool(tool, FindToolSearchTool(options?.Tools), options);
+
+    private static ResponseTool? ToResponseTool(AITool tool, HostedToolSearchTool? toolSearchTool, ChatOptions? options)
     {
         switch (tool)
         {
@@ -1828,7 +1831,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     /// <summary>Finds the first <see cref="HostedToolSearchTool"/> in the given tools list, if present.</summary>
-    internal static HostedToolSearchTool? FindToolSearchTool(IList<AITool>? tools)
+    private static HostedToolSearchTool? FindToolSearchTool(IList<AITool>? tools)
     {
         if (tools is not null)
         {
