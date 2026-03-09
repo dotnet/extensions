@@ -50,6 +50,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             null, [typeof(GetResponseOptions), typeof(RequestOptions)], null)
         ?.CreateDelegate(typeof(Func<ResponsesClient, GetResponseOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>));
 
+    /// <summary>Cached deserialized <see cref="ResponseTool"/> for the tool_search hosted tool.</summary>
+    private static ResponseTool? s_toolSearchResponseTool;
+
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -690,7 +693,20 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 return rtat.Tool;
 
             case AIFunctionDeclaration aiFunction:
-                return ToResponseTool(aiFunction, options);
+                var functionTool = ToResponseTool(aiFunction, options);
+                if (tool.GetService<SearchableAIFunctionDeclaration>() is { } searchable)
+                {
+                    functionTool.Patch.Set("$.defer_loading"u8, JsonSerializer.SerializeToUtf8Bytes(true).AsSpan());
+                    if (searchable.Namespace is { } ns)
+                    {
+                        functionTool.Patch.Set("$.namespace"u8, JsonSerializer.SerializeToUtf8Bytes(ns, OpenAIJsonContext.Default.String).AsSpan());
+                    }
+                }
+
+                return functionTool;
+
+            case HostedToolSearchTool:
+                return s_toolSearchResponseTool ??= ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString("""{"type": "tool_search"}"""))!;
 
             case HostedWebSearchTool webSearchTool:
                 return new WebSearchTool

@@ -57,6 +57,7 @@ internal static class DiagnosticIds
         internal const string AIResponseContinuations = AIExperiments;
         internal const string AICodeInterpreter = AIExperiments;
         internal const string AIWebSearch = AIExperiments;
+        internal const string AIToolSearch = AIExperiments;
         internal const string AIRealTime = AIExperiments;
         internal const string AIFiles = AIExperiments;
 
