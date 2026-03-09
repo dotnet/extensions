@@ -589,6 +589,59 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseTool_WithHostedToolSearchTool_ProducesValidToolSearchTool()
+    {
+        var toolSearchTool = new HostedToolSearchTool();
+
+        var result = toolSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var json = ModelReaderWriter.Write(result, ModelReaderWriterOptions.Json).ToString();
+        Assert.Contains("\"type\"", json);
+        Assert.Contains("tool_search", json);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedToolSearchTool_CachesResult()
+    {
+        var result1 = new HostedToolSearchTool().AsOpenAIResponseTool();
+        var result2 = new HostedToolSearchTool().AsOpenAIResponseTool();
+
+        Assert.NotNull(result1);
+        Assert.Same(result1, result2);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithSearchableAIFunctionDeclaration_PatchesDeferLoading()
+    {
+        var inner = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
+        var searchable = new SearchableAIFunctionDeclaration(inner);
+
+        var result = ((AITool)searchable).AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var functionTool = Assert.IsType<FunctionTool>(result);
+        var json = ModelReaderWriter.Write(functionTool, ModelReaderWriterOptions.Json).ToString();
+        Assert.Contains("defer_loading", json);
+        Assert.Contains("true", json);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithSearchableAIFunctionDeclarationWithNamespace_PatchesNamespace()
+    {
+        var inner = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
+        var searchable = new SearchableAIFunctionDeclaration(inner, namespaceName: "myNamespace");
+
+        var result = ((AITool)searchable).AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var functionTool = Assert.IsType<FunctionTool>(result);
+        var json = ModelReaderWriter.Write(functionTool, ModelReaderWriterOptions.Json).ToString();
+        Assert.Contains("namespace", json);
+        Assert.Contains("myNamespace", json);
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_WithNullTool_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>("tool", () => ((AITool)null!).AsOpenAIResponseTool());
