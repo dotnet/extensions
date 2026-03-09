@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
+using OpenAI;
 using OpenAI.Responses;
 
 #pragma warning disable S1226 // Method parameters, caught exceptions and foreach variables' initial values should not be ignored
@@ -51,7 +52,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         ?.CreateDelegate(typeof(Func<ResponsesClient, GetResponseOptions, RequestOptions, AsyncCollectionResult<StreamingResponseUpdate>>));
 
     /// <summary>Cached deserialized <see cref="ResponseTool"/> for the tool_search hosted tool.</summary>
-    private static ResponseTool? s_toolSearchResponseTool;
+    private static ResponseTool? _toolSearchResponseTool;
 
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
@@ -706,19 +707,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             case AIFunctionDeclaration aiFunction:
                 var functionTool = ToResponseTool(aiFunction, options);
-                if (tool.GetService<SearchableAIFunctionDeclaration>() is { } searchable)
+                if (FindToolSearchTool(options) is { } toolSearch && IsDeferredLoading(aiFunction.Name, toolSearch))
                 {
-                    functionTool.Patch.Set("$.defer_loading"u8, JsonSerializer.SerializeToUtf8Bytes(true).AsSpan());
-                    if (searchable.Namespace is { } ns)
-                    {
-                        functionTool.Patch.Set("$.namespace"u8, JsonSerializer.SerializeToUtf8Bytes(ns, OpenAIJsonContext.Default.String).AsSpan());
-                    }
+                    functionTool.Patch.Set("$.defer_loading"u8, "true"u8);
                 }
 
                 return functionTool;
 
             case HostedToolSearchTool:
-                return s_toolSearchResponseTool ??= ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString("""{"type": "tool_search"}"""))!;
+                return _toolSearchResponseTool ??= ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString("""{"type": "tool_search"}"""), ModelReaderWriterOptions.Json, OpenAIContext.Default)!;
 
             case HostedWebSearchTool webSearchTool:
                 return new WebSearchTool
@@ -1831,6 +1828,34 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
 
         return null;
+    }
+
+    /// <summary>Finds the <see cref="HostedToolSearchTool"/> in the options' tools list, if present.</summary>
+    private static HostedToolSearchTool? FindToolSearchTool(ChatOptions? options)
+    {
+        if (options?.Tools is { } tools)
+        {
+            foreach (AITool t in tools)
+            {
+                if (t is HostedToolSearchTool toolSearch)
+                {
+                    return toolSearch;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Determines whether the tool with the given name should have deferred loading based on the <see cref="HostedToolSearchTool"/> configuration.</summary>
+    private static bool IsDeferredLoading(string toolName, HostedToolSearchTool toolSearch)
+    {
+        if (toolSearch.NonDeferredTools is { } nonDeferred && nonDeferred.Contains(toolName))
+        {
+            return false;
+        }
+
+        return toolSearch.DeferredTools is not { } deferred || deferred.Contains(toolName);
     }
 
     /// <summary>Provides an <see cref="AITool"/> wrapper for a <see cref="ResponseTool"/>.</summary>
