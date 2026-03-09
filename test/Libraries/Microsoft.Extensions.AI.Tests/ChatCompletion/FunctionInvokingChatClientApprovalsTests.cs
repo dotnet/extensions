@@ -1418,6 +1418,189 @@ public class FunctionInvokingChatClientApprovalsTests
         await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput, additionalTools: useAdditionalTools ? tools : null);
     }
 
+    [Fact]
+    public async Task RejectionWithUserMessageAfterApprovalResponsePreservesOrderingAsync()
+    {
+        // Verifies that when a user adds a message after the approval response,
+        // the reconstructed FCC/FRC are inserted at the original approval position,
+        // not at the end, preserving the user message at the end.
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "1st message"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1"))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1"))
+            ]),
+            new ChatMessage(ChatRole.User, "2nd message"),
+        ];
+
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "1st message"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Tool call invocation rejected.")]),
+            new ChatMessage(ChatRole.User, "2nd message"),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Tool call invocation rejected.")]),
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+    }
+
+    [Fact]
+    public async Task ApprovalWithUserMessageAfterApprovalResponsePreservesOrderingAsync()
+    {
+        // Verifies that when a user approves and adds a message after the approval response,
+        // the message ordering is preserved.
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "1st message"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1"))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1"))
+            ]),
+            new ChatMessage(ChatRole.User, "2nd message"),
+        ];
+
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "1st message"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.User, "2nd message"),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+    }
+
+    [Fact]
+    public async Task MultipleApprovalRequestResponsePairsWithInterleavedUserMessagesPreservesOrderingAsync()
+    {
+        // Verifies that when there are multiple approval request/response pairs
+        // with user messages interleaved between them, each FCC/FRC pair is inserted
+        // at its original position, preserving user message ordering.
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 2", "Func2")),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "1st user message"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1"))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1"))
+            ]),
+            new ChatMessage(ChatRole.User, "2nd user message"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2"))
+            ]) { MessageId = "resp2" },
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId2", true, new FunctionCallContent("callId2", "Func2"))
+            ]),
+            new ChatMessage(ChatRole.User, "3rd user message"),
+        ];
+
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "1st user message"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.User, "2nd user message"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2")]),
+            new ChatMessage(ChatRole.User, "3rd user message"),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        List<ChatMessage> nonStreamingOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2")]),
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        // In streaming, preDownstreamCallHistory (all FCCs) is yielded first, then all approved Tool results.
+        List<ChatMessage> streamingOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2")]),
+            new ChatMessage(ChatRole.Assistant, "Final response"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, nonStreamingOutput, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, streamingOutput, expectedDownstreamClientInput);
+    }
+
     private static Task<List<ChatMessage>> InvokeAndAssertAsync(
         ChatOptions? options,
         List<ChatMessage> input,
