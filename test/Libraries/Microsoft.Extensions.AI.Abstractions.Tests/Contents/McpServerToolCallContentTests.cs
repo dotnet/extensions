@@ -86,4 +86,35 @@ public class McpServerToolCallContentTests
             Assert.Equal("value1", deserializedContent.Arguments["arg1"]?.ToString());
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "mcpServerToolCall",
+              "callId": "call1",
+              "name": "myTool",
+              "serverName": "myServer",
+              "arguments": {
+                "arg1": "val1"
+              },
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var mcpCall = Assert.IsType<McpServerToolCallContent>(result);
+        Assert.Equal("call1", mcpCall.CallId);
+        Assert.Equal("myTool", mcpCall.Name);
+        Assert.Equal("myServer", mcpCall.ServerName);
+        Assert.NotNull(mcpCall.Arguments);
+        Assert.Equal("val1", mcpCall.Arguments["arg1"]?.ToString());
+        Assert.NotNull(mcpCall.AdditionalProperties);
+        Assert.Equal("val", mcpCall.AdditionalProperties["key"]?.ToString());
+    }
 }

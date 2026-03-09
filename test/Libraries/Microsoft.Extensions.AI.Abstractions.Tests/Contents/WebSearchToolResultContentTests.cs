@@ -122,4 +122,38 @@ public class WebSearchToolResultContentTests
         var first = Assert.IsType<UriContent>(result.Results[0]);
         Assert.Equal("Test", first.AdditionalProperties?["title"]?.ToString());
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "webSearchToolResult",
+              "callId": "ws-call1",
+              "results": [
+                {
+                  "$type": "uri",
+                  "uri": "https://example.com",
+                  "mediaType": "text/html"
+                }
+              ],
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var wsResult = Assert.IsType<WebSearchToolResultContent>(result);
+        Assert.Equal("ws-call1", wsResult.CallId);
+        Assert.NotNull(wsResult.Results);
+        Assert.Single(wsResult.Results);
+        var uriResult = Assert.IsType<UriContent>(wsResult.Results[0]);
+        Assert.Equal(new Uri("https://example.com"), uriResult.Uri);
+        Assert.Equal("text/html", uriResult.MediaType);
+        Assert.NotNull(wsResult.AdditionalProperties);
+        Assert.Equal("val", wsResult.AdditionalProperties["key"]?.ToString());
+    }
 }

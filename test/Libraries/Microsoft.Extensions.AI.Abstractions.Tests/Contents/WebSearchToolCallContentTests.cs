@@ -72,4 +72,28 @@ public class WebSearchToolCallContentTests
         Assert.Equal("ws_call456", result.CallId);
         Assert.Equal(["AI safety research", "latest AI alignment papers"], result.Queries);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "webSearchToolCall",
+              "callId": "ws-call1",
+              "queries": ["query one", "query two"],
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var wsCall = Assert.IsType<WebSearchToolCallContent>(result);
+        Assert.Equal("ws-call1", wsCall.CallId);
+        Assert.Equal(["query one", "query two"], wsCall.Queries);
+        Assert.NotNull(wsCall.AdditionalProperties);
+        Assert.Equal("val", wsCall.AdditionalProperties["key"]?.ToString());
+    }
 }

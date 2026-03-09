@@ -329,4 +329,71 @@ public class ChatOptionsTests
         {
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "conversationId": "12345",
+              "instructions": "Some instructions",
+              "temperature": 0.1,
+              "maxOutputTokens": 2,
+              "topP": 0.3,
+              "topK": 42,
+              "frequencyPenalty": 0.4,
+              "presencePenalty": 0.5,
+              "seed": 12345,
+              "reasoning": {
+                "effort": "High",
+                "output": "Full"
+              },
+              "responseFormat": {
+                "$type": "json"
+              },
+              "modelId": "modelId",
+              "stopSequences": ["stop1", "stop2"],
+              "allowMultipleToolCalls": false,
+              "toolMode": {
+                "$type": "required"
+              },
+              "allowBackgroundResponses": true,
+              "continuationToken": "AQIDBA==",
+              "additionalProperties": {
+                "key": "value"
+              }
+            }
+            """;
+
+        ChatOptions? result = JsonSerializer.Deserialize<ChatOptions>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal("12345", result.ConversationId);
+        Assert.Equal("Some instructions", result.Instructions);
+        Assert.Equal(0.1f, result.Temperature);
+        Assert.Equal(2, result.MaxOutputTokens);
+        Assert.Equal(0.3f, result.TopP);
+        Assert.Equal(42, result.TopK);
+        Assert.Equal(0.4f, result.FrequencyPenalty);
+        Assert.Equal(0.5f, result.PresencePenalty);
+        Assert.Equal(12345, result.Seed);
+
+        Assert.NotNull(result.Reasoning);
+        Assert.Equal(ReasoningEffort.High, result.Reasoning.Effort);
+        Assert.Equal(ReasoningOutput.Full, result.Reasoning.Output);
+
+        Assert.IsType<ChatResponseFormatJson>(result.ResponseFormat);
+        Assert.Equal("modelId", result.ModelId);
+        Assert.Equal(new[] { "stop1", "stop2" }, result.StopSequences);
+        Assert.False(result.AllowMultipleToolCalls);
+        Assert.Equal(ChatToolMode.RequireAny, result.ToolMode);
+        Assert.True(result.AllowBackgroundResponses);
+
+        Assert.NotNull(result.ContinuationToken);
+        Assert.Equal(new byte[] { 1, 2, 3, 4 }, result.ContinuationToken.ToBytes().ToArray());
+
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Single(result.AdditionalProperties);
+        Assert.Equal("value", result.AdditionalProperties["key"]?.ToString());
+    }
 }

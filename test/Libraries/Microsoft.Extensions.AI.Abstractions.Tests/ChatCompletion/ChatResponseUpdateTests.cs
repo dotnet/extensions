@@ -398,4 +398,61 @@ public class ChatResponseUpdateTests
         Assert.True(original.AdditionalProperties.ContainsKey("modified"));
         Assert.True(clone.AdditionalProperties?.ContainsKey("modified"));
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "authorName": "author",
+              "role": "assistant",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "text-1"
+                },
+                {
+                  "$type": "data",
+                  "uri": "data:image/png;base64,aGVsbG8="
+                }
+              ],
+              "responseId": "id",
+              "messageId": "messageid",
+              "conversationId": "conv123",
+              "createdAt": "2022-01-01T00:00:00+00:00",
+              "finishReason": "content_filter",
+              "modelId": "gpt-4",
+              "continuationToken": "AQID",
+              "additionalProperties": {
+                "key": "value"
+              }
+            }
+            """;
+
+        ChatResponseUpdate? result = JsonSerializer.Deserialize<ChatResponseUpdate>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal("author", result.AuthorName);
+        Assert.Equal(ChatRole.Assistant, result.Role);
+
+        Assert.Equal(2, result.Contents.Count);
+        var textContent = Assert.IsType<TextContent>(result.Contents[0]);
+        Assert.Equal("text-1", textContent.Text);
+        var dataContent = Assert.IsType<DataContent>(result.Contents[1]);
+        Assert.Equal("data:image/png;base64,aGVsbG8=", dataContent.Uri);
+
+        Assert.Equal("id", result.ResponseId);
+        Assert.Equal("messageid", result.MessageId);
+        Assert.Equal("conv123", result.ConversationId);
+        Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
+        Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
+        Assert.Equal("gpt-4", result.ModelId);
+
+        Assert.NotNull(result.ContinuationToken);
+        Assert.Equal(new byte[] { 1, 2, 3 }, result.ContinuationToken.ToBytes().ToArray());
+
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Single(result.AdditionalProperties);
+        Assert.Equal("value", result.AdditionalProperties["key"]?.ToString());
+    }
 }
