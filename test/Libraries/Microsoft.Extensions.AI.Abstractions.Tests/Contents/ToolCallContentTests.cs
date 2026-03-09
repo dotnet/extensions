@@ -79,4 +79,26 @@ public class ToolCallContentTests
             Assert.Equal(message.Contents[i].GetType(), deserialized2.Contents[i].GetType());
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "toolCall",
+              "callId": "tc1",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var toolCall = Assert.IsType<ToolCallContent>(result);
+        Assert.Equal("tc1", toolCall.CallId);
+        Assert.NotNull(toolCall.AdditionalProperties);
+        Assert.Equal("val", toolCall.AdditionalProperties["key"]?.ToString());
+    }
 }

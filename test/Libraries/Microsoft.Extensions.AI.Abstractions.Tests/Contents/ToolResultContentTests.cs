@@ -78,4 +78,26 @@ public class ToolResultContentTests
             Assert.Equal(message.Contents[i].GetType(), deserialized2.Contents[i].GetType());
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "toolResult",
+              "callId": "tr1",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var toolResult = Assert.IsType<ToolResultContent>(result);
+        Assert.Equal("tr1", toolResult.CallId);
+        Assert.NotNull(toolResult.AdditionalProperties);
+        Assert.Equal("val", toolResult.AdditionalProperties["key"]?.ToString());
+    }
 }

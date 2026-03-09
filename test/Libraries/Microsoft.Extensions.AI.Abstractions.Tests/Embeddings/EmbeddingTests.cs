@@ -102,4 +102,30 @@ public class EmbeddingTests
         Embedding<double> result = Assert.IsType<Embedding<double>>(JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.Embedding));
         Assert.Equal(e.Vector.ToArray(), result.Vector.ToArray());
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "float32",
+              "vector": [1.0, 2.0, 3.0],
+              "createdAt": "2024-01-01T00:00:00+00:00",
+              "modelId": "text-embedding-ada-002",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        Embedding? result = JsonSerializer.Deserialize<Embedding>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var floatEmbedding = Assert.IsType<Embedding<float>>(result);
+        Assert.Equal(new float[] { 1.0f, 2.0f, 3.0f }, floatEmbedding.Vector.ToArray());
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero), floatEmbedding.CreatedAt);
+        Assert.Equal("text-embedding-ada-002", floatEmbedding.ModelId);
+        Assert.NotNull(floatEmbedding.AdditionalProperties);
+        Assert.Equal("val", floatEmbedding.AdditionalProperties["key"]?.ToString());
+    }
 }

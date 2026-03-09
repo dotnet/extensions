@@ -228,4 +228,38 @@ public class HostedFileContentTests
         Assert.Null(c.MediaType);
         Assert.False(c.HasTopLevelMediaType("image"));
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "hostedFile",
+              "fileId": "file-abc123",
+              "mediaType": "application/pdf",
+              "name": "document.pdf",
+              "sizeInBytes": 1024,
+              "createdAt": "2024-01-15T10:30:00+00:00",
+              "purpose": "assistants",
+              "scope": "user",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var hostedFile = Assert.IsType<HostedFileContent>(result);
+        Assert.Equal("file-abc123", hostedFile.FileId);
+        Assert.Equal("application/pdf", hostedFile.MediaType);
+        Assert.Equal("document.pdf", hostedFile.Name);
+        Assert.Equal(1024, hostedFile.SizeInBytes);
+        Assert.Equal(new DateTimeOffset(2024, 1, 15, 10, 30, 0, TimeSpan.Zero), hostedFile.CreatedAt);
+        Assert.Equal("assistants", hostedFile.Purpose);
+        Assert.Equal("user", hostedFile.Scope);
+        Assert.NotNull(hostedFile.AdditionalProperties);
+        Assert.Equal("val", hostedFile.AdditionalProperties["key"]?.ToString());
+    }
 }

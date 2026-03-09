@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
@@ -114,5 +115,39 @@ public class ImageGenerationToolResultContentTests
         Assert.Equal(2, imageResult.Outputs.Count);
         Assert.IsType<DataContent>(imageResult.Outputs[0]);
         Assert.IsType<UriContent>(imageResult.Outputs[1]);
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "imageGenerationToolResult",
+              "callId": "img-call1",
+              "outputs": [
+                {
+                  "$type": "uri",
+                  "uri": "http://example.com/image.png",
+                  "mediaType": "image/png"
+                }
+              ],
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var imgResult = Assert.IsType<ImageGenerationToolResultContent>(result);
+        Assert.Equal("img-call1", imgResult.CallId);
+        Assert.NotNull(imgResult.Outputs);
+        Assert.Single(imgResult.Outputs);
+        var uriOutput = Assert.IsType<UriContent>(imgResult.Outputs[0]);
+        Assert.Equal(new Uri("http://example.com/image.png"), uriOutput.Uri);
+        Assert.Equal("image/png", uriOutput.MediaType);
+        Assert.NotNull(imgResult.AdditionalProperties);
+        Assert.Equal("val", imgResult.AdditionalProperties["key"]?.ToString());
     }
 }

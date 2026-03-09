@@ -88,4 +88,36 @@ public class CodeInterpreterToolResultContentTests
         Assert.IsType<HostedFileContent>(deserializedSut.Outputs[1]);
         Assert.Equal("result.txt", ((HostedFileContent)deserializedSut.Outputs[1]).FileId);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "codeInterpreterToolResult",
+              "callId": "ci-call1",
+              "outputs": [
+                {
+                  "$type": "text",
+                  "text": "hello"
+                }
+              ],
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var ciResult = Assert.IsType<CodeInterpreterToolResultContent>(result);
+        Assert.Equal("ci-call1", ciResult.CallId);
+        Assert.NotNull(ciResult.Outputs);
+        Assert.Single(ciResult.Outputs);
+        var textOutput = Assert.IsType<TextContent>(ciResult.Outputs[0]);
+        Assert.Equal("hello", textOutput.Text);
+        Assert.NotNull(ciResult.AdditionalProperties);
+        Assert.Equal("val", ciResult.AdditionalProperties["key"]?.ToString());
+    }
 }

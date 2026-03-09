@@ -75,5 +75,37 @@ public class McpServerToolResultContentTests
             Assert.Equal("result", Assert.IsType<TextContent>(Assert.Single(deserializedContent.Outputs)).Text);
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "mcpServerToolResult",
+              "callId": "call1",
+              "outputs": [
+                {
+                  "$type": "text",
+                  "text": "output text"
+                }
+              ],
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var mcpResult = Assert.IsType<McpServerToolResultContent>(result);
+        Assert.Equal("call1", mcpResult.CallId);
+        Assert.NotNull(mcpResult.Outputs);
+        Assert.Single(mcpResult.Outputs);
+        var textOutput = Assert.IsType<TextContent>(mcpResult.Outputs[0]);
+        Assert.Equal("output text", textOutput.Text);
+        Assert.NotNull(mcpResult.AdditionalProperties);
+        Assert.Equal("val", mcpResult.AdditionalProperties["key"]?.ToString());
+    }
 }
 
