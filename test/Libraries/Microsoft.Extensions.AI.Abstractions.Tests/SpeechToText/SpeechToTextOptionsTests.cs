@@ -157,8 +157,10 @@ public class SpeechToTextOptionsTests
     {
         const string Json = """
             {
-              "modelId": "whisper-1",
-              "speechLanguage": "en-US",
+              "transcription": {
+                "modelId": "whisper-1",
+                "speechLanguage": "en-US"
+              },
               "speechSampleRate": 16000,
               "textLanguage": "en",
               "additionalProperties": {
@@ -170,8 +172,9 @@ public class SpeechToTextOptionsTests
         SpeechToTextOptions? result = JsonSerializer.Deserialize<SpeechToTextOptions>(Json, AIJsonUtilities.DefaultOptions);
 
         Assert.NotNull(result);
-        Assert.Equal("whisper-1", result.ModelId);
-        Assert.Equal("en-US", result.SpeechLanguage);
+        Assert.NotNull(result.Transcription);
+        Assert.Equal("whisper-1", result.Transcription.ModelId);
+        Assert.Equal("en-US", result.Transcription.SpeechLanguage);
         Assert.Equal(16000, result.SpeechSampleRate);
         Assert.Equal("en", result.TextLanguage);
         Assert.NotNull(result.AdditionalProperties);
