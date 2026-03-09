@@ -920,15 +920,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Populate tools if there are any.
         if (options.Tools is { Count: > 0 } tools)
         {
-            HostedToolSearchTool? toolSearchTool = null;
-            foreach (AITool tool in tools)
-            {
-                if (tool is HostedToolSearchTool tst)
-                {
-                    toolSearchTool = tst;
-                    break;
-                }
-            }
+            HostedToolSearchTool? toolSearchTool = FindToolSearchTool(tools);
 
             foreach (AITool tool in tools)
             {
@@ -1833,6 +1825,23 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
 
         return toolSearch.DeferredTools is not { } deferred || deferred.Contains(toolName);
+    }
+
+    /// <summary>Finds the first <see cref="HostedToolSearchTool"/> in the given tools list, if present.</summary>
+    internal static HostedToolSearchTool? FindToolSearchTool(IList<AITool>? tools)
+    {
+        if (tools is not null)
+        {
+            foreach (AITool tool in tools)
+            {
+                if (tool is HostedToolSearchTool toolSearch)
+                {
+                    return toolSearch;
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>Provides an <see cref="AITool"/> wrapper for a <see cref="ResponseTool"/>.</summary>

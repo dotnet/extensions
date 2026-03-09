@@ -37,20 +37,10 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     {
         _ = Throw.IfNull(tool);
 
-        HostedToolSearchTool? toolSearchTool = null;
-        if (options?.Tools is { } tools)
-        {
-            foreach (AITool t in tools)
-            {
-                if (t is HostedToolSearchTool tst)
-                {
-                    toolSearchTool = tst;
-                    break;
-                }
-            }
-        }
-
-        return OpenAIResponsesChatClient.ToResponseTool(tool, toolSearchTool, options);
+        return OpenAIResponsesChatClient.ToResponseTool(
+            tool,
+            OpenAIResponsesChatClient.FindToolSearchTool(options?.Tools),
+            options);
     }
 
     /// <summary>
