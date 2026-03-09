@@ -62,4 +62,26 @@ public class ImageGenerationToolCallContentTests
         Assert.IsType<ImageGenerationToolCallContent>(deserialized);
         Assert.Equal("img456", ((ImageGenerationToolCallContent)deserialized).CallId);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "imageGenerationToolCall",
+              "callId": "img-call1",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var imgCall = Assert.IsType<ImageGenerationToolCallContent>(result);
+        Assert.Equal("img-call1", imgCall.CallId);
+        Assert.NotNull(imgCall.AdditionalProperties);
+        Assert.Equal("val", imgCall.AdditionalProperties["key"]?.ToString());
+    }
 }

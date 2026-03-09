@@ -151,4 +151,30 @@ public class SpeechToTextOptionsTests
         {
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "modelId": "whisper-1",
+              "speechLanguage": "en-US",
+              "speechSampleRate": 16000,
+              "textLanguage": "en",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        SpeechToTextOptions? result = JsonSerializer.Deserialize<SpeechToTextOptions>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal("whisper-1", result.ModelId);
+        Assert.Equal("en-US", result.SpeechLanguage);
+        Assert.Equal(16000, result.SpeechSampleRate);
+        Assert.Equal("en", result.TextLanguage);
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Equal("val", result.AdditionalProperties["key"]?.ToString());
+    }
 }

@@ -28,7 +28,7 @@ public class ToolApprovalResponseContentTests
     };
 
     [Theory]
-    [MemberData(nameof(ToolCallContentInstances))]
+    [MemberData(nameof(ToolCallContentInstances), DisableDiscoveryEnumeration = true)]
     public void Constructor_Roundtrips(ToolCallContent toolCall)
     {
         ToolApprovalResponseContent content = new("req-1", true, toolCall);
@@ -45,7 +45,7 @@ public class ToolApprovalResponseContentTests
     }
 
     [Theory]
-    [MemberData(nameof(ToolCallContentInstances))]
+    [MemberData(nameof(ToolCallContentInstances), DisableDiscoveryEnumeration = true)]
     public void Serialization_Roundtrips(ToolCallContent toolCall)
     {
         var content = new ToolApprovalResponseContent("request123", true, toolCall)
@@ -95,5 +95,40 @@ public class ToolApprovalResponseContentTests
         var functionCall = Assert.IsType<FunctionCallContent>(deserializedContent.ToolCall);
         Assert.Equal(content.ToolCall.CallId, functionCall.CallId);
         Assert.Equal(((FunctionCallContent)content.ToolCall).Name, functionCall.Name);
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "toolApprovalResponse",
+              "requestId": "req-abc123",
+              "approved": true,
+              "toolCall": {
+                "$type": "functionCall",
+                "callId": "call1",
+                "name": "myFunc"
+              },
+              "reason": "Looks safe",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var approvalResponse = Assert.IsType<ToolApprovalResponseContent>(result);
+        Assert.Equal("req-abc123", approvalResponse.RequestId);
+        Assert.True(approvalResponse.Approved);
+        Assert.NotNull(approvalResponse.ToolCall);
+        var funcCall = Assert.IsType<FunctionCallContent>(approvalResponse.ToolCall);
+        Assert.Equal("call1", funcCall.CallId);
+        Assert.Equal("myFunc", funcCall.Name);
+        Assert.Equal("Looks safe", approvalResponse.Reason);
+        Assert.NotNull(approvalResponse.AdditionalProperties);
+        Assert.Equal("val", approvalResponse.AdditionalProperties["key"]?.ToString());
     }
 }

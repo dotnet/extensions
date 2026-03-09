@@ -249,4 +249,46 @@ public class SpeechToTextResponseTests
             Assert.Equal(300, usage.Details.TotalTokenCount);
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "startTime": "00:00:01",
+              "endTime": "00:00:05",
+              "responseId": "resp1",
+              "modelId": "whisper-1",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "Hello world"
+                }
+              ],
+              "usage": {
+                "inputTokenCount": 100,
+                "outputTokenCount": 50
+              },
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        SpeechToTextResponse? result = JsonSerializer.Deserialize<SpeechToTextResponse>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal(TimeSpan.FromSeconds(1), result.StartTime);
+        Assert.Equal(TimeSpan.FromSeconds(5), result.EndTime);
+        Assert.Equal("resp1", result.ResponseId);
+        Assert.Equal("whisper-1", result.ModelId);
+        Assert.Single(result.Contents);
+        var textContent = Assert.IsType<TextContent>(result.Contents[0]);
+        Assert.Equal("Hello world", textContent.Text);
+        Assert.NotNull(result.Usage);
+        Assert.Equal(100, result.Usage.InputTokenCount);
+        Assert.Equal(50, result.Usage.OutputTokenCount);
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Equal("val", result.AdditionalProperties["key"]?.ToString());
+    }
 }

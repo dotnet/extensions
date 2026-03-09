@@ -68,4 +68,28 @@ public class TextReasoningContentTests
         Assert.Equal(content.Text, deserializedContent.Text);
         Assert.Equal("protected", deserializedContent.ProtectedData);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "reasoning",
+              "text": "reasoning text",
+              "protectedData": "protected",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var reasoning = Assert.IsType<TextReasoningContent>(result);
+        Assert.Equal("reasoning text", reasoning.Text);
+        Assert.Equal("protected", reasoning.ProtectedData);
+        Assert.NotNull(reasoning.AdditionalProperties);
+        Assert.Equal("val", reasoning.AdditionalProperties["key"]?.ToString());
+    }
 }

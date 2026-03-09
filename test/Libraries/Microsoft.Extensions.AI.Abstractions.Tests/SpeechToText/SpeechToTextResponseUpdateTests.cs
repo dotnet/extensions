@@ -110,4 +110,41 @@ public class SpeechToTextResponseUpdateTests
             Assert.Equal(original.Contents[i].ToString(), result.Contents[i].ToString());
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "kind": "textupdated",
+              "responseId": "resp1",
+              "startTime": "00:00:01",
+              "endTime": "00:00:05",
+              "modelId": "whisper-1",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "Hello world"
+                }
+              ],
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        SpeechToTextResponseUpdate? result = JsonSerializer.Deserialize<SpeechToTextResponseUpdate>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal(SpeechToTextResponseUpdateKind.TextUpdated, result.Kind);
+        Assert.Equal("resp1", result.ResponseId);
+        Assert.Equal(TimeSpan.FromSeconds(1), result.StartTime);
+        Assert.Equal(TimeSpan.FromSeconds(5), result.EndTime);
+        Assert.Equal("whisper-1", result.ModelId);
+        Assert.Single(result.Contents);
+        var textContent = Assert.IsType<TextContent>(result.Contents[0]);
+        Assert.Equal("Hello world", textContent.Text);
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Equal("val", result.AdditionalProperties["key"]?.ToString());
+    }
 }
