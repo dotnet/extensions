@@ -100,7 +100,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "static OpenAI.Responses.ResponseTool? OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTool(this Microsoft.Extensions.AI.AITool tool);",
+          "Member": "static OpenAI.Responses.ResponseTool? OpenAI.Responses.MicrosoftExtensionsAIResponsesExtensions.AsOpenAIResponseTool(this Microsoft.Extensions.AI.AITool tool, Microsoft.Extensions.AI.ChatOptions? options = null);",
           "Stage": "Experimental"
         }
       ]
