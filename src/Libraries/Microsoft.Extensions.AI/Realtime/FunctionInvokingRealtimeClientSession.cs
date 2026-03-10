@@ -46,6 +46,11 @@ namespace Microsoft.Extensions.AI;
 /// (the default), multiple concurrent requests to this same instance and using the same tools could result in those
 /// tools being used concurrently (one per request).
 /// </para>
+/// <para>
+/// <b>Known limitation:</b> Function invocation blocks the message processing loop. While functions are being
+/// invoked, incoming server messages (including user interruptions) are buffered and not processed until the
+/// invocation completes.
+/// </para>
 /// </remarks>
 internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSession
 {
