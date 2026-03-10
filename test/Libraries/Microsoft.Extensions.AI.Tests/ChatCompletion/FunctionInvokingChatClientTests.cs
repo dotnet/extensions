@@ -1668,6 +1668,9 @@ public class FunctionInvokingChatClientTests
     [InlineData("invoke_agent")]
     [InlineData("invoke_agent my_agent")]
     [InlineData("invoke_agent ")]
+    [InlineData("invoke_workflow")]
+    [InlineData("invoke_workflow my_workflow")]
+    [InlineData("invoke_workflow ")]
     public async Task DoesNotCreateOrchestrateToolsSpanWhenInvokeAgentIsParent(string displayName)
     {
         string agentSourceName = Guid.NewGuid().ToString();
@@ -1713,8 +1716,10 @@ public class FunctionInvokingChatClientTests
         Assert.All(childActivities, activity => Assert.Same(invokeAgent, activity.Parent));
     }
 
-    [Fact]
-    public async Task StreamingPreservesTraceContextWhenInvokeAgentWithNameIsParent()
+    [Theory]
+    [InlineData("invoke_agent MyAgent(agent-123)")]
+    [InlineData("invoke_workflow MyWorkflow(workflow-123)")]
+    public async Task StreamingPreservesTraceContextWhenInvokeAgentWithNameIsParent(string displayName)
     {
         string agentSourceName = Guid.NewGuid().ToString();
         string clientSourceName = Guid.NewGuid().ToString();
@@ -1750,7 +1755,7 @@ public class FunctionInvokingChatClientTests
         };
 
         using var agentSource = new ActivitySource(agentSourceName);
-        using var invokeAgentActivity = agentSource.StartActivity("invoke_agent MyAgent(agent-123)");
+        using var invokeAgentActivity = agentSource.StartActivity(displayName);
         Assert.NotNull(invokeAgentActivity);
 
         await foreach (var update in client.GetStreamingResponseAsync(
@@ -1764,7 +1769,7 @@ public class FunctionInvokingChatClientTests
         var chatActivities = activities.Where(a => a.DisplayName.StartsWith("chat", StringComparison.Ordinal)).ToList();
         Assert.Equal(2, chatActivities.Count);
 
-        // All child activities must share the same trace as invoke_agent
+        // All child activities must share the same trace as the parent activity
         var nonAgentActivities = activities.Where(a => a != invokeAgentActivity).ToList();
         Assert.All(nonAgentActivities, a =>
             Assert.Equal(invokeAgentActivity.TraceId, a.TraceId));
@@ -1816,8 +1821,10 @@ public class FunctionInvokingChatClientTests
         Assert.Contains(activities, a => a.DisplayName == "orchestrate_tools");
     }
 
-    [Fact]
-    public async Task UsesAgentActivitySourceWhenInvokeAgentIsParent()
+    [Theory]
+    [InlineData("invoke_agent")]
+    [InlineData("invoke_workflow")]
+    public async Task UsesAgentActivitySourceWhenInvokeAgentIsParent(string displayName)
     {
         string agentSourceName = Guid.NewGuid().ToString();
         string clientSourceName = Guid.NewGuid().ToString();
@@ -1847,7 +1854,7 @@ public class FunctionInvokingChatClientTests
             .Build();
 
         using (var agentSource = new ActivitySource(agentSourceName))
-        using (var invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
+        using (var invokeAgentActivity = agentSource.StartActivity(displayName))
         {
             Assert.NotNull(invokeAgentActivity);
             await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
@@ -1859,14 +1866,15 @@ public class FunctionInvokingChatClientTests
     }
 
     public static IEnumerable<object[]> SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent_MemberData() =>
+        from operationName in new[] { "invoke_agent", "invoke_workflow" }
         from invokeAgentSensitiveData in new bool?[] { null, false, true }
         from innerOpenTelemetryChatClient in new bool?[] { null, false, true }
-        select new object?[] { invokeAgentSensitiveData, innerOpenTelemetryChatClient };
+        select new object?[] { operationName, invokeAgentSensitiveData, innerOpenTelemetryChatClient };
 
     [Theory]
     [MemberData(nameof(SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent_MemberData))]
     public async Task SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent(
-        bool? invokeAgentSensitiveData, bool? innerOpenTelemetryChatClient)
+        string operationName, bool? invokeAgentSensitiveData, bool? innerOpenTelemetryChatClient)
     {
         string agentSourceName = Guid.NewGuid().ToString();
         string clientSourceName = Guid.NewGuid().ToString();
@@ -1893,7 +1901,7 @@ public class FunctionInvokingChatClientTests
             .Build();
 
         using (var agentSource = new ActivitySource(agentSourceName))
-        using (var invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
+        using (var invokeAgentActivity = agentSource.StartActivity(operationName))
         {
             if (invokeAgentSensitiveData is not null)
             {
@@ -1933,232 +1941,6 @@ public class FunctionInvokingChatClientTests
         {
             Assert.False(hasArguments, "Expected arguments NOT to be logged when agent EnableSensitiveData is false");
             Assert.False(hasResult, "Expected result NOT to be logged when agent EnableSensitiveData is false");
-        }
-    }
-
-    [Theory]
-    [InlineData("invoke_workflow")]
-    [InlineData("invoke_workflow my_workflow")]
-    [InlineData("invoke_workflow ")]
-    public async Task DoesNotCreateOrchestrateToolsSpanWhenInvokeWorkflowIsParent(string displayName)
-    {
-        string workflowSourceName = Guid.NewGuid().ToString();
-        string clientSourceName = Guid.NewGuid().ToString();
-
-        List<ChatMessage> plan =
-        [
-            new ChatMessage(ChatRole.User, "hello"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
-            new ChatMessage(ChatRole.Assistant, "world"),
-        ];
-
-        ChatOptions options = new()
-        {
-            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
-        };
-
-        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
-            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
-
-        var activities = new List<Activity>();
-
-        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
-            .AddSource(workflowSourceName)
-            .AddSource(clientSourceName)
-            .AddInMemoryExporter(activities)
-            .Build();
-
-        using (var workflowSource = new ActivitySource(workflowSourceName))
-        using (var invokeWorkflowActivity = workflowSource.StartActivity(displayName))
-        {
-            Assert.NotNull(invokeWorkflowActivity);
-            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
-        }
-
-        Assert.DoesNotContain(activities, a => a.DisplayName == "orchestrate_tools");
-        Assert.Contains(activities, a => a.DisplayName == "chat");
-        Assert.Contains(activities, a => a.DisplayName == "execute_tool Func1");
-
-        var invokeWorkflow = Assert.Single(activities, a => a.DisplayName == displayName);
-        var childActivities = activities.Where(a => a != invokeWorkflow).ToList();
-        Assert.All(childActivities, activity => Assert.Same(invokeWorkflow, activity.Parent));
-    }
-
-    [Fact]
-    public async Task StreamingPreservesTraceContextWhenInvokeWorkflowWithNameIsParent()
-    {
-        string workflowSourceName = Guid.NewGuid().ToString();
-        string clientSourceName = Guid.NewGuid().ToString();
-        var activities = new List<Activity>();
-
-        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
-            .AddSource(workflowSourceName)
-            .AddSource(clientSourceName)
-            .AddInMemoryExporter(activities)
-            .Build();
-
-        int callCount = 0;
-        using var innerClient = new TestChatClient
-        {
-            GetStreamingResponseAsyncCallback = (messages, options, ct) =>
-            {
-                callCount++;
-                ChatMessage message = callCount == 1
-                    ? new(ChatRole.Assistant, [new FunctionCallContent("call1", "Func1")])
-                    : new(ChatRole.Assistant, "Done");
-                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
-            }
-        };
-
-        var client = innerClient.AsBuilder()
-            .Use(c => new FunctionInvokingChatClient(
-                new OpenTelemetryChatClient(c, sourceName: clientSourceName)))
-            .Build();
-
-        var options = new ChatOptions
-        {
-            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
-        };
-
-        using var workflowSource = new ActivitySource(workflowSourceName);
-        using var invokeWorkflowActivity = workflowSource.StartActivity("invoke_workflow MyWorkflow(workflow-123)");
-        Assert.NotNull(invokeWorkflowActivity);
-
-        await foreach (var update in client.GetStreamingResponseAsync(
-            [new ChatMessage(ChatRole.User, "hello")], options))
-        {
-            // consume all updates
-        }
-
-        Assert.Equal(2, callCount);
-
-        var chatActivities = activities.Where(a => a.DisplayName.StartsWith("chat", StringComparison.Ordinal)).ToList();
-        Assert.Equal(2, chatActivities.Count);
-
-        // All child activities must share the same trace as invoke_workflow
-        var nonWorkflowActivities = activities.Where(a => a != invokeWorkflowActivity).ToList();
-        Assert.All(nonWorkflowActivities, a =>
-            Assert.Equal(invokeWorkflowActivity.TraceId, a.TraceId));
-    }
-
-    [Fact]
-    public async Task UsesWorkflowActivitySourceWhenInvokeWorkflowIsParent()
-    {
-        string workflowSourceName = Guid.NewGuid().ToString();
-        string clientSourceName = Guid.NewGuid().ToString();
-
-        List<ChatMessage> plan =
-        [
-            new ChatMessage(ChatRole.User, "hello"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
-            new ChatMessage(ChatRole.Assistant, "world"),
-        ];
-
-        ChatOptions options = new()
-        {
-            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
-        };
-
-        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
-            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: clientSourceName)));
-
-        var activities = new List<Activity>();
-
-        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
-            .AddSource(workflowSourceName)
-            .AddSource(clientSourceName)
-            .AddInMemoryExporter(activities)
-            .Build();
-
-        using (var workflowSource = new ActivitySource(workflowSourceName))
-        using (var invokeWorkflowActivity = workflowSource.StartActivity("invoke_workflow"))
-        {
-            Assert.NotNull(invokeWorkflowActivity);
-            await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
-        }
-
-        var executeToolActivities = activities.Where(a => a.DisplayName == "execute_tool Func1").ToList();
-        Assert.NotEmpty(executeToolActivities);
-        Assert.All(executeToolActivities, executeTool => Assert.Equal(workflowSourceName, executeTool.Source.Name));
-    }
-
-    public static IEnumerable<object[]> SensitiveDataPropagatesFromWorkflowActivityWhenInvokeWorkflowIsParent_MemberData() =>
-        from invokeWorkflowSensitiveData in new bool?[] { null, false, true }
-        from innerOpenTelemetryChatClient in new bool?[] { null, false, true }
-        select new object?[] { invokeWorkflowSensitiveData, innerOpenTelemetryChatClient };
-
-    [Theory]
-    [MemberData(nameof(SensitiveDataPropagatesFromWorkflowActivityWhenInvokeWorkflowIsParent_MemberData))]
-    public async Task SensitiveDataPropagatesFromWorkflowActivityWhenInvokeWorkflowIsParent(
-        bool? invokeWorkflowSensitiveData, bool? innerOpenTelemetryChatClient)
-    {
-        string workflowSourceName = Guid.NewGuid().ToString();
-        string clientSourceName = Guid.NewGuid().ToString();
-
-        List<ChatMessage> plan =
-        [
-            new ChatMessage(ChatRole.User, "hello"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg1"] = "secret" })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
-            new ChatMessage(ChatRole.Assistant, "world"),
-        ];
-
-        ChatOptions options = new()
-        {
-            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
-        };
-
-        var activities = new List<Activity>();
-
-        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
-            .AddSource(workflowSourceName)
-            .AddSource(clientSourceName)
-            .AddInMemoryExporter(activities)
-            .Build();
-
-        using (var workflowSource = new ActivitySource(workflowSourceName))
-        using (var invokeWorkflowActivity = workflowSource.StartActivity("invoke_workflow"))
-        {
-            if (invokeWorkflowSensitiveData is not null)
-            {
-                invokeWorkflowActivity?.SetCustomProperty("__EnableSensitiveData__", invokeWorkflowSensitiveData is true ? "true" : "false");
-            }
-
-            await InvokeAndAssertAsync(options, plan, configurePipeline: b =>
-            {
-                b.UseFunctionInvocation();
-
-                if (innerOpenTelemetryChatClient is not null)
-                {
-                    b.UseOpenTelemetry(sourceName: clientSourceName, configure: c =>
-                    {
-                        c.EnableSensitiveData = innerOpenTelemetryChatClient.Value;
-                    });
-                }
-
-                return b;
-            });
-        }
-
-        var executeToolActivity = Assert.Single(activities, a => a.DisplayName == "execute_tool Func1");
-
-        var hasArguments = executeToolActivity.Tags.Any(t => t.Key == "gen_ai.tool.call.arguments");
-        var hasResult = executeToolActivity.Tags.Any(t => t.Key == "gen_ai.tool.call.result");
-
-        if (invokeWorkflowSensitiveData is true)
-        {
-            Assert.True(hasArguments, "Expected arguments to be logged when workflow EnableSensitiveData is true");
-            Assert.True(hasResult, "Expected result to be logged when workflow EnableSensitiveData is true");
-
-            var argsTag = Assert.Single(executeToolActivity.Tags, t => t.Key == "gen_ai.tool.call.arguments");
-            Assert.Contains("arg1", argsTag.Value);
-        }
-        else
-        {
-            Assert.False(hasArguments, "Expected arguments NOT to be logged when workflow EnableSensitiveData is false");
-            Assert.False(hasResult, "Expected result NOT to be logged when workflow EnableSensitiveData is false");
         }
     }
 
