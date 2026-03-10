@@ -129,14 +129,6 @@ internal static class OpenTelemetryConsts
             public const string Temperature = "gen_ai.request.temperature";
             public const string TopK = "gen_ai.request.top_k";
             public const string TopP = "gen_ai.request.top_p";
-
-            /// <summary>
-            /// The tool choice mode for the request.
-            /// This is a custom attribute NOT part of the OpenTelemetry GenAI semantic conventions (as of v1.39).
-            /// Values: "none", "auto", "required", or a specific tool name when a tool is forced.
-            /// Custom attribute: "gen_ai.request.tool_choice".
-            /// </summary>
-            public const string ToolChoice = "gen_ai.request.tool_choice";
         }
 
         public static class Response

@@ -754,24 +754,6 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                                 }), RealtimeOtelContext.Default.IEnumerableRealtimeOtelFunction));
                         }
                     }
-
-                    // Tool choice mode (custom attribute - not part of OTel GenAI spec)
-                    string? toolChoice = null;
-                    if (options.ToolMode is { } toolMode)
-                    {
-                        toolChoice = toolMode switch
-                        {
-                            RequiredChatToolMode r when r.RequiredFunctionName is not null => r.RequiredFunctionName,
-                            RequiredChatToolMode => "required",
-                            NoneChatToolMode => "none",
-                            _ => "auto",
-                        };
-                    }
-
-                    if (toolChoice is not null)
-                    {
-                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.ToolChoice, toolChoice);
-                    }
                 }
             }
         }
