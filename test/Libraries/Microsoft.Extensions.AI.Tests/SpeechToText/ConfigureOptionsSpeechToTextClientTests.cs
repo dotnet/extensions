@@ -33,7 +33,7 @@ public class ConfigureOptionsSpeechToTextClientTests
     [InlineData(true)]
     public async Task ConfigureOptions_ReturnedInstancePassedToNextClient(bool nullProvidedOptions)
     {
-        SpeechToTextOptions? providedOptions = nullProvidedOptions ? null : new() { Transcription = new TranscriptionOptions { ModelId = "test" } };
+        SpeechToTextOptions? providedOptions = nullProvidedOptions ? null : new() { ModelId = "test" };
         SpeechToTextOptions? returnedOptions = null;
         SpeechToTextResponse expectedResponse = new([]);
         var expectedUpdates = Enumerable.Range(0, 3).Select(i => new SpeechToTextResponseUpdate()).ToArray();
@@ -63,11 +63,11 @@ public class ConfigureOptionsSpeechToTextClientTests
                 Assert.NotSame(providedOptions, options);
                 if (nullProvidedOptions)
                 {
-                    Assert.Null(options.Transcription);
+                    Assert.Null(options.ModelId);
                 }
                 else
                 {
-                    Assert.Equal(providedOptions!.Transcription?.ModelId, options.Transcription?.ModelId);
+                    Assert.Equal(providedOptions!.ModelId, options.ModelId);
                 }
 
                 returnedOptions = options;

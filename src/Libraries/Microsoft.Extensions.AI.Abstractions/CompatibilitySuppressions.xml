@@ -1,5 +1,6 @@
-<?xml version='1.0' encoding='utf-8'?>
-<Suppressions>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
+<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Microsoft.Extensions.AI.FunctionApprovalRequestContent</Target>
@@ -10,6 +11,13 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Microsoft.Extensions.AI.FunctionApprovalResponseContent</Target>
+    <Left>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
+    <Right>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.Extensions.AI.IToolReductionStrategy</Target>
     <Left>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
     <Right>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -52,6 +60,13 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Microsoft.Extensions.AI.FunctionApprovalResponseContent</Target>
+    <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.Extensions.AI.IToolReductionStrategy</Target>
     <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -94,6 +109,13 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Microsoft.Extensions.AI.FunctionApprovalResponseContent</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.Extensions.AI.IToolReductionStrategy</Target>
     <Left>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -136,6 +158,13 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Microsoft.Extensions.AI.FunctionApprovalResponseContent</Target>
+    <Left>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
+    <Right>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.Extensions.AI.IToolReductionStrategy</Target>
     <Left>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
     <Right>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -178,6 +207,13 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Microsoft.Extensions.AI.FunctionApprovalResponseContent</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.Extensions.AI.IToolReductionStrategy</Target>
     <Left>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -766,181 +802,6 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.AI.McpServerToolResultContent.set_Output(System.Collections.Generic.IList{Microsoft.Extensions.AI.AIContent})</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-<Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.AI.IToolReductionStrategy</Target>
-    <Left>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.AI.IToolReductionStrategy</Target>
-    <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.AI.IToolReductionStrategy</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.AI.IToolReductionStrategy</Target>
-    <Left>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.AI.IToolReductionStrategy</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.get_ModelId</Target>
-    <Left>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.get_SpeechLanguage</Target>
-    <Left>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.set_ModelId(System.String)</Target>
-    <Left>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.set_SpeechLanguage(System.String)</Target>
-    <Left>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.get_ModelId</Target>
-    <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.get_SpeechLanguage</Target>
-    <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.set_ModelId(System.String)</Target>
-    <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.set_SpeechLanguage(System.String)</Target>
-    <Left>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.get_ModelId</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.get_SpeechLanguage</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.set_ModelId(System.String)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.set_SpeechLanguage(System.String)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.get_ModelId</Target>
-    <Left>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.get_SpeechLanguage</Target>
-    <Left>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.set_ModelId(System.String)</Target>
-    <Left>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.set_SpeechLanguage(System.String)</Target>
-    <Left>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.get_ModelId</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.get_SpeechLanguage</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.set_ModelId(System.String)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.AI.SpeechToTextOptions.set_SpeechLanguage(System.String)</Target>
     <Left>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

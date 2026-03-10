@@ -26,8 +26,9 @@ public class SpeechToTextOptions
         }
 
         AdditionalProperties = other.AdditionalProperties?.Clone();
-        Transcription = other.Transcription;
+        ModelId = other.ModelId;
         RawRepresentationFactory = other.RawRepresentationFactory;
+        SpeechLanguage = other.SpeechLanguage;
         SpeechSampleRate = other.SpeechSampleRate;
         TextLanguage = other.TextLanguage;
     }
@@ -35,8 +36,11 @@ public class SpeechToTextOptions
     /// <summary>Gets or sets any additional properties associated with the options.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
-    /// <summary>Gets or sets the transcription options for the speech to text request.</summary>
-    public TranscriptionOptions? Transcription { get; set; }
+    /// <summary>Gets or sets the model ID for the speech to text.</summary>
+    public string? ModelId { get; set; }
+
+    /// <summary>Gets or sets the language of source speech.</summary>
+    public string? SpeechLanguage { get; set; }
 
     /// <summary>Gets or sets the sample rate of the speech input audio.</summary>
     public int? SpeechSampleRate { get; set; }

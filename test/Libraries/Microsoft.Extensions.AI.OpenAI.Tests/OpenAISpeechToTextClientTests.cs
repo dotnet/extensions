@@ -86,7 +86,7 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         var response = await client.GetTextAsync(audioSpeechStream, new SpeechToTextOptions
         {
-            Transcription = new TranscriptionOptions { SpeechLanguage = speechLanguage },
+            SpeechLanguage = speechLanguage,
             TextLanguage = textLanguage
         });
 
@@ -161,7 +161,7 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         await foreach (var update in client.GetStreamingTextAsync(audioSpeechStream, new SpeechToTextOptions
         {
-            Transcription = new TranscriptionOptions { SpeechLanguage = speechLanguage },
+            SpeechLanguage = speechLanguage,
             TextLanguage = textLanguage
         }))
         {
@@ -196,7 +196,7 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         await foreach (var update in client.GetStreamingTextAsync(audioSpeechStream, new SpeechToTextOptions
         {
-            Transcription = new TranscriptionOptions { SpeechLanguage = "pt" },
+            SpeechLanguage = "pt",
             TextLanguage = textLanguage
         }))
         {
@@ -233,7 +233,7 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         Assert.NotNull(await client.GetTextAsync(audioSpeechStream, new()
         {
-            Transcription = new TranscriptionOptions { SpeechLanguage = "en" },
+            SpeechLanguage = "en",
             RawRepresentationFactory = (s) =>
             new AudioTranscriptionOptions
             {

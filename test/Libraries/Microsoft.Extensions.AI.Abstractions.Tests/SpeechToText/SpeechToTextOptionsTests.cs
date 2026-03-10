@@ -13,12 +13,14 @@ public class SpeechToTextOptionsTests
     public void Constructor_Parameterless_PropsDefaulted()
     {
         SpeechToTextOptions options = new();
-        Assert.Null(options.Transcription);
+        Assert.Null(options.ModelId);
+        Assert.Null(options.SpeechLanguage);
         Assert.Null(options.SpeechSampleRate);
         Assert.Null(options.AdditionalProperties);
 
         SpeechToTextOptions clone = options.Clone();
-        Assert.Null(clone.Transcription);
+        Assert.Null(clone.ModelId);
+        Assert.Null(clone.SpeechLanguage);
         Assert.Null(clone.SpeechSampleRate);
         Assert.Null(clone.AdditionalProperties);
     }
@@ -35,21 +37,21 @@ public class SpeechToTextOptionsTests
 
         Func<ISpeechToTextClient?, object?> rawRepresentationFactory = (c) => null;
 
-        var transcription = new TranscriptionOptions { ModelId = "modelId", SpeechLanguage = "en-US" };
-        options.Transcription = transcription;
+        options.ModelId = "modelId";
+        options.SpeechLanguage = "en-US";
         options.SpeechSampleRate = 44100;
         options.AdditionalProperties = additionalProps;
         options.RawRepresentationFactory = rawRepresentationFactory;
 
-        Assert.Same(transcription, options.Transcription);
-        Assert.Equal("modelId", options.Transcription.ModelId);
-        Assert.Equal("en-US", options.Transcription.SpeechLanguage);
+        Assert.Equal("modelId", options.ModelId);
+        Assert.Equal("en-US", options.SpeechLanguage);
         Assert.Equal(44100, options.SpeechSampleRate);
         Assert.Same(additionalProps, options.AdditionalProperties);
         Assert.Same(rawRepresentationFactory, options.RawRepresentationFactory);
 
         SpeechToTextOptions clone = options.Clone();
-        Assert.Same(transcription, clone.Transcription);
+        Assert.Equal("modelId", clone.ModelId);
+        Assert.Equal("en-US", clone.SpeechLanguage);
         Assert.Equal(44100, clone.SpeechSampleRate);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
         Assert.Same(rawRepresentationFactory, clone.RawRepresentationFactory);
@@ -65,7 +67,8 @@ public class SpeechToTextOptionsTests
             ["key"] = "value",
         };
 
-        options.Transcription = new TranscriptionOptions { ModelId = "modelId", SpeechLanguage = "en-US" };
+        options.ModelId = "modelId";
+        options.SpeechLanguage = "en-US";
         options.SpeechSampleRate = 44100;
         options.AdditionalProperties = additionalProps;
 
@@ -74,9 +77,8 @@ public class SpeechToTextOptionsTests
         SpeechToTextOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.SpeechToTextOptions);
         Assert.NotNull(deserialized);
 
-        Assert.NotNull(deserialized.Transcription);
-        Assert.Equal("modelId", deserialized.Transcription.ModelId);
-        Assert.Equal("en-US", deserialized.Transcription.SpeechLanguage);
+        Assert.Equal("modelId", deserialized.ModelId);
+        Assert.Equal("en-US", deserialized.SpeechLanguage);
         Assert.Equal(44100, deserialized.SpeechSampleRate);
 
         Assert.NotNull(deserialized.AdditionalProperties);
@@ -91,14 +93,14 @@ public class SpeechToTextOptionsTests
     {
         OptionsB b = new()
         {
-            Transcription = new TranscriptionOptions { ModelId = "test" },
+            ModelId = "test",
             A = 42,
             B = 84,
         };
 
         SpeechToTextOptions clone = b.Clone();
 
-        Assert.Equal("test", clone.Transcription?.ModelId);
+        Assert.Equal("test", clone.ModelId);
         Assert.Equal(42, Assert.IsType<OptionsA>(clone, exactMatch: false).A);
         Assert.Equal(84, Assert.IsType<OptionsB>(clone, exactMatch: true).B);
     }
@@ -157,10 +159,8 @@ public class SpeechToTextOptionsTests
     {
         const string Json = """
             {
-              "transcription": {
-                "modelId": "whisper-1",
-                "speechLanguage": "en-US"
-              },
+              "modelId": "whisper-1",
+              "speechLanguage": "en-US",
               "speechSampleRate": 16000,
               "textLanguage": "en",
               "additionalProperties": {
@@ -172,9 +172,8 @@ public class SpeechToTextOptionsTests
         SpeechToTextOptions? result = JsonSerializer.Deserialize<SpeechToTextOptions>(Json, AIJsonUtilities.DefaultOptions);
 
         Assert.NotNull(result);
-        Assert.NotNull(result.Transcription);
-        Assert.Equal("whisper-1", result.Transcription.ModelId);
-        Assert.Equal("en-US", result.Transcription.SpeechLanguage);
+        Assert.Equal("whisper-1", result.ModelId);
+        Assert.Equal("en-US", result.SpeechLanguage);
         Assert.Equal(16000, result.SpeechSampleRate);
         Assert.Equal("en", result.TextLanguage);
         Assert.NotNull(result.AdditionalProperties);
