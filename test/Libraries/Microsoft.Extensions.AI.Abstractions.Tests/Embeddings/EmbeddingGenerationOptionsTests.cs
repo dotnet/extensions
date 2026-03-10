@@ -154,4 +154,26 @@ public class EmbeddingGenerationOptionsTests
         {
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "dimensions": 1536,
+              "modelId": "text-embedding-ada-002",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        EmbeddingGenerationOptions? result = JsonSerializer.Deserialize<EmbeddingGenerationOptions>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal(1536, result.Dimensions);
+        Assert.Equal("text-embedding-ada-002", result.ModelId);
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Equal("val", result.AdditionalProperties["key"]?.ToString());
+    }
 }
