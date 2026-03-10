@@ -280,6 +280,7 @@ public class OpenTelemetryHostedFileClientTests
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal("upload failed", activity.StatusDescription);
         Assert.Equal(typeof(InvalidOperationException).FullName, activity.GetTagItem("error.type"));
+        AssertExceptionEvent(activity, typeof(InvalidOperationException));
     }
 
     [Fact]
@@ -322,6 +323,7 @@ public class OpenTelemetryHostedFileClientTests
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal(typeof(InvalidOperationException).FullName, activity.GetTagItem("error.type"));
         Assert.Equal(1, activity.GetTagItem("files.list.count"));
+        AssertExceptionEvent(activity, typeof(InvalidOperationException));
     }
 
     [Fact]
@@ -398,6 +400,7 @@ public class OpenTelemetryHostedFileClientTests
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal("download failed", activity.StatusDescription);
         Assert.Equal(typeof(InvalidOperationException).FullName, activity.GetTagItem("error.type"));
+        AssertExceptionEvent(activity, typeof(InvalidOperationException));
     }
 
     [Fact]
@@ -429,6 +432,7 @@ public class OpenTelemetryHostedFileClientTests
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal("delete failed", activity.StatusDescription);
         Assert.Equal(typeof(InvalidOperationException).FullName, activity.GetTagItem("error.type"));
+        AssertExceptionEvent(activity, typeof(InvalidOperationException));
     }
 
     [Fact]
@@ -460,6 +464,7 @@ public class OpenTelemetryHostedFileClientTests
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal("get info failed", activity.StatusDescription);
         Assert.Equal(typeof(InvalidOperationException).FullName, activity.GetTagItem("error.type"));
+        AssertExceptionEvent(activity, typeof(InvalidOperationException));
     }
 
     [Fact]
@@ -572,51 +577,19 @@ public class OpenTelemetryHostedFileClientTests
         Assert.Null(activity.GetTagItem("custom.tag1"));
     }
 
-    [Fact]
-    public async Task ExceptionLogged_Async()
-    {
-        var sourceName = Guid.NewGuid().ToString();
-        var activities = new List<Activity>();
-        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
-            .AddSource(sourceName)
-            .AddInMemoryExporter(activities)
-            .Build();
-
-        var expectedException = new InvalidOperationException("test exception message");
-
-        using var innerClient = new TestHostedFileClient
-        {
-            UploadAsyncCallback = (stream, mediaType, fileName, options, ct) => throw expectedException,
-            GetServiceCallback = CreateMetadataCallback(),
-        };
-
-        using var client = innerClient
-            .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName)
-            .Build();
-
-        using var stream = new MemoryStream(new byte[] { 1 });
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            client.UploadAsync(stream));
-
-        var activity = Assert.Single(activities);
-
-        // Existing error behavior is preserved
-        Assert.Equal(expectedException.GetType().FullName, activity.GetTagItem("error.type"));
-        Assert.Equal(ActivityStatusCode.Error, activity.Status);
-
-        // Exception event is emitted
-        var exceptionEvent = Assert.Single(activity.Events);
-        Assert.Equal("gen_ai.client.operation.exception", exceptionEvent.Name);
-        Assert.Equal(expectedException.GetType().FullName, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.type").Value);
-        Assert.Equal(expectedException.Message, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.message").Value);
-        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.stacktrace").Value);
-    }
-
     private static Func<Type, object?, object?> CreateMetadataCallback() =>
         (serviceType, serviceKey) =>
             serviceType == typeof(HostedFileClientMetadata) ? new HostedFileClientMetadata("testprovider", new Uri("http://localhost:8080/files")) :
             null;
+
+    private static void AssertExceptionEvent(Activity activity, Type expectedExceptionType)
+    {
+        var exceptionEvent = Assert.Single(activity.Events);
+        Assert.Equal("gen_ai.client.operation.exception", exceptionEvent.Name);
+        Assert.Equal(expectedExceptionType.FullName, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.type").Value);
+        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.message").Value);
+        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.stacktrace").Value);
+    }
 
     private sealed class TestDownloadStream : HostedFileDownloadStream
     {

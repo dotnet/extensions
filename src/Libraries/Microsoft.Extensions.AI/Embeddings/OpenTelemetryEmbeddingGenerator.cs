@@ -234,16 +234,15 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             {
                 _ = activity
                     .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                    .SetStatus(ActivityStatusCode.Error, error.Message);
-
-                _ = activity.AddEvent(new ActivityEvent(
-                    OpenTelemetryConsts.GenAI.Client.ExceptionEventName,
-                    tags: new ActivityTagsCollection
-                    {
-                        { OpenTelemetryConsts.ExceptionType, error.GetType().FullName },
-                        { OpenTelemetryConsts.ExceptionMessage, error.Message },
-                        { OpenTelemetryConsts.ExceptionStacktrace, error.ToString() },
-                    }));
+                    .SetStatus(ActivityStatusCode.Error, error.Message)
+                    .AddEvent(new ActivityEvent(
+                        OpenTelemetryConsts.GenAI.Client.ExceptionEventName,
+                        tags: new ActivityTagsCollection
+                        {
+                            { OpenTelemetryConsts.ExceptionType, error.GetType().FullName },
+                            { OpenTelemetryConsts.ExceptionMessage, error.Message },
+                            { OpenTelemetryConsts.ExceptionStacktrace, error.ToString() },
+                        }));
             }
 
             if (inputTokens.HasValue)
