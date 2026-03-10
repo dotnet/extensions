@@ -13,8 +13,6 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AITextToSpeech, UrlFormat = DiagnosticIds.UrlFormat)]
 public class TextToSpeechResponse
 {
-    private IList<AIContent>? _contents;
-
     /// <summary>Initializes a new instance of the <see cref="TextToSpeechResponse"/> class.</summary>
     [JsonConstructor]
     public TextToSpeechResponse()
@@ -25,7 +23,7 @@ public class TextToSpeechResponse
     /// <param name="contents">The contents for this response.</param>
     public TextToSpeechResponse(IList<AIContent> contents)
     {
-        _contents = Throw.IfNull(contents);
+        Contents = Throw.IfNull(contents);
     }
 
     /// <summary>Gets or sets the ID of the text to speech response.</summary>
@@ -50,7 +48,7 @@ public class TextToSpeechResponse
     /// <returns>An array of <see cref="TextToSpeechResponseUpdate" /> instances that may be used to represent this <see cref="TextToSpeechResponse" />.</returns>
     public TextToSpeechResponseUpdate[] ToTextToSpeechResponseUpdates()
     {
-        IList<AIContent> contents = _contents ?? [];
+        IList<AIContent> contents = Contents;
         if (Usage is { } usage)
         {
             contents = [.. contents, new UsageContent(usage)];
@@ -73,8 +71,8 @@ public class TextToSpeechResponse
     [AllowNull]
     public IList<AIContent> Contents
     {
-        get => _contents ??= [];
-        set => _contents = value;
+        get => field ??= [];
+        set;
     }
 
     /// <summary>Gets or sets usage details for the text to speech response.</summary>
