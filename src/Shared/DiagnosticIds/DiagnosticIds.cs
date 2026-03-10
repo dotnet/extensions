@@ -50,6 +50,7 @@ internal static class DiagnosticIds
         // constants to manage which experiment each API belongs to.
         internal const string AIImageGeneration = AIExperiments;
         internal const string AISpeechToText = AIExperiments;
+        internal const string AITextToSpeech = AIExperiments;
         internal const string AIMcpServers = AIExperiments;
         internal const string AIFunctionApprovals = AIExperiments;
 

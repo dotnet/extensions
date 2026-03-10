@@ -167,6 +167,14 @@ public static class OpenAIClientExtensions
     public static ISpeechToTextClient AsISpeechToTextClient(this AudioClient audioClient) =>
         new OpenAISpeechToTextClient(audioClient);
 
+    /// <summary>Gets an <see cref="ITextToSpeechClient"/> for use with this <see cref="AudioClient"/>.</summary>
+    /// <param name="audioClient">The client.</param>
+    /// <returns>An <see cref="ITextToSpeechClient"/> that can be used to generate speech via the <see cref="AudioClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="audioClient"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AITextToSpeech, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static ITextToSpeechClient AsITextToSpeechClient(this AudioClient audioClient) =>
+        new OpenAITextToSpeechClient(audioClient);
+
     /// <summary>Gets an <see cref="IImageGenerator"/> for use with this <see cref="ImageClient"/>.</summary>
     /// <param name="imageClient">The client.</param>
     /// <returns>An <see cref="IImageGenerator"/> that can be used to generate images via the <see cref="ImageClient"/>.</returns>
