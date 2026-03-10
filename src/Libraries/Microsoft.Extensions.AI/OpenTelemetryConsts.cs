@@ -35,10 +35,6 @@ internal static class OpenTelemetryConsts
         public const string Type = "error.type";
     }
 
-    public const string ExceptionType = "exception.type";
-    public const string ExceptionMessage = "exception.message";
-    public const string ExceptionStacktrace = "exception.stacktrace";
-
     public static class GenAI
     {
         public const string ChatName = "chat";
@@ -60,8 +56,6 @@ internal static class OpenTelemetryConsts
 
         public static class Client
         {
-            public const string ExceptionEventName = "gen_ai.client.operation.exception";
-
             public static class OperationDuration
             {
                 public const string Description = "Measures the duration of a GenAI operation";

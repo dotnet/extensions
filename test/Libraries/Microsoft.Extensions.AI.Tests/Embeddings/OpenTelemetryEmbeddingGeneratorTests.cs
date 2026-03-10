@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -106,6 +105,9 @@ public class OpenTelemetryEmbeddingGeneratorTests
             .AddInMemoryExporter(activities)
             .Build();
 
+        var collector = new FakeLogCollector();
+        using var loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+
         var expectedException = new InvalidOperationException("test exception message");
 
         using var innerGenerator = new TestEmbeddingGenerator
@@ -118,7 +120,7 @@ public class OpenTelemetryEmbeddingGeneratorTests
 
         using var generator = innerGenerator
             .AsBuilder()
-            .UseOpenTelemetry(null, sourceName)
+            .UseOpenTelemetry(loggerFactory, sourceName)
             .Build();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -130,11 +132,10 @@ public class OpenTelemetryEmbeddingGeneratorTests
         Assert.Equal(expectedException.GetType().FullName, activity.GetTagItem("error.type"));
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
 
-        // Exception event is emitted
-        var exceptionEvent = Assert.Single(activity.Events);
-        Assert.Equal("gen_ai.client.operation.exception", exceptionEvent.Name);
-        Assert.Equal(expectedException.GetType().FullName, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.type").Value);
-        Assert.Equal(expectedException.Message, exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.message").Value);
-        Assert.NotNull(exceptionEvent.Tags.FirstOrDefault(t => t.Key == "exception.stacktrace").Value);
+        // Exception is logged via ILogger
+        var logEntry = Assert.Single(collector.GetSnapshot());
+        Assert.Equal("gen_ai.client.operation.exception", logEntry.Id.Name);
+        Assert.Equal(LogLevel.Warning, logEntry.Level);
+        Assert.Same(expectedException, logEntry.Exception);
     }
 }

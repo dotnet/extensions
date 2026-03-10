@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
+public sealed partial class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
 {
     private const string UploadOperationName = "files.upload";
     private const string DownloadOperationName = "files.download";
@@ -58,16 +58,18 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
     private readonly string? _serverAddress;
     private readonly int _serverPort;
 
+    private readonly ILogger? _logger;
+
     /// <summary>Initializes a new instance of the <see cref="OpenTelemetryHostedFileClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="IHostedFileClient"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for emitting any logging data from the client.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
-#pragma warning disable IDE0060 // Remove unused parameter; it exists for consistency with OpenTelemetryChatClient and future use
     public OpenTelemetryHostedFileClient(IHostedFileClient innerClient, ILogger? logger = null, string? sourceName = null)
-#pragma warning restore IDE0060
         : base(innerClient)
     {
         Debug.Assert(innerClient is not null, "Should have been validated by the base ctor");
+
+        _logger = logger;
 
         if (innerClient!.GetService<HostedFileClientMetadata>() is HostedFileClientMetadata metadata)
         {
@@ -390,21 +392,18 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
         }
     }
 
-    private static void SetErrorStatus(Activity? activity, Exception? error)
+    private void SetErrorStatus(Activity? activity, Exception? error)
     {
         if (error is not null)
         {
             _ = activity?
                 .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                .SetStatus(ActivityStatusCode.Error, error.Message)
-                .AddEvent(new ActivityEvent(
-                    OpenTelemetryConsts.GenAI.Client.ExceptionEventName,
-                    tags: new ActivityTagsCollection
-                    {
-                        { OpenTelemetryConsts.ExceptionType, error.GetType().FullName },
-                        { OpenTelemetryConsts.ExceptionMessage, error.Message },
-                        { OpenTelemetryConsts.ExceptionStacktrace, error.ToString() },
-                    }));
+                .SetStatus(ActivityStatusCode.Error, error.Message);
+
+            if (_logger is not null)
+            {
+                LogOperationException(_logger, error);
+            }
         }
     }
 
@@ -468,4 +467,12 @@ public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
             _operationDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, tags);
         }
     }
+
+#pragma warning disable SA1204 // Static members should appear before non-static members
+    [LoggerMessage(
+        EventName = "gen_ai.client.operation.exception",
+        Level = LogLevel.Warning,
+        Message = "A GenAI client operation exception occurred.")]
+    private static partial void LogOperationException(ILogger logger, Exception error);
+#pragma warning restore SA1204
 }
