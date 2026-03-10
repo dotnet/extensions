@@ -84,6 +84,12 @@ public readonly struct RealtimeServerMessageType : IEquatable<RealtimeServerMess
     /// <summary>Gets a message type indicating an individual output item has been added to the response.</summary>
     public static RealtimeServerMessageType ResponseOutputItemAdded { get; } = new("ResponseOutputItemAdded");
 
+    /// <summary>Gets a message type indicating a conversation item has been added.</summary>
+    public static RealtimeServerMessageType ConversationItemAdded { get; } = new("ConversationItemAdded");
+
+    /// <summary>Gets a message type indicating a conversation item is complete.</summary>
+    public static RealtimeServerMessageType ConversationItemDone { get; } = new("ConversationItemDone");
+
     /// <summary>Gets a message type indicating an error occurred while processing the request.</summary>
     public static RealtimeServerMessageType Error { get; } = new("Error");
 
