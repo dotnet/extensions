@@ -223,6 +223,40 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
         return functionCallContents.Count > 0;
     }
 
+    /// <summary>Finds a tool by name in the specified tool lists.</summary>
+    private static AIFunctionDeclaration? FindTool(string name, params ReadOnlySpan<IList<AITool>?> toolLists)
+    {
+        foreach (var toolList in toolLists)
+        {
+            if (toolList is not null)
+            {
+                foreach (AITool tool in toolList)
+                {
+                    if (tool is AIFunctionDeclaration declaration && string.Equals(tool.Name, name, StringComparison.Ordinal))
+                    {
+                        return declaration;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Checks whether there are any tools in the specified tool lists.</summary>
+    private static bool HasAnyTools(params ReadOnlySpan<IList<AITool>?> toolLists)
+    {
+        foreach (var toolList in toolLists)
+        {
+            if (toolList?.Count > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>Gets whether the function calling loop should exit based on the function call requests.</summary>
     /// <remarks>
     /// This mirrors the logic in <c>FunctionInvokingChatClient.ShouldTerminateLoopBasedOnHandleableFunctions</c>.
@@ -232,9 +266,7 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
     /// </remarks>
     private bool ShouldTerminateBasedOnFunctionCalls(List<FunctionCallContent> functionCallContents)
     {
-        var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, _innerSession.Options?.Tools as IList<AITool>);
-
-        if (toolMap is null || toolMap.Count == 0)
+        if (!HasAnyTools(AdditionalTools, _innerSession.Options?.Tools as IList<AITool>))
         {
             // No tools available at all. If TerminateOnUnknownCalls, stop the loop.
             if (TerminateOnUnknownCalls)
@@ -252,7 +284,8 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
 
         foreach (var fcc in functionCallContents)
         {
-            if (toolMap.TryGetValue(fcc.Name, out AITool? tool))
+            AIFunctionDeclaration? tool = FindTool(fcc.Name, AdditionalTools, _innerSession.Options?.Tools as IList<AITool>);
+            if (tool is not null)
             {
                 if (tool is not AIFunction)
                 {
@@ -279,15 +312,12 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
         int consecutiveErrorCount,
         CancellationToken cancellationToken)
     {
-        // Compute toolMap to ensure we always use the latest tools
-        var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, _innerSession.Options?.Tools as IList<AITool>);
-
         var captureCurrentIterationExceptions = consecutiveErrorCount < MaximumConsecutiveErrorsPerRequest;
 
         // Use the processor to handle function calls
         var results = await Processor.ProcessFunctionCallsAsync(
             functionCallContents,
-            toolMap,
+            name => FindTool(name, AdditionalTools, _innerSession.Options?.Tools as IList<AITool>),
             AllowConcurrentInvocation,
             (callContent, aiFunction, _) => new FunctionInvocationContext
             {

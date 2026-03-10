@@ -296,7 +296,6 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         int consecutiveErrorCount = 0;
-        Dictionary<string, AITool>? toolMap = null;
         bool anyToolsRequireApproval = false;
 
         if (HasAnyApprovalContent(originalMessages))
@@ -404,12 +403,9 @@ public class FunctionInvokingChatClient : DelegatingChatClient
             // Prepare the history for the next iteration.
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
 
-            // Recompute toolMap on each iteration to respect ChatOptions.Tools modifications by functions.
-            (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, options?.Tools);
-
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, toolMap, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: false, cancellationToken);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: false, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -453,7 +449,6 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         List<ChatResponseUpdate> updates = []; // updates from the current response
         int consecutiveErrorCount = 0;
-        Dictionary<string, AITool>? toolMap = null;
         bool anyToolsRequireApproval = false;
 
         // This is a synthetic ID since we're generating the tool messages instead of getting them from
@@ -674,11 +669,8 @@ public class FunctionInvokingChatClient : DelegatingChatClient
             // Prepare the history for the next iteration.
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
 
-            // Recompute toolMap on each iteration to respect ChatOptions.Tools modifications by functions.
-            (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, options?.Tools);
-
             // Process all of the functions, adding their results into the history.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, toolMap, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: true, cancellationToken);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: true, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -1132,7 +1124,6 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <param name="messages">The current chat contents, inclusive of the function call contents being processed.</param>
     /// <param name="options">The options used for the response being processed.</param>
-    /// <param name="toolMap">Map from tool name to available AI tools.</param>
     /// <param name="functionCallContents">The function call contents representing the functions to be invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
     /// <param name="consecutiveErrorCount">The number of consecutive iterations, prior to this one, that were recorded as having function invocation errors.</param>
@@ -1140,7 +1131,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A value indicating how the caller should proceed.</returns>
     private async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        List<ChatMessage> messages, ChatOptions? options, Dictionary<string, AITool>? toolMap,
+        List<ChatMessage> messages, ChatOptions? options,
         List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount,
         bool isStreaming, CancellationToken cancellationToken)
     {
@@ -1153,7 +1144,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         // Use the processor to handle function calls
         var results = await Processor.ProcessFunctionCallsAsync(
             functionCallContents,
-            toolMap,
+            name => FindTool(name, options?.Tools, AdditionalTools),
             AllowConcurrentInvocation,
             (callContent, aiFunction, callIndex) => new FunctionInvocationContext
             {
@@ -1712,12 +1703,9 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         // Check if there are any function calls to do for any approved functions and execute them.
         if (notInvokedApprovals is { Count: > 0 })
         {
-            // Compute the tool map for this invocation
-            var (toolMap, _) = FunctionInvocationHelpers.CreateToolsMap(AdditionalTools, options?.Tools);
-
             // The FRC that is generated here is already added to originalMessages by ProcessFunctionCallsAsync.
             var modeAndMessages = await ProcessFunctionCallsAsync(
-                originalMessages, options, toolMap, notInvokedApprovals.Select(x => x.Response.ToolCall).OfType<FunctionCallContent>().ToList(), 0, consecutiveErrorCount, isStreaming, cancellationToken);
+                originalMessages, options, notInvokedApprovals.Select(x => x.Response.ToolCall).OfType<FunctionCallContent>().ToList(), 0, consecutiveErrorCount, isStreaming, cancellationToken);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
             return (modeAndMessages.MessagesAdded, modeAndMessages.ShouldTerminate, consecutiveErrorCount);

@@ -52,7 +52,7 @@ internal sealed class FunctionInvocationProcessor
     /// Processes multiple function calls, either concurrently or serially.
     /// </summary>
     /// <param name="functionCallContents">The function calls to process.</param>
-    /// <param name="toolMap">Map from tool name to tool.</param>
+    /// <param name="findTool">Delegate to look up a tool by name. Returns null if not found.</param>
     /// <param name="allowConcurrentInvocation">Whether to allow concurrent invocation.</param>
     /// <param name="createContext">Delegate to create a <see cref="FunctionInvocationContext"/> for each function call.</param>
     /// <param name="setCurrentContext">Delegate to set the current context (for AsyncLocal flow).</param>
@@ -61,7 +61,7 @@ internal sealed class FunctionInvocationProcessor
     /// <returns>A list of function invocation results.</returns>
     public async Task<List<FunctionInvocationResult>> ProcessFunctionCallsAsync(
         List<FunctionCallContent> functionCallContents,
-        Dictionary<string, AITool>? toolMap,
+        Func<string, AITool?> findTool,
         bool allowConcurrentInvocation,
         Func<FunctionCallContent, AIFunction, int, FunctionInvocationContext> createContext,
         Action<FunctionInvocationContext?> setCurrentContext,
@@ -76,7 +76,7 @@ internal sealed class FunctionInvocationProcessor
             results.AddRange(await Task.WhenAll(
                 from callIndex in Enumerable.Range(0, functionCallContents.Count)
                 select ProcessSingleFunctionCallAsync(
-                    functionCallContents[callIndex], toolMap, callIndex,
+                    functionCallContents[callIndex], findTool, callIndex,
                     createContext, setCurrentContext, captureExceptions: true, cancellationToken)).ConfigureAwait(false));
         }
         else
@@ -85,7 +85,7 @@ internal sealed class FunctionInvocationProcessor
             for (int callIndex = 0; callIndex < functionCallContents.Count; callIndex++)
             {
                 var result = await ProcessSingleFunctionCallAsync(
-                    functionCallContents[callIndex], toolMap, callIndex,
+                    functionCallContents[callIndex], findTool, callIndex,
                     createContext, setCurrentContext, captureExceptionsWhenSerial, cancellationToken).ConfigureAwait(false);
 
                 results.Add(result);
@@ -105,7 +105,7 @@ internal sealed class FunctionInvocationProcessor
     /// </summary>
     private async Task<FunctionInvocationResult> ProcessSingleFunctionCallAsync(
         FunctionCallContent callContent,
-        Dictionary<string, AITool>? toolMap,
+        Func<string, AITool?> findTool,
         int callIndex,
         Func<FunctionCallContent, AIFunction, int, FunctionInvocationContext> createContext,
         Action<FunctionInvocationContext?> setCurrentContext,
@@ -113,8 +113,8 @@ internal sealed class FunctionInvocationProcessor
         CancellationToken cancellationToken)
     {
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        if (toolMap is null ||
-            !toolMap.TryGetValue(callContent.Name, out AITool? tool))
+        AITool? tool = findTool(callContent.Name);
+        if (tool is null)
         {
             FunctionInvocationLogger.LogFunctionNotFound(_logger, callContent.Name);
             return new(terminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
