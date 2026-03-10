@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -111,52 +110,47 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
     {
         _ = Throw.IfNull(message);
 
-        if (cancellationToken.IsCancellationRequested || _sessionClient is null)
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (_sessionClient is null)
         {
-            return;
+            Throw.InvalidOperationException("The session is not connected.");
         }
 
-        try
+        switch (message)
         {
-            switch (message)
-            {
-                case SessionUpdateRealtimeClientMessage sessionUpdate:
-                    await UpdateSessionAsync(sessionUpdate.Options, cancellationToken).ConfigureAwait(false);
-                    break;
+            case SessionUpdateRealtimeClientMessage sessionUpdate:
+                await UpdateSessionAsync(sessionUpdate.Options, cancellationToken).ConfigureAwait(false);
+                break;
 
-                case CreateResponseRealtimeClientMessage responseCreate:
-                    await SendResponseCreateAsync(responseCreate, cancellationToken).ConfigureAwait(false);
-                    break;
+            case CreateResponseRealtimeClientMessage responseCreate:
+                await SendResponseCreateAsync(responseCreate, cancellationToken).ConfigureAwait(false);
+                break;
 
-                case CreateConversationItemRealtimeClientMessage itemCreate:
-                    await SendConversationItemCreateAsync(itemCreate, cancellationToken).ConfigureAwait(false);
-                    break;
+            case CreateConversationItemRealtimeClientMessage itemCreate:
+                await SendConversationItemCreateAsync(itemCreate, cancellationToken).ConfigureAwait(false);
+                break;
 
-                case InputAudioBufferAppendRealtimeClientMessage audioAppend:
-                    await SendInputAudioAppendAsync(audioAppend, cancellationToken).ConfigureAwait(false);
-                    break;
+            case InputAudioBufferAppendRealtimeClientMessage audioAppend:
+                await SendInputAudioAppendAsync(audioAppend, cancellationToken).ConfigureAwait(false);
+                break;
 
-                case InputAudioBufferCommitRealtimeClientMessage:
-                    if (message.MessageId is not null)
-                    {
-                        var cmd = new Sdk.RealtimeClientCommandInputAudioBufferCommit { EventId = message.MessageId };
-                        await _sessionClient.SendCommandAsync(cmd, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await _sessionClient.CommitPendingAudioAsync(cancellationToken).ConfigureAwait(false);
-                    }
+            case InputAudioBufferCommitRealtimeClientMessage:
+                if (message.MessageId is not null)
+                {
+                    var cmd = new Sdk.RealtimeClientCommandInputAudioBufferCommit { EventId = message.MessageId };
+                    await _sessionClient.SendCommandAsync(cmd, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await _sessionClient.CommitPendingAudioAsync(cancellationToken).ConfigureAwait(false);
+                }
 
-                    break;
+                break;
 
-                default:
-                    await SendRawCommandAsync(message, cancellationToken).ConfigureAwait(false);
-                    break;
-            }
-        }
-        catch (Exception ex) when (ex is OperationCanceledException or ObjectDisposedException or WebSocketException)
-        {
-            // Expected during session teardown or cancellation.
+            default:
+                await SendRawCommandAsync(message, cancellationToken).ConfigureAwait(false);
+                break;
         }
     }
 

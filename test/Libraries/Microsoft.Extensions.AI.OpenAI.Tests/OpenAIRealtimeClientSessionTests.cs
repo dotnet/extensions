@@ -62,15 +62,23 @@ public class OpenAIRealtimeClientSessionTests
     }
 
     [Fact]
-    public async Task SendAsync_CancelledToken_ReturnsSilently()
+    public async Task SendAsync_CancelledToken_ThrowsOperationCanceledException()
     {
         await using var session = new OpenAIRealtimeClientSession("key", "model");
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        // Should not throw when cancellation is requested.
-        await session.SendAsync(new RealtimeClientMessage(), cts.Token);
-        Assert.Null(session.Options);
+        // Should throw when cancellation is requested.
+        await Assert.ThrowsAsync<OperationCanceledException>(() => session.SendAsync(new RealtimeClientMessage(), cts.Token));
+    }
+
+    [Fact]
+    public async Task SendAsync_NotConnected_ThrowsInvalidOperationException()
+    {
+        await using var session = new OpenAIRealtimeClientSession("key", "model");
+
+        // Should throw when session is not connected.
+        await Assert.ThrowsAsync<InvalidOperationException>(() => session.SendAsync(new RealtimeClientMessage()));
     }
 
     [Fact]
