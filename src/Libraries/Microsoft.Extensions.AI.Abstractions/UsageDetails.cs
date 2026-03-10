@@ -47,7 +47,15 @@ public class UsageDetails
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
-    public long? InputAudioTokenCount { get; set; }
+    public long? InputAudioTokenCount
+    {
+        get => InputAudioTokenCountCore;
+        set => InputAudioTokenCountCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("inputAudioTokenCount")]
+    internal long? InputAudioTokenCountCore { get; set; }
 
     /// <summary>Gets or sets the number of text input tokens used.</summary>
     /// <remarks>
@@ -55,7 +63,15 @@ public class UsageDetails
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
-    public long? InputTextTokenCount { get; set; }
+    public long? InputTextTokenCount
+    {
+        get => InputTextTokenCountCore;
+        set => InputTextTokenCountCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("inputTextTokenCount")]
+    internal long? InputTextTokenCountCore { get; set; }
 
     /// <summary>Gets or sets the number of audio output tokens used.</summary>
     /// <remarks>
@@ -63,7 +79,15 @@ public class UsageDetails
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
-    public long? OutputAudioTokenCount { get; set; }
+    public long? OutputAudioTokenCount
+    {
+        get => OutputAudioTokenCountCore;
+        set => OutputAudioTokenCountCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("outputAudioTokenCount")]
+    internal long? OutputAudioTokenCountCore { get; set; }
 
     /// <summary>Gets or sets the number of text output tokens used.</summary>
     /// <remarks>
@@ -71,7 +95,15 @@ public class UsageDetails
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
     [JsonIgnore]
-    public long? OutputTextTokenCount { get; set; }
+    public long? OutputTextTokenCount
+    {
+        get => OutputTextTokenCountCore;
+        set => OutputTextTokenCountCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("outputTextTokenCount")]
+    internal long? OutputTextTokenCountCore { get; set; }
 
     /// <summary>Gets or sets a dictionary of additional usage counts.</summary>
     /// <remarks>
