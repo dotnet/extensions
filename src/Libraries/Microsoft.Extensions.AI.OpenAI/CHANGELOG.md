@@ -1,14 +1,74 @@
-# Release History
+# Microsoft.Extensions.AI.OpenAI Release History
 
 ## NOT YET RELEASED
 
-- Updated `IChatClient` for Responses API to support connectors with `HostedMcpServerTool`.
+- Updated to depend on OpenAI 2.9.1.
+- Updated the OpenAI Chat Completions `IChatClient` to surface OpenAI-compatible `reasoning_content` as `TextReasoningContent`.
+- Updated the OpenAI `IChatClient` implementations to emit the `openai.api.type` OpenTelemetry attribute when an appropriate active span is detected.
+- Fixed the OpenAI Chat Completions `IChatClient` to map `ReasoningEffort.None` and `ExtraHigh` correctly.
+- Fixed the OpenAI Responses `FunctionCallOutputResponseItem` to correctly preserve `RawRepresentation`.
+
+## 10.3.0
+
+- Marked Microsoft.Extensions.AI.OpenAI as stable. Portions of the surface area are still marked as [Experimental], e.g. because the OpenAI Responses surface area from the OpenAI library is [Experimental], the corresponding `AsIChatClient` in Microsoft.Extensions.AI.OpenAI is as well.
+- Added support for `ReasoningOptions` in `ChatOptions` via the OpenAI chat clients.
+- Updated the OpenAI Responses `IChatClient` to handle streaming code interpreter content.
+- Fixed the OpenAI Responses `IChatClient` to preserve encrypted reasoning content during streaming.
+- Fixed tool call descriptions to not drop extraneous JSON properties.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 10.2.0-preview.1.26063.2
+
+- Updated the OpenAI Responses `IChatClient` to support `ResponseItem`s with input image urls.
+- Updated the OpenAI Responses `IChatClient` to propagate custom headers on `HostedMcpServerTool`.
+
+## 10.1.1-preview.1.25612.2
+
+- Updated to depend on OpenAI 2.8.0.
+- Updated public API signatures in `OpenAIClientExtensions` and `MicrosoftExtensionsAIResponsesExtensions` to match the corresponding breaking changes in OpenAI's Responses APIs.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated the OpenAI Responses and Chat Completion `IChatClient`s to populate `UsageDetails`'s `InputCachedTokenCount` and `ReasoningTokenCount`.
+- Updated handling of `HostedWebSearchTool`, `HostedFileSearchTool`, and `HostedImageGenerationTool` to pull OpenAI-specific
+  options from `AdditionalProperties`.
+
+## 10.1.0-preview.1.25608.1
+
+- Fixed package references for net10.0 asset.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+- Updated the OpenAI Responses `IChatClient` to ensure all `ResponseItem`s are yielded in `AIContent`.
+- Added workaround to the OpenAI Responses `IChatClient` for OpenAI service sometimes sending error data in a manner different from how it's documented.
+
+## 10.0.1-preview.1.25571.5
+
+- Updated to depend on OpenAI 2.7.0.
+- Added support for image detail in OpenAI Responses `IChatClient`.
+- Fixed IEmbeddingGenerator implementation to correctly handle missing usage data.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 10.0.0-preview.1.25560.10
+
+- Added support for `HostedImageGenerationTool` in the OpenAI Responses `IChatClient`.
+- Updated .NET dependencies to 10.0.0 versions.
+
+## 9.10.2-preview.1.25552.1
+
+- Updated to depend on OpenAI 2.6.0.
+- Updated the OpenAI Responses `IChatClient` to allow either conversation or response ID for `ChatOptions.ConversationId`.
+- Updated the OpenAI Responses `IChatClient` to support `AIFunction`s that return `AIContent` like `DataContent`.
+- Updated the OpenAI Chat Completion `IChatClient`, the Responses `IChatClient`, and the `IEmbeddingGenerator` to support per-request `ModelId` overrides.
+- Added an `AITool` to `ResponseTool` conversion utility.
+- Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
+
+## 9.10.1-preview.1.25521.4
+
+- Updated the OpenAI Responses `IChatClient` to support connectors with `HostedMcpServerTool`.
+- Fixed the OpenAI Responses `IChatClient` to roundtrip a `ResponseItem` stored in an `AIContent` in a `ChatRole.User` message.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.10.0-preview.1.25513.3
 
-- Fixed issue with `IChatClient` for the OpenAI Assistants API where a chat history including unrelated function calls would cause an exception.
-- Fixed issue with `IChatClient` for the OpenAI Assistants API sending a tool in `ChatOptions.Tools` that had the same name as a function configured with the Assistant would cause an exception.
+- Fixed issue with the OpenAI Assistants `IChatClient` where a chat history including unrelated function calls would cause an exception.
+- Fixed issue with the OpenAI Assistants `IChatClient` sending a tool in `ChatOptions.Tools` that had the same name as a function configured with the Assistant would cause an exception.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.9.1-preview.1.25474.6
@@ -31,7 +91,7 @@
 
 - Updated to depend on OpenAI 2.3.0.
 - Added more conversion helpers for converting bidirectionally between Microsoft.Extensions.AI messages and OpenAI messages.
-- Fixed handling of multiple response messages in the Responses `IChatClient`.
+- Fixed handling of multiple response messages in the OpenAI Responses `IChatClient`.
 - Updated to accommodate the additions in `Microsoft.Extensions.AI.Abstractions`.
 
 ## 9.7.1-preview.1.25365.4

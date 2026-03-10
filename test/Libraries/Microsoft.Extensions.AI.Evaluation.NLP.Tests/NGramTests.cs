@@ -21,7 +21,7 @@ public class NGramTests
     [Fact]
     public void Constructor_ThrowsOnEmpty()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new NGram<int>(Array.Empty<int>()));
+        Assert.Throws<ArgumentOutOfRangeException>("values", () => new NGram<int>(Array.Empty<int>()));
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class NGramTests
     [Fact]
     public void CreateNGrams()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new int[0].CreateNGrams(-1).ToList());
+        Assert.Throws<ArgumentOutOfRangeException>("n", () => new int[0].CreateNGrams(-1).ToList());
 
         ReadOnlySpan<int> data = [1, 2, 3];
 
@@ -81,11 +81,11 @@ public class NGramTests
     [Fact]
     public void CreateAllNGrams()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new int[0].CreateAllNGrams(-1).ToList());
+        Assert.Throws<ArgumentOutOfRangeException>("minN", () => new int[0].CreateAllNGrams(-1).ToList());
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => new int[0].CreateAllNGrams(0).ToList());
+        Assert.Throws<ArgumentOutOfRangeException>("minN", () => new int[0].CreateAllNGrams(0).ToList());
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => new int[0].CreateAllNGrams(1, 0).ToList());
+        Assert.Throws<ArgumentOutOfRangeException>("maxN", () => new int[0].CreateAllNGrams(1, 0).ToList());
 
         ReadOnlySpan<int> arr = [1, 2, 3];
 

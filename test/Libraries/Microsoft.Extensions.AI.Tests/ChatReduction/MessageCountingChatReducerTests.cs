@@ -18,7 +18,7 @@ public class MessageCountingChatReducerTests
     [InlineData(-10)]
     public void Constructor_ThrowsOnInvalidTargetCount(int targetCount)
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new MessageCountingChatReducer(targetCount));
+        Assert.Throws<ArgumentOutOfRangeException>(nameof(targetCount), () => new MessageCountingChatReducer(targetCount));
     }
 
     [Fact]
@@ -126,8 +126,8 @@ public class MessageCountingChatReducerTests
         [
             new ChatMessage(ChatRole.User, "What's the weather?"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("call1", "get_weather", new Dictionary<string, object?> { ["location"] = "Seattle" })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("call1", "Sunny, 72°F")]),
-            new ChatMessage(ChatRole.Assistant, "The weather in Seattle is sunny and 72°F."),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("call1", "Sunny, 72Â°F")]),
+            new ChatMessage(ChatRole.Assistant, "The weather in Seattle is sunny and 72Â°F."),
             new ChatMessage(ChatRole.User, "Thanks!"),
             new ChatMessage(ChatRole.Assistant, "You're welcome!"),
         ];

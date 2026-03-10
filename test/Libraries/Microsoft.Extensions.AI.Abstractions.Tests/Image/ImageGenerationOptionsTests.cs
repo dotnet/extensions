@@ -198,4 +198,37 @@ public class ImageGenerationOptionsTests
         {
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "count": 2,
+              "imageSize": {
+                "width": 1024,
+                "height": 768
+              },
+              "mediaType": "image/png",
+              "modelId": "dall-e-3",
+              "responseFormat": "Uri",
+              "streamingCount": 3,
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        ImageGenerationOptions? result = JsonSerializer.Deserialize<ImageGenerationOptions>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+        Assert.Equal(new Size(1024, 768), result.ImageSize);
+        Assert.Equal("image/png", result.MediaType);
+        Assert.Equal("dall-e-3", result.ModelId);
+        Assert.Equal(ImageGenerationResponseFormat.Uri, result.ResponseFormat);
+        Assert.Equal(3, result.StreamingCount);
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Equal("val", result.AdditionalProperties["key"]?.ToString());
+    }
 }

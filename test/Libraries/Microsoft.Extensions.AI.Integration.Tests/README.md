@@ -41,23 +41,6 @@ dotnet user-secrets set OpenAI:ImageModel dall-e-3
 
 Your account must have models matching these names.
 
-### Configuring Azure AI Inference tests
-
-Run commands like the following. The settings will be saved in your user profile.
-
-```
-cd test/Libraries/Microsoft.Extensions.AI.Integration.Tests
-dotnet user-secrets set AzureAIInference:Endpoint https://YOUR_DEPLOYMENT.azure.com/
-dotnet user-secrets set AzureAIInference:Key abcdefghijkl
-```
-
-Optionally also run the following. The values shown here are the defaults if you don't specify otherwise:
-
-```
-dotnet user-secrets set AzureAIInference:ChatModel gpt-4o-mini
-dotnet user-secrets set AzureAIInference:EmbeddingModel text-embedding-3-small
-```
-
 ### Configuring Ollama tests
 
 Run commands like the following. The settings will be saved in your user profile.

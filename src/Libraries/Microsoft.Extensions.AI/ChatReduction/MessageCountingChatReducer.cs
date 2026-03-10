@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -21,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 /// messages. Messages containing function call or function result content are excluded from the reduced
 /// output.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIChatReduction, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class MessageCountingChatReducer : IChatReducer
 {
     private readonly int _targetCount;

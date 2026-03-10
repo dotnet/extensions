@@ -1,0 +1,96 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Diagnostics;
+using Xunit;
+
+namespace Microsoft.Extensions.Telemetry.Telemetry;
+
+public class HttpDependencyMetadataResolverTests : IDisposable
+{
+    private readonly HttpDependencyMetadataResolver _metadataResolver;
+    private readonly ServiceProvider _sp;
+
+    public HttpDependencyMetadataResolverTests()
+    {
+        _sp = new ServiceCollection()
+            .AddDownstreamDependencyMetadata(new BackslashDownstreamDependencyMetadata())
+            .AddDownstreamDependencyMetadata(new EmptyRouteDependencyMetadata())
+            .BuildServiceProvider();
+        _metadataResolver = _sp.GetRequiredService<HttpDependencyMetadataResolver>();
+    }
+
+    [Theory]
+    [InlineData("DELETE", "https://anotherservice.net/singlebackslash", "StartingSingleBackslash", "/singlebackslash")]
+    [InlineData("POST", "https://anotherservice.net/doublebackslash", "StartingDoublebackslash", "//doublebackslash")]
+    [InlineData("PUT", "https://anotherservice.net/singlethensingle", "StartingSingleBackslashEndingSingleBackslash", "/singlethensingle/")]
+    [InlineData("GET", "https://anotherservice.net/doublethensingle", "StartingDoublebackslashEndingSingleBackslash", "//doublethensingle/")]
+
+    [InlineData("DELETE", "https://anotherservice.net//singlebackslash", "StartingSingleBackslash", "/singlebackslash")]
+    [InlineData("POST", "https://anotherservice.net//doublebackslash", "StartingDoublebackslash", "//doublebackslash")]
+    [InlineData("PUT", "https://anotherservice.net//singlethensingle", "StartingSingleBackslashEndingSingleBackslash", "/singlethensingle/")]
+    [InlineData("GET", "https://anotherservice.net//doublethensingle", "StartingDoublebackslashEndingSingleBackslash", "//doublethensingle/")]
+
+    [InlineData("DELETE", "https://anotherservice.net/singlebackslash/", "StartingSingleBackslash", "/singlebackslash")]
+    [InlineData("POST", "https://anotherservice.net/doublebackslash/", "StartingDoublebackslash", "//doublebackslash")]
+    [InlineData("PUT", "https://anotherservice.net/singlethensingle/", "StartingSingleBackslashEndingSingleBackslash", "/singlethensingle/")]
+    [InlineData("GET", "https://anotherservice.net/doublethensingle/", "StartingDoublebackslashEndingSingleBackslash", "//doublethensingle/")]
+
+    [InlineData("DELETE", "https://anotherservice.net//singlebackslash/", "StartingSingleBackslash", "/singlebackslash")]
+    [InlineData("POST", "https://anotherservice.net//doublebackslash/", "StartingDoublebackslash", "//doublebackslash")]
+    [InlineData("PUT", "https://anotherservice.net//singlethensingle/", "StartingSingleBackslashEndingSingleBackslash", "/singlethensingle/")]
+    [InlineData("GET", "https://anotherservice.net//doublethensingle/", "StartingDoublebackslashEndingSingleBackslash", "//doublethensingle/")]
+    public void GetRequestMetadata_RoutesRegisteredWithBackslashes_ShouldReturnHostMetadata(string httpMethod, string urlString, string expectedRequestName, string expectedRequestRoute)
+    {
+        using var requestMessage = new HttpRequestMessage
+        {
+            Method = new HttpMethod(method: httpMethod),
+            RequestUri = new Uri(uriString: urlString)
+        };
+
+        var requestMetadata = _metadataResolver.GetRequestMetadata(requestMessage);
+        Assert.NotNull(requestMetadata);
+        Assert.Equal(new BackslashDownstreamDependencyMetadata().DependencyName, requestMetadata.DependencyName);
+        Assert.Equal(expectedRequestName, requestMetadata.RequestName);
+        Assert.Equal(expectedRequestRoute, requestMetadata.RequestRoute);
+        Assert.Equal(httpMethod, requestMetadata.MethodType);
+    }
+
+    [Theory]
+    [InlineData("GET", "https://emptyroute.com/", "EmptyRoute", "")]
+    [InlineData("GET", "https://emptyroute.com", "EmptyRoute", "")]
+    [InlineData("GET", "https://emptyroute.com/a", "PathWithoutBackslash", "a")]
+    public void GetRequestMetadata_EmptyRouteRegisteredForDependency_ShouldReturnMetadata(string httpMethod, string urlString, string expectedRequestName, string expectedRequestRoute)
+    {
+        using var requestMessage = new HttpRequestMessage
+        {
+            Method = new HttpMethod(method: httpMethod),
+            RequestUri = new Uri(uriString: urlString)
+        };
+
+        var requestMetadata = _metadataResolver.GetRequestMetadata(requestMessage);
+
+        Assert.NotNull(requestMetadata);
+        Assert.Equal("EmptyRouteService", requestMetadata.DependencyName);
+        Assert.Equal(expectedRequestName, requestMetadata.RequestName);
+        Assert.Equal("GET", requestMetadata.MethodType);
+        Assert.Equal(expectedRequestRoute, requestMetadata.RequestRoute);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _sp.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+}

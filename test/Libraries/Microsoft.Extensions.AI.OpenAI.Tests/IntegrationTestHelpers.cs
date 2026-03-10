@@ -7,6 +7,8 @@ using System.ClientModel.Primitives;
 using Azure.Identity;
 using OpenAI;
 
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Shared utility methods for integration tests.</summary>
@@ -17,7 +19,7 @@ internal static class IntegrationTestHelpers
     {
         var configuration = TestRunnerConfiguration.Instance;
 
-        string? apiKey = configuration["OpenAI:Key"];
+        string? apiKey = configuration["OpenAI:Key"] ?? configuration["AI:OpenAI:ApiKey"];
         string? mode = configuration["OpenAI:Mode"];
 
         if (string.Equals(mode, "AzureOpenAI", StringComparison.OrdinalIgnoreCase))

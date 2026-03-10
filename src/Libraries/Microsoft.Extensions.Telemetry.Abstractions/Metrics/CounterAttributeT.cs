@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Metrics;
 
@@ -18,11 +20,11 @@ namespace Microsoft.Extensions.Diagnostics.Metrics;
 /// <remarks>
 /// This attribute is applied to a method that has the following constraints:
 /// <list type="bullet">
-/// <item><description>Must be a partial method.</description></item>
-/// <item><description>Must return <c>metricName</c> as the type. A class with that name will be generated.</description></item>
-/// <item><description>Must not be generic.</description></item>
-/// <item><description>Must have <c>System.Diagnostics.Metrics.Meter</c> as first parameter.</description></item>
-/// <item><description>Must have all the keys provided in <c>staticTags</c> as string type parameters.</description></item>
+///   <item>Must be a partial method.</item>
+///   <item>Must return <c>metricName</c> as the type. A class with that name will be generated.</item>
+///   <item>Must not be generic.</item>
+///   <item>Must have <c>System.Diagnostics.Metrics.Meter</c> as first parameter.</item>
+///   <item>Must have all the keys provided in <c>staticTags</c> as string type parameters.</item>
 /// </list>
 /// </remarks>
 /// <example>
@@ -82,4 +84,10 @@ public sealed class CounterAttribute<T> : Attribute
     /// Gets the type that supplies metric tag values.
     /// </summary>
     public Type? Type { get; }
+
+    /// <summary>
+    /// Gets or sets the unit of measurement for the metric.
+    /// </summary>
+    [Experimental(DiagnosticIds.Experiments.Telemetry)]
+    public string? Unit { get; set; }
 }

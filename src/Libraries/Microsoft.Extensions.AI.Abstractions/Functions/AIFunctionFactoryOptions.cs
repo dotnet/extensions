@@ -39,7 +39,7 @@ public sealed class AIFunctionFactoryOptions
 
     /// <summary>Gets or sets the name to use for the function.</summary>
     /// <value>
-    /// The name to use for the function. The default value is a name derived from the method represented by the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
+    /// The name to use for the function. The default value is a name derived from the passed <see cref="Delegate"/> or <see cref="MethodInfo"/> (for example, via a <see cref="DisplayNameAttribute"/> on the method).
     /// </value>
     public string? Name { get; set; }
 
@@ -90,7 +90,7 @@ public sealed class AIFunctionFactoryOptions
     /// <see langword="void"/>-returning methods).
     /// </para>
     /// <para>
-    /// Methods strongly-typed to return types of <see cref="Task"/>, <see cref="Task{TResult}"/>, <see cref="ValueTask"/>,
+    /// Methods strongly typed to return types of <see cref="Task"/>, <see cref="Task{TResult}"/>, <see cref="ValueTask"/>,
     /// and <see cref="ValueTask{TResult}"/> are special-cased. For methods typed to return <see cref="Task"/> or <see cref="ValueTask"/>,
     /// <see cref="MarshalResult"/> will be invoked with the <see langword="null"/> value after the returned task has successfully completed.
     /// For methods typed to return <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the delegate will be invoked with the

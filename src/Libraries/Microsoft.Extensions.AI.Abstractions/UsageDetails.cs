@@ -21,6 +21,23 @@ public class UsageDetails
     /// <summary>Gets or sets the total number of tokens used to produce the response.</summary>
     public long? TotalTokenCount { get; set; }
 
+    /// <summary>
+    /// Gets or sets the number of input tokens that were read from a cache.
+    /// </summary>
+    /// <remarks>
+    /// Cached input tokens should be counted as part of <see cref="InputTokenCount"/>.
+    /// </remarks>
+    public long? CachedInputTokenCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of "reasoning" / "thinking" tokens used internally
+    /// by the model.
+    /// </summary>
+    /// <remarks>
+    /// Reasoning tokens should be counted as part of <see cref="OutputTokenCount"/>.
+    /// </remarks>
+    public long? ReasoningTokenCount { get; set; }
+
     /// <summary>Gets or sets a dictionary of additional usage counts.</summary>
     /// <remarks>
     /// All values set here are assumed to be summable. For example, when middleware makes multiple calls to an underlying
@@ -38,6 +55,8 @@ public class UsageDetails
         InputTokenCount = NullableSum(InputTokenCount, usage.InputTokenCount);
         OutputTokenCount = NullableSum(OutputTokenCount, usage.OutputTokenCount);
         TotalTokenCount = NullableSum(TotalTokenCount, usage.TotalTokenCount);
+        CachedInputTokenCount = NullableSum(CachedInputTokenCount, usage.CachedInputTokenCount);
+        ReasoningTokenCount = NullableSum(ReasoningTokenCount, usage.ReasoningTokenCount);
 
         if (usage.AdditionalCounts is { } countsToAdd)
         {
@@ -78,6 +97,16 @@ public class UsageDetails
             if (TotalTokenCount is { } total)
             {
                 parts.Add($"{nameof(TotalTokenCount)} = {total}");
+            }
+
+            if (CachedInputTokenCount is { } cached)
+            {
+                parts.Add($"{nameof(CachedInputTokenCount)} = {cached}");
+            }
+
+            if (ReasoningTokenCount is { } reasoning)
+            {
+                parts.Add($"{nameof(ReasoningTokenCount)} = {reasoning}");
             }
 
             if (AdditionalCounts is { } additionalCounts)

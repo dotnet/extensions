@@ -129,6 +129,8 @@ internal sealed class MetricFactoryEmitter : EmitterBase
             InstrumentKind.CounterT => $"CreateCounter<{metricMethod.GenericType}>",
             InstrumentKind.Histogram => $"CreateHistogram<{metricMethod.GenericType}>",
             InstrumentKind.HistogramT => $"CreateHistogram<{metricMethod.GenericType}>",
+            InstrumentKind.Gauge => $"CreateGauge<{metricMethod.GenericType}>",
+            InstrumentKind.GaugeT => $"CreateGauge<{metricMethod.GenericType}>",
             _ => throw new NotSupportedException($"Metric type '{metricMethod.InstrumentKind}' is not supported to generate factory"),
         };
 
@@ -146,7 +148,15 @@ internal sealed class MetricFactoryEmitter : EmitterBase
         OutOpenBrace();
         OutLn($"return {GetMetricDictionaryName(metricMethod)}.GetOrAdd({meterParam.Name}, static _meter =>");
         OutLn("    {");
-        OutLn($"        var instrument = _meter.{createMethodName}(@\"{metricMethod.MetricName}\");");
+        if (string.IsNullOrEmpty(metricMethod.MetricUnit))
+        {
+            OutLn($"        var instrument = _meter.{createMethodName}(@\"{metricMethod.MetricName}\");");
+        }
+        else
+        {
+            OutLn($"        var instrument = _meter.{createMethodName}(@\"{metricMethod.MetricName}\", @\"{metricMethod.MetricUnit}\");");
+        }
+
         OutLn($"        return new {nsprefix}{metricMethod.MetricTypeName}(instrument);");
         OutLn("    });");
         OutCloseBrace();

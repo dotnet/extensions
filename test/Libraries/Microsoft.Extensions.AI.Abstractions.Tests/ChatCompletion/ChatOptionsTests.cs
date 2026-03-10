@@ -23,6 +23,7 @@ public class ChatOptionsTests
         Assert.Null(options.FrequencyPenalty);
         Assert.Null(options.PresencePenalty);
         Assert.Null(options.Seed);
+        Assert.Null(options.Reasoning);
         Assert.Null(options.ResponseFormat);
         Assert.Null(options.ModelId);
         Assert.Null(options.StopSequences);
@@ -42,6 +43,7 @@ public class ChatOptionsTests
         Assert.Null(clone.FrequencyPenalty);
         Assert.Null(clone.PresencePenalty);
         Assert.Null(clone.Seed);
+        Assert.Null(clone.Reasoning);
         Assert.Null(clone.ResponseFormat);
         Assert.Null(clone.ModelId);
         Assert.Null(clone.StopSequences);
@@ -89,6 +91,7 @@ public class ChatOptionsTests
         options.FrequencyPenalty = 0.4f;
         options.PresencePenalty = 0.5f;
         options.Seed = 12345;
+        options.Reasoning = new ReasoningOptions { Effort = ReasoningEffort.Medium, Output = ReasoningOutput.Summary };
         options.ResponseFormat = ChatResponseFormat.Json;
         options.ModelId = "modelId";
         options.StopSequences = stopSequences;
@@ -109,6 +112,9 @@ public class ChatOptionsTests
         Assert.Equal(0.4f, options.FrequencyPenalty);
         Assert.Equal(0.5f, options.PresencePenalty);
         Assert.Equal(12345, options.Seed);
+        Assert.NotNull(options.Reasoning);
+        Assert.Equal(ReasoningEffort.Medium, options.Reasoning.Effort);
+        Assert.Equal(ReasoningOutput.Summary, options.Reasoning.Output);
         Assert.Same(ChatResponseFormat.Json, options.ResponseFormat);
         Assert.Equal("modelId", options.ModelId);
         Assert.Same(stopSequences, options.StopSequences);
@@ -129,6 +135,10 @@ public class ChatOptionsTests
         Assert.Equal(0.4f, clone.FrequencyPenalty);
         Assert.Equal(0.5f, clone.PresencePenalty);
         Assert.Equal(12345, clone.Seed);
+        Assert.NotNull(clone.Reasoning);
+        Assert.NotSame(options.Reasoning, clone.Reasoning); // Should be a shallow copy
+        Assert.Equal(ReasoningEffort.Medium, clone.Reasoning.Effort);
+        Assert.Equal(ReasoningOutput.Summary, clone.Reasoning.Output);
         Assert.Same(ChatResponseFormat.Json, clone.ResponseFormat);
         Assert.Equal("modelId", clone.ModelId);
         Assert.Equal(stopSequences, clone.StopSequences);
@@ -168,6 +178,7 @@ public class ChatOptionsTests
         options.FrequencyPenalty = 0.4f;
         options.PresencePenalty = 0.5f;
         options.Seed = 12345;
+        options.Reasoning = new ReasoningOptions { Effort = ReasoningEffort.High, Output = ReasoningOutput.Full };
         options.ResponseFormat = ChatResponseFormat.Json;
         options.ModelId = "modelId";
         options.StopSequences = stopSequences;
@@ -197,6 +208,9 @@ public class ChatOptionsTests
         Assert.Equal(0.4f, deserialized.FrequencyPenalty);
         Assert.Equal(0.5f, deserialized.PresencePenalty);
         Assert.Equal(12345, deserialized.Seed);
+        Assert.NotNull(deserialized.Reasoning);
+        Assert.Equal(ReasoningEffort.High, deserialized.Reasoning.Effort);
+        Assert.Equal(ReasoningOutput.Full, deserialized.Reasoning.Output);
         Assert.IsType<ChatResponseFormatJson>(deserialized.ResponseFormat);
         Assert.Equal("modelId", deserialized.ModelId);
         Assert.NotSame(stopSequences, deserialized.StopSequences);
@@ -211,6 +225,43 @@ public class ChatOptionsTests
         Assert.True(deserialized.AdditionalProperties.TryGetValue("key", out object? value));
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
+    }
+
+    [Fact]
+    public void JsonSerialization_Roundtrips_DefaultOptions()
+    {
+        ChatOptions original = new()
+        {
+            ConversationId = "12345",
+            Instructions = "Some instructions",
+            Temperature = 0.1f,
+            MaxOutputTokens = 2,
+            ModelId = "modelId",
+            AllowBackgroundResponses = true,
+            ContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3 }),
+            AdditionalProperties = new() { ["key"] = "value" },
+        };
+
+        string json = JsonSerializer.Serialize(original, AIJsonUtilities.DefaultOptions);
+
+        ChatOptions? result = JsonSerializer.Deserialize<ChatOptions>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal("12345", result.ConversationId);
+        Assert.Equal("Some instructions", result.Instructions);
+        Assert.Equal(0.1f, result.Temperature);
+        Assert.Equal(2, result.MaxOutputTokens);
+        Assert.Equal("modelId", result.ModelId);
+
+        Assert.True(result.AllowBackgroundResponses);
+
+        Assert.NotNull(result.ContinuationToken);
+        Assert.Equal(new byte[] { 1, 2, 3 }, result.ContinuationToken.ToBytes().ToArray());
+
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Single(result.AdditionalProperties);
+        Assert.True(result.AdditionalProperties.TryGetValue("key", out object? value));
+        Assert.Equal("value", value?.ToString());
     }
 
     [Fact]
@@ -277,5 +328,72 @@ public class ChatOptionsTests
             : base(null)
         {
         }
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "conversationId": "12345",
+              "instructions": "Some instructions",
+              "temperature": 0.1,
+              "maxOutputTokens": 2,
+              "topP": 0.3,
+              "topK": 42,
+              "frequencyPenalty": 0.4,
+              "presencePenalty": 0.5,
+              "seed": 12345,
+              "reasoning": {
+                "effort": "High",
+                "output": "Full"
+              },
+              "responseFormat": {
+                "$type": "json"
+              },
+              "modelId": "modelId",
+              "stopSequences": ["stop1", "stop2"],
+              "allowMultipleToolCalls": false,
+              "toolMode": {
+                "$type": "required"
+              },
+              "allowBackgroundResponses": true,
+              "continuationToken": "AQIDBA==",
+              "additionalProperties": {
+                "key": "value"
+              }
+            }
+            """;
+
+        ChatOptions? result = JsonSerializer.Deserialize<ChatOptions>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal("12345", result.ConversationId);
+        Assert.Equal("Some instructions", result.Instructions);
+        Assert.Equal(0.1f, result.Temperature);
+        Assert.Equal(2, result.MaxOutputTokens);
+        Assert.Equal(0.3f, result.TopP);
+        Assert.Equal(42, result.TopK);
+        Assert.Equal(0.4f, result.FrequencyPenalty);
+        Assert.Equal(0.5f, result.PresencePenalty);
+        Assert.Equal(12345, result.Seed);
+
+        Assert.NotNull(result.Reasoning);
+        Assert.Equal(ReasoningEffort.High, result.Reasoning.Effort);
+        Assert.Equal(ReasoningOutput.Full, result.Reasoning.Output);
+
+        Assert.IsType<ChatResponseFormatJson>(result.ResponseFormat);
+        Assert.Equal("modelId", result.ModelId);
+        Assert.Equal(new[] { "stop1", "stop2" }, result.StopSequences);
+        Assert.False(result.AllowMultipleToolCalls);
+        Assert.Equal(ChatToolMode.RequireAny, result.ToolMode);
+        Assert.True(result.AllowBackgroundResponses);
+
+        Assert.NotNull(result.ContinuationToken);
+        Assert.Equal(new byte[] { 1, 2, 3, 4 }, result.ContinuationToken.ToBytes().ToArray());
+
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Single(result.AdditionalProperties);
+        Assert.Equal("value", result.AdditionalProperties["key"]?.ToString());
     }
 }

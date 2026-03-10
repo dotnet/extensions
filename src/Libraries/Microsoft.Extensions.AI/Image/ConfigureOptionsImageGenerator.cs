@@ -5,12 +5,13 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating image generator that configures a <see cref="ImageGenerationOptions"/> instance used by the remainder of the pipeline.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ConfigureOptionsImageGenerator : DelegatingImageGenerator
 {
     /// <summary>The callback delegate used to configure options.</summary>

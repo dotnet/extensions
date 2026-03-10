@@ -508,16 +508,19 @@ public class ResourceHealthCheckExtensionsTests
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
-
-        var snapshotProvider = new WindowsContainerSnapshotProvider(
+        var resourceQuotaProvider = new WindowsContainerResourceQuotaProvider(
             memoryInfoMock.Object,
             systemInfoMock.Object,
+            () => jobHandleMock.Object);
+
+        var snapshotProvider = new WindowsContainerSnapshotProvider(
             processInfoMock.Object,
             logger,
             meterFactoryMock.Object,
             () => jobHandleMock.Object,
             fakeClock,
-            new ResourceMonitoringOptions { CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(1) });
+            new ResourceMonitoringOptions { CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(1) },
+            resourceQuotaProvider);
 
         var checkContext = new HealthCheckContext();
         var checkOptions = new ResourceUtilizationHealthCheckOptions

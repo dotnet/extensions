@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.ServiceDiscovery.Dns.Resolver.Tests;
 public class ResolvConfTests
 {
     [Fact]
-    public void GetOptions()
+    public void GetServers()
     {
         var contents = @"
 nameserver 10.96.0.10
@@ -18,9 +18,9 @@ options ndots:5
 @";
 
         var reader = new StringReader(contents);
-        ResolverOptions options = ResolvConf.GetOptions(reader);
+        var servers = ResolvConf.GetServers(reader);
 
-        IPEndPoint ipAddress = Assert.Single(options.Servers);
+        IPEndPoint ipAddress = Assert.Single(servers);
         Assert.Equal(new IPEndPoint(IPAddress.Parse("10.96.0.10"), 53), ipAddress);
     }
 }

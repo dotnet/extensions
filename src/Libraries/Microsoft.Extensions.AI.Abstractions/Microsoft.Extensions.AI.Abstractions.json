@@ -1,5 +1,5 @@
-{
-  "Name": "Microsoft.Extensions.AI.Abstractions, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+﻿{
+  "Name": "Microsoft.Extensions.AI.Abstractions, Version=10.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.AI.AdditionalPropertiesDictionary : Microsoft.Extensions.AI.AdditionalPropertiesDictionary<object?>",
@@ -134,11 +134,11 @@
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AnnotatedRegion>? Microsoft.Extensions.AI.AIAnnotation.AnnotatedRegions { get; set; }",
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.AIAnnotation.AdditionalProperties { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.AIAnnotation.AdditionalProperties { get; set; }",
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AnnotatedRegion>? Microsoft.Extensions.AI.AIAnnotation.AnnotatedRegions { get; set; }",
           "Stage": "Stable"
         },
         {
@@ -180,15 +180,15 @@
           "Stage": "Stable"
         },
         {
+          "Member": "Microsoft.Extensions.AI.AIFunctionDeclaration Microsoft.Extensions.AI.AIFunction.AsDeclarationOnly();",
+          "Stage": "Stable"
+        },
+        {
           "Member": "System.Threading.Tasks.ValueTask<object?> Microsoft.Extensions.AI.AIFunction.InvokeAsync(Microsoft.Extensions.AI.AIFunctionArguments? arguments = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Stable"
         },
         {
           "Member": "abstract System.Threading.Tasks.ValueTask<object?> Microsoft.Extensions.AI.AIFunction.InvokeCoreAsync(Microsoft.Extensions.AI.AIFunctionArguments arguments, System.Threading.CancellationToken cancellationToken);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.AIFunctionDeclaration Microsoft.Extensions.AI.AIFunction.AsDeclarationOnly();",
           "Stage": "Stable"
         }
       ],
@@ -199,26 +199,6 @@
         },
         {
           "Member": "virtual System.Reflection.MethodInfo? Microsoft.Extensions.AI.AIFunction.UnderlyingMethod { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "abstract class Microsoft.Extensions.AI.AIFunctionDeclaration : Microsoft.Extensions.AI.AITool",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.AIFunctionDeclaration.AIFunctionDeclaration();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "virtual System.Text.Json.JsonElement Microsoft.Extensions.AI.AIFunctionDeclaration.JsonSchema { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "virtual System.Text.Json.JsonElement? Microsoft.Extensions.AI.AIFunctionDeclaration.ReturnJsonSchema { get; }",
           "Stage": "Stable"
         }
       ]
@@ -295,6 +275,26 @@
         },
         {
           "Member": "System.Collections.Generic.ICollection<object?> Microsoft.Extensions.AI.AIFunctionArguments.Values { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.AI.AIFunctionDeclaration : Microsoft.Extensions.AI.AITool",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunctionDeclaration.AIFunctionDeclaration();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual System.Text.Json.JsonElement Microsoft.Extensions.AI.AIFunctionDeclaration.JsonSchema { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Text.Json.JsonElement? Microsoft.Extensions.AI.AIFunctionDeclaration.ReturnJsonSchema { get; }",
           "Stage": "Stable"
         }
       ]
@@ -512,6 +512,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "System.Func<System.Reflection.ParameterInfo, string?>? Microsoft.Extensions.AI.AIJsonSchemaCreateOptions.ParameterDescriptionProvider { get; init; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "Microsoft.Extensions.AI.AIJsonSchemaTransformOptions? Microsoft.Extensions.AI.AIJsonSchemaCreateOptions.TransformOptions { get; init; }",
           "Stage": "Stable"
         },
@@ -719,6 +723,16 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.AnnotatedRegion.AnnotatedRegion();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ApprovalRequiredAIFunction : Microsoft.Extensions.AI.DelegatingAIFunction",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ApprovalRequiredAIFunction.ApprovalRequiredAIFunction(Microsoft.Extensions.AI.AIFunction innerFunction);",
           "Stage": "Stable"
         }
       ]
@@ -998,19 +1012,27 @@
           "Stage": "Stable"
         },
         {
+          "Member": "bool? Microsoft.Extensions.AI.ChatOptions.AllowBackgroundResponses { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "bool? Microsoft.Extensions.AI.ChatOptions.AllowMultipleToolCalls { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatOptions.ContinuationToken { get; set; }",
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ChatOptions.ConversationId { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.AI.ChatOptions.Instructions { get; set; }",
+          "Member": "float? Microsoft.Extensions.AI.ChatOptions.FrequencyPenalty { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "float? Microsoft.Extensions.AI.ChatOptions.FrequencyPenalty { get; set; }",
+          "Member": "string? Microsoft.Extensions.AI.ChatOptions.Instructions { get; set; }",
           "Stage": "Stable"
         },
         {
@@ -1027,6 +1049,10 @@
         },
         {
           "Member": "System.Func<Microsoft.Extensions.AI.IChatClient, object?>? Microsoft.Extensions.AI.ChatOptions.RawRepresentationFactory { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ReasoningOptions? Microsoft.Extensions.AI.ChatOptions.Reasoning { get; set; }",
           "Stage": "Stable"
         },
         {
@@ -1092,6 +1118,10 @@
         {
           "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.ChatResponse.AdditionalProperties { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatResponse.ContinuationToken { get; set; }",
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ChatResponse.ConversationId { get; set; }",
@@ -1248,6 +1278,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "Microsoft.Extensions.AI.ChatResponseUpdate Microsoft.Extensions.AI.ChatResponseUpdate.Clone();",
+          "Stage": "Stable"
+        },
+        {
           "Member": "override string Microsoft.Extensions.AI.ChatResponseUpdate.ToString();",
           "Stage": "Stable"
         }
@@ -1264,6 +1298,10 @@
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> Microsoft.Extensions.AI.ChatResponseUpdate.Contents { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatResponseUpdate.ContinuationToken { get; set; }",
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ChatResponseUpdate.ConversationId { get; set; }",
@@ -1416,6 +1454,14 @@
       ],
       "Properties": [
         {
+          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.FileId { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.Snippet { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.Title { get; set; }",
           "Stage": "Stable"
         },
@@ -1426,14 +1472,38 @@
         {
           "Member": "System.Uri? Microsoft.Extensions.AI.CitationAnnotation.Url { get; set; }",
           "Stage": "Stable"
-        },
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.CodeInterpreterToolCallContent : Microsoft.Extensions.AI.ToolCallContent",
+      "Stage": "Experimental",
+      "Methods": [
         {
-          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.FileId { get; set; }",
-          "Stage": "Stable"
-        },
+          "Member": "Microsoft.Extensions.AI.CodeInterpreterToolCallContent.CodeInterpreterToolCallContent(string callId);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
         {
-          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.Snippet { get; set; }",
-          "Stage": "Stable"
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.CodeInterpreterToolCallContent.Inputs { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.CodeInterpreterToolResultContent : Microsoft.Extensions.AI.ToolResultContent",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.CodeInterpreterToolResultContent.CodeInterpreterToolResultContent(string callId);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.CodeInterpreterToolResultContent.Outputs { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -1456,6 +1526,18 @@
         {
           "Member": "bool Microsoft.Extensions.AI.DataContent.HasTopLevelMediaType(string topLevelType);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.DataContent> Microsoft.Extensions.AI.DataContent.LoadFromAsync(string path, string? mediaType = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.DataContent> Microsoft.Extensions.AI.DataContent.LoadFromAsync(System.IO.Stream stream, string? mediaType = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<string> Microsoft.Extensions.AI.DataContent.SaveToAsync(string path, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
@@ -1468,11 +1550,11 @@
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.AI.DataContent.Name { get; set; }",
+          "Member": "string Microsoft.Extensions.AI.DataContent.MediaType { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.AI.DataContent.MediaType { get; }",
+          "Member": "string? Microsoft.Extensions.AI.DataContent.Name { get; set; }",
           "Stage": "Stable"
         },
         {
@@ -1499,20 +1581,20 @@
         },
         {
           "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunction.ToString();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.AIFunction Microsoft.Extensions.AI.DelegatingAIFunction.InnerFunction { get; }",
-          "Stage": "Stable"
-        },
         {
           "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.DelegatingAIFunction.AdditionalProperties { get; }",
           "Stage": "Stable"
         },
         {
           "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunction.Description { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunction Microsoft.Extensions.AI.DelegatingAIFunction.InnerFunction { get; }",
           "Stage": "Stable"
         },
         {
@@ -1602,6 +1684,38 @@
         {
           "Member": "Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding> Microsoft.Extensions.AI.DelegatingEmbeddingGenerator<TInput, TEmbedding>.InnerGenerator { get; }",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.DelegatingImageGenerator : Microsoft.Extensions.AI.IImageGenerator, System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DelegatingImageGenerator.DelegatingImageGenerator(Microsoft.Extensions.AI.IImageGenerator innerGenerator);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.DelegatingImageGenerator.Dispose();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.AI.DelegatingImageGenerator.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.ImageGenerationResponse> Microsoft.Extensions.AI.DelegatingImageGenerator.GenerateAsync(Microsoft.Extensions.AI.ImageGenerationRequest request, Microsoft.Extensions.AI.ImageGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual object? Microsoft.Extensions.AI.DelegatingImageGenerator.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.IImageGenerator Microsoft.Extensions.AI.DelegatingImageGenerator.InnerGenerator { get; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -1808,7 +1922,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.FunctionCallContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.FunctionCallContent : Microsoft.Extensions.AI.ToolCallContent",
       "Stage": "Stable",
       "Methods": [
         {
@@ -1826,11 +1940,11 @@
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.AI.FunctionCallContent.CallId { get; }",
+          "Member": "System.Exception? Microsoft.Extensions.AI.FunctionCallContent.Exception { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Exception? Microsoft.Extensions.AI.FunctionCallContent.Exception { get; set; }",
+          "Member": "bool Microsoft.Extensions.AI.FunctionCallContent.InformationalOnly { get; set; }",
           "Stage": "Stable"
         },
         {
@@ -1840,7 +1954,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.FunctionResultContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.FunctionResultContent : Microsoft.Extensions.AI.ToolResultContent",
       "Stage": "Stable",
       "Methods": [
         {
@@ -1849,10 +1963,6 @@
         }
       ],
       "Properties": [
-        {
-          "Member": "string Microsoft.Extensions.AI.FunctionResultContent.CallId { get; }",
-          "Stage": "Stable"
-        },
         {
           "Member": "System.Exception? Microsoft.Extensions.AI.FunctionResultContent.Exception { get; set; }",
           "Stage": "Stable"
@@ -1946,9 +2056,17 @@
         {
           "Member": "Microsoft.Extensions.AI.HostedCodeInterpreterTool.HostedCodeInterpreterTool();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedCodeInterpreterTool.HostedCodeInterpreterTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedCodeInterpreterTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedCodeInterpreterTool.Inputs { get; set; }",
           "Stage": "Stable"
@@ -1960,15 +2078,51 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.HostedFileContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileContent.HostedFileContent(string fileId);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.HostedFileContent.HasTopLevelMediaType(string topLevelType);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.HostedFileContent.FileId { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileContent.MediaType { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileContent.Name { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.HostedFileSearchTool : Microsoft.Extensions.AI.AITool",
       "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.HostedFileSearchTool.HostedFileSearchTool();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileSearchTool.HostedFileSearchTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedFileSearchTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedFileSearchTool.Inputs { get; set; }",
           "Stage": "Stable"
@@ -1984,33 +2138,169 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.HostedWebSearchTool : Microsoft.Extensions.AI.AITool",
+      "Type": "class Microsoft.Extensions.AI.HostedImageGenerationTool : Microsoft.Extensions.AI.AITool",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedImageGenerationTool.HostedImageGenerationTool();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedImageGenerationTool.HostedImageGenerationTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedImageGenerationTool.AdditionalProperties { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedImageGenerationTool.Name { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationOptions? Microsoft.Extensions.AI.HostedImageGenerationTool.Options { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.HostedMcpServerTool : Microsoft.Extensions.AI.AITool",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool();",
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, string serverAddress);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, string serverAddress, System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, System.Uri serverAddress);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, System.Uri serverAddress, System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "override string Microsoft.Extensions.AI.HostedWebSearchTool.Name { get; }",
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedMcpServerTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.HostedMcpServerTool.AllowedTools { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode? Microsoft.Extensions.AI.HostedMcpServerTool.ApprovalMode { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, string>? Microsoft.Extensions.AI.HostedMcpServerTool.Headers { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedMcpServerTool.Name { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.HostedMcpServerTool.ServerAddress { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedMcpServerTool.ServerDescription { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.HostedMcpServerTool.ServerName { get; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.HostedFileContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "sealed class Microsoft.Extensions.AI.HostedMcpServerToolAlwaysRequireApprovalMode : Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.HostedFileContent.HostedFileContent(string fileId);",
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerToolAlwaysRequireApprovalMode.HostedMcpServerToolAlwaysRequireApprovalMode();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.HostedMcpServerToolAlwaysRequireApprovalMode.Equals(object? obj);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.HostedMcpServerToolAlwaysRequireApprovalMode.GetHashCode();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode.RequireSpecific(System.Collections.Generic.IList<string>? alwaysRequireApprovalToolNames, System.Collections.Generic.IList<string>? neverRequireApprovalToolNames);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.AI.HostedFileContent.FileId { get; set; }",
+          "Member": "static Microsoft.Extensions.AI.HostedMcpServerToolAlwaysRequireApprovalMode Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode.AlwaysRequire { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.HostedMcpServerToolNeverRequireApprovalMode Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode.NeverRequire { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.HostedMcpServerToolNeverRequireApprovalMode : Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerToolNeverRequireApprovalMode.HostedMcpServerToolNeverRequireApprovalMode();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.HostedMcpServerToolNeverRequireApprovalMode.Equals(object? obj);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.HostedMcpServerToolNeverRequireApprovalMode.GetHashCode();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode : Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.HostedMcpServerToolRequireSpecificApprovalMode(System.Collections.Generic.IList<string>? alwaysRequireApprovalToolNames, System.Collections.Generic.IList<string>? neverRequireApprovalToolNames);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.Equals(object? obj);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.GetHashCode();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.AlwaysRequireApprovalToolNames { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.NeverRequireApprovalToolNames { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -2032,6 +2322,30 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.HostedWebSearchTool : Microsoft.Extensions.AI.AITool",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedWebSearchTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedWebSearchTool.Name { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "interface Microsoft.Extensions.AI.IChatClient : System.IDisposable",
       "Stage": "Stable",
       "Methods": [
@@ -2045,6 +2359,16 @@
         },
         {
           "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.IChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.AI.IChatReducer",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage>> Microsoft.Extensions.AI.IChatReducer.ReduceAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, System.Threading.CancellationToken cancellationToken);",
           "Stage": "Stable"
         }
       ]
@@ -2070,6 +2394,271 @@
       ]
     },
     {
+      "Type": "interface Microsoft.Extensions.AI.IImageGenerator : System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.ImageGenerationResponse> Microsoft.Extensions.AI.IImageGenerator.GenerateAsync(Microsoft.Extensions.AI.ImageGenerationRequest request, Microsoft.Extensions.AI.ImageGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.IImageGenerator.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ImageGenerationOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationOptions.ImageGenerationOptions();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationOptions.ImageGenerationOptions(Microsoft.Extensions.AI.ImageGenerationOptions? other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.ImageGenerationOptions Microsoft.Extensions.AI.ImageGenerationOptions.Clone();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.ImageGenerationOptions.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.ImageGenerationOptions.Count { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Drawing.Size? Microsoft.Extensions.AI.ImageGenerationOptions.ImageSize { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ImageGenerationOptions.MediaType { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ImageGenerationOptions.ModelId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.AI.IImageGenerator, object?>? Microsoft.Extensions.AI.ImageGenerationOptions.RawRepresentationFactory { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationResponseFormat? Microsoft.Extensions.AI.ImageGenerationOptions.ResponseFormat { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.ImageGenerationOptions.StreamingCount { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ImageGenerationRequest",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationRequest.ImageGenerationRequest();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationRequest.ImageGenerationRequest(string prompt);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationRequest.ImageGenerationRequest(string prompt, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent>? originalImages);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.ImageGenerationRequest.OriginalImages { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ImageGenerationRequest.Prompt { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ImageGenerationResponse",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationResponse.ImageGenerationResponse();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationResponse.ImageGenerationResponse(System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? contents);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> Microsoft.Extensions.AI.ImageGenerationResponse.Contents { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.ImageGenerationResponse.RawRepresentation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.UsageDetails? Microsoft.Extensions.AI.ImageGenerationResponse.Usage { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.ImageGenerationResponseFormat",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationResponseFormat.ImageGenerationResponseFormat();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.ImageGenerationResponseFormat Microsoft.Extensions.AI.ImageGenerationResponseFormat.Data",
+          "Stage": "Experimental",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ImageGenerationResponseFormat Microsoft.Extensions.AI.ImageGenerationResponseFormat.Hosted",
+          "Stage": "Experimental",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ImageGenerationResponseFormat Microsoft.Extensions.AI.ImageGenerationResponseFormat.Uri",
+          "Stage": "Experimental",
+          "Value": "0"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolCallContent : Microsoft.Extensions.AI.ToolCallContent",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationToolCallContent.ImageGenerationToolCallContent(string callId);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolResultContent : Microsoft.Extensions.AI.ToolResultContent",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGenerationToolResultContent.ImageGenerationToolResultContent(string callId);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.ImageGenerationToolResultContent.Outputs { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ImageGeneratorExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ImageGenerationResponse> Microsoft.Extensions.AI.ImageGeneratorExtensions.EditImageAsync(this Microsoft.Extensions.AI.IImageGenerator generator, Microsoft.Extensions.AI.DataContent originalImage, string prompt, Microsoft.Extensions.AI.ImageGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ImageGenerationResponse> Microsoft.Extensions.AI.ImageGeneratorExtensions.EditImageAsync(this Microsoft.Extensions.AI.IImageGenerator generator, System.ReadOnlyMemory<byte> originalImageData, string fileName, string prompt, Microsoft.Extensions.AI.ImageGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ImageGenerationResponse> Microsoft.Extensions.AI.ImageGeneratorExtensions.EditImagesAsync(this Microsoft.Extensions.AI.IImageGenerator generator, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent> originalImages, string prompt, Microsoft.Extensions.AI.ImageGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ImageGenerationResponse> Microsoft.Extensions.AI.ImageGeneratorExtensions.GenerateImagesAsync(this Microsoft.Extensions.AI.IImageGenerator generator, string prompt, Microsoft.Extensions.AI.ImageGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static object Microsoft.Extensions.AI.ImageGeneratorExtensions.GetRequiredService(this Microsoft.Extensions.AI.IImageGenerator generator, System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static TService Microsoft.Extensions.AI.ImageGeneratorExtensions.GetRequiredService<TService>(this Microsoft.Extensions.AI.IImageGenerator generator, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static TService? Microsoft.Extensions.AI.ImageGeneratorExtensions.GetService<TService>(this Microsoft.Extensions.AI.IImageGenerator generator, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ImageGeneratorMetadata",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ImageGeneratorMetadata.ImageGeneratorMetadata(string? providerName = null, System.Uri? providerUri = null, string? defaultModelId = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AI.ImageGeneratorMetadata.DefaultModelId { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ImageGeneratorMetadata.ProviderName { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Uri? Microsoft.Extensions.AI.ImageGeneratorMetadata.ProviderUri { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.InputRequestContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.InputRequestContent.InputRequestContent(string requestId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.InputRequestContent.RequestId { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.InputResponseContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.InputResponseContent.InputResponseContent(string requestId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.InputResponseContent.RequestId { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "interface Microsoft.Extensions.AI.ISpeechToTextClient : System.IDisposable",
       "Stage": "Experimental",
       "Methods": [
@@ -2088,6 +2677,46 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolCallContent : Microsoft.Extensions.AI.ToolCallContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.McpServerToolCallContent.McpServerToolCallContent(string callId, string name, string? serverName);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, object?>? Microsoft.Extensions.AI.McpServerToolCallContent.Arguments { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.McpServerToolCallContent.Name { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.McpServerToolCallContent.ServerName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolResultContent : Microsoft.Extensions.AI.ToolResultContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.McpServerToolResultContent.McpServerToolResultContent(string callId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.McpServerToolResultContent.Outputs { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.AI.NoneChatToolMode : Microsoft.Extensions.AI.ChatToolMode",
       "Stage": "Stable",
       "Methods": [
@@ -2102,6 +2731,90 @@
         {
           "Member": "override int Microsoft.Extensions.AI.NoneChatToolMode.GetHashCode();",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.ReasoningEffort",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ReasoningEffort.ReasoningEffort();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.ExtraHigh",
+          "Stage": "Stable",
+          "Value": "4"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.High",
+          "Stage": "Stable",
+          "Value": "3"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.Low",
+          "Stage": "Stable",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.Medium",
+          "Stage": "Stable",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningEffort Microsoft.Extensions.AI.ReasoningEffort.None",
+          "Stage": "Stable",
+          "Value": "0"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ReasoningOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ReasoningOptions.ReasoningOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.ReasoningEffort? Microsoft.Extensions.AI.ReasoningOptions.Effort { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ReasoningOutput? Microsoft.Extensions.AI.ReasoningOptions.Output { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.ReasoningOutput",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ReasoningOutput.ReasoningOutput();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.Full",
+          "Stage": "Stable",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.None",
+          "Stage": "Stable",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.ReasoningOutput Microsoft.Extensions.AI.ReasoningOutput.Summary",
+          "Stage": "Stable",
+          "Value": "1"
         }
       ]
     },
@@ -2126,6 +2839,46 @@
         {
           "Member": "string? Microsoft.Extensions.AI.RequiredChatToolMode.RequiredFunctionName { get; }",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ResponseContinuationToken",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.ResponseContinuationToken();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.ResponseContinuationToken(System.ReadOnlyMemory<byte> bytes);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ResponseContinuationToken Microsoft.Extensions.AI.ResponseContinuationToken.FromBytes(System.ReadOnlyMemory<byte> bytes);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.ReadOnlyMemory<byte> Microsoft.Extensions.AI.ResponseContinuationToken.ToBytes();",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ResponseContinuationToken.Converter",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Converter();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override Microsoft.Extensions.AI.ResponseContinuationToken Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.ResponseContinuationToken value, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -2177,6 +2930,10 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.SpeechToTextOptions.SpeechToTextOptions();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.SpeechToTextOptions.SpeechToTextOptions(Microsoft.Extensions.AI.SpeechToTextOptions? other);",
           "Stage": "Experimental"
         },
         {
@@ -2267,6 +3024,10 @@
         },
         {
           "Member": "string Microsoft.Extensions.AI.SpeechToTextResponse.Text { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.UsageDetails? Microsoft.Extensions.AI.SpeechToTextResponse.Usage { get; set; }",
           "Stage": "Experimental"
         }
       ]
@@ -2462,11 +3223,11 @@
       ],
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.AI.TextReasoningContent.Text { get; set; }",
+          "Member": "string? Microsoft.Extensions.AI.TextReasoningContent.ProtectedData { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.AI.TextReasoningContent.ProtectedData { get; set; }",
+          "Member": "string Microsoft.Extensions.AI.TextReasoningContent.Text { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -2482,11 +3243,87 @@
       ],
       "Properties": [
         {
-          "Member": "int? Microsoft.Extensions.AI.TextSpanAnnotatedRegion.StartIndex { get; set; }",
+          "Member": "int? Microsoft.Extensions.AI.TextSpanAnnotatedRegion.EndIndex { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "int? Microsoft.Extensions.AI.TextSpanAnnotatedRegion.EndIndex { get; set; }",
+          "Member": "int? Microsoft.Extensions.AI.TextSpanAnnotatedRegion.StartIndex { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ToolApprovalRequestContent : Microsoft.Extensions.AI.InputRequestContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolApprovalRequestContent(string requestId, Microsoft.Extensions.AI.ToolCallContent toolCall);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalResponseContent Microsoft.Extensions.AI.ToolApprovalRequestContent.CreateResponse(bool approved, string? reason = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolCallContent Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolCall { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ToolApprovalResponseContent : Microsoft.Extensions.AI.InputResponseContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalResponseContent.ToolApprovalResponseContent(string requestId, bool approved, Microsoft.Extensions.AI.ToolCallContent toolCall);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.ToolApprovalResponseContent.Approved { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ToolApprovalResponseContent.Reason { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolCallContent Microsoft.Extensions.AI.ToolApprovalResponseContent.ToolCall { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ToolCallContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolCallContent.ToolCallContent(string callId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.ToolCallContent.CallId { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ToolResultContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolResultContent.ToolResultContent(string callId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.ToolResultContent.CallId { get; }",
           "Stage": "Stable"
         }
       ]
@@ -2558,11 +3395,19 @@
           "Stage": "Stable"
         },
         {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.CachedInputTokenCount { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "long? Microsoft.Extensions.AI.UsageDetails.InputTokenCount { get; set; }",
           "Stage": "Stable"
         },
         {
           "Member": "long? Microsoft.Extensions.AI.UsageDetails.OutputTokenCount { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.ReasoningTokenCount { get; set; }",
           "Stage": "Stable"
         },
         {

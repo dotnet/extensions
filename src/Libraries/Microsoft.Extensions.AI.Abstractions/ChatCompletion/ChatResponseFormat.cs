@@ -88,7 +88,7 @@ public partial class ChatResponseFormat
 
         return ForJsonSchema(
             schema,
-            schemaName ?? InvalidNameCharsRegex().Replace(schemaType.Name, "_"),
+            schemaName ?? schemaType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? InvalidNameCharsRegex().Replace(schemaType.Name, "_"),
             schemaDescription ?? schemaType.GetCustomAttribute<DescriptionAttribute>()?.Description);
     }
 

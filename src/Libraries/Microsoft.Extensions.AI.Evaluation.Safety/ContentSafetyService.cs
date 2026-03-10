@@ -34,7 +34,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
     internal static EvaluationResult ParseAnnotationResult(string annotationResponse)
     {
-#pragma warning disable S125 // Sections of code should not be commented out
+#pragma warning disable S125 // Sections of code should not be commented out.
         // Example annotation response:
         // [
         //   {

@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// Represents a function call request.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class FunctionCallContent : AIContent
+public class FunctionCallContent : ToolCallContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionCallContent"/> class.
@@ -24,16 +24,11 @@ public sealed class FunctionCallContent : AIContent
     /// <param name="arguments">The function original arguments.</param>
     [JsonConstructor]
     public FunctionCallContent(string callId, string name, IDictionary<string, object?>? arguments = null)
+        : base(callId)
     {
-        CallId = Throw.IfNull(callId);
         Name = Throw.IfNull(name);
         Arguments = arguments;
     }
-
-    /// <summary>
-    /// Gets the function call ID.
-    /// </summary>
-    public string CallId { get; }
 
     /// <summary>
     /// Gets the name of the function requested.
@@ -51,10 +46,20 @@ public sealed class FunctionCallContent : AIContent
     /// <remarks>
     /// This property is for information purposes only. The <see cref="Exception"/> is not serialized as part of serializing
     /// instances of this class with <see cref="JsonSerializer"/>; as such, upon deserialization, this property will be <see langword="null"/>.
-    /// Consumers should not rely on <see langword="null"/> indicating success. 
+    /// Consumers should not rely on <see langword="null"/> indicating success.
     /// </remarks>
     [JsonIgnore]
     public Exception? Exception { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this function call is purely informational.
+    /// </summary>
+    /// <remarks>
+    /// This property defaults to <see langword="false"/>, indicating that the function call should be processed.
+    /// When set to <see langword="true"/>, it indicates that the function has already been processed or is otherwise
+    /// purely informational and should be ignored by components that process function calls.
+    /// </remarks>
+    public bool InformationalOnly { get; set; }
 
     /// <summary>
     /// Creates a new instance of <see cref="FunctionCallContent"/> parsing arguments using a specified encoding and parser.

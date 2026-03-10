@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -51,12 +51,12 @@ public static partial class AIJsonUtilities
         // Temporary workaround: these types are [Experimental] and can't be added as [JsonDerivedType] on AIContent yet,
         // or else consuming assemblies that used source generation with AIContent would implicitly reference them.
         // Once they're no longer [Experimental] and added as [JsonDerivedType] on AIContent, these lines should be removed.
-        AddAIContentType(options, typeof(FunctionApprovalRequestContent), typeDiscriminatorId: "functionApprovalRequest", checkBuiltIn: false);
-        AddAIContentType(options, typeof(FunctionApprovalResponseContent), typeDiscriminatorId: "functionApprovalResponse", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolCallContent), typeDiscriminatorId: "mcpServerToolCall", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolResultContent), typeDiscriminatorId: "mcpServerToolResult", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolApprovalRequestContent), typeDiscriminatorId: "mcpServerToolApprovalRequest", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolApprovalResponseContent), typeDiscriminatorId: "mcpServerToolApprovalResponse", checkBuiltIn: false);
+        AddAIContentTypeChain(options, typeof(CodeInterpreterToolCallContent), typeDiscriminatorId: "codeInterpreterToolCall", checkBuiltIn: false);
+        AddAIContentTypeChain(options, typeof(CodeInterpreterToolResultContent), typeDiscriminatorId: "codeInterpreterToolResult", checkBuiltIn: false);
+        AddAIContentTypeChain(options, typeof(ImageGenerationToolCallContent), typeDiscriminatorId: "imageGenerationToolCall", checkBuiltIn: false);
+        AddAIContentTypeChain(options, typeof(ImageGenerationToolResultContent), typeDiscriminatorId: "imageGenerationToolResult", checkBuiltIn: false);
+        AddAIContentTypeChain(options, typeof(WebSearchToolCallContent), typeDiscriminatorId: "webSearchToolCall", checkBuiltIn: false);
+        AddAIContentTypeChain(options, typeof(WebSearchToolResultContent), typeDiscriminatorId: "webSearchToolResult", checkBuiltIn: false);
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
@@ -75,39 +75,23 @@ public static partial class AIJsonUtilities
         UseStringEnumConverter = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         WriteIndented = true)]
-    [JsonSerializable(typeof(SpeechToTextOptions))]
-    [JsonSerializable(typeof(SpeechToTextClientMetadata))]
-    [JsonSerializable(typeof(SpeechToTextResponse))]
-    [JsonSerializable(typeof(SpeechToTextResponseUpdate))]
-    [JsonSerializable(typeof(IReadOnlyList<SpeechToTextResponseUpdate>))]
-    [JsonSerializable(typeof(ImageGenerationOptions))]
-    [JsonSerializable(typeof(ImageGenerationResponse))]
-    [JsonSerializable(typeof(IList<ChatMessage>))]
-    [JsonSerializable(typeof(IEnumerable<ChatMessage>))]
-    [JsonSerializable(typeof(ChatMessage[]))]
-    [JsonSerializable(typeof(ChatOptions))]
-    [JsonSerializable(typeof(EmbeddingGenerationOptions))]
-    [JsonSerializable(typeof(ChatClientMetadata))]
-    [JsonSerializable(typeof(EmbeddingGeneratorMetadata))]
-    [JsonSerializable(typeof(ChatResponse))]
-    [JsonSerializable(typeof(ChatResponseUpdate))]
-    [JsonSerializable(typeof(IReadOnlyList<ChatResponseUpdate>))]
-    [JsonSerializable(typeof(Dictionary<string, object>))]
-    [JsonSerializable(typeof(IDictionary<string, object?>))]
+
+    // JSON
     [JsonSerializable(typeof(JsonDocument))]
     [JsonSerializable(typeof(JsonElement))]
     [JsonSerializable(typeof(JsonNode))]
     [JsonSerializable(typeof(JsonObject))]
     [JsonSerializable(typeof(JsonValue))]
     [JsonSerializable(typeof(JsonArray))]
-    [JsonSerializable(typeof(IEnumerable<string>))]
-    [JsonSerializable(typeof(char))]
+
+    // Primitives
     [JsonSerializable(typeof(string))]
-    [JsonSerializable(typeof(int))]
+    [JsonSerializable(typeof(char))]
     [JsonSerializable(typeof(short))]
-    [JsonSerializable(typeof(long))]
-    [JsonSerializable(typeof(uint))]
     [JsonSerializable(typeof(ushort))]
+    [JsonSerializable(typeof(int))]
+    [JsonSerializable(typeof(uint))]
+    [JsonSerializable(typeof(long))]
     [JsonSerializable(typeof(ulong))]
     [JsonSerializable(typeof(float))]
     [JsonSerializable(typeof(double))]
@@ -116,6 +100,38 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(TimeSpan))]
     [JsonSerializable(typeof(DateTime))]
     [JsonSerializable(typeof(DateTimeOffset))]
+
+    // AIFunction
+    [JsonSerializable(typeof(AIFunctionArguments))]
+
+    // IChatClient
+    [JsonSerializable(typeof(IEnumerable<ChatMessage>))]
+    [JsonSerializable(typeof(IList<ChatMessage>))]
+    [JsonSerializable(typeof(ChatMessage[]))]
+    [JsonSerializable(typeof(ChatOptions))]
+    [JsonSerializable(typeof(ChatClientMetadata))]
+    [JsonSerializable(typeof(ChatResponse))]
+    [JsonSerializable(typeof(ChatResponseUpdate))]
+    [JsonSerializable(typeof(IReadOnlyList<ChatResponseUpdate>))]
+    [JsonSerializable(typeof(Dictionary<string, object>))]
+    [JsonSerializable(typeof(IDictionary<string, object?>))]
+    [JsonSerializable(typeof(IEnumerable<string>))]
+    [JsonSerializable(typeof(AIContent))]
+    [JsonSerializable(typeof(IEnumerable<AIContent>))]
+
+    // Temporary workaround: These should be implicitly added in once they're no longer [Experimental]
+    // and are included via [JsonDerivedType] on AIContent.
+    [JsonSerializable(typeof(CodeInterpreterToolCallContent))]
+    [JsonSerializable(typeof(CodeInterpreterToolResultContent))]
+    [JsonSerializable(typeof(ImageGenerationToolCallContent))]
+    [JsonSerializable(typeof(ImageGenerationToolResultContent))]
+    [JsonSerializable(typeof(WebSearchToolCallContent))]
+    [JsonSerializable(typeof(WebSearchToolResultContent))]
+    [JsonSerializable(typeof(ResponseContinuationToken))]
+
+    // IEmbeddingGenerator
+    [JsonSerializable(typeof(EmbeddingGenerationOptions))]
+    [JsonSerializable(typeof(EmbeddingGeneratorMetadata))]
     [JsonSerializable(typeof(Embedding))]
     [JsonSerializable(typeof(Embedding<byte>))]
     [JsonSerializable(typeof(Embedding<int>))]
@@ -124,18 +140,22 @@ public static partial class AIJsonUtilities
 #endif
     [JsonSerializable(typeof(Embedding<float>))]
     [JsonSerializable(typeof(Embedding<double>))]
-    [JsonSerializable(typeof(AIContent))]
-    [JsonSerializable(typeof(AIFunctionArguments))]
 
-    // Temporary workaround:
-    // These should be added in once they're no longer [Experimental] and included via [JsonDerivedType] on AIContent.
-    [JsonSerializable(typeof(FunctionApprovalRequestContent))]
-    [JsonSerializable(typeof(FunctionApprovalResponseContent))]
-    [JsonSerializable(typeof(McpServerToolCallContent))]
-    [JsonSerializable(typeof(McpServerToolResultContent))]
-    [JsonSerializable(typeof(McpServerToolApprovalRequestContent))]
-    [JsonSerializable(typeof(McpServerToolApprovalResponseContent))]
-    [JsonSerializable(typeof(ResponseContinuationToken))]
+    // ISpeechToTextClient
+    [JsonSerializable(typeof(SpeechToTextOptions))]
+    [JsonSerializable(typeof(SpeechToTextClientMetadata))]
+    [JsonSerializable(typeof(SpeechToTextResponse))]
+    [JsonSerializable(typeof(SpeechToTextResponseUpdate))]
+    [JsonSerializable(typeof(IReadOnlyList<SpeechToTextResponseUpdate>))]
+
+    // IImageGenerator
+    [JsonSerializable(typeof(ImageGenerationOptions))]
+    [JsonSerializable(typeof(ImageGenerationResponse))]
+
+    // IHostedFileClient
+    [JsonSerializable(typeof(HostedFileClientOptions))]
+    [JsonSerializable(typeof(HostedFileClientMetadata))]
+
     [EditorBrowsable(EditorBrowsableState.Never)] // Never use JsonContext directly, use DefaultOptions instead.
     private sealed partial class JsonContext : JsonSerializerContext;
 

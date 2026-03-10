@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Assistants;
 
@@ -21,6 +23,7 @@ using OpenAI.Assistants;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="AssistantClient"/>.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAIAssistants)]
 internal sealed class OpenAIAssistantsChatClient : IChatClient
 {
     /// <summary>The underlying <see cref="AssistantClient" />.</summary>
@@ -196,6 +199,56 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                     yield return ruUpdate;
                     break;
 
+                case RunStepDetailsUpdate details:
+                    if (!string.IsNullOrEmpty(details.CodeInterpreterInput))
+                    {
+                        CodeInterpreterToolCallContent hcitcc = new(details.ToolCallId)
+                        {
+                            Inputs = [new DataContent(Encoding.UTF8.GetBytes(details.CodeInterpreterInput), OpenAIClientExtensions.PythonMediaType)],
+                            RawRepresentation = details,
+                        };
+
+                        yield return new ChatResponseUpdate(ChatRole.Assistant, [hcitcc])
+                        {
+                            AuthorName = _assistantId,
+                            ConversationId = threadId,
+                            MessageId = responseId,
+                            RawRepresentation = update,
+                            ResponseId = responseId,
+                        };
+                    }
+
+                    if (details.CodeInterpreterOutputs is { Count: > 0 })
+                    {
+                        CodeInterpreterToolResultContent hcitrc = new(details.ToolCallId)
+                        {
+                            RawRepresentation = details,
+                        };
+
+                        foreach (var output in details.CodeInterpreterOutputs)
+                        {
+                            if (output.ImageFileId is not null)
+                            {
+                                (hcitrc.Outputs ??= []).Add(new HostedFileContent(output.ImageFileId) { MediaType = "image/*" });
+                            }
+
+                            if (output.Logs is string logs)
+                            {
+                                (hcitrc.Outputs ??= []).Add(new TextContent(logs));
+                            }
+                        }
+
+                        yield return new ChatResponseUpdate(ChatRole.Assistant, [hcitrc])
+                        {
+                            AuthorName = _assistantId,
+                            ConversationId = threadId,
+                            MessageId = responseId,
+                            RawRepresentation = update,
+                            ResponseId = responseId,
+                        };
+                    }
+                    break;
+
                 case MessageContentUpdate mcu:
                     ChatResponseUpdate textUpdate = new(mcu.Role == MessageRole.User ? ChatRole.User : ChatRole.Assistant, mcu.Text)
                     {
@@ -357,7 +410,10 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                             break;
 
                         case HostedFileSearchTool fileSearchTool:
-                            _ = toolsOverride.Add(ToolDefinition.CreateFileSearch(fileSearchTool.MaximumResultCount));
+                            var fst = ToolDefinition.CreateFileSearch(fileSearchTool.MaximumResultCount);
+                            fst.RankingOptions = fileSearchTool.GetProperty<FileSearchRankingOptions>(nameof(FileSearchToolDefinition.RankingOptions));
+                            _ = toolsOverride.Add(fst);
+
                             if (fileSearchTool.Inputs is { Count: > 0 } fileSearchInputs)
                             {
                                 foreach (var input in fileSearchInputs)

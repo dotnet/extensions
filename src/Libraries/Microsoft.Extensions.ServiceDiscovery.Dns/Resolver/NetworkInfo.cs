@@ -8,8 +8,8 @@ namespace Microsoft.Extensions.ServiceDiscovery.Dns.Resolver;
 
 internal static class NetworkInfo
 {
-    // basic option to get DNS serves via NetworkInfo. We may get it directly later via proper APIs.
-    public static ResolverOptions GetOptions()
+    // basic option to get DNS servers via NetworkInfo. We may get it directly later via proper APIs.
+    public static IList<IPEndPoint> GetServers()
     {
         List<IPEndPoint> servers = new List<IPEndPoint>();
 
@@ -31,6 +31,6 @@ internal static class NetworkInfo
             }
         }
 
-        return new ResolverOptions(servers);
+        return servers;
     }
 }

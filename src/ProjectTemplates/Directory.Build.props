@@ -7,4 +7,14 @@
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <Api>false</Api>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Provides the GenerateFileFromTemplate task. -->
+    <PackageReference
+      Include="Microsoft.DotNet.Build.Tasks.Templating"
+      Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)"
+      PrivateAssets="All"
+      IsImplicitlyDefined="true" />
+  </ItemGroup>
+
 </Project>

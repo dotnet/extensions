@@ -76,7 +76,7 @@ internal static class ModelInfo
     /// </param>
     internal static string? GetModelProvider(string? model, ChatClientMetadata? metadata)
     {
-#pragma warning disable S2219 // Runtime type checking should be simplified
+#pragma warning disable S2219 // Runtime type checking should be simplified.
         if (model is KnownModels.AzureAIFoundryEvaluation)
 #pragma warning restore S2219
         {

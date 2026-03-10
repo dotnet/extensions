@@ -4,11 +4,12 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the options for an speech to text request.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public class SpeechToTextOptions
 {
     /// <summary>Initializes a new instance of the <see cref="SpeechToTextOptions"/> class.</summary>
@@ -60,7 +61,7 @@ public class SpeechToTextOptions
     /// implementation to use instead of creating a new instance. Such implementations may mutate the supplied options
     /// instance further based on other settings supplied on this <see cref="SpeechToTextOptions" /> instance or from other inputs,
     /// therefore, it is <b>strongly recommended</b> to not return shared instances and instead make the callback return a new instance on each call.
-    /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly-typed
+    /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly typed
     /// properties on <see cref="SpeechToTextOptions" />.
     /// </remarks>
     [JsonIgnore]

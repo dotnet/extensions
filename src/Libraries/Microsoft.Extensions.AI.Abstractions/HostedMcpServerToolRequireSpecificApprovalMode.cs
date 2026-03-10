@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.Extensions.AI;
@@ -11,7 +10,6 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a mode where approval behavior is specified for individual tool names.
 /// </summary>
-[Experimental("MEAI001")]
 public sealed class HostedMcpServerToolRequireSpecificApprovalMode : HostedMcpServerToolApprovalMode
 {
     /// <summary>

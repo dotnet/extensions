@@ -4,11 +4,19 @@
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <Description>Provides extensions to HttpClient to resolve well-known hostnames to concrete endpoints based on DNS records. Useful for service resolution in orchestrators such as Kubernetes.</Description>
-    <PackageIconFullPath>$(DefaultDotnetIconFullPath)</PackageIconFullPath>
+    <StrongNameKeyId>Open</StrongNameKeyId>
     <!-- https://github.com/dotnet/extensions/issues/6871 tracks enabling these -->
     <NoWarn>$(NoWarn);IDE0018;IDE0025;IDE0032;IDE0040;IDE0058;IDE0250;IDE0251;IDE1006;CA1304;CA1307;CA1309;CA1310;CA1849;CA2000;CA2213;CA2217;S125;S1135;S1226;S2344;S3626;S4022;SA1108;SA1120;SA1128;SA1129;SA1204;SA1205;SA1214;SA1400;SA1405;SA1408;SA1515;SA1600;SA1629;SA1642;SA1649;EA0001;EA0009;EA0014;LA0001;LA0003;LA0008;VSTHRD200</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Workstream>ServiceDiscovery</Workstream>
+    <Stage>normal</Stage>
+    <PackageValidationBaselineVersion>9.5.1</PackageValidationBaselineVersion>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>75</MinMutationScore>
   </PropertyGroup>
 
   <ItemGroup>

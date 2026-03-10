@@ -23,22 +23,22 @@ public interface IEnrichmentTagCollector
     /// <remarks>
     /// For log enrichment, <paramref name="tagValue"/> is serialized as per the rules below:
     /// <list type="bullet">
-    /// <item>
+    ///   <item>
     ///     <term>Arrays</term>
     ///     <description>Recognized and serialized in a loop.</description>
-    ///  </item>
-    ///  <item>
+    ///   </item>
+    ///   <item>
     ///     <term><see cref="IDictionary"/></term>
     ///     <description>Recognized as IDictionary&lt;string, object&gt; and serialized in a loop.</description>
-    ///  </item>
-    ///  <item>
+    ///   </item>
+    ///   <item>
     ///     <term><see cref="DateTime"/></term>
     ///     <description>Recognized and serialized after converting to <see cref="DateTime.ToUniversalTime()"/>.</description>
-    ///  </item>
-    ///  <item>
+    ///   </item>
+    ///   <item>
     ///     <term>All other primitive types</term>
     ///     <description>Converted to <see cref="string"/> as is and serialized.</description>
-    ///  </item>
+    ///   </item>
     /// </list>
     /// For metric enrichment, <paramref name="tagValue"/> is converted to <see cref="string"/> format using <see cref="object.ToString()"/> method.
     /// </remarks>

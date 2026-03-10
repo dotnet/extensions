@@ -119,11 +119,8 @@ internal abstract partial class DnsServiceEndpointProviderBase : IServiceEndpoin
                 _hasEndpoints = false;
             }
 
-            if (validityPeriod <= TimeSpan.Zero)
-            {
-                validityPeriod = _nextRefreshPeriod;
-            }
-            else if (validityPeriod > _nextRefreshPeriod)
+            if (validityPeriod <= TimeSpan.Zero ||
+                validityPeriod > _nextRefreshPeriod)
             {
                 validityPeriod = _nextRefreshPeriod;
             }

@@ -482,12 +482,6 @@ public partial class ChatClientStructuredOutputExtensionsTests
 
     private static bool DeepEquals(JsonElement element1, JsonElement element2)
     {
-#if NET9_0_OR_GREATER
         return JsonElement.DeepEquals(element1, element2);
-#else
-        return System.Text.Json.Nodes.JsonNode.DeepEquals(
-            JsonSerializer.SerializeToNode(element1, AIJsonUtilities.DefaultOptions),
-            JsonSerializer.SerializeToNode(element2, AIJsonUtilities.DefaultOptions));
-#endif
     }
 }

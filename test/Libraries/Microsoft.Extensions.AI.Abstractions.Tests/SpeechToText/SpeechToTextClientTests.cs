@@ -74,12 +74,10 @@ public class SpeechToTextClientTests
     }
 
     // Helper method to simulate streaming updates
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     private static async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingUpdatesAsync()
     {
         yield return new("hello ");
         yield return new("world ");
         yield return new("!");
     }
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 }

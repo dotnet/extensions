@@ -24,10 +24,6 @@ internal static class LoggerExtensions
         {
             operation();
         }
-        catch (Exception ex) when (swallowUnhandledExceptions && ex.IsCancellation())
-        {
-            // Do nothing.
-        }
         catch (Exception ex) when (!ex.IsCancellation() && logger.LogException(ex) && swallowUnhandledExceptions)
         {
             // Do nothing. The exception is logged in the when clause above.
@@ -44,10 +40,6 @@ internal static class LoggerExtensions
         {
             return operation();
         }
-        catch (Exception ex) when (swallowUnhandledExceptions && ex.IsCancellation())
-        {
-            // Do nothing.
-        }
         catch (Exception ex) when (!ex.IsCancellation() && logger.LogException(ex) && swallowUnhandledExceptions)
         {
             // Do nothing. The exception is logged in the when clause above.
@@ -56,7 +48,7 @@ internal static class LoggerExtensions
         return defaultValue;
     }
 
-#pragma warning disable EA0014 // The async method doesn't support cancellation
+#pragma warning disable EA0014 // The async method doesn't support cancellation.
     internal static async ValueTask ExecuteWithCatchAsync(
         this ILogger logger,
         Func<Task> operation,
@@ -65,10 +57,6 @@ internal static class LoggerExtensions
         try
         {
             await operation().ConfigureAwait(false);
-        }
-        catch (Exception ex) when (swallowUnhandledExceptions && ex.IsCancellation())
-        {
-            // Do nothing.
         }
         catch (Exception ex) when (!ex.IsCancellation() && logger.LogException(ex) && swallowUnhandledExceptions)
         {
@@ -85,10 +73,6 @@ internal static class LoggerExtensions
         {
             await operation().ConfigureAwait(false);
         }
-        catch (Exception ex) when (swallowUnhandledExceptions && ex.IsCancellation())
-        {
-            // Do nothing.
-        }
         catch (Exception ex) when (!ex.IsCancellation() && logger.LogException(ex) && swallowUnhandledExceptions)
         {
             // Do nothing. The exception is logged in the when clause above.
@@ -104,10 +88,6 @@ internal static class LoggerExtensions
         try
         {
             return await operation().ConfigureAwait(false);
-        }
-        catch (Exception ex) when (swallowUnhandledExceptions && ex.IsCancellation())
-        {
-            // Do nothing.
         }
         catch (Exception ex) when (!ex.IsCancellation() && logger.LogException(ex) && swallowUnhandledExceptions)
         {
@@ -126,10 +106,6 @@ internal static class LoggerExtensions
         try
         {
             return await operation().ConfigureAwait(false);
-        }
-        catch (Exception ex) when (swallowUnhandledExceptions && ex.IsCancellation())
-        {
-            // Do nothing.
         }
         catch (Exception ex) when (!ex.IsCancellation() && logger.LogException(ex) && swallowUnhandledExceptions)
         {

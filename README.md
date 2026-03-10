@@ -13,7 +13,7 @@ The major functional areas this repo addresses are:
 - Static Analysis: Curated static analysis settings to help improve your code.
 - Testing: Dramatically simplifies testing around common .NET abstractions such as ILogger and the TimeProvider.
 
-[![Build Status](https://dev.azure.com/dnceng/internal/_apis/build/status/r9/dotnet-r9?branchName=main)](https://dev.azure.com/dnceng/internal/_build/latest?definitionId=1223&branchName=main)
+[![Build Status](https://dev.azure.com/dnceng-public/public/_apis/build/status%2Fdotnet%2Fextensions%2Fextensions-ci?branchName=main)](https://dev.azure.com/dnceng-public/public/_build/latest?definitionId=16&branchName=main)
 [![Help Wanted](https://img.shields.io/github/issues/dotnet/extensions/help%20wanted?style=flat-square&color=%232EA043&label=help%20wanted)](https://github.com/dotnet/extensions/labels/help%20wanted)
 [![Discord](https://img.shields.io/discord/732297728826277939?style=flat-square&label=Discord&logo=discord&logoColor=white&color=7289DA)](https://aka.ms/dotnet-discord)
 

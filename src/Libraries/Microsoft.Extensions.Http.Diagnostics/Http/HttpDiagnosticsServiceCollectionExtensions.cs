@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -23,7 +22,7 @@ public static class HttpDiagnosticsServiceCollectionExtensions
     public static IServiceCollection AddDownstreamDependencyMetadata(this IServiceCollection services, IDownstreamDependencyMetadata downstreamDependencyMetadata)
     {
         _ = Throw.IfNull(services);
-        services.TryAddSingleton<IDownstreamDependencyMetadataManager, DownstreamDependencyMetadataManager>();
+        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
         _ = services.AddSingleton(downstreamDependencyMetadata);
 
         return services;
@@ -39,9 +38,8 @@ public static class HttpDiagnosticsServiceCollectionExtensions
         where T : class, IDownstreamDependencyMetadata
     {
         _ = Throw.IfNull(services);
-        services.TryAddSingleton<IDownstreamDependencyMetadataManager, DownstreamDependencyMetadataManager>();
+        services.TryAddSingleton<HttpDependencyMetadataResolver, DefaultHttpDependencyMetadataResolver>();
         _ = services.AddSingleton<IDownstreamDependencyMetadata, T>();
-
         return services;
     }
 }

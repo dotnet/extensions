@@ -130,7 +130,7 @@ internal sealed class AssemblyAnalysis
     {
         var typeSignature = type.ToDisplayString(_format);
         var typeModifiersAndName = PrependModifiers(typeSignature, type);
-        var typeDef = Assembly.Types.FirstOrDefault(x => x.ModifiersAndName == typeModifiersAndName);
+        var typeDef = Array.Find(Assembly.Types, x => x.ModifiersAndName == typeModifiersAndName);
 
         if (typeDef == null)
         {
@@ -218,7 +218,7 @@ internal sealed class AssemblyAnalysis
                 {
                     var methodSignature = member.ToDisplayString(_formatNoVariance) + ";";
 
-                    var method = typeDef.Methods.FirstOrDefault(x => x.Member == methodSignature);
+                    var method = Array.Find(typeDef.Methods, x => x.Member == methodSignature);
                     if (method != null)
                     {
                         _ = MissingMethods.Remove(method);
@@ -233,7 +233,7 @@ internal sealed class AssemblyAnalysis
                 {
                     var propSignature = member.ToDisplayString(_formatNoVariance);
 
-                    var prop = typeDef.Properties.FirstOrDefault(x => x.Member == propSignature);
+                    var prop = Array.Find(typeDef.Properties, x => x.Member == propSignature);
                     if (prop != null)
                     {
                         _ = MissingProperties.Remove(prop);
@@ -255,7 +255,7 @@ internal sealed class AssemblyAnalysis
                         fieldSignature = "const " + t.ToDisplayString(_enumType) + " " + fieldSignature;
                     }
 
-                    var field = typeDef.Fields.FirstOrDefault(x => x.Member == fieldSignature);
+                    var field = Array.Find(typeDef.Fields, x => x.Member == fieldSignature);
                     if (field != null)
                     {
                         _ = MissingFields.Remove(field);

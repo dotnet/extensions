@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -12,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Provides extension methods for working with <see cref="SpeechToTextResponseUpdate"/> instances.
 /// </summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class SpeechToTextResponseUpdateExtensions
 {
     /// <summary>Combines <see cref="SpeechToTextResponseUpdate"/> instances into a single <see cref="SpeechToTextResponse"/>.</summary>
@@ -30,7 +31,7 @@ public static class SpeechToTextResponseUpdateExtensions
             ProcessUpdate(update, response);
         }
 
-        ChatResponseExtensions.CoalesceTextContent((List<AIContent>)response.Contents);
+        ChatResponseExtensions.CoalesceContent((List<AIContent>)response.Contents);
 
         return response;
     }
@@ -56,7 +57,7 @@ public static class SpeechToTextResponseUpdateExtensions
                 ProcessUpdate(update, response);
             }
 
-            ChatResponseExtensions.CoalesceTextContent((List<AIContent>)response.Contents);
+            ChatResponseExtensions.CoalesceContent((List<AIContent>)response.Contents);
 
             return response;
         }

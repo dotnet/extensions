@@ -125,8 +125,10 @@ public class OpenTelemetryImageGeneratorTests
                         "content": "This is the input prompt."
                       },
                       {
-                        "type": "image",
-                        "content": "http://example/input.png"
+                        "type": "uri",
+                        "uri": "http://example/input.png",
+                        "mime_type": "image/png",
+                        "modality": "image"
                       }
                     ]
                   }
@@ -139,12 +141,16 @@ public class OpenTelemetryImageGeneratorTests
                     "role": "assistant",
                     "parts": [
                       {
-                        "type": "image",
-                        "content": "http://example/output.png"
+                        "type": "uri",
+                        "uri": "http://example/output.png",
+                        "mime_type": "image/png",
+                        "modality": "image"
                       },
                       {
-                        "type": "image",
-                        "content": "data:image/png;base64,AQIDBA=="
+                        "type": "blob",
+                        "content": "AQIDBA==",
+                        "mime_type": "image/png",
+                        "modality": "image"
                       }
                     ]
                   }

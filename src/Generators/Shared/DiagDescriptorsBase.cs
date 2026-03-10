@@ -32,9 +32,7 @@ internal class DiagDescriptorsBase
             category,
             defaultSeverity,
             isEnabledByDefault,
-            null,
-            string.Format(DiagnosticIds.UrlFormat, id),
-            Array.Empty<string>());
+            helpLinkUri: string.Format(DiagnosticIds.UrlFormat, id));
 #pragma warning restore CS0436 // Type conflicts with imported type
 #pragma warning restore CA1863 // Use 'CompositeFormat'
 #pragma warning restore CA1305 // Specify IFormatProvider

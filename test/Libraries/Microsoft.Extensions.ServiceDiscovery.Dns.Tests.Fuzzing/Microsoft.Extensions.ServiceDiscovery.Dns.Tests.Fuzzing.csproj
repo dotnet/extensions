@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
+    <StrongNameKeyId>Open</StrongNameKeyId>
     <!-- https://github.com/dotnet/extensions/issues/6871 tracks enabling these -->
     <NoWarn>$(NoWarn);IDE0040;IDE0061;IDE1006;S5034;SA1400;VSTHRD002</NoWarn>
   </PropertyGroup>

@@ -63,9 +63,21 @@ internal sealed class ConditionalTheoryDiscoverer : TheoryDiscoverer
             }
         }
 
-        return skipReason != null ?
-            base.CreateTestCasesForSkippedDataRow(discoveryOptions, testMethod, theoryAttribute, dataRow, skipReason)
-            : base.CreateTestCasesForDataRow(discoveryOptions, testMethod, theoryAttribute, dataRow);
+        if (skipReason != null)
+        {
+            return base.CreateTestCasesForSkippedDataRow(discoveryOptions, testMethod, theoryAttribute, dataRow, skipReason);
+        }
+
+        // Create test cases that can handle runtime SkipTestException
+        return new[]
+        {
+            new SkippedTheoryTestCase(
+                DiagnosticMessageSink,
+                discoveryOptions.MethodDisplayOrDefault(),
+                discoveryOptions.MethodDisplayOptionsOrDefault(),
+                testMethod,
+                dataRow)
+        };
     }
 
     protected override IEnumerable<IXunitTestCase> CreateTestCasesForSkippedDataRow(

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -18,18 +18,26 @@ namespace Microsoft.Extensions.AI;
 [JsonDerivedType(typeof(TextReasoningContent), typeDiscriminator: "reasoning")]
 [JsonDerivedType(typeof(UriContent), typeDiscriminator: "uri")]
 [JsonDerivedType(typeof(UsageContent), typeDiscriminator: "usage")]
+[JsonDerivedType(typeof(ToolCallContent), typeDiscriminator: "toolCall")]
+[JsonDerivedType(typeof(ToolResultContent), typeDiscriminator: "toolResult")]
+[JsonDerivedType(typeof(InputRequestContent), typeDiscriminator: "inputRequest")]
+[JsonDerivedType(typeof(InputResponseContent), typeDiscriminator: "inputResponse")]
+[JsonDerivedType(typeof(ToolApprovalRequestContent), typeDiscriminator: "toolApprovalRequest")]
+[JsonDerivedType(typeof(ToolApprovalResponseContent), typeDiscriminator: "toolApprovalResponse")]
+[JsonDerivedType(typeof(McpServerToolCallContent), typeDiscriminator: "mcpServerToolCall")]
+[JsonDerivedType(typeof(McpServerToolResultContent), typeDiscriminator: "mcpServerToolResult")]
 
 // These should be added in once they're no longer [Experimental]. If they're included while still
 // experimental, any JsonSerializerContext that includes AIContent will incur errors about using
 // experimental types in its source generated files. When [Experimental] is removed from these types,
 // these lines should be uncommented and the corresponding lines in AIJsonUtilities.CreateDefaultOptions
 // as well as the [JsonSerializable] attributes for them on the JsonContext should be removed.
-// [JsonDerivedType(typeof(FunctionApprovalRequestContent), typeDiscriminator: "functionApprovalRequest")]
-// [JsonDerivedType(typeof(FunctionApprovalResponseContent), typeDiscriminator: "functionApprovalResponse")]
-// [JsonDerivedType(typeof(McpServerToolCallContent), typeDiscriminator: "mcpServerToolCall")]
-// [JsonDerivedType(typeof(McpServerToolResultContent), typeDiscriminator: "mcpServerToolResult")]
-// [JsonDerivedType(typeof(McpServerToolApprovalRequestContent), typeDiscriminator: "mcpServerToolApprovalRequest")]
-// [JsonDerivedType(typeof(McpServerToolApprovalResponseContent), typeDiscriminator: "mcpServerToolApprovalResponse")]
+// [JsonDerivedType(typeof(CodeInterpreterToolCallContent), typeDiscriminator: "codeInterpreterToolCall")]
+// [JsonDerivedType(typeof(CodeInterpreterToolResultContent), typeDiscriminator: "codeInterpreterToolResult")]
+// [JsonDerivedType(typeof(ImageGenerationToolCallContent), typeDiscriminator: "imageGenerationToolCall")]
+// [JsonDerivedType(typeof(ImageGenerationToolResultContent), typeDiscriminator: "imageGenerationToolResult")]
+// [JsonDerivedType(typeof(WebSearchToolCallContent), typeDiscriminator: "webSearchToolCall")]
+// [JsonDerivedType(typeof(WebSearchToolResultContent), typeDiscriminator: "webSearchToolResult")]
 
 public class AIContent
 {

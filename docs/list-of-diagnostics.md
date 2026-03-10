@@ -24,23 +24,24 @@ if desired.
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
-| `EXTEXP0001` | Resilience experiments |
-| `EXTEXP0002` | Compliance experiments  |
-| `EXTEXP0003` | Telemetry experiments |
-| `EXTEXP0004` | TimeProvider experiments |
-| `EXTEXP0006` | AsyncState experiments |
-| `EXTEXP0007` | Health check experiments |
-| `EXTEXP0008` | Resource monitoring experiments |
-| `EXTEXP0009` | Hosting experiments |
-| `EXTEXP0010` | Object pool experiments |
-| `EXTEXP0011` | Document database experiments |
-| `EXTEXP0012` | Auto-activation experiments |
-| `EXTEXP0013` | HttpLogging middleware experiments |
-| `EXTEXP0014` | ASP.NET Core integration testing experiments |
-| `EXTEXP0015` | Environmental probes experiments |
-| `EXTEXP0016` | Hosting integration testing experiments |
-| `EXTEXP0017` | Contextual options experiments |
-| `EXTEXP0018` | HybridCache experiments |
+| `EXTEXP0001`      | Resilience experiments |
+| `EXTEXP0002`      | Compliance experiments  |
+| `EXTEXP0003`      | Telemetry experiments |
+| `EXTEXP0004`      | TimeProvider experiments |
+| `EXTEXP0006`      | AsyncState experiments |
+| `EXTEXP0007`      | Health check experiments |
+| `EXTEXP0008`      | Resource monitoring experiments |
+| `EXTEXP0009`      | Hosting experiments |
+| `EXTEXP0010`      | Object pool experiments |
+| `EXTEXP0011`      | Document database experiments |
+| `EXTEXP0012`      | Auto-activation experiments |
+| `EXTEXP0013`      | HttpLogging middleware experiments |
+| `EXTEXP0014`      | ASP.NET Core integration testing experiments |
+| `EXTEXP0015`      | Environmental probes experiments |
+| `EXTEXP0016`      | Hosting integration testing experiments |
+| `EXTEXP0017`      | Contextual options experiments |
+| `EXTEXP0018`      | HybridCache experiments |
+| `MEAI001`         | AI experiments |
 
 # Obsoletions
 
@@ -51,6 +52,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
 | `EXTOBS0001` | This API is obsolete and will be removed in a future version. Consider using [Resource Monitoring observable instruments](https://learn.microsoft.com/dotnet/core/diagnostics/built-in-metrics-diagnostics#microsoftextensionsdiagnosticsresourcemonitoring). |
+| `EXTOBS0002` | This API is obsolete and will be removed in a future version. Instead of the AddServiceLogEnricher() methods, consider using the respective AddApplicationLogEnricher() methods.                                                                              |
 
 # LoggerMessage
 
@@ -63,7 +65,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `LOGGEN004` | A static logging method must have a parameter that implements the "Microsoft.Extensions.Logging.ILogger" interface |
 | `LOGGEN005` | Logging methods must be static |
 | `LOGGEN006` | Logging methods must be partial |
-| `LOGGEN007` | Logging methods can't be generic |
+| `LOGGEN007` | Logging methods can't use the `allows ref struct` constraint |
 | `LOGGEN008` | Redundant qualifier in the logging message |
 | `LOGGEN009` | Don't include exception parameters as templates in the logging message |
 | `LOGGEN010` | The logging template has no corresponding method parameter |
@@ -95,6 +97,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `LOGGEN036` | A value being logged doesn't have an effective way to be converted into a string |
 | `LOGGEN037` | Logging method contains malformed format strings |
 | `LOGGEN038` | Primary constructor parameter of type Microsoft.Extensions.Logging.ILogger is hidden by a field |
+| `LOGGEN039` | Logging method parameters can't have the "params" or "scoped" modifier |
 
 # Metrics
 
@@ -117,7 +120,6 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `METGEN014` | A metering attribute type argument is invalid |
 | `METGEN015` | Metric methods mustn't use any external type as the return type |
 | `METGEN016` | Metric methods mustn't use any generic type as the return type |
-| `METGEN017` | Gauge is not supported yet |
 | `METGEN018` | Xml comment was not parsed correctly |
 | `METGEN019` | A metric class has cycles in its type hierarchy |
 

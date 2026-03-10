@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -46,5 +47,40 @@ public class TextContentTests
         c.Text = string.Empty;
         Assert.Equal(string.Empty, c.Text);
         Assert.Equal(string.Empty, c.ToString());
+    }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new TextContent("Hello, world!");
+
+        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+        var deserializedContent = JsonSerializer.Deserialize<TextContent>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(deserializedContent);
+        Assert.Equal(content.Text, deserializedContent.Text);
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "text",
+              "text": "Hello, world!",
+              "additionalProperties": {
+                "key1": "value1"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var textContent = Assert.IsType<TextContent>(result);
+        Assert.Equal("Hello, world!", textContent.Text);
+        Assert.NotNull(textContent.AdditionalProperties);
+        Assert.Single(textContent.AdditionalProperties);
+        Assert.Equal("value1", textContent.AdditionalProperties["key1"]?.ToString());
     }
 }

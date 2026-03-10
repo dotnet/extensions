@@ -33,6 +33,8 @@ public class FakeHostTests
             })
             .StartAsync();
 
+        await Task.Delay(100); // Give some time for the host to shut down
+
         Assert.Throws<ObjectDisposedException>(() => host.Services.GetService<IHost>());
     }
 

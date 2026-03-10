@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Markdown viewer</title>
+
+  <style>
+    html, :host {
+      font-family: var(
+        --default-font-family,
+        ui-sans-serif,
+        system-ui,
+        sans-serif,
+        'Apple Color Emoji',
+        'Segoe UI Emoji',
+        'Segoe UI Symbol',
+        'Noto Color Emoji'
+      );
+    }
+
+    body {
+      background-color: #f4f4f4;
+      max-width: 1024px;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="content"></div>
+  <script type="module" src="viewer.mjs"></script>
+</body>
+</html>

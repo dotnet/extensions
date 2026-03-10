@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -13,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Describes the intended purpose of a specific update during streaming of speech to text updates.
 /// </summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 [JsonConverter(typeof(Converter))]
 public readonly struct SpeechToTextResponseUpdateKind : IEquatable<SpeechToTextResponseUpdateKind>
 {

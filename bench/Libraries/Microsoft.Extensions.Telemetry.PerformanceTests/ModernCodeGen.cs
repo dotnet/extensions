@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
+
 namespace Microsoft.Extensions.Telemetry.Bench;
 
 [global::System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Emulating generated code")]
@@ -35,7 +37,7 @@ internal static class ModernCodeGen
                 var length = s.TagArray[3].Value ?? "(null)";
                 var flags = s.TagArray[2].Value ?? "(null)";
                 var other = s.TagArray[1].Value ?? "(null)";
-                return global::System.FormattableString.Invariant($"Connection id '{connectionId}' received {type} frame for stream ID {streamId} with length {length} and flags {flags} and {other}");
+                return string.Create(CultureInfo.InvariantCulture, $"Connection id '{connectionId}' received {type} frame for stream ID {streamId} with length {length} and flags {flags} and {other}");
             });
 
         state.Clear();
@@ -66,7 +68,7 @@ internal static class ModernCodeGen
                 var end = s.TagArray[3].Value;
                 var options = s.TagArray[2].Value;
                 var guid = s.TagArray[1].Value;
-                return global::System.FormattableString.Invariant($"Range [{start}..{end}], options {options}, guid {guid}");
+                return string.Create(CultureInfo.InvariantCulture, $"Range [{start}..{end}], options {options}, guid {guid}");
             });
 
         state.Clear();

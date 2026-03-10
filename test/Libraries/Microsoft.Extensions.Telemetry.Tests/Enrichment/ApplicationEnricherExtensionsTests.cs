@@ -18,16 +18,16 @@ public class ApplicationEnricherExtensionsTests
     public void ServiceLogEnricher_GivenAnyNullArgument_Throws()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            ((IServiceCollection)null!).AddServiceLogEnricher());
+            ((IServiceCollection)null!).AddApplicationLogEnricher());
 
         Assert.Throws<ArgumentNullException>(() =>
-            ((IServiceCollection)null!).AddServiceLogEnricher(_ => { }));
+            ((IServiceCollection)null!).AddApplicationLogEnricher(_ => { }));
 
         Assert.Throws<ArgumentNullException>(() =>
-            ((IServiceCollection)null!).AddServiceLogEnricher(Mock.Of<IConfigurationSection>()));
+            ((IServiceCollection)null!).AddApplicationLogEnricher(Mock.Of<IConfigurationSection>()));
 
         Assert.Throws<ArgumentNullException>(() =>
-            new ServiceCollection().AddServiceLogEnricher((IConfigurationSection)null!));
+            new ServiceCollection().AddApplicationLogEnricher((IConfigurationSection)null!));
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class ApplicationEnricherExtensionsTests
     {
         // Arrange & Act
         using var host = FakeHost.CreateBuilder()
-            .ConfigureServices(services => services.AddServiceLogEnricher())
+            .ConfigureServices(services => services.AddApplicationLogEnricher())
             .Build();
 
         // Assert
@@ -48,7 +48,7 @@ public class ApplicationEnricherExtensionsTests
         // Arrange & Act
         using var host = FakeHost.CreateBuilder()
             .ConfigureLogging(builder => builder
-                .Services.AddServiceLogEnricher(e =>
+                .Services.AddApplicationLogEnricher(e =>
                 {
                     e.ApplicationName = false;
                     e.EnvironmentName = false;
@@ -68,17 +68,17 @@ public class ApplicationEnricherExtensionsTests
     }
 
     [Fact]
-    public void ServiceLogEnricher_GivenConfiguration_RegistersInDI()
+    public void ApplicationLogEnricher_GivenConfiguration_RegistersInDI()
     {
         // Arrange & Act
         using var host = FakeHost.CreateBuilder()
             .ConfigureAppConfiguration(
-                ("Serviceenrichersection:ApplicationName", "true"),
-                ("Serviceenrichersection:EnvironmentName", "false"),
-                ("Serviceenrichersection:BuildVersion", "true"),
-                ("Serviceenrichersection:DeploymentRing", "true"))
+                ("Applicationenrichersection:ApplicationName", "true"),
+                ("Applicationenrichersection:EnvironmentName", "false"),
+                ("Applicationenrichersection:BuildVersion", "true"),
+                ("Applicationenrichersection:DeploymentRing", "true"))
             .ConfigureServices((context, services) => services
-                .AddServiceLogEnricher(context.Configuration.GetSection("Serviceenrichersection")))
+                .AddApplicationLogEnricher(context.Configuration.GetSection("Applicationenrichersection")))
             .Build();
 
         // Assert

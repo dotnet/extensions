@@ -55,7 +55,9 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             Throw.ArgumentOutOfRangeException(nameof(defaultModelDimensions), "Value must be greater than 0.");
         }
 
+#pragma warning disable OPENAI001 // Endpoint and Model are experimental
         _metadata = new("openai", embeddingClient.Endpoint, _embeddingClient.Model, defaultModelDimensions);
+#pragma warning restore OPENAI001
     }
 
     /// <inheritdoc />
@@ -68,6 +70,14 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             _embeddingClient.GenerateEmbeddingsAsync(values, openAIOptions, cancellationToken);
         var embeddings = (await t.ConfigureAwait(false)).Value;
 
+        UsageDetails? usage = embeddings.Usage is not null ?
+            new()
+            {
+                InputTokenCount = embeddings.Usage.InputTokenCount,
+                TotalTokenCount = embeddings.Usage.TotalTokenCount
+            } :
+            null;
+
         return new(embeddings.Select(e =>
                 new Embedding<float>(e.ToFloats())
                 {
@@ -75,11 +85,7 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
                     ModelId = embeddings.Model,
                 }))
         {
-            Usage = new()
-            {
-                InputTokenCount = embeddings.Usage.InputTokenCount,
-                TotalTokenCount = embeddings.Usage.TotalTokenCount
-            },
+            Usage = usage,
         };
     }
 
@@ -107,10 +113,14 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     {
         if (options?.RawRepresentationFactory?.Invoke(this) is not OpenAI.Embeddings.EmbeddingGenerationOptions result)
         {
-            result = new OpenAI.Embeddings.EmbeddingGenerationOptions();
+            result = new();
         }
 
         result.Dimensions ??= options?.Dimensions ?? _dimensions;
+#pragma warning disable SCME0001 // JsonPatch is experimental
+        OpenAIClientExtensions.PatchModelIfNotSet(ref result.Patch, options?.ModelId);
+#pragma warning restore SCME0001
+
         return result;
     }
 }

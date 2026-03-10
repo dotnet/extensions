@@ -37,6 +37,11 @@ public class DnsSrvServiceEndpointProviderOptions
     public string? QuerySuffix { get; set; }
 
     /// <summary>
+    /// Gets or sets a delegate that generates a DNS SRV query from a specified <see cref="ServiceEndpointQuery"/> instance.
+    /// </summary>
+    public Func<ServiceEndpointQuery, string>? ServiceDomainNameCallback { get; set; }
+
+    /// <summary>
     /// Gets or sets a delegate used to determine whether to apply host name metadata to each resolved endpoint. Defaults to <c>false</c>.
     /// </summary>
     public Func<ServiceEndpoint, bool> ShouldApplyHostNameMetadata { get; set; } = _ => false;

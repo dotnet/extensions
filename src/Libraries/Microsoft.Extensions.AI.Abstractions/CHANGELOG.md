@@ -1,9 +1,69 @@
-# Release History
+# Microsoft.Extensions.AI.Abstractions Release History
 
 ## NOT YET RELEASED
 
+- `AddAIContentType` now automatically registers the content type against every base in the inheritance chain up to `AIContent`.
+- Added `IHostedFileClient` interface and related types for interacting with files hosted by the service.
+- Added `WebSearchToolCallContent` and `WebSearchToolResultContent` for representing web search tool calls and results.
+- Added `ToolCallContent` and `ToolResultContent` base classes.
+- Updated the design of the MCP and approvals-related types and marked them as stable.
+- Updated AI function parameter JSON schema generation to honor `[Required]` attributes.
+- Updated `AIFunctionFactory` to work better with `DynamicMethod`-based functions.
+- Removed the experimental `IToolReductionStrategy` type.
+
+## 10.3.0
+
+- Added `ReasoningOptions` to `ChatOptions` for configuring reasoning effort and output.
+- Unsealed `FunctionCallContent` and `FunctionResultContent`.
+- Added `InformationalOnly` property to `FunctionCallContent` to indicate whether the content is informing the consumer about a call that's being made elsewhere or that is a request for the call to be performed.
+- Added `LoadFromAsync` and `SaveToAsync` helper methods to `DataContent` for file I/O operations.
+- Removed `[Experimental]` attribute from `IChatReducer`.
+- Fixed JSON schema generation for nullable reference type annotations on parameters in AIFunctions.
+- Fixed `DataUriParser` to default to `text/plain;charset=US-ASCII` per RFC 2397.
+- Fixed serialization handling of `ImageGenerationToolCallContent` and `ImageGenerationToolResultContent`.
+
+## 10.2.0
+
+- Updated `ToChatResponse{Async}`'s handling of `AdditionalProperties`, such that `ChatResponseUpdate.AdditionalProperties` is merged into `ChatMessage.AdditionalProperties` for updates that have a non-`null` `MessageId`.
+- Updated `ToChatResponse{Async}` to use the first appropriate `ChatResponseUpdate`'s `CreatedAt` timestamp rather than the last.
+- Added a `Reason` property to `FunctionApprovalResponseContent` in support of custom rejection messages.
+- Added support for custom headers to `HostedMcpServerTool`.
+
+## 10.1.1
+
+- Added `InputCachedTokenCount` and `ReasoningTokenCount` to `UsageDetails`.
+- Added constructors to `HostedCodeInterpreterTool`, `HostedFileSearchTool`, `HostedImageGeneratorTool`, `HostedMcpServerTool`,
+  and `HostedWebSearchTool` that accept a dictionary for `AdditionalProperties`.
+
+## 10.1.0
+
+- Fixed package references for net10.0 asset.
+- Added `AIJsonSchemaCreateOptions.ParameterDescriptions`.
+
+## 10.0.1
+
+- Updated return type of [Experimental] `ContinuationToken` properties.
+- Fixed ValidateSchemaDocument's handling of valid Boolean schemas.
+
+## 10.0.0
+
+- Added experimental `HostedImageGenerationTool`.
+- Updated .NET dependencies to 10.0.0 versions.
+
+## 9.10.2
+
+- Updated `AIFunctionFactory` to respect `[DisplayName(...)]` on functions as a way to override the function name.
+- Updated `AIFunctionFactory` to respect `[DefaultValue(...)]` on function parameters as a way to specify default values.
+- Added `CodeInterpreterToolCallContent`/`CodeInterpreterToolResultContent` for representing code interpreter tool calls and results.
+- Added `Name`, `MediaType`, and `HasTopLevelMediaType` to `HostedFileContent`.
+- Fixed the serialization/deserialization of variables typed as `UserInputRequestContent`/`UserInputResponseContent`.
+
+## 9.10.1
+
 - Updated `HostedMcpServerTool` to allow for non-`Uri` server addresses, in order to enable built-in names.
 - Updated `HostedMcpServerTool` to replace the header collection with an `AuthorizationToken` property.
+- Fixed `ToChatResponse{Async}` to not discard `TextReasoningContent.ProtectedData` when coalescing messages.
+- Fixed `AIFunctionFactory.Create` to special-case return types of `AIContent` and `IEnumerable<AIContent>` to not automatically JSON serialize them.
 
 ## 9.10.0
 

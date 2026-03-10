@@ -12,13 +12,13 @@ public static class AIJsonSchemaTransformCacheTests
     [Fact]
     public static void NullOptions_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => new AIJsonSchemaTransformCache(transformOptions: null!));
+        Assert.Throws<ArgumentNullException>("transformOptions", () => new AIJsonSchemaTransformCache(transformOptions: null!));
     }
 
     [Fact]
     public static void EmptyOptions_ThrowsArgumentException()
     {
-        Assert.Throws<ArgumentException>(() => new AIJsonSchemaTransformCache(transformOptions: new()));
+        Assert.Throws<ArgumentException>("transformOptions", () => new AIJsonSchemaTransformCache(transformOptions: new()));
     }
 
     [Fact]
@@ -33,14 +33,14 @@ public static class AIJsonSchemaTransformCacheTests
     public static void NullFunction_ThrowsArgumentNullException()
     {
         AIJsonSchemaTransformCache cache = new(new() { ConvertBooleanSchemas = true });
-        Assert.Throws<ArgumentNullException>(() => cache.GetOrCreateTransformedSchema(function: null!));
+        Assert.Throws<ArgumentNullException>("function", () => cache.GetOrCreateTransformedSchema(function: null!));
     }
 
     [Fact]
     public static void NullResponseFormat_ThrowsArgumentNullException()
     {
         AIJsonSchemaTransformCache cache = new(new() { ConvertBooleanSchemas = true });
-        Assert.Throws<ArgumentNullException>(() => cache.GetOrCreateTransformedSchema(responseFormat: null!));
+        Assert.Throws<ArgumentNullException>("responseFormat", () => cache.GetOrCreateTransformedSchema(responseFormat: null!));
     }
 
     [Fact]

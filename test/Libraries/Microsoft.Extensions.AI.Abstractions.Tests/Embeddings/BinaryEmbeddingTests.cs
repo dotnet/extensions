@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using Xunit;
@@ -40,12 +41,12 @@ public class BinaryEmbeddingTests
         Assert.Equal("text-embedding-3-small", e.ModelId);
 
         Assert.Null(e.CreatedAt);
-        DateTimeOffset createdAt = DateTimeOffset.Parse("2022-01-01T00:00:00Z");
+        DateTimeOffset createdAt = DateTimeOffset.Parse("2022-01-01T00:00:00Z", DateTimeFormatInfo.InvariantInfo);
         e.CreatedAt = createdAt;
         Assert.Equal(createdAt, e.CreatedAt);
 
         Assert.Null(e.AdditionalProperties);
-        AdditionalPropertiesDictionary props = new();
+        AdditionalPropertiesDictionary props = [];
         e.AdditionalProperties = props;
         Assert.Same(props, e.AdditionalProperties);
     }

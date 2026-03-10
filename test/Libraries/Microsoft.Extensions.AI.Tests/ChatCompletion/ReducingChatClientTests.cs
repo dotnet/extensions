@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,7 +62,7 @@ public class ReducingChatClientTests
             {
                 // Verify that the inner client receives the reduced messages
                 Assert.Same(reducedMessages, messages);
-                return ToAsyncEnumerable(expectedUpdates);
+                return expectedUpdates.ToAsyncEnumerable();
             }
         };
 
@@ -161,15 +162,6 @@ public class ReducingChatClientTests
         Assert.True(configureCalled);
         Assert.NotNull(configuredClient);
         Assert.IsType<ReducingChatClient>(configuredClient);
-    }
-
-    private static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> items)
-    {
-        foreach (var item in items)
-        {
-            await Task.Yield();
-            yield return item;
-        }
     }
 
     private sealed class TestReducer : IChatReducer

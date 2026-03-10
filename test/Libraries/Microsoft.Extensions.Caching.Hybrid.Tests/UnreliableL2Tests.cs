@@ -43,7 +43,9 @@ public class UnreliableL2Tests(ITestOutputHelper testLog) : IClassFixture<TestEv
             }
 
             await l2.LastWrite; // allows out-of-band write to complete
-            await Task.Delay(150); // even then: thread jitter can cause problems
+
+            // Wait for logs to be written (with timeout to avoid hanging on failure)
+            await log.WaitForLogsAsync(errorIds, TimeSpan.FromSeconds(5));
 
             log.WriteTo(testLog);
             log.AssertErrors(errorIds);

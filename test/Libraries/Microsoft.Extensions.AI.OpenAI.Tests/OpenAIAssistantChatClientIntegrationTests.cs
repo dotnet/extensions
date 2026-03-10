@@ -18,6 +18,8 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
+#pragma warning disable OPENAI001 // OpenAI Assistant APIs are experimental
+
 public class OpenAIAssistantChatClientIntegrationTests : ChatClientIntegrationTests
 {
     protected override IChatClient? CreateChatClient()
@@ -60,6 +62,43 @@ public class OpenAIAssistantChatClientIntegrationTests : ChatClientIntegrationTe
         ChatMessage message = Assert.Single(response.Messages);
 
         Assert.NotEmpty(message.Text);
+
+        // Validate CodeInterpreterToolCallContent
+        var toolCallContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolCallContent>().SingleOrDefault();
+        Assert.NotNull(toolCallContent);
+        if (toolCallContent.CallId is not null)
+        {
+            Assert.NotEmpty(toolCallContent.CallId);
+        }
+
+        if (toolCallContent.Inputs is not null)
+        {
+            Assert.NotEmpty(toolCallContent.Inputs);
+            if (toolCallContent.Inputs.OfType<DataContent>().FirstOrDefault() is { } codeInput)
+            {
+                Assert.Equal("text/x-python", codeInput.MediaType);
+                Assert.NotEmpty(codeInput.Data.ToArray());
+            }
+        }
+
+        // Validate CodeInterpreterToolResultContent (when present)
+        var toolResultContents = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolResultContent>().ToList();
+        foreach (var toolResultContent in toolResultContents)
+        {
+            if (toolResultContent.CallId is not null)
+            {
+                Assert.NotEmpty(toolResultContent.CallId);
+            }
+
+            if (toolResultContent.Outputs is not null)
+            {
+                Assert.NotEmpty(toolResultContent.Outputs);
+                if (toolResultContent.Outputs.OfType<TextContent>().FirstOrDefault() is { } resultOutput)
+                {
+                    Assert.NotEmpty(resultOutput.Text);
+                }
+            }
+        }
     }
 
     // [Fact] // uncomment and run to clear out _all_ threads in your OpenAI account

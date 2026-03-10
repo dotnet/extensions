@@ -270,7 +270,7 @@ internal readonly struct JsonValue : IEquatable<JsonValue>
     /// Gets this value as a system.DateTime.
     /// </summary>
     /// <value>This value as a system.DateTime.</value>
-    public DateTime? AsDateTime => IsString && DateTime.TryParse((string?)_reference ?? string.Empty, out var value)
+    public DateTime? AsDateTime => IsString && DateTime.TryParse((string?)_reference ?? string.Empty, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.None, out var value)
             ? value
             : null;
 

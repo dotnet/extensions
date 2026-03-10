@@ -1,12 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.TestUtilities;
+using OpenAI.Responses;
 using Xunit;
+
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
 
 namespace Microsoft.Extensions.AI;
 
@@ -14,8 +19,10 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 {
     protected override IChatClient? CreateChatClient() =>
         IntegrationTestHelpers.GetOpenAIClient()
-        ?.GetOpenAIResponseClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini")
-        .AsIChatClient();
+        ?.GetResponsesClient()
+        .AsIChatClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini");
+
+    private static string ReasoningModel => "gpt-5-nano";
 
     public override bool FunctionInvokingChatClientSetsConversationId => true;
 
@@ -36,6 +43,34 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         ChatMessage message = Assert.Single(response.Messages);
 
         Assert.Equal("6", message.Text);
+
+        // Validate CodeInterpreterToolCallContent
+        var toolCallContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolCallContent>().SingleOrDefault();
+        Assert.NotNull(toolCallContent);
+        Assert.NotNull(toolCallContent.CallId);
+        Assert.NotEmpty(toolCallContent.CallId);
+        Assert.NotNull(toolCallContent.Inputs);
+        Assert.NotEmpty(toolCallContent.Inputs);
+
+        var codeInput = toolCallContent.Inputs.OfType<DataContent>().FirstOrDefault();
+        Assert.NotNull(codeInput);
+        Assert.Equal("text/x-python", codeInput.MediaType);
+        Assert.NotEmpty(codeInput.Data.ToArray());
+
+        // Validate CodeInterpreterToolResultContent
+        var toolResultContent = response.Messages.SelectMany(m => m.Contents).OfType<CodeInterpreterToolResultContent>().FirstOrDefault();
+        Assert.NotNull(toolResultContent);
+        Assert.NotNull(toolResultContent.CallId);
+        Assert.NotEmpty(toolResultContent.CallId);
+
+        if (toolResultContent.Outputs is not null)
+        {
+            Assert.NotEmpty(toolResultContent.Outputs);
+            if (toolResultContent.Outputs.OfType<TextContent>().FirstOrDefault() is { } resultOutput)
+            {
+                Assert.NotEmpty(resultOutput.Text);
+            }
+        }
     }
 
     [ConditionalFact]
@@ -45,9 +80,39 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         var response = await ChatClient.GetResponseAsync(
             "Write a paragraph about .NET based on at least three recent news articles. Cite your sources.",
-            new() { Tools = [new HostedWebSearchTool()] });
+            new()
+            {
+                Tools = [new HostedWebSearchTool()],
+                RawRepresentationFactory = _ =>
+                {
+                    var cro = new CreateResponseOptions();
+                    cro.IncludedProperties.Add("web_search_call.action.sources");
+                    return cro;
+                },
+            });
 
         ChatMessage m = Assert.Single(response.Messages);
+
+        // Verify that the web search tool call and result content are present.
+        var wsCall = m.Contents.OfType<WebSearchToolCallContent>().FirstOrDefault();
+        Assert.NotNull(wsCall);
+        Assert.NotNull(wsCall.CallId);
+        Assert.NotNull(wsCall.Queries);
+        Assert.NotEmpty(wsCall.Queries);
+
+        var wsResult = m.Contents.OfType<WebSearchToolResultContent>().FirstOrDefault();
+        Assert.NotNull(wsResult);
+        Assert.Equal(wsCall.CallId, wsResult.CallId);
+
+        // Verify that sources are populated when opted in.
+        Assert.NotNull(wsResult.Results);
+        Assert.NotEmpty(wsResult.Results);
+        Assert.All(wsResult.Results, r =>
+        {
+            var uriContent = Assert.IsType<UriContent>(r);
+            Assert.NotNull(uriContent.Uri);
+        });
+
         TextContent tc = m.Contents.OfType<TextContent>().First();
         Assert.NotNull(tc.Annotations);
         Assert.NotEmpty(tc.Annotations);
@@ -74,7 +139,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         ChatOptions chatOptions = new()
         {
-            Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp") { ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire }],
+            Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp")) { ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire }],
         };
 
         ChatResponse response = await CreateChatClient()!.GetResponseAsync("Which tools are available on the wiki_tools MCP server?", chatOptions);
@@ -96,7 +161,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         {
             ChatOptions chatOptions = new()
             {
-                Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+                Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
                     {
                         ApprovalMode = requireSpecific ?
                             HostedMcpServerToolApprovalMode.RequireSpecific(null, ["read_wiki_structure", "ask_question"]) :
@@ -116,7 +181,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             Assert.NotNull(response);
             Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
             Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
-            Assert.Empty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
+            Assert.Empty(response.Messages.SelectMany(m => m.Contents).OfType<ToolApprovalRequestContent>());
 
             Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
         }
@@ -136,7 +201,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         {
             ChatOptions chatOptions = new()
             {
-                Tools = [new HostedMcpServerTool("deepwiki", "https://mcp.deepwiki.com/mcp")
+                Tools = [new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
                     {
                         ApprovalMode = requireSpecific ?
                             HostedMcpServerToolApprovalMode.RequireSpecific(["read_wiki_structure", "ask_question"], null) :
@@ -170,8 +235,8 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 var approvalResponse = new ChatMessage(ChatRole.Tool,
                     response.Messages
                             .SelectMany(m => m.Contents)
-                            .OfType<McpServerToolApprovalRequestContent>()
-                            .Select(c => new McpServerToolApprovalResponseContent(c.ToolCall.CallId, true))
+                            .OfType<ToolApprovalRequestContent>()
+                            .Select(c => c.CreateResponse(true))
                             .ToArray());
                 if (approvalResponse.Contents.Count == 0)
                 {
@@ -287,7 +352,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         int updateNumber = 0;
         string responseText = "";
-        object? continuationToken = null;
+        ResponseContinuationToken? continuationToken = null;
 
         await foreach (var update in ChatClient.GetStreamingResponseAsync("What is the capital of France?", chatOptions))
         {
@@ -344,7 +409,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["RemoteMCP:ConnectorAccessToken"] is not string accessToken)
+        if (TestRunnerConfiguration.Instance["RemoteMCP:ConnectorAccessToken"] is not string { Length: > 0 } accessToken)
         {
             throw new SkipTestException(
                 "To run this test, set a value for RemoteMCP:ConnectorAccessToken. " +
@@ -361,9 +426,9 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 Tools = [new HostedMcpServerTool("calendar", "connector_googlecalendar")
                     {
                         ApprovalMode = approval ?
-                                HostedMcpServerToolApprovalMode.AlwaysRequire :
-                                HostedMcpServerToolApprovalMode.NeverRequire,
-                        AuthorizationToken = accessToken
+                            HostedMcpServerToolApprovalMode.AlwaysRequire :
+                            HostedMcpServerToolApprovalMode.NeverRequire,
+                        Headers = new Dictionary<string, string> { ["Authorization"] = $"Bearer {accessToken}" },
                     }
                 ],
             };
@@ -379,8 +444,9 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             if (approval)
             {
                 input.AddRange(response.Messages);
-                var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolApprovalRequestContent>());
-                Assert.Equal("search_events", approvalRequest.ToolCall.ToolName);
+                var approvalRequest = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<ToolApprovalRequestContent>());
+                var mcpCallContent = Assert.IsType<McpServerToolCallContent>(approvalRequest.ToolCall);
+                Assert.Equal("search_events", mcpCallContent.Name);
                 input.Add(new ChatMessage(ChatRole.Tool, [approvalRequest.CreateResponse(true)]));
 
                 response = streaming ?
@@ -390,11 +456,302 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
             Assert.NotNull(response);
             var toolCall = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
-            Assert.Equal("search_events", toolCall.ToolName);
+            Assert.Equal("search_events", toolCall.Name);
 
             var toolResult = Assert.Single(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
-            var content = Assert.IsType<TextContent>(Assert.Single(toolResult.Output!));
+            var content = Assert.IsType<TextContent>(Assert.Single(toolResult.Outputs!));
             Assert.Equal(@"{""events"": [], ""next_page_token"": null}", content.Text);
         }
+    }
+
+    [ConditionalFact]
+    public async Task ToolCallResult_TextContent()
+    {
+        SkipIfNotEnabled();
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create((int a, int b) => new TextContent($"The sum is {a + b}"), "AddNumbers", "Adds two numbers together")]
+        };
+
+        using var client = new FunctionInvokingChatClient(ChatClient);
+
+        var response = await client.GetResponseAsync("What is 25 plus 17? Use the AddNumbers function.", chatOptions);
+
+        Assert.NotNull(response);
+
+        // The model should have called the function and received "The sum is 42"
+        Assert.Contains("42", response.Text);
+    }
+
+    [ConditionalFact]
+    public async Task ToolCallResult_MultipleAIContents()
+    {
+        SkipIfNotEnabled();
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create((string city) => new List<AIContent>
+            {
+                new TextContent($"Weather in {city}: "),
+                new TextContent("Sunny, 72°F")
+            }, "GetWeather", "Gets the weather for a city")]
+        };
+
+        using var client = new FunctionInvokingChatClient(ChatClient);
+
+        var response = await client.GetResponseAsync("What's the weather in Seattle? Use GetWeather.", chatOptions);
+
+        Assert.NotNull(response);
+
+        // Verify the function was called and both parts were included
+        var messages = response.Messages.ToList();
+        Assert.NotEmpty(messages);
+
+        // Check that we got a response mentioning the weather data
+        Assert.Contains("72", response.Text);
+    }
+
+    [ConditionalFact]
+    public async Task ToolCallResult_ImageDataContent()
+    {
+        SkipIfNotEnabled();
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => new DataContent(ImageDataUri.GetImageDataUri(), "image/png"), "GetDotnetLogo", "Returns the .NET logo image")]
+        };
+
+        using var client = new FunctionInvokingChatClient(ChatClient);
+
+        var response = await client.GetResponseAsync("Call GetDotnetLogo and tell me what you see in the image.", chatOptions);
+
+        Assert.NotNull(response);
+
+        // The model should describe seeing the .NET logo or purple/related colors
+        Assert.True(
+            response.Text.Contains("logo", StringComparison.OrdinalIgnoreCase) ||
+            response.Text.Contains("purple", StringComparison.OrdinalIgnoreCase) ||
+            response.Text.Contains("dot", StringComparison.OrdinalIgnoreCase) ||
+            response.Text.Contains("net", StringComparison.OrdinalIgnoreCase),
+            $"Expected response to mention logo or colors, but got: {response.Text}");
+    }
+
+    [ConditionalFact]
+    public async Task ToolCallResult_PdfDataContent()
+    {
+        SkipIfNotEnabled();
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => new DataContent(ImageDataUri.GetPdfDataUri(), "application/pdf") { Name = "document.pdf" }, "GetDocument", "Returns a PDF document")]
+        };
+
+        using var client = new FunctionInvokingChatClient(ChatClient);
+
+        var response = await client.GetResponseAsync("Call GetDocument and tell me what text is in the PDF.", chatOptions);
+
+        Assert.NotNull(response);
+
+        // The PDF contains "Hello World!" text
+        Assert.Contains("Hello World", response.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task ToolCallResult_MixedContentWithImage()
+    {
+        SkipIfNotEnabled();
+
+        var imageUri = ImageDataUri.GetImageDataUri();
+        var imageBytes = Convert.FromBase64String(imageUri.ToString().Split(',')[1]);
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => new List<AIContent>
+            {
+                new TextContent("Analysis result: "),
+                new DataContent(imageBytes, "image/png"),
+                new TextContent(" - Image provided above")
+            }, "AnalyzeImage", "Analyzes an image and returns results")]
+        };
+
+        using var client = new FunctionInvokingChatClient(ChatClient);
+
+        var response = await client.GetResponseAsync("Call AnalyzeImage and describe what you see.", chatOptions);
+
+        Assert.NotNull(response);
+
+        // Should mention the analysis and describe the image
+        Assert.True(
+            response.Text.Contains("analysis", StringComparison.OrdinalIgnoreCase) ||
+            response.Text.Contains("image", StringComparison.OrdinalIgnoreCase) ||
+            response.Text.Contains("logo", StringComparison.OrdinalIgnoreCase),
+            $"Expected response to mention analysis or image content, but got: {response.Text}");
+    }
+
+    [ConditionalFact]
+    public async Task ReasoningContent_NonStreaming_RoundtripsEncryptedContent()
+    {
+        SkipIfNotEnabled();
+
+        ChatOptions chatOptions = new()
+        {
+            ModelId = ReasoningModel,
+            Reasoning = new()
+            {
+                Effort = ReasoningEffort.Low,
+                Output = ReasoningOutput.Full,
+            },
+            RawRepresentationFactory = _ => new CreateResponseOptions
+            {
+                StoredOutputEnabled = false,
+                IncludedProperties = { IncludedResponseProperty.ReasoningEncryptedContent },
+            },
+        };
+
+        // 1. First request: Get initial response with encrypted content
+        List<ChatMessage> chatHistory = [new ChatMessage(ChatRole.User, "What is 2+2? Think step by step but be very brief.")];
+
+        var response1 = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        Assert.NotNull(response1);
+
+        // Verify we got reasoning content with encrypted data and RawRepresentation
+        var reasoningContent = response1.Messages
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .FirstOrDefault();
+
+        Assert.NotNull(reasoningContent);
+        Assert.NotNull(reasoningContent.ProtectedData);
+        Assert.NotEmpty(reasoningContent.ProtectedData);
+        Assert.NotNull(reasoningContent.RawRepresentation);
+
+        // 2. Second request: Uses raw representation
+        chatHistory.AddMessages(response1);
+        chatHistory.Add(new ChatMessage(ChatRole.User, "What is 3+3?"));
+
+        var response2 = await ChatClient.GetResponseAsync(chatHistory, chatOptions);
+        Assert.NotNull(response2);
+        Assert.True(response2.Text.Contains("6") || response2.Text.Contains("six"));
+
+        // 3. Serialize/deserialize to drop RawRepresentations, then make third request
+        string json = JsonSerializer.Serialize(chatHistory, AIJsonUtilities.DefaultOptions);
+        var deserializedHistory = JsonSerializer.Deserialize<List<ChatMessage>>(json, AIJsonUtilities.DefaultOptions)!;
+
+        // Verify RawRepresentation was dropped but ProtectedData preserved
+        var deserializedReasoning = deserializedHistory
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .First(r => !string.IsNullOrEmpty(r.ProtectedData));
+
+        Assert.Null(deserializedReasoning.RawRepresentation);
+        Assert.Equal(reasoningContent.ProtectedData, deserializedReasoning.ProtectedData);
+
+        deserializedHistory.Add(new ChatMessage(ChatRole.User, "What is 4+4?"));
+
+        var response3 = await ChatClient.GetResponseAsync(deserializedHistory, chatOptions);
+        Assert.NotNull(response3);
+        Assert.Contains("8", response3.Text);
+
+        // 4. Corrupt the encrypted content and verify fourth request fails
+        foreach (var reasoning in deserializedHistory
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .Where(r => !string.IsNullOrEmpty(r.ProtectedData)))
+        {
+            reasoning.ProtectedData = "completely_invalid_encrypted_content_that_should_fail";
+        }
+
+        deserializedHistory.Add(new ChatMessage(ChatRole.User, "What is 5+5?"));
+
+        var ex = await Assert.ThrowsAsync<ClientResultException>(
+            () => ChatClient.GetResponseAsync(deserializedHistory, chatOptions));
+        Assert.Contains("encrypted", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task ReasoningContent_Streaming_RoundtripsEncryptedContent()
+    {
+        // This test requires a reasoning model with encrypted content support.
+        SkipIfNotEnabled();
+
+        ChatOptions chatOptions = new()
+        {
+            ModelId = ReasoningModel,
+            Reasoning = new()
+            {
+                Effort = ReasoningEffort.Low,
+                Output = ReasoningOutput.Full,
+            },
+            RawRepresentationFactory = _ => new CreateResponseOptions
+            {
+                StoredOutputEnabled = false,
+                IncludedProperties = { IncludedResponseProperty.ReasoningEncryptedContent },
+            },
+        };
+
+        // 1. First request: Get initial response with encrypted content via streaming
+        List<ChatMessage> chatHistory = [new ChatMessage(ChatRole.User, "What is 2+2? Think step by step but be very brief.")];
+
+        var response1 = await ChatClient.GetStreamingResponseAsync(chatHistory, chatOptions).ToChatResponseAsync();
+        Assert.NotNull(response1);
+
+        // Verify we got reasoning content with encrypted data
+        // Note: After coalescing streaming updates, RawRepresentation is not preserved
+        var reasoningContent = response1.Messages
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .FirstOrDefault();
+
+        Assert.NotNull(reasoningContent);
+        Assert.NotNull(reasoningContent.ProtectedData);
+        Assert.NotEmpty(reasoningContent.ProtectedData);
+
+        // 2. Second request: Uses the coalesced content (no RawRepresentation after coalescing)
+        chatHistory.AddMessages(response1);
+        chatHistory.Add(new ChatMessage(ChatRole.User, "What is 3+3?"));
+
+        var response2 = await ChatClient.GetStreamingResponseAsync(chatHistory, chatOptions).ToChatResponseAsync();
+        Assert.NotNull(response2);
+        Assert.Contains("6", response2.Text);
+
+        // 3. Serialize/deserialize to ensure ProtectedData survives, then make third request
+        string json = JsonSerializer.Serialize(chatHistory, AIJsonUtilities.DefaultOptions);
+        var deserializedHistory = JsonSerializer.Deserialize<List<ChatMessage>>(json, AIJsonUtilities.DefaultOptions)!;
+
+        // Verify ProtectedData preserved after serialization
+        var deserializedReasoning = deserializedHistory
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .First(r => !string.IsNullOrEmpty(r.ProtectedData));
+
+        Assert.Null(deserializedReasoning.RawRepresentation);
+        Assert.Equal(reasoningContent.ProtectedData, deserializedReasoning.ProtectedData);
+
+        deserializedHistory.Add(new ChatMessage(ChatRole.User, "What is 4+4?"));
+
+        var response3 = await ChatClient.GetStreamingResponseAsync(deserializedHistory, chatOptions).ToChatResponseAsync();
+        Assert.NotNull(response3);
+        Assert.Contains("8", response3.Text);
+
+        // 4. Corrupt the encrypted content and verify fourth request fails
+        foreach (var reasoning in deserializedHistory
+            .SelectMany(m => m.Contents)
+            .OfType<TextReasoningContent>()
+            .Where(r => !string.IsNullOrEmpty(r.ProtectedData)))
+        {
+            reasoning.ProtectedData = "completely_invalid_encrypted_content_that_should_fail";
+        }
+
+        deserializedHistory.Add(new ChatMessage(ChatRole.User, "What is 5+5?"));
+
+        var ex = await Assert.ThrowsAsync<ClientResultException>(async () =>
+        {
+            await foreach (var update in ChatClient.GetStreamingResponseAsync(deserializedHistory, chatOptions))
+            {
+                _ = update;
+            }
+        });
+        Assert.Contains("encrypted", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 }

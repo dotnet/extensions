@@ -68,12 +68,23 @@ public class DnsServicePublicApiTests
     }
 
     [Fact]
-    public void AddDnsServiceEndpointProviderWithConfigureOptionsShouldThrowWhenConfigureOptionsIsNull()
+    public void ConfigureDnsResolverShouldThrowWhenServicesIsNull()
+    {
+        IServiceCollection services = null!;
+
+        var action = () => services.ConfigureDnsResolver(_ => { });
+
+        var exception = Assert.Throws<ArgumentNullException>(action);
+        Assert.Equal(nameof(services), exception.ParamName);
+    }
+
+    [Fact]
+    public void ConfigureDnsResolverShouldThrowWhenConfigureOptionsIsNull()
     {
         IServiceCollection services = new ServiceCollection();
-        Action<DnsServiceEndpointProviderOptions> configureOptions = null!;
+        Action<DnsResolverOptions> configureOptions = null!;
 
-        var action = () => services.AddDnsServiceEndpointProvider(configureOptions);
+        var action = () => services.ConfigureDnsResolver(configureOptions);
 
         var exception = Assert.Throws<ArgumentNullException>(action);
         Assert.Equal(nameof(configureOptions), exception.ParamName);

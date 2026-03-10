@@ -4,11 +4,12 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an image generation request.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public class ImageGenerationResponse
 {
     /// <summary>Initializes a new instance of the <see cref="ImageGenerationResponse"/> class.</summary>

@@ -56,7 +56,7 @@ internal sealed partial class ResourceUtilizationHealthCheck : IHealthCheck, IDi
                 message = "Memory usage is above the limit";
             }
 
-            return Task.FromResult(HealthCheckResult.Unhealthy(message, default, data));
+            return Task.FromResult(HealthCheckResult.Unhealthy(message, data: data));
         }
 
         bool cpuDegraded = cpuUsedPercentage > options.CpuThresholds.DegradedUtilizationPercentage;
@@ -78,10 +78,10 @@ internal sealed partial class ResourceUtilizationHealthCheck : IHealthCheck, IDi
                 message = "Memory usage is close to the limit";
             }
 
-            return Task.FromResult(HealthCheckResult.Degraded(message, default, data));
+            return Task.FromResult(HealthCheckResult.Degraded(message, data: data));
         }
 
-        return Task.FromResult(HealthCheckResult.Healthy(default, data));
+        return Task.FromResult(HealthCheckResult.Healthy(data: data));
     }
 #pragma warning restore EA0014 // The async method doesn't support cancellation
 

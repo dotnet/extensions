@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +10,6 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents a reducer capable of shrinking the size of a list of chat messages.
 /// </summary>
-[Experimental("MEAI001")]
 public interface IChatReducer
 {
     /// <summary>Reduces the size of a list of chat messages.</summary>

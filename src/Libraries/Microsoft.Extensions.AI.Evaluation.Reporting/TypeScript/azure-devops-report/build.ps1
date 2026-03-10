@@ -21,9 +21,16 @@ if ($null -eq $PackageVersion)
 
 Write-Host "Using version $PackageVersion"
 
+# Some CI agents have stale npm auth tokens in user or global .npmrc files
+# (e.g. C:\Users\cloudtest\.npmrc) that cause E401 errors against the public
+# dotnet-public-npm feed. Override both config paths so npm ignores stale
+# agent-level credentials and accesses the public feed anonymously.
+$env:NPM_CONFIG_USERCONFIG = "$env:TEMP\no-user-npmrc"
+$env:NPM_CONFIG_GLOBALCONFIG = "$env:TEMP\no-global-npmrc"
+
 # Write-Information "Building Report Publishing task"
 Set-Location $PSScriptRoot/tasks/PublishAIEvaluationReport
-npm install --omit=dev
+npm ci --omit=dev
 # Copy task files to dist folder
 New-Item -ItemType Directory -Path ./dist -Force
 copy-item -Path ./task.json -Destination ./dist/ -Force
@@ -39,7 +46,7 @@ remove-item -Path ./dist/node_modules/resolve/test -Recurse -Force -ErrorAction 
     
 # Write-Information "Building Extension Package" 
 Set-Location $PSScriptRoot
-npm install
+npm ci
 npx tsc -b
 npx vite build
     
