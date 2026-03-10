@@ -21,6 +21,7 @@ internal static class OpenTelemetryConsts
     public const string TypeText = "text";
     public const string TypeJson = "json";
     public const string TypeImage = "image";
+    public const string TypeAudio = "audio";
 
     public const string TokenTypeInput = "input";
     public const string TokenTypeOutput = "output";
