@@ -271,7 +271,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability. If there's already a genai "invoke_agent"
-        // span that's current, however, we just consider that the group and don't add a new one.
+        // or "invoke_workflow" span that's current, however, we just consider that the group and don't add a new one.
         using Activity? activity = CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
@@ -423,7 +423,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability. If there's already a genai "invoke_agent"
-        // span that's current, however, we just consider that the group and don't add a new one.
+        // or "invoke_workflow" span that's current, however, we just consider that the group and don't add a new one.
         using Activity? activity = CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
         UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
 
@@ -1370,17 +1370,25 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
     }
 
-    /// <summary>Gets a value indicating whether <see cref="Activity.Current"/> represents an "invoke_agent" span.</summary>
+    /// <summary>Gets a value indicating whether <see cref="Activity.Current"/> represents an "invoke_agent" or "invoke_workflow" span.</summary>
     private static bool CurrentActivityIsInvokeAgent
     {
         get
         {
             string? name = Activity.Current?.DisplayName;
             return
-                name?.StartsWith(OpenTelemetryConsts.GenAI.InvokeAgentName, StringComparison.Ordinal) is true &&
-                (name.Length == OpenTelemetryConsts.GenAI.InvokeAgentName.Length || name[OpenTelemetryConsts.GenAI.InvokeAgentName.Length] == ' ');
+                IsActivityDisplayNameMatch(name, OpenTelemetryConsts.GenAI.InvokeAgentName) ||
+                IsActivityDisplayNameMatch(name, OpenTelemetryConsts.GenAI.InvokeWorkflowName);
         }
     }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if <paramref name="displayName"/> equals <paramref name="operationName"/>
+    /// or starts with <paramref name="operationName"/> followed by a space (e.g. "invoke_agent my_agent").
+    /// </summary>
+    private static bool IsActivityDisplayNameMatch(string? displayName, string operationName) =>
+        displayName?.StartsWith(operationName, StringComparison.Ordinal) is true &&
+        (displayName.Length == operationName.Length || displayName[operationName.Length] == ' ');
 
     /// <summary>Invokes the function asynchronously.</summary>
     /// <param name="context">
@@ -1394,7 +1402,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         _ = Throw.IfNull(context);
 
         // We have multiple possible ActivitySource's we could use. In a chat scenario, we ask the inner client whether it has an ActivitySource.
-        // In an agent scenario, we use the ActivitySource from the surrounding "invoke_agent" activity.
+        // In an agent/workflow scenario, we use the ActivitySource from the surrounding "invoke_agent" or "invoke_workflow" activity.
         Activity? invokeAgentActivity = CurrentActivityIsInvokeAgent ? Activity.Current : null;
         ActivitySource? source = invokeAgentActivity?.Source ?? _activitySource;
 
@@ -1413,7 +1421,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         long startingTimestamp = Stopwatch.GetTimestamp();
 
         // If we're in the chat scenario, we determine whether sensitive data is enabled by querying the inner chat client.
-        // If we're in the agent scenario, we determine whether sensitive data is enabled by checking for the relevant custom property on the activity.
+        // If we're in the agent/workflow scenario, we determine whether sensitive data is enabled by checking for the relevant custom property on the activity.
         bool enableSensitiveData =
             activity is { IsAllDataRequested: true } &&
             (invokeAgentActivity is not null ?
