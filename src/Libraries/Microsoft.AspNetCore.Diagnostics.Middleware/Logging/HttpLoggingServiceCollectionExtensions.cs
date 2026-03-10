@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -18,7 +17,6 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods to register the HTTP logging feature within the service.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.HttpLogging, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class HttpLoggingServiceCollectionExtensions
 {
     /// <summary>
