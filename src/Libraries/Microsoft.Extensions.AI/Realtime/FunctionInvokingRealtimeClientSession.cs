@@ -224,7 +224,7 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
     }
 
     /// <summary>Finds a tool by name in the specified tool lists.</summary>
-    private static AIFunctionDeclaration? FindTool(string name, params ReadOnlySpan<IList<AITool>?> toolLists)
+    private static AIFunctionDeclaration? FindTool(string name, params ReadOnlySpan<IEnumerable<AITool>?> toolLists)
     {
         foreach (var toolList in toolLists)
         {
@@ -244,13 +244,17 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
     }
 
     /// <summary>Checks whether there are any tools in the specified tool lists.</summary>
-    private static bool HasAnyTools(params ReadOnlySpan<IList<AITool>?> toolLists)
+    private static bool HasAnyTools(params ReadOnlySpan<IEnumerable<AITool>?> toolLists)
     {
         foreach (var toolList in toolLists)
         {
-            if (toolList?.Count > 0)
+            if (toolList is not null)
             {
-                return true;
+                using var enumerator = toolList.GetEnumerator();
+                if (enumerator.MoveNext())
+                {
+                    return true;
+                }
             }
         }
 
@@ -266,7 +270,7 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
     /// </remarks>
     private bool ShouldTerminateBasedOnFunctionCalls(List<FunctionCallContent> functionCallContents)
     {
-        if (!HasAnyTools(AdditionalTools, _innerSession.Options?.Tools as IList<AITool>))
+        if (!HasAnyTools(AdditionalTools, _innerSession.Options?.Tools))
         {
             // No tools available at all. If TerminateOnUnknownCalls, stop the loop.
             if (TerminateOnUnknownCalls)
@@ -284,7 +288,7 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
 
         foreach (var fcc in functionCallContents)
         {
-            AIFunctionDeclaration? tool = FindTool(fcc.Name, AdditionalTools, _innerSession.Options?.Tools as IList<AITool>);
+            AIFunctionDeclaration? tool = FindTool(fcc.Name, AdditionalTools, _innerSession.Options?.Tools);
             if (tool is not null)
             {
                 if (tool is not AIFunction)
@@ -317,7 +321,7 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
         // Use the processor to handle function calls
         var results = await Processor.ProcessFunctionCallsAsync(
             functionCallContents,
-            name => FindTool(name, AdditionalTools, _innerSession.Options?.Tools as IList<AITool>),
+            name => FindTool(name, AdditionalTools, _innerSession.Options?.Tools),
             AllowConcurrentInvocation,
             (callContent, aiFunction, _) => new FunctionInvocationContext
             {
