@@ -1276,7 +1276,6 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         }
     }
 
- 
     /// <summary>This method will invoke the function within the try block.</summary>
     /// <param name="context">The function invocation context.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
