@@ -13,17 +13,23 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
 public class CreateConversationItemRealtimeClientMessage : RealtimeClientMessage
 {
+    private RealtimeConversationItem _item;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateConversationItemRealtimeClientMessage"/> class.
     /// </summary>
     /// <param name="item">The conversation item to create.</param>
     public CreateConversationItemRealtimeClientMessage(RealtimeConversationItem item)
     {
-        Item = Throw.IfNull(item);
+        _item = Throw.IfNull(item);
     }
 
     /// <summary>
     /// Gets or sets the conversation item to create.
     /// </summary>
-    public RealtimeConversationItem Item { get; set; }
+    public RealtimeConversationItem Item
+    {
+        get => _item;
+        set => _item = Throw.IfNull(value);
+    }
 }
