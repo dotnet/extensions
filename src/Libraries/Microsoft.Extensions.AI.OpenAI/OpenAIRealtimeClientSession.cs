@@ -517,7 +517,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
 
             if (mcpTool.Headers is { } headers)
             {
-                var sdkHeaders = new Dictionary<string, string>();
+                var sdkHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var kvp in headers)
                 {
                     sdkHeaders[kvp.Key] = kvp.Value;
