@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
@@ -19,6 +20,7 @@ public class InputAudioBufferAppendRealtimeClientMessage : RealtimeClientMessage
     /// Initializes a new instance of the <see cref="InputAudioBufferAppendRealtimeClientMessage"/> class.
     /// </summary>
     /// <param name="audioContent">The data content containing the audio buffer data to append.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="audioContent"/> is <see langword="null"/>.</exception>
     public InputAudioBufferAppendRealtimeClientMessage(DataContent audioContent)
     {
         _content = Throw.IfNull(audioContent);
@@ -30,6 +32,7 @@ public class InputAudioBufferAppendRealtimeClientMessage : RealtimeClientMessage
     /// <remarks>
     /// The content should include the audio buffer data that needs to be appended to the input audio buffer.
     /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     public DataContent Content
     {
         get => _content;

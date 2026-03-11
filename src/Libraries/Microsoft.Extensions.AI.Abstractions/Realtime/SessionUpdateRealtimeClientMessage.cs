@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
@@ -28,6 +29,7 @@ public class SessionUpdateRealtimeClientMessage : RealtimeClientMessage
     /// Initializes a new instance of the <see cref="SessionUpdateRealtimeClientMessage"/> class.
     /// </summary>
     /// <param name="options">The session options to apply.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> is <see langword="null"/>.</exception>
     public SessionUpdateRealtimeClientMessage(RealtimeSessionOptions options)
     {
         Options = Throw.IfNull(options);

@@ -102,6 +102,7 @@ public readonly struct RealtimeServerMessageType : IEquatable<RealtimeServerMess
     /// Initializes a new instance of the <see cref="RealtimeServerMessageType"/> struct with the provided value.
     /// </summary>
     /// <param name="value">The value to associate with this <see cref="RealtimeServerMessageType"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/> or whitespace.</exception>
     [JsonConstructor]
     public RealtimeServerMessageType(string value)
     {
