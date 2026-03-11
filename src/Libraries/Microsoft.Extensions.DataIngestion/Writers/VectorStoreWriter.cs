@@ -169,7 +169,13 @@ public sealed class VectorStoreWriter<T> : IngestionChunkWriter<T>
         }
 
         // Each Vector Store has a different max top count limit, so we use low value and loop.
-        const int MaxTopCount = 1_000;
+        // Use smaller batch size in debug to be able to test the looping logic without needing to insert a lot of records.
+        const int MaxTopCount =
+#if RELEASE
+            1_000;
+#else
+            10;
+#endif
 
         List<object> keys = [];
         int insertedCount;
