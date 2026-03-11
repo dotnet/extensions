@@ -987,6 +987,5 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     [JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelMcpApprovalResponse>))]
     [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
     private sealed partial class OtelContext : JsonSerializerContext;
-
 }
 
