@@ -19,24 +19,24 @@ namespace Microsoft.Extensions.AI;
 public static class RealtimeResponseStatus
 {
     /// <summary>
-    /// The response completed successfully.
+    /// Gets the status value indicating the response completed successfully.
     /// </summary>
-    public const string Completed = "completed";
+    public static string Completed { get; } = "completed";
 
     /// <summary>
-    /// The response was cancelled, typically due to an interruption such as user barge-in
+    /// Gets the status value indicating the response was cancelled, typically due to an interruption such as user barge-in
     /// (the user started speaking while the model was generating output).
     /// </summary>
-    public const string Cancelled = "cancelled";
+    public static string Cancelled { get; } = "cancelled";
 
     /// <summary>
-    /// The response ended before completing, for example because the output reached
+    /// Gets the status value indicating the response ended before completing, for example because the output reached
     /// the maximum token limit.
     /// </summary>
-    public const string Incomplete = "incomplete";
+    public static string Incomplete { get; } = "incomplete";
 
     /// <summary>
-    /// The response failed due to an error.
+    /// Gets the status value indicating the response failed due to an error.
     /// </summary>
-    public const string Failed = "failed";
+    public static string Failed { get; } = "failed";
 }
