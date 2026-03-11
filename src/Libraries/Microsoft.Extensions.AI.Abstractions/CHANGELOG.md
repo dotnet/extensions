@@ -2,6 +2,10 @@
 
 ## NOT YET RELEASED
 
+- Added `ITextToSpeechClient` abstraction for interacting with text-to-speech capabilities.
+
+## 10.4.0
+
 - `AddAIContentType` now automatically registers the content type against every base in the inheritance chain up to `AIContent`.
 - Added `IHostedFileClient` interface and related types for interacting with files hosted by the service.
 - Added `WebSearchToolCallContent` and `WebSearchToolResultContent` for representing web search tool calls and results.
@@ -10,6 +14,7 @@
 - Updated AI function parameter JSON schema generation to honor `[Required]` attributes.
 - Updated `AIFunctionFactory` to work better with `DynamicMethod`-based functions.
 - Removed the experimental `IToolReductionStrategy` type.
+- Fixed the serialization of `ResponseContinuationToken` / `AllowBackgroundResponses` properties.
 
 ## 10.3.0
 
