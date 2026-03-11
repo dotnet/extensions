@@ -5,6 +5,8 @@ using System;
 using System.Text.Json;
 using Xunit;
 
+#pragma warning disable MEAI001 // Experimental API
+
 namespace Microsoft.Extensions.AI;
 
 public class UsageDetailsTests
@@ -18,6 +20,10 @@ public class UsageDetailsTests
         Assert.Null(details.TotalTokenCount);
         Assert.Null(details.CachedInputTokenCount);
         Assert.Null(details.ReasoningTokenCount);
+        Assert.Null(details.InputAudioTokenCount);
+        Assert.Null(details.InputTextTokenCount);
+        Assert.Null(details.OutputAudioTokenCount);
+        Assert.Null(details.OutputTextTokenCount);
         Assert.Null(details.AdditionalCounts);
     }
 
@@ -31,6 +37,10 @@ public class UsageDetailsTests
             TotalTokenCount = 30,
             CachedInputTokenCount = 5,
             ReasoningTokenCount = 8,
+            InputAudioTokenCount = 50,
+            InputTextTokenCount = 60,
+            OutputAudioTokenCount = 70,
+            OutputTextTokenCount = 80,
             AdditionalCounts = new() { ["custom"] = 100 }
         };
 
@@ -39,6 +49,10 @@ public class UsageDetailsTests
         Assert.Equal(30, details.TotalTokenCount);
         Assert.Equal(5, details.CachedInputTokenCount);
         Assert.Equal(8, details.ReasoningTokenCount);
+        Assert.Equal(50, details.InputAudioTokenCount);
+        Assert.Equal(60, details.InputTextTokenCount);
+        Assert.Equal(70, details.OutputAudioTokenCount);
+        Assert.Equal(80, details.OutputTextTokenCount);
         Assert.NotNull(details.AdditionalCounts);
         Assert.Equal(100, details.AdditionalCounts["custom"]);
     }
@@ -60,6 +74,10 @@ public class UsageDetailsTests
             TotalTokenCount = 30,
             CachedInputTokenCount = 5,
             ReasoningTokenCount = 8,
+            InputAudioTokenCount = 10,
+            InputTextTokenCount = 20,
+            OutputAudioTokenCount = 30,
+            OutputTextTokenCount = 40,
         };
 
         UsageDetails details2 = new()
@@ -69,6 +87,10 @@ public class UsageDetailsTests
             TotalTokenCount = 40,
             CachedInputTokenCount = 7,
             ReasoningTokenCount = 12,
+            InputAudioTokenCount = 15,
+            InputTextTokenCount = 25,
+            OutputAudioTokenCount = 35,
+            OutputTextTokenCount = 45,
         };
 
         details1.Add(details2);
@@ -78,6 +100,10 @@ public class UsageDetailsTests
         Assert.Equal(70, details1.TotalTokenCount);
         Assert.Equal(12, details1.CachedInputTokenCount);
         Assert.Equal(20, details1.ReasoningTokenCount);
+        Assert.Equal(25, details1.InputAudioTokenCount);
+        Assert.Equal(45, details1.InputTextTokenCount);
+        Assert.Equal(65, details1.OutputAudioTokenCount);
+        Assert.Equal(85, details1.OutputTextTokenCount);
     }
 
     [Fact]
@@ -152,6 +178,10 @@ public class UsageDetailsTests
             TotalTokenCount = 30,
             CachedInputTokenCount = 5,
             ReasoningTokenCount = 8,
+            InputAudioTokenCount = 50,
+            InputTextTokenCount = 60,
+            OutputAudioTokenCount = 70,
+            OutputTextTokenCount = 80,
             AdditionalCounts = new() { ["custom"] = 100 }
         };
 
@@ -164,6 +194,10 @@ public class UsageDetailsTests
         Assert.Equal(details.TotalTokenCount, deserialized.TotalTokenCount);
         Assert.Equal(details.CachedInputTokenCount, deserialized.CachedInputTokenCount);
         Assert.Equal(details.ReasoningTokenCount, deserialized.ReasoningTokenCount);
+        Assert.Equal(details.InputAudioTokenCount, deserialized.InputAudioTokenCount);
+        Assert.Equal(details.InputTextTokenCount, deserialized.InputTextTokenCount);
+        Assert.Equal(details.OutputAudioTokenCount, deserialized.OutputAudioTokenCount);
+        Assert.Equal(details.OutputTextTokenCount, deserialized.OutputTextTokenCount);
         Assert.NotNull(deserialized.AdditionalCounts);
         Assert.Equal(100, deserialized.AdditionalCounts["custom"]);
     }
@@ -186,6 +220,10 @@ public class UsageDetailsTests
         Assert.Null(deserialized.TotalTokenCount);
         Assert.Null(deserialized.CachedInputTokenCount);
         Assert.Null(deserialized.ReasoningTokenCount);
+        Assert.Null(deserialized.InputAudioTokenCount);
+        Assert.Null(deserialized.InputTextTokenCount);
+        Assert.Null(deserialized.OutputAudioTokenCount);
+        Assert.Null(deserialized.OutputTextTokenCount);
     }
 
     [Fact]
@@ -198,6 +236,10 @@ public class UsageDetailsTests
               "totalTokenCount": 30,
               "cachedInputTokenCount": 5,
               "reasoningTokenCount": 8,
+              "inputAudioTokenCount": 50,
+              "inputTextTokenCount": 60,
+              "outputAudioTokenCount": 70,
+              "outputTextTokenCount": 80,
               "additionalCounts": {
                 "custom": 100
               }
@@ -212,6 +254,10 @@ public class UsageDetailsTests
         Assert.Equal(30, result.TotalTokenCount);
         Assert.Equal(5, result.CachedInputTokenCount);
         Assert.Equal(8, result.ReasoningTokenCount);
+        Assert.Equal(50, result.InputAudioTokenCount);
+        Assert.Equal(60, result.InputTextTokenCount);
+        Assert.Equal(70, result.OutputAudioTokenCount);
+        Assert.Equal(80, result.OutputTextTokenCount);
         Assert.NotNull(result.AdditionalCounts);
         Assert.Single(result.AdditionalCounts);
         Assert.Equal(100, result.AdditionalCounts["custom"]);
