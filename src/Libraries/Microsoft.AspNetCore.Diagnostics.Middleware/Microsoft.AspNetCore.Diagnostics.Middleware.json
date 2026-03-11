@@ -110,41 +110,41 @@
     },
     {
       "Type": "class Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions.LoggingRedactionOptions();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "System.Collections.Generic.ISet<string> Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions.ExcludePathStartsWith { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "bool Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions.IncludeUnmatchedRoutes { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions.RequestHeadersDataClasses { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "Microsoft.AspNetCore.Diagnostics.Logging.IncomingPathLoggingMode Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions.RequestPathLoggingMode { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions.RequestPathParameterRedactionMode { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions.ResponseHeadersDataClasses { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions.RouteParameterDataClasses { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },

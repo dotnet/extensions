@@ -6,14 +6,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 /// <summary>
 /// Top-level model for redacting incoming HTTP requests and their corresponding responses.
 /// </summary>
+[Experimental(diagnosticId: DiagnosticIds.Experiments.HttpLogging, UrlFormat = DiagnosticIds.UrlFormat)]
 public class LoggingRedactionOptions
 {
     private const IncomingPathLoggingMode DefaultRequestPathLoggingMode = IncomingPathLoggingMode.Formatted;
