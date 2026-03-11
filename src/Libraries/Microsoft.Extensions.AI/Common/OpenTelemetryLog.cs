@@ -12,6 +12,6 @@ internal static partial class OpenTelemetryLog
     [LoggerMessage(
         EventName = "gen_ai.client.operation.exception",
         Level = LogLevel.Warning,
-        Message = "A GenAI client operation exception occurred.")]
+        Message = "gen_ai.client.operation.exception")]
     internal static partial void OperationException(ILogger logger, Exception error);
 }
