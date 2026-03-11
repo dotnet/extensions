@@ -172,7 +172,7 @@ internal static class OpenTelemetryConsts
 
         /// <summary>
         /// Custom attributes for realtime sessions.
-        /// These attributes are NOT part of the OpenTelemetry GenAI semantic conventions (as of v1.39).
+        /// These attributes are NOT part of the OpenTelemetry GenAI semantic conventions (as of v1.40).
         /// They are custom extensions to capture realtime session-specific configuration.
         /// </summary>
         public static class Realtime

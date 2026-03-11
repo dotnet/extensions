@@ -57,7 +57,7 @@ namespace Microsoft.Extensions.AI;
 /// </list>
 /// </para>
 /// <para>
-/// Additionally, the following custom attributes are supported (not part of OpenTelemetry GenAI semantic conventions as of v1.39):
+/// Additionally, the following custom attributes are supported (not part of OpenTelemetry GenAI semantic conventions as of v1.40):
 /// <list type="bullet">
 ///   <item><c>gen_ai.request.tool_choice</c> - Tool choice mode ("none", "auto", "required") or specific tool name</item>
 ///   <item><c>gen_ai.realtime.voice</c> - Voice setting from options</item>
