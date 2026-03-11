@@ -2,6 +2,10 @@
 
 ## NOT YET RELEASED
 
+- Added middleware and DI support for the `ITextToSpeechClient` interface.
+
+## 10.4.0
+
 - Added `time_to_first_chunk` and `time_per_output_chunk` streaming metrics to `OpenTelemetryChatClient`.
 - Fixed `OpenTelemetryChatClient` to emit tool definitions even when EnableSensitiveData is false.
 - Updated the OpenTelemetry instrumentation to conform to the latest 1.49 draft specification of the Semantic Conventions for Generative AI systems.

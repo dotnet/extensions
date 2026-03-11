@@ -2,6 +2,10 @@
 
 ## NOT YET RELEASED
 
+- Added `AsTextToSpeechClient` extension method for `AudioClient` to support OpenAI's text-to-speech capabilities.
+
+## 10.4.0
+
 - Updated to depend on OpenAI 2.9.1.
 - Updated the OpenAI Chat Completions `IChatClient` to surface OpenAI-compatible `reasoning_content` as `TextReasoningContent`.
 - Updated the OpenAI `IChatClient` implementations to emit the `openai.api.type` OpenTelemetry attribute when an appropriate active span is detected.
