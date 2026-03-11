@@ -28,4 +28,55 @@ public static class RealtimeClientSessionExtensions
 
         return session.GetService(typeof(TService), serviceKey) is TService service ? service : default;
     }
+
+    /// <summary>
+    /// Asks the <see cref="IRealtimeClientSession"/> for an object of the specified type <paramref name="serviceType"/>
+    /// and throws an exception if one isn't available.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="serviceType">The type of object being requested.</param>
+    /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
+    /// <returns>The found object.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
+    /// <remarks>
+    /// The purpose of this method is to allow for the retrieval of services that are required to be provided by the <see cref="IRealtimeClientSession"/>,
+    /// including itself or any services it might be wrapping.
+    /// </remarks>
+    public static object GetRequiredService(this IRealtimeClientSession session, Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(session);
+        _ = Throw.IfNull(serviceType);
+
+        return
+            session.GetService(serviceType, serviceKey) ??
+            throw Throw.CreateMissingServiceException(serviceType, serviceKey);
+    }
+
+    /// <summary>
+    /// Asks the <see cref="IRealtimeClientSession"/> for an object of type <typeparamref name="TService"/>
+    /// and throws an exception if one isn't available.
+    /// </summary>
+    /// <typeparam name="TService">The type of the object to be retrieved.</typeparam>
+    /// <param name="session">The session.</param>
+    /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
+    /// <returns>The found object.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
+    /// <remarks>
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that are required to be provided by the <see cref="IRealtimeClientSession"/>,
+    /// including itself or any services it might be wrapping.
+    /// </remarks>
+    public static TService GetRequiredService<TService>(this IRealtimeClientSession session, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(session);
+
+        if (session.GetService(typeof(TService), serviceKey) is not TService service)
+        {
+            throw Throw.CreateMissingServiceException(typeof(TService), serviceKey);
+        }
+
+        return service;
+    }
 }

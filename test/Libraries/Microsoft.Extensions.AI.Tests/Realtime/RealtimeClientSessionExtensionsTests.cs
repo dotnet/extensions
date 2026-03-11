@@ -48,4 +48,63 @@ public class RealtimeClientSessionExtensionsTests
         var result = session.GetService<IRealtimeClientSession>();
         Assert.Same(session, result);
     }
+
+    [Fact]
+    public void GetRequiredService_NullSession_Throws()
+    {
+        Assert.Throws<ArgumentNullException>("session", () => ((IRealtimeClientSession)null!).GetRequiredService(typeof(string)));
+        Assert.Throws<ArgumentNullException>("session", () => ((IRealtimeClientSession)null!).GetRequiredService<string>());
+    }
+
+    [Fact]
+    public async Task GetRequiredService_NullServiceType_Throws()
+    {
+        await using var session = new TestRealtimeClientSession();
+        Assert.Throws<ArgumentNullException>("serviceType", () => session.GetRequiredService(null!));
+    }
+
+    [Fact]
+    public async Task GetRequiredService_ReturnsMatchingService()
+    {
+        await using var session = new TestRealtimeClientSession();
+        var result = session.GetRequiredService<TestRealtimeClientSession>();
+        Assert.Same(session, result);
+    }
+
+    [Fact]
+    public async Task GetRequiredService_ReturnsInterfaceType()
+    {
+        await using var session = new TestRealtimeClientSession();
+        var result = session.GetRequiredService<IRealtimeClientSession>();
+        Assert.Same(session, result);
+    }
+
+    [Fact]
+    public async Task GetRequiredService_NonGeneric_ReturnsMatchingService()
+    {
+        await using var session = new TestRealtimeClientSession();
+        var result = session.GetRequiredService(typeof(TestRealtimeClientSession));
+        Assert.Same(session, result);
+    }
+
+    [Fact]
+    public async Task GetRequiredService_ThrowsForNonMatchingType()
+    {
+        await using var session = new TestRealtimeClientSession();
+        Assert.Throws<InvalidOperationException>(() => session.GetRequiredService<string>());
+    }
+
+    [Fact]
+    public async Task GetRequiredService_NonGeneric_ThrowsForNonMatchingType()
+    {
+        await using var session = new TestRealtimeClientSession();
+        Assert.Throws<InvalidOperationException>(() => session.GetRequiredService(typeof(string)));
+    }
+
+    [Fact]
+    public async Task GetRequiredService_WithServiceKey_ThrowsForNonMatchingKey()
+    {
+        await using var session = new TestRealtimeClientSession();
+        Assert.Throws<InvalidOperationException>(() => session.GetRequiredService<TestRealtimeClientSession>("someKey"));
+    }
 }
