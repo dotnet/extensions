@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.AI;
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed partial class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClient
+public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClient
 {
     private readonly ActivitySource _activitySource;
     private readonly Meter _meter;
@@ -293,7 +293,7 @@ public sealed partial class OpenTelemetrySpeechToTextClient : DelegatingSpeechTo
 
             if (_logger is not null)
             {
-                LogOperationException(_logger, error);
+                OpenTelemetryLog.OperationException(_logger, error);
             }
         }
 
@@ -368,12 +368,4 @@ public sealed partial class OpenTelemetrySpeechToTextClient : DelegatingSpeechTo
                 OpenTelemetryChatClient.SerializeChatMessages([new(ChatRole.Assistant, response.Contents)]));
         }
     }
-
-#pragma warning disable SA1204 // Static members should appear before non-static members
-    [LoggerMessage(
-        EventName = "gen_ai.client.operation.exception",
-        Level = LogLevel.Warning,
-        Message = "A GenAI client operation exception occurred.")]
-    private static partial void LogOperationException(ILogger logger, Exception error);
-#pragma warning restore SA1204
 }

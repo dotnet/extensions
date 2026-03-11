@@ -717,7 +717,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
             if (_logger is not null)
             {
-                LogOperationException(_logger, error);
+                OpenTelemetryLog.OperationException(_logger, error);
             }
         }
 
@@ -988,10 +988,5 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
     private sealed partial class OtelContext : JsonSerializerContext;
 
-    [LoggerMessage(
-        EventName = "gen_ai.client.operation.exception",
-        Level = LogLevel.Warning,
-        Message = "A GenAI client operation exception occurred.")]
-    private static partial void LogOperationException(ILogger logger, Exception error);
 }
 

@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed partial class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
+public sealed class OpenTelemetryHostedFileClient : DelegatingHostedFileClient
 {
     private const string UploadOperationName = "files.upload";
     private const string DownloadOperationName = "files.download";
@@ -402,7 +402,7 @@ public sealed partial class OpenTelemetryHostedFileClient : DelegatingHostedFile
 
             if (_logger is not null)
             {
-                LogOperationException(_logger, error);
+                OpenTelemetryLog.OperationException(_logger, error);
             }
         }
     }
@@ -467,12 +467,4 @@ public sealed partial class OpenTelemetryHostedFileClient : DelegatingHostedFile
             _operationDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, tags);
         }
     }
-
-#pragma warning disable SA1204 // Static members should appear before non-static members
-    [LoggerMessage(
-        EventName = "gen_ai.client.operation.exception",
-        Level = LogLevel.Warning,
-        Message = "A GenAI client operation exception occurred.")]
-    private static partial void LogOperationException(ILogger logger, Exception error);
-#pragma warning restore SA1204
 }

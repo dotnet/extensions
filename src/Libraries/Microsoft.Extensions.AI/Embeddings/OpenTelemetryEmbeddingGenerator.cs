@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 /// <typeparam name="TInput">The type of input used to produce embeddings.</typeparam>
 /// <typeparam name="TEmbedding">The type of embedding generated.</typeparam>
-public sealed partial class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : DelegatingEmbeddingGenerator<TInput, TEmbedding>
+public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : DelegatingEmbeddingGenerator<TInput, TEmbedding>
     where TEmbedding : Embedding
 {
     private readonly ActivitySource _activitySource;
@@ -240,7 +240,7 @@ public sealed partial class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> 
 
                 if (_logger is not null)
                 {
-                    LogOperationException(_logger, error);
+                    OpenTelemetryLog.OperationException(_logger, error);
                 }
             }
 
@@ -289,12 +289,4 @@ public sealed partial class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> 
             tags.Add(OpenTelemetryConsts.GenAI.Response.Model, responseModelId);
         }
     }
-
-#pragma warning disable SA1204 // Static members should appear before non-static members
-    [LoggerMessage(
-        EventName = "gen_ai.client.operation.exception",
-        Level = LogLevel.Warning,
-        Message = "A GenAI client operation exception occurred.")]
-    private static partial void LogOperationException(ILogger logger, Exception error);
-#pragma warning restore SA1204
 }
