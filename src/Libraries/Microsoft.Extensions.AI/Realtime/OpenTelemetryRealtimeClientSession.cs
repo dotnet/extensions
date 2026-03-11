@@ -88,6 +88,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     private readonly int _serverPort;
 
     private readonly IRealtimeClientSession _innerSession;
+    private readonly ILogger? _logger;
 
     private JsonSerializerOptions _jsonSerializerOptions;
 
@@ -95,11 +96,10 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     /// <param name="innerSession">The underlying <see cref="IRealtimeClientSession"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for emitting any logging data from the session.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
-#pragma warning disable IDE0060 // Remove unused parameter; it exists for backwards compatibility and future use
     public OpenTelemetryRealtimeClientSession(IRealtimeClientSession innerSession, ILogger? logger = null, string? sourceName = null)
-#pragma warning restore IDE0060
     {
         _innerSession = Throw.IfNull(innerSession);
+        _logger = logger;
 
         // Try to get metadata from the inner session's ChatClientMetadata if available
         if (innerSession.GetService(typeof(ChatClientMetadata)) is ChatClientMetadata metadata)
@@ -838,6 +838,11 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
             _ = activity?
                 .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
                 .SetStatus(ActivityStatusCode.Error, error.Message);
+
+            if (_logger is not null)
+            {
+                OpenTelemetryLog.OperationException(_logger, error);
+            }
         }
 
         if (response is not null && activity is not null)
