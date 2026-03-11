@@ -134,7 +134,7 @@ public abstract class VectorStoreWriterTests
 
         IngestionDocument document = new(documentId);
 
-        // Create enough chunks to exercise the incremental ingestion delete-all behavior
+        // Create enough chunks to exercise the incremental ingestion delete-all behavior in DEBUG builds
         List<IngestionChunk<string>> chunks = [];
         for (int i = 0; i < 50; i++)
         {
