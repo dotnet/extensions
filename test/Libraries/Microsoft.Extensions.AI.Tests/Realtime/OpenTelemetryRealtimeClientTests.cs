@@ -192,8 +192,6 @@ public class OpenTelemetryRealtimeClientTests
         var collector = new FakeLogCollector();
         using var loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
 
-        var expectedException = new InvalidOperationException("Streaming error");
-
         await using var innerSession = new TestRealtimeClientSession
         {
             Options = new RealtimeSessionOptions { Model = "test-model" },
@@ -233,6 +231,7 @@ public class OpenTelemetryRealtimeClientTests
         Assert.Equal("gen_ai.client.operation.exception", logEntry.Id.Name);
         Assert.Equal(LogLevel.Warning, logEntry.Level);
         Assert.IsType<InvalidOperationException>(logEntry.Exception);
+        Assert.Equal("Streaming error", logEntry.Exception!.Message);
     }
 
     [Fact]
