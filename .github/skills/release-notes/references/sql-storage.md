@@ -44,6 +44,12 @@ CREATE TABLE experimental_changes (
     PRIMARY KEY (pr_number, package_name, change_type)
 );
 
+CREATE TABLE pr_coauthors (
+    pr_number INTEGER NOT NULL,
+    coauthor TEXT NOT NULL,
+    PRIMARY KEY (pr_number, coauthor)
+);
+
 CREATE TABLE pr_reviewers (
     pr_number INTEGER NOT NULL,
     reviewer TEXT NOT NULL,
@@ -111,6 +117,27 @@ WHERE is_candidate = 1
 GROUP BY category;
 ```
 
+### All contributors for acknowledgements
+
+```sql
+SELECT contributor, MIN(pr_number) as first_pr FROM (
+    SELECT author AS contributor, number AS pr_number
+    FROM prs
+    WHERE is_candidate = 1
+
+    UNION
+
+    SELECT c.coauthor AS contributor, c.pr_number
+    FROM pr_coauthors c
+    JOIN prs p ON p.number = c.pr_number
+    WHERE p.is_candidate = 1
+)
+WHERE contributor NOT LIKE '%[bot]%'
+  AND contributor != 'Copilot'
+GROUP BY contributor
+ORDER BY first_pr;
+```
+
 ### PR reviewers for acknowledgements
 
 ```sql
@@ -119,6 +146,12 @@ FROM pr_reviewers r
 WHERE reviewer NOT LIKE '%[bot]%'
   AND reviewer != 'Copilot'
   AND reviewer NOT IN (SELECT DISTINCT author FROM prs WHERE is_candidate = 1)
+  AND reviewer NOT IN (
+      SELECT DISTINCT c.coauthor
+      FROM pr_coauthors c
+      JOIN prs p ON p.number = c.pr_number
+      WHERE p.is_candidate = 1
+  )
 GROUP BY reviewer
 ORDER BY review_count DESC;
 ```
@@ -127,6 +160,7 @@ ORDER BY review_count DESC;
 
 - Insert PRs as they are discovered during collection. Update `body`, `reactions`, and `packages` during enrichment.
 - Insert into `pr_packages` after file path analysis determines affected packages (see [package-areas.md](package-areas.md)).
+- Insert into `pr_coauthors` during enrichment when harvesting `Co-authored-by:` trailers from PR commits.
 - Insert into `pr_reviewers` during enrichment when fetching PR reviews.
 - Mark candidates with `is_candidate = 1` after filtering.
 - Insert `experimental_changes` during the experimental feature audit step.
