@@ -94,4 +94,48 @@ public class OpenTelemetryEmbeddingGeneratorTests
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
     }
+
+    [Fact]
+    public async Task ExceptionLogged_Async()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        var collector = new FakeLogCollector();
+        using var loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+
+        var expectedException = new InvalidOperationException("test exception message");
+
+        using var innerGenerator = new TestEmbeddingGenerator
+        {
+            GenerateAsyncCallback = (values, options, cancellationToken) => throw expectedException,
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(EmbeddingGeneratorMetadata) ? new EmbeddingGeneratorMetadata("testservice", new Uri("http://localhost:12345"), "testmodel") :
+                null,
+        };
+
+        using var generator = innerGenerator
+            .AsBuilder()
+            .UseOpenTelemetry(loggerFactory, sourceName)
+            .Build();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            generator.GenerateAsync(["hello"]));
+
+        var activity = Assert.Single(activities);
+
+        // Existing error behavior is preserved
+        Assert.Equal(expectedException.GetType().FullName, activity.GetTagItem("error.type"));
+        Assert.Equal(ActivityStatusCode.Error, activity.Status);
+
+        // Exception is logged via ILogger
+        var logEntry = Assert.Single(collector.GetSnapshot());
+        Assert.Equal("gen_ai.client.operation.exception", logEntry.Id.Name);
+        Assert.Equal(LogLevel.Warning, logEntry.Level);
+        Assert.Same(expectedException, logEntry.Exception);
+    }
 }
