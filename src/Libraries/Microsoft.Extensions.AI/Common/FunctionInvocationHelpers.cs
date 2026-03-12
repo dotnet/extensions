@@ -11,17 +11,25 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 internal static class FunctionInvocationHelpers
 {
-    /// <summary>Gets a value indicating whether <see cref="Activity.Current"/> represents an "invoke_agent" span.</summary>
+    /// <summary>Gets a value indicating whether <see cref="Activity.Current"/> represents an "invoke_agent" or "invoke_workflow" span.</summary>
     internal static bool CurrentActivityIsInvokeAgent
     {
         get
         {
             string? name = Activity.Current?.DisplayName;
             return
-                name?.StartsWith(OpenTelemetryConsts.GenAI.InvokeAgentName, StringComparison.Ordinal) is true &&
-                (name.Length == OpenTelemetryConsts.GenAI.InvokeAgentName.Length || name[OpenTelemetryConsts.GenAI.InvokeAgentName.Length] == ' ');
+                IsActivityDisplayNameMatch(name, OpenTelemetryConsts.GenAI.InvokeAgentName) ||
+                IsActivityDisplayNameMatch(name, OpenTelemetryConsts.GenAI.InvokeWorkflowName);
         }
     }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if <paramref name="displayName"/> equals <paramref name="operationName"/>
+    /// or starts with <paramref name="operationName"/> followed by a space (e.g. "invoke_agent my_agent").
+    /// </summary>
+    internal static bool IsActivityDisplayNameMatch(string? displayName, string operationName) =>
+        displayName?.StartsWith(operationName, StringComparison.Ordinal) is true &&
+        (displayName.Length == operationName.Length || displayName[operationName.Length] == ' ');
 
     /// <summary>Gets the elapsed time since the given timestamp.</summary>
     internal static TimeSpan GetElapsedTime(long startingTimestamp) =>
