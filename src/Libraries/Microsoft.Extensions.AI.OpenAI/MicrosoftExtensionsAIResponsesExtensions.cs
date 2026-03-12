@@ -26,14 +26,19 @@ public static class MicrosoftExtensionsAIResponsesExtensions
 
     /// <summary>Creates an OpenAI <see cref="ResponseTool"/> from an <see cref="AITool"/>.</summary>
     /// <param name="tool">The tool to convert.</param>
+    /// <param name="options">Optional chat options providing context for the conversion. When the tools list includes a <see cref="HostedToolSearchTool"/>, function tools may have deferred loading applied.</param>
     /// <returns>An OpenAI <see cref="ResponseTool"/> representing <paramref name="tool"/> or <see langword="null"/> if there is no mapping.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="tool"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// This method is only able to create <see cref="ResponseTool"/>s for <see cref="AITool"/> types
     /// it's aware of, namely all of those available from the Microsoft.Extensions.AI.Abstractions library.
     /// </remarks>
-    public static ResponseTool? AsOpenAIResponseTool(this AITool tool) =>
-        OpenAIResponsesChatClient.ToResponseTool(Throw.IfNull(tool));
+    public static ResponseTool? AsOpenAIResponseTool(this AITool tool, ChatOptions? options = null)
+    {
+        _ = Throw.IfNull(tool);
+
+        return OpenAIResponsesChatClient.ToResponseTool(tool, options);
+    }
 
     /// <summary>
     /// Creates an OpenAI <see cref="ResponseTextFormat"/> from a <see cref="ChatResponseFormat"/>.

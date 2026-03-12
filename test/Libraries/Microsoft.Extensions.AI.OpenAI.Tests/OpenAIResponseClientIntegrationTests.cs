@@ -754,4 +754,28 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         });
         Assert.Contains("encrypted", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
+
+    [ConditionalFact]
+    public async Task UseToolSearch_WithDeferredFunctions()
+    {
+        SkipIfNotEnabled();
+
+        AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
+        AIFunction getTime = AIFunctionFactory.Create(() => "3:00 PM", "GetTime", "Gets the current time.");
+
+        var response = await ChatClient.GetResponseAsync(
+            "What's the weather like? Just respond with the weather info, nothing else.",
+            new()
+            {
+                Tools =
+                [
+                    new HostedToolSearchTool(),
+                    getWeather,
+                    getTime,
+                ],
+            });
+
+        Assert.NotNull(response);
+        Assert.NotEmpty(response.Text);
+    }
 }

@@ -589,6 +589,113 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseTool_WithHostedToolSearchTool_ProducesValidToolSearchTool()
+    {
+        var toolSearchTool = new HostedToolSearchTool();
+
+        var result = toolSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var json = ModelReaderWriter.Write(result, ModelReaderWriterOptions.Json).ToString();
+        Assert.Contains("\"type\"", json);
+        Assert.Contains("tool_search", json);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedToolSearchTool_CachesResult()
+    {
+        var result1 = new HostedToolSearchTool().AsOpenAIResponseTool();
+        var result2 = new HostedToolSearchTool().AsOpenAIResponseTool();
+
+        Assert.NotNull(result1);
+        Assert.Same(result1, result2);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_AllToolsDeferred_WhenBothListsNull()
+    {
+        var func = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
+        var toolSearch = new HostedToolSearchTool();
+        var options = new ChatOptions { Tools = [toolSearch, func] };
+
+        var result = func.AsOpenAIResponseTool(options);
+
+        Assert.NotNull(result);
+        var functionTool = Assert.IsType<FunctionTool>(result);
+        var json = ModelReaderWriter.Write(functionTool, ModelReaderWriterOptions.Json).ToString();
+        Assert.Contains("defer_loading", json);
+        Assert.Contains("true", json);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_NoDeferLoading_WhenNoHostedToolSearchTool()
+    {
+        var func = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
+        var options = new ChatOptions { Tools = [func] };
+
+        var result = func.AsOpenAIResponseTool(options);
+
+        Assert.NotNull(result);
+        var functionTool = Assert.IsType<FunctionTool>(result);
+        var json = ModelReaderWriter.Write(functionTool, ModelReaderWriterOptions.Json).ToString();
+        Assert.DoesNotContain("defer_loading", json);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_OnlyDeferredToolsGetDeferLoading()
+    {
+        var func1 = AIFunctionFactory.Create(() => 1, "Func1");
+        var func2 = AIFunctionFactory.Create(() => 2, "Func2");
+        var toolSearch = new HostedToolSearchTool { DeferredTools = ["Func1"] };
+        var options = new ChatOptions { Tools = [toolSearch, func1, func2] };
+
+        var result1 = func1.AsOpenAIResponseTool(options);
+        var result2 = func2.AsOpenAIResponseTool(options);
+
+        var json1 = ModelReaderWriter.Write(result1!, ModelReaderWriterOptions.Json).ToString();
+        Assert.Contains("defer_loading", json1);
+
+        var json2 = ModelReaderWriter.Write(result2!, ModelReaderWriterOptions.Json).ToString();
+        Assert.DoesNotContain("defer_loading", json2);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_NonDeferredToolsExcluded()
+    {
+        var func1 = AIFunctionFactory.Create(() => 1, "Func1");
+        var func2 = AIFunctionFactory.Create(() => 2, "Func2");
+        var toolSearch = new HostedToolSearchTool { NonDeferredTools = ["Func2"] };
+        var options = new ChatOptions { Tools = [toolSearch, func1, func2] };
+
+        var result1 = func1.AsOpenAIResponseTool(options);
+        var result2 = func2.AsOpenAIResponseTool(options);
+
+        var json1 = ModelReaderWriter.Write(result1!, ModelReaderWriterOptions.Json).ToString();
+        Assert.Contains("defer_loading", json1);
+
+        var json2 = ModelReaderWriter.Write(result2!, ModelReaderWriterOptions.Json).ToString();
+        Assert.DoesNotContain("defer_loading", json2);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_BothLists_DisableTakesPrecedence()
+    {
+        var func = AIFunctionFactory.Create(() => 42, "MyFunc");
+        var toolSearch = new HostedToolSearchTool
+        {
+            DeferredTools = ["MyFunc"],
+            NonDeferredTools = ["MyFunc"],
+        };
+        var options = new ChatOptions { Tools = [toolSearch, func] };
+
+        var result = func.AsOpenAIResponseTool(options);
+
+        Assert.NotNull(result);
+        var json = ModelReaderWriter.Write(result!, ModelReaderWriterOptions.Json).ToString();
+        Assert.DoesNotContain("defer_loading", json);
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_WithNullTool_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>("tool", () => ((AITool)null!).AsOpenAIResponseTool());
