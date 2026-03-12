@@ -2819,6 +2819,30 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.RawRepresentationJsonConverter : System.Text.Json.Serialization.JsonConverter<object?>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RawRepresentationJsonConverter.RawRepresentationJsonConverter();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.AI.RawRepresentationJsonConverter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.RawRepresentationJsonConverter.Write(System.Text.Json.Utf8JsonWriter writer, object? value, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override bool Microsoft.Extensions.AI.RawRepresentationJsonConverter.HandleNull { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.AI.RequiredChatToolMode : Microsoft.Extensions.AI.ChatToolMode",
       "Stage": "Stable",
       "Methods": [

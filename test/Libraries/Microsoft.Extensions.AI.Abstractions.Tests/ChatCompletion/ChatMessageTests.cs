@@ -276,6 +276,7 @@ public class ChatMessageTests
         var chatMessage = new ChatMessage(ChatRole.User, contents: items)
         {
             AuthorName = "Fred",
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
             AdditionalProperties = new() { ["message-metadata-key-1"] = "message-metadata-value-1" },
         };
         ((TextContent)chatMessage.Contents[0]).Text = "content-1-override"; // Override the content of the first text content item that has the "content-1" content
@@ -286,6 +287,8 @@ public class ChatMessageTests
         // Assert
         Assert.Equal("Fred", deserializedMessage.AuthorName);
         Assert.Equal("user", deserializedMessage.Role.Value);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(deserializedMessage.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
         Assert.NotNull(deserializedMessage.AdditionalProperties);
         Assert.Single(deserializedMessage.AdditionalProperties);
         Assert.Equal("message-metadata-value-1", deserializedMessage.AdditionalProperties["message-metadata-key-1"]?.ToString());

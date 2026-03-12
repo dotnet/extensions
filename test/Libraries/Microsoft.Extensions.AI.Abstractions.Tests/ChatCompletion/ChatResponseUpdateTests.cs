@@ -124,7 +124,7 @@ public class ChatResponseUpdateTests
                 new DataContent("data"u8.ToArray(), "text/plain"),
                 new TextContent("text-2"),
             ],
-            RawRepresentation = new object(),
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
             ResponseId = "id",
             MessageId = "messageid",
             ModelId = "gpt-4",
@@ -164,6 +164,8 @@ public class ChatResponseUpdateTests
         Assert.Equal("conv123", result.ConversationId);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(result.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
 
         Assert.NotNull(result.AdditionalProperties);
         Assert.Single(result.AdditionalProperties);
@@ -187,7 +189,7 @@ public class ChatResponseUpdateTests
                 new DataContent("data"u8.ToArray(), "text/plain"),
                 new TextContent("text-2"),
             ],
-            RawRepresentation = new object(),
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
             ResponseId = "id",
             MessageId = "messageid",
             ModelId = "gpt-4",
@@ -228,6 +230,8 @@ public class ChatResponseUpdateTests
         Assert.Equal("conv123", result.ConversationId);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(result.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
 
         Assert.NotNull(result.ContinuationToken);
         Assert.Equal(new byte[] { 1, 2, 3 }, result.ContinuationToken.ToBytes().ToArray());

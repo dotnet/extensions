@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
@@ -26,5 +27,7 @@ public class RealtimeClientMessage
     /// The raw representation is typically used for custom or unsupported message types.
     /// For example, the model may accept a JSON serialized message.
     /// </remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(RawRepresentationJsonConverter))]
     public object? RawRepresentation { get; set; }
 }

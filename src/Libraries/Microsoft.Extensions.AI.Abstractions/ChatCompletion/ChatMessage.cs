@@ -94,9 +94,12 @@ public class ChatMessage
     /// <remarks>
     /// If a <see cref="ChatMessage"/> is created to represent some underlying object from another object
     /// model, this property can be used to store that original object. This can be useful for debugging or
-    /// for enabling a consumer to access the underlying object model if needed.
+    /// for enabling a consumer to access the underlying object model if needed. When serialized to JSON,
+    /// the value is written using the active <see cref="System.Text.Json.JsonSerializerOptions"/> when possible.
+    /// When deserialized from JSON, the value is materialized as a <see cref="System.Text.Json.JsonElement"/>.
     /// </remarks>
-    [JsonIgnore]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(RawRepresentationJsonConverter))]
     public object? RawRepresentation { get; set; }
 
     /// <summary>Gets or sets any additional properties associated with the message.</summary>

@@ -156,7 +156,7 @@ public class SpeechToTextResponseTests
             ModelId = "modelId",
             StartTime = TimeSpan.FromSeconds(1),
             EndTime = TimeSpan.FromSeconds(2),
-            RawRepresentation = new(),
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
             AdditionalProperties = new() { ["key"] = "value" },
             Usage = new() { InputTokenCount = 42, OutputTokenCount = 84, TotalTokenCount = 126 },
         };
@@ -177,6 +177,8 @@ public class SpeechToTextResponseTests
         Assert.Equal("modelId", result.ModelId);
         Assert.Equal(TimeSpan.FromSeconds(1), result.StartTime);
         Assert.Equal(TimeSpan.FromSeconds(2), result.EndTime);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(result.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
 
         Assert.NotNull(result.AdditionalProperties);
         Assert.Single(result.AdditionalProperties);

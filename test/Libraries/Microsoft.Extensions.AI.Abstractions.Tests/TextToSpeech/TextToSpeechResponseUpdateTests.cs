@@ -48,6 +48,7 @@ public class TextToSpeechResponseUpdateTests
         {
             Kind = new TextToSpeechResponseUpdateKind("audiogenerated"),
             ResponseId = "id123",
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
             Contents =
             [
                 new DataContent(new byte[] { 1, 2, 3 }, "audio/mpeg"),
@@ -60,6 +61,8 @@ public class TextToSpeechResponseUpdateTests
 
         Assert.Equal(original.Kind, result.Kind);
         Assert.Equal(original.ResponseId, result.ResponseId);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(result.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
         Assert.Equal(original.Contents.Count, result.Contents.Count);
     }
 

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
@@ -57,5 +58,13 @@ public class RealtimeConversationItem
     /// Gets or sets the raw representation of the conversation item.
     /// This can be used to hold the original data structure received from or sent to the provider.
     /// </summary>
+    /// <remarks>
+    /// During serialization the converter attempts to serialize the runtime value using the active
+    /// <see cref="System.Text.Json.JsonSerializerOptions"/>. If the value cannot be serialized,
+    /// an empty JSON object is written as a fallback. During deserialization, the value is
+    /// always materialized as a <see cref="System.Text.Json.JsonElement"/>.
+    /// </remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(RawRepresentationJsonConverter))]
     public object? RawRepresentation { get; set; }
 }

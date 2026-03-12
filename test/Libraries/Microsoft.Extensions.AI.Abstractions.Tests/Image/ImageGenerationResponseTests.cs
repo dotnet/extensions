@@ -100,7 +100,10 @@ public class ImageGenerationResponseTests
             new DataContent((byte[])[1, 2, 3, 4], "image/jpeg")
         ];
 
-        ImageGenerationResponse response = new(contents);
+        ImageGenerationResponse response = new(contents)
+        {
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
+        };
 
         string json = JsonSerializer.Serialize(response, TestJsonSerializerContext.Default.ImageGenerationResponse);
 
@@ -116,6 +119,8 @@ public class ImageGenerationResponseTests
         DataContent dataContent = Assert.IsType<DataContent>(deserialized.Contents[1]);
         Assert.Equal([1, 2, 3, 4], dataContent.Data.ToArray());
         Assert.Equal("image/jpeg", dataContent.MediaType);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(deserialized.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
     }
 
     [Fact]
