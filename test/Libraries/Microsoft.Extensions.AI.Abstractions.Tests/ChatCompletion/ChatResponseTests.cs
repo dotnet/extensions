@@ -92,7 +92,7 @@ public class ChatResponseTests
             CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
             FinishReason = ChatFinishReason.ContentFilter,
             Usage = new UsageDetails(),
-            RawRepresentation = new(),
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
             AdditionalProperties = new() { ["key"] = "value" },
         };
 
@@ -110,6 +110,8 @@ public class ChatResponseTests
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
         Assert.NotNull(result.Usage);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(result.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
 
         Assert.NotNull(result.AdditionalProperties);
         Assert.Single(result.AdditionalProperties);
@@ -129,7 +131,7 @@ public class ChatResponseTests
             CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
             FinishReason = ChatFinishReason.ContentFilter,
             Usage = new UsageDetails(),
-            RawRepresentation = new(),
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
             AdditionalProperties = new() { ["key"] = "value" },
             ContinuationToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3 }),
         };
@@ -148,6 +150,8 @@ public class ChatResponseTests
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
         Assert.NotNull(result.Usage);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(result.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
 
         Assert.NotNull(result.ContinuationToken);
         Assert.Equal(new byte[] { 1, 2, 3 }, result.ContinuationToken.ToBytes().ToArray());
@@ -225,6 +229,30 @@ public class ChatResponseTests
         Assert.NotNull(result.AdditionalProperties);
         Assert.Single(result.AdditionalProperties);
         Assert.Equal("value", result.AdditionalProperties["key"]?.ToString());
+    }
+
+    [Fact]
+    public void JsonSerialization_WritesEmptyObjectForUnsupportedRawRepresentation()
+    {
+        Dictionary<string, object?> rawRepresentation = [];
+        rawRepresentation["self"] = rawRepresentation;
+
+        ChatResponse original = new(new ChatMessage(ChatRole.Assistant, "the message"))
+        {
+            RawRepresentation = rawRepresentation,
+        };
+
+        string json = JsonSerializer.Serialize(original, AIJsonUtilities.DefaultOptions);
+        using JsonDocument document = JsonDocument.Parse(json);
+
+        Assert.True(document.RootElement.TryGetProperty("rawRepresentation", out JsonElement rawRep));
+        Assert.Equal(JsonValueKind.Object, rawRep.ValueKind);
+        Assert.Empty(rawRep.EnumerateObject().ToArray());
+
+        ChatResponse? result = JsonSerializer.Deserialize<ChatResponse>(json, AIJsonUtilities.DefaultOptions);
+        Assert.NotNull(result);
+        Assert.IsType<JsonElement>(result.RawRepresentation);
+        Assert.Equal(JsonValueKind.Object, ((JsonElement)result.RawRepresentation).ValueKind);
     }
 
     [Fact]

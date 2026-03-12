@@ -67,7 +67,7 @@ public class CitationAnnotationTests
         CitationAnnotation original = new()
         {
             AdditionalProperties = new AdditionalPropertiesDictionary { { "key", "value" } },
-            RawRepresentation = new object(),
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
             Snippet = "snippet",
             Title = "title",
             ToolName = "toolName",
@@ -85,7 +85,8 @@ public class CitationAnnotationTests
         Assert.Single(deserialized.AdditionalProperties);
         Assert.Equal(JsonElement.Parse("\"value\"").ToString(), deserialized.AdditionalProperties["key"]!.ToString());
 
-        Assert.Null(deserialized.RawRepresentation);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(deserialized.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
         Assert.Equal("snippet", deserialized.Snippet);
         Assert.Equal("title", deserialized.Title);
         Assert.Equal("toolName", deserialized.ToolName);

@@ -46,7 +46,7 @@ public class AIAnnotationTests
         {
             AdditionalProperties = new AdditionalPropertiesDictionary { { "key", "value" } },
             AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = 10, EndIndex = 42 }],
-            RawRepresentation = new object(),
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
         };
 
         string json = JsonSerializer.Serialize(original, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(AIAnnotation)));
@@ -59,7 +59,8 @@ public class AIAnnotationTests
         Assert.Single(deserialized.AdditionalProperties);
         Assert.Equal(JsonElement.Parse("\"value\"").ToString(), deserialized.AdditionalProperties["key"]!.ToString());
 
-        Assert.Null(deserialized.RawRepresentation);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(deserialized.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
 
         Assert.NotNull(deserialized.AnnotatedRegions);
         TextSpanAnnotatedRegion? region = Assert.IsType<TextSpanAnnotatedRegion>(Assert.Single(deserialized.AnnotatedRegions));

@@ -88,6 +88,7 @@ public class SpeechToTextResponseUpdateTests
             ResponseId = "id123",
             StartTime = TimeSpan.FromSeconds(5),
             EndTime = TimeSpan.FromSeconds(10),
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
             Contents =
             [
                 new TextContent("text-1"),
@@ -103,6 +104,8 @@ public class SpeechToTextResponseUpdateTests
         Assert.Equal(original.ResponseId, result.ResponseId);
         Assert.Equal(original.StartTime, result.StartTime);
         Assert.Equal(original.EndTime, result.EndTime);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(result.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
         Assert.Equal(original.Contents.Count, result.Contents.Count);
         for (int i = 0; i < original.Contents.Count; i++)
         {

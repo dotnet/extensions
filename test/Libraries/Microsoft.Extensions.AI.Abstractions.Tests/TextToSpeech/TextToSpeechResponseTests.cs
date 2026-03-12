@@ -102,7 +102,7 @@ public class TextToSpeechResponseTests
             ],
             ResponseId = "id",
             ModelId = "modelId",
-            RawRepresentation = new(),
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
             AdditionalProperties = new() { ["key"] = "value" },
             Usage = new() { InputTokenCount = 42, OutputTokenCount = 84, TotalTokenCount = 126 },
         };
@@ -116,6 +116,8 @@ public class TextToSpeechResponseTests
 
         Assert.Equal("id", result.ResponseId);
         Assert.Equal("modelId", result.ModelId);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(result.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
 
         Assert.NotNull(result.AdditionalProperties);
         Assert.Single(result.AdditionalProperties);

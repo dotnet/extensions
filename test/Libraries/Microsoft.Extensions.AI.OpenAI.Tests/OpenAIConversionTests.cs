@@ -828,6 +828,77 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void RawRepresentation_SerializesOpenAITypes_WhenJsonModelConverterRegistered()
+    {
+        // Create an OpenAI ChatCompletion and convert it to a ChatResponse, which
+        // stores the OpenAI object in ChatMessage.RawRepresentation.
+        ChatCompletion chatCompletion = OpenAIChatModelFactory.ChatCompletion(
+            "chatcmpl-test123",
+            OpenAI.Chat.ChatFinishReason.Stop,
+            content: new ChatMessageContent(ChatMessageContentPart.CreateTextPart("Hello!")),
+            role: ChatMessageRole.Assistant,
+            createdAt: new DateTimeOffset(2025, 6, 15, 12, 0, 0, TimeSpan.Zero),
+            model: "gpt-4o",
+            usage: OpenAIChatModelFactory.ChatTokenUsage(10, 5, 15));
+
+        ChatResponse response = chatCompletion.AsChatResponse();
+        Assert.IsType<ChatCompletion>(response.Messages.Single().RawRepresentation);
+
+        // Create options that include JsonModelConverter, which bridges IJsonModel<T>
+        // types to System.Text.Json by calling IJsonModel<T>.Write under the covers.
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions);
+        options.Converters.Add(new JsonModelConverter());
+
+        // Serialize the ChatResponse. The RawRepresentation property on the ChatMessage
+        // should contain the OpenAI wire-format JSON for the ChatCompletion, not a
+        // reflection-based dump or an empty object.
+        string json = JsonSerializer.Serialize(response, options);
+        using JsonDocument doc = JsonDocument.Parse(json);
+
+        // Verify the message's rawRepresentation contains OpenAI wire-format keys.
+        JsonElement messageElement = doc.RootElement.GetProperty("messages")[0];
+        Assert.True(messageElement.TryGetProperty("rawRepresentation", out JsonElement rawRep));
+        Assert.Equal(JsonValueKind.Object, rawRep.ValueKind);
+        Assert.Equal("chatcmpl-test123", rawRep.GetProperty("id").GetString());
+        Assert.Equal("chat.completion", rawRep.GetProperty("object").GetString());
+        Assert.Equal("gpt-4o", rawRep.GetProperty("model").GetString());
+
+        // Verify the ChatResponse's own rawRepresentation is also present and correct.
+        Assert.True(doc.RootElement.TryGetProperty("rawRepresentation", out JsonElement responseRawRep));
+        Assert.Equal("chatcmpl-test123", responseRawRep.GetProperty("id").GetString());
+
+        // Deserialize and verify the rawRepresentation comes back as JsonElement.
+        ChatResponse? deserialized = JsonSerializer.Deserialize<ChatResponse>(json, options);
+        Assert.NotNull(deserialized);
+        Assert.IsType<JsonElement>(deserialized.Messages.Single().RawRepresentation);
+    }
+
+    [Fact]
+    public void RawRepresentation_FallsBackGracefully_WithoutJsonModelConverter()
+    {
+        // Without JsonModelConverter, OpenAI types may not have type info in
+        // AOT/source-gen scenarios. Verify the converter falls back to {}.
+        ChatCompletion chatCompletion = OpenAIChatModelFactory.ChatCompletion(
+            "chatcmpl-test456",
+            OpenAI.Chat.ChatFinishReason.Stop,
+            content: new ChatMessageContent(ChatMessageContentPart.CreateTextPart("Hi!")),
+            role: ChatMessageRole.Assistant,
+            createdAt: new DateTimeOffset(2025, 6, 15, 12, 0, 0, TimeSpan.Zero),
+            model: "gpt-4o");
+
+        ChatResponse response = chatCompletion.AsChatResponse();
+
+        // Use DefaultOptions (no JsonModelConverter). With reflection enabled,
+        // this may still serialize something, but we verify it doesn't throw.
+        string json = JsonSerializer.Serialize(response, AIJsonUtilities.DefaultOptions);
+        Assert.NotNull(json);
+
+        // Roundtrip should succeed regardless.
+        ChatResponse? deserialized = JsonSerializer.Deserialize<ChatResponse>(json, AIJsonUtilities.DefaultOptions);
+        Assert.NotNull(deserialized);
+    }
+
+    [Fact]
     public async Task AsChatResponse_ConvertsOpenAIStreamingChatCompletionUpdates()
     {
         Assert.Throws<ArgumentNullException>("chatCompletionUpdates", () => ((IAsyncEnumerable<StreamingChatCompletionUpdate>)null!).AsChatResponseUpdatesAsync());

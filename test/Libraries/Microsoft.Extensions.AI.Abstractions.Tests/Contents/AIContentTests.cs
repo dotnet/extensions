@@ -38,7 +38,7 @@ public class AIContentTests
     {
         AIContent original = new()
         {
-            RawRepresentation = new object(),
+            RawRepresentation = new Dictionary<string, object?> { ["value"] = 42 },
             AdditionalProperties = new AdditionalPropertiesDictionary { { "key", "value" } }
         };
 
@@ -50,7 +50,8 @@ public class AIContentTests
 
         AIContent? deserialized = (AIContent?)JsonSerializer.Deserialize(json, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(AIContent)));
         Assert.NotNull(deserialized);
-        Assert.Null(deserialized.RawRepresentation);
+        JsonElement rawRepresentation = Assert.IsType<JsonElement>(deserialized.RawRepresentation);
+        Assert.Equal(42, rawRepresentation.GetProperty("value").GetInt32());
         Assert.NotNull(deserialized.AdditionalProperties);
         Assert.Single(deserialized.AdditionalProperties);
     }
