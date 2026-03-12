@@ -281,7 +281,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability. If there's already a genai "invoke_agent"
-        // span that's current, however, we just consider that the group and don't add a new one.
+        // or "invoke_workflow" span that's current, however, we just consider that the group and don't add a new one.
         using Activity? activity = FunctionInvocationHelpers.CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
@@ -434,7 +434,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability. If there's already a genai "invoke_agent"
-        // span that's current, however, we just consider that the group and don't add a new one.
+        // or "invoke_workflow" span that's current, however, we just consider that the group and don't add a new one.
         using Activity? activity = FunctionInvocationHelpers.CurrentActivityIsInvokeAgent ? null : _activitySource?.StartActivity(OpenTelemetryConsts.GenAI.OrchestrateToolsName);
         UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
 

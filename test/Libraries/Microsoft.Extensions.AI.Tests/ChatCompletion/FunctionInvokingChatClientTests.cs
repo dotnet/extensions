@@ -1668,6 +1668,9 @@ public class FunctionInvokingChatClientTests
     [InlineData("invoke_agent")]
     [InlineData("invoke_agent my_agent")]
     [InlineData("invoke_agent ")]
+    [InlineData("invoke_workflow")]
+    [InlineData("invoke_workflow my_workflow")]
+    [InlineData("invoke_workflow ")]
     public async Task DoesNotCreateOrchestrateToolsSpanWhenInvokeAgentIsParent(string displayName)
     {
         string agentSourceName = Guid.NewGuid().ToString();
@@ -1713,8 +1716,10 @@ public class FunctionInvokingChatClientTests
         Assert.All(childActivities, activity => Assert.Same(invokeAgent, activity.Parent));
     }
 
-    [Fact]
-    public async Task StreamingPreservesTraceContextWhenInvokeAgentWithNameIsParent()
+    [Theory]
+    [InlineData("invoke_agent MyAgent(agent-123)")]
+    [InlineData("invoke_workflow MyWorkflow(workflow-123)")]
+    public async Task StreamingPreservesTraceContextWhenInvokeAgentWithNameIsParent(string displayName)
     {
         string agentSourceName = Guid.NewGuid().ToString();
         string clientSourceName = Guid.NewGuid().ToString();
@@ -1750,7 +1755,7 @@ public class FunctionInvokingChatClientTests
         };
 
         using var agentSource = new ActivitySource(agentSourceName);
-        using var invokeAgentActivity = agentSource.StartActivity("invoke_agent MyAgent(agent-123)");
+        using var invokeAgentActivity = agentSource.StartActivity(displayName);
         Assert.NotNull(invokeAgentActivity);
 
         await foreach (var update in client.GetStreamingResponseAsync(
@@ -1764,7 +1769,7 @@ public class FunctionInvokingChatClientTests
         var chatActivities = activities.Where(a => a.DisplayName.StartsWith("chat", StringComparison.Ordinal)).ToList();
         Assert.Equal(2, chatActivities.Count);
 
-        // All child activities must share the same trace as invoke_agent
+        // All child activities must share the same trace as the parent activity
         var nonAgentActivities = activities.Where(a => a != invokeAgentActivity).ToList();
         Assert.All(nonAgentActivities, a =>
             Assert.Equal(invokeAgentActivity.TraceId, a.TraceId));
@@ -1774,6 +1779,9 @@ public class FunctionInvokingChatClientTests
     [InlineData("invoke_agen")]
     [InlineData("invoke_agent_extra")]
     [InlineData("invoke_agentx")]
+    [InlineData("invoke_workflo")]
+    [InlineData("invoke_workflow_extra")]
+    [InlineData("invoke_workflowx")]
     public async Task CreatesOrchestrateToolsSpanWhenParentIsNotInvokeAgent(string displayName)
     {
         string agentSourceName = Guid.NewGuid().ToString();
@@ -1813,8 +1821,10 @@ public class FunctionInvokingChatClientTests
         Assert.Contains(activities, a => a.DisplayName == "orchestrate_tools");
     }
 
-    [Fact]
-    public async Task UsesAgentActivitySourceWhenInvokeAgentIsParent()
+    [Theory]
+    [InlineData("invoke_agent")]
+    [InlineData("invoke_workflow")]
+    public async Task UsesAgentActivitySourceWhenInvokeAgentIsParent(string displayName)
     {
         string agentSourceName = Guid.NewGuid().ToString();
         string clientSourceName = Guid.NewGuid().ToString();
@@ -1844,7 +1854,7 @@ public class FunctionInvokingChatClientTests
             .Build();
 
         using (var agentSource = new ActivitySource(agentSourceName))
-        using (var invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
+        using (var invokeAgentActivity = agentSource.StartActivity(displayName))
         {
             Assert.NotNull(invokeAgentActivity);
             await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
@@ -1856,14 +1866,15 @@ public class FunctionInvokingChatClientTests
     }
 
     public static IEnumerable<object[]> SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent_MemberData() =>
+        from operationName in new[] { "invoke_agent", "invoke_workflow" }
         from invokeAgentSensitiveData in new bool?[] { null, false, true }
         from innerOpenTelemetryChatClient in new bool?[] { null, false, true }
-        select new object?[] { invokeAgentSensitiveData, innerOpenTelemetryChatClient };
+        select new object?[] { operationName, invokeAgentSensitiveData, innerOpenTelemetryChatClient };
 
     [Theory]
     [MemberData(nameof(SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent_MemberData))]
     public async Task SensitiveDataPropagatesFromAgentActivityWhenInvokeAgentIsParent(
-        bool? invokeAgentSensitiveData, bool? innerOpenTelemetryChatClient)
+        string operationName, bool? invokeAgentSensitiveData, bool? innerOpenTelemetryChatClient)
     {
         string agentSourceName = Guid.NewGuid().ToString();
         string clientSourceName = Guid.NewGuid().ToString();
@@ -1890,7 +1901,7 @@ public class FunctionInvokingChatClientTests
             .Build();
 
         using (var agentSource = new ActivitySource(agentSourceName))
-        using (var invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
+        using (var invokeAgentActivity = agentSource.StartActivity(operationName))
         {
             if (invokeAgentSensitiveData is not null)
             {
