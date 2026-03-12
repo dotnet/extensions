@@ -39,16 +39,18 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
     private readonly string? _serverAddress;
     private readonly int _serverPort;
 
+    private readonly ILogger? _logger;
+
     /// <summary>Initializes a new instance of the <see cref="OpenTelemetrySpeechToTextClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="ISpeechToTextClient"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for emitting any logging data from the client.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
-#pragma warning disable IDE0060 // Remove unused parameter; it exists for consistency with IChatClient and future use
     public OpenTelemetrySpeechToTextClient(ISpeechToTextClient innerClient, ILogger? logger = null, string? sourceName = null)
-#pragma warning restore IDE0060
         : base(innerClient)
     {
         Debug.Assert(innerClient is not null, "Should have been validated by the base ctor");
+
+        _logger = logger;
 
         if (innerClient!.GetService<SpeechToTextClientMetadata>() is SpeechToTextClientMetadata metadata)
         {
@@ -288,6 +290,11 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
             _ = activity?
                 .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
                 .SetStatus(ActivityStatusCode.Error, error.Message);
+
+            if (_logger is not null)
+            {
+                OpenTelemetryLog.OperationException(_logger, error);
+            }
         }
 
         if (response is not null)

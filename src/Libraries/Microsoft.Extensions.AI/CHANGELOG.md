@@ -3,6 +3,7 @@
 ## NOT YET RELEASED
 
 - Added middleware and DI support for the `ITextToSpeechClient` interface.
+- Added `gen_ai.client.operation.exception` log event emission via `ILogger` across all OpenTelemetry instrumentation classes.
 
 ## 10.4.0
 
