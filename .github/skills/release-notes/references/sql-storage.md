@@ -43,6 +43,12 @@ CREATE TABLE experimental_changes (
     description TEXT,
     PRIMARY KEY (pr_number, package_name, change_type)
 );
+
+CREATE TABLE pr_reviewers (
+    pr_number INTEGER NOT NULL,
+    reviewer TEXT NOT NULL,
+    PRIMARY KEY (pr_number, reviewer)
+);
 ```
 
 ## Common queries
@@ -105,10 +111,23 @@ WHERE is_candidate = 1
 GROUP BY category;
 ```
 
+### PR reviewers for acknowledgements
+
+```sql
+SELECT reviewer, COUNT(DISTINCT pr_number) as review_count
+FROM pr_reviewers r
+WHERE reviewer NOT LIKE '%[bot]%'
+  AND reviewer != 'Copilot'
+  AND reviewer NOT IN (SELECT DISTINCT author FROM prs WHERE is_candidate = 1)
+GROUP BY reviewer
+ORDER BY review_count DESC;
+```
+
 ## Usage notes
 
 - Insert PRs as they are discovered during collection. Update `body`, `reactions`, and `packages` during enrichment.
 - Insert into `pr_packages` after file path analysis determines affected packages (see [package-areas.md](package-areas.md)).
+- Insert into `pr_reviewers` during enrichment when fetching PR reviews.
 - Mark candidates with `is_candidate = 1` after filtering.
 - Insert `experimental_changes` during the experimental feature audit step.
 - Additional PRs can be added to the candidate list manually by number.

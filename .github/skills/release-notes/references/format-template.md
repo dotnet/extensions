@@ -23,10 +23,10 @@ Use this template when all packages ship together (e.g. v10.3.0 → v10.4.0).
 * <Feature Name> APIs are now stable (previously `DIAGID`) #PR
 
 ### New Experimental APIs
-* New experimental API: <Feature Name> (`DIAGID`) #PR by @author
+* New experimental API: <Feature Name> (`DIAGID`) #PR
 
 ### Breaking Changes to Experimental APIs
-* <Feature Name>: `TypeName` signature changed (experimental under `DIAGID`) #PR by @author
+* <Feature Name>: `TypeName` signature changed (experimental under `DIAGID`) #PR
 
 ### Removed Experimental APIs
 * <Feature Name> experimental APIs removed (was experimental under `DIAGID`) #PR

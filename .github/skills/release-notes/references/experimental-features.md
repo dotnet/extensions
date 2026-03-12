@@ -50,7 +50,7 @@ An experimental API changes its signature, behavior, or contracts. These changes
 
 **How to report:**
 ```markdown
-* <Feature Name>: `TypeOrMemberName` signature changed (experimental under `EXTEXP0002`) #PR by @author
+* <Feature Name>: `TypeOrMemberName` signature changed (experimental under `EXTEXP0002`) #PR
 ```
 
 ### New experimental APIs
@@ -64,29 +64,35 @@ A new API is introduced with the `[Experimental]` attribute. These are interesti
 
 **How to report:**
 ```markdown
-* New experimental API: <Feature Name> (`MEAI002`) #PR by @author
+* New experimental API: <Feature Name> (`MEAI002`) #PR
 ```
 
 ## Detection strategy
 
-For each candidate PR, detect experimental API changes using the **PR diff** and the **`run-apichief` skill**. Do not rely on PR descriptions or PR labels for detection — they rarely mention experimental changes explicitly.
+For each candidate PR, detect experimental API changes using the **PR diff** and the **`run-apichief` skill**. Do not rely on PR titles, descriptions, or labels to determine *what* changed — they can be misleading or incomplete.
 
-1. **Check the PR diff** using `pull_request_read` with method `get_files`. Look for changes to files containing `[Experimental` annotations. Specifically:
+> **Critical: Every experimental change description must be derived from the actual file diff, not inferred from PR titles.** PR titles may use imprecise or overloaded terminology (e.g. "Reduction" could refer to chat reduction or tool reduction — entirely different features). Always fetch and inspect the changed files to determine exactly which types and members were affected.
+
+### Step-by-step
+
+1. **Fetch the PR file list** using `pull_request_read` with method `get_files` for every candidate PR. This is mandatory — do not skip it or rely on title-based inference.
+2. **Inspect the diff for experimental annotations.** Look for:
    - Files adding or removing `[Experimental("...")]` attributes
    - Changes to `.json` API baseline files where the `"Stage"` field changes between `"Experimental"` and `"Stable"`
    - Deletions of types or members that were previously experimental
-2. **Cross-reference with `run-apichief`** — use the `run-apichief` skill's `emit delta` or `check breaking` commands to compare API baselines between the previous release and the current target. This reveals:
+3. **Derive the feature name from the actual types affected**, not from the PR title. For example, if the deleted files are `IToolReductionStrategy.cs`, `ToolReducingChatClient.cs`, and `EmbeddingToolReductionStrategy.cs`, the feature name is "Tool Reduction" — even if the PR title says something more generic like "Remove Reduction APIs."
+4. **Cross-reference with `run-apichief`** — use the `run-apichief` skill's `emit delta` or `check breaking` commands to compare API baselines between the previous release and the current target. This reveals:
    - New experimental types/members added
    - Experimental types/members removed
    - Experimental types/members that changed stage to Stable
    - Signature changes on experimental types/members
-3. **Cross-reference `docs/list-of-diagnostics.md`** — check if the PR modifies the diagnostics list, which signals addition or removal of experimental diagnostic IDs.
+5. **Cross-reference `docs/list-of-diagnostics.md`** — check if the PR modifies the diagnostics list, which signals addition or removal of experimental diagnostic IDs.
 
-Store detected changes in the `experimental_changes` SQL table (see [sql-storage.md](sql-storage.md)).
+Store detected changes in the `experimental_changes` SQL table (see [sql-storage.md](sql-storage.md)). The `description` column must reflect the actual types/members found in the diff, not a summary derived from the PR title.
 
 ## Presentation in release notes
 
-Experimental feature changes appear in a dedicated section near the top of the release notes, after any stable breaking changes (which should be rare) and before the area-grouped "What's Changed" sections.
+Experimental feature changes appear in a dedicated section near the top of the release notes, after any stable breaking changes (which should be rare) and before the area-grouped "What's Changed" sections. **Do not include author attributions in this section** — the PRs will still appear with full attribution in the "What's Changed" list.
 
 Group experimental changes by type:
 
@@ -97,10 +103,10 @@ Group experimental changes by type:
 * HTTP Logging Middleware APIs are now stable (previously `EXTEXP0013`) #7380
 
 ### New Experimental APIs
-* Realtime Client Sessions (`MEAI001`) #7285 by @author
+* Realtime Client Sessions (`MEAI001`) #7285
 
 ### Breaking Changes to Experimental APIs
-* AI Function Approvals: `FunctionCallApprovalContext` constructor changed (experimental under `MEAI001`) #7350 by @author
+* AI Function Approvals: `FunctionCallApprovalContext` constructor changed (experimental under `MEAI001`) #7350
 
 ### Removed Experimental APIs
 * AI Tool Reduction experimental APIs removed (was experimental under `MEAI001`) #7300

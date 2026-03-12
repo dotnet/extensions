@@ -72,4 +72,4 @@ These categories are **not** grouped by package area. They appear as flat lists 
 
 ## Multi-faceted PRs
 
-A single PR may deliver a feature, fix bugs, AND improve performance. When writing the entry, describe the full scope — do not reduce it to a single aspect. Read the full PR description, not just the title.
+A single PR may deliver a feature, fix bugs, AND improve performance. Use the verbatim PR title as the entry description regardless. Read the full PR description, not just the title, to determine the correct category assignment.

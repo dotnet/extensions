@@ -2,17 +2,20 @@
 
 ## Tone
 
-- Maintain a **positive tone** — highlight new benefits rather than expressing prior shortcomings
+- Remain **objective and factual** — describe what was introduced or changed without editorial judgment
+  - ✅ `Introduces new APIs for text-to-speech`
   - ✅ `Added streaming metrics for time-to-first-chunk and time-per-output-chunk`
+  - ❌ `Adds significant advancements in AI capabilities`
   - ❌ `Previously there was no way to measure streaming latency`
+- Avoid superlatives and subjective qualifiers ("significant", "major improvements", "exciting"). Simply state what was added, changed, or fixed.
 - When context about the prior state is needed, keep it brief — one clause, not a paragraph — then pivot to the new capability
 
 ## Conciseness
 
 - **No code samples** in release notes. This repository ships many packages and the release notes should be scannable, not tutorial-length.
-- Each entry is a **single bullet point** with a brief description of what changed and why it matters.
-- For complex features, use at most 2–3 sentences. Link to the PR for details.
-- If a PR touches multiple concerns, describe the primary change. Do not enumerate every modified file.
+- Each entry is a **single bullet point** using the verbatim PR title.
+- Link to the PR for details (via `#PR` auto-link).
+- If a PR touches multiple concerns, the PR title should capture the primary change. Do not rewrite it.
 
 ## Entry format
 
@@ -39,19 +42,20 @@ For Copilot-authored PRs, check the `copilot_work_started` timeline event to ide
 
 ## Entry naming
 
-- Prefer a **brief description** of what changed over simply stating an API name
-  - ✅ `Added streaming metrics for time-to-first-chunk`
-  - ✅ `Fixed credential handling in authenticated proxy scenarios`
-  - ❌ `OpenTelemetryChatClient update`
-  - ❌ `HttpClientHandler fix`
-- Start with a verb: Added, Fixed, Updated, Removed, Improved, Renamed
-- Keep entries to one line when possible
+- Use the **verbatim PR title** as the entry description. Do not rewrite, rephrase, or summarize PR titles.
+- The PR title is the author's chosen description of the change and should be preserved exactly as written.
 
 ## Attribution rules
 
-- **PR author**: The `user.login` from the PR details
-- **Co-authors**: Harvest from `Co-authored-by` trailers in the PR's merge commit
-- **Copilot**: Check the `copilot_work_started` timeline event. If present, the triggering user is the primary author and `@Copilot` is a co-author
+> **Critical: Every attribution must be derived from the stored PR data, never fabricated or assumed.** When writing each release note entry, read the `author` field from the `prs` SQL table and the co-author data collected during enrichment. Do not write an `@username` attribution without having that username in the database for that PR.
+
+- **PR author**: The `user.login` from the PR details — read this from the `prs` table when rendering each entry
+- **Co-authors**: Harvest from `Co-authored-by` trailers in **all commits** in the PR (not just the merge commit). Individual commits often carry `Co-authored-by: Copilot <...>` trailers that are not present in the merge commit message. Fetch the PR's commits and parse trailers from each one. For squash-merged PRs, check the squash commit message which consolidates trailers.
+- **Copilot-authored PRs**: If the PR author is `Copilot`, `copilot-swe-agent[bot]`, or the PR body mentions "Created from Copilot CLI" / "copilot delegate":
+  1. Check the `copilot_work_started` timeline event to identify the triggering user
+  2. If found, the triggering user becomes the primary author and `@Copilot` becomes a co-author
+  3. If the timeline event is missing, check assignees and the merger — the human who delegated and merged the work is the primary author
+  4. As a last resort, attribute to the merger
 - **Bots to exclude**: `dependabot[bot]`, `dotnet-maestro[bot]`, `github-actions[bot]`, `copilot-swe-agent[bot]`, and any account ending with `[bot]`
 
 ## Sorting
@@ -99,10 +103,30 @@ Include an acknowledgements section at the bottom of the release notes:
 2. **Issue reporters** — community members whose reported issues were resolved in this release, citing the resolving PR
 3. **PR reviewers** — single bullet listing all reviewers, sorted by review count (no count shown)
 
-Format:
+### Collecting PR reviewers
+
+For each candidate PR, fetch the reviews:
+
 ```
-* @user made their first contribution in #PR
-* @user submitted issue #1234 (resolved by #5678)
+pull_request_read(
+  method: "get_reviews",
+  owner: "dotnet",
+  repo: "extensions",
+  pullNumber: <number>
+)
+```
+
+Collect all users who submitted a review (any state: APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED). Multiple reviews on the same PR by the same user count as one review for that PR.
+
+**Exclusions — do not list as reviewers:**
+- Bot accounts: any account ending with `[bot]`, `Copilot`, `copilot-swe-agent[bot]`
+- Users who are already listed as PR authors or co-authors elsewhere in the release notes (they are already acknowledged)
+- The PR author themselves (self-reviews)
+
+**Sorting:** Sort reviewers by the number of distinct PRs they reviewed (descending). Do not show the count — just the sorted order.
+
+**Format:** A single bullet with all reviewers listed inline:
+```
 * @user1 @user2 @user3 reviewed pull requests
 ```
 

@@ -73,10 +73,11 @@ Follow [references/categorize-entries.md](references/categorize-entries.md):
 
 Follow [references/experimental-features.md](references/experimental-features.md):
 
-1. Scan candidate PRs for changes to `[Experimental]` APIs.
+1. For each candidate PR, **fetch the file list and diff** to identify changes to `[Experimental]` APIs. Do not infer experimental changes from PR titles — always verify against the actual files changed.
 2. Classify each change: now stable, new experimental, breaking change to experimental, or removed.
-3. Record in the `experimental_changes` SQL table.
-4. Present findings to the user for confirmation.
+3. Derive the conceptual feature name from the actual types/members affected in the diff.
+4. Record in the `experimental_changes` SQL table.
+5. Present findings to the user for confirmation.
 
 ### Step 5: Determine Package Versions
 
@@ -90,7 +91,7 @@ Build the package version information:
 
 Compose the release notes following [references/format-template.md](references/format-template.md) and [references/editorial-rules.md](references/editorial-rules.md):
 
-1. **Preamble** — Optionally draft 2–3 sentences summarizing the release theme. Suggest a couple of preamble options to the user, but always offer the option of omitting the preamble entirely.
+1. **Preamble** — Optionally draft 2–3 sentences summarizing the release theme. Present the preamble options to the user using the `ask_user` tool, offering them the choice of: (a) one of the suggested preambles, (b) writing their own, or (c) skipping the preamble entirely.
 2. **Packages in this release** — for patch releases, the table of affected packages and versions from Step 5. For full releases, omit this table (all packages ship at the same version and listing them all adds no value).
 3. **Breaking Changes** — stable API breaks only (should be very rare). Include migration guidance.
 4. **Experimental API Changes** — from Step 4 results. Group by change type. Omit empty subsections.
@@ -111,16 +112,16 @@ Present the complete draft to the user:
 2. Summary statistics (number of PRs, packages affected, areas covered)
 3. Any unresolved items (ambiguous PRs, missing package assignments)
 
-Get explicit user confirmation before creating the GitHub release. The user may:
-- **Edit the draft** — make changes and re-present
-- **Approve** — create the GitHub release with the draft as the body
-- **Save as draft** — save the release as a draft for later publishing
+After the user has reviewed and approved the draft, present the finalization options using the `ask_user` tool:
+- **Create draft release** — create a GitHub release in draft state with the notes as the body
+- **Save to private gist** — save the draft notes to a private GitHub gist for later use
+- **Cancel** — discard the draft without creating anything
 
 ## Edge Cases
 
 - **PR spans categories**: Categorize by primary intent; read the title and description.
 - **PR spans multiple areas**: Place under the most central area; mention cross-cutting nature in the description.
-- **Copilot timeline missing**: Fall back to `Co-authored-by` trailers; if unclear, use the PR author.
+- **Copilot-authored PRs**: If the PR author is Copilot or a bot, check the `copilot_work_started` timeline event for the triggering user, then assignees, then the merger. See [references/editorial-rules.md](references/editorial-rules.md) for the full fallback chain. Never fabricate an attribution — always derive it from the PR data.
 - **No breaking changes**: Omit the Breaking Changes section entirely.
 - **No experimental changes**: Omit the Experimental API Changes section entirely.
 - **No user-facing changes**: If all PRs are documentation, tests, or infrastructure, note this in the release notes. The release still proceeds — this repository ships monthly regardless.
