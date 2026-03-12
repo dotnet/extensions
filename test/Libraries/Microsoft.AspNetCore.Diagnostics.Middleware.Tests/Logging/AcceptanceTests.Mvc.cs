@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if NET8_0_OR_GREATER
@@ -33,14 +33,12 @@ public partial class AcceptanceTests
     [SuppressMessage("Design", "CA1052:Static holder types should be Static or NotInheritable", Justification = "Needed for reflection")]
     private class TestStartupWithControllers
     {
-        [SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Used through reflection")]
         public static void ConfigureServices(IServiceCollection services)
             => services
                 .AddFakeRedaction(x => x.RedactionFormat = RedactedFormat)
                 .AddRouting() // Adds routing middleware.
                 .AddControllers(); // Allows to read routes from classes annotated with [ApiController] attribute.
 
-        [SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Used through reflection")]
         public static void Configure(IApplicationBuilder app)
             => app
                 .UseRouting()

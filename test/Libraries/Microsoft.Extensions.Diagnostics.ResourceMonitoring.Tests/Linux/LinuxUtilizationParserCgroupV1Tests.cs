@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -169,7 +169,6 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
     [InlineData("MB", 287, 300_941_312)]
     [InlineData("GB", 372, 399_431_958_528)]
     [InlineData("TB", 2, 219_902_325_555_2)]
-    [SuppressMessage("Critical Code Smell", "S3937:Number patterns should be regular", Justification = "Its OK.")]
     public void When_Calling_GetHostAvailableMemory_Parser_Correctly_Transforms_Supported_Units_To_Bytes(string unit, int value, ulong bytes)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -105,7 +105,6 @@ public abstract class Redactor
     /// <param name="provider">Format provider used to produce a string representing the value.</param>
     /// <returns>Redacted value.</returns>
     [SkipLocalsInit]
-    [SuppressMessage("Minor Code Smell", "S3247:Duplicate casts should not be made", Justification = "Avoid pattern matching to improve jitted code")]
     public string Redact<T>(T value, string? format = null, IFormatProvider? provider = null)
     {
 #if NET6_0_OR_GREATER
@@ -167,7 +166,6 @@ public abstract class Redactor
     /// <returns>Number of characters written to the buffer.</returns>
     /// <exception cref="ArgumentException"><paramref name="destination"/> is too small.</exception>
     [SkipLocalsInit]
-    [SuppressMessage("Minor Code Smell", "S3247:Duplicate casts should not be made", Justification = "Avoid pattern matching to improve jitted code")]
     public int Redact<T>(T value, Span<char> destination, string? format = null, IFormatProvider? provider = null)
     {
 #if NET6_0_OR_GREATER
@@ -218,7 +216,6 @@ public abstract class Redactor
     /// <param name="provider">The format provider used to produce a string representing the value.</param>
     /// <returns><see langword="true"/> if the destination buffer was large enough, otherwise <see langword="false"/>.</returns>
     [SkipLocalsInit]
-    [SuppressMessage("Minor Code Smell", "S3247:Duplicate casts should not be made", Justification = "Avoid pattern matching to improve jitted code")]
     public bool TryRedact<T>(T value, Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider = null)
     {
 #if NET6_0_OR_GREATER

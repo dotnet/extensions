@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -64,7 +64,6 @@ internal sealed partial class Emitter : EmitterBase
         {
             level = lm.Level switch
             {
-#pragma warning disable S109 // Magic numbers should not be used
                 0 => "global::Microsoft.Extensions.Logging.LogLevel.Trace",
                 1 => "global::Microsoft.Extensions.Logging.LogLevel.Debug",
                 2 => "global::Microsoft.Extensions.Logging.LogLevel.Information",
@@ -73,7 +72,6 @@ internal sealed partial class Emitter : EmitterBase
                 5 => "global::Microsoft.Extensions.Logging.LogLevel.Critical",
                 6 => "global::Microsoft.Extensions.Logging.LogLevel.None",
                 _ => $"(global::Microsoft.Extensions.Logging.LogLevel){lm.Level}",
-#pragma warning restore S109 // Magic numbers should not be used
             };
         }
 
@@ -91,7 +89,6 @@ internal sealed partial class Emitter : EmitterBase
 
         return lm.Level switch
         {
-#pragma warning disable S109 // Magic numbers should not be used
             0 => "Trace",
             1 => "Debug",
             2 => "Information",
@@ -100,7 +97,6 @@ internal sealed partial class Emitter : EmitterBase
             5 => "Critical",
             6 => "None",
             _ => $"{lm.Level}",
-#pragma warning restore S109 // Magic numbers should not be used
         };
     }
 
@@ -126,9 +122,7 @@ internal sealed partial class Emitter : EmitterBase
                 return name;
             }
 
-#pragma warning disable S1643 // Strings should not be concatenated using '+' in a loop
             name += "_";
-#pragma warning restore S1643 // Strings should not be concatenated using '+' in a loop
         }
     }
 

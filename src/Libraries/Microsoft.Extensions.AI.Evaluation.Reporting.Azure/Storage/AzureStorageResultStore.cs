@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -62,10 +62,8 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IE
         (string path, _) = GetResultPath(executionName);
         DataLakeDirectoryClient subClient = client.GetSubDirectoryClient(path);
 
-#pragma warning disable S3254 // Default parameter value (for 'recursive') should not be passed as argument.
         await foreach (PathItem item in
             subClient.GetPathsAsync(recursive: false, cancellationToken: cancellationToken).ConfigureAwait(false))
-#pragma warning restore S3254
         {
             yield return GetLastSegmentFromPath(item.Name);
         }
@@ -80,10 +78,8 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IE
         (string path, _) = GetResultPath(executionName, scenarioName);
         DataLakeDirectoryClient subClient = client.GetSubDirectoryClient(path);
 
-#pragma warning disable S3254 // Default parameter value (for 'recursive') should not be passed as argument.
         await foreach (PathItem item in
             subClient.GetPathsAsync(recursive: false, cancellationToken: cancellationToken).ConfigureAwait(false))
-#pragma warning restore S3254
         {
             yield return StripExtension(GetLastSegmentFromPath(item.Name));
         }

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -83,10 +83,8 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         {
             // enrichmentOptions is only present if EnableEnrichment was called, so if it's null
             // then ignore all the supplied enrichers, we're not doing enrichment
-#pragma warning disable S1226
             enrichers = [];
             staticEnrichers = [];
-#pragma warning restore S1226
         }
 
         _enrichers = enrichers.Select<ILogEnricher, Action<IEnrichmentTagCollector>>(e => e.Enrich).ToArray();

@@ -60,27 +60,23 @@ public class TypeTests
     {
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Needed to be non-trivial blittable")]
     private struct CustomBlittableStruct(int x)
     {
         public readonly int X => x;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Needed to force non-blittable")]
     private struct CustomNonBlittableStructNoAttrib(string x)
     {
         public readonly string X => x;
     }
 
     [ImmutableObject(false)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Needed to force non-blittable")]
     private struct CustomNonBlittableStructAttribFalse(string x)
     {
         public readonly string X => x;
     }
 
     [ImmutableObject(true)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Needed to force non-blittable")]
     private struct CustomNonBlittableStructAttribTrue(string x)
     {
         public readonly string X => x;

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -860,7 +860,6 @@ internal sealed class Parser
     }
 
     // we can deal with this warning later
-#pragma warning disable S107 // Methods should not have too many parameters
     private List<StrongTypeConfig> WalkObjectModel(
         ISymbol parentSymbol,
         ISet<ITypeSymbol> typesChain,
@@ -870,7 +869,6 @@ internal sealed class Parser
         Dictionary<string, string> tagDescriptionDictionary,
         SymbolHolder symbols,
         bool isClass)
-#pragma warning restore S107 // Methods should not have too many parameters
     {
         var tagConfigs = new List<StrongTypeConfig>();
 

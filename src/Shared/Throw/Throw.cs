@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -17,8 +17,6 @@ namespace Microsoft.Shared.Diagnostics;
 /// The main purpose is to reduce code size, improve performance, and standardize exception
 /// messages.
 /// </remarks>
-[SuppressMessage("Minor Code Smell", "S4136:Method overloads should be grouped together", Justification = "Doesn't work with the region layout")]
-[SuppressMessage("Minor Code Smell", "S2333:Partial is gratuitous in this context", Justification = "Some projects add additional partial parts.")]
 [SuppressMessage("Design", "CA1716", Justification = "Not part of an API")]
 
 #if !SHARED_PROJECT
@@ -872,9 +870,7 @@ internal static partial class Throw
     public static double IfLessThan(double argument, double min, [CallerArgumentExpression(nameof(argument))] string paramName = "")
     {
         // strange conditional needed in order to handle NaN values correctly
-#pragma warning disable S1940 // Boolean checks should not be inverted
         if (!(argument >= min))
-#pragma warning restore S1940 // Boolean checks should not be inverted
         {
             ArgumentOutOfRangeException(paramName, argument, $"Argument less than minimum value {min}");
         }
@@ -893,9 +889,7 @@ internal static partial class Throw
     public static double IfGreaterThan(double argument, double max, [CallerArgumentExpression(nameof(argument))] string paramName = "")
     {
         // strange conditional needed in order to handle NaN values correctly
-#pragma warning disable S1940 // Boolean checks should not be inverted
         if (!(argument <= max))
-#pragma warning restore S1940 // Boolean checks should not be inverted
         {
             ArgumentOutOfRangeException(paramName, argument, $"Argument greater than maximum value {max}");
         }
@@ -914,9 +908,7 @@ internal static partial class Throw
     public static double IfLessThanOrEqual(double argument, double min, [CallerArgumentExpression(nameof(argument))] string paramName = "")
     {
         // strange conditional needed in order to handle NaN values correctly
-#pragma warning disable S1940 // Boolean checks should not be inverted
         if (!(argument > min))
-#pragma warning restore S1940 // Boolean checks should not be inverted
         {
             ArgumentOutOfRangeException(paramName, argument, $"Argument less or equal than minimum value {min}");
         }
@@ -935,9 +927,7 @@ internal static partial class Throw
     public static double IfGreaterThanOrEqual(double argument, double max, [CallerArgumentExpression(nameof(argument))] string paramName = "")
     {
         // strange conditional needed in order to handle NaN values correctly
-#pragma warning disable S1940 // Boolean checks should not be inverted
         if (!(argument < max))
-#pragma warning restore S1940 // Boolean checks should not be inverted
         {
             ArgumentOutOfRangeException(paramName, argument, $"Argument greater or equal than maximum value {max}");
         }
@@ -974,9 +964,7 @@ internal static partial class Throw
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double IfZero(double argument, [CallerArgumentExpression(nameof(argument))] string paramName = "")
     {
-#pragma warning disable S1244 // Floating point numbers should not be tested for equality
         if (argument == 0.0)
-#pragma warning restore S1244 // Floating point numbers should not be tested for equality
         {
             ArgumentOutOfRangeException(paramName, "Argument is zero");
         }

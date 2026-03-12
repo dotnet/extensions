@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 #endif
 
 #pragma warning disable SA1405 // Debug.Assert should provide message text
-#pragma warning disable S2333 // Redundant modifiers should not be used
 #pragma warning disable SA1519 // Braces should not be omitted from multi-line child statement
 #pragma warning disable LA0001 // Use Microsoft.Shared.Diagnostics.Throws for improved performance
 #pragma warning disable LA0002 // Use Microsoft.Shared.Diagnostics.ToInvariantString for improved performance

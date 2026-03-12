@@ -33,7 +33,6 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
 
     // Copy of Array.MaxLength.
     // Used by projects targeting .NET Framework.
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "Usage example, please retain")]
     private const int ArrayMaxLength = 0x7FFFFFC7;
 
     private const int DefaultInitialBufferSize = 256;
@@ -78,8 +77,6 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3928:Parameter names used into ArgumentException constructors should match an existing one ",
-        Justification = "False positive; parameter exists")]
     public void Advance(int count)
     {
         _ = Throw.IfLessThan(count, 0);

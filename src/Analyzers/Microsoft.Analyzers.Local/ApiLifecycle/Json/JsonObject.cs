@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // Forked from StyleCop.Analyzers repo.
@@ -149,7 +149,6 @@ internal sealed class JsonObject : IEnumerable<KeyValuePair<string, JsonValue>>,
     {
         private readonly JsonObject _object;
 
-        [SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Used by debugger.")]
         public JsonObjectDebugView(JsonObject jsonObject)
         {
             _object = jsonObject;

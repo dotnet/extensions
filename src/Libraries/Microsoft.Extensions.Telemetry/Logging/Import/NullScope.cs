@@ -4,7 +4,6 @@
 // This source file was lovingly 'borrowed' from dotnet/runtime/src/libraries/Microsoft.Extensions.Logging
 #pragma warning disable SA1629 // Documentation text should end with a period
 #pragma warning disable SA1505 // Opening braces should not be followed by blank line
-#pragma warning disable S1186 // Methods should not be empty
 
 using System;
 

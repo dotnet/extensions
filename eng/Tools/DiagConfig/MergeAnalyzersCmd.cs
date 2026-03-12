@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -60,9 +60,7 @@ internal static class MergeAnalyzersCmd
             Assembly asm;
             try
             {
-#pragma warning disable S3885 // "Assembly.Load" should be used
                 asm = Assembly.LoadFrom(path);
-#pragma warning restore S3885 // "Assembly.Load" should be used
             }
             catch (Exception ex)
             {

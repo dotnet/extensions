@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -13,8 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable SA1402 // File may only contain a single type
-#pragma warning disable S1144 // Unused private types or members should be removed
-#pragma warning disable S3459 // Unassigned members should be removed
 
 namespace Microsoft.Extensions.AI;
 

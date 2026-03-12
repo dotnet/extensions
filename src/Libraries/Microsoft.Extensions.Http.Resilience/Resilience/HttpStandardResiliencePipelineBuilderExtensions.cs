@@ -46,9 +46,7 @@ public static class HttpStandardResiliencePipelineBuilderExtensions
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="configure">The configure method.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-#pragma warning disable S3872 // Parameter names should not duplicate the names of their methods
     public static IHttpStandardResiliencePipelineBuilder Configure(this IHttpStandardResiliencePipelineBuilder builder, Action<HttpStandardResilienceOptions> configure)
-#pragma warning restore S3872 // Parameter names should not duplicate the names of their methods
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
@@ -62,9 +60,7 @@ public static class HttpStandardResiliencePipelineBuilderExtensions
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="configure">The configure method.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-#pragma warning disable S3872 // Parameter names should not duplicate the names of their methods
     public static IHttpStandardResiliencePipelineBuilder Configure(this IHttpStandardResiliencePipelineBuilder builder, Action<HttpStandardResilienceOptions, IServiceProvider> configure)
-#pragma warning restore S3872 // Parameter names should not duplicate the names of their methods
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -21,7 +21,6 @@ using OpenTelemetry.Trace;
 using Xunit;
 
 #pragma warning disable CA2214 // Do not call overridable methods in constructors
-#pragma warning disable S3967  // Multidimensional arrays should not be used
 
 namespace Microsoft.Extensions.AI;
 

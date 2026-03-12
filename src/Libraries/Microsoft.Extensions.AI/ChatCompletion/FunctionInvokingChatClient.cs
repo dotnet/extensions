@@ -15,8 +15,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
-#pragma warning disable S2219 // Runtime type checking should be simplified
-#pragma warning disable S3353 // Unchanged local variables should be "const"
 #pragma warning disable SA1204 // Static members should appear before non-static members
 
 namespace Microsoft.Extensions.AI;

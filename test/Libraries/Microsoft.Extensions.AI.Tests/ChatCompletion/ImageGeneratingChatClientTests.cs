@@ -298,9 +298,7 @@ public class ImageGeneratingChatClientTests
 
         // Assert
         Assert.Same(chatOptions, capturedOptions);
-#pragma warning disable CA1508
         Assert.NotNull(capturedOptions?.Tools);
-#pragma warning restore CA1508
         Assert.Empty(capturedOptions.Tools);
     }
 

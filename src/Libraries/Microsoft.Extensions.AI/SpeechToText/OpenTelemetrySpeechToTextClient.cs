@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 #pragma warning disable SA1113 // Comma should be on the same line as previous parameter
 

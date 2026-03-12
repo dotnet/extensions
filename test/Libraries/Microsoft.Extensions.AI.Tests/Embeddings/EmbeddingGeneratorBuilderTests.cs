@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -81,9 +81,7 @@ public class EmbeddingGeneratorBuilderTests
     private sealed class InnerServiceCapturingEmbeddingGenerator(string name, IEmbeddingGenerator<string, Embedding<float>> innerGenerator) :
         DelegatingEmbeddingGenerator<string, Embedding<float>>(innerGenerator)
     {
-#pragma warning disable S3604 // False positive: Member initializer values should not be redundant
         public string Name { get; } = name;
-#pragma warning restore S3604
         public new IEmbeddingGenerator<string, Embedding<float>> InnerGenerator => base.InnerGenerator;
     }
 }

@@ -82,7 +82,6 @@ public class StampedeTests : IClassFixture<TestEventListener>
     [InlineData(1, true)]
     [InlineData(10, false)]
     [InlineData(10, true)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S5034:\"ValueTask\" should be consumed correctly", Justification = "False positive, is only awaited once")]
     public async Task MultipleCallsShareExecution_NoCancellation(int callerCount, bool canBeCanceled)
     {
         using var scope = GetDefaultCache(out var cache);
@@ -327,7 +326,6 @@ public class StampedeTests : IClassFixture<TestEventListener>
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S5034:\"ValueTask\" should be consumed correctly", Justification = "False positive, is only awaited once")]
     public async Task ImmutableTypesShareFinalTask(bool withCancelation)
     {
         using CancellationTokenSource? cts = withCancelation ? new() : null;
@@ -367,7 +365,6 @@ public class StampedeTests : IClassFixture<TestEventListener>
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S5034:\"ValueTask\" should be consumed correctly", Justification = "False positive, is only awaited once")]
     public async Task ImmutableCustomTypesShareFinalTask(bool withCancelation)
     {
         using var cts = withCancelation ? new CancellationTokenSource() : null;
@@ -411,7 +408,6 @@ public class StampedeTests : IClassFixture<TestEventListener>
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S5034:\"ValueTask\" should be consumed correctly", Justification = "False positive, is only awaited once")]
     public async Task MutableTypesNeverShareFinalTask(bool withCancelation)
     {
         using CancellationTokenSource? cts = withCancelation ? new() : null;

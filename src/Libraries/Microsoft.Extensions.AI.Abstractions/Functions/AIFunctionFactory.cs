@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -21,8 +21,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
-
-#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 
 namespace Microsoft.Extensions.AI;
 

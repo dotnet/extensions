@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -25,9 +25,6 @@ using Xunit;
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CA2214 // Do not call overridable methods in constructors
 #pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
-#pragma warning disable S103 // Lines should not be too long
-#pragma warning disable S1144 // Unused private types or members should be removed
-#pragma warning disable S3604 // Member initializer values should not be redundant
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 
 namespace Microsoft.Extensions.AI;
@@ -1109,12 +1106,10 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     private class Person
     {
-#pragma warning disable S1144, S3459 // Unassigned members should be removed
         public string? FullName { get; set; }
         public int AgeInYears { get; set; }
         public string? HomeTown { get; set; }
         public JobType Job { get; set; }
-#pragma warning restore S1144, S3459 // Unused private types or members should be removed
     }
 
     private enum JobType

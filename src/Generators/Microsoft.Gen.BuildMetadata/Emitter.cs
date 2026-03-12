@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
@@ -6,7 +6,6 @@ using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.BuildMetadata;
 
-[SuppressMessage("Format", "S1199", Justification = "For better visualization of how the generated code will look like.")]
 internal sealed class Emitter : EmitterBase
 {
     private const string DependencyInjectionNamespace = "global::Microsoft.Extensions.DependencyInjection.";
@@ -122,9 +121,7 @@ internal sealed class Emitter : EmitterBase
                 OutCloseBrace();
                 OutLn();
 
-#pragma warning disable S103 // Lines should not be too long
                 OutLn($"public static {ConfigurationNamespace}IConfigurationBuilder AddBuildMetadata(this {ConfigurationNamespace}IConfigurationBuilder builder, string sectionName = DefaultSectionName)");
-#pragma warning restore S103 // Lines should not be too long
                 OutOpenBrace();
                 {
                     OutNullGuards();

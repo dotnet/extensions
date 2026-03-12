@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Http.Resilience.Internal;
@@ -17,9 +17,7 @@ internal sealed class OrderedGroupsRoutingStrategyFactory : IPooledObjectPolicy<
     {
         _randomizer = randomizer;
         _cache = cache;
-#pragma warning disable S3366 // "this" should not be exposed from constructors
         _pool = PoolFactory.CreatePool(this);
-#pragma warning restore S3366 // "this" should not be exposed from constructors
     }
 
     public OrderedGroupsRoutingStrategy Get()

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -9,7 +9,6 @@ using System.Diagnostics;
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 #pragma warning disable SA1112 // Closing parenthesis should be on line of opening parenthesis
 #pragma warning disable SA1114 // Parameter list should follow declaration
-#pragma warning disable S4039 // Make 'AIFunctionArguments' sealed
 #pragma warning disable CA1033 // Make 'AIFunctionArguments' sealed
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 

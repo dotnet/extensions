@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -49,7 +49,6 @@ public class LinuxCountersTests
                 "   0: 030011AC:8AF7 C1B17827:01BB 0B 00000000:00000000 02:000000D1 00000000   472        0 2481276 2 00000000c62511cb 28 4 26 10 -1\r\n"
             },
             {
-#pragma warning disable S103 // Lines should not be too long - disabled for better readability
                 new FileInfo("/proc/net/tcp6"),
                 "  sl  local_address                         remote_address                        st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\r\n" +
                 "   0: 00000000000000000000000000000000:0BB8 00000000000000000000000000000000:0000 0A 00000000:00000000 00:00000000 00000000   472        0 2455375 1 00000000f4cb7621 100 0 0 10 0\r\n" +

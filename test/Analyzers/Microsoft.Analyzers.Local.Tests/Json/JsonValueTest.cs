@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // Forked from StyleCop.Analyzers repo.
@@ -209,9 +209,7 @@ public class JsonValueTest
         DateTime time = DateTime.Now;
         Assert.NotEqual(time, JsonValue.Null);
         Assert.Equal(time.ToString("o", CultureInfo.InvariantCulture), ((JsonValue)time).AsString);
-#pragma warning disable S3655 // Empty nullable value should not be accessed
         Assert.Equal(default(DateTime?), JsonValue.Null);
-#pragma warning restore S3655 // Empty nullable value should not be accessed
 
         // (int)(JsonValue)
         Assert.Equal(0, (int)new JsonValue(uint.MaxValue));

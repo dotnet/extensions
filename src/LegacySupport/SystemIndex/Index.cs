@@ -5,12 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 #pragma warning disable CS0436 // Type conflicts with imported type
-#pragma warning disable S3427 // Method overloads with default parameter values should not overlap 
 #pragma warning disable SA1642 // Constructor summary documentation should begin with standard text
 #pragma warning disable IDE0011 // Add braces
 #pragma warning disable SA1623 // Property summary documentation should match accessors
 #pragma warning disable IDE0023 // Use block body for conversion operator
-#pragma warning disable S3928 // Parameter names used into ArgumentException constructors should match an existing one
 #pragma warning disable LA0001 // Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
 #pragma warning disable CA1305 // Specify IFormatProvider
 

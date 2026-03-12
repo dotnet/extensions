@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -160,10 +160,8 @@ internal static class TemplateProcessor
 
                 int bracesCount = scanIndex - scanIndexBeforeSkip;
 
-#pragma warning disable S109 // Magic numbers should not be used
                 // if it is an even number of braces, just skip them, otherwise, we found an unescaped brace
                 if (bracesCount % 2 != 0)
-#pragma warning restore S109 // Magic numbers should not be used
                 {
                     if (currentBrace == searchedBrace)
                     {

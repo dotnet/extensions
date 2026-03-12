@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -38,7 +38,6 @@ internal static class HybridCachePayload
     private static readonly Random _entropySource = new(); // doesn't need to be cryptographic
 
     [Flags]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2344:Enumeration type names should not have \"Flags\" or \"Enum\" suffixes", Justification = "Clarity")]
     internal enum PayloadFlags : uint
     {
         None = 0,

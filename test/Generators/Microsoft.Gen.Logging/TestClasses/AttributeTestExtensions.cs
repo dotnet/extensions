@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
@@ -36,7 +36,6 @@ namespace TestClasses
             [PrivateData] NonFormattable p3);
 
         [LoggerMessage(5, LogLevel.Debug, "M5 {p0} {p1} {p2} {p3} {p4} {p5} {p6} {p7} {p8} {p9} {p10}")]
-        [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Testing.")]
         public static partial void M5(
             ILogger logger,
             [PrivateData] string p0,

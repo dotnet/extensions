@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -14,7 +14,6 @@ using Xunit;
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
 #pragma warning disable CA1031 // Do not catch general exception types
-#pragma warning disable S108 // Nested blocks of code should not be left empty
 
 namespace Microsoft.Extensions.AI;
 

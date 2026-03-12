@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -76,9 +76,7 @@ internal static class ModelInfo
     /// </param>
     internal static string? GetModelProvider(string? model, ChatClientMetadata? metadata)
     {
-#pragma warning disable S2219 // Runtime type checking should be simplified.
         if (model is KnownModels.AzureAIFoundryEvaluation)
-#pragma warning restore S2219
         {
             // We know that the model provider and the host are both Azure AI Foundry in this case.
             return $"{KnownModelProviders.AzureAIFoundry} ({KnownModelHostMonikers.AzureAIFoundry})";

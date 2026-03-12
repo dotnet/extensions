@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -42,7 +42,6 @@ public sealed class AcceptanceTest
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-    [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_Can_Be_Configured_With_Section()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
@@ -94,7 +93,6 @@ public sealed class AcceptanceTest
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-    [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv1()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
@@ -143,7 +141,6 @@ public sealed class AcceptanceTest
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-    [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv2()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
@@ -484,7 +481,6 @@ public sealed class AcceptanceTest
             return;
         }
 
-#pragma warning disable S1067 // Expressions should not be too complex
         if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization ||
             instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization ||
             instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime ||
@@ -495,10 +491,8 @@ public sealed class AcceptanceTest
         {
             meterListener.EnableMeasurementEvents(instrument);
         }
-#pragma warning restore S1067 // Expressions should not be too complex
     }
 
-#pragma warning disable S107 // Methods should not have too many parameters
     private static void OnMeasurementReceived(Instrument instrument,
         double value,
         ReadOnlySpan<KeyValuePair<string, object?>> tags,
@@ -509,7 +503,6 @@ public sealed class AcceptanceTest
         ref double cpuRequestFromGauge,
         ref double memoryFromGauge,
         ref double memoryLimitFromGauge)
-#pragma warning restore S107 // Methods should not have too many parameters
     {
         if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization)
         {

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -16,11 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 #pragma warning disable IDE0004 // Remove Unnecessary Cast
-#pragma warning disable S103 // Lines should not be too long
-#pragma warning disable S107 // Methods should not have too many parameters
-#pragma warning disable S2760 // Sequential tests should not check the same condition
-#pragma warning disable S3358 // Ternary operators should not be nested
-#pragma warning disable S5034 // "ValueTask" should be consumed correctly
 
 namespace Microsoft.Extensions.AI;
 
@@ -250,9 +245,7 @@ public partial class AIFunctionFactoryTest
 
     private sealed class ThrowingAsyncEnumerable : IAsyncEnumerable<int>
     {
-#pragma warning disable S3717 // Track use of "NotImplementedException"
         public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) => throw new NotImplementedException();
-#pragma warning restore S3717 // Track use of "NotImplementedException"
     }
 
     [Fact]
