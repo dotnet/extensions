@@ -14,7 +14,7 @@ An experimental API has its `[Experimental]` attribute removed, making it a stab
 
 **How to detect:**
 - PR removes `[Experimental("...")]` attribute from types or members
-- PR removes the diagnostic ID from the project's `DiagnosticId` list
+- PR updates the project's experimental diagnostic staging properties (for example, removing the ID from `StageDevDiagnosticId` or related MSBuild properties) in line with [`docs/list-of-diagnostics.md`](../../../docs/list-of-diagnostics.md)
 - PR description or title mentions "promote", "graduate", "stabilize", or "remove experimental"
 - The corresponding `.json` API baseline file changes a type's `"Stage"` from `"Experimental"` to `"Stable"`
 

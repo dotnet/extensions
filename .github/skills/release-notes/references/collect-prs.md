@@ -151,7 +151,7 @@ Mark remaining PRs as candidates: `UPDATE prs SET is_candidate = 1 WHERE ...`
 
 For each candidate PR, collect co-authors from **all commits in the PR**, not just the merge commit:
 
-1. **Fetch the PR's commits** using `list_commits` on the PR's head branch, or use `get_commit` for the merge commit SHA from the PR details.
+1. **Fetch the PR's commits** via the pull request commits endpoint (for example, using a `pull_request_read` / PR-scoped `list_commits` method), so it works even if the PR's head branch has been deleted. If needed, also use `get_commit` for the merge commit SHA from the PR details.
 2. **Parse `Co-authored-by:` trailers** from every commit message in the PR. These trailers follow the format: `Co-authored-by: Name <email>`. Extract the GitHub username from the email (e.g. `123456+username@users.noreply.github.com` → `username`) or match the name against known GitHub users.
 3. **Also check the merge commit** message itself for `Co-authored-by:` trailers, as squash-merged PRs consolidate trailers there.
 4. **Check the `copilot_work_started` timeline event** to identify Copilot-assisted PRs where a human delegated the work.
