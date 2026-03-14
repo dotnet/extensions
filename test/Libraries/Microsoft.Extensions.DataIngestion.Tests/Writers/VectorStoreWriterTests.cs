@@ -225,8 +225,8 @@ public abstract class VectorStoreWriterTests
             .ToListAsync();
 
         Assert.Equal(updatedChunks.Count, records.Count);
-        Assert.Contains(records, r => (string)r.Content! == "updated chunk 1");
-        Assert.Contains(records, r => (string)r.Content! == "updated chunk 2");
+        Assert.Contains(records, r => r.Content == "updated chunk 1");
+        Assert.Contains(records, r => r.Content == "updated chunk 2");
     }
 
     protected abstract VectorStore CreateVectorStore(TestEmbeddingGenerator<string> testEmbeddingGenerator);

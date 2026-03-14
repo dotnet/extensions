@@ -18,7 +18,9 @@ namespace Microsoft.Extensions.DataIngestion;
 /// When the vector dimension count is known at compile time, derive from this class and add
 /// the <see cref="VectorStoreVectorAttribute"/> to the <see cref="Embedding"/> property.
 /// </remarks>
+#pragma warning disable CA1005 // Avoid excessive parameters on generic types - TKey, TChunk, and TRecord are all necessary
 public class IngestedChunkRecord<TKey, TChunk>
+#pragma warning restore CA1005
 {
     /// <summary>
     /// The storage name for the <see cref="Key"/> property.
@@ -44,6 +46,48 @@ public class IngestedChunkRecord<TKey, TChunk>
     /// The storage name for the <see cref="Embedding"/> property.
     /// </summary>
     public const string EmbeddingPropertyName = "embedding";
+
+    /// <summary>
+    /// Creates a <see cref="VectorStoreCollectionDefinition"/> for <see cref="IngestedChunkRecord{TKey, TChunk}"/>.
+    /// </summary>
+    /// <param name="dimensionCount">The number of dimensions that the vector has.</param>
+    /// <param name="distanceFunction">
+    /// The distance function to use. When not provided, the default specific to given database will be used.
+    /// Check <see cref="DistanceFunction"/> for available values.
+    /// </param>
+    /// <param name="indexKind">The index kind to use.</param>
+    /// <returns>A <see cref="VectorStoreCollectionDefinition"/> suitable for creating a vector store collection.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="dimensionCount"/> is less than or equal to zero.</exception>
+#pragma warning disable CA1000 // Do not declare static members on generic types - needs access to TKey and TChunk type parameters
+    public static VectorStoreCollectionDefinition CreateCollectionDefinition(int dimensionCount, string? distanceFunction = null, string? indexKind = null)
+#pragma warning restore CA1000
+    {
+        _ = Shared.Diagnostics.Throw.IfLessThanOrEqual(dimensionCount, 0);
+
+        return new VectorStoreCollectionDefinition
+        {
+            Properties =
+            {
+                new VectorStoreKeyProperty(nameof(Key), typeof(TKey)) { StorageName = KeyPropertyName },
+
+                // By using TChunk as the type here we allow the vector store
+                // to handle the conversion from TChunk to the actual vector type it supports.
+                new VectorStoreVectorProperty(nameof(Embedding), typeof(TChunk), dimensionCount)
+                {
+                    StorageName = EmbeddingPropertyName,
+                    DistanceFunction = distanceFunction,
+                    IndexKind = indexKind,
+                },
+                new VectorStoreDataProperty(nameof(Content), typeof(TChunk)) { StorageName = ContentPropertyName },
+                new VectorStoreDataProperty(nameof(Context), typeof(string)) { StorageName = ContextPropertyName },
+                new VectorStoreDataProperty(nameof(DocumentId), typeof(string))
+                {
+                    StorageName = DocumentIdPropertyName,
+                    IsIndexed = true,
+                },
+            },
+        };
+    }
 
     /// <summary>
     /// Gets or sets the unique key for this record.
@@ -97,43 +141,5 @@ public class IngestedChunkRecord<TKey, TChunk>
     {
         // Default implementation: no-op.
         // Derived classes can override to map metadata keys to typed properties.
-    }
-
-    /// <summary>
-    /// Creates a <see cref="VectorStoreCollectionDefinition"/> for <see cref="IngestedChunkRecord{TKey, TChunk}"/>.
-    /// </summary>
-    /// <param name="dimensionCount">The number of dimensions that the vector has.</param>
-    /// <param name="distanceFunction">
-    /// The distance function to use. When not provided, the default specific to given database will be used.
-    /// Check <see cref="DistanceFunction"/> for available values.
-    /// </param>
-    /// <param name="indexKind">The index kind to use.</param>
-    /// <returns>A <see cref="VectorStoreCollectionDefinition"/> suitable for creating a vector store collection.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="dimensionCount"/> is less than or equal to zero.</exception>
-    public static VectorStoreCollectionDefinition CreateCollectionDefinition(int dimensionCount, string? distanceFunction = null, string? indexKind = null)
-    {
-        Shared.Diagnostics.Throw.IfLessThanOrEqual(dimensionCount, 0);
-
-        return new VectorStoreCollectionDefinition
-        {
-            Properties =
-            {
-                new VectorStoreKeyProperty(KeyPropertyName, typeof(TKey)),
-
-                // By using TChunk as the type here we allow the vector store
-                // to handle the conversion from TChunk to the actual vector type it supports.
-                new VectorStoreVectorProperty(EmbeddingPropertyName, typeof(TChunk), dimensionCount)
-                {
-                    DistanceFunction = distanceFunction,
-                    IndexKind = indexKind,
-                },
-                new VectorStoreDataProperty(ContentPropertyName, typeof(TChunk)),
-                new VectorStoreDataProperty(ContextPropertyName, typeof(string)),
-                new VectorStoreDataProperty(DocumentIdPropertyName, typeof(string))
-                {
-                    IsIndexed = true,
-                },
-            },
-        };
     }
 }

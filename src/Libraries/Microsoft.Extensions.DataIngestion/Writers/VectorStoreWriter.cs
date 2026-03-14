@@ -16,7 +16,9 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <typeparam name="TKey">The type of the key for the record.</typeparam>
 /// <typeparam name="TChunk">The type of the chunk content.</typeparam>
 /// <typeparam name="TRecord">The type of the record stored in the vector store.</typeparam>
+#pragma warning disable CA1005 // Avoid excessive parameters on generic types - TKey, TChunk, and TRecord are all necessary
 public sealed class VectorStoreWriter<TKey, TChunk, TRecord> : IngestionChunkWriter<TChunk>
+#pragma warning restore CA1005
     where TKey : notnull
     where TRecord : IngestedChunkRecord<TKey, TChunk>, new()
 {
