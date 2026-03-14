@@ -120,7 +120,7 @@ public sealed class VectorStoreWriter<TKey, TChunk, TRecord> : IngestionChunkWri
             return (TKey)(object)Guid.NewGuid().ToString();
         }
 
-        throw new NotSupportedException($"Automatic key generation is not supported for key type '{typeof(TKey)}'. Supported key types are Guid and string.");
+        throw new NotSupportedException($"Automatic key generation is not supported for key type '{typeof(TKey)}'. Supported key types are Guid or string.");
     }
 
     private async Task<IReadOnlyList<TKey>> GetPreExistingChunksIdsAsync(IngestionDocument document, CancellationToken cancellationToken)
