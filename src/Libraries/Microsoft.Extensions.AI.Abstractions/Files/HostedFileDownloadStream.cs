@@ -51,6 +51,29 @@ public abstract class HostedFileDownloadStream : Stream
     /// </remarks>
     public virtual string? FileName => null;
 
+    /// <inheritdoc />
+    public override bool CanWrite => false;
+
+    /// <inheritdoc />
+    public override void SetLength(long value) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public override void WriteByte(byte value) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public override void EndWrite(IAsyncResult asyncResult) => throw new NotSupportedException();
+
     /// <summary>
     /// Reads the entire stream content from its current position and returns it as a <see cref="DataContent"/>.
     /// </summary>
@@ -77,4 +100,13 @@ public abstract class HostedFileDownloadStream : Stream
             Name = FileName,
         };
     }
+
+#if NET
+    /// <inheritdoc />
+    public override void Write(ReadOnlySpan<byte> buffer) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException();
+#endif
 }
