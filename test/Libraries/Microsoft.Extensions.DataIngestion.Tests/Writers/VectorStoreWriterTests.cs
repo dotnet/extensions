@@ -14,42 +14,64 @@ namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 public abstract class VectorStoreWriterTests
 {
     [Fact]
-    public async Task CanGenerateDynamicSchema()
+    public async Task CanWriteChunks()
     {
         string documentId = Guid.NewGuid().ToString();
 
         using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
-        using VectorStoreWriter<string> writer = new(
-            vectorStore,
-            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
+
+        var definition = IngestedChunkRecord<Guid, string>.CreateCollectionDefinition(TestEmbeddingGenerator<string>.DimensionCount);
+        var collection = vectorStore.GetCollection<Guid, IngestedChunkRecord<Guid, string>>("chunks", definition);
+
+        using VectorStoreWriter<Guid, string, IngestedChunkRecord<Guid, string>> writer = new(collection);
 
         IngestionDocument document = new(documentId);
         IngestionChunk<string> chunk = TestChunkFactory.CreateChunk("some content", document);
-        chunk.Metadata["key1"] = "value1";
-        chunk.Metadata["key2"] = 123;
-        chunk.Metadata["key3"] = true;
-        chunk.Metadata["key4"] = 123.45;
 
         List<IngestionChunk<string>> chunks = [chunk];
 
         Assert.False(testEmbeddingGenerator.WasCalled);
         await writer.WriteAsync(chunks.ToAsyncEnumerable());
 
-        Dictionary<string, object?> record = await writer.VectorStoreCollection
-            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 1)
+        IngestedChunkRecord<Guid, string> record = await writer.VectorStoreCollection
+            .GetAsync(filter: record => record.DocumentId == documentId, top: 1)
             .SingleAsync();
 
         Assert.NotNull(record);
-        Assert.NotNull(record["key"]);
-        Assert.Equal(documentId, record["documentid"]);
-        Assert.Equal(chunks[0].Content, record["content"]);
+        Assert.NotEqual(Guid.Empty, record.Key);
+        Assert.Equal(documentId, record.DocumentId);
+        Assert.Equal(chunks[0].Content, record.Content);
         Assert.True(testEmbeddingGenerator.WasCalled);
-        foreach (var kvp in chunks[0].Metadata)
-        {
-            Assert.True(record.ContainsKey(kvp.Key), $"Record does not contain key '{kvp.Key}'");
-            Assert.Equal(kvp.Value, record[kvp.Key]);
-        }
+    }
+
+    [Fact]
+    public async Task CanWriteChunksWithMetadata()
+    {
+        string documentId = Guid.NewGuid().ToString();
+
+        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
+
+        var collection = vectorStore.GetCollection<Guid, TestChunkRecordWithMetadata>("chunks-meta");
+        using VectorStoreWriter<Guid, string, TestChunkRecordWithMetadata> writer = new(collection);
+
+        IngestionDocument document = new(documentId);
+        IngestionChunk<string> chunk = TestChunkFactory.CreateChunk("some content", document);
+        chunk.Metadata["Classification"] = "important";
+
+        List<IngestionChunk<string>> chunks = [chunk];
+
+        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+
+        TestChunkRecordWithMetadata record = await writer.VectorStoreCollection
+            .GetAsync(filter: record => record.DocumentId == documentId, top: 1)
+            .SingleAsync();
+
+        Assert.NotNull(record);
+        Assert.Equal(documentId, record.DocumentId);
+        Assert.Equal(chunks[0].Content, record.Content);
+        Assert.Equal("important", record.Classification);
     }
 
     [Fact]
@@ -59,9 +81,12 @@ public abstract class VectorStoreWriterTests
 
         using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
-        using VectorStoreWriter<string> writer = new(
-            vectorStore,
-            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount,
+
+        var definition = IngestedChunkRecord<Guid, string>.CreateCollectionDefinition(TestEmbeddingGenerator<string>.DimensionCount);
+        var collection = vectorStore.GetCollection<Guid, IngestedChunkRecord<Guid, string>>("chunks-incr", definition);
+
+        using VectorStoreWriter<Guid, string, IngestedChunkRecord<Guid, string>> writer = new(
+            collection,
             options: new()
             {
                 IncrementalIngestion = true,
@@ -69,8 +94,6 @@ public abstract class VectorStoreWriterTests
 
         IngestionDocument document = new(documentId);
         IngestionChunk<string> chunk1 = TestChunkFactory.CreateChunk("first chunk", document);
-        chunk1.Metadata["key1"] = "value1";
-
         IngestionChunk<string> chunk2 = TestChunkFactory.CreateChunk("second chunk", document);
 
         List<IngestionChunk<string>> chunks = [chunk1, chunk2];
@@ -78,27 +101,25 @@ public abstract class VectorStoreWriterTests
         await writer.WriteAsync(chunks.ToAsyncEnumerable());
 
         int recordCount = await writer.VectorStoreCollection
-            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 100)
+            .GetAsync(filter: record => record.DocumentId == documentId, top: 100)
             .CountAsync();
         Assert.Equal(chunks.Count, recordCount);
 
         // Now we will do an incremental ingestion that updates the chunk(s).
         IngestionChunk<string> updatedChunk = TestChunkFactory.CreateChunk("different content", document);
-        updatedChunk.Metadata["key1"] = "value2";
 
         List<IngestionChunk<string>> updatedChunks = [updatedChunk];
 
         await writer.WriteAsync(updatedChunks.ToAsyncEnumerable());
 
         // We ask for 100 records, but we expect only 1 as the previous 2 should have been deleted.
-        Dictionary<string, object?> record = await writer.VectorStoreCollection
-            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 100)
+        IngestedChunkRecord<Guid, string> record = await writer.VectorStoreCollection
+            .GetAsync(filter: record => record.DocumentId == documentId, top: 100)
             .SingleAsync();
 
         Assert.NotNull(record);
-        Assert.NotNull(record["key"]);
-        Assert.Equal("different content", record["content"]);
-        Assert.Equal("value2", record["key1"]);
+        Assert.NotEqual(Guid.Empty, record.Key);
+        Assert.Equal("different content", record.Content);
     }
 
     public static TheoryData<int?, int[]> BatchingTestCases => new()
@@ -131,9 +152,11 @@ public abstract class VectorStoreWriterTests
             options.BatchTokenCount = batchTokenCount.Value;
         }
 
-        using VectorStoreWriter<string> writer = new(
-            vectorStore,
-            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount,
+        var definition = IngestedChunkRecord<Guid, string>.CreateCollectionDefinition(TestEmbeddingGenerator<string>.DimensionCount);
+        var collection = vectorStore.GetCollection<Guid, IngestedChunkRecord<Guid, string>>("chunks-batch", definition);
+
+        using VectorStoreWriter<Guid, string, IngestedChunkRecord<Guid, string>> writer = new(
+            collection,
             options: options);
 
         IngestionDocument document = new(documentId);
@@ -146,7 +169,7 @@ public abstract class VectorStoreWriterTests
         await writer.WriteAsync(chunks.ToAsyncEnumerable());
 
         int recordCount = await writer.VectorStoreCollection
-            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 100)
+            .GetAsync(filter: record => record.DocumentId == documentId, top: 100)
             .CountAsync();
 
         Assert.Equal(chunks.Count, recordCount);
@@ -159,9 +182,12 @@ public abstract class VectorStoreWriterTests
 
         using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
-        using VectorStoreWriter<string> writer = new(
-            vectorStore,
-            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount,
+
+        var definition = IngestedChunkRecord<Guid, string>.CreateCollectionDefinition(TestEmbeddingGenerator<string>.DimensionCount);
+        var collection = vectorStore.GetCollection<Guid, IngestedChunkRecord<Guid, string>>("chunks-many", definition);
+
+        using VectorStoreWriter<Guid, string, IngestedChunkRecord<Guid, string>> writer = new(
+            collection,
             options: new()
             {
                 IncrementalIngestion = true,
@@ -180,7 +206,7 @@ public abstract class VectorStoreWriterTests
         await writer.WriteAsync(chunks.ToAsyncEnumerable());
 
         int recordCount = await writer.VectorStoreCollection
-            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 10000)
+            .GetAsync(filter: record => record.DocumentId == documentId, top: 10000)
             .CountAsync();
         Assert.Equal(chunks.Count, recordCount);
 
@@ -194,13 +220,13 @@ public abstract class VectorStoreWriterTests
         await writer.WriteAsync(updatedChunks.ToAsyncEnumerable());
 
         // Verify that all old records were deleted and only the new ones remain
-        List<Dictionary<string, object?>> records = await writer.VectorStoreCollection
-            .GetAsync(filter: record => (string)record["documentid"]! == documentId, top: 10000)
+        List<IngestedChunkRecord<Guid, string>> records = await writer.VectorStoreCollection
+            .GetAsync(filter: record => record.DocumentId == documentId, top: 10000)
             .ToListAsync();
 
         Assert.Equal(updatedChunks.Count, records.Count);
-        Assert.Contains(records, r => (string)r["content"]! == "updated chunk 1");
-        Assert.Contains(records, r => (string)r["content"]! == "updated chunk 2");
+        Assert.Contains(records, r => (string)r.Content! == "updated chunk 1");
+        Assert.Contains(records, r => (string)r.Content! == "updated chunk 2");
     }
 
     protected abstract VectorStore CreateVectorStore(TestEmbeddingGenerator<string> testEmbeddingGenerator);

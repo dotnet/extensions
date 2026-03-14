@@ -126,7 +126,7 @@
         await InvokeAsync(StateHasChanged);
         var results = await Search.SearchAsync(searchPhrase, filenameFilter, maxResults: 5);
         return results.Select(result =>
-            $"<result filename=\"{result.DocumentId}\">{result.Text}</result>");
+            $"<result filename=\"{result.DocumentId}\">{result.Content}</result>");
     }
 
     public void Dispose()

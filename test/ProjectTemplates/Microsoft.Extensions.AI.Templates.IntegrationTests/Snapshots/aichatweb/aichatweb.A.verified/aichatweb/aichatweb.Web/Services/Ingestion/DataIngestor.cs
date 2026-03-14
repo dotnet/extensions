@@ -9,15 +9,13 @@ namespace aichatweb.Web.Services.Ingestion;
 public class DataIngestor(
     ILogger<DataIngestor> logger,
     ILoggerFactory loggerFactory,
-    VectorStore vectorStore,
+    VectorStoreCollection<string, IngestedChunk> vectorCollection,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
 {
     public async Task IngestDataAsync(DirectoryInfo directory, string searchPattern)
     {
-        using var writer = new VectorStoreWriter<string>(vectorStore, dimensionCount: IngestedChunk.VectorDimensions, new()
+        using var writer = new VectorStoreWriter<string, string, IngestedChunk>(vectorCollection, new()
         {
-            CollectionName = IngestedChunk.CollectionName,
-            DistanceFunction = IngestedChunk.VectorDistanceFunction,
             IncrementalIngestion = false,
         });
 

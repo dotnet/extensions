@@ -13,7 +13,6 @@ public class VectorStoreWriterOptionsTests
     {
         VectorStoreWriterOptions options = new();
 
-        Assert.Equal("chunks", options.CollectionName);
         Assert.True(options.IncrementalIngestion);
         Assert.Equal(512000, options.BatchTokenCount); // 256 * 2000
     }
