@@ -18,10 +18,10 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </remarks>
 public class IngestedChunkRecord<TChunk>
 {
-    private const string KeyPropertyName = "key";
-    private const string DocumentIdPropertyName = "documentid";
-    private const string ContentPropertyName = "content";
-    private const string ContextPropertyName = "context";
+    private const string KeyStorageName = "key";
+    private const string DocumentIdStorageName = "documentid";
+    private const string ContentStorageName = "content";
+    private const string ContextStorageName = "context";
     /// <summary>
     /// The storage name for the <see cref="Embedding"/> property.
     /// </summary>
@@ -48,7 +48,7 @@ public class IngestedChunkRecord<TChunk>
         {
             Properties =
             {
-                new VectorStoreKeyProperty(nameof(Key), typeof(Guid)) { StorageName = KeyPropertyName },
+                new VectorStoreKeyProperty(nameof(Key), typeof(Guid)) { StorageName = KeyStorageName },
 
                 // By using TChunk as the type here we allow the vector store
                 // to handle the conversion from TChunk to the actual vector type it supports.
@@ -58,11 +58,11 @@ public class IngestedChunkRecord<TChunk>
                     DistanceFunction = distanceFunction,
                     IndexKind = indexKind,
                 },
-                new VectorStoreDataProperty(nameof(Content), typeof(TChunk)) { StorageName = ContentPropertyName },
-                new VectorStoreDataProperty(nameof(Context), typeof(string)) { StorageName = ContextPropertyName },
+                new VectorStoreDataProperty(nameof(Content), typeof(TChunk)) { StorageName = ContentStorageName },
+                new VectorStoreDataProperty(nameof(Context), typeof(string)) { StorageName = ContextStorageName },
                 new VectorStoreDataProperty(nameof(DocumentId), typeof(string))
                 {
-                    StorageName = DocumentIdPropertyName,
+                    StorageName = DocumentIdStorageName,
                     IsIndexed = true,
                 },
             },
@@ -72,25 +72,25 @@ public class IngestedChunkRecord<TChunk>
     /// <summary>
     /// Gets or sets the unique key for this record.
     /// </summary>
-    [VectorStoreKey(StorageName = KeyPropertyName)]
+    [VectorStoreKey(StorageName = KeyStorageName)]
     public virtual Guid Key { get; set; }
 
     /// <summary>
     /// Gets or sets the identifier of the document from which this chunk was extracted.
     /// </summary>
-    [VectorStoreData(StorageName = DocumentIdPropertyName)]
+    [VectorStoreData(StorageName = DocumentIdStorageName)]
     public virtual string DocumentId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the content of the chunk.
     /// </summary>
-    [VectorStoreData(StorageName = ContentPropertyName)]
+    [VectorStoreData(StorageName = ContentStorageName)]
     public virtual TChunk? Content { get; set; }
 
     /// <summary>
     /// Gets or sets additional context for the chunk.
     /// </summary>
-    [VectorStoreData(StorageName = ContextPropertyName)]
+    [VectorStoreData(StorageName = ContextStorageName)]
     public virtual string? Context { get; set; }
 
     /// <summary>
