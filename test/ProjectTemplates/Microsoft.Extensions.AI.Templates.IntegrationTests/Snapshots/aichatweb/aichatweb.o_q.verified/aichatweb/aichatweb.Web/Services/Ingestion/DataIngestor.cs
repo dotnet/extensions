@@ -14,7 +14,7 @@ public class DataIngestor(
 {
     public async Task IngestDataAsync(DirectoryInfo directory, string searchPattern)
     {
-        using var writer = new VectorStoreWriter<Guid, string, IngestedChunk>(vectorCollection, new()
+        using var writer = new VectorStoreWriter<string, IngestedChunk>(vectorCollection, new()
         {
             IncrementalIngestion = false,
         });

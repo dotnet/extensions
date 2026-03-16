@@ -7,12 +7,11 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
-public class TestChunkRecordWithMetadata : IngestedChunkRecord<Guid, string>
+public class TestChunkRecordWithMetadata : IngestedChunkRecord<string>
 {
     public const int TestDimensionCount = 4;
 
     [VectorStoreVector(TestDimensionCount, StorageName = EmbeddingPropertyName)]
-    [JsonPropertyName(EmbeddingPropertyName)]
     public override string? Embedding => Content;
 
     [VectorStoreData(StorageName = "classification")]

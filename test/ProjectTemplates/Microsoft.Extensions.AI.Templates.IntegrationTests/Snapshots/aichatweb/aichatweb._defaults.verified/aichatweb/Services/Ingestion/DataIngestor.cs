@@ -9,12 +9,12 @@ namespace aichatweb.Services.Ingestion;
 public class DataIngestor(
     ILogger<DataIngestor> logger,
     ILoggerFactory loggerFactory,
-    VectorStoreCollection<string, IngestedChunk> vectorCollection,
+    VectorStoreCollection<Guid, IngestedChunk> vectorCollection,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
 {
     public async Task IngestDataAsync(DirectoryInfo directory, string searchPattern)
     {
-        using var writer = new VectorStoreWriter<string, string, IngestedChunk>(vectorCollection, new()
+        using var writer = new VectorStoreWriter<string, IngestedChunk>(vectorCollection, new()
         {
             IncrementalIngestion = false,
         });

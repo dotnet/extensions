@@ -13,25 +13,21 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Writes chunks to a <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
-/// <typeparam name="TKey">The type of the key for the record.</typeparam>
 /// <typeparam name="TChunk">The type of the chunk content.</typeparam>
 /// <typeparam name="TRecord">The type of the record stored in the vector store.</typeparam>
-#pragma warning disable CA1005 // Avoid excessive parameters on generic types - TKey, TChunk, and TRecord are all necessary
-public sealed class VectorStoreWriter<TKey, TChunk, TRecord> : IngestionChunkWriter<TChunk>
-#pragma warning restore CA1005
-    where TKey : notnull
-    where TRecord : IngestedChunkRecord<TKey, TChunk>, new()
+public sealed class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
+    where TRecord : IngestedChunkRecord<TChunk>, new()
 {
     private readonly VectorStoreWriterOptions _options;
     private bool _collectionEnsured;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreWriter{TKey, TChunk, TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="VectorStoreWriter{TChunk, TRecord}"/> class.
     /// </summary>
     /// <param name="collection">The <see cref="VectorStoreCollection{TKey, TRecord}"/> to use to store the <see cref="IngestionChunk{T}"/> instances.</param>
     /// <param name="options">The options for the vector store writer.</param>
     /// <exception cref="ArgumentNullException">When <paramref name="collection"/> is null.</exception>
-    public VectorStoreWriter(VectorStoreCollection<TKey, TRecord> collection, VectorStoreWriterOptions? options = default)
+    public VectorStoreWriter(VectorStoreCollection<Guid, TRecord> collection, VectorStoreWriterOptions? options = default)
     {
         VectorStoreCollection = Throw.IfNull(collection);
         _options = options ?? new VectorStoreWriterOptions();
@@ -40,14 +36,14 @@ public sealed class VectorStoreWriter<TKey, TChunk, TRecord> : IngestionChunkWri
     /// <summary>
     /// Gets the underlying <see cref="VectorStoreCollection{TKey,TRecord}"/> used to store the chunks.
     /// </summary>
-    public VectorStoreCollection<TKey, TRecord> VectorStoreCollection { get; }
+    public VectorStoreCollection<Guid, TRecord> VectorStoreCollection { get; }
 
     /// <inheritdoc/>
     public override async Task WriteAsync(IAsyncEnumerable<IngestionChunk<TChunk>> chunks, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chunks);
 
-        IReadOnlyList<TKey>? preExistingKeys = null;
+        IReadOnlyList<Guid>? preExistingKeys = null;
         List<TRecord>? batch = null;
         long currentBatchTokenCount = 0;
 
@@ -66,7 +62,7 @@ public sealed class VectorStoreWriter<TKey, TChunk, TRecord> : IngestionChunkWri
 
             TRecord record = new()
             {
-                Key = GenerateKey(),
+                Key = Guid.NewGuid(),
                 Content = chunk.Content,
                 Context = chunk.Context,
                 DocumentId = chunk.Document.Identifier,
@@ -108,22 +104,7 @@ public sealed class VectorStoreWriter<TKey, TChunk, TRecord> : IngestionChunkWri
         }
     }
 
-    private static TKey GenerateKey()
-    {
-        if (typeof(TKey) == typeof(Guid))
-        {
-            return (TKey)(object)Guid.NewGuid();
-        }
-
-        if (typeof(TKey) == typeof(string))
-        {
-            return (TKey)(object)Guid.NewGuid().ToString();
-        }
-
-        throw new NotSupportedException($"Automatic key generation is not supported for key type '{typeof(TKey)}'. Supported key types are Guid or string.");
-    }
-
-    private async Task<IReadOnlyList<TKey>> GetPreExistingChunksIdsAsync(IngestionDocument document, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<Guid>> GetPreExistingChunksIdsAsync(IngestionDocument document, CancellationToken cancellationToken)
     {
         if (!_options.IncrementalIngestion)
         {
@@ -133,7 +114,7 @@ public sealed class VectorStoreWriter<TKey, TChunk, TRecord> : IngestionChunkWri
         // Each Vector Store has a different max top count limit, so we use low value and loop.
         const int MaxTopCount = 1_000;
 
-        List<TKey> keys = [];
+        List<Guid> keys = [];
         int insertedCount;
         do
         {
