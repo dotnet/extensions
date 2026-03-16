@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using Microsoft.Extensions.DataIngestion;
+﻿using Microsoft.Extensions.DataIngestion;
 using Microsoft.Extensions.VectorData;
 
 namespace aichatweb.Services;
