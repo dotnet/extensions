@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.AI.Evaluation.Reporting.Utilities;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
@@ -37,13 +38,18 @@ internal sealed partial class DiskBasedResponseCache : IDistributedCache
         Func<DateTime> provideDateTime,
         TimeSpan? timeToLiveForCacheEntries = null)
     {
+        PathValidation.ValidatePathSegment(scenarioName, nameof(scenarioName));
+        PathValidation.ValidatePathSegment(iterationName, nameof(iterationName));
+
         _scenarioName = scenarioName;
         _iterationName = iterationName;
 
         storageRootPath = Path.GetFullPath(storageRootPath);
         string cacheRootPath = GetCacheRootPath(storageRootPath);
 
-        _iterationPath = Path.Combine(cacheRootPath, scenarioName, iterationName);
+        _iterationPath = PathValidation.EnsureWithinRoot(
+            cacheRootPath,
+            Path.Combine(cacheRootPath, scenarioName, iterationName));
         _provideDateTime = provideDateTime;
         _timeToLiveForCacheEntries = timeToLiveForCacheEntries ?? Defaults.DefaultTimeToLiveForCacheEntries;
     }
@@ -289,7 +295,9 @@ internal sealed partial class DiskBasedResponseCache : IDistributedCache
 
     private (string keyPath, string entryFilePath, string contentsFilePath, bool filesExist) GetPaths(string key)
     {
-        string keyPath = Path.Combine(_iterationPath, key);
+        PathValidation.ValidatePathSegment(key, nameof(key));
+
+        string keyPath = PathValidation.EnsureWithinRoot(_iterationPath, Path.Combine(_iterationPath, key));
         string entryFilePath = GetEntryFilePath(keyPath);
         string contentsFilePath = GetContentsFilePath(keyPath);
 
