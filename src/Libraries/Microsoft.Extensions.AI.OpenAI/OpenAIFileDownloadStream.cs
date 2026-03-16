@@ -62,9 +62,6 @@ internal sealed class OpenAIFileDownloadStream : HostedFileDownloadStream
     public override bool CanSeek => _innerStream.CanSeek;
 
     /// <inheritdoc />
-    public override bool CanWrite => false;
-
-    /// <inheritdoc />
     public override long Length => _innerStream.Length;
 
     /// <inheritdoc />
@@ -95,20 +92,8 @@ internal sealed class OpenAIFileDownloadStream : HostedFileDownloadStream
         _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
 
     /// <inheritdoc />
-    public override void Write(byte[] buffer, int offset, int count) =>
-        throw new NotSupportedException();
-
-    /// <inheritdoc />
-    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
-        throw new NotSupportedException();
-
-    /// <inheritdoc />
     public override long Seek(long offset, SeekOrigin origin) =>
         _innerStream.Seek(offset, origin);
-
-    /// <inheritdoc />
-    public override void SetLength(long value) =>
-        _innerStream.SetLength(value);
 
     /// <inheritdoc />
     public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken) =>
@@ -134,13 +119,6 @@ internal sealed class OpenAIFileDownloadStream : HostedFileDownloadStream
     /// <inheritdoc />
     public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
         _innerStream.ReadAsync(buffer, cancellationToken);
-
-    /// <inheritdoc />
-    public override void Write(ReadOnlySpan<byte> buffer) => throw new NotSupportedException();
-
-    /// <inheritdoc />
-    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException();
 
     /// <inheritdoc />
     public override async ValueTask DisposeAsync()
