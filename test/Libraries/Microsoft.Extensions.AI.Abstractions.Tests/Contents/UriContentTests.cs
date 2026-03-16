@@ -72,6 +72,9 @@ public sealed class UriContentTests
     {
         var content = new UriContent(uri);
         Assert.Equal(expectedMediaType, content.MediaType);
+
+        var content2 = new UriContent(uri, null);
+        Assert.Equal(expectedMediaType, content2.MediaType);
     }
 
     [Theory]
