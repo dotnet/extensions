@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Utilities;
 using Xunit;
@@ -57,13 +58,29 @@ public class PathValidationTests
 
     [Theory]
     [InlineData("foo/bar")]
-    [InlineData("foo\\bar")]
     [InlineData("../secret")]
-    [InlineData("..\\secret")]
-    public void ValidatePathSegment_ContainsPathSeparators_Throws(string segment)
+    public void ValidatePathSegment_ContainsForwardSlash_Throws(string segment)
     {
         Assert.Throws<ArgumentException>(() =>
             PathValidation.ValidatePathSegment(segment, "param"));
+    }
+
+    [Theory]
+    [InlineData("foo\\bar")]
+    [InlineData("..\\secret")]
+    public void ValidatePathSegment_ContainsBackslash_ThrowsOnWindows(string segment)
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            // Backslash is a path separator (and invalid filename char) on Windows.
+            Assert.Throws<ArgumentException>(() =>
+                PathValidation.ValidatePathSegment(segment, "param"));
+        }
+        else
+        {
+            // Backslash is a valid filename character on Linux/macOS.
+            PathValidation.ValidatePathSegment(segment, "param");
+        }
     }
 
     [Theory]
@@ -194,8 +211,16 @@ public class PathValidationTests
         }
         finally
         {
-            try { Directory.Delete(storagePath, true); }
-            catch { /* best effort */ }
+            try
+            {
+                Directory.Delete(storagePath, true);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types.
+            catch
+#pragma warning restore CA1031
+            {
+                // Best effort cleanup.
+            }
         }
     }
 
@@ -214,8 +239,16 @@ public class PathValidationTests
         }
         finally
         {
-            try { Directory.Delete(storagePath, true); }
-            catch { /* best effort */ }
+            try
+            {
+                Directory.Delete(storagePath, true);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types.
+            catch
+#pragma warning restore CA1031
+            {
+                // Best effort cleanup.
+            }
         }
     }
 }
