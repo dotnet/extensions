@@ -58,7 +58,7 @@ public class UriContent : AIContent
         _uri = Throw.IfNull(uri);
         _mediaType = mediaType is not null
             ? DataUriParser.ThrowIfInvalidMediaType(mediaType)
-            : MediaTypeMap.GetMediaType(uri.AbsolutePath) ?? DefaultMediaType;
+            : InferMediaType(uri);
     }
 
     /// <summary>Gets or sets the <see cref="Uri"/> for this content.</summary>
@@ -92,4 +92,25 @@ public class UriContent : AIContent
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"Uri = {_uri}";
+
+    /// <summary>Infers the media type from the URI's file extension.</summary>
+    private static string InferMediaType(Uri uri)
+    {
+        string path;
+        if (uri.IsAbsoluteUri)
+        {
+            path = uri.AbsolutePath;
+        }
+        else
+        {
+            path = uri.OriginalString;
+            int i = path.AsSpan().IndexOfAny('?', '#');
+            if (i >= 0)
+            {
+                path = path.Substring(0, i);
+            }
+        }
+
+        return MediaTypeMap.GetMediaType(path) ?? DefaultMediaType;
+    }
 }

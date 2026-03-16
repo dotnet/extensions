@@ -85,12 +85,34 @@ public sealed class UriContentTests
     [InlineData("http://localhost/audio.mp3", "audio/mpeg")]
     [InlineData("http://localhost/document.pdf", "application/pdf")]
     [InlineData("http://localhost/photo.jpg", "image/jpeg")]
-    public void Ctor_NullMediaType_InfersFromExtension_UriObject(string uri, string expectedMediaType)
+    [InlineData("http://localhost/image.png?width=100", "image/png")]
+    [InlineData("http://localhost/image.png#section", "image/png")]
+    [InlineData("http://localhost/image.png?q=1#frag", "image/png")]
+    public void Ctor_NullMediaType_InfersFromExtension_AbsoluteUri(string uri, string expectedMediaType)
     {
         var content = new UriContent(new Uri(uri));
         Assert.Equal(expectedMediaType, content.MediaType);
 
         var content2 = new UriContent(new Uri(uri), null);
+        Assert.Equal(expectedMediaType, content2.MediaType);
+    }
+
+    [Theory]
+    [InlineData("image.png", "image/png")]
+    [InlineData("audio.mp3", "audio/mpeg")]
+    [InlineData("path/to/document.pdf", "application/pdf")]
+    [InlineData("photo.jpg", "image/jpeg")]
+    [InlineData("image.png?width=100", "image/png")]
+    [InlineData("image.png#section", "image/png")]
+    [InlineData("image.png?q=1#frag", "image/png")]
+    [InlineData("path/to/file.wav?key=value&other=123", "audio/wav")]
+    [InlineData("path/to/file.svg#top", "image/svg+xml")]
+    public void Ctor_NullMediaType_InfersFromExtension_RelativeUri(string uri, string expectedMediaType)
+    {
+        var content = new UriContent(new Uri(uri, UriKind.Relative));
+        Assert.Equal(expectedMediaType, content.MediaType);
+
+        var content2 = new UriContent(new Uri(uri, UriKind.Relative), null);
         Assert.Equal(expectedMediaType, content2.MediaType);
     }
 
@@ -106,11 +128,27 @@ public sealed class UriContentTests
         Assert.Equal("application/octet-stream", content.MediaType);
     }
 
+    [Theory]
+    [InlineData("noextension")]
+    [InlineData("path/to/resource")]
+    [InlineData("file.unknownext")]
+    [InlineData("file.xyz123")]
+    [InlineData("noext?q=1")]
+    [InlineData("noext#frag")]
+    public void Ctor_NullMediaType_RelativeUri_NoOrUnknownExtension_DefaultsToOctetStream(string uri)
+    {
+        var content = new UriContent(new Uri(uri, UriKind.Relative));
+        Assert.Equal("application/octet-stream", content.MediaType);
+    }
+
     [Fact]
     public void Ctor_ExplicitMediaType_OverridesInference()
     {
         var content = new UriContent("http://localhost/image.png", "application/octet-stream");
         Assert.Equal("application/octet-stream", content.MediaType);
+
+        var relContent = new UriContent(new Uri("image.png", UriKind.Relative), "application/octet-stream");
+        Assert.Equal("application/octet-stream", relContent.MediaType);
     }
 
     [Fact]
