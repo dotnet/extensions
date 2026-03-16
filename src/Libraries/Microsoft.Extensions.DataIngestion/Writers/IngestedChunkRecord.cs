@@ -22,6 +22,7 @@ public class IngestedChunkRecord<TChunk>
     private const string DocumentIdStorageName = "documentid";
     private const string ContentStorageName = "content";
     private const string ContextStorageName = "context";
+
     /// <summary>
     /// The storage name for the <see cref="Embedding"/> property.
     /// </summary>
