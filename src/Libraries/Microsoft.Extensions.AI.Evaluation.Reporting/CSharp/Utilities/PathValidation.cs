@@ -47,7 +47,7 @@ internal static class PathValidation
         {
             Throw.ArgumentException(
                 paramName,
-                $"The value '{paramName}' contains invalid path characters or directory traversal sequences.");
+                $"The parameter '{paramName}' contains invalid path characters or directory traversal sequences.");
         }
     }
 
