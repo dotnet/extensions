@@ -21,21 +21,22 @@ public abstract class VectorStoreWriterTests
         using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
 
-        // User creates their own definition without using CreateCollectionDefinition
-        var definition = new VectorStoreCollectionDefinition
+        // User creates their own definition without using CreateCollectionDefinition,
+        // using custom storage names to prove they can map to a pre-existing collection schema.
+        VectorStoreCollectionDefinition definition = new()
         {
             Properties =
             {
-                new VectorStoreKeyProperty(nameof(IngestedChunkRecord<string>.Key), typeof(Guid)) { StorageName = "key" },
+                new VectorStoreKeyProperty(nameof(IngestedChunkRecord<string>.Key), typeof(Guid)) { StorageName = "custom_key" },
                 new VectorStoreVectorProperty(nameof(IngestedChunkRecord<string>.Embedding), typeof(string), TestEmbeddingGenerator<string>.DimensionCount)
                 {
-                    StorageName = "embedding",
+                    StorageName = "custom_embedding",
                 },
-                new VectorStoreDataProperty(nameof(IngestedChunkRecord<string>.Content), typeof(string)) { StorageName = "content" },
-                new VectorStoreDataProperty(nameof(IngestedChunkRecord<string>.Context), typeof(string)) { StorageName = "context" },
+                new VectorStoreDataProperty(nameof(IngestedChunkRecord<string>.Content), typeof(string)) { StorageName = "custom_content" },
+                new VectorStoreDataProperty(nameof(IngestedChunkRecord<string>.Context), typeof(string)) { StorageName = "custom_context" },
                 new VectorStoreDataProperty(nameof(IngestedChunkRecord<string>.DocumentId), typeof(string))
                 {
-                    StorageName = "documentid",
+                    StorageName = "custom_documentid",
                     IsIndexed = true,
                 },
             },

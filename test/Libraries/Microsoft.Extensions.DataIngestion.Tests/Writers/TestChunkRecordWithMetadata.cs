@@ -10,7 +10,7 @@ public class TestChunkRecordWithMetadata : IngestedChunkRecord<string>
 {
     public const int TestDimensionCount = 4;
 
-    [VectorStoreVector(TestDimensionCount, StorageName = "embedding")]
+    [VectorStoreVector(TestDimensionCount, StorageName = EmbeddingStorageName)]
     public override string? Embedding => Content;
 
     [VectorStoreData(StorageName = "classification")]

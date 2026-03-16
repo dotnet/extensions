@@ -22,7 +22,10 @@ public class IngestedChunkRecord<TChunk>
     private const string DocumentIdPropertyName = "documentid";
     private const string ContentPropertyName = "content";
     private const string ContextPropertyName = "context";
-    private const string EmbeddingPropertyName = "embedding";
+    /// <summary>
+    /// The storage name for the <see cref="Embedding"/> property.
+    /// </summary>
+    protected const string EmbeddingStorageName = "embedding";
 
     /// <summary>
     /// Creates a <see cref="VectorStoreCollectionDefinition"/> for <see cref="IngestedChunkRecord{TChunk}"/>.
@@ -51,7 +54,7 @@ public class IngestedChunkRecord<TChunk>
                 // to handle the conversion from TChunk to the actual vector type it supports.
                 new VectorStoreVectorProperty(nameof(Embedding), typeof(TChunk), dimensionCount)
                 {
-                    StorageName = EmbeddingPropertyName,
+                    StorageName = EmbeddingStorageName,
                     DistanceFunction = distanceFunction,
                     IndexKind = indexKind,
                 },
