@@ -14,6 +14,55 @@ namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 public abstract class VectorStoreWriterTests
 {
     [Fact]
+    public async Task CanWriteChunksWithCustomDefinition()
+    {
+        string documentId = Guid.NewGuid().ToString();
+
+        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
+
+        // User creates their own definition without using CreateCollectionDefinition
+        var definition = new VectorStoreCollectionDefinition
+        {
+            Properties =
+            {
+                new VectorStoreKeyProperty(nameof(IngestedChunkRecord<string>.Key), typeof(Guid)) { StorageName = "key" },
+                new VectorStoreVectorProperty(nameof(IngestedChunkRecord<string>.Embedding), typeof(string), TestEmbeddingGenerator<string>.DimensionCount)
+                {
+                    StorageName = "embedding",
+                },
+                new VectorStoreDataProperty(nameof(IngestedChunkRecord<string>.Content), typeof(string)) { StorageName = "content" },
+                new VectorStoreDataProperty(nameof(IngestedChunkRecord<string>.Context), typeof(string)) { StorageName = "context" },
+                new VectorStoreDataProperty(nameof(IngestedChunkRecord<string>.DocumentId), typeof(string))
+                {
+                    StorageName = "documentid",
+                    IsIndexed = true,
+                },
+            },
+        };
+
+        var collection = vectorStore.GetCollection<Guid, IngestedChunkRecord<string>>("chunks-custom", definition);
+
+        using VectorStoreWriter<string, IngestedChunkRecord<string>> writer = new(collection);
+
+        IngestionDocument document = new(documentId);
+        IngestionChunk<string> chunk = TestChunkFactory.CreateChunk("custom schema content", document);
+
+        List<IngestionChunk<string>> chunks = [chunk];
+
+        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+
+        IngestedChunkRecord<string> record = await writer.VectorStoreCollection
+            .GetAsync(filter: record => record.DocumentId == documentId, top: 1)
+            .SingleAsync();
+
+        Assert.NotNull(record);
+        Assert.NotEqual(Guid.Empty, record.Key);
+        Assert.Equal(documentId, record.DocumentId);
+        Assert.Equal(chunks[0].Content, record.Content);
+    }
+
+    [Fact]
     public async Task CanWriteChunks()
     {
         string documentId = Guid.NewGuid().ToString();

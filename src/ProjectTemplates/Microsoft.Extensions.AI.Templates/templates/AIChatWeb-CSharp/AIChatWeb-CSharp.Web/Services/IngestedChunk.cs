@@ -17,6 +17,6 @@ public class IngestedChunk : IngestedChunkRecord<string>
 #endif
     public const string CollectionName = "data-AIChatWeb-CSharp.Web-chunks";
 
-    [VectorStoreVector(VectorDimensions, DistanceFunction = VectorDistanceFunction, StorageName = EmbeddingPropertyName)]
+    [VectorStoreVector(VectorDimensions, DistanceFunction = VectorDistanceFunction, StorageName = "embedding")]
     public override string? Embedding => Content;
 }

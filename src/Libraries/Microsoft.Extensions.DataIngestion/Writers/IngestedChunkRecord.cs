@@ -18,30 +18,11 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </remarks>
 public class IngestedChunkRecord<TChunk>
 {
-    /// <summary>
-    /// The storage name for the <see cref="Key"/> property.
-    /// </summary>
-    protected const string KeyPropertyName = "key";
-
-    /// <summary>
-    /// The storage name for the <see cref="DocumentId"/> property.
-    /// </summary>
-    protected const string DocumentIdPropertyName = "documentid";
-
-    /// <summary>
-    /// The storage name for the <see cref="Content"/> property.
-    /// </summary>
-    protected const string ContentPropertyName = "content";
-
-    /// <summary>
-    /// The storage name for the <see cref="Context"/> property.
-    /// </summary>
-    protected const string ContextPropertyName = "context";
-
-    /// <summary>
-    /// The storage name for the <see cref="Embedding"/> property.
-    /// </summary>
-    protected const string EmbeddingPropertyName = "embedding";
+    private const string KeyPropertyName = "key";
+    private const string DocumentIdPropertyName = "documentid";
+    private const string ContentPropertyName = "content";
+    private const string ContextPropertyName = "context";
+    private const string EmbeddingPropertyName = "embedding";
 
     /// <summary>
     /// Creates a <see cref="VectorStoreCollectionDefinition"/> for <see cref="IngestedChunkRecord{TChunk}"/>.
