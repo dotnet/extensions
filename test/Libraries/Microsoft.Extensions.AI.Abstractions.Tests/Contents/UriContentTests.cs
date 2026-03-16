@@ -16,11 +16,9 @@ public sealed class UriContentTests
         Assert.Throws<ArgumentNullException>("uri", () => new UriContent((Uri)null!, "image/png"));
         Assert.Throws<UriFormatException>(() => new UriContent("notauri", "image/png"));
 
-        Assert.Throws<ArgumentNullException>("mediaType", () => new UriContent("data:image/png;base64,aGVsbG8=", null!));
         Assert.Throws<ArgumentException>("mediaType", () => new UriContent("data:image/png;base64,aGVsbG8=", ""));
         Assert.Throws<ArgumentException>("mediaType", () => new UriContent("data:image/png;base64,aGVsbG8=", "image"));
 
-        Assert.Throws<ArgumentNullException>("mediaType", () => new UriContent(new Uri("data:image/png;base64,aGVsbG8="), null!));
         Assert.Throws<ArgumentException>("mediaType", () => new UriContent(new Uri("data:image/png;base64,aGVsbG8="), ""));
         Assert.Throws<ArgumentException>("mediaType", () => new UriContent(new Uri("data:image/png;base64,aGVsbG8="), "audio"));
 
@@ -59,6 +57,54 @@ public sealed class UriContentTests
 
         content.MediaType = mediaType;
         Assert.Equal(mediaType, content.MediaType);
+    }
+
+    [Theory]
+    [InlineData("http://localhost/image.png", "image/png")]
+    [InlineData("http://localhost/audio.mp3", "audio/mpeg")]
+    [InlineData("http://localhost/document.pdf", "application/pdf")]
+    [InlineData("http://localhost/data.json", "application/json")]
+    [InlineData("http://localhost/page.html", "text/html")]
+    [InlineData("http://localhost/photo.jpg", "image/jpeg")]
+    [InlineData("http://localhost/path/to/file.wav", "audio/wav")]
+    [InlineData("http://localhost/path/to/file.svg", "image/svg+xml")]
+    public void Ctor_NullMediaType_InfersFromExtension_StringUri(string uri, string expectedMediaType)
+    {
+        var content = new UriContent(uri);
+        Assert.Equal(expectedMediaType, content.MediaType);
+    }
+
+    [Theory]
+    [InlineData("http://localhost/image.png", "image/png")]
+    [InlineData("http://localhost/audio.mp3", "audio/mpeg")]
+    [InlineData("http://localhost/document.pdf", "application/pdf")]
+    [InlineData("http://localhost/photo.jpg", "image/jpeg")]
+    public void Ctor_NullMediaType_InfersFromExtension_UriObject(string uri, string expectedMediaType)
+    {
+        var content = new UriContent(new Uri(uri));
+        Assert.Equal(expectedMediaType, content.MediaType);
+
+        var content2 = new UriContent(new Uri(uri), null);
+        Assert.Equal(expectedMediaType, content2.MediaType);
+    }
+
+    [Theory]
+    [InlineData("http://localhost/noextension")]
+    [InlineData("http://localhost/path/to/resource")]
+    [InlineData("http://localhost/")]
+    [InlineData("http://localhost/file.unknownext")]
+    [InlineData("http://localhost/file.xyz123")]
+    public void Ctor_NullMediaType_NoOrUnknownExtension_DefaultsToOctetStream(string uri)
+    {
+        var content = new UriContent(uri);
+        Assert.Equal("application/octet-stream", content.MediaType);
+    }
+
+    [Fact]
+    public void Ctor_ExplicitMediaType_OverridesInference()
+    {
+        var content = new UriContent("http://localhost/image.png", "application/octet-stream");
+        Assert.Equal("application/octet-stream", content.MediaType);
     }
 
     [Fact]
