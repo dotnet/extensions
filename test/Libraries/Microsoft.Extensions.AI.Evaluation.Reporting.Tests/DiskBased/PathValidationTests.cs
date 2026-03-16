@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Utilities;
 using Xunit;
 
@@ -179,7 +180,7 @@ public class PathValidationTests
     // ──────────────────────────────────────────────
 
     [Fact]
-    public async void DiskBasedResultStore_DeleteWithTraversal_Throws()
+    public async Task DiskBasedResultStore_DeleteWithTraversal_Throws()
     {
         string storagePath = Path.Combine(Path.GetTempPath(), "M.E.AI.Eval.PathTests", Path.GetRandomFileName());
 
@@ -199,7 +200,7 @@ public class PathValidationTests
     }
 
     [Fact]
-    public async void DiskBasedResponseCacheProvider_TraversalInScenarioName_Throws()
+    public async Task DiskBasedResponseCacheProvider_TraversalInScenarioName_Throws()
     {
         string storagePath = Path.Combine(Path.GetTempPath(), "M.E.AI.Eval.PathTests", Path.GetRandomFileName());
 
