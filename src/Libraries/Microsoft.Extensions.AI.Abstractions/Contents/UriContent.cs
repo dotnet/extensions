@@ -19,6 +19,9 @@ namespace Microsoft.Extensions.AI;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class UriContent : AIContent
 {
+    /// <summary>The default media type for unknown file extensions.</summary>
+    private const string DefaultMediaType = "application/octet-stream";
+
     /// <summary>The URI represented.</summary>
     private Uri _uri;
 
@@ -89,7 +92,4 @@ public class UriContent : AIContent
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"Uri = {_uri}";
-
-    /// <summary>The default media type for unknown file extensions.</summary>
-    private const string DefaultMediaType = "application/octet-stream";
 }

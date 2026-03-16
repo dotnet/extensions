@@ -68,6 +68,9 @@ public sealed class UriContentTests
     [InlineData("http://localhost/photo.jpg", "image/jpeg")]
     [InlineData("http://localhost/path/to/file.wav", "audio/wav")]
     [InlineData("http://localhost/path/to/file.svg", "image/svg+xml")]
+    [InlineData("http://localhost/image.png?width=100&height=100", "image/png")]
+    [InlineData("http://localhost/image.png#section", "image/png")]
+    [InlineData("http://localhost/image.png?q=1#frag", "image/png")]
     public void Ctor_NullMediaType_InfersFromExtension_StringUri(string uri, string expectedMediaType)
     {
         var content = new UriContent(uri);
