@@ -27,7 +27,17 @@ public interface IRealtimeClientSession : IAsyncDisposable
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous send operation.</returns>
     /// <remarks>
+    /// <para>
     /// This method allows for sending client messages to the session at any time, which can be used to influence the session's behavior or state.
+    /// </para>
+    /// <para>
+    /// <strong>Concurrency note for provider implementers:</strong> <see cref="SendAsync"/> may be called concurrently
+    /// from multiple sources. For example, a caller may stream audio via <see cref="SendAsync"/> on one thread while
+    /// middleware such as <c>FunctionInvokingRealtimeClientSession</c> calls <see cref="SendAsync"/> to return tool results
+    /// from within <see cref="GetStreamingResponseAsync"/> enumeration on another thread. If the underlying transport
+    /// (e.g., a WebSocket) does not support concurrent sends, provider implementations must serialize access — for
+    /// example by using a <see cref="System.Threading.SemaphoreSlim"/> — to prevent protocol violations.
+    /// </para>
     /// </remarks>
     Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default);
 
