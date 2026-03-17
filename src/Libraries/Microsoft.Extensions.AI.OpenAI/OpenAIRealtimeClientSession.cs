@@ -414,6 +414,22 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             outputAudioOptions.Voice = new Sdk.RealtimeVoice(options.Voice);
         }
 
+        if (options.VoiceActivityDetection is { } vad)
+        {
+            if (!vad.Enabled)
+            {
+                inputAudioOptions.DisableTurnDetection();
+            }
+            else
+            {
+                inputAudioOptions.TurnDetection = new Sdk.RealtimeServerVadTurnDetection
+                {
+                    InterruptResponseEnabled = vad.AllowInterruption,
+                    CreateResponseEnabled = true,
+                };
+            }
+        }
+
         audioOptions.InputAudioOptions = inputAudioOptions;
         audioOptions.OutputAudioOptions = outputAudioOptions;
         convOptions.AudioOptions = audioOptions;
@@ -464,7 +480,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
     {
         var transOptions = new Sdk.RealtimeTranscriptionSessionOptions();
 
-        if (options.InputAudioFormat is not null || options.TranscriptionOptions is not null)
+        if (options.InputAudioFormat is not null || options.TranscriptionOptions is not null || options.VoiceActivityDetection is not null)
         {
             var inputAudioOptions = new Sdk.RealtimeTranscriptionSessionInputAudioOptions();
 
@@ -481,6 +497,22 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
                     Model = options.TranscriptionOptions.ModelId,
                     Prompt = options.TranscriptionOptions.Prompt,
                 };
+            }
+
+            if (options.VoiceActivityDetection is { } vad)
+            {
+                if (!vad.Enabled)
+                {
+                    inputAudioOptions.DisableTurnDetection();
+                }
+                else
+                {
+                    inputAudioOptions.TurnDetection = new Sdk.RealtimeServerVadTurnDetection
+                    {
+                        InterruptResponseEnabled = vad.AllowInterruption,
+                        CreateResponseEnabled = true,
+                    };
+                }
             }
 
             transOptions.AudioOptions = new Sdk.RealtimeTranscriptionSessionAudioOptions
