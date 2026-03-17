@@ -30,10 +30,13 @@ public sealed class AIFunctionFactoryOptions
     public JsonSerializerOptions? SerializerOptions { get; set; }
 
     /// <summary>
-    /// Gets or sets the <see cref="AIJsonSchemaCreateOptions"/> governing the generation of JSON schemas for the function.
+    /// Gets or sets the <see cref="AIJsonSchemaCreateOptions"/> governing the generation of JSON schemas for
+    /// the function's input parameters and return type.
     /// </summary>
     /// <remarks>
     /// If no value has been specified, the <see cref="AIJsonSchemaCreateOptions.Default"/> instance will be used.
+    /// This setting affects both the <see cref="AIFunctionDeclaration.JsonSchema"/> (input parameters) and
+    /// the <see cref="AIFunctionDeclaration.ReturnJsonSchema"/> (return type).
     /// </remarks>
     public AIJsonSchemaCreateOptions? JsonSchemaCreateOptions { get; set; }
 
@@ -107,14 +110,15 @@ public sealed class AIFunctionFactoryOptions
     public Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether a schema should be created for the function's result type, if possible, and included as <see cref="AIFunctionDeclaration.ReturnJsonSchema" />.
+    /// Gets or sets a value indicating whether to suppress generation of a JSON schema for the function's return type.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The default value is <see langword="false"/>.
+    /// The default value is <see langword="false"/>, meaning a return type schema will be generated and exposed
+    /// via <see cref="AIFunctionDeclaration.ReturnJsonSchema"/> when the method has a non-void return type.
     /// </para>
     /// <para>
-    /// When set to <see langword="true"/>, results in the produced <see cref="AIFunctionDeclaration.ReturnJsonSchema"/> to always be <see langword="null"/>.
+    /// When set to <see langword="true"/>, the produced <see cref="AIFunctionDeclaration.ReturnJsonSchema"/> will always be <see langword="null"/>.
     /// </para>
     /// </remarks>
     public bool ExcludeResultSchema { get; set; }
