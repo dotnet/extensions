@@ -115,7 +115,8 @@ public sealed class AIFunctionFactoryOptions
     /// <remarks>
     /// <para>
     /// The default value is <see langword="false"/>, meaning a return type schema will be generated and exposed
-    /// via <see cref="AIFunctionDeclaration.ReturnJsonSchema"/> when the method has a non-void return type.
+    /// via <see cref="AIFunctionDeclaration.ReturnJsonSchema"/> when the method has a return type other than
+    /// <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>.
     /// </para>
     /// <para>
     /// When set to <see langword="true"/>, the produced <see cref="AIFunctionDeclaration.ReturnJsonSchema"/> will always be <see langword="null"/>.
