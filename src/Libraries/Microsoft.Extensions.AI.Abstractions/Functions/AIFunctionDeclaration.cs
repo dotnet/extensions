@@ -55,7 +55,7 @@ public abstract class AIFunctionDeclaration : AITool
     /// When an <see cref="AIFunction"/> is created via <see cref="AIFunctionFactory"/>, this schema is automatically derived from the
     /// method's return type using the configured <see cref="JsonSerializerOptions"/> and <see cref="AIJsonSchemaCreateOptions"/>.
     /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is based on the
-    /// unwrapped result type. Return schema generation can be suppressed by setting
+    /// unwrapped result type. Return schema generation can be excluded by setting
     /// <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/> to <see langword="true"/>.
     /// </para>
     /// <para>

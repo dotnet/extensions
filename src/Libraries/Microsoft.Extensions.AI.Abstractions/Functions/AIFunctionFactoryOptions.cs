@@ -110,7 +110,7 @@ public sealed class AIFunctionFactoryOptions
     public Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to suppress generation of a JSON schema for the function's return type.
+    /// Gets or sets a value indicating whether to exclude generation of a JSON schema for the function's return type.
     /// </summary>
     /// <remarks>
     /// <para>

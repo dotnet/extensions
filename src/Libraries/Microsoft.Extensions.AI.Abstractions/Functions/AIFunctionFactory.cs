@@ -117,7 +117,7 @@ public static partial class AIFunctionFactory
     /// returned <see cref="AIFunction"/>'s <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>. For methods returning
     /// <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced (the property is <see langword="null"/>).
     /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the
-    /// unwrapped result type. Return schema generation can be suppressed via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
+    /// unwrapped result type. Return schema generation can be excluded via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
     /// and its generation is governed by <paramref name="options"/>'s <see cref="AIFunctionFactoryOptions.JsonSchemaCreateOptions"/>.
     /// </para>
     /// </remarks>
@@ -285,7 +285,7 @@ public static partial class AIFunctionFactory
     /// returned <see cref="AIFunction"/>'s <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>. For methods returning
     /// <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced (the property is <see langword="null"/>).
     /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the
-    /// unwrapped result type. Return schema generation can be suppressed via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
+    /// unwrapped result type. Return schema generation can be excluded via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
     /// and its generation is governed by <paramref name="options"/>'s <see cref="AIFunctionFactoryOptions.JsonSchemaCreateOptions"/>.
     /// </para>
     /// </remarks>
@@ -476,7 +476,7 @@ public static partial class AIFunctionFactory
     /// returned <see cref="AIFunction"/>'s <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>. For methods returning
     /// <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced (the property is <see langword="null"/>).
     /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the
-    /// unwrapped result type. Return schema generation can be suppressed via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
+    /// unwrapped result type. Return schema generation can be excluded via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
     /// and its generation is governed by <paramref name="options"/>'s <see cref="AIFunctionFactoryOptions.JsonSchemaCreateOptions"/>.
     /// </para>
     /// </remarks>
