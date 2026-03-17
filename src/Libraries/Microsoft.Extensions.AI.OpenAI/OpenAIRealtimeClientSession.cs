@@ -420,6 +420,10 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
             {
                 inputAudioOptions.DisableTurnDetection();
             }
+            else if (inputAudioOptions.TurnDetection is Sdk.RealtimeServerVadTurnDetection existingVad)
+            {
+                existingVad.InterruptResponseEnabled = vad.AllowInterruption;
+            }
             else
             {
                 inputAudioOptions.TurnDetection = new Sdk.RealtimeServerVadTurnDetection
@@ -504,6 +508,10 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
                 if (!vad.Enabled)
                 {
                     inputAudioOptions.DisableTurnDetection();
+                }
+                else if (inputAudioOptions.TurnDetection is Sdk.RealtimeServerVadTurnDetection existingVad)
+                {
+                    existingVad.InterruptResponseEnabled = vad.AllowInterruption;
                 }
                 else
                 {

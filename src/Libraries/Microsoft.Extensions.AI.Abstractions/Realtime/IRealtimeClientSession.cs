@@ -33,7 +33,7 @@ public interface IRealtimeClientSession : IAsyncDisposable
     /// <para>
     /// <strong>Concurrency note for provider implementers:</strong> <see cref="SendAsync"/> may be called concurrently
     /// from multiple sources. For example, a caller may stream audio via <see cref="SendAsync"/> on one thread while
-    /// middleware such as <c>FunctionInvokingRealtimeSession</c> calls <see cref="SendAsync"/> to return tool results
+    /// middleware such as <c>FunctionInvokingRealtimeClientSession</c> calls <see cref="SendAsync"/> to return tool results
     /// from within <see cref="GetStreamingResponseAsync"/> enumeration on another thread. If the underlying transport
     /// (e.g., a WebSocket) does not support concurrent sends, provider implementations must serialize access — for
     /// example by using a <see cref="System.Threading.SemaphoreSlim"/> — to prevent protocol violations.
