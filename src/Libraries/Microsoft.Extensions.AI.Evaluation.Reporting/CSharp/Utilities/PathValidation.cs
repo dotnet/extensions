@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Microsoft.Shared.Diagnostics;
 
-#if !NET462
+#if NET
 using System.Runtime.InteropServices;
 #endif
 
@@ -17,13 +17,13 @@ internal static class PathValidation
 
 #pragma warning disable CA1802 // Use literals where appropriate
     private static readonly StringComparison _pathComparison =
-#if NET462
-        StringComparison.OrdinalIgnoreCase; // .NET Framework 4.6.2 only runs on Windows
-#else
+#if NET
         // Windows paths are case-insensitive; Linux/macOS paths are case-sensitive.
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
+#else
+        StringComparison.OrdinalIgnoreCase; // .NET Framework and .NET Standard only run on Windows
 #endif
 #pragma warning restore CA1802 // Use literals where appropriate
 
@@ -64,12 +64,12 @@ internal static class PathValidation
 
         // Ensure the root ends with a directory separator so that a root of
         // "/foo/bar" does not match a path like "/foo/bar-sibling/file".
-#if NET462
-        if (!normalizedRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) &&
-            !normalizedRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString(), StringComparison.Ordinal))
-#else
+#if NET
         if (!normalizedRoot.EndsWith(Path.DirectorySeparatorChar) &&
             !normalizedRoot.EndsWith(Path.AltDirectorySeparatorChar))
+#else
+        if (!normalizedRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) &&
+            !normalizedRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString(), StringComparison.Ordinal))
 #endif
         {
             normalizedRoot += Path.DirectorySeparatorChar;
