@@ -18,9 +18,6 @@ public class HostedConversation
     /// <summary>Gets or sets the creation timestamp.</summary>
     public DateTimeOffset? CreatedAt { get; set; }
 
-    /// <summary>Gets or sets metadata associated with the conversation.</summary>
-    public AdditionalPropertiesDictionary<string>? Metadata { get; set; }
-
     /// <summary>Gets or sets the raw representation of the conversation from the underlying provider.</summary>
     /// <remarks>
     /// If a <see cref="HostedConversation"/> is created to represent some underlying object from another object

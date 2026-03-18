@@ -121,19 +121,19 @@ public class HostedConversationClientBuilderTest
 
     private sealed class TestHostedConversationClient : IHostedConversationClient
     {
-        public Task<HostedConversation> CreateAsync(HostedConversationCreationOptions? options = null, CancellationToken cancellationToken = default)
+        public Task<HostedConversation> CreateAsync(HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => Task.FromResult(new HostedConversation { ConversationId = "test" });
 
-        public Task<HostedConversation> GetAsync(string conversationId, CancellationToken cancellationToken = default)
+        public Task<HostedConversation> GetAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => Task.FromResult(new HostedConversation { ConversationId = conversationId });
 
-        public Task DeleteAsync(string conversationId, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public Task AddMessagesAsync(string conversationId, IEnumerable<ChatMessage> messages, CancellationToken cancellationToken = default)
+        public Task AddMessagesAsync(string conversationId, IEnumerable<ChatMessage> messages, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => EmptyAsync();
 
         private static async IAsyncEnumerable<ChatMessage> EmptyAsync()

@@ -41,7 +41,7 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
 
     /// <inheritdoc />
     public async Task<HostedConversation> CreateAsync(
-        HostedConversationCreationOptions? options = null,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         using BinaryContent content = CreateOrGetCreatePayload(options);
@@ -55,6 +55,7 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
     /// <inheritdoc />
     public async Task<HostedConversation> GetAsync(
         string conversationId,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(conversationId);
@@ -69,6 +70,7 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
     /// <inheritdoc />
     public async Task DeleteAsync(
         string conversationId,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(conversationId);
@@ -81,6 +83,7 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
     public async Task AddMessagesAsync(
         string conversationId,
         IEnumerable<ChatMessage> messages,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(conversationId);
@@ -95,10 +98,12 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
     /// <inheritdoc />
     public async IAsyncEnumerable<ChatMessage> GetMessagesAsync(
         string conversationId,
+        HostedConversationClientOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(conversationId);
 
+        int? limit = options?.Limit;
         RequestOptions requestOptions = cancellationToken.ToRequestOptions(streaming: false);
 
         // Manual pagination: the SDK's GetRawPagesAsync() only yields a single page because
@@ -109,7 +114,7 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
         do
         {
             AsyncCollectionResult pages = _conversationClient.GetConversationItemsAsync(
-                conversationId, limit: null, order: null, after: after, include: null, options: requestOptions);
+                conversationId, limit: limit, order: null, after: after, include: null, options: requestOptions);
 
             bool hasMore = false;
             string? lastId = null;
@@ -163,7 +168,7 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
     }
 
     /// <summary>Creates a <see cref="BinaryContent"/> for the create conversation request, using the raw representation factory if available.</summary>
-    private BinaryContent CreateOrGetCreatePayload(HostedConversationCreationOptions? options)
+    private BinaryContent CreateOrGetCreatePayload(HostedConversationClientOptions? options)
     {
         if (options?.RawRepresentationFactory?.Invoke(this) is BinaryContent rawContent)
         {
@@ -192,26 +197,26 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
     }
 
     /// <summary>Writes the JSON payload for creating a conversation.</summary>
-    private static void WriteCreatePayload(Utf8JsonWriter writer, HostedConversationCreationOptions? options)
+    private static void WriteCreatePayload(Utf8JsonWriter writer, HostedConversationClientOptions? options)
     {
         writer.WriteStartObject();
 
-        if (options?.Metadata is { Count: > 0 } metadata)
+        if (options?.AdditionalProperties is { Count: > 0 } additionalProperties)
         {
-            writer.WritePropertyName("metadata");
-            writer.WriteStartObject();
-            foreach (var kvp in metadata)
+            // Map "metadata" from AdditionalProperties if present as a dictionary of string values.
+            if (additionalProperties.TryGetValue("metadata", out object? metadataObj) &&
+                metadataObj is AdditionalPropertiesDictionary<string> metadata &&
+                metadata.Count > 0)
             {
-                writer.WriteString(kvp.Key, kvp.Value);
+                writer.WritePropertyName("metadata");
+                writer.WriteStartObject();
+                foreach (var kvp in metadata)
+                {
+                    writer.WriteString(kvp.Key, kvp.Value);
+                }
+
+                writer.WriteEndObject();
             }
-
-            writer.WriteEndObject();
-        }
-
-        if (options?.Messages is { Count: > 0 } messages)
-        {
-            writer.WritePropertyName("items");
-            WriteMessagesArray(writer, messages);
         }
 
         writer.WriteEndObject();
@@ -321,13 +326,20 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
         using JsonDocument doc = JsonDocument.Parse(result.GetRawResponse().Content);
         JsonElement root = doc.RootElement;
 
-        return new HostedConversation
+        var conversation = new HostedConversation
         {
             ConversationId = root.TryGetProperty("id", out JsonElement idElement) ? idElement.GetString() : null,
             CreatedAt = root.TryGetProperty("created_at", out JsonElement createdAtElement) && createdAtElement.ValueKind == JsonValueKind.Number ? DateTimeOffset.FromUnixTimeSeconds(createdAtElement.GetInt64()) : null,
-            Metadata = ParseMetadata(root),
             RawRepresentation = result,
         };
+
+        if (ParseMetadata(root) is { } metadata)
+        {
+            conversation.AdditionalProperties ??= new();
+            conversation.AdditionalProperties["metadata"] = metadata;
+        }
+
+        return conversation;
     }
 
     /// <summary>Attempts to convert a JSON element representing a conversation item to a <see cref="ChatMessage"/>.</summary>

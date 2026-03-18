@@ -32,30 +32,35 @@ public interface IHostedConversationClient : IDisposable
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The created <see cref="HostedConversation"/>.</returns>
     Task<HostedConversation> CreateAsync(
-        HostedConversationCreationOptions? options = null,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>Retrieves an existing hosted conversation by its identifier.</summary>
     /// <param name="conversationId">The unique identifier of the conversation to retrieve.</param>
+    /// <param name="options">The options for the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The <see cref="HostedConversation"/> matching the specified <paramref name="conversationId"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="conversationId"/> is <see langword="null"/>.</exception>
     Task<HostedConversation> GetAsync(
         string conversationId,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>Deletes an existing hosted conversation.</summary>
     /// <param name="conversationId">The unique identifier of the conversation to delete.</param>
+    /// <param name="options">The options for the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="conversationId"/> is <see langword="null"/>.</exception>
     Task DeleteAsync(
         string conversationId,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>Adds messages to an existing hosted conversation.</summary>
     /// <param name="conversationId">The unique identifier of the conversation to add messages to.</param>
     /// <param name="messages">The sequence of chat messages to add to the conversation.</param>
+    /// <param name="options">The options for the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="conversationId"/> is <see langword="null"/>.</exception>
@@ -63,15 +68,18 @@ public interface IHostedConversationClient : IDisposable
     Task AddMessagesAsync(
         string conversationId,
         IEnumerable<ChatMessage> messages,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>Lists the messages in an existing hosted conversation.</summary>
     /// <param name="conversationId">The unique identifier of the conversation to list messages from.</param>
+    /// <param name="options">The options for the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous sequence of <see cref="ChatMessage"/> instances from the conversation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="conversationId"/> is <see langword="null"/>.</exception>
     IAsyncEnumerable<ChatMessage> GetMessagesAsync(
         string conversationId,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>Asks the <see cref="IHostedConversationClient"/> for an object of the specified type <paramref name="serviceType"/>.</summary>

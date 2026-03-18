@@ -15,11 +15,12 @@ namespace Microsoft.Extensions.AI;
 public static class OpenTelemetryHostedConversationClientBuilderExtensions
 {
     /// <summary>
-    /// Adds OpenTelemetry support to the hosted conversation client pipeline, following the OpenTelemetry Semantic Conventions for Generative AI systems.
+    /// Adds OpenTelemetry support to the hosted conversation client pipeline.
     /// </summary>
     /// <remarks>
-    /// The draft specification this follows is available at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
-    /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
+    /// Since there is currently no OpenTelemetry Semantic Convention for hosted conversation operations, this implementation
+    /// uses general client span conventions alongside standard <c>conversations.*</c> registry attributes where applicable.
+    /// The telemetry output is subject to change as relevant conventions emerge.
     /// </remarks>
     /// <param name="builder">The <see cref="HostedConversationClientBuilder"/>.</param>
     /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to use to create a logger for logging events.</param>

@@ -26,13 +26,9 @@
 
 ### Azure AI Foundry
 
-- Maps to Thread/Message APIs in Agent Service SDK
-- `CreateAsync` → `threads.create()`
-- `GetAsync` → `threads.get()`
-- `DeleteAsync` → `threads.delete()`
-- `AddMessagesAsync` → `messages.create()` (one per message)
-- `GetMessagesAsync` → `messages.list()`
-- **Gaps**: Thread model includes Run/Agent concepts not in our abstraction; use `AdditionalProperties` for agent-specific metadata
+- **Azure Foundry v2** uses the OpenAI Responses API directly, so the OpenAI `IHostedConversationClient` implementation works for Azure Foundry v2 without a separate adapter
+- The deprecated v1 Agent Service SDK mapped to Thread/Message APIs (`threads.create()`, `threads.get()`, `threads.delete()`, `messages.create()`, `messages.list()`), but this is no longer the recommended path
+- **Gaps**: Agent-specific concepts (Runs, Agents) are not in our abstraction; use `AdditionalProperties` for agent-specific metadata
 
 ### AWS Bedrock
 

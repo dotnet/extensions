@@ -43,34 +43,38 @@ public class DelegatingHostedConversationClient : IHostedConversationClient
 
     /// <inheritdoc />
     public virtual Task<HostedConversation> CreateAsync(
-        HostedConversationCreationOptions? options = null,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
         InnerClient.CreateAsync(options, cancellationToken);
 
     /// <inheritdoc />
     public virtual Task<HostedConversation> GetAsync(
         string conversationId,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
-        InnerClient.GetAsync(conversationId, cancellationToken);
+        InnerClient.GetAsync(conversationId, options, cancellationToken);
 
     /// <inheritdoc />
     public virtual Task DeleteAsync(
         string conversationId,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
-        InnerClient.DeleteAsync(conversationId, cancellationToken);
+        InnerClient.DeleteAsync(conversationId, options, cancellationToken);
 
     /// <inheritdoc />
     public virtual Task AddMessagesAsync(
         string conversationId,
         IEnumerable<ChatMessage> messages,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
-        InnerClient.AddMessagesAsync(conversationId, messages, cancellationToken);
+        InnerClient.AddMessagesAsync(conversationId, messages, options, cancellationToken);
 
     /// <inheritdoc />
     public virtual IAsyncEnumerable<ChatMessage> GetMessagesAsync(
         string conversationId,
+        HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default) =>
-        InnerClient.GetMessagesAsync(conversationId, cancellationToken);
+        InnerClient.GetMessagesAsync(conversationId, options, cancellationToken);
 
     /// <inheritdoc />
     public virtual object? GetService(Type serviceType, object? serviceKey = null)

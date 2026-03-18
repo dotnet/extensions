@@ -13,21 +13,21 @@ namespace Microsoft.Extensions.AI;
 public static class ConfigureOptionsHostedConversationClientBuilderExtensions
 {
     /// <summary>
-    /// Adds a callback that configures a <see cref="HostedConversationCreationOptions"/> to be passed to the next client in the pipeline.
+    /// Adds a callback that configures a <see cref="HostedConversationClientOptions"/> to be passed to the next client in the pipeline.
     /// </summary>
     /// <param name="builder">The <see cref="HostedConversationClientBuilder"/>.</param>
     /// <param name="configure">
-    /// The delegate to invoke to configure the <see cref="HostedConversationCreationOptions"/> instance.
-    /// It is passed a clone of the caller-supplied <see cref="HostedConversationCreationOptions"/> instance (or a newly constructed instance if the caller-supplied instance is <see langword="null"/>).
+    /// The delegate to invoke to configure the <see cref="HostedConversationClientOptions"/> instance.
+    /// It is passed a clone of the caller-supplied <see cref="HostedConversationClientOptions"/> instance (or a newly constructed instance if the caller-supplied instance is <see langword="null"/>).
     /// </param>
     /// <remarks>
     /// This method can be used to set default options. The <paramref name="configure"/> delegate is passed either a new instance of
-    /// <see cref="HostedConversationCreationOptions"/> if the caller didn't supply a <see cref="HostedConversationCreationOptions"/> instance, or a clone (via <see cref="HostedConversationCreationOptions.Clone"/>)
+    /// <see cref="HostedConversationClientOptions"/> if the caller didn't supply a <see cref="HostedConversationClientOptions"/> instance, or a clone (via <see cref="HostedConversationClientOptions.Clone"/>)
     /// of the caller-supplied instance if one was supplied.
     /// </remarks>
     /// <returns>The <paramref name="builder"/>.</returns>
     public static HostedConversationClientBuilder ConfigureOptions(
-        this HostedConversationClientBuilder builder, Action<HostedConversationCreationOptions> configure)
+        this HostedConversationClientBuilder builder, Action<HostedConversationClientOptions> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);

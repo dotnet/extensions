@@ -55,7 +55,7 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
 
     /// <inheritdoc/>
     public override async Task<HostedConversation> CreateAsync(
-        HostedConversationCreationOptions? options = null, CancellationToken cancellationToken = default)
+        HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
@@ -101,7 +101,7 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
 
     /// <inheritdoc/>
     public override async Task<HostedConversation> GetAsync(
-        string conversationId, CancellationToken cancellationToken = default)
+        string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
@@ -110,7 +110,7 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
 
         try
         {
-            var conversation = await base.GetAsync(conversationId, cancellationToken);
+            var conversation = await base.GetAsync(conversationId, options, cancellationToken);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
@@ -140,7 +140,7 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
 
     /// <inheritdoc/>
     public override async Task DeleteAsync(
-        string conversationId, CancellationToken cancellationToken = default)
+        string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
@@ -149,7 +149,7 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
 
         try
         {
-            await base.DeleteAsync(conversationId, cancellationToken);
+            await base.DeleteAsync(conversationId, options, cancellationToken);
             LogCompleted(nameof(DeleteAsync));
         }
         catch (OperationCanceledException)
@@ -166,7 +166,7 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
 
     /// <inheritdoc/>
     public override async Task AddMessagesAsync(
-        string conversationId, IEnumerable<ChatMessage> messages, CancellationToken cancellationToken = default)
+        string conversationId, IEnumerable<ChatMessage> messages, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
@@ -182,7 +182,7 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
 
         try
         {
-            await base.AddMessagesAsync(conversationId, messages, cancellationToken);
+            await base.AddMessagesAsync(conversationId, messages, options, cancellationToken);
             LogCompleted(nameof(AddMessagesAsync));
         }
         catch (OperationCanceledException)
@@ -199,7 +199,7 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessage> GetMessagesAsync(
-        string conversationId, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        string conversationId, HostedConversationClientOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
@@ -209,7 +209,7 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
         IAsyncEnumerator<ChatMessage> e;
         try
         {
-            e = base.GetMessagesAsync(conversationId, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            e = base.GetMessagesAsync(conversationId, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -278,8 +278,8 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked. ConversationId: {ConversationId}.")]
     private partial void LogInvokedWithConversationId(string methodName, string conversationId);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Options: {HostedConversationCreationOptions}. Metadata: {HostedConversationClientMetadata}.")]
-    private partial void LogInvokedSensitive(string methodName, string hostedConversationCreationOptions, string hostedConversationClientMetadata);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Options: {HostedConversationClientOptions}. Metadata: {HostedConversationClientMetadata}.")]
+    private partial void LogInvokedSensitive(string methodName, string hostedConversationClientOptions, string hostedConversationClientMetadata);
 
     [LoggerMessage(LogLevel.Trace, "AddMessagesAsync invoked. ConversationId: {ConversationId}. Messages: {Messages}.")]
     private partial void LogAddMessagesInvokedSensitive(string conversationId, string messages);

@@ -23,7 +23,7 @@ public class DelegatingHostedConversationClientTests
     public async Task CreateAsyncDefaultsToInnerClientAsync()
     {
         // Arrange
-        var expectedOptions = new HostedConversationCreationOptions();
+        var expectedOptions = new HostedConversationClientOptions();
         var expectedCancellationToken = CancellationToken.None;
         var expectedResult = new TaskCompletionSource<HostedConversation>();
         var expectedConversation = new HostedConversation { ConversationId = "conv-1" };
@@ -59,7 +59,7 @@ public class DelegatingHostedConversationClientTests
         var expectedConversation = new HostedConversation { ConversationId = expectedConversationId };
         using var inner = new TestHostedConversationClient
         {
-            GetAsyncCallback = (conversationId, cancellationToken) =>
+            GetAsyncCallback = (conversationId, options, cancellationToken) =>
             {
                 Assert.Equal(expectedConversationId, conversationId);
                 Assert.Equal(expectedCancellationToken, cancellationToken);
@@ -70,7 +70,7 @@ public class DelegatingHostedConversationClientTests
         using var delegating = new NoOpDelegatingHostedConversationClient(inner);
 
         // Act
-        var resultTask = delegating.GetAsync(expectedConversationId, expectedCancellationToken);
+        var resultTask = delegating.GetAsync(expectedConversationId, cancellationToken: expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);
@@ -88,7 +88,7 @@ public class DelegatingHostedConversationClientTests
         var expectedResult = new TaskCompletionSource<bool>();
         using var inner = new TestHostedConversationClient
         {
-            DeleteAsyncCallback = (conversationId, cancellationToken) =>
+            DeleteAsyncCallback = (conversationId, options, cancellationToken) =>
             {
                 Assert.Equal(expectedConversationId, conversationId);
                 Assert.Equal(expectedCancellationToken, cancellationToken);
@@ -99,7 +99,7 @@ public class DelegatingHostedConversationClientTests
         using var delegating = new NoOpDelegatingHostedConversationClient(inner);
 
         // Act
-        var resultTask = delegating.DeleteAsync(expectedConversationId, expectedCancellationToken);
+        var resultTask = delegating.DeleteAsync(expectedConversationId, cancellationToken: expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);
@@ -118,7 +118,7 @@ public class DelegatingHostedConversationClientTests
         var expectedResult = new TaskCompletionSource<bool>();
         using var inner = new TestHostedConversationClient
         {
-            AddMessagesAsyncCallback = (conversationId, messages, cancellationToken) =>
+            AddMessagesAsyncCallback = (conversationId, messages, options, cancellationToken) =>
             {
                 Assert.Equal(expectedConversationId, conversationId);
                 Assert.Same(expectedMessages, messages);
@@ -130,7 +130,7 @@ public class DelegatingHostedConversationClientTests
         using var delegating = new NoOpDelegatingHostedConversationClient(inner);
 
         // Act
-        var resultTask = delegating.AddMessagesAsync(expectedConversationId, expectedMessages, expectedCancellationToken);
+        var resultTask = delegating.AddMessagesAsync(expectedConversationId, expectedMessages, cancellationToken: expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);
@@ -153,7 +153,7 @@ public class DelegatingHostedConversationClientTests
 
         using var inner = new TestHostedConversationClient
         {
-            GetMessagesAsyncCallback = (conversationId, cancellationToken) =>
+            GetMessagesAsyncCallback = (conversationId, options, cancellationToken) =>
             {
                 Assert.Equal(expectedConversationId, conversationId);
                 Assert.Equal(expectedCancellationToken, cancellationToken);
@@ -164,7 +164,7 @@ public class DelegatingHostedConversationClientTests
         using var delegating = new NoOpDelegatingHostedConversationClient(inner);
 
         // Act
-        var resultAsyncEnumerable = delegating.GetMessagesAsync(expectedConversationId, expectedCancellationToken);
+        var resultAsyncEnumerable = delegating.GetMessagesAsync(expectedConversationId, cancellationToken: expectedCancellationToken);
 
         // Assert
         var enumerator = resultAsyncEnumerable.GetAsyncEnumerator();
@@ -274,35 +274,35 @@ public class DelegatingHostedConversationClientTests
 
         public bool Disposed { get; private set; }
 
-        public Func<HostedConversationCreationOptions?, CancellationToken, Task<HostedConversation>>? CreateAsyncCallback { get; set; }
+        public Func<HostedConversationClientOptions?, CancellationToken, Task<HostedConversation>>? CreateAsyncCallback { get; set; }
 
-        public Func<string, CancellationToken, Task<HostedConversation>>? GetAsyncCallback { get; set; }
+        public Func<string, HostedConversationClientOptions?, CancellationToken, Task<HostedConversation>>? GetAsyncCallback { get; set; }
 
-        public Func<string, CancellationToken, Task>? DeleteAsyncCallback { get; set; }
+        public Func<string, HostedConversationClientOptions?, CancellationToken, Task>? DeleteAsyncCallback { get; set; }
 
-        public Func<string, IEnumerable<ChatMessage>, CancellationToken, Task>? AddMessagesAsyncCallback { get; set; }
+        public Func<string, IEnumerable<ChatMessage>, HostedConversationClientOptions?, CancellationToken, Task>? AddMessagesAsyncCallback { get; set; }
 
-        public Func<string, CancellationToken, IAsyncEnumerable<ChatMessage>>? GetMessagesAsyncCallback { get; set; }
+        public Func<string, HostedConversationClientOptions?, CancellationToken, IAsyncEnumerable<ChatMessage>>? GetMessagesAsyncCallback { get; set; }
 
         public Func<Type, object?, object?> GetServiceCallback { get; set; }
 
         private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey) =>
             serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
-        public Task<HostedConversation> CreateAsync(HostedConversationCreationOptions? options = null, CancellationToken cancellationToken = default)
+        public Task<HostedConversation> CreateAsync(HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => CreateAsyncCallback!.Invoke(options, cancellationToken);
 
-        public Task<HostedConversation> GetAsync(string conversationId, CancellationToken cancellationToken = default)
-            => GetAsyncCallback!.Invoke(conversationId, cancellationToken);
+        public Task<HostedConversation> GetAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
+            => GetAsyncCallback!.Invoke(conversationId, options, cancellationToken);
 
-        public Task DeleteAsync(string conversationId, CancellationToken cancellationToken = default)
-            => DeleteAsyncCallback!.Invoke(conversationId, cancellationToken);
+        public Task DeleteAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
+            => DeleteAsyncCallback!.Invoke(conversationId, options, cancellationToken);
 
-        public Task AddMessagesAsync(string conversationId, IEnumerable<ChatMessage> messages, CancellationToken cancellationToken = default)
-            => AddMessagesAsyncCallback!.Invoke(conversationId, messages, cancellationToken);
+        public Task AddMessagesAsync(string conversationId, IEnumerable<ChatMessage> messages, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
+            => AddMessagesAsyncCallback!.Invoke(conversationId, messages, options, cancellationToken);
 
-        public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, CancellationToken cancellationToken = default)
-            => GetMessagesAsyncCallback!.Invoke(conversationId, cancellationToken);
+        public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
+            => GetMessagesAsyncCallback!.Invoke(conversationId, options, cancellationToken);
 
         public object? GetService(Type serviceType, object? serviceKey = null)
             => GetServiceCallback(serviceType, serviceKey);

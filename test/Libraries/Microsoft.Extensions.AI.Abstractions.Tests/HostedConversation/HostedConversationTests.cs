@@ -16,7 +16,6 @@ public class HostedConversationTests
         HostedConversation conversation = new();
         Assert.Null(conversation.ConversationId);
         Assert.Null(conversation.CreatedAt);
-        Assert.Null(conversation.Metadata);
         Assert.Null(conversation.RawRepresentation);
         Assert.Null(conversation.AdditionalProperties);
     }
@@ -46,24 +45,6 @@ public class HostedConversationTests
 
         conversation.CreatedAt = null;
         Assert.Null(conversation.CreatedAt);
-    }
-
-    [Fact]
-    public void Metadata_Roundtrips()
-    {
-        HostedConversation conversation = new();
-        Assert.Null(conversation.Metadata);
-
-        AdditionalPropertiesDictionary<string> metadata = new()
-        {
-            ["key1"] = "value1",
-            ["key2"] = "value2",
-        };
-        conversation.Metadata = metadata;
-        Assert.Same(metadata, conversation.Metadata);
-
-        conversation.Metadata = null;
-        Assert.Null(conversation.Metadata);
     }
 
     [Fact]

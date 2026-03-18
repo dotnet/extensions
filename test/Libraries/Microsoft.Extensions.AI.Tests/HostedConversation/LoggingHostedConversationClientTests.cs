@@ -56,7 +56,7 @@ public class LoggingHostedConversationClientTests
         using var client = builder.Build(services);
 
         // Act
-        await client.CreateAsync(new HostedConversationCreationOptions());
+        await client.CreateAsync(new HostedConversationClientOptions());
 
         // Assert
         var logs = collector.GetSnapshot();
@@ -92,7 +92,7 @@ public class LoggingHostedConversationClientTests
 
         using var innerClient = new TestHostedConversationClient
         {
-            GetAsyncCallback = (id, _) =>
+            GetAsyncCallback = (id, opts, _) =>
                 Task.FromResult(new HostedConversation { ConversationId = id })
         };
 
@@ -131,7 +131,7 @@ public class LoggingHostedConversationClientTests
 
         using var innerClient = new TestHostedConversationClient
         {
-            DeleteAsyncCallback = (_, _) => Task.CompletedTask
+            DeleteAsyncCallback = (_, opts, _) => Task.CompletedTask
         };
 
         var builder = new HostedConversationClientBuilder(innerClient);
@@ -170,23 +170,23 @@ public class LoggingHostedConversationClientTests
 
     private sealed class TestHostedConversationClient : IHostedConversationClient
     {
-        public Func<HostedConversationCreationOptions?, CancellationToken, Task<HostedConversation>>? CreateAsyncCallback { get; set; }
-        public Func<string, CancellationToken, Task<HostedConversation>>? GetAsyncCallback { get; set; }
-        public Func<string, CancellationToken, Task>? DeleteAsyncCallback { get; set; }
+        public Func<HostedConversationClientOptions?, CancellationToken, Task<HostedConversation>>? CreateAsyncCallback { get; set; }
+        public Func<string, HostedConversationClientOptions?, CancellationToken, Task<HostedConversation>>? GetAsyncCallback { get; set; }
+        public Func<string, HostedConversationClientOptions?, CancellationToken, Task>? DeleteAsyncCallback { get; set; }
 
-        public Task<HostedConversation> CreateAsync(HostedConversationCreationOptions? options = null, CancellationToken cancellationToken = default)
+        public Task<HostedConversation> CreateAsync(HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => CreateAsyncCallback?.Invoke(options, cancellationToken) ?? Task.FromResult(new HostedConversation { ConversationId = "test" });
 
-        public Task<HostedConversation> GetAsync(string conversationId, CancellationToken cancellationToken = default)
-            => GetAsyncCallback?.Invoke(conversationId, cancellationToken) ?? Task.FromResult(new HostedConversation { ConversationId = conversationId });
+        public Task<HostedConversation> GetAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
+            => GetAsyncCallback?.Invoke(conversationId, options, cancellationToken) ?? Task.FromResult(new HostedConversation { ConversationId = conversationId });
 
-        public Task DeleteAsync(string conversationId, CancellationToken cancellationToken = default)
-            => DeleteAsyncCallback?.Invoke(conversationId, cancellationToken) ?? Task.CompletedTask;
+        public Task DeleteAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
+            => DeleteAsyncCallback?.Invoke(conversationId, options, cancellationToken) ?? Task.CompletedTask;
 
-        public Task AddMessagesAsync(string conversationId, IEnumerable<ChatMessage> messages, CancellationToken cancellationToken = default)
+        public Task AddMessagesAsync(string conversationId, IEnumerable<ChatMessage> messages, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => EmptyAsync();
 
         private static async IAsyncEnumerable<ChatMessage> EmptyAsync()

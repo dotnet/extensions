@@ -17,39 +17,54 @@ using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents a delegating hosted conversation client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
+/// <summary>Represents a delegating hosted conversation client that implements OpenTelemetry-compatible tracing and metrics for conversation operations.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.40, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
-/// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
+/// <para>
+/// Since there is currently no OpenTelemetry Semantic Convention for hosted conversation operations, this implementation
+/// uses general client span conventions alongside standard <c>conversations.*</c> registry attributes where applicable.
+/// </para>
+/// <para>
+/// The specification is subject to change as relevant OpenTelemetry conventions emerge; as such, the telemetry
+/// output by this client is also subject to change.
+/// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIHostedConversation, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConversationClient
 {
-    private const string HostedConversationCreateName = "hosted_conversation create";
-    private const string HostedConversationGetName = "hosted_conversation get";
-    private const string HostedConversationDeleteName = "hosted_conversation delete";
-    private const string HostedConversationAddMessagesName = "hosted_conversation add_messages";
-    private const string HostedConversationGetMessagesName = "hosted_conversation get_messages";
+    private const string CreateOperationName = "conversations.create";
+    private const string GetOperationName = "conversations.get";
+    private const string DeleteOperationName = "conversations.delete";
+    private const string AddMessagesOperationName = "conversations.add_messages";
+    private const string GetMessagesOperationName = "conversations.get_messages";
+
+    private const string OperationDurationMetricName = "conversations.client.operation.duration";
+    private const string OperationDurationMetricDescription = "Measures the duration of a conversation operation";
+
+    private const string ConversationsOperationNameAttribute = "conversations.operation.name";
+    private const string ConversationsProviderNameAttribute = "conversations.provider.name";
+    private const string ConversationsIdAttribute = "conversations.id";
+    private const string ConversationsMessagesCountAttribute = "conversations.messages.count";
 
     private readonly ActivitySource _activitySource;
     private readonly Meter _meter;
-
     private readonly Histogram<double> _operationDurationHistogram;
 
     private readonly string? _providerName;
     private readonly string? _serverAddress;
     private readonly int _serverPort;
 
+    private readonly ILogger? _logger;
+
     /// <summary>Initializes a new instance of the <see cref="OpenTelemetryHostedConversationClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="IHostedConversationClient"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for emitting any logging data from the client.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
-#pragma warning disable IDE0060 // Remove unused parameter; it exists for consistency with other OTel clients and future use
     public OpenTelemetryHostedConversationClient(IHostedConversationClient innerClient, ILogger? logger = null, string? sourceName = null)
-#pragma warning restore IDE0060
         : base(innerClient)
     {
         Debug.Assert(innerClient is not null, "Should have been validated by the base ctor");
+
+        _logger = logger;
 
         if (innerClient!.GetService<HostedConversationClientMetadata>() is HostedConversationClientMetadata metadata)
         {
@@ -63,12 +78,41 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
         _meter = new(name);
 
         _operationDurationHistogram = _meter.CreateHistogram<double>(
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Name,
+            OperationDurationMetricName,
             OpenTelemetryConsts.SecondsUnit,
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description,
+            OperationDurationMetricDescription,
             advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
             );
     }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether potentially sensitive information should be included in telemetry.
+    /// </summary>
+    /// <value>
+    /// <see langword="true"/> if potentially sensitive information should be included in telemetry;
+    /// <see langword="false"/> if telemetry shouldn't include raw inputs and outputs.
+    /// The default value is <see langword="false"/>, unless the <c>OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT</c>
+    /// environment variable is set to "true" (case-insensitive).
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// By default, telemetry includes operation metadata such as provider name, duration,
+    /// conversation IDs, and message counts.
+    /// </para>
+    /// <para>
+    /// When enabled, telemetry will additionally include message content, which may contain sensitive information.
+    /// </para>
+    /// <para>
+    /// The default value can be overridden by setting the <c>OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT</c>
+    /// environment variable to "true". Explicitly setting this property will override the environment variable.
+    /// </para>
+    /// </remarks>
+    public bool EnableSensitiveData { get; set; } = TelemetryHelpers.EnableSensitiveDataDefault;
+
+    /// <inheritdoc/>
+    public override object? GetService(Type serviceType, object? serviceKey = null) =>
+        serviceKey is null && serviceType == typeof(ActivitySource) ? _activitySource :
+        base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
@@ -82,33 +126,19 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
         base.Dispose(disposing);
     }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether potentially sensitive information should be included in telemetry.
-    /// </summary>
-    /// <value>
-    /// <see langword="true"/> if potentially sensitive information should be included in telemetry;
-    /// <see langword="false"/> if telemetry shouldn't include raw inputs and outputs.
-    /// The default value is <see langword="false"/>, unless the <c>OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT</c>
-    /// environment variable is set to "true" (case-insensitive).
-    /// </value>
-    public bool EnableSensitiveData { get; set; } = TelemetryHelpers.EnableSensitiveDataDefault;
-
-    /// <inheritdoc/>
-    public override object? GetService(Type serviceType, object? serviceKey = null) =>
-        serviceType == typeof(ActivitySource) ? _activitySource :
-        base.GetService(serviceType, serviceKey);
-
     /// <inheritdoc/>
     public override async Task<HostedConversation> CreateAsync(
-        HostedConversationCreationOptions? options = null, CancellationToken cancellationToken = default)
+        HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using Activity? activity = CreateAndConfigureActivity(HostedConversationCreateName);
+        using Activity? activity = StartActivity(CreateOperationName);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
 
+        HostedConversation? result = null;
         Exception? error = null;
         try
         {
-            return await base.CreateAsync(options, cancellationToken);
+            result = await base.CreateAsync(options, cancellationToken).ConfigureAwait(false);
+            return result;
         }
         catch (Exception ex)
         {
@@ -117,21 +147,27 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
         }
         finally
         {
-            TraceResponse(activity, HostedConversationCreateName, error, stopwatch);
+            if (result is not null && activity is { IsAllDataRequested: true })
+            {
+                _ = activity.AddTag(ConversationsIdAttribute, result.ConversationId);
+            }
+
+            RecordDuration(stopwatch, CreateOperationName, error);
+            SetErrorStatus(activity, error);
         }
     }
 
     /// <inheritdoc/>
     public override async Task<HostedConversation> GetAsync(
-        string conversationId, CancellationToken cancellationToken = default)
+        string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using Activity? activity = CreateAndConfigureActivity(HostedConversationGetName, conversationId);
+        using Activity? activity = StartActivity(GetOperationName, conversationId);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
 
         Exception? error = null;
         try
         {
-            return await base.GetAsync(conversationId, cancellationToken);
+            return await base.GetAsync(conversationId, options, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -140,21 +176,22 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
         }
         finally
         {
-            TraceResponse(activity, HostedConversationGetName, error, stopwatch);
+            RecordDuration(stopwatch, GetOperationName, error);
+            SetErrorStatus(activity, error);
         }
     }
 
     /// <inheritdoc/>
     public override async Task DeleteAsync(
-        string conversationId, CancellationToken cancellationToken = default)
+        string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using Activity? activity = CreateAndConfigureActivity(HostedConversationDeleteName, conversationId);
+        using Activity? activity = StartActivity(DeleteOperationName, conversationId);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
 
         Exception? error = null;
         try
         {
-            await base.DeleteAsync(conversationId, cancellationToken);
+            await base.DeleteAsync(conversationId, options, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -163,21 +200,22 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
         }
         finally
         {
-            TraceResponse(activity, HostedConversationDeleteName, error, stopwatch);
+            RecordDuration(stopwatch, DeleteOperationName, error);
+            SetErrorStatus(activity, error);
         }
     }
 
     /// <inheritdoc/>
     public override async Task AddMessagesAsync(
-        string conversationId, IEnumerable<ChatMessage> messages, CancellationToken cancellationToken = default)
+        string conversationId, IEnumerable<ChatMessage> messages, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using Activity? activity = CreateAndConfigureActivity(HostedConversationAddMessagesName, conversationId);
+        using Activity? activity = StartActivity(AddMessagesOperationName, conversationId);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
 
         Exception? error = null;
         try
         {
-            await base.AddMessagesAsync(conversationId, messages, cancellationToken);
+            await base.AddMessagesAsync(conversationId, messages, options, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -186,43 +224,43 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
         }
         finally
         {
-            TraceResponse(activity, HostedConversationAddMessagesName, error, stopwatch);
+            RecordDuration(stopwatch, AddMessagesOperationName, error);
+            SetErrorStatus(activity, error);
         }
     }
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessage> GetMessagesAsync(
-        string conversationId, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        string conversationId, HostedConversationClientOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using Activity? activity = CreateAndConfigureActivity(HostedConversationGetMessagesName, conversationId);
+        using Activity? activity = StartActivity(GetMessagesOperationName, conversationId);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
 
-        IAsyncEnumerable<ChatMessage> messages;
+        IAsyncEnumerator<ChatMessage> e;
+        Exception? error = null;
         try
         {
-            messages = base.GetMessagesAsync(conversationId, cancellationToken);
+            e = base.GetMessagesAsync(conversationId, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
         }
         catch (Exception ex)
         {
-            TraceResponse(activity, HostedConversationGetMessagesName, ex, stopwatch);
+            error = ex;
+            RecordDuration(stopwatch, GetMessagesOperationName, error);
+            SetErrorStatus(activity, error);
             throw;
         }
 
-        var enumerator = messages.GetAsyncEnumerator(cancellationToken);
-        Exception? error = null;
+        int count = 0;
         try
         {
             while (true)
             {
-                ChatMessage message;
                 try
                 {
-                    if (!await enumerator.MoveNextAsync())
+                    if (!await e.MoveNextAsync().ConfigureAwait(false))
                     {
                         break;
                     }
-
-                    message = enumerator.Current;
                 }
                 catch (Exception ex)
                 {
@@ -230,35 +268,58 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
                     throw;
                 }
 
-                yield return message;
+                count++;
+                yield return e.Current;
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
         }
         finally
         {
-            TraceResponse(activity, HostedConversationGetMessagesName, error, stopwatch);
+            if (activity is { IsAllDataRequested: true })
+            {
+                _ = activity.AddTag(ConversationsMessagesCountAttribute, count);
+            }
 
-            await enumerator.DisposeAsync();
+            RecordDuration(stopwatch, GetMessagesOperationName, error);
+            SetErrorStatus(activity, error);
+
+            await e.DisposeAsync().ConfigureAwait(false);
         }
     }
 
-    /// <summary>Creates an activity for a hosted conversation operation, or returns <see langword="null"/> if not enabled.</summary>
-    private Activity? CreateAndConfigureActivity(string operationName, string? conversationId = null)
+    private void SetErrorStatus(Activity? activity, Exception? error)
+    {
+        if (error is not null)
+        {
+            _ = activity?
+                .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
+                .SetStatus(ActivityStatusCode.Error, error.Message);
+
+            if (_logger is not null)
+            {
+                OpenTelemetryLog.OperationException(_logger, error);
+            }
+        }
+    }
+
+    private Activity? StartActivity(string operationName, string? conversationId = null)
     {
         Activity? activity = null;
         if (_activitySource.HasListeners())
         {
-            activity = _activitySource.StartActivity(operationName, ActivityKind.Client);
+            activity = _activitySource.StartActivity(
+                operationName,
+                ActivityKind.Client);
 
             if (activity is { IsAllDataRequested: true })
             {
                 _ = activity
-                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, operationName)
-                    .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
+                    .AddTag(ConversationsOperationNameAttribute, operationName)
+                    .AddTag(ConversationsProviderNameAttribute, _providerName);
 
                 if (conversationId is not null)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Conversation.Id, conversationId);
+                    _ = activity.AddTag(ConversationsIdAttribute, conversationId);
                 }
 
                 if (_serverAddress is not null)
@@ -273,22 +334,17 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
         return activity;
     }
 
-    /// <summary>Records response information to the activity and metrics.</summary>
-    private void TraceResponse(
-        Activity? activity,
-        string operationName,
-        Exception? error,
-        Stopwatch? stopwatch)
+    private void RecordDuration(Stopwatch? stopwatch, string operationName, Exception? error)
     {
         if (_operationDurationHistogram.Enabled && stopwatch is not null)
         {
             TagList tags = default;
-            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, operationName);
-            tags.Add(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
+            tags.Add(ConversationsOperationNameAttribute, operationName);
+            tags.Add(ConversationsProviderNameAttribute, _providerName);
 
-            if (_serverAddress is string endpointAddress)
+            if (_serverAddress is string address)
             {
-                tags.Add(OpenTelemetryConsts.Server.Address, endpointAddress);
+                tags.Add(OpenTelemetryConsts.Server.Address, address);
                 tags.Add(OpenTelemetryConsts.Server.Port, _serverPort);
             }
 
@@ -298,13 +354,6 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
             }
 
             _operationDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, tags);
-        }
-
-        if (error is not null)
-        {
-            _ = activity?
-                .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                .SetStatus(ActivityStatusCode.Error, error.Message);
         }
     }
 }

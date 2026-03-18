@@ -18,7 +18,7 @@ public class ConfigureOptionsHostedConversationClientTests
     {
         // Arrange
         var callbackInvoked = false;
-        HostedConversationCreationOptions? receivedByInner = null;
+        HostedConversationClientOptions? receivedByInner = null;
 
         using var innerClient = new TestHostedConversationClient
         {
@@ -32,27 +32,27 @@ public class ConfigureOptionsHostedConversationClientTests
         using var client = new ConfigureOptionsHostedConversationClient(innerClient, options =>
         {
             callbackInvoked = true;
-            options.Metadata ??= new();
-            options.Metadata["configured"] = "true";
+            options.AdditionalProperties ??= new();
+            options.AdditionalProperties["configured"] = "true";
         });
 
         // Act
-        await client.CreateAsync(new HostedConversationCreationOptions());
+        await client.CreateAsync(new HostedConversationClientOptions());
 
         // Assert
         Assert.True(callbackInvoked);
         Assert.NotNull(receivedByInner);
-        Assert.Equal("true", receivedByInner!.Metadata!["configured"]);
+        Assert.Equal("true", receivedByInner!.AdditionalProperties!["configured"]);
     }
 
     [Fact]
     public async Task ConfigureOptions_OptionsAreCloned_OriginalNotModified()
     {
         // Arrange
-        HostedConversationCreationOptions? receivedByInner = null;
-        var originalOptions = new HostedConversationCreationOptions
+        HostedConversationClientOptions? receivedByInner = null;
+        var originalOptions = new HostedConversationClientOptions
         {
-            Metadata = new() { ["key"] = "original" }
+            AdditionalProperties = new() { ["key"] = "original" }
         };
 
         using var innerClient = new TestHostedConversationClient
@@ -66,26 +66,26 @@ public class ConfigureOptionsHostedConversationClientTests
 
         using var client = new ConfigureOptionsHostedConversationClient(innerClient, options =>
         {
-            options.Metadata!["key"] = "modified";
+            options.AdditionalProperties!["key"] = "modified";
         });
 
         // Act
         await client.CreateAsync(originalOptions);
 
         // Assert - original should not be modified
-        Assert.Equal("original", originalOptions.Metadata["key"]);
+        Assert.Equal("original", originalOptions.AdditionalProperties["key"]);
 
         // Assert - inner received modified clone
         Assert.NotNull(receivedByInner);
         Assert.NotSame(originalOptions, receivedByInner);
-        Assert.Equal("modified", receivedByInner!.Metadata!["key"]);
+        Assert.Equal("modified", receivedByInner!.AdditionalProperties!["key"]);
     }
 
     [Fact]
     public async Task ConfigureOptions_NullOptions_CreatesNew()
     {
         // Arrange
-        HostedConversationCreationOptions? receivedByInner = null;
+        HostedConversationClientOptions? receivedByInner = null;
 
         using var innerClient = new TestHostedConversationClient
         {
@@ -98,7 +98,7 @@ public class ConfigureOptionsHostedConversationClientTests
 
         using var client = new ConfigureOptionsHostedConversationClient(innerClient, options =>
         {
-            options.Metadata = new() { ["new"] = "value" };
+            options.AdditionalProperties = new() { ["new"] = "value" };
         });
 
         // Act
@@ -106,7 +106,7 @@ public class ConfigureOptionsHostedConversationClientTests
 
         // Assert - a new options instance should have been created
         Assert.NotNull(receivedByInner);
-        Assert.Equal("value", receivedByInner!.Metadata!["new"]);
+        Assert.Equal("value", receivedByInner!.AdditionalProperties!["new"]);
     }
 
     [Fact]
@@ -124,21 +124,21 @@ public class ConfigureOptionsHostedConversationClientTests
 
     private sealed class TestHostedConversationClient : IHostedConversationClient
     {
-        public Func<HostedConversationCreationOptions?, CancellationToken, Task<HostedConversation>>? CreateAsyncCallback { get; set; }
+        public Func<HostedConversationClientOptions?, CancellationToken, Task<HostedConversation>>? CreateAsyncCallback { get; set; }
 
-        public Task<HostedConversation> CreateAsync(HostedConversationCreationOptions? options = null, CancellationToken cancellationToken = default)
+        public Task<HostedConversation> CreateAsync(HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => CreateAsyncCallback?.Invoke(options, cancellationToken) ?? Task.FromResult(new HostedConversation { ConversationId = "test" });
 
-        public Task<HostedConversation> GetAsync(string conversationId, CancellationToken cancellationToken = default)
+        public Task<HostedConversation> GetAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => Task.FromResult(new HostedConversation { ConversationId = conversationId });
 
-        public Task DeleteAsync(string conversationId, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public Task AddMessagesAsync(string conversationId, IEnumerable<ChatMessage> messages, CancellationToken cancellationToken = default)
+        public Task AddMessagesAsync(string conversationId, IEnumerable<ChatMessage> messages, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => EmptyAsync();
 
         private static async IAsyncEnumerable<ChatMessage> EmptyAsync()
