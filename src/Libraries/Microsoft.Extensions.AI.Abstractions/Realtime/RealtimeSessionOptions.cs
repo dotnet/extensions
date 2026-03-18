@@ -73,6 +73,15 @@ public class RealtimeSessionOptions
     public IReadOnlyList<AITool>? Tools { get; init; }
 
     /// <summary>
+    /// Gets the voice activity detection (VAD) options for the session.
+    /// </summary>
+    /// <remarks>
+    /// When set, configures how the server detects user speech to manage turn-taking.
+    /// When <see langword="null"/>, the provider's default VAD behavior is used.
+    /// </remarks>
+    public VoiceActivityDetectionOptions? VoiceActivityDetection { get; init; }
+
+    /// <summary>
     /// Gets a callback responsible for creating the raw representation of the session options from an underlying implementation.
     /// </summary>
     /// <remarks>
