@@ -63,8 +63,8 @@ internal static class PathValidation
 
         // Ensure the root ends with a directory separator so that a root of
         // "/foo/bar" does not match a path like "/foo/bar-sibling/file".
-        if (!fullRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) &&
-            !fullRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString(), StringComparison.Ordinal))
+        if (!fullRoot.EndsWith(Path.DirectorySeparatorChar) &&
+            !fullRoot.EndsWith(Path.AltDirectorySeparatorChar))
         {
             fullRoot += Path.DirectorySeparatorChar;
         }
