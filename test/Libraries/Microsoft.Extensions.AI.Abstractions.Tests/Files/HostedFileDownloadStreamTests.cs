@@ -50,6 +50,31 @@ public class HostedFileDownloadStreamTests
         Assert.Empty(content.Data.ToArray());
     }
 
+    [Fact]
+    public void CanWrite_ReturnsFalse()
+    {
+        using var stream = new MinimalDownloadStream([1, 2, 3]);
+        Assert.False(stream.CanWrite);
+    }
+
+    [Fact]
+    public async Task WriteApis_ThrowNotSupportedException()
+    {
+        using var stream = new MinimalDownloadStream([1, 2, 3]);
+
+        Assert.Throws<NotSupportedException>(() => stream.SetLength(1));
+        Assert.Throws<NotSupportedException>(() => stream.Write([4], 0, 1));
+        Assert.Throws<NotSupportedException>(() => stream.WriteByte(4));
+        await Assert.ThrowsAsync<NotSupportedException>(() => stream.WriteAsync(new byte[] { 4 }, 0, 1));
+        Assert.Throws<NotSupportedException>(() => stream.BeginWrite([4], 0, 1, callback: null, state: null));
+        Assert.Throws<NotSupportedException>(() => stream.EndWrite(Task.CompletedTask));
+
+#if NET
+        Assert.Throws<NotSupportedException>(() => stream.Write([4]));
+        await Assert.ThrowsAsync<NotSupportedException>(() => stream.WriteAsync(new byte[] { 4 }).AsTask());
+#endif
+    }
+
     /// <summary>
     /// Minimal implementation that does not override MediaType or FileName, testing the default behavior.
     /// </summary>
@@ -64,14 +89,11 @@ public class HostedFileDownloadStreamTests
 
         public override bool CanRead => _inner.CanRead;
         public override bool CanSeek => _inner.CanSeek;
-        public override bool CanWrite => false;
         public override long Length => _inner.Length;
         public override long Position { get => _inner.Position; set => _inner.Position = value; }
         public override void Flush() => _inner.Flush();
         public override int Read(byte[] buffer, int offset, int count) => _inner.Read(buffer, offset, count);
         public override long Seek(long offset, SeekOrigin origin) => _inner.Seek(offset, origin);
-        public override void SetLength(long value) => _inner.SetLength(value);
-        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
         protected override void Dispose(bool disposing)
         {
@@ -102,14 +124,11 @@ public class HostedFileDownloadStreamTests
         public override string? FileName { get; }
         public override bool CanRead => _inner.CanRead;
         public override bool CanSeek => _inner.CanSeek;
-        public override bool CanWrite => false;
         public override long Length => _inner.Length;
         public override long Position { get => _inner.Position; set => _inner.Position = value; }
         public override void Flush() => _inner.Flush();
         public override int Read(byte[] buffer, int offset, int count) => _inner.Read(buffer, offset, count);
         public override long Seek(long offset, SeekOrigin origin) => _inner.Seek(offset, origin);
-        public override void SetLength(long value) => _inner.SetLength(value);
-        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
         protected override void Dispose(bool disposing)
         {

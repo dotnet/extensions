@@ -270,7 +270,6 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         Assert.NotNull(await client.GetTextAsync(audioSpeechStream, new()
         {
-            SpeechLanguage = null,
             TextLanguage = "pt",
             RawRepresentationFactory = (s) =>
             new AudioTranslationOptions

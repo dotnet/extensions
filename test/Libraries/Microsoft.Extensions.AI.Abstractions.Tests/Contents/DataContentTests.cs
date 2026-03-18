@@ -969,4 +969,30 @@ public sealed class DataContentTests
             }
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "data",
+              "uri": "data:audio/wav;base64,AQIDBA==",
+              "name": "audio.wav",
+              "additionalProperties": {
+                "source": "microphone"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var dataContent = Assert.IsType<DataContent>(result);
+        Assert.Equal("data:audio/wav;base64,AQIDBA==", dataContent.Uri);
+        Assert.Equal("audio/wav", dataContent.MediaType);
+        Assert.Equal(new byte[] { 1, 2, 3, 4 }, dataContent.Data.ToArray());
+        Assert.Equal("audio.wav", dataContent.Name);
+        Assert.NotNull(dataContent.AdditionalProperties);
+        Assert.Equal("microphone", dataContent.AdditionalProperties["source"]?.ToString());
+    }
 }
