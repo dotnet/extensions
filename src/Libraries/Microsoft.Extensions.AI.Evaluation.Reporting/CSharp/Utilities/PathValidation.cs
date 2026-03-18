@@ -41,8 +41,8 @@ internal static class PathValidation
 
         if (segment.Length == 0
             || segment != segment.Trim()
-            || segment == "."
-            || segment == ".."
+            || segment is "."
+            || segment is ".."
             || segment.IndexOfAny(_invalidFileNameChars) >= 0)
         {
             Throw.ArgumentException(
@@ -64,8 +64,8 @@ internal static class PathValidation
 
         // Ensure the root ends with a directory separator so that a root of
         // "/foo/bar" does not match a path like "/foo/bar-sibling/file".
-        if (!normalizedRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) &&
-            !normalizedRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString(), StringComparison.Ordinal))
+        if (!normalizedRoot.EndsWith(Path.DirectorySeparatorChar) &&
+            !normalizedRoot.EndsWith(Path.AltDirectorySeparatorChar))
         {
             normalizedRoot += Path.DirectorySeparatorChar;
         }
