@@ -59,18 +59,19 @@ internal static class PathValidation
     internal static string EnsureWithinRoot(string rootPath, string resolvedPath)
     {
         string fullRoot = Path.GetFullPath(rootPath);
+        string normalizedRoot = fullRoot;
         string fullResolved = Path.GetFullPath(resolvedPath);
 
         // Ensure the root ends with a directory separator so that a root of
         // "/foo/bar" does not match a path like "/foo/bar-sibling/file".
-        if (!fullRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) &&
-            !fullRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString(), StringComparison.Ordinal))
+        if (!normalizedRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal) &&
+            !normalizedRoot.EndsWith(Path.AltDirectorySeparatorChar.ToString(), StringComparison.Ordinal))
         {
-            fullRoot += Path.DirectorySeparatorChar;
+            normalizedRoot += Path.DirectorySeparatorChar;
         }
 
-        if (!fullResolved.StartsWith(fullRoot, _pathComparison) &&
-            !string.Equals(Path.GetFullPath(rootPath), fullResolved, _pathComparison))
+        if (!fullResolved.StartsWith(normalizedRoot, _pathComparison) &&
+            !string.Equals(fullRoot, fullResolved, _pathComparison))
         {
             throw new InvalidOperationException(
                 "The resolved path escapes the configured root directory. " +
