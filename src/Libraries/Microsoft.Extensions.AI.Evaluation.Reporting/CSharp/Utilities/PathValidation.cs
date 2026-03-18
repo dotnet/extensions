@@ -41,8 +41,8 @@ internal static class PathValidation
 
         if (segment.Length == 0
             || segment != segment.Trim()
-            || segment == "."
-            || segment == ".."
+            || segment is "."
+            || segment is ".."
             || segment.IndexOfAny(_invalidFileNameChars) >= 0)
         {
             Throw.ArgumentException(
