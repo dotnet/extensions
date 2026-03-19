@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" />
-    <PackageReference Include="Microsoft.Bcl.Memory" />
+    <PackageReference Include="Microsoft.Bcl.Memory" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" />
