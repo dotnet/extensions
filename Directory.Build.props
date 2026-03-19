@@ -44,6 +44,7 @@
     <DebugSymbols>true</DebugSymbols>
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <Deterministic>true</Deterministic>
     <Features>debug-determinism</Features>
 
