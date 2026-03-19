@@ -14,14 +14,4 @@ public class TestChunkRecordWithMetadata : IngestedChunkRecord<string>
 
     [VectorStoreData(StorageName = "classification")]
     public string? Classification { get; set; }
-
-    public override void SetMetadata(string key, object? value)
-    {
-        switch (key)
-        {
-            case nameof(Classification):
-                Classification = value as string;
-                break;
-        }
-    }
 }

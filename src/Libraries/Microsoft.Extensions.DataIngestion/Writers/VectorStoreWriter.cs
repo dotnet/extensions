@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </summary>
 /// <typeparam name="TChunk">The type of the chunk content.</typeparam>
 /// <typeparam name="TRecord">The type of the record stored in the vector store.</typeparam>
-public sealed class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
+public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
     where TRecord : IngestedChunkRecord<TChunk>, new()
 {
     private readonly VectorStoreWriterOptions _options;
@@ -72,7 +72,7 @@ public sealed class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TC
             {
                 foreach (var metadata in chunk.Metadata)
                 {
-                    record.SetMetadata(metadata.Key, metadata.Value);
+                    SetMetadata(record, metadata.Key, metadata.Value);
                 }
             }
 
@@ -102,6 +102,21 @@ public sealed class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TC
         {
             await VectorStoreCollection.DeleteAsync(preExistingKeys, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    /// <summary>
+    /// Sets a metadata value on the record.
+    /// </summary>
+    /// <param name="record">The record on which to set the metadata.</param>
+    /// <param name="key">The metadata key.</param>
+    /// <param name="value">The metadata value.</param>
+    /// <remarks>
+    /// Override this method in derived classes to store metadata as typed properties with
+    /// <see cref="VectorStoreDataAttribute"/> attributes.
+    /// </remarks>
+    protected virtual void SetMetadata(TRecord record, string key, object? value)
+    {
+        throw new NotSupportedException($"Metadata key '{key}' is not supported. Override {nameof(SetMetadata)} in a derived class to handle metadata.");
     }
 
     private async Task<IReadOnlyList<Guid>> GetPreExistingChunksIdsAsync(IngestionDocument document, CancellationToken cancellationToken)
