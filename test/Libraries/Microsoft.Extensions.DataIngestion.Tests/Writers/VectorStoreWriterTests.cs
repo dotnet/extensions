@@ -27,14 +27,14 @@ public abstract class VectorStoreWriterTests
         {
             Properties =
             {
-                new VectorStoreKeyProperty(nameof(IngestedChunkRecord<string>.Key), typeof(Guid)) { StorageName = "custom_key" },
-                new VectorStoreVectorProperty(nameof(IngestedChunkRecord<string>.Embedding), typeof(string), TestEmbeddingGenerator<string>.DimensionCount)
+                new VectorStoreKeyProperty(nameof(IngestedChunkRecord<>.Key), typeof(Guid)) { StorageName = "custom_key" },
+                new VectorStoreVectorProperty(nameof(IngestedChunkRecord<>.Embedding), typeof(string), TestEmbeddingGenerator<string>.DimensionCount)
                 {
                     StorageName = "custom_embedding",
                 },
-                new VectorStoreDataProperty(nameof(IngestedChunkRecord<string>.Content), typeof(string)) { StorageName = "custom_content" },
-                new VectorStoreDataProperty(nameof(IngestedChunkRecord<string>.Context), typeof(string)) { StorageName = "custom_context" },
-                new VectorStoreDataProperty(nameof(IngestedChunkRecord<string>.DocumentId), typeof(string))
+                new VectorStoreDataProperty(nameof(IngestedChunkRecord<>.Content), typeof(string)) { StorageName = "custom_content" },
+                new VectorStoreDataProperty(nameof(IngestedChunkRecord<>.Context), typeof(string)) { StorageName = "custom_context" },
+                new VectorStoreDataProperty(nameof(IngestedChunkRecord<>.DocumentId), typeof(string))
                 {
                     StorageName = "custom_documentid",
                     IsIndexed = true,
@@ -71,8 +71,8 @@ public abstract class VectorStoreWriterTests
         using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
 
-        var definition = IngestedChunkRecord<string>.CreateDefaultCollectionDefinition(TestEmbeddingGenerator<string>.DimensionCount);
-        var collection = vectorStore.GetCollection<Guid, IngestedChunkRecord<string>>("chunks", definition);
+        var collection = vectorStore.GetIngestionRecordCollection<IngestedChunkRecord<string>, string>(
+            "chunks", TestEmbeddingGenerator<string>.DimensionCount);
 
         using VectorStoreWriter<string, IngestedChunkRecord<string>> writer = new(collection);
 
@@ -132,8 +132,8 @@ public abstract class VectorStoreWriterTests
         using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
 
-        var definition = IngestedChunkRecord<string>.CreateDefaultCollectionDefinition(TestEmbeddingGenerator<string>.DimensionCount);
-        var collection = vectorStore.GetCollection<Guid, IngestedChunkRecord<string>>("chunks-incr", definition);
+        var collection = vectorStore.GetIngestionRecordCollection<IngestedChunkRecord<string>, string>(
+            "chunks-incr", TestEmbeddingGenerator<string>.DimensionCount);
 
         using VectorStoreWriter<string, IngestedChunkRecord<string>> writer = new(
             collection,
@@ -202,8 +202,8 @@ public abstract class VectorStoreWriterTests
             options.BatchTokenCount = batchTokenCount.Value;
         }
 
-        var definition = IngestedChunkRecord<string>.CreateDefaultCollectionDefinition(TestEmbeddingGenerator<string>.DimensionCount);
-        var collection = vectorStore.GetCollection<Guid, IngestedChunkRecord<string>>("chunks-batch", definition);
+        var collection = vectorStore.GetIngestionRecordCollection<IngestedChunkRecord<string>, string>(
+            "chunks-batch", TestEmbeddingGenerator<string>.DimensionCount);
 
         using VectorStoreWriter<string, IngestedChunkRecord<string>> writer = new(
             collection,
@@ -233,8 +233,8 @@ public abstract class VectorStoreWriterTests
         using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
 
-        var definition = IngestedChunkRecord<string>.CreateDefaultCollectionDefinition(TestEmbeddingGenerator<string>.DimensionCount);
-        var collection = vectorStore.GetCollection<Guid, IngestedChunkRecord<string>>("chunks-many", definition);
+        var collection = vectorStore.GetIngestionRecordCollection<IngestedChunkRecord<string>, string>(
+            "chunks-many", TestEmbeddingGenerator<string>.DimensionCount);
 
         using VectorStoreWriter<string, IngestedChunkRecord<string>> writer = new(
             collection,

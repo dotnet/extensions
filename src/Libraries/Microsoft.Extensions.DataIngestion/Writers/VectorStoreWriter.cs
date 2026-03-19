@@ -27,6 +27,10 @@ public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
     /// <param name="collection">The <see cref="VectorStoreCollection{TKey, TRecord}"/> to use to store the <see cref="IngestionChunk{T}"/> instances.</param>
     /// <param name="options">The options for the vector store writer.</param>
     /// <exception cref="ArgumentNullException">When <paramref name="collection"/> is null.</exception>
+    /// <remarks>
+    /// You can use the <see cref="VectorStoreExtensions.GetIngestionRecordCollection{TRecord, TChunk}(VectorStore, string, int, string, string?, string?)"/>
+    /// helper to create a <see cref="VectorStoreCollection{TKey, TRecord}"/> with the appropriate schema for storing ingestion chunks.
+    /// </remarks>
     public VectorStoreWriter(VectorStoreCollection<Guid, TRecord> collection, VectorStoreWriterOptions? options = default)
     {
         VectorStoreCollection = Throw.IfNull(collection);
