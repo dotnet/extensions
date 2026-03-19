@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="Markdig.Signed" />
-    <PackageReference Include="Microsoft.Bcl.Memory" />
+    <PackageReference Include="Microsoft.Bcl.Memory" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
     <PackageReference Include="ModelContextProtocol.Core" />
   </ItemGroup>
 
