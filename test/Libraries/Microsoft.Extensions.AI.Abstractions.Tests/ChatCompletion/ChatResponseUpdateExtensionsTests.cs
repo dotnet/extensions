@@ -1095,6 +1095,51 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(3, webSearchCalls.Length);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task ToChatResponse_CoalescesWebSearchToolCallContent_CallingToChatResponseTwiceOnSameUpdates(bool useAsync, bool firstHasQueries)
+    {
+        object rawRepresentation = new();
+        string[] expectedQueries = firstHasQueries ? ["first query", "dotnet extensions"] : ["dotnet extensions"];
+
+        var inProgress = new WebSearchToolCallContent("ws1")
+        {
+            RawRepresentation = rawRepresentation,
+            Queries = firstHasQueries ? ["first query"] : null,
+        };
+
+        ChatResponseUpdate[] updates =
+        {
+            new(null, "Searching the web..."),
+
+            // In-progress: mirrors StreamingResponseWebSearchCallInProgressUpdate.
+            // With the OpenAI provider this has null Queries, but exercise both paths.
+            new() { Contents = [inProgress] },
+
+            // Done: queries populated (mirrors StreamingResponseOutputItemDoneUpdate with WebSearchCallResponseItem)
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["dotnet extensions"] }] },
+
+            // Function call in the same response (this is what triggers FunctionInvokingChatClient
+            // to call ToChatResponse internally before the caller does)
+            new() { Contents = [new FunctionCallContent("fc1", "SearchTool", new Dictionary<string, object?> { ["q"] = "test" })] },
+        };
+
+        // First call — simulates FunctionInvokingChatClient's internal ToChatResponse.
+        ChatResponse response1 = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        var ws1First = Assert.Single(response1.Messages.SelectMany(m => m.Contents).OfType<WebSearchToolCallContent>());
+        Assert.Equal(expectedQueries, ws1First.Queries);
+        Assert.Same(rawRepresentation, ws1First.RawRepresentation);
+
+        // Second call — simulates the caller's ToChatResponse on the same updates.
+        ChatResponse response2 = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        var ws1Second = Assert.Single(response2.Messages.SelectMany(m => m.Contents).OfType<WebSearchToolCallContent>());
+        Assert.Equal(expectedQueries, ws1Second.Queries);
+        Assert.Same(rawRepresentation, ws1Second.RawRepresentation);
+    }
+
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)
     {
         foreach (ChatResponseUpdate update in updates)
