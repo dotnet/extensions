@@ -258,6 +258,7 @@ public static class ChatResponseExtensions
                                       [.. existing.Queries, .. webSearchCall.Queries],
                             RawRepresentation = existing.RawRepresentation ?? webSearchCall.RawRepresentation,
                             AdditionalProperties = existing.AdditionalProperties ?? webSearchCall.AdditionalProperties,
+                            Annotations = existing.Annotations ?? webSearchCall.Annotations,
                         };
                     }
 
