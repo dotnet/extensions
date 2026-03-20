@@ -21,6 +21,7 @@ using OpenAI.Embeddings;
 using OpenAI.Files;
 using OpenAI.Images;
 using OpenAI.Responses;
+using OpenAI.Videos;
 
 #pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
@@ -183,6 +184,60 @@ public static class OpenAIClientExtensions
     [Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IImageGenerator AsIImageGenerator(this ImageClient imageClient) =>
         new OpenAIImageGenerator(imageClient);
+
+    /// <summary>Gets an <see cref="IVideoGenerator"/> for use with this <see cref="VideoClient"/>.</summary>
+    /// <param name="videoClient">The client.</param>
+    /// <param name="modelId">The model ID to use for video generation (e.g. "sora-2").</param>
+    /// <returns>An <see cref="IVideoGenerator"/> that can be used to generate videos via the <see cref="VideoClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="videoClient"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// <para>
+    /// The returned <see cref="IVideoGenerator"/> supports the following scenarios based on the
+    /// request contents and <see cref="VideoGenerationOptions.AdditionalProperties"/> keys:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>
+    /// <b>Text-to-video</b>: When <see cref="VideoGenerationRequest.OriginalMedia"/> is
+    /// <see langword="null"/> and no routing keys are set, generates a new video from the
+    /// text prompt via <c>POST /videos</c>.
+    /// </description></item>
+    /// <item><description>
+    /// <b>Image-to-video</b>: When <see cref="VideoGenerationRequest.OriginalMedia"/>
+    /// contains image content (e.g., <c>image/png</c>), uses the image as an
+    /// <c>input_reference</c> to guide new video creation via <c>POST /videos</c>.
+    /// A <see cref="UriContent"/> sends the image URL in the JSON body;
+    /// a <see cref="DataContent"/> uploads the image bytes via multipart/form-data.
+    /// </description></item>
+    /// <item><description>
+    /// <b>Edit by video ID</b>: Set <c>edit_video_id</c> in
+    /// <see cref="VideoGenerationOptions.AdditionalProperties"/> to the ID of a previously
+    /// generated video. The request is routed to <c>POST /videos/edits</c>.
+    /// </description></item>
+    /// <item><description>
+    /// <b>Edit by upload</b>: When <see cref="VideoGenerationRequest.OriginalMedia"/>
+    /// contains video content (e.g., <c>video/mp4</c>), uploads the video for editing
+    /// via <c>POST /videos/edits</c> with multipart/form-data.
+    /// </description></item>
+    /// <item><description>
+    /// <b>Extend</b>: Set <c>extend_video_id</c> in
+    /// <see cref="VideoGenerationOptions.AdditionalProperties"/> to the ID of a completed
+    /// video. The request is routed to <c>POST /videos/extensions</c>.
+    /// </description></item>
+    /// </list>
+    /// <para>
+    /// Character IDs can be included in the create request by passing a <c>characters</c> key
+    /// in <see cref="VideoGenerationOptions.AdditionalProperties"/> as a JSON array (e.g.,
+    /// <c>[{ "id": "char_abc123" }]</c>). Characters are reusable visual assets created
+    /// separately via <c>POST /videos/characters</c>.
+    /// </para>
+    /// <para>
+    /// Any other keys in <see cref="VideoGenerationOptions.AdditionalProperties"/> are forwarded
+    /// as-is to the OpenAI API request body.
+    /// </para>
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIVideoGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IVideoGenerator AsIVideoGenerator(this VideoClient videoClient, string? modelId = null) =>
+        new OpenAIVideoGenerator(videoClient, modelId);
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="EmbeddingClient"/>.</summary>
     /// <param name="embeddingClient">The client.</param>
