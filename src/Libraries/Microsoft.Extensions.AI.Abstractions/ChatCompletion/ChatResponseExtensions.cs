@@ -237,11 +237,11 @@ public static class ChatResponseExtensions
 
         for (int i = 0; i < contents.Count; i++)
         {
-            if (contents[i] is WebSearchToolCallContent webSearchCall && !string.IsNullOrEmpty(webSearchCall.CallId))
+            if (contents[i] is WebSearchToolCallContent webSearchCall)
             {
                 webSearchCallIndexById ??= new(StringComparer.Ordinal);
 
-                if (webSearchCallIndexById.TryGetValue(webSearchCall.CallId!, out int existingIndex))
+                if (webSearchCallIndexById.TryGetValue(webSearchCall.CallId, out int existingIndex))
                 {
                     // Create a new merged content rather than mutating the original content objects.
                     // The same content objects may be shared across multiple ToChatResponse calls
@@ -267,7 +267,7 @@ public static class ChatResponseExtensions
                 }
                 else
                 {
-                    webSearchCallIndexById[webSearchCall.CallId!] = i;
+                    webSearchCallIndexById[webSearchCall.CallId] = i;
                 }
             }
         }
