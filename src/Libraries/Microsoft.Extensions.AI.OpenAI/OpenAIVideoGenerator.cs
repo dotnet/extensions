@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -128,19 +127,27 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
         if (editVideoId is null && extendVideoId is null &&
             request.OriginalMedia is { } originalMedia)
         {
-            AIContent? firstMedia = originalMedia.FirstOrDefault();
-            if (firstMedia is DataContent dc &&
-                IsVideoMediaType(dc.MediaType) && dc.Data.Length > 0)
+            foreach (AIContent media in originalMedia)
             {
-                videoEditContent = dc;
-            }
-            else if (firstMedia is UriContent uc)
-            {
-                imageReferenceUri = uc;
-            }
-            else if (firstMedia is DataContent imgDc && imgDc.Data.Length > 0)
-            {
-                imageReferenceData = imgDc;
+                if (media is DataContent dc && dc.Data.Length > 0)
+                {
+                    if (IsVideoMediaType(dc.MediaType))
+                    {
+                        videoEditContent = dc;
+                    }
+                    else if (IsImageMediaType(dc.MediaType))
+                    {
+                        imageReferenceData = dc;
+                    }
+
+                    break;
+                }
+
+                if (media is UriContent uc && IsImageMediaType(uc.MediaType))
+                {
+                    imageReferenceUri = uc;
+                    break;
+                }
             }
         }
 
@@ -159,15 +166,12 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
 
             if (options?.Duration is TimeSpan extDuration)
             {
-#pragma warning disable LA0002
-                body["seconds"] = ((int)extDuration.TotalSeconds)
-                    .ToString(System.Globalization.CultureInfo.InvariantCulture);
-#pragma warning restore LA0002
+                body["seconds"] = (int)extDuration.TotalSeconds;
             }
 
             ForwardAdditionalProperties(body, options);
             using BinaryContent extendContent = BinaryContent.Create(
-                new BinaryData(body.ToJsonString()));
+                SerializeJsonToUtf8(body));
             using PipelineMessage extendMsg = CreatePipelineRequest(
                 _videoClient, "/videos/extensions", extendContent,
                 "application/json", reqOpts);
@@ -185,7 +189,7 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
 
             ForwardAdditionalProperties(body, options);
             using BinaryContent editContent = BinaryContent.Create(
-                new BinaryData(body.ToJsonString()));
+                SerializeJsonToUtf8(body));
             using PipelineMessage editMsg = CreatePipelineRequest(
                 _videoClient, "/videos/edits", editContent,
                 "application/json", reqOpts);
@@ -227,10 +231,7 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
 
             if (options?.Duration is TimeSpan duration)
             {
-#pragma warning disable LA0002
-                requestBody["seconds"] = ((int)duration.TotalSeconds)
-                    .ToString(System.Globalization.CultureInfo.InvariantCulture);
-#pragma warning restore LA0002
+                requestBody["seconds"] = (int)duration.TotalSeconds;
             }
 
             if (options?.Count is int count && count > 1)
@@ -260,7 +261,7 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
             else
             {
                 using BinaryContent content = BinaryContent.Create(
-                    new BinaryData(requestBody.ToJsonString()));
+                    SerializeJsonToUtf8(requestBody));
                 createResult = await _videoClient.CreateVideoAsync(
                     content, "application/json", reqOpts).ConfigureAwait(false);
             }
@@ -306,15 +307,28 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
                 errorMessage ?? "Video generation failed.");
         }
 
-        // Download the completed video content
-        var dlOpts = new RequestOptions { CancellationToken = cancellationToken };
-        ClientResult downloadResult = await _videoClient.DownloadVideoAsync(
-            videoId, options: dlOpts).ConfigureAwait(false);
-        BinaryData videoData = downloadResult.GetRawResponse().Content;
-
+        // Honor the requested response format.
         string contentType = options?.MediaType ?? "video/mp4";
-        List<AIContent> contents =
-            [new DataContent(videoData.ToMemory(), contentType)];
+        List<AIContent> contents;
+
+        if (options?.ResponseFormat is VideoGenerationResponseFormat.Uri or
+            VideoGenerationResponseFormat.Hosted)
+        {
+            // Return a URI pointing to the video content endpoint without downloading
+            // the potentially large video blob.
+            string baseUrl = _videoClient.Endpoint.ToString().TrimEnd('/');
+            var videoUri = new Uri($"{baseUrl}/videos/{videoId}/content");
+            contents = [new UriContent(videoUri, contentType)];
+        }
+        else
+        {
+            // Download the completed video content.
+            var dlOpts = new RequestOptions { CancellationToken = cancellationToken };
+            ClientResult downloadResult = await _videoClient.DownloadVideoAsync(
+                videoId, options: dlOpts).ConfigureAwait(false);
+            BinaryData videoData = downloadResult.GetRawResponse().Content;
+            contents = [new DataContent(videoData.ToMemory(), contentType)];
+        }
 
         return new VideoGenerationResponse(contents);
     }
@@ -342,7 +356,7 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
         string baseUrl = videoClient.Endpoint.ToString().TrimEnd('/');
         Uri uri = new($"{baseUrl}{path}");
         PipelineMessageClassifier classifier = PipelineMessageClassifier.Create(
-            stackalloc ushort[] { 200 });
+            stackalloc ushort[] { 200, 201, 202 });
         PipelineMessage message = videoClient.Pipeline.CreateMessage(
             uri, "POST", classifier);
         message.Request.Headers.Set("Content-Type", contentType);
@@ -362,6 +376,12 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
     private static bool IsVideoMediaType(string? mediaType) =>
         mediaType is not null &&
         mediaType.StartsWith("video/", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Determines whether the given media type represents an image format.</summary>
+    /// <remarks>Treats <see langword="null"/> or unspecified media types as images for backward compatibility.</remarks>
+    private static bool IsImageMediaType(string? mediaType) =>
+        mediaType is null ||
+        mediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Determines whether the given key is a routing key consumed by this generator.</summary>
     private static bool IsRoutingKey(string key) =>
@@ -398,6 +418,18 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
             ? val
             : null;
 
+    /// <summary>Serializes a <see cref="JsonObject"/> to UTF-8 bytes without an intermediate string allocation.</summary>
+    private static BinaryData SerializeJsonToUtf8(JsonObject body)
+    {
+        using var ms = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(ms))
+        {
+            body.WriteTo(writer);
+        }
+
+        return new BinaryData(ms.ToArray());
+    }
+
     /// <summary>Builds a multipart/form-data body containing the form fields and a file part.</summary>
     private static BinaryContent BuildMultipartContent(
         JsonObject formFields,
@@ -417,7 +449,13 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
                 continue;
             }
 
-            WriteFormField(ms, boundary, prop.Key, prop.Value.ToString());
+            string fieldValue =
+                prop.Value is JsonValue jsonValue &&
+                jsonValue.TryGetValue<string>(out string? stringValue)
+                    ? stringValue
+                    : prop.Value.ToString();
+
+            WriteFormField(ms, boundary, prop.Key, fieldValue);
         }
 
         string fileName = fileContent.Name ?? filePartName;

@@ -52,8 +52,8 @@ public static class VideoGeneratorBuilderServiceCollectionExtensions
     /// <param name="innerGenerator">The inner <see cref="IVideoGenerator"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the generator. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="VideoGeneratorBuilder"/> that can be used to build a pipeline around the inner generator.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/>, <paramref name="serviceKey"/>, or <paramref name="innerGenerator"/> is <see langword="null"/>.</exception>
-    /// <remarks>The generator is registered as a scoped service.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> or <paramref name="innerGenerator"/> is <see langword="null"/>.</exception>
+    /// <remarks>The generator is registered with the specified <paramref name="lifetime"/>.</remarks>
     public static VideoGeneratorBuilder AddKeyedVideoGenerator(
         this IServiceCollection serviceCollection,
         object? serviceKey,
@@ -67,8 +67,8 @@ public static class VideoGeneratorBuilderServiceCollectionExtensions
     /// <param name="innerGeneratorFactory">A callback that produces the inner <see cref="IVideoGenerator"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the generator. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="VideoGeneratorBuilder"/> that can be used to build a pipeline around the inner generator.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/>, <paramref name="serviceKey"/>, or <paramref name="innerGeneratorFactory"/> is <see langword="null"/>.</exception>
-    /// <remarks>The generator is registered as a scoped service.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> or <paramref name="innerGeneratorFactory"/> is <see langword="null"/>.</exception>
+    /// <remarks>The generator is registered with the specified <paramref name="lifetime"/>.</remarks>
     public static VideoGeneratorBuilder AddKeyedVideoGenerator(
         this IServiceCollection serviceCollection,
         object? serviceKey,

@@ -50,4 +50,10 @@ public class VideoGenerationResponse
 
     /// <summary>Gets or sets usage details for the video generation response.</summary>
     public UsageDetails? Usage { get; set; }
+
+    /// <summary>Gets or sets the model ID used to generate the video.</summary>
+    public string? ModelId { get; set; }
+
+    /// <summary>Gets or sets any additional properties associated with the response.</summary>
+    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 }
