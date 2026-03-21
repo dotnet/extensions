@@ -163,8 +163,7 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
             }
 
             ForwardAdditionalProperties(body, options);
-            using BinaryContent extendContent = BinaryContent.Create(
-                SerializeJsonToUtf8(body));
+            using var extendContent = CreateJsonContent(body);
             using PipelineMessage extendMsg = CreatePipelineRequest(
                 _videoClient, "/videos/extensions", extendContent,
                 "application/json", reqOpts);
@@ -181,8 +180,7 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
             };
 
             ForwardAdditionalProperties(body, options);
-            using BinaryContent editContent = BinaryContent.Create(
-                SerializeJsonToUtf8(body));
+            using var editContent = CreateJsonContent(body);
             using PipelineMessage editMsg = CreatePipelineRequest(
                 _videoClient, "/videos/edits", editContent,
                 "application/json", reqOpts);
@@ -253,8 +251,7 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
             }
             else
             {
-                using BinaryContent content = BinaryContent.Create(
-                    SerializeJsonToUtf8(requestBody));
+                using var content = CreateJsonContent(requestBody);
                 createResult = await _videoClient.CreateVideoAsync(
                     content, "application/json", reqOpts).ConfigureAwait(false);
             }
@@ -361,16 +358,12 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
         }
     }
 
-    /// <summary>Serializes a <see cref="JsonObject"/> to UTF-8 bytes without an intermediate string allocation.</summary>
-    private static BinaryData SerializeJsonToUtf8(JsonObject body)
+    /// <summary>Creates a <see cref="Utf8JsonBinaryContent"/> containing the serialized JSON object.</summary>
+    private static Utf8JsonBinaryContent CreateJsonContent(JsonObject body)
     {
-        using var ms = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(ms))
-        {
-            body.WriteTo(writer);
-        }
-
-        return new BinaryData(ms.ToArray());
+        var content = new Utf8JsonBinaryContent();
+        body.WriteTo(content.JsonWriter);
+        return content;
     }
 
     /// <summary>Builds a multipart/form-data body containing the form fields and a file part.</summary>
