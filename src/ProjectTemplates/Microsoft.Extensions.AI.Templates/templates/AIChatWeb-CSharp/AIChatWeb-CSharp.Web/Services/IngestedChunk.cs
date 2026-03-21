@@ -3,7 +3,7 @@ using Microsoft.Extensions.VectorData;
 
 namespace AIChatWeb_CSharp.Web.Services;
 
-public class IngestedChunk : IngestedChunkRecord<string>
+public class IngestedChunk : IngestionChunkVectorRecord<string>
 {
 #if (IsOllama)
     public const int VectorDimensions = 384; // 384 is the default vector size for the all-minilm embedding model

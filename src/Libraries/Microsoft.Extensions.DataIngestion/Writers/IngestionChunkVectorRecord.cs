@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// When the vector dimension count is known at compile time, derive from this class and add
 /// the <see cref="VectorStoreVectorAttribute"/> to the <see cref="Embedding"/> property.
 /// </remarks>
-public class IngestedChunkRecord<TChunk>
+public class IngestionChunkVectorRecord<TChunk>
 {
     /// <summary>
     /// The storage name for the <see cref="Embedding"/> property.

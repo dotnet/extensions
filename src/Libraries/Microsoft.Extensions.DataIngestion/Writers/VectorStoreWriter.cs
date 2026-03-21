@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <typeparam name="TChunk">The type of the chunk content.</typeparam>
 /// <typeparam name="TRecord">The type of the record stored in the vector store.</typeparam>
 public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
-    where TRecord : IngestedChunkRecord<TChunk>, new()
+    where TRecord : IngestionChunkVectorRecord<TChunk>, new()
 {
     private readonly VectorStoreWriterOptions _options;
     private bool _collectionEnsured;

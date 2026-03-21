@@ -5,7 +5,7 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
-public class TestChunkRecordWithMetadata : IngestedChunkRecord<string>
+public class TestChunkRecordWithMetadata : IngestionChunkVectorRecord<string>
 {
     public const int TestDimensionCount = 4;
 

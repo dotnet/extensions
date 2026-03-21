@@ -29,6 +29,74 @@ Or directly in the C# project file:
 </ItemGroup>
 ```
 
+## Writing chunks to a vector store
+
+### Basic usage
+
+The simplest way to store ingestion chunks in a vector store is to use the `GetIngestionRecordCollection` extension method to create a collection, and then pass it to a `VectorStoreWriter`:
+
+```csharp
+VectorStoreCollection<Guid, IngestionChunkVectorRecord<string>> collection =
+    vectorStore.GetIngestionRecordCollection("chunks", dimensionCount: 1536);
+
+using var writer = new VectorStoreWriter<string, IngestionChunkVectorRecord<string>>(collection);
+
+await writer.WriteAsync(chunks);
+```
+
+### Custom metadata
+
+To store custom metadata alongside each chunk, create a type derived from `IngestionChunkVectorRecord<TChunk>` with additional properties, and a `VectorStoreWriter` subclass that overrides `SetMetadata`:
+
+```csharp
+public class ChunkWithMetadata : IngestionChunkVectorRecord<string>
+{
+    [VectorStoreVector(1536, StorageName = EmbeddingStorageName)]
+    public override string? Embedding => Content;
+
+    [VectorStoreData(StorageName = "classification")]
+    public string? Classification { get; set; }
+}
+
+public class MetadataWriter : VectorStoreWriter<string, ChunkWithMetadata>
+{
+    public MetadataWriter(VectorStoreCollection<Guid, ChunkWithMetadata> collection)
+        : base(collection) { }
+
+    protected override void SetMetadata(ChunkWithMetadata record, string key, object? value)
+    {
+        if (key == nameof(ChunkWithMetadata.Classification))
+            record.Classification = value as string;
+    }
+}
+```
+
+### Custom collection schema
+
+To map to a pre-existing collection that uses different storage names, create a `VectorStoreCollectionDefinition` manually:
+
+```csharp
+VectorStoreCollectionDefinition definition = new()
+{
+    Properties =
+    {
+        new VectorStoreKeyProperty(nameof(IngestionChunkVectorRecord<string>.Key), typeof(Guid))
+            { StorageName = "my_key" },
+        new VectorStoreVectorProperty(nameof(IngestionChunkVectorRecord<string>.Embedding), typeof(string), 1536)
+            { StorageName = "my_embedding" },
+        new VectorStoreDataProperty(nameof(IngestionChunkVectorRecord<string>.Content), typeof(string))
+            { StorageName = "my_content" },
+        new VectorStoreDataProperty(nameof(IngestionChunkVectorRecord<string>.Context), typeof(string))
+            { StorageName = "my_context" },
+        new VectorStoreDataProperty(nameof(IngestionChunkVectorRecord<string>.DocumentId), typeof(string))
+            { StorageName = "my_documentid", IsIndexed = true },
+    },
+};
+
+var collection = vectorStore.GetCollection<Guid, IngestionChunkVectorRecord<string>>("chunks", definition);
+using var writer = new VectorStoreWriter<string, IngestionChunkVectorRecord<string>>(collection);
+```
+
 ## Feedback & Contributing
 
 We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
