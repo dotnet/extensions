@@ -18,15 +18,15 @@ public class DelegatingVideoGeneratorTests
     [Fact]
     public async Task GenerateVideosAsyncDefaultsToInnerGeneratorAsync()
     {
-        var expectedResponse = new VideoGenerationResponse();
+        var expectedOperation = new TestVideoGenerationOperation();
         using var inner = new TestVideoGenerator
         {
-            GenerateVideosAsyncCallback = (request, options, ct) => Task.FromResult(expectedResponse)
+            GenerateVideosAsyncCallback = (request, options, ct) => Task.FromResult<VideoGenerationOperation>(expectedOperation)
         };
 
         using var delegating = new TestDelegatingVideoGenerator(inner);
         var result = await delegating.GenerateAsync(new VideoGenerationRequest("Test"));
-        Assert.Same(expectedResponse, result);
+        Assert.Same(expectedOperation, result);
     }
 
     [Fact]

@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,8 +54,8 @@ public partial class LoggingVideoGenerator : DelegatingVideoGenerator
     }
 
     /// <inheritdoc/>
-    public override async Task<VideoGenerationResponse> GenerateAsync(
-        VideoGenerationRequest request, VideoGenerationOptions? options = null, IProgress<VideoGenerationProgress>? progress = null, CancellationToken cancellationToken = default)
+    public override async Task<VideoGenerationOperation> GenerateAsync(
+        VideoGenerationRequest request, VideoGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(request);
 
@@ -74,13 +73,13 @@ public partial class LoggingVideoGenerator : DelegatingVideoGenerator
 
         try
         {
-            var response = await base.GenerateAsync(request, options, progress, cancellationToken);
+            var operation = await base.GenerateAsync(request, options, cancellationToken);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                if (_logger.IsEnabled(LogLevel.Trace) && response.Contents.All(c => c is not DataContent))
+                if (_logger.IsEnabled(LogLevel.Trace))
                 {
-                    LogCompletedSensitive(nameof(GenerateAsync), AsJson(response));
+                    LogCompletedSensitive(nameof(GenerateAsync), $"OperationId={operation.OperationId}, Status={operation.Status}");
                 }
                 else
                 {
@@ -88,7 +87,7 @@ public partial class LoggingVideoGenerator : DelegatingVideoGenerator
                 }
             }
 
-            return response;
+            return operation;
         }
         catch (OperationCanceledException)
         {
@@ -113,8 +112,8 @@ public partial class LoggingVideoGenerator : DelegatingVideoGenerator
     [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
     private partial void LogCompleted(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {VideoGenerationResponse}.")]
-    private partial void LogCompletedSensitive(string methodName, string videoGenerationResponse);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {VideoGenerationOperation}.")]
+    private partial void LogCompletedSensitive(string methodName, string videoGenerationOperation);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
     private partial void LogInvocationCanceled(string methodName);

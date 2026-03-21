@@ -29,28 +29,28 @@ public class VideoGeneratorTests
     public async Task GenerateVideosAsync_CallsCallback()
     {
         var expectedRequest = new VideoGenerationRequest("Test prompt");
-        var expectedResponse = new VideoGenerationResponse();
+        var expectedOperation = new TestVideoGenerationOperation();
 
         using var generator = new TestVideoGenerator
         {
             GenerateVideosAsyncCallback = (request, options, ct) =>
             {
                 Assert.Same(expectedRequest, request);
-                return Task.FromResult(expectedResponse);
+                return Task.FromResult<VideoGenerationOperation>(expectedOperation);
             }
         };
 
         var result = await generator.GenerateAsync(expectedRequest);
-        Assert.Same(expectedResponse, result);
+        Assert.Same(expectedOperation, result);
     }
 
     [Fact]
-    public async Task GenerateVideosAsync_NoCallback_ReturnsEmptyResponse()
+    public async Task GenerateVideosAsync_NoCallback_ReturnsDefaultOperation()
     {
         using var generator = new TestVideoGenerator();
         var result = await generator.GenerateAsync(new VideoGenerationRequest("Test"));
         Assert.NotNull(result);
-        Assert.Empty(result.Contents);
+        Assert.True(result.IsCompleted);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class VideoGeneratorTests
             GenerateVideosAsyncCallback = (request, opts, ct) =>
             {
                 capturedOptions = opts;
-                return Task.FromResult(new VideoGenerationResponse());
+                return Task.FromResult<VideoGenerationOperation>(new TestVideoGenerationOperation());
             }
         };
 
@@ -121,7 +121,7 @@ public class VideoGeneratorTests
             GenerateVideosAsyncCallback = (req, opts, ct) =>
             {
                 capturedRequest = req;
-                return Task.FromResult(new VideoGenerationResponse());
+                return Task.FromResult<VideoGenerationOperation>(new TestVideoGenerationOperation());
             }
         };
 

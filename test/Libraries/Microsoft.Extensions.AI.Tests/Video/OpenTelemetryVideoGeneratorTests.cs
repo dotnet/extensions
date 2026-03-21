@@ -40,14 +40,8 @@ public class OpenTelemetryVideoGeneratorTests
             {
                 await Task.Yield();
 
-                return new()
+                return new TestVideoGenerationOperation
                 {
-                    Contents =
-                    [
-                        new UriContent("http://example/output.mp4", "video/mp4"),
-                        new DataContent(new byte[] { 1, 2, 3, 4 }, "video/mp4") { Name = "moreOutput.mp4" },
-                    ],
-
                     Usage = new()
                     {
                         InputTokenCount = 10,
@@ -119,6 +113,11 @@ public class OpenTelemetryVideoGeneratorTests
         Assert.True(activity.Duration.TotalMilliseconds > 0);
 
         var tags = activity.Tags.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        // Operation metadata is always recorded
+        Assert.Equal("test-op-id", activity.GetTagItem("gen_ai.operation.id"));
+        Assert.Equal("completed", activity.GetTagItem("gen_ai.operation.status"));
+
         if (enableSensitiveData)
         {
             Assert.Equal(ReplaceWhitespace("""
@@ -140,33 +139,10 @@ public class OpenTelemetryVideoGeneratorTests
                   }
                 ]
                 """), ReplaceWhitespace(tags["gen_ai.input.messages"]));
-
-            Assert.Equal(ReplaceWhitespace("""
-                [
-                  {
-                    "role": "assistant",
-                    "parts": [
-                      {
-                        "type": "uri",
-                        "uri": "http://example/output.mp4",
-                        "mime_type": "video/mp4",
-                        "modality": "video"
-                      },
-                      {
-                        "type": "blob",
-                        "content": "AQIDBA==",
-                        "mime_type": "video/mp4",
-                        "modality": "video"
-                      }
-                    ]
-                  }
-                ]
-                """), ReplaceWhitespace(tags["gen_ai.output.messages"]));
         }
         else
         {
             Assert.False(tags.ContainsKey("gen_ai.input.messages"));
-            Assert.False(tags.ContainsKey("gen_ai.output.messages"));
         }
 
         static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();

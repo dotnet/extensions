@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -54,7 +55,7 @@ public class VideoGeneratorExtensionsTests
     public async Task GenerateVideosAsync_NullGenerator_Throws()
     {
         await Assert.ThrowsAsync<ArgumentNullException>("generator", () =>
-            ((IVideoGenerator)null!).GenerateVideosAsync("Test"));
+            ((IVideoGenerator)null!).GenerateVideoAsync("Test"));
     }
 
     [Fact]
@@ -62,7 +63,7 @@ public class VideoGeneratorExtensionsTests
     {
         using var generator = new TestVideoGenerator();
         await Assert.ThrowsAsync<ArgumentNullException>("prompt", () =>
-            generator.GenerateVideosAsync(null!));
+            generator.GenerateVideoAsync(null!));
     }
 
     [Fact]
@@ -74,11 +75,11 @@ public class VideoGeneratorExtensionsTests
             GenerateVideosAsyncCallback = (request, options, ct) =>
             {
                 capturedRequest = request;
-                return Task.FromResult(new VideoGenerationResponse());
+                return Task.FromResult<VideoGenerationOperation>(new TestVideoGenerationOperation());
             }
         };
 
-        await generator.GenerateVideosAsync("A cat video");
+        await generator.GenerateVideoAsync("A cat video");
 
         Assert.NotNull(capturedRequest);
         Assert.Equal("A cat video", capturedRequest!.Prompt);
@@ -89,7 +90,7 @@ public class VideoGeneratorExtensionsTests
     public async Task EditVideosAsync_NullGenerator_Throws()
     {
         await Assert.ThrowsAsync<ArgumentNullException>("generator", () =>
-            ((IVideoGenerator)null!).EditVideosAsync([], "prompt"));
+            ((IVideoGenerator)null!).EditVideoAsync(Array.Empty<AIContent>(), "prompt"));
     }
 
     [Fact]
@@ -97,7 +98,7 @@ public class VideoGeneratorExtensionsTests
     {
         using var generator = new TestVideoGenerator();
         await Assert.ThrowsAsync<ArgumentNullException>("originalMedia", () =>
-            generator.EditVideosAsync(null!, "prompt"));
+            generator.EditVideoAsync((IEnumerable<AIContent>)null!, "prompt"));
     }
 
     [Fact]
@@ -105,7 +106,7 @@ public class VideoGeneratorExtensionsTests
     {
         using var generator = new TestVideoGenerator();
         await Assert.ThrowsAsync<ArgumentNullException>("prompt", () =>
-            generator.EditVideosAsync([], null!));
+            generator.EditVideoAsync(Array.Empty<AIContent>(), null!));
     }
 
     [Fact]
@@ -117,7 +118,7 @@ public class VideoGeneratorExtensionsTests
             GenerateVideosAsyncCallback = (request, options, ct) =>
             {
                 capturedRequest = request;
-                return Task.FromResult(new VideoGenerationResponse());
+                return Task.FromResult<VideoGenerationOperation>(new TestVideoGenerationOperation());
             }
         };
 
@@ -138,7 +139,7 @@ public class VideoGeneratorExtensionsTests
             GenerateVideosAsyncCallback = (request, options, ct) =>
             {
                 capturedRequest = request;
-                return Task.FromResult(new VideoGenerationResponse());
+                return Task.FromResult<VideoGenerationOperation>(new TestVideoGenerationOperation());
             }
         };
 

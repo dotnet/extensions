@@ -38,12 +38,18 @@ public abstract class VideoGeneratorIntegrationTests : IDisposable
             Count = 1
         };
 
-        var response = await _generator.GenerateVideosAsync("A simple animation of a bouncing ball", options);
+        var operation = await _generator.GenerateVideoAsync("A simple animation of a bouncing ball", options);
 
-        Assert.NotNull(response);
-        Assert.NotEmpty(response.Contents);
+        Assert.NotNull(operation);
+        Assert.NotNull(operation.OperationId);
 
-        var content = Assert.Single(response.Contents);
+        await operation.WaitForCompletionAsync();
+        Assert.True(operation.IsCompleted);
+
+        var contents = await operation.GetContentsAsync();
+        Assert.NotEmpty(contents);
+
+        var content = Assert.Single(contents);
         switch (content)
         {
             case UriContent uc:
@@ -71,13 +77,18 @@ public abstract class VideoGeneratorIntegrationTests : IDisposable
             Count = 2
         };
 
-        var response = await _generator.GenerateVideosAsync("A cat sitting on a table", options);
+        var operation = await _generator.GenerateVideoAsync("A cat sitting on a table", options);
 
-        Assert.NotNull(response);
-        Assert.NotEmpty(response.Contents);
-        Assert.Equal(2, response.Contents.Count);
+        Assert.NotNull(operation);
 
-        foreach (var content in response.Contents)
+        await operation.WaitForCompletionAsync();
+        Assert.True(operation.IsCompleted);
+
+        var contents = await operation.GetContentsAsync();
+        Assert.NotEmpty(contents);
+        Assert.Equal(2, contents.Count);
+
+        foreach (var content in contents)
         {
             Assert.IsType<DataContent>(content);
             var dataContent = (DataContent)content;

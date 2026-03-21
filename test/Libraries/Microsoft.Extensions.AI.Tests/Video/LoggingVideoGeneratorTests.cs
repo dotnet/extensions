@@ -56,7 +56,7 @@ public class LoggingVideoGeneratorTests
         {
             GenerateVideosAsyncCallback = (request, options, cancellationToken) =>
             {
-                return Task.FromResult(new VideoGenerationResponse());
+                return Task.FromResult<VideoGenerationOperation>(new TestVideoGenerationOperation());
             },
         };
 
@@ -104,7 +104,7 @@ public class LoggingVideoGeneratorTests
         {
             GenerateVideosAsyncCallback = (request, options, cancellationToken) =>
             {
-                return Task.FromResult(new VideoGenerationResponse());
+                return Task.FromResult<VideoGenerationOperation>(new TestVideoGenerationOperation());
             }
         };
 

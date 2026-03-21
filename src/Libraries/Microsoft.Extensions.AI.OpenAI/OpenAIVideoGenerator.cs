@@ -23,63 +23,52 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// <para>
 /// This implementation uses the OpenAI video generation API. Video generation is asynchronous:
-/// a generation job is created, polled for completion, and then the video content is downloaded.
+/// <see cref="IVideoGenerator.GenerateAsync"/> submits a generation job and returns an
+/// <see cref="OpenAIVideoGenerationOperation"/> that can be used to poll for completion and download the result.
 /// </para>
-/// <para>The operation chosen depends on the request contents and options:</para>
+/// <para>The endpoint chosen depends on <see cref="VideoGenerationRequest.OperationKind"/>
+/// and <see cref="VideoGenerationRequest.SourceVideoId"/>:</para>
 /// <list type="bullet">
 /// <item><description>
-/// <b>Text-to-video</b>: When <see cref="VideoGenerationRequest.OriginalMedia"/> is
-/// <see langword="null"/> and no routing keys are set, creates a new video from the
-/// text prompt via <c>POST /videos</c>.
+/// <b>Text-to-video</b> (<see cref="VideoOperationKind.Create"/>): When
+/// <see cref="VideoGenerationRequest.OriginalMedia"/> is <see langword="null"/>,
+/// creates a new video from the text prompt via <c>POST /videos</c>.
 /// </description></item>
 /// <item><description>
-/// <b>Image-to-video</b>: When <see cref="VideoGenerationRequest.OriginalMedia"/>
-/// contains image content (e.g., <c>image/png</c>), uses the image as an
-/// <c>input_reference</c> to guide new video creation via <c>POST /videos</c>.
-/// A <see cref="UriContent"/> sends the image URL in JSON; a <see cref="DataContent"/>
-/// uploads the image bytes via multipart/form-data.
+/// <b>Image-to-video</b> (<see cref="VideoOperationKind.Create"/>): When
+/// <see cref="VideoGenerationRequest.OriginalMedia"/> contains image content
+/// (e.g., <c>image/png</c>), uses the image as an <c>input_reference</c> to guide
+/// new video creation via <c>POST /videos</c>. A <see cref="UriContent"/> sends the
+/// image URL in JSON; a <see cref="DataContent"/> uploads the image bytes via
+/// multipart/form-data.
 /// </description></item>
 /// <item><description>
-/// <b>Edit by video ID</b>: When <c>edit_video_id</c> is set in
-/// <see cref="VideoGenerationOptions.AdditionalProperties"/>, edits the specified
+/// <b>Edit by video ID</b> (<see cref="VideoOperationKind.Edit"/>): When
+/// <see cref="VideoGenerationRequest.SourceVideoId"/> is set, edits the specified
 /// video via <c>POST /videos/edits</c>.
 /// </description></item>
 /// <item><description>
-/// <b>Edit by upload</b>: When <see cref="VideoGenerationRequest.OriginalMedia"/>
-/// contains video content (e.g., <c>video/mp4</c>), uploads the video for editing
-/// via <c>POST /videos/edits</c> with multipart/form-data.
+/// <b>Edit by upload</b> (<see cref="VideoOperationKind.Edit"/>): When
+/// <see cref="VideoGenerationRequest.OriginalMedia"/> contains video content
+/// (e.g., <c>video/mp4</c>) and no <see cref="VideoGenerationRequest.SourceVideoId"/>
+/// is set, uploads the video for editing via <c>POST /videos/edits</c> with multipart/form-data.
 /// </description></item>
 /// <item><description>
-/// <b>Extend</b>: When <c>extend_video_id</c> is set in
-/// <see cref="VideoGenerationOptions.AdditionalProperties"/>, extends the completed
+/// <b>Extend</b> (<see cref="VideoOperationKind.Extend"/>): When
+/// <see cref="VideoGenerationRequest.SourceVideoId"/> is set, extends the completed
 /// video via <c>POST /videos/extensions</c>.
 /// </description></item>
 /// </list>
 /// <para>
 /// Character IDs can be included in the create request by passing a <c>characters</c>
 /// key in <see cref="VideoGenerationOptions.AdditionalProperties"/> as a JSON array.
-/// Characters are reusable visual assets created separately via
-/// <c>POST /videos/characters</c>.
+/// Characters are reusable visual assets that can be uploaded via
+/// <see cref="OpenAIClientExtensions.UploadVideoCharacterAsync"/>.
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIOpenAIVideoClient)]
 internal sealed class OpenAIVideoGenerator : IVideoGenerator
 {
-    /// <summary>Default polling interval for checking video generation status.</summary>
-    private static readonly TimeSpan _defaultPollingInterval = TimeSpan.FromSeconds(10);
-
-    /// <summary>
-    /// Well-known <see cref="VideoGenerationOptions.AdditionalProperties"/> key that routes the
-    /// request to <c>POST /videos/edits</c>. The value should be the video ID to edit.
-    /// </summary>
-    internal const string EditVideoIdKey = "edit_video_id";
-
-    /// <summary>
-    /// Well-known <see cref="VideoGenerationOptions.AdditionalProperties"/> key that routes the
-    /// request to <c>POST /videos/extensions</c>. The value should be the completed video ID to extend.
-    /// </summary>
-    internal const string ExtendVideoIdKey = "extend_video_id";
-
     /// <summary>Metadata about the client.</summary>
     private readonly VideoGeneratorMetadata _metadata;
 
@@ -102,10 +91,9 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
     }
 
     /// <inheritdoc />
-    public async Task<VideoGenerationResponse> GenerateAsync(
+    public async Task<VideoGenerationOperation> GenerateAsync(
         VideoGenerationRequest request,
         VideoGenerationOptions? options = null,
-        IProgress<VideoGenerationProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(request);
@@ -115,27 +103,19 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
 
         string modelId = options?.ModelId ?? _defaultModelId ?? "sora-2";
 
-        // Check for routing keys in AdditionalProperties
-        string? editVideoId = GetStringAdditionalProperty(options, EditVideoIdKey);
-        string? extendVideoId = GetStringAdditionalProperty(options, ExtendVideoIdKey);
-
-        // Determine OriginalMedia type (only when no routing keys override the operation)
+        // Determine OriginalMedia type based on the operation kind
         DataContent? videoEditContent = null;
         DataContent? imageReferenceData = null;
         UriContent? imageReferenceUri = null;
 
-        if (editVideoId is null && extendVideoId is null &&
-            request.OriginalMedia is { } originalMedia)
+        if (request.OperationKind == VideoOperationKind.Create &&
+            request.OriginalMedia is { } createMedia)
         {
-            foreach (AIContent media in originalMedia)
+            foreach (AIContent media in createMedia)
             {
                 if (media is DataContent dc && dc.Data.Length > 0)
                 {
-                    if (IsVideoMediaType(dc.MediaType))
-                    {
-                        videoEditContent = dc;
-                    }
-                    else if (IsImageMediaType(dc.MediaType))
+                    if (IsImageMediaType(dc.MediaType))
                     {
                         imageReferenceData = dc;
                     }
@@ -150,18 +130,31 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
                 }
             }
         }
+        else if (request.OperationKind == VideoOperationKind.Edit &&
+                 request.SourceVideoId is null &&
+                 request.OriginalMedia is { } editMedia)
+        {
+            foreach (AIContent media in editMedia)
+            {
+                if (media is DataContent dc && dc.Data.Length > 0 && IsVideoMediaType(dc.MediaType))
+                {
+                    videoEditContent = dc;
+                    break;
+                }
+            }
+        }
 
-        // Route to the appropriate endpoint and create the video generation job
+        // Route to the appropriate endpoint and submit the video generation job
         RequestOptions reqOpts = new() { CancellationToken = cancellationToken };
         ClientResult createResult;
 
-        if (extendVideoId is not null)
+        if (request.OperationKind == VideoOperationKind.Extend && request.SourceVideoId is not null)
         {
             // POST /videos/extensions — extend a completed video
             JsonObject body = new()
             {
                 ["prompt"] = prompt,
-                ["video"] = new JsonObject { ["id"] = extendVideoId },
+                ["video"] = new JsonObject { ["id"] = request.SourceVideoId },
             };
 
             if (options?.Duration is TimeSpan extDuration)
@@ -178,13 +171,13 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
             await _videoClient.Pipeline.SendAsync(extendMsg).ConfigureAwait(false);
             createResult = ClientResult.FromResponse(extendMsg.Response!);
         }
-        else if (editVideoId is not null)
+        else if (request.OperationKind == VideoOperationKind.Edit && request.SourceVideoId is not null)
         {
             // POST /videos/edits — edit an existing video by ID
             JsonObject body = new()
             {
                 ["prompt"] = prompt,
-                ["video"] = new JsonObject { ["id"] = editVideoId },
+                ["video"] = new JsonObject { ["id"] = request.SourceVideoId },
             };
 
             ForwardAdditionalProperties(body, options);
@@ -267,70 +260,19 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
             }
         }
 
-        // Parse the creation response to get the video ID and status
+        // Parse the creation response to get the video ID and initial status
         using JsonDocument createDoc = JsonDocument.Parse(
             createResult.GetRawResponse().Content);
         string videoId = createDoc.RootElement.GetProperty("id").GetString()!;
         string status = createDoc.RootElement.GetProperty("status").GetString()!;
-        int? progressPercent = TryGetProgress(createDoc.RootElement);
-
-        progress?.Report(new VideoGenerationProgress(status, progressPercent));
-
-        // Poll until the video generation is complete
-        string? errorMessage = null;
-        while (!IsTerminalStatus(status))
+        int? progressPercent = null;
+        if (createDoc.RootElement.TryGetProperty("progress", out JsonElement progEl) &&
+            progEl.TryGetInt32(out int pct))
         {
-            await Task.Delay(
-                _defaultPollingInterval, cancellationToken).ConfigureAwait(false);
-
-            var pollOpts = new RequestOptions { CancellationToken = cancellationToken };
-            ClientResult getResult = await _videoClient.GetVideoAsync(
-                videoId, pollOpts).ConfigureAwait(false);
-            using JsonDocument statusDoc = JsonDocument.Parse(
-                getResult.GetRawResponse().Content);
-            status = statusDoc.RootElement.GetProperty("status").GetString()!;
-            progressPercent = TryGetProgress(statusDoc.RootElement);
-
-            progress?.Report(new VideoGenerationProgress(status, progressPercent));
-
-            if (string.Equals(status, "failed", StringComparison.OrdinalIgnoreCase) &&
-                statusDoc.RootElement.TryGetProperty("error", out JsonElement errorEl) &&
-                errorEl.TryGetProperty("message", out JsonElement msgEl))
-            {
-                errorMessage = msgEl.GetString();
-            }
+            progressPercent = pct;
         }
 
-        if (string.Equals(status, "failed", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException(
-                errorMessage ?? "Video generation failed.");
-        }
-
-        // Honor the requested response format.
-        string contentType = options?.MediaType ?? "video/mp4";
-        List<AIContent> contents;
-
-        if (options?.ResponseFormat is VideoGenerationResponseFormat.Uri or
-            VideoGenerationResponseFormat.Hosted)
-        {
-            // Return a URI pointing to the video content endpoint without downloading
-            // the potentially large video blob.
-            string baseUrl = _videoClient.Endpoint.ToString().TrimEnd('/');
-            var videoUri = new Uri($"{baseUrl}/videos/{videoId}/content");
-            contents = [new UriContent(videoUri, contentType)];
-        }
-        else
-        {
-            // Download the completed video content.
-            var dlOpts = new RequestOptions { CancellationToken = cancellationToken };
-            ClientResult downloadResult = await _videoClient.DownloadVideoAsync(
-                videoId, options: dlOpts).ConfigureAwait(false);
-            BinaryData videoData = downloadResult.GetRawResponse().Content;
-            contents = [new DataContent(videoData.ToMemory(), contentType)];
-        }
-
-        return new VideoGenerationResponse(contents);
+        return new OpenAIVideoGenerationOperation(_videoClient, videoId, status, progressPercent);
     }
 
     /// <inheritdoc />
@@ -346,6 +288,34 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
     void IDisposable.Dispose()
     {
         // Nothing to dispose. Implementation required for the IVideoGenerator interface.
+    }
+
+    /// <summary>Uploads a character asset from a video for use in subsequent video generation requests.</summary>
+    internal async Task<string> UploadVideoCharacterAsync(
+        string name,
+        DataContent videoContent,
+        CancellationToken cancellationToken = default)
+    {
+        string boundary = $"----MEAI{Guid.NewGuid():N}";
+        string contentType = $"multipart/form-data; boundary={boundary}";
+
+        using var ms = new MemoryStream();
+        WriteFormField(ms, boundary, "name", name);
+
+        string fileName = videoContent.Name ?? "character.mp4";
+        string mediaType = videoContent.MediaType ?? "video/mp4";
+        WriteFilePart(ms, boundary, "video", fileName, mediaType, videoContent.Data);
+        WriteString(ms, $"--{boundary}--\r\n");
+
+        using BinaryContent content = BinaryContent.Create(new BinaryData(ms.ToArray()));
+        RequestOptions reqOpts = new() { CancellationToken = cancellationToken };
+        using PipelineMessage message = CreatePipelineRequest(
+            _videoClient, "/videos/characters", content, contentType, reqOpts);
+
+        await _videoClient.Pipeline.SendAsync(message).ConfigureAwait(false);
+
+        using JsonDocument doc = JsonDocument.Parse(message.Response!.Content);
+        return doc.RootElement.GetProperty("id").GetString()!;
     }
 
     /// <summary>Creates a <see cref="PipelineMessage"/> for a POST request to a path not yet exposed by the SDK.</summary>
@@ -366,12 +336,6 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
         return message;
     }
 
-    /// <summary>Returns the string value of an additional property, or <see langword="null"/> if not present.</summary>
-    private static string? GetStringAdditionalProperty(VideoGenerationOptions? options, string key) =>
-        options?.AdditionalProperties is { } props &&
-        props.TryGetValue(key, out object? value) &&
-        value is string s ? s : null;
-
     /// <summary>Determines whether the given media type represents a video format.</summary>
     private static bool IsVideoMediaType(string? mediaType) =>
         mediaType is not null &&
@@ -383,12 +347,7 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
         mediaType is null ||
         mediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>Determines whether the given key is a routing key consumed by this generator.</summary>
-    private static bool IsRoutingKey(string key) =>
-        string.Equals(key, EditVideoIdKey, StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(key, ExtendVideoIdKey, StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>Forwards additional properties to the JSON body, skipping routing keys.</summary>
+    /// <summary>Forwards additional properties to the JSON body.</summary>
     private static void ForwardAdditionalProperties(JsonObject body, VideoGenerationOptions? options)
     {
         if (options?.AdditionalProperties is not { } props)
@@ -398,25 +357,9 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
 
         foreach (KeyValuePair<string, object?> prop in props)
         {
-            if (!IsRoutingKey(prop.Key))
-            {
-                body[prop.Key] = ToJsonNode(prop.Value);
-            }
+            body[prop.Key] = ToJsonNode(prop.Value);
         }
     }
-
-    /// <summary>Determines whether the given status indicates the video generation job has finished.</summary>
-    private static bool IsTerminalStatus(string status) =>
-        string.Equals(status, "completed", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(status, "failed", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(status, "expired", StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>Tries to read the integer <c>progress</c> field from a video job JSON element.</summary>
-    private static int? TryGetProgress(JsonElement element) =>
-        element.TryGetProperty("progress", out JsonElement el) &&
-        el.TryGetInt32(out int val)
-            ? val
-            : null;
 
     /// <summary>Serializes a <see cref="JsonObject"/> to UTF-8 bytes without an intermediate string allocation.</summary>
     private static BinaryData SerializeJsonToUtf8(JsonObject body)

@@ -16,7 +16,7 @@ public sealed class TestVideoGenerator : IVideoGenerator
 
     public IServiceProvider? Services { get; set; }
 
-    public Func<VideoGenerationRequest, VideoGenerationOptions?, CancellationToken, Task<VideoGenerationResponse>>? GenerateVideosAsyncCallback { get; set; }
+    public Func<VideoGenerationRequest, VideoGenerationOptions?, CancellationToken, Task<VideoGenerationOperation>>? GenerateVideosAsyncCallback { get; set; }
 
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
 
@@ -25,14 +25,13 @@ public sealed class TestVideoGenerator : IVideoGenerator
     private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey)
         => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
-    public Task<VideoGenerationResponse> GenerateAsync(
+    public Task<VideoGenerationOperation> GenerateAsync(
         VideoGenerationRequest request,
         VideoGenerationOptions? options = null,
-        IProgress<VideoGenerationProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         return GenerateVideosAsyncCallback?.Invoke(request, options, cancellationToken) ??
-            Task.FromResult(new VideoGenerationResponse());
+            Task.FromResult<VideoGenerationOperation>(new TestVideoGenerationOperation());
     }
 
     public object? GetService(Type serviceType, object? serviceKey = null)

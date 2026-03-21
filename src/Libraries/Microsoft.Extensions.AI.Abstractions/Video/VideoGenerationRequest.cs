@@ -35,13 +35,29 @@ public class VideoGenerationRequest
     /// <summary>Gets or sets the prompt to guide the video generation.</summary>
     public string? Prompt { get; set; }
 
+    /// <summary>Gets or sets the kind of video operation to perform.</summary>
+    /// <remarks>
+    /// Defaults to <see cref="VideoOperationKind.Create"/>. Set to <see cref="VideoOperationKind.Edit"/> or
+    /// <see cref="VideoOperationKind.Extend"/> when working with an existing video referenced by
+    /// <see cref="SourceVideoId"/> or uploaded via <see cref="OriginalMedia"/>.
+    /// </remarks>
+    public VideoOperationKind OperationKind { get; set; }
+
+    /// <summary>Gets or sets the provider-specific ID of an existing video to edit or extend.</summary>
+    /// <remarks>
+    /// This is typically the <see cref="VideoGenerationOperation.OperationId"/> of a previously completed
+    /// video generation. Use <see cref="VideoGenerationOperation.CreateEditRequest"/> or
+    /// <see cref="VideoGenerationOperation.CreateExtensionRequest"/> to create a request with this property set.
+    /// </remarks>
+    public string? SourceVideoId { get; set; }
+
     /// <summary>
     /// Gets or sets the original media (images or videos) to use as input for the video generation.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The interpretation of this property depends on the content type of the media and the capabilities
-    /// of the underlying provider. Common behaviors include:
+    /// The interpretation of this property depends on the content type of the media, the <see cref="OperationKind"/>,
+    /// and the capabilities of the underlying provider. Common behaviors include:
     /// </para>
     /// <list type="bullet">
     /// <item><description>
@@ -49,18 +65,15 @@ public class VideoGenerationRequest
     /// generation. The provider creates a video inspired by or based on the image. Supported by most providers.
     /// </description></item>
     /// <item><description>
-    /// <b>Video content</b> (e.g., <c>video/mp4</c>): Used as a source video for editing or remixing. The provider
-    /// modifies the existing video according to the <see cref="Prompt"/>. Not all providers support video editing.
+    /// <b>Video content</b> (e.g., <c>video/mp4</c>): Used as a source video for editing when
+    /// <see cref="OperationKind"/> is <see cref="VideoOperationKind.Edit"/>. The provider modifies the
+    /// existing video according to the <see cref="Prompt"/>.
     /// </description></item>
     /// </list>
     /// <para>
     /// If this property is <see langword="null"/> or empty, the request is treated as a text-to-video generation
-    /// using only the <see cref="Prompt"/>.
-    /// </para>
-    /// <para>
-    /// Provider-specific scenarios such as video continuations or character consistency can be controlled
-    /// via <see cref="VideoGenerationOptions.AdditionalProperties"/>. Refer to the provider documentation
-    /// for supported keys.
+    /// using only the <see cref="Prompt"/>. To edit or extend a previously generated video by ID rather than by
+    /// uploading media, set <see cref="SourceVideoId"/> and the appropriate <see cref="OperationKind"/>.
     /// </para>
     /// </remarks>
     public IEnumerable<AIContent>? OriginalMedia { get; set; }

@@ -112,8 +112,8 @@ public sealed class OpenTelemetryVideoGenerator : DelegatingVideoGenerator
         base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
-    public async override Task<VideoGenerationResponse> GenerateAsync(
-        VideoGenerationRequest request, VideoGenerationOptions? options = null, IProgress<VideoGenerationProgress>? progress = null, CancellationToken cancellationToken = default)
+    public async override Task<VideoGenerationOperation> GenerateAsync(
+        VideoGenerationRequest request, VideoGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(request);
 
@@ -121,12 +121,12 @@ public sealed class OpenTelemetryVideoGenerator : DelegatingVideoGenerator
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _defaultModelId;
 
-        VideoGenerationResponse? response = null;
+        VideoGenerationOperation? operation = null;
         Exception? error = null;
         try
         {
-            response = await base.GenerateAsync(request, options, progress, cancellationToken).ConfigureAwait(false);
-            return response;
+            operation = await base.GenerateAsync(request, options, cancellationToken).ConfigureAwait(false);
+            return operation;
         }
         catch (Exception ex)
         {
@@ -135,7 +135,7 @@ public sealed class OpenTelemetryVideoGenerator : DelegatingVideoGenerator
         }
         finally
         {
-            TraceResponse(activity, requestModelId, response, error, stopwatch);
+            TraceResponse(activity, requestModelId, operation, error, stopwatch);
         }
     }
 
@@ -223,11 +223,11 @@ public sealed class OpenTelemetryVideoGenerator : DelegatingVideoGenerator
         return activity;
     }
 
-    /// <summary>Adds video generation response information to the activity.</summary>
+    /// <summary>Adds video generation operation information to the activity.</summary>
     private void TraceResponse(
         Activity? activity,
         string? requestModelId,
-        VideoGenerationResponse? response,
+        VideoGenerationOperation? operation,
         Exception? error,
         Stopwatch? stopwatch)
     {
@@ -256,18 +256,15 @@ public sealed class OpenTelemetryVideoGenerator : DelegatingVideoGenerator
             }
         }
 
-        if (response is not null)
+        if (operation is not null)
         {
-            if (EnableSensitiveData &&
-                response.Contents is { Count: > 0 } contents &&
-                activity is { IsAllDataRequested: true })
+            if (activity is { IsAllDataRequested: true })
             {
-                _ = activity.AddTag(
-                    OpenTelemetryConsts.GenAI.Output.Messages,
-                    OpenTelemetryChatClient.SerializeChatMessages([new(ChatRole.Assistant, contents)]));
+                _ = activity.AddTag("gen_ai.operation.id", operation.OperationId);
+                _ = activity.AddTag("gen_ai.operation.status", operation.Status);
             }
 
-            if (response.Usage is { } usage)
+            if (operation.Usage is { } usage)
             {
                 if (_tokenUsageHistogram.Enabled)
                 {

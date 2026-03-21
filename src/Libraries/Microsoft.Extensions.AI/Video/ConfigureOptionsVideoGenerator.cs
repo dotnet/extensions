@@ -36,10 +36,10 @@ public sealed class ConfigureOptionsVideoGenerator : DelegatingVideoGenerator
     }
 
     /// <inheritdoc/>
-    public override async Task<VideoGenerationResponse> GenerateAsync(
-        VideoGenerationRequest request, VideoGenerationOptions? options = null, IProgress<VideoGenerationProgress>? progress = null, CancellationToken cancellationToken = default)
+    public override async Task<VideoGenerationOperation> GenerateAsync(
+        VideoGenerationRequest request, VideoGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await base.GenerateAsync(request, Configure(options), progress, cancellationToken);
+        return await base.GenerateAsync(request, Configure(options), cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="VideoGenerationOptions"/> to pass along to the inner generator.</summary>

@@ -144,18 +144,6 @@ rootCommand.SetHandler(async (context) =>
         ResponseFormat = VideoGenerationResponseFormat.Data,
     };
 
-    if (editVideoId is not null)
-    {
-        generateOptions.AdditionalProperties ??= [];
-        generateOptions.AdditionalProperties["edit_video_id"] = editVideoId;
-    }
-
-    if (extendVideoId is not null)
-    {
-        generateOptions.AdditionalProperties ??= [];
-        generateOptions.AdditionalProperties["extend_video_id"] = extendVideoId;
-    }
-
     if (characterIds.Length > 0)
     {
         var chars = new JsonArray();
@@ -168,9 +156,25 @@ rootCommand.SetHandler(async (context) =>
         generateOptions.AdditionalProperties["characters"] = chars;
     }
 
-    var response = await generator.GenerateAsync(
-        new VideoGenerationRequest(prompt, originalMedia),
-        generateOptions,
+    var request = new VideoGenerationRequest(prompt, originalMedia);
+
+    if (editVideoId is not null)
+    {
+        request.OperationKind = VideoOperationKind.Edit;
+        request.SourceVideoId = editVideoId;
+    }
+    else if (extendVideoId is not null)
+    {
+        request.OperationKind = VideoOperationKind.Extend;
+        request.SourceVideoId = extendVideoId;
+    }
+
+    var operation = await generator.GenerateAsync(request, generateOptions);
+
+    Console.WriteLine($"  Operation ID: {operation.OperationId}");
+    Console.WriteLine($"  Initial status: {operation.Status}");
+
+    await operation.WaitForCompletionAsync(
         new Progress<VideoGenerationProgress>(p =>
             Console.WriteLine($"  Status: {p.Status}{(p.PercentComplete.HasValue ? $" ({p.PercentComplete}%)" : string.Empty)}")));
 
@@ -178,20 +182,21 @@ rootCommand.SetHandler(async (context) =>
     Console.WriteLine($"Completed in {stopwatch.Elapsed.TotalSeconds:F1}s");
     Console.WriteLine();
 
-    // --- Process response ---
-    if (response.Usage is { } usage)
+    // --- Download and process contents ---
+    if (operation.Usage is { } usage)
     {
         Console.WriteLine($"Token Usage: input={usage.InputTokenCount}, output={usage.OutputTokenCount}, total={usage.TotalTokenCount}");
     }
 
-    Console.WriteLine($"Generated {response.Contents.Count} content item(s):");
-    for (int i = 0; i < response.Contents.Count; i++)
+    var contents = await operation.GetContentsAsync(generateOptions);
+    Console.WriteLine($"Generated {contents.Count} content item(s):");
+    for (int i = 0; i < contents.Count; i++)
     {
-        var content = response.Contents[i];
+        var content = contents[i];
         switch (content)
         {
             case DataContent dc:
-                string filePath = response.Contents.Count == 1
+                string filePath = contents.Count == 1
                     ? outputPath
                     : Path.Combine(
                         Path.GetDirectoryName(outputPath) ?? ".",

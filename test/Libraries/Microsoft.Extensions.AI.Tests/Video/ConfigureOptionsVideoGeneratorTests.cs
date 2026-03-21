@@ -28,7 +28,7 @@ public class ConfigureOptionsVideoGeneratorTests
             GenerateVideosAsyncCallback = (request, options, ct) =>
             {
                 capturedOptions = options;
-                return Task.FromResult(new VideoGenerationResponse());
+                return Task.FromResult<VideoGenerationOperation>(new TestVideoGenerationOperation());
             }
         };
 
@@ -55,7 +55,7 @@ public class ConfigureOptionsVideoGeneratorTests
             GenerateVideosAsyncCallback = (request, options, ct) =>
             {
                 capturedOptions = options;
-                return Task.FromResult(new VideoGenerationResponse());
+                return Task.FromResult<VideoGenerationOperation>(new TestVideoGenerationOperation());
             }
         };
 

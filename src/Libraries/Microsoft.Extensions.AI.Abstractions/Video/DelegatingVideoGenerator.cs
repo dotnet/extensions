@@ -41,10 +41,10 @@ public class DelegatingVideoGenerator : IVideoGenerator
     protected IVideoGenerator InnerGenerator { get; }
 
     /// <inheritdoc />
-    public virtual Task<VideoGenerationResponse> GenerateAsync(
-        VideoGenerationRequest request, VideoGenerationOptions? options = null, IProgress<VideoGenerationProgress>? progress = null, CancellationToken cancellationToken = default)
+    public virtual Task<VideoGenerationOperation> GenerateAsync(
+        VideoGenerationRequest request, VideoGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerGenerator.GenerateAsync(request, options, progress, cancellationToken);
+        return InnerGenerator.GenerateAsync(request, options, cancellationToken);
     }
 
     /// <inheritdoc />
