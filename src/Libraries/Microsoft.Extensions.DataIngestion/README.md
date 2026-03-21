@@ -39,7 +39,7 @@ The simplest way to store ingestion chunks in a vector store is to use the `GetI
 VectorStoreCollection<Guid, IngestionChunkVectorRecord<string>> collection =
     vectorStore.GetIngestionRecordCollection("chunks", dimensionCount: 1536);
 
-using var writer = new VectorStoreWriter<string, IngestionChunkVectorRecord<string>>(collection);
+using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(collection);
 
 await writer.WriteAsync(chunks);
 ```
@@ -93,8 +93,9 @@ VectorStoreCollectionDefinition definition = new()
     },
 };
 
-var collection = vectorStore.GetCollection<Guid, IngestionChunkVectorRecord<string>>("chunks", definition);
-using var writer = new VectorStoreWriter<string, IngestionChunkVectorRecord<string>>(collection);
+VectorStoreCollection<Guid, IngestionChunkVectorRecord<string>> collection =
+    vectorStore.GetCollection<Guid, IngestionChunkVectorRecord<string>>("chunks", definition);
+using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(collection);
 ```
 
 ## Feedback & Contributing
