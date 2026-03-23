@@ -226,8 +226,8 @@
      -->
     <XUnitRunnerVisualStudioVersion>2.8.2</XUnitRunnerVisualStudioVersion>
     <!-- MEVD is still part of the Semantic Kernel repo -->
-    <MicrosoftExtensionsVectorDataAbstractionsVersion>9.7.0</MicrosoftExtensionsVectorDataAbstractionsVersion>
-    <MicrosoftSemanticKernelConnectorsVersion>1.67.0-preview</MicrosoftSemanticKernelConnectorsVersion>
+    <MicrosoftExtensionsVectorDataAbstractionsVersion>10.1.0</MicrosoftExtensionsVectorDataAbstractionsVersion>
+    <MicrosoftSemanticKernelConnectorsVersion>1.74.0-preview</MicrosoftSemanticKernelConnectorsVersion>
     <MarkdigSignedVersion>0.43.0</MarkdigSignedVersion>
   </PropertyGroup>
 </Project>
