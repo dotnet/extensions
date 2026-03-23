@@ -159,6 +159,9 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(ImageGenerationOptions))]
     [JsonSerializable(typeof(ImageGenerationResponse))]
 
+    // IVideoGenerator
+    [JsonSerializable(typeof(VideoGenerationOptions))]
+
     // IHostedFileClient
     [JsonSerializable(typeof(HostedFileClientOptions))]
     [JsonSerializable(typeof(HostedFileClientMetadata))]
