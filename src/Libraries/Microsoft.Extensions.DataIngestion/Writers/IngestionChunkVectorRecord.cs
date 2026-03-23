@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <typeparam name="TChunk">The type of the chunk content.</typeparam>
 /// <remarks>
 /// When the vector dimension count is not known at compile time,
-/// use the <see cref="VectorStoreExtensions.GetIngestionRecordCollection{TRecord, TChunk}(VectorStore, string, int, string, string?, string?)"/>
+/// use the <see cref="VectorStoreExtensions.GetIngestionRecordCollection{TRecord, TChunk}(VectorStore, string, int, string?, string?)"/>
 /// helper to create a <see cref="VectorStoreCollection{TKey, TRecord}"/> and pass it to the <see cref="VectorStoreWriter{TChunk, TRecord}"/> constructor.
 /// When the vector dimension count is known at compile time, derive from this class and add
 /// the <see cref="VectorStoreVectorAttribute"/> to the <see cref="Embedding"/> property.

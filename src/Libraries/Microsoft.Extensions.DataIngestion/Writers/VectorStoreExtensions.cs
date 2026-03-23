@@ -32,7 +32,7 @@ public static class VectorStoreExtensions
     public static VectorStoreCollection<Guid, IngestionChunkVectorRecord<string>> GetIngestionRecordCollection(this VectorStore vectorStore,
         string collectionName, int dimensionCount, string? distanceFunction = null, string? indexKind = null)
     {
-        return vectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(collectionName, dimensionCount, EmbeddingStorageName, distanceFunction, indexKind);
+        return vectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(collectionName, dimensionCount, distanceFunction, indexKind);
     }
 
     /// <summary>
@@ -43,7 +43,6 @@ public static class VectorStoreExtensions
     /// <param name="vectorStore">The vector store instance to create the collection in.</param>
     /// <param name="collectionName">The name of the collection to be created.</param>
     /// <param name="dimensionCount">The number of dimensions that the vector has.</param>
-    /// <param name="storageName">The storage name for the vector property.</param>
     /// <param name="distanceFunction">
     /// The distance function to use. When not provided, the default specific to given database will be used.
     /// Check <see cref="DistanceFunction"/> for available values.
@@ -72,13 +71,12 @@ public static class VectorStoreExtensions
     [RequiresDynamicCode("This API is not compatible with NativeAOT. You can implement your own IngestionChunkWriter that uses dynamic mapping via VectorStore.GetCollectionDynamic().")]
     [RequiresUnreferencedCode("This API is not compatible with trimming. You can implement your own IngestionChunkWriter that uses dynamic mapping via VectorStore.GetCollectionDynamic().")]
     public static VectorStoreCollection<Guid, TRecord> GetIngestionRecordCollection<TRecord, TChunk>(this VectorStore vectorStore,
-        string collectionName, int dimensionCount, string storageName, string? distanceFunction = null, string? indexKind = null)
+        string collectionName, int dimensionCount, string? distanceFunction = null, string? indexKind = null)
         where TRecord : IngestionChunkVectorRecord<TChunk>, new()
     {
         _ = Shared.Diagnostics.Throw.IfNull(vectorStore);
         _ = Shared.Diagnostics.Throw.IfNullOrEmpty(collectionName);
         _ = Shared.Diagnostics.Throw.IfLessThanOrEqual(dimensionCount, 0);
-        _ = Shared.Diagnostics.Throw.IfNullOrEmpty(storageName);
 
         VectorStoreCollectionDefinition additiveDefinition = new()
         {
@@ -88,7 +86,7 @@ public static class VectorStoreExtensions
                 // to handle the conversion from TChunk to the actual vector type it supports.
                 new VectorStoreVectorProperty(nameof(IngestionChunkVectorRecord<>.Embedding), typeof(TChunk), dimensionCount)
                 {
-                    StorageName = storageName,
+                    StorageName = EmbeddingStorageName,
                     DistanceFunction = distanceFunction,
                     IndexKind = indexKind,
                 },
